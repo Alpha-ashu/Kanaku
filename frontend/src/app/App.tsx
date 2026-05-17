@@ -285,7 +285,7 @@ const AppContent: React.FC = () => {
     if (!user || authLoading) return;
     const staleAuthPaths = new Set(['login', 'signin', 'auth-callback', '']);
 
-    // 1. Handle stale auth paths
+    // 1. Handle stale auth paths (safe to do before dataReady)
     if (staleAuthPaths.has(currentPage)) {
       if (visibleFeatures.dashboard) {
         setCurrentPage('dashboard');
@@ -295,7 +295,11 @@ const AppContent: React.FC = () => {
       return;
     }
 
-    // 2. Handle disabled features
+    // 2. Guard against disabled features — but ONLY once the backend role is resolved.
+    // Without this check, the provisional role (set on permission-fetch timeout) fires
+    // the guard and bounces the user off the correct page before the real role arrives.
+    if (!dataReady) return;
+
     const normalizedRole = role?.toLowerCase();
     const isAdmin = normalizedRole === 'admin';
     const isManager = normalizedRole === 'manager';
@@ -315,7 +319,7 @@ const AppContent: React.FC = () => {
         setCurrentPage('settings');
       }
     }
-  }, [user, authLoading, currentPage, setCurrentPage, visibleFeatures, role]);
+  }, [user, authLoading, dataReady, currentPage, setCurrentPage, visibleFeatures, role]);
 
   const setupNativeFeatures = async () => {
     try {

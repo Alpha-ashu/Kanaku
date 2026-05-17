@@ -13,7 +13,10 @@ import { TokenManager } from '@/lib/api';
 import supabase from '@/utils/supabase/client';
 
 const API_BASE = getConfiguredApiBase();
-const PROFILE_LOOKUP_TIMEOUT_MS = 15000;
+// Inner timeout MUST be shorter than the AuthContext outer race (5000ms) so the
+// service can fall back gracefully to a cached role instead of hard-rejecting.
+const PROFILE_LOOKUP_TIMEOUT_MS = 3500;
+const ROLE_CACHE_KEY = 'auth_role_cache';
 
 const normalizeUserRole = (value: unknown): UserRole => {
   if (value === 'admin' || value === 'manager' || value === 'advisor' || value === 'user') {
@@ -119,26 +122,81 @@ class PermissionService {
   }
 
   private getCachedRole(userId: string): UserRole | null {
+    // 1. Check in-memory snapshot first (fastest)
     const snapshot = this.roleSnapshots.get(userId);
-    if (!snapshot) {
-      return null;
+    if (snapshot) {
+      return resolveEffectiveRole(snapshot.role, snapshot.isApproved);
     }
 
-    return resolveEffectiveRole(snapshot.role, snapshot.isApproved);
+    // 2. Fall back to localStorage so repeat loads (refresh/hot-reload)
+    //    resolve role instantly without a network round-trip.
+    try {
+      const stored = localStorage.getItem(ROLE_CACHE_KEY);
+      if (stored) {
+        const parsed: BackendRoleSnapshot & { userId: string } = JSON.parse(stored);
+        if (parsed.userId === userId) {
+          // Restore into memory cache for the rest of this session
+          this.roleSnapshots.set(userId, parsed);
+          return resolveEffectiveRole(parsed.role, parsed.isApproved);
+        }
+      }
+    } catch {
+      // ignore parse errors
+    }
+
+    return null;
   }
 
   private rememberResolvedRole(userId: string, role: UserRole, isApproved?: boolean): UserRole {
-    this.roleSnapshots.set(userId, {
+    const snapshot: BackendRoleSnapshot & { userId: string } = {
+      userId,
       role,
       isApproved,
       fetchedAt: new Date().toISOString(),
-    });
+    };
+    this.roleSnapshots.set(userId, snapshot);
+
+    // Persist to localStorage so next page load skips the network round-trip
+    try {
+      localStorage.setItem(ROLE_CACHE_KEY, JSON.stringify(snapshot));
+    } catch {
+      // ignore storage errors
+    }
 
     return resolveEffectiveRole(role, isApproved);
   }
 
   private async loadUserRole(userId: string, fallbackRole?: UserRole): Promise<UserRole> {
     const safeFallback = normalizeUserRole(fallbackRole);
+    const cachedRole = this.getCachedRole(userId);
+
+    // If we already have a cached role (from a previous session or this session),
+    // return it immediately so the AuthContext 5s race completes instantly.
+    // Then refresh the role from the backend in the background.
+    if (cachedRole) {
+      void this.refreshRoleInBackground(userId, safeFallback);
+      return cachedRole;
+    }
+
+    // No cache — must wait for the network (first-ever login for this user)
+    return this.fetchRoleFromNetwork(userId, safeFallback);
+  }
+
+  private async refreshRoleInBackground(userId: string, fallback: UserRole): Promise<void> {
+    try {
+      const freshRole = await this.fetchRoleFromNetwork(userId, fallback);
+      // If the backend says the role changed, update permissions state
+      if (freshRole !== this.permissions?.role) {
+        const permissions = this.getDefaultPermissions(freshRole);
+        this.permissions = permissions;
+        this.notifyListeners();
+      }
+    } catch {
+      // Ignore background refresh failures — cached role stays in effect
+    }
+  }
+
+  private async fetchRoleFromNetwork(userId: string, safeFallback: UserRole): Promise<UserRole> {
     const cachedRole = this.getCachedRole(userId);
     try {
       const token = await getAuthToken();
@@ -395,6 +453,8 @@ class PermissionService {
     this.permissions = null;
     this.inflightRoleLookups.clear();
     this.roleSnapshots.clear();
+    // Clear localStorage cache so next user gets a fresh role fetch
+    try { localStorage.removeItem(ROLE_CACHE_KEY); } catch { /* ignore */ }
     this.notifyListeners();
   }
 

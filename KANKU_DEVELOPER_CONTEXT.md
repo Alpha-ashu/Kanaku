@@ -478,3 +478,202 @@ const getDocumentIdFromTransaction = (tx) => {
 9. **View Bill Icon**: Always use `Eye` icon from `lucide-react` in `text-orange-400` color. It must be **always visible** (not hover-gated) when `attachedDocumentId` is truthy.
 10. **Hooks Rule**: Never call `useAuth()`, `useSecurity()`, or any hook after a conditional `return`. Always place all hook calls at the top of the component, before any guard clauses.
 11. **Auth Loading**: The `AuthContext` clears `loading` after a permission fetch with a **5-second hard timeout**. If the backend is unreachable, the app falls back to the locally-cached role from `localStorage`. Do not add any logic that waits for `loading === false` AND `dataReady === true` — this will cause hangs.
+12. **Route Guard**: The feature-gate check in `App.tsx` now requires `dataReady === true` before enforcing. The stale-path redirect (login→dashboard) is exempt and runs before `dataReady`. Never move the `!dataReady` guard below the stale-path check or role-based redirects will fire with the provisional role.
+13. **Permission Service**: `permissionService` uses a **cache-first** strategy. The role is read from `localStorage` (`auth_role_cache`) on first call, returned immediately, and then refreshed from the backend in the background. Do NOT add code that waits for the permission service to complete before rendering — it resolves synchronously from cache on all repeat loads.
+14. **useSharedMenu**: This hook derives `visibleMenuItems` purely from `visibleFeatures` (AppContext) and `role` (AuthContext). Do NOT add `updateTrigger` counters, `adminFeatureUpdate` listeners, or `BroadcastChannel` listeners here — AppContext already handles all flag synchronization and the useMemo recomputes automatically when `visibleFeatures` changes.
+15. **AdminFeaturePanel — applyFeatureVisibility**: Always use the functional updater form `setVisibleFeatures(prev => ({ ...prev, ...newVisibility }))`. Never close over `visibleFeatures` state directly in this callback's `useCallback` deps — it will create a new function reference on every render and trigger re-render loops.
+
+---
+
+### **2026-05-18 — Global Feature Flag Sync Stabilization: Infinite Loop & Permission Timeout Fixes**
+
+This session resolved a cascade of interconnected reactivity bugs that caused infinite console spam, wrong role redirects, and persistent permission timeout warnings on every page load.
+
+---
+
+#### 1. Root Cause: Infinite Re-render Loop in `AdminFeaturePanel.tsx` (`applyFeatureVisibility`)
+
+**Problem**: The `adminFeatureUpdate` CustomEvent was being dispatched 50+ times per second, and `useSharedMenu.ts` was logging `"Admin feature update detected, refreshing menu"` hundreds of times on every load.
+
+**Root Cause — `applyFeatureVisibility` closed over `visibleFeatures`:**
+
+```typescript
+// BEFORE (broken): visibleFeatures in deps → function recreates on every render
+const applyFeatureVisibility = useCallback((featureList) => {
+  ...
+  setVisibleFeatures({ ...visibleFeatures, ...newVisibility }); // stale closure
+}, [role, setVisibleFeatures, visibleFeatures]); // visibleFeatures triggers re-creation
+```
+
+Every time `setVisibleFeatures` was called → `visibleFeatures` state changed → `applyFeatureVisibility` was recreated → `useEffect`s that depended on it re-ran → more `setItem` to localStorage → more StorageEvents → infinite loop.
+
+**Fix (`AdminFeaturePanel.tsx` line ~310)**:
+```typescript
+// AFTER (fixed): functional updater, no stale closure
+const applyFeatureVisibility = useCallback((featureList) => {
+  ...
+  setVisibleFeatures((prev: any) => ({ ...prev, ...newVisibility })); // no closure over visibleFeatures
+}, [role, setVisibleFeatures]); // visibleFeatures removed from deps
+```
+
+---
+
+#### 2. `AdminFeaturePanel.tsx` — useEffect Dependency Loops (3 effects)
+
+**Problem**: Three `useEffect` hooks in `AdminFeaturePanel` had `applyFeatureVisibility` in their dependency arrays. Since `applyFeatureVisibility` was recreated on every render (due to bug #1), these effects would re-run infinitely.
+
+**Effects fixed:**
+
+| Effect | Old dep array | New dep array |
+|---|---|---|
+| `loadFromDb` (DB mount fetch) | `[applyFeatureVisibility]` | `[]` (run once on mount) |
+| BroadcastChannel message listener | `[broadcastChannel, applyFeatureVisibility]` | `[broadcastChannel]` |
+| `StorageEvent` listener | `[applyFeatureVisibility]` | `[]` (run once on mount) |
+
+All three now use `// eslint-disable-next-line react-hooks/exhaustive-deps` with explanatory comments.
+
+---
+
+#### 3. `useSharedMenu.ts` — Removed Redundant `updateTrigger` Mechanism
+
+**Problem**: The hook maintained a separate `updateTrigger: number` state counter and had a 35-line `useEffect` that listened to `adminFeatureUpdate`, `StorageEvent`, and `BroadcastChannel`. On every feature flag change event, it called `setUpdateTrigger(prev => prev + 1)`, which forced all 3 consumers (Sidebar, TopBar, Header) to re-render simultaneously.
+
+**Why it was wrong**: `visibleFeatures` from AppContext is already in the `useMemo([role, visibleFeatures])` dependency array. When AppContext updates `visibleFeatures` state (which it correctly does via `computeVisibleFeatures`), React automatically triggers the memo recomputation in all consumers — no external trigger needed.
+
+**Fix**: Removed the entire `updateTrigger` state, the entire 35-line listener `useEffect`, and removed `updateTrigger` from the `useMemo` dependency array.
+
+> ⚠️ **NOTE**: During this edit, the `orderedItems` state declaration was accidentally deleted (it was on the adjacent line). This caused `ReferenceError: orderedItems is not defined` in Sidebar and TopBar. It was immediately restored.
+
+**Final clean state of `useSharedMenu.ts`**:
+- `const [orderedItems, setOrderedItems] = useState<NavigationItem[]>([])` ✅ present
+- No `updateTrigger` state ✅
+- No `adminFeatureUpdate` event listener ✅  
+- No BroadcastChannel in this hook ✅
+- `useMemo` deps: `[role, visibleFeatures]` ✅
+
+---
+
+#### 4. `App.tsx` — Route Guard Race Condition with Provisional Role
+
+**Problem**: Two wrong redirects happened on every admin login:
+1. `[Route Guard] Redirecting from disabled page: admin-feature-panel (Role: user)` — provisional role 'user' blocked admin pages
+2. `[Route Guard] Redirecting from disabled page: dashboard (Role: admin)` — real admin role arrived but `visibleFeatures` was stale from provisional computation
+
+**Root Cause**: The route guard `useEffect` ran as soon as `authLoading === false`. But `authLoading` becomes false after the 5-second permission timeout fires — at which point the role is still the provisional `'user'` (set from Supabase metadata, not from the backend profile). The real role arrives later via `setDataReady(true)` when `syncFromSupabase` completes.
+
+**Fix (`App.tsx`, route guard useEffect)**:
+```typescript
+// BEFORE: ran with provisional role
+if (!user || authLoading) return;
+// ... feature gate check (fired with wrong provisional role)
+
+// AFTER: waits for backend-confirmed role
+if (!user || authLoading) return;
+// Stale-path redirects (login→dashboard) are safe before dataReady ✅
+if (staleAuthPaths.has(currentPage)) { ... return; }
+
+// Feature-gate check ONLY after role is confirmed from backend
+if (!dataReady) return; // ← NEW: blocks premature gate evaluation
+// ...rest of gate checks
+```
+
+`dataReady` is added to the `useEffect` dependency array: `[user, authLoading, dataReady, currentPage, setCurrentPage, visibleFeatures, role]`.
+
+---
+
+#### 5. `permissionService.ts` — Permission Fetch Timeout (every page load)
+
+**Problem**: `AuthContext` warned `"Permission fetch failed/timed out, using provisional role"` on every single app load.
+
+**Root Cause — Mismatched timeout budgets**:
+- `AuthContext` outer race: **5000ms**  
+- `permissionService` inner timeout (`PROFILE_LOOKUP_TIMEOUT_MS`): **15000ms**
+
+The inner timeout was 3× longer than the outer race. The outer race always fired first, hard-rejecting with the timeout error. The inner request continued running silently in the background consuming 15 additional seconds.
+
+**Fix — Three-part solution**:
+
+**Part A — Reduce inner timeout to 3500ms** (shorter than outer 5000ms budget):
+```typescript
+// BEFORE
+const PROFILE_LOOKUP_TIMEOUT_MS = 15000;
+// AFTER
+const PROFILE_LOOKUP_TIMEOUT_MS = 3500; // must be < AuthContext's 5000ms outer race
+```
+
+**Part B — Add localStorage role cache (`auth_role_cache`)**:
+- `getCachedRole()` now checks `localStorage` first (as a second tier after in-memory map). This means any app load after the very first login reads the role synchronously from localStorage — no network request needed.
+- `rememberResolvedRole()` now writes the resolved role + `userId` to `localStorage.setItem('auth_role_cache', ...)` after every successful backend fetch.
+- `clearPermissions()` (called on sign-out) now also calls `localStorage.removeItem('auth_role_cache')` to prevent a different user from inheriting the previous user's cached role.
+
+**Part C — Cache-first strategy in `loadUserRole()`**:
+```typescript
+// BEFORE: always waited for network
+private async loadUserRole(userId, fallbackRole) {
+  const cachedRole = this.getCachedRole(userId);
+  // ... always fetched from backend, only using cache as fallback on error
+}
+
+// AFTER: return cache immediately, refresh in background
+private async loadUserRole(userId, fallbackRole) {
+  const cachedRole = this.getCachedRole(userId);
+  if (cachedRole) {
+    void this.refreshRoleInBackground(userId, safeFallback); // non-blocking
+    return cachedRole; // instant return — completes in <1ms
+  }
+  // No cache: first-ever login, must wait for network
+  return this.fetchRoleFromNetwork(userId, safeFallback);
+}
+```
+
+`refreshRoleInBackground()` fetches the role from the backend, and if the role changed (e.g., admin promoted a user), calls `notifyListeners()` to propagate the update. The new `fetchRoleFromNetwork()` method is the extracted body of the old `loadUserRole`.
+
+**Expected outcome after these fixes**:
+- **First login ever**: Single network fetch (up to 3.5s), role cached to localStorage.
+- **All subsequent loads**: Role resolved from localStorage in <1ms. No timeout warning. Background refresh validates against backend silently.
+- **Sign-out**: Cache cleared. Next user gets a fresh fetch.
+
+---
+
+#### Files Changed in This Session
+
+| File | Change |
+|---|---|
+| `frontend/src/app/components/admin/AdminFeaturePanel.tsx` | Fixed `applyFeatureVisibility` closure; removed `applyFeatureVisibility` from 3 useEffect dep arrays; deep-merged `roleAccess` with `getDefaultRoleAccess` in all 3 localStorage parsing locations |
+| `frontend/src/contexts/AppContext.tsx` | Added `roleAccess` fallback for roles missing from older saved state; kept `computeVisibleFeatures` stable via `useCallback([role])` |
+| `frontend/src/hooks/useSharedMenu.ts` | Removed `updateTrigger` state and its 35-line listener `useEffect`; restored `orderedItems` state; `useMemo` deps now `[role, visibleFeatures]` only |
+| `frontend/src/app/App.tsx` | Route guard now requires `dataReady === true` before enforcing feature gates; stale-path redirect still runs before `dataReady` check |
+| `frontend/src/services/permissionService.ts` | Inner timeout: 15000ms → 3500ms; added `auth_role_cache` localStorage persistence; cache-first role loading with background refresh; `clearPermissions` clears localStorage cache on sign-out |
+
+---
+
+#### 6. `CartoonCategoryIcons.tsx` — SVG Icons Blank on Mobile (Production)
+
+**Problem**: Quick Action modal icons and all category cartoon icons rendered correctly in local dev but appeared **completely blank** after deployment on real mobile devices (iOS Safari, Android Chrome).
+
+**Root Cause — Broken cross-SVG `url(#id)` references**:
+
+Every icon SVG referenced two IDs defined in a *separate, never-mounted* `<Gradients />` component:
+- `filter="url(#softShadow)"` — a drop-shadow filter
+- `fill="url(#glossGradient)"` — a white gloss overlay gradient
+
+SVG `url(#id)` lookups are **document-scoped** (not SVG-scoped). Desktop Chrome is lenient and silently skips missing filter/gradient references. Mobile browsers (WebKit/Safari on iOS, Chrome on Android) are strict — they drop the **entire element** when a referenced ID is absent, causing icons to render as empty circles or nothing at all.
+
+The `Gradients` component was exported but **never rendered** anywhere in the component tree, so `#softShadow` and `#glossGradient` never existed in the DOM.
+
+**Fix (`CartoonCategoryIcons.tsx`)** — Two global replacements across all 22 icons:
+
+```diff
+- <g filter="url(#softShadow)">   // cross-SVG ref → broken on mobile
++ <g>                              // plain group, no external dep
+
+- <circle ... fill="url(#glossGradient)" opacity="0.2" />   // cross-SVG ref → broken
++ <circle ... fill="white"          opacity="0.15" />        // inline, self-contained
+```
+
+Every icon is now **fully self-contained** — zero external ID dependencies, guaranteed to render on all browsers including iOS Safari and Android Chrome in production PWA builds.
+
+> ⚠️ **Rule**: Never use `url(#id)` in SVG components that reference IDs defined in a *separate* SVG element. Either embed `<defs>` inside each SVG with unique IDs, or use inline attribute values. Cross-SVG ID references are unreliable across all mobile browsers.
+
+**Affected component**: `frontend/src/app/components/ui/CartoonCategoryIcons.tsx` (all 22 icon exports + `getCategoryCartoonIcon` mapper)
+

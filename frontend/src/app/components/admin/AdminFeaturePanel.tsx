@@ -278,6 +278,8 @@ export const AdminFeaturePanel: React.FC = () => {
   }, []);
 
   // Apply feature visibility based on readiness and user role
+  // NOTE: Uses functional update to avoid closing over visibleFeatures state,
+  // which would cause this callback to recreate on every render and trigger a loop.
   const applyFeatureVisibility = useCallback((featureList: FeatureControl[]) => {
     const newVisibility: Record<string, boolean> = {};
 
@@ -306,9 +308,9 @@ export const AdminFeaturePanel: React.FC = () => {
       newVisibility[feature.key] = isVisible;
     });
 
-    // Apply feature visibility
-    setVisibleFeatures({ ...visibleFeatures, ...newVisibility } as any);
-  }, [role, setVisibleFeatures, visibleFeatures]);
+    // Use functional form to avoid closing over stale visibleFeatures
+    setVisibleFeatures((prev: any) => ({ ...prev, ...newVisibility }));
+  }, [role, setVisibleFeatures]);
 
   // Load global feature settings from the database on mount to ensure we have the absolute latest state
   useEffect(() => {
@@ -334,8 +336,9 @@ export const AdminFeaturePanel: React.FC = () => {
       }
     };
     void loadFromDb();
-  }, [applyFeatureVisibility]);
-
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Intentionally empty to run only once on mount
+  
   // Listen for changes from other tabs/sessions
   useEffect(() => {
     if (!broadcastChannel) return;
@@ -352,7 +355,8 @@ export const AdminFeaturePanel: React.FC = () => {
 
     broadcastChannel.addEventListener('message', handleMessage);
     return () => broadcastChannel.removeEventListener('message', handleMessage);
-  }, [broadcastChannel, applyFeatureVisibility]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [broadcastChannel]);
 
   // Also listen for storage changes (for cross-session sync)
   useEffect(() => {
@@ -381,7 +385,8 @@ export const AdminFeaturePanel: React.FC = () => {
 
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
-  }, [applyFeatureVisibility]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Redirect non-admins silently to dashboard
   useEffect(() => {

@@ -10,48 +10,10 @@ const MENU_ORDER_KEY = 'sidebar_menu_order';
 export const useSharedMenu = () => {
   const app = useOptionalApp();
   const { role } = useAuth();
-  const [orderedItems, setOrderedItems] = useState<NavigationItem[]>([]);
-  const [updateTrigger, setUpdateTrigger] = useState(0);
   const currentPage = app?.currentPage ?? 'dashboard';
   const setCurrentPage = app?.setCurrentPage ?? (() => { });
   const visibleFeatures = (app?.visibleFeatures ?? {}) as FeatureVisibility;
-
-  // Listen for admin feature updates to refresh menu
-  useEffect(() => {
-    const handleAdminUpdate = () => {
-      console.log(' useSharedMenu: Admin feature update detected, refreshing menu');
-      setUpdateTrigger(prev => prev + 1);
-    };
-
-    // BroadcastChannel for cross-tab sync
-    let broadcastChannel: BroadcastChannel | null = null;
-    try {
-      broadcastChannel = new BroadcastChannel('feature_settings_channel');
-      broadcastChannel.addEventListener('message', (event) => {
-        if (event.data.type === 'FEATURE_UPDATE') {
-          handleAdminUpdate();
-        }
-      });
-    } catch {
-      // BroadcastChannel not supported
-    }
-
-    window.addEventListener('adminFeatureUpdate', handleAdminUpdate);
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'admin_global_feature_settings') {
-        handleAdminUpdate();
-      }
-    };
-    window.addEventListener('storage', handleStorageChange);
-
-    return () => {
-      window.removeEventListener('adminFeatureUpdate', handleAdminUpdate);
-      window.removeEventListener('storage', handleStorageChange);
-      if (broadcastChannel) {
-        broadcastChannel.close();
-      }
-    };
-  }, []);
+  const [orderedItems, setOrderedItems] = useState<NavigationItem[]>([]);
 
   // Filter menu items based on RBAC and user's feature visibility preferences
   const visibleMenuItems = useMemo(() => {
@@ -69,7 +31,7 @@ export const useSharedMenu = () => {
       return canAccessPage(item.id, visibleFeatures);
     });
 
-  }, [role, visibleFeatures, updateTrigger]);
+  }, [role, visibleFeatures]);
 
   // Load saved order from localStorage
   useEffect(() => {
