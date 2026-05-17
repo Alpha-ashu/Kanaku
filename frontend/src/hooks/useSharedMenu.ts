@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useOptionalApp } from '@/contexts/AppContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { sidebarMenuItems, NavigationItem } from '@/app/constants/navigation';
-import { canAccessPage } from '@/lib/featureFlags';
+import { canAccessPage, FeatureVisibility } from '@/lib/featureFlags';
 
 
 const MENU_ORDER_KEY = 'sidebar_menu_order';
@@ -14,7 +14,7 @@ export const useSharedMenu = () => {
   const [updateTrigger, setUpdateTrigger] = useState(0);
   const currentPage = app?.currentPage ?? 'dashboard';
   const setCurrentPage = app?.setCurrentPage ?? (() => { });
-  const visibleFeatures = app?.visibleFeatures ?? ({} as Record<string, boolean>);
+  const visibleFeatures = (app?.visibleFeatures ?? {}) as FeatureVisibility;
 
   // Listen for admin feature updates to refresh menu
   useEffect(() => {

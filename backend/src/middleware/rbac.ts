@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { AuthRequest } from './auth';
 
-export type UserRole = 'admin' | 'advisor' | 'user';
+export type UserRole = 'admin' | 'manager' | 'advisor' | 'user';
 
 /**
  * RBAC Middleware - Check if user has required role

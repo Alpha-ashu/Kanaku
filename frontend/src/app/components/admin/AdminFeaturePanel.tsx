@@ -30,7 +30,15 @@ interface FeatureControl {
   };
 }
 
-const getDefaultRoleAccess = (readiness: string) => {
+interface FeatureControlBase {
+  name: string;
+  key: string;
+  readiness: 'unreleased' | 'beta' | 'released' | 'deprecated';
+  description: string;
+  lastUpdated: Date;
+}
+
+const getDefaultRoleAccess = (readiness: 'unreleased' | 'beta' | 'released' | 'deprecated') => {
   switch (readiness) {
     case 'unreleased': return { admin: true, manager: false, advisor: false, user: false };
     case 'beta': return { admin: true, manager: true, advisor: true, user: false };
@@ -40,7 +48,7 @@ const getDefaultRoleAccess = (readiness: string) => {
   }
 };
 
-const FEATURES: FeatureControl[] = [
+const FEATURES_BASE: FeatureControlBase[] = [
   // Core Navigation Features
   {
     name: 'Dashboard',
@@ -197,7 +205,12 @@ const FEATURES: FeatureControl[] = [
     description: 'Manager module for approving and verifying advisor applications',
     lastUpdated: new Date(),
   },
-].map(f => ({ ...f, roleAccess: getDefaultRoleAccess(f.readiness) }));
+];
+
+const FEATURES: FeatureControl[] = FEATURES_BASE.map(f => ({
+  ...f,
+  roleAccess: getDefaultRoleAccess(f.readiness)
+}));
 
 export const AdminFeaturePanel: React.FC = () => {
   const { setCurrentPage, visibleFeatures, setVisibleFeatures } = useApp();

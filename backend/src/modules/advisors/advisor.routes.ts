@@ -25,10 +25,10 @@ router.get('/me/sessions', requireRole('advisor'), requireApproved, AdvisorContr
 // Client-only routes
 router.put('/sessions/:id/rate', AdvisorController.rateSession);
 
-//  ADMIN ONLY 
-router.get('/admin/applications', requireRole('admin'), AdvisorController.listPendingAdvisors);
-router.put('/admin/:id/approve', requireRole('admin'), AdvisorController.approveAdvisor);
-router.put('/admin/:id/reject', requireRole('admin'), AdvisorController.rejectAdvisor);
+//  ADMIN / MANAGER ONLY 
+router.get('/admin/applications', requireRole(['admin', 'manager']), AdvisorController.listPendingAdvisors);
+router.put('/admin/:id/approve', requireRole(['admin', 'manager']), AdvisorController.approveAdvisor);
+router.put('/admin/:id/reject', requireRole(['admin', 'manager']), AdvisorController.rejectAdvisor);
 
 export { router as advisorRoutes };
 
