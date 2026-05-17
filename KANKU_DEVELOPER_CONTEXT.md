@@ -171,6 +171,179 @@ const getDocumentIdFromTransaction = (tx) => {
 12. **Route Guard**: The feature-gate check in `App.tsx` now requires `dataReady === true` before enforcing. The stale-path redirect (login→dashboard) is exempt and runs before `dataReady`. Never move the `!dataReady` guard below the stale-path check or role-based redirects will fire with the provisional role.
 13. **Permission Service**: `permissionService` uses a **cache-first** strategy. The role is read from `localStorage` (`auth_role_cache`) on first call, returned immediately, and then refreshed from the backend in the background. Do NOT add code that waits for the permission service to complete before rendering — it resolves synchronously from cache on all repeat loads.
 14. **useSharedMenu**: This hook derives `visibleMenuItems` purely from `visibleFeatures` (AppContext) and `role` (AuthContext). Do NOT add `updateTrigger` counters, `adminFeatureUpdate` listeners, or `BroadcastChannel` listeners here — AppContext already handles all flag synchronization and the useMemo recomputes automatically when `visibleFeatures` changes.
+# KANKU Project: Master Developer Context & Changelog
+
+This document serves as the single source of truth for the project's architecture, design system, and implementation history. **Any AI assistant or developer working on this project must read this file first to ensure consistency.**
+
+> ⚠️ **Developer Skills & Guidelines**: You **MUST** refer to the skill definitions located in the `docs/skills/` directory (e.g., `frontend.skill.md`, `backend.skill.md`, `database.skill.md`, etc.) for domain-specific development rules, architectural standards, and best practices.
+
+---
+
+##  Core Architecture
+
+KANKU follows a **feature-modular structure** within the frontend to ensure scalability and clarity.
+
+- **Root Directory**: Contains global configuration (`package.json`, `vite.config.ts`, `tsconfig.json`).
+- **`frontend/src/app/components/`**: The unified home for all UI components.
+  - `core/`: Primary app shells (Dashboard, Accounts, Transactions, BottomNav, TopBar).
+  - `auth/`: Authentication flows, login/signup, and onboarding.
+  - `transactions/`: AddTransaction, Transfer, PayEMI, StatementImport, ReceiptScanner, BillUpload.
+  - `receipt-scanner/`: Shared sub-views for the ReceiptScanner (ReceiptScannerViews.tsx).
+  - `features/`: Extended modules (Reports, Calendar, VoiceInput, ToDoLists).
+  - `shared/`: Reusable layouts and complex patterns (AppLayout, QuickActionModal, Diagnostics, CenteredLayout).
+  - `ui/`: Low-level, reusable atoms (Buttons, Cards, Inputs, Logos).
+  - `admin/`: Admin-only modules (AdminDashboard, AdminFeaturePanel, AdminAIDashboard).
+  - `manager/`: Manager-only modules (ManagerAdvisorVerification).
+- **`frontend/src/lib/`**: Core services, business logic, and API clients.
+- **`frontend/src/contexts/`**: Global state management (Auth, App, UI).
+- **`frontend/src/services/`**: Domain services (DocumentManagementService, documentIntelligenceService, receiptScannerService, cloudReceiptScanService, permissionService, adminConsoleService).
+- **`frontend/src/hooks/`**: Custom hooks (useReceiptScanner, useTransactionCreation).
+- **`frontend/src/types/`**: Shared TypeScript types (receipt.types.ts).
+- **`docs/`**: Archived documentation and implementation guides.
+- **`unused/`**: Deprecated or archived code (do not import from here).
+
+###  Import Conventions
+- **Always use absolute aliases**: Use `@/app/components/...` or `@/lib/...`.
+- **Avoid relative nesting**: Do not use `../../../`.
+
+---
+
+---
+
+##  Design System & Theme
+
+KANKU uses a **Premium Glassmorphic Aesthetic**. All new features must adhere to these standards:
+
+### **Color Palette**
+- **Primary Gradient**: `#7B4CFF` (Purple) to `#4A9EFF` (Blue).
+- **Surface**: High-transparency white/slate backgrounds with `backdrop-blur-xl`.
+- **Accents**:
+  - Success: Emerald-500
+  - Error: Rose-500
+  - Warning: Amber-500
+  - Bill/Attachment: Orange-400 / Orange-500
+
+### **UI Tokens**
+- **Corners**: `rounded-[30px]` for cards, `rounded-2xl` (16px) for inner elements.
+- **Glassmorphism (Standard)**: `bg-white/80` or `bg-white/70` with `backdrop-blur-xl` and `border-white/20`.
+- **Logos & Branding**: Centralized bank/card logo rendering in `src/app/components/ui/AccountLogos.tsx`. This avoids Vite Fast Refresh conflicts by keeping page components as single-export modules.
+- **Shadows**: Premium `shadow-xl shadow-black/5` or `shadow-floating`.
+- **Typography**: Modern Sans-Serif (Inter/Outfit). High contrast (font-black) for titles, muted for metadata.
+
+### **Stacking Context (Z-Index)**
+- **Backdrops**: `z-[60]`
+- **Modals/Drawers**: `z-[61]`
+- **Transaction Detail Sheet (mobile)**: `z-[61]`
+- **Bill Preview Modal**: `z-[70]`
+- **Receipt Scanner Overlay**: `z-[80]`
+- **Overlays/Toasts**: `z-[100]`
+- **Modal Popups (Mobile)**: `max-w-lg` for a centered "half-size" floating card effect. Must use `z-[101]` for content and `pointer-events-auto`.
+- **Transaction Rows**: Use consolidated vertical date blocks and flexible horizontal alignment to prevent text overlap in data-dense views.
+
+###  Database Maintenance Standards
+- **Deduplication**: When implementing imports or syncs, use `deduplicateLocalData` to merge redundant records. Soft-matching should use `(date, amount, description)` for transactions.
+- **Diagnostics**: All core maintenance tools (Deduplicate, Reset) must be exposed in the `Diagnostics` component with appropriate safeguards (confirmations/spinners).
+- **Sync Integrity**: Always prefer `upsert` with `onConflict` (remoteId/cloudId) to prevent upstream duplication during sync cycles.
+
+###  UI Interaction Standards
+- **Popups**: Mobile popups must use `max-w-lg` and `pointer-events-auto` on the container to ensure button interactability.
+- **Z-Index Hierarchy**: Modal backdrops start at `z-[100]`, content at `z-[101]`. Avoid exceeding `z-[200]` unless for global notifications.
+
+###  Real Mock Credentials (Dev/Staging)
+| Role | Email | Password |
+| :--- | :--- | :--- |
+| **Admin** | `admin@kanku.com` | `Admin@2026!k` |
+| **Manager** | `manager@kanku.com` | `Manager@2026!k` |
+| **Advisor** | `advisor@kanku.com` | `Advisor@2026!k` |
+| **User** | `user@kanku.com` | `User@2026!k` |
+
+> [!IMPORTANT]
+> To use these, you MUST first create them in your **Supabase Auth** dashboard, then run the SQL below to map their roles in the `public.users` table.
+
+###  Supabase Role Mapping SQL
+```sql
+INSERT INTO public.users (id, email, role, name, status)
+VALUES 
+  ('REPLACE_WITH_AUTH_ID', 'admin@kanku.com', 'admin', 'System Admin', 'active'),
+  ('REPLACE_WITH_AUTH_ID', 'manager@kanku.com', 'manager', 'Compliance Manager', 'active'),
+  ('REPLACE_WITH_AUTH_ID', 'advisor@kanku.com', 'advisor', 'Senior Advisor', 'active'),
+  ('REPLACE_WITH_AUTH_ID', 'user@kanku.com', 'user', 'Premium Client', 'active')
+ON CONFLICT (email) DO UPDATE SET role = EXCLUDED.role;
+```
+
+---
+
+---
+
+##  Core Intelligence Systems
+- **OCR Bill Scanner**: Cloud OCR (Google Gemini Vision) primary, Tesseract.js on-device fallback. Privacy mode toggle preserves user data locally. Two separate modes: **Scan Receipt** (OCR-enabled) and **Add Attachment** (OCR-disabled).
+- **Bank Statement Parser**: Regex-based engine for PDF/Image bank statements (extracts account details & transactions).
+- **Voice Assistant**: Web Speech API integrated with custom NLP for hands-free expense entry.
+- **AI Categorization**: `backendService.categorizeText()`  auto-categorizes from merchant/description with confidence scoring (>0.45 threshold).
+- *Reference*: [INTELLIGENCE_SYSTEMS.md](./docs/intelligence/INTELLIGENCE_SYSTEMS.md)
+
+---
+
+---
+
+##  Document & Attachment System
+
+Documents are stored in the **Dexie `documents` table** (`DocumentRecord`).
+
+### How a bill gets linked to a transaction:
+1. **Scan mode**: `useReceiptScanner` calls `DocumentManagementService.createDocumentRecord()` during scan  `linkTransaction(docId, txId)` sets `attachment: 'document:{id}'` and `importMetadata['Document Id']` on the transaction.
+2. **Attachment mode**: `ReceiptScanner` calls `createDocumentRecord()`  `updateDocumentStatus('completed')`  returns `docId` via `onAttachmentSaved`. `AddTransaction` stores it in `attachmentDocumentId` and links it on save.
+
+### How to detect a linked bill:
+```ts
+const getDocumentIdFromTransaction = (tx) => {
+  const match = tx.attachment?.match(/^document:(\d+)$/);
+  if (match) return parseInt(match[1]);
+  const id = parseInt(tx.importMetadata?.['Document Id'] || '');
+  return isFinite(id) ? id : null;
+};
+```
+- If `attachedDocumentId` is truthy  show **Eye (View Bill)** icon.
+- `DocumentManagementService.getDocument(id)`  `fileData`  `URL.createObjectURL()` for preview.
+
+---
+
+---
+
+##  Project Documentation
+- [Frontend Architecture](./frontend/FRONTEND_ARCHITECTURE.md)
+
+---
+
+---
+
+##  Tech Stack Details
+- **Frontend**: React + Vite + TypeScript.
+- **Styling**: Tailwind CSS (Glassmorphism focus).
+- **Backend/Auth**: Supabase.
+- **Database**: Dexie.js (Local-first) + Supabase (Sync).
+- **Mobile Support**: PWA (Service Workers) + Capacitor-ready.
+- **Animations**: Framer Motion (`motion.div`, `AnimatePresence`, spring transitions).
+
+---
+
+---
+
+##  Developer Instructions for New Features
+1. **Reuse UI**: Check `src/app/components/ui/` before creating new primitive elements.
+2. **Standard Headers**: Use `PageHeader` from UI for consistency across modules.
+3. **Standard Page Container**: Use `CenteredLayout` from `shared/` for the page-level padding/max-width wrapper instead of duplicating the class string.
+4. **Local-First**: Always ensure data is saved to `localStorage` or `Dexie` before syncing to the cloud.
+5. **Theme Check**: If a component looks like "Standard Tailwind/Bootstrap," it is wrong. Apply glassmorphism and the primary gradient.
+6. **Frozen Pages**: The **Account Page**, **Add Account** sub-page, **User Profile** page, and **Add Transaction** page are finalized. **DO NOT** modify their layout, logic, or features unless the user specifically requests changes to them.
+7. **Receipt/Bill System**: When adding receipt support to any new module, use `DocumentManagementService` directly. Do NOT reinvent document storage. Pass `initialMode` to `ReceiptScanner` to pre-select the workflow.
+8. **Mobile Responsiveness**: Every list/table must have a mobile card view. Use `hidden lg:block` for desktop tables and `lg:hidden` for mobile card lists. Tapping a row should open a bottom-sheet detail view.
+9. **View Bill Icon**: Always use `Eye` icon from `lucide-react` in `text-orange-400` color. It must be **always visible** (not hover-gated) when `attachedDocumentId` is truthy.
+10. **Hooks Rule**: Never call `useAuth()`, `useSecurity()`, or any hook after a conditional `return`. Always place all hook calls at the top of the component, before any guard clauses.
+11. **Auth Loading**: The `AuthContext` clears `loading` after a permission fetch with a **5-second hard timeout**. If the backend is unreachable, the app falls back to the locally-cached role from `localStorage`. Do not add any logic that waits for `loading === false` AND `dataReady === true` — this will cause hangs.
+12. **Route Guard**: The feature-gate check in `App.tsx` now requires `dataReady === true` before enforcing. The stale-path redirect (login→dashboard) is exempt and runs before `dataReady`. Never move the `!dataReady` guard below the stale-path check or role-based redirects will fire with the provisional role.
+13. **Permission Service**: `permissionService` uses a **cache-first** strategy. The role is read from `localStorage` (`auth_role_cache`) on first call, returned immediately, and then refreshed from the backend in the background. Do NOT add code that waits for the permission service to complete before rendering — it resolves synchronously from cache on all repeat loads.
+14. **useSharedMenu**: This hook derives `visibleMenuItems` purely from `visibleFeatures` (AppContext) and `role` (AuthContext). Do NOT add `updateTrigger` counters, `adminFeatureUpdate` listeners, or `BroadcastChannel` listeners here — AppContext already handles all flag synchronization and the useMemo recomputes automatically when `visibleFeatures` changes.
 15. **AdminFeaturePanel — applyFeatureVisibility**: Always use the functional updater form `setVisibleFeatures(prev => ({ ...prev, ...newVisibility }))`. Never close over `visibleFeatures` state directly in this callback's `useCallback` deps — it will create a new function reference on every render and trigger re-render loops.
 
 ---
@@ -178,12 +351,6 @@ const getDocumentIdFromTransaction = (tx) => {
 ---
 
 ##  Change Log & Evolution
-
-### **2026-05-18 — Global Feature Flag Sync Stabilization: Infinite Loop & Permission Timeout Fixes**
-
-This session resolved a cascade of interconnected reactivity bugs that caused infinite console spam, wrong role redirects, and persistent permission timeout warnings on every page load.
-
----
 
 #### 1. Root Cause: Infinite Re-render Loop in `AdminFeaturePanel.tsx` (`applyFeatureVisibility`)
 
