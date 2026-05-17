@@ -77,6 +77,13 @@ const Notifications = lazy(() => import('@/app/components/profile/Notifications'
 const SimpleAutoTest = lazy(() => import('@/app/components/ui/SimpleAutoTest').then(m => ({ default: m.SimpleAutoTest })));
 const NewUserOnboarding = lazy(() => import('@/app/components/auth/onboarding/NewUserOnboarding').then(m => ({ default: m.NewUserOnboarding })));
 
+// Dynamic features pages
+const TaxCalculator = lazy(() => import('@/app/components/features/TaxCalculatorPage').then(m => ({ default: m.TaxCalculator })));
+const AIInsightsPage = lazy(() => import('@/app/components/features/AIInsightsPage').then(m => ({ default: m.AIInsightsPage })));
+const RecurringTransactions = lazy(() => import('@/app/components/features/RecurringTransactions').then(m => ({ default: m.RecurringTransactions })));
+const BudgetAlertsPage = lazy(() => import('@/app/components/features/BudgetAlertsPage').then(m => ({ default: m.BudgetAlertsPage })));
+const ClientManagementPage = lazy(() => import('@/app/components/features/ClientManagementPage').then(m => ({ default: m.ClientManagementPage })));
+
 //  Capacitor (native only) 
 import { App as CapacitorApp } from '@capacitor/app';
 import { StatusBar, Style } from '@capacitor/status-bar';
@@ -634,15 +641,23 @@ const AppContent: React.FC = () => {
       case 'admin-feature-panel': return <AdminFeaturePanel />;
       case 'admin': return <AdminDashboard />;
       case 'advisor-panel': return <AdvisorPanel />;
+      case 'ai-management':
       case 'admin-ai': return <AdminAIDashboard />;
       case 'sync-monitor': return <SyncMonitorDashboard />;
       case 'admin-advisor-verification': return <AdminAdvisorVerification />;
+      case 'advisor-verification':
       case 'manager-advisor-verification': return <ManagerAdvisorVerification />;
       case 'advisor': return <AdvisorWorkspace />;
       case 'voice-input': return <VoiceInput />;
       case 'voice-review': return <VoiceReview />;
       case 'pay-emi': return <PayEMI />;
       case 'transfer': return <Transfer />;
+      case 'tax-calculator': return <TaxCalculator />;
+      case 'ai-insights': return <AIInsightsPage />;
+      case 'data-export': return <ExportReports />;
+      case 'recurring-transactions': return <RecurringTransactions />;
+      case 'budget-alerts': return <BudgetAlertsPage />;
+      case 'client-management': return <ClientManagementPage />;
       default: return <Dashboard setCurrentPage={setCurrentPage} />;
     }
   };

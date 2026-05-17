@@ -149,13 +149,6 @@ const FEATURES: FeatureControl[] = [
     lastUpdated: new Date(),
   },
   {
-    name: 'Advanced Reports',
-    key: 'advancedReports',
-    readiness: 'beta',
-    description: 'Enhanced analytics and custom report generation',
-    lastUpdated: new Date(),
-  },
-  {
     name: 'AI Insights',
     key: 'aiInsights',
     readiness: 'unreleased',

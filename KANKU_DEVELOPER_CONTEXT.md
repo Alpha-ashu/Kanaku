@@ -100,6 +100,30 @@ ON CONFLICT (email) DO UPDATE SET role = EXCLUDED.role;
 
 ---
 
+### **2026-05-17 (Late Afternoon) — App-Wide CenteredLayout Standardization & Role Visibility Propagation**
+
+#### 1. Dynamic Feature Visibility Propagation to Navigation & Page Controls
+- **Global Context Propagation**: Fully propagated `visibleFeatures` dynamically updated from the database role overrides down to the key navigation shells and account/profile controls.
+- **TopBar & Header Overhaul (`TopBar.tsx`, `Header.tsx`)**:
+  - Dynamically hides the **Notification Bell** button in the TopBar and Page Header if the `notifications` feature flag is administratively disabled (`visibleFeatures?.notifications === false`).
+  - Conditionally displays the **Profile Avatar** action button in the TopBar only when the `userProfile` feature flag is active (`visibleFeatures?.userProfile !== false`).
+- **Feature Disabled View (`UserProfile.tsx`)**:
+  - Implemented an elegant system-wide fallback screen for the User Profile. If `visibleFeatures?.userProfile === false`, the page renders a high-fidelity glassmorphic card presenting a **Lock icon**, clear notifications detailing that the feature is system-disabled, and a quick navigation action to safely return to the Dashboard.
+- **Settings Visibility Gates (`Settings.tsx`)**:
+  - Configured the entire **Notification Settings** control panel to automatically mount/unmount based on `visibleFeatures?.notifications !== false`, ensuring the user settings menu reflects actual system permissions.
+
+#### 2. System-wide Responsive Grid Normalization (`CenteredLayout.tsx`)
+- **CenteredLayout Adoption**: Standardized layout wrapping across **13 core components and viewports** to eliminate visual drift, container offset gaps, and scrollbar reflow anomalies.
+- **Redundant Layout Cleanup**:
+  - Replaced legacy, nested outer wrappers (such as `w-full min-h-screen max-w-[100vw] bg-transparent` and double scroll-safe boundaries) with a unified `<CenteredLayout>` component in the main return blocks.
+  - Trimmed duplicate horizontal and vertical padding classes (`px-4 sm:px-6 lg:px-8 xl:px-12 pt-6 lg:pt-8`) from inner elements, centralizing layout margins, safe-area notches, and responsive breakpoints in a single component.
+- **Normalized Pages**:
+  - Core Shell: `Header.tsx`, `TopBar.tsx`
+  - Main Pages: `Dashboard.tsx`, `Accounts.tsx`, `Transactions.tsx`, `Settings.tsx`, `UserProfile.tsx`, `Reports.tsx`
+  - Modules: `Goals.tsx`, `GoalDetail.tsx`, `Loans.tsx`, `Investments.tsx`, `Groups.tsx`
+
+---
+
 ### **2026-05-17 (Afternoon) — Master Feature Matrix & Role Visibility Toggles**
 
 #### 1. Routing Deadlock Fix (`App.tsx`)

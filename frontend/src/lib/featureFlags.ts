@@ -21,7 +21,11 @@ export type FeatureKey =
   | 'settings'
   | 'clientManagement'
   | 'aiManagement'
-  | 'dashboard';
+  | 'dashboard'
+  | 'aiInsights'
+  | 'dataExport'
+  | 'recurringTransactions'
+  | 'budgetAlerts';
 
 export interface FeatureVisibility extends Record<FeatureKey, boolean> {
   accounts: boolean;
@@ -45,6 +49,10 @@ export interface FeatureVisibility extends Record<FeatureKey, boolean> {
   clientManagement: boolean;
   aiManagement: boolean;
   dashboard: boolean;
+  aiInsights: boolean;
+  dataExport: boolean;
+  recurringTransactions: boolean;
+  budgetAlerts: boolean;
 }
 
 const DEFAULT_FEATURES: FeatureVisibility = {
@@ -69,6 +77,10 @@ const DEFAULT_FEATURES: FeatureVisibility = {
   clientManagement: true,
   aiManagement: true,
   dashboard: true,
+  aiInsights: true,
+  dataExport: true,
+  recurringTransactions: true,
+  budgetAlerts: true,
 };
 
 const ROLE_FEATURES: Record<UserRole, FeatureVisibility> = {
@@ -94,6 +106,10 @@ const ROLE_FEATURES: Record<UserRole, FeatureVisibility> = {
     clientManagement: true,
     aiManagement: true,
     dashboard: true,
+    aiInsights: true,
+    dataExport: true,
+    recurringTransactions: true,
+    budgetAlerts: true,
   },
   manager: {
     accounts: false,
@@ -117,6 +133,10 @@ const ROLE_FEATURES: Record<UserRole, FeatureVisibility> = {
     clientManagement: true,
     aiManagement: false,
     dashboard: false,
+    aiInsights: false,
+    dataExport: true,
+    recurringTransactions: false,
+    budgetAlerts: false,
   },
   advisor: {
     accounts: true,
@@ -137,9 +157,13 @@ const ROLE_FEATURES: Record<UserRole, FeatureVisibility> = {
     notifications: true,
     userProfile: true,
     settings: true,
-    clientManagement: false,
+    clientManagement: true,
     aiManagement: false,
     dashboard: true,
+    aiInsights: true,
+    dataExport: true,
+    recurringTransactions: true,
+    budgetAlerts: true,
   },
   user: {
     accounts: true,
@@ -163,6 +187,10 @@ const ROLE_FEATURES: Record<UserRole, FeatureVisibility> = {
     clientManagement: false,
     aiManagement: false,
     dashboard: true,
+    aiInsights: true,
+    dataExport: true,
+    recurringTransactions: true,
+    budgetAlerts: true,
   },
 };
 
@@ -218,7 +246,15 @@ export const PAGE_TO_FEATURE_MAPPING: Record<string, FeatureKey> = {
   'transfer': 'transfer',
   'tax-calculator': 'taxCalculator',
   'admin-ai': 'aiManagement',
+  'ai-management': 'aiManagement',
   'manager-advisor-verification': 'managerPanel',
+  'advisor-verification': 'managerPanel',
+  'ai-insights': 'aiInsights',
+  'export-reports': 'dataExport',
+  'data-export': 'dataExport',
+  'recurring-transactions': 'recurringTransactions',
+  'budget-alerts': 'budgetAlerts',
+  'client-management': 'clientManagement',
 };
 
 export function canAccessPage(page: string, features: FeatureVisibility): boolean {
