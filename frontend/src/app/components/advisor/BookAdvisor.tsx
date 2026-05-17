@@ -164,7 +164,7 @@ export const BookAdvisor: React.FC = () => {
  const clientBookings = myBookings.filter(b => !b.advisorId || b.advisorId !== user?.id);
 
  return (
- <div className="flex flex-col min-h-screen bg-[#F8FAFC]">
+ <div className="flex flex-col min-h-screen bg-white">
 
  {/* High Density Header */}
  <header className="flex items-center justify-between px-4 lg:px-6 py-4 bg-white border-b border-slate-100 shrink-0">

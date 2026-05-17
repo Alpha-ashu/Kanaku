@@ -131,7 +131,7 @@ export const AddGoal: React.FC = () => {
  };
 
  return (
- <div className="flex flex-col min-h-screen bg-[#F8FAFC]">
+ <div className="flex flex-col min-h-screen bg-white">
 
  {/* High Density Header */}
  <header className="px-4 lg:px-6 py-4 bg-white border-b border-slate-100">

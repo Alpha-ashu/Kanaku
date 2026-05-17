@@ -177,7 +177,7 @@ export const AddAccount: React.FC = () => {
  };
 
  return (
- <div className="flex flex-col min-h-screen bg-[#F8FAFC]">
+ <div className="flex flex-col min-h-screen bg-white">
 
  {/* Header - Stays at top with Glassmorphism */}
  <header className="flex-shrink-0 px-4 lg:px-10 py-5 bg-white/80 backdrop-blur-2xl border-b border-slate-100/50 z-30 sticky top-0 shadow-sm shadow-slate-200/30">
