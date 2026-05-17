@@ -98,6 +98,23 @@ ON CONFLICT (email) DO UPDATE SET role = EXCLUDED.role;
 
 ##  Change Log & Evolution
 
+### **2026-05-17 (Evening) — Navigation Registration, Settings Auto-Rearrange & Manager RBAC Stabilization**
+
+#### 1. Navigation Menu Registration & Flow Integration (`navigation.ts`, `useSharedMenu.ts`)
+- **Menu Items Populated**: Registered all 7 new feature pages (Tax Calculator, AI Insights, Data Export, Recurring Transactions, Budget Alerts, Client Management, AI Management) inside both the desktop `sidebarMenuItems` and the mobile `headerMenuItems` in `navigation.ts`.
+- **RBAC Role Filtering**: Assigned correct icons (`lucide-react`) and customized role restrictions for premium advisor tools like `client-management` (restricted to admin, manager, advisor roles).
+- **Admin Routing Bypass**: Updated the `useSharedMenu` hook bypass list to include both `ai-management` and `advisor-verification` route IDs, ensuring administrators always have access regardless of local feature state.
+
+#### 2. Dynamic Settings Page Rearrangement (`Settings.tsx`)
+- **Data-Driven Sections**: Re-engineered the Settings page to use a structured, data-driven section definitions array (`SettingsSection[]`).
+- **Real-time Feature Auto-Hiding**: Each settings card declares its dependency on a specific `featureKey`. If an administrator disables a feature (e.g. `dataExport` or `notifications`), the corresponding settings card immediately hides from both the mobile stack and desktop grid in real-time.
+- **Dynamic 3-Column Column Balancing**: Configured a `useMemo` hooks-based grid builder that dynamically splits the filtered, visible sections evenly across 3 desktop columns using round-robin distribution. Disabling a feature reflows the grid dynamically, leaving no empty slots or broken column gaps.
+
+#### 3. Manager RBAC Route Stabilization & 403 Forbidden Fixes (`rbac.ts`, `advisor.routes.ts`, `AdminFeaturePanel.tsx`)
+- **Backend Role Support**: Added the `'manager'` role type to `UserRole` union in the backend RBAC middleware (`rbac.ts`), aligning with the database's string-based role capabilities.
+- **403 Forbidden Resolved**: Updated the backend advisor routes (`advisor.routes.ts`) for approving, rejecting, and viewing pending advisor applications (`/admin/applications`) to allow both `'admin'` and `'manager'` roles (`requireRole(['admin', 'manager'])`). Compliance managers can now successfully access the application verification panel without server denial.
+- **Compiler Type Safety**: Resolved strict TypeScript compilation errors in `AdminFeaturePanel.tsx` by declaring a base `FeatureControlBase` array and mapping it to the final `FEATURES: FeatureControl[]` type, preventing string-to-union literal mismatches on `readiness` settings. Corrected a type mismatch on `visibleFeatures` inside `useSharedMenu.ts` with a safe `FeatureVisibility` cast.
+
 ---
 
 ### **2026-05-17 (Late Afternoon) — App-Wide CenteredLayout Standardization & Role Visibility Propagation**
