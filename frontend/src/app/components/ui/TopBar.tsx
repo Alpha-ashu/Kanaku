@@ -5,6 +5,7 @@ import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from 
 import { NavigationItem } from '@/app/constants/navigation';
 import { NotificationPopup } from '@/app/components/ui/NotificationPopup';
 import { useSharedMenu } from '@/hooks/useSharedMenu';
+import { useAuth } from '@/contexts/AuthContext';
 import { motion, Reorder, useDragControls } from 'framer-motion';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db, type Notification as AppNotification } from '@/lib/database';
@@ -55,10 +56,125 @@ const DraggablePageMenuItem: React.FC<DraggablePageMenuItemProps> = ({
 };
 
 export const TopBar: React.FC = () => {
-    const { setCurrentPage, visibleFeatures } = useApp();
+    const { setCurrentPage, visibleFeatures, accounts, transactions } = useApp();
     const { orderedItems, handleReorder, handleNavigate, currentPage } = useSharedMenu();
+    const { role } = useAuth();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [notificationPopupOpen, setNotificationPopupOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [isFocused, setIsFocused] = useState(false);
+    const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+
+    const searchInputRef = React.useRef<HTMLInputElement>(null);
+
+    React.useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                e.preventDefault();
+                searchInputRef.current?.focus();
+            }
+            if (e.key === 'Escape') {
+                setIsFocused(false);
+                setIsMobileSearchOpen(false);
+                setSearchQuery('');
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, []);
+
+    const searchablePages = useMemo(() => {
+        const pages = [
+            { id: 'dashboard', label: 'Dashboard', category: 'Navigation', icon: Wallet, description: 'Overview, net worth, and recent trends' },
+            { id: 'transactions', label: 'Transactions', category: 'Navigation', icon: Target, description: 'View history and add new transactions' },
+            { id: 'accounts', label: 'Accounts', category: 'Navigation', icon: Wallet, description: 'Banks, credit cards, wallets, and cash' },
+            { id: 'goals', label: 'Goals', category: 'Navigation', icon: Target, description: 'Track savings targets and goals' },
+            { id: 'loans', label: 'Loans & EMI', category: 'Navigation', icon: Wallet, description: 'Manage borrow, lend, and monthly EMI' },
+            { id: 'investments', label: 'Investments', category: 'Navigation', icon: Target, description: 'Stock market portfolio and holdings' },
+            { id: 'groups', label: 'Groups', category: 'Navigation', icon: Users, description: 'Split bills and shared expenses' },
+            { id: 'user-profile', label: 'Profile & Settings', category: 'Navigation', icon: Users, description: 'Manage profile, security PIN, and avatars' },
+        ];
+
+        if (role === 'admin') {
+            pages.push(
+                { id: 'admin', label: 'Admin Console', category: 'Admin Tools', icon: Users, description: 'System monitoring & user role assignment' },
+                { id: 'admin-feature-panel', label: 'Master Feature Matrix', category: 'Admin Tools', icon: Users, description: 'Manage global feature visibility and readiness' }
+            );
+        }
+        if (role === 'admin' || role === 'manager') {
+            pages.push(
+                { id: 'ai-management', label: 'AI Management', category: 'Management Tools', icon: Target, description: 'Configure AI models and custom insights templates' },
+                { id: 'advisor-verification', label: 'Advisor Verification', category: 'Management Tools', icon: Users, description: 'Verify and approve advisor applications' }
+            );
+        }
+
+        return pages;
+    }, [role]);
+
+    const searchResults = useMemo(() => {
+        const query = searchQuery.trim().toLowerCase();
+        if (!query) return [];
+
+        const matchedPages = searchablePages.filter(p => 
+            p.label.toLowerCase().includes(query) || 
+            p.description.toLowerCase().includes(query) || 
+            p.category.toLowerCase().includes(query)
+        ).map(p => ({
+            id: p.id,
+            type: 'page',
+            title: p.label,
+            subtitle: p.category,
+            description: p.description,
+            icon: p.icon,
+            action: () => {
+                setCurrentPage(p.id);
+                setSearchQuery('');
+                setIsFocused(false);
+                setIsMobileSearchOpen(false);
+            }
+        }));
+
+        const matchedAccounts = (accounts ?? []).filter(a => 
+            a.name.toLowerCase().includes(query) || 
+            a.type.toLowerCase().includes(query) || 
+            (a.subType && a.subType.toLowerCase().includes(query))
+        ).slice(0, 4).map(a => ({
+            id: String(a.id),
+            type: 'account',
+            title: a.name,
+            subtitle: `Account (${a.type.toUpperCase()})`,
+            description: `Current balance: ${a.currency} ${a.balance.toLocaleString()}`,
+            icon: Wallet,
+            action: () => {
+                setCurrentPage('accounts');
+                setSearchQuery('');
+                setIsFocused(false);
+                setIsMobileSearchOpen(false);
+            }
+        }));
+
+        const matchedTransactions = (transactions ?? []).filter(t => 
+            (t.description && t.description.toLowerCase().includes(query)) || 
+            (t.category && t.category.toLowerCase().includes(query)) || 
+            t.type.toLowerCase().includes(query) ||
+            String(t.amount).includes(query)
+        ).slice(0, 6).map(t => ({
+            id: String(t.id),
+            type: 'transaction',
+            title: t.description || t.category,
+            subtitle: `Transaction (${t.category})`,
+            description: `${t.type === 'income' ? '+' : '-'}${t.amount.toLocaleString()} on ${new Date(t.date).toLocaleDateString()}`,
+            icon: Target,
+            action: () => {
+                setCurrentPage('transactions');
+                setSearchQuery('');
+                setIsFocused(false);
+                setIsMobileSearchOpen(false);
+            }
+        }));
+
+        return [...matchedPages, ...matchedAccounts, ...matchedTransactions];
+    }, [searchQuery, searchablePages, accounts, transactions, setCurrentPage]);
 
     const notifications = useLiveQuery(
         () => db.notifications.orderBy('createdAt').reverse().toArray(),
@@ -249,10 +365,77 @@ export const TopBar: React.FC = () => {
                     <div className="relative flex-1 max-w-md group hidden md:block">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4 group-hover:text-slate-600 transition-colors" />
                         <input
+                            ref={searchInputRef}
                             type="text"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            onFocus={() => setIsFocused(true)}
+                            onBlur={() => setTimeout(() => setIsFocused(false), 200)}
                             placeholder="Search transactions, assets..."
                             className="KANKU-search-bar"
                         />
+                        {!searchQuery && (
+                            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-300 border border-slate-200 px-1.5 py-0.5 rounded-md pointer-events-none group-hover:border-slate-300 transition-colors">
+                                ⌘K
+                            </span>
+                        )}
+
+                        {isFocused && searchQuery.trim() && (
+                            <div className="absolute top-[calc(100%+8px)] left-0 right-0 bg-white/95 backdrop-blur-md border border-slate-100 rounded-[24px] shadow-2xl overflow-hidden z-50 max-h-[400px] overflow-y-auto scrollbar-hide py-3 animate-in fade-in slide-in-from-top-2 duration-200">
+                                {searchResults.length > 0 ? (
+                                    <div className="space-y-4">
+                                        {['page', 'account', 'transaction'].map((type) => {
+                                            const matches = searchResults.filter(r => r.type === type);
+                                            if (matches.length === 0) return null;
+                                            
+                                            const groupLabel = {
+                                                page: 'Navigation & Tools',
+                                                account: 'Assets & Accounts',
+                                                transaction: 'Recent Transactions'
+                                            }[type as 'page' | 'account' | 'transaction'];
+
+                                            return (
+                                                <div key={type} className="px-2">
+                                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-3 mb-2">{groupLabel}</p>
+                                                    <div className="space-y-1">
+                                                        {matches.map((result) => {
+                                                            const Icon = result.icon;
+                                                            return (
+                                                                <button
+                                                                    key={result.id}
+                                                                    onMouseDown={(e) => {
+                                                                        e.preventDefault();
+                                                                        result.action();
+                                                                    }}
+                                                                    className="w-full flex items-start gap-3 px-3 py-2 hover:bg-slate-50 rounded-2xl transition-colors text-left"
+                                                                >
+                                                                    <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
+                                                                        type === 'page' ? 'bg-indigo-50 text-indigo-600' :
+                                                                        type === 'account' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'
+                                                                    }`}>
+                                                                        <Icon size={16} />
+                                                                    </div>
+                                                                    <div className="min-w-0 flex-1">
+                                                                        <p className="text-xs font-bold text-slate-900 truncate">{result.title}</p>
+                                                                        <p className="text-[10px] text-slate-400 font-medium truncate mt-0.5">{result.description}</p>
+                                                                    </div>
+                                                                </button>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                ) : (
+                                    <div className="py-8 text-center text-slate-400">
+                                        <Search size={24} className="mx-auto mb-2 opacity-30" />
+                                        <p className="text-xs font-bold">No matches found</p>
+                                        <p className="text-[10px] text-slate-400 font-medium mt-0.5">Try searching for other words</p>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -262,6 +445,15 @@ export const TopBar: React.FC = () => {
                     <div className="hidden sm:block">
                         <SyncStatusBar compact />
                     </div>
+
+                    {/* Mobile Search Button */}
+                    <button
+                        onClick={() => setIsMobileSearchOpen(true)}
+                        className="md:hidden rounded-xl bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 shadow-sm w-10 h-10 shrink-0 flex items-center justify-center transition-colors"
+                        aria-label="Search"
+                    >
+                        <Search size={20} />
+                    </button>
 
                     {/* Notification Bell */}
                     {visibleFeatures?.notifications !== false && (
@@ -319,6 +511,92 @@ export const TopBar: React.FC = () => {
                     )}
                 </div>
             </div>
+
+            {/* Mobile Fullscreen Search Sheet */}
+            {isMobileSearchOpen && (
+                <div className="fixed inset-0 bg-white/95 backdrop-blur-xl z-[100] flex flex-col animate-in fade-in duration-200 text-slate-900">
+                    <div className="flex items-center gap-3 p-4 border-b border-slate-100">
+                        <Search className="text-slate-400 w-5 h-5" />
+                        <input
+                            autoFocus
+                            type="text"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            placeholder="Search transactions, assets..."
+                            className="flex-1 bg-slate-50 border-none rounded-xl h-11 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-slate-100 font-semibold text-slate-900"
+                        />
+                        <button
+                            onClick={() => {
+                                setIsMobileSearchOpen(false);
+                                setSearchQuery('');
+                            }}
+                            className="text-xs font-black uppercase text-slate-500 hover:text-slate-900 px-2"
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                    
+                    <div className="flex-1 overflow-y-auto p-4 space-y-6 scrollbar-hide pb-24">
+                        {searchQuery.trim() ? (
+                            searchResults.length > 0 ? (
+                                <div className="space-y-6">
+                                    {['page', 'account', 'transaction'].map((type) => {
+                                        const matches = searchResults.filter(r => r.type === type);
+                                        if (matches.length === 0) return null;
+                                        
+                                        const groupLabel = {
+                                            page: 'Navigation & Tools',
+                                            account: 'Assets & Accounts',
+                                            transaction: 'Recent Transactions'
+                                        }[type as 'page' | 'account' | 'transaction'];
+
+                                        return (
+                                            <div key={type} className="space-y-2">
+                                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">{groupLabel}</p>
+                                                <div className="space-y-1 bg-slate-50/50 rounded-3xl p-2 border border-slate-100/50">
+                                                    {matches.map((result) => {
+                                                        const Icon = result.icon;
+                                                        return (
+                                                            <button
+                                                                key={result.id}
+                                                                onClick={result.action}
+                                                                className="w-full flex items-start gap-3.5 px-3 py-3 hover:bg-slate-100/50 active:bg-slate-100 rounded-2xl transition-colors text-left"
+                                                            >
+                                                                <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                                                                    type === 'page' ? 'bg-indigo-50 text-indigo-600' :
+                                                                    type === 'account' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'
+                                                                }`}>
+                                                                    <Icon size={18} />
+                                                                </div>
+                                                                <div className="min-w-0 flex-1">
+                                                                    <p className="text-sm font-bold text-slate-900 truncate">{result.title}</p>
+                                                                    <p className="text-xs text-slate-400 font-medium truncate mt-0.5">{result.description}</p>
+                                                                </div>
+                                                            </button>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            ) : (
+                                <div className="py-20 text-center text-slate-400">
+                                    <Search size={32} className="mx-auto mb-3 opacity-30" />
+                                    <p className="text-sm font-bold text-slate-900">No matches found</p>
+                                    <p className="text-xs text-slate-400 font-medium mt-1">Try searching for something else</p>
+                                </div>
+                            )
+                        ) : (
+                            <div className="py-20 text-center text-slate-400">
+                                <Search size={32} className="mx-auto mb-3 opacity-30 animate-pulse text-indigo-500" />
+                                <p className="text-sm font-bold text-slate-900">Search anything in KANKU</p>
+                                <p className="text-xs text-slate-400 font-medium mt-1">Type matching words for accounts, transactions, or pages</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
         </header>
     );
 };
