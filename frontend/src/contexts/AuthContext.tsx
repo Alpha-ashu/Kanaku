@@ -165,7 +165,7 @@ const normalizeRemoteProfile = (profile: any): RemoteProfileSnapshot => {
   const state = String(profile?.state ?? '').trim();
   const city = String(profile?.city ?? '').trim();
   const updatedAt = profile?.updated_at ?? profile?.updatedAt ?? null;
-  const role = String(profile?.role ?? '').trim();
+  const role = String(profile?.role ?? '').trim().toLowerCase();
 
   return {
     displayName,
@@ -212,8 +212,9 @@ const resolveUserRole = (_user: User | null): UserRole => {
   if (!_user) return 'user';
   const localProfile = readLocalProfile();
   if (localProfile?.role) {
-    return (['admin', 'manager', 'advisor', 'user'].includes(localProfile.role))
-      ? localProfile.role as UserRole
+    const normalizedRole = String(localProfile.role).trim().toLowerCase();
+    return (['admin', 'manager', 'advisor', 'user'].includes(normalizedRole))
+      ? normalizedRole as UserRole
       : 'user';
   }
   return 'user';

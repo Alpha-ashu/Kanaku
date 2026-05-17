@@ -51,10 +51,11 @@ interface UserAuthSnapshot {
 }
 
 const normalizeAppRole = (value: unknown): string => {
-  if (value === 'admin' || value === 'advisor' || value === 'user' || value === 'customer') {
-    return value === 'customer' ? 'user' : value;
+  if (typeof value !== 'string') return 'user';
+  const role = value.trim().toLowerCase();
+  if (role === 'admin' || role === 'manager' || role === 'advisor' || role === 'user' || role === 'customer') {
+    return role === 'customer' ? 'user' : role;
   }
-
   return 'user';
 };
 
