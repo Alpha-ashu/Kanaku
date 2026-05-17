@@ -84,7 +84,7 @@ export const Sidebar: React.FC = () => {
           <KANKULogo className="w-12 h-12 drop-shadow-md" />
         </div>
 
-        <nav className="w-full px-4 flex flex-col items-center overflow-y-auto scrollbar-hide shrink-0 pb-2">
+        <nav className="w-full px-4 flex flex-col items-center flex-1 min-h-0 overflow-y-auto scrollbar-hide pb-4">
           <TooltipProvider delayDuration={0}>
             <Reorder.Group
               axis="y"
