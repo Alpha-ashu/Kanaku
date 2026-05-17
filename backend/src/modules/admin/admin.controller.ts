@@ -211,21 +211,27 @@ export const getPlatformStats = async (req: AuthRequest, res: Response) => {
 // Feature flags management
 export const getFeatureFlags = async (req: AuthRequest, res: Response) => {
   try {
-    // For now, return hardcoded flags
-    // TODO: Implement persistent feature flags in database
-    const flags = {
-      advisorBooking: true,
-      payments: true,
-      groups: false,
-      investments: true,
-      loanTracking: true,
-      taxCalculator: true,
-      calendar: true,
-      reports: true,
-      realtime: false,
-    };
+    // Find the first admin user in the system to load global feature flags
+    const adminUser = await prisma.user.findFirst({
+      where: { role: 'admin' },
+    });
 
-    res.json(flags);
+    if (!adminUser) {
+      // Fallback if no admin is seeded yet
+      return res.json({});
+    }
+
+    const settings = await prisma.userSettings.findUnique({
+      where: { userId: adminUser.id },
+    });
+
+    if (!settings || !settings.settings) {
+      return res.json({});
+    }
+
+    const parsedSettings = JSON.parse(settings.settings);
+    const featureFlags = parsedSettings.admin_global_feature_settings || {};
+    res.json(featureFlags);
   } catch (error: any) {
     logger.error('Failed to fetch feature flags', { error });
     res.status(500).json({ error: 'Failed to fetch feature flags' });
@@ -235,20 +241,56 @@ export const getFeatureFlags = async (req: AuthRequest, res: Response) => {
 // Toggle feature flag (admin only)
 export const toggleFeatureFlag = async (req: AuthRequest, res: Response) => {
   try {
-    const { flag, enabled } = req.body;
+    const { features } = req.body; // Expecting the complete features settings object/array
 
-    if (!flag || enabled === undefined) {
-      return res.status(400).json({ error: 'Missing required fields: flag, enabled' });
+    if (!features) {
+      return res.status(400).json({ error: 'Missing required field: features' });
     }
 
-    // TODO: Implement persistent storage for feature flags
-    // For now, just acknowledge the request
-    // Feature flag toggled
+    const adminUser = await prisma.user.findFirst({
+      where: { role: 'admin' },
+    });
+
+    if (!adminUser) {
+      return res.status(404).json({ error: 'Admin user not found' });
+    }
+
+    let settings = await prisma.userSettings.findUnique({
+      where: { userId: adminUser.id },
+    });
+
+    let currentSettings: Record<string, any> = {};
+    if (settings && settings.settings) {
+      try {
+        currentSettings = JSON.parse(settings.settings);
+      } catch {
+        currentSettings = {};
+      }
+    }
+
+    // Save under the key 'admin_global_feature_settings'
+    currentSettings.admin_global_feature_settings = features;
+
+    if (!settings) {
+      settings = await prisma.userSettings.create({
+        data: {
+          userId: adminUser.id,
+          settings: JSON.stringify(currentSettings),
+        },
+      });
+    } else {
+      settings = await prisma.userSettings.update({
+        where: { userId: adminUser.id },
+        data: {
+          settings: JSON.stringify(currentSettings),
+          updatedAt: new Date(),
+        },
+      });
+    }
 
     res.json({
-      message: `Feature flag '${flag}' toggled to ${enabled}`,
-      flag,
-      enabled,
+      message: 'Global feature flags saved successfully',
+      features,
     });
   } catch (error: any) {
     logger.error('Failed to toggle feature flag', { error });

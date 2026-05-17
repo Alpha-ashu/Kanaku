@@ -6,6 +6,8 @@ import { ChevronLeft, Settings, ToggleRight, ToggleLeft, Shield, RefreshCw, Brai
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
+import { backendService } from '@/lib/backend-api';
+import { ROLE_FEATURES } from '@/lib/featureFlags';
 
 // Storage key for admin feature settings (shared globally)
 const ADMIN_FEATURE_SETTINGS_KEY = 'admin_global_feature_settings';
@@ -38,14 +40,20 @@ interface FeatureControlBase {
   lastUpdated: Date;
 }
 
-const getDefaultRoleAccess = (readiness: 'unreleased' | 'beta' | 'released' | 'deprecated') => {
-  switch (readiness) {
-    case 'unreleased': return { admin: true, manager: false, advisor: false, user: false };
-    case 'beta': return { admin: true, manager: true, advisor: true, user: false };
-    case 'released': return { admin: true, manager: true, advisor: true, user: true };
-    case 'deprecated': return { admin: false, manager: false, advisor: false, user: false };
-    default: return { admin: true, manager: true, advisor: true, user: true };
+const getDefaultRoleAccess = (key: string, readiness: 'unreleased' | 'beta' | 'released' | 'deprecated') => {
+  if (readiness === 'unreleased') {
+    return { admin: true, manager: false, advisor: false, user: false };
   }
+  if (readiness === 'deprecated') {
+    return { admin: false, manager: false, advisor: false, user: false };
+  }
+  
+  return {
+    admin: ROLE_FEATURES.admin[key as keyof typeof ROLE_FEATURES.admin] ?? true,
+    manager: ROLE_FEATURES.manager[key as keyof typeof ROLE_FEATURES.manager] ?? false,
+    advisor: ROLE_FEATURES.advisor[key as keyof typeof ROLE_FEATURES.advisor] ?? false,
+    user: ROLE_FEATURES.user[key as keyof typeof ROLE_FEATURES.user] ?? false,
+  };
 };
 
 const FEATURES_BASE: FeatureControlBase[] = [
@@ -209,7 +217,7 @@ const FEATURES_BASE: FeatureControlBase[] = [
 
 const FEATURES: FeatureControl[] = FEATURES_BASE.map(f => ({
   ...f,
-  roleAccess: getDefaultRoleAccess(f.readiness)
+  roleAccess: getDefaultRoleAccess(f.key, f.readiness)
 }));
 
 export const AdminFeaturePanel: React.FC = () => {
@@ -226,7 +234,7 @@ export const AdminFeaturePanel: React.FC = () => {
           return {
             ...f,
             readiness,
-            roleAccess: parsed[f.key]?.roleAccess || getDefaultRoleAccess(readiness),
+            roleAccess: parsed[f.key]?.roleAccess || getDefaultRoleAccess(f.key, readiness),
             lastUpdated: parsed[f.key]?.lastUpdated ? new Date(parsed[f.key].lastUpdated) : f.lastUpdated
           };
         });
@@ -244,52 +252,6 @@ export const AdminFeaturePanel: React.FC = () => {
     } catch {
       return null; // BroadcastChannel not supported
     }
-  }, []);
-
-  // Listen for changes from other tabs/sessions
-  useEffect(() => {
-    if (!broadcastChannel) return;
-
-    const handleMessage = (event: MessageEvent) => {
-      if (event.data.type === 'FEATURE_UPDATE') {
-        // Feature update received via broadcast
-        setFeatures(event.data.features);
-        // Also update the app context visible features
-        applyFeatureVisibility(event.data.features);
-        toast.info('Feature settings updated by admin');
-      }
-    };
-
-    broadcastChannel.addEventListener('message', handleMessage);
-    return () => broadcastChannel.removeEventListener('message', handleMessage);
-  }, [broadcastChannel]);
-
-  // Also listen for storage changes (for cross-session sync)
-  useEffect(() => {
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === ADMIN_FEATURE_SETTINGS_KEY && e.newValue) {
-        // Storage change detected
-        try {
-          const parsed = JSON.parse(e.newValue);
-          const updatedFeatures = FEATURES.map(f => {
-            const readiness = parsed[f.key]?.readiness || f.readiness;
-            return {
-              ...f,
-              readiness,
-              roleAccess: parsed[f.key]?.roleAccess || getDefaultRoleAccess(readiness),
-              lastUpdated: parsed[f.key]?.lastUpdated ? new Date(parsed[f.key].lastUpdated) : f.lastUpdated
-            };
-          });
-          setFeatures(updatedFeatures);
-          applyFeatureVisibility(updatedFeatures);
-        } catch {
-          // Ignore parse errors
-        }
-      }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   // Apply feature visibility based on readiness and user role
@@ -324,6 +286,78 @@ export const AdminFeaturePanel: React.FC = () => {
     // Apply feature visibility
     setVisibleFeatures({ ...visibleFeatures, ...newVisibility } as any);
   }, [role, setVisibleFeatures, visibleFeatures]);
+
+  // Load global feature settings from the database on mount to ensure we have the absolute latest state
+  useEffect(() => {
+    const loadFromDb = async () => {
+      try {
+        const dbFlags = await backendService.getGlobalFeatureFlags();
+        if (dbFlags && Object.keys(dbFlags).length > 0) {
+          localStorage.setItem(ADMIN_FEATURE_SETTINGS_KEY, JSON.stringify(dbFlags));
+          const updatedFeatures = FEATURES.map(f => {
+            const readiness = dbFlags[f.key]?.readiness || f.readiness;
+            return {
+              ...f,
+              readiness,
+              roleAccess: dbFlags[f.key]?.roleAccess || getDefaultRoleAccess(f.key, readiness),
+              lastUpdated: dbFlags[f.key]?.lastUpdated ? new Date(dbFlags[f.key].lastUpdated) : f.lastUpdated
+            };
+          });
+          setFeatures(updatedFeatures);
+          applyFeatureVisibility(updatedFeatures);
+        }
+      } catch (err) {
+        console.error('Failed to load global feature flags from backend database:', err);
+      }
+    };
+    void loadFromDb();
+  }, [applyFeatureVisibility]);
+
+  // Listen for changes from other tabs/sessions
+  useEffect(() => {
+    if (!broadcastChannel) return;
+
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data.type === 'FEATURE_UPDATE') {
+        // Feature update received via broadcast
+        setFeatures(event.data.features);
+        // Also update the app context visible features
+        applyFeatureVisibility(event.data.features);
+        toast.info('Feature settings updated by admin');
+      }
+    };
+
+    broadcastChannel.addEventListener('message', handleMessage);
+    return () => broadcastChannel.removeEventListener('message', handleMessage);
+  }, [broadcastChannel, applyFeatureVisibility]);
+
+  // Also listen for storage changes (for cross-session sync)
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === ADMIN_FEATURE_SETTINGS_KEY && e.newValue) {
+        // Storage change detected
+        try {
+          const parsed = JSON.parse(e.newValue);
+          const updatedFeatures = FEATURES.map(f => {
+            const readiness = parsed[f.key]?.readiness || f.readiness;
+            return {
+              ...f,
+              readiness,
+              roleAccess: parsed[f.key]?.roleAccess || getDefaultRoleAccess(f.key, readiness),
+              lastUpdated: parsed[f.key]?.lastUpdated ? new Date(parsed[f.key].lastUpdated) : f.lastUpdated
+            };
+          });
+          setFeatures(updatedFeatures);
+          applyFeatureVisibility(updatedFeatures);
+        } catch {
+          // Ignore parse errors
+        }
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, [applyFeatureVisibility]);
 
   // Redirect non-admins silently to dashboard
   useEffect(() => {
@@ -369,12 +403,17 @@ export const AdminFeaturePanel: React.FC = () => {
         timestamp: new Date().toISOString()
       });
     }
+
+    // Save to backend database for permanent persistence across sessions and roles
+    void backendService.saveGlobalFeatureFlags(settingsToSave).catch((err) => {
+      console.error('Failed to sync global feature flags to backend database:', err);
+    });
   };
 
   const handleToggleFeature = (key: string, newReadiness: FeatureControl['readiness']) => {
     const updatedFeatures = features.map((f) =>
       f.key === key
-        ? { ...f, readiness: newReadiness, roleAccess: getDefaultRoleAccess(newReadiness), lastUpdated: new Date() }
+        ? { ...f, readiness: newReadiness, roleAccess: getDefaultRoleAccess(f.key, newReadiness), lastUpdated: new Date() }
         : f
     );
 

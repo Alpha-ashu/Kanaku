@@ -83,7 +83,7 @@ const DEFAULT_FEATURES: FeatureVisibility = {
   budgetAlerts: true,
 };
 
-const ROLE_FEATURES: Record<UserRole, FeatureVisibility> = {
+export const ROLE_FEATURES: Record<UserRole, FeatureVisibility> = {
   admin: {
     accounts: true,
     transactions: true,
@@ -132,9 +132,9 @@ const ROLE_FEATURES: Record<UserRole, FeatureVisibility> = {
     settings: true,
     clientManagement: true,
     aiManagement: false,
-    dashboard: true,
+    dashboard: false,
     aiInsights: false,
-    dataExport: true,
+    dataExport: false,
     recurringTransactions: false,
     budgetAlerts: false,
   },

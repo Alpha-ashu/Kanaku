@@ -424,6 +424,25 @@ const getDocumentIdFromTransaction = (tx) => {
 
 ---
 
+### **2026-05-17 (Evening) — Dynamic Global Feature Flag Database Synchronization**
+
+#### 1. Database-Backed Persistent Feature Matrix Settings (`admin.controller.ts`, `admin.routes.ts`)
+- **Backend Persistence**: Implemented database-backed feature flags storage in `/api/v1/admin/features` and `/api/v1/admin/features/toggle`. The feature overrides settings map is stored inside the `UserSettings` row (under the JSON key `admin_global_feature_settings`) for the system's administrator, avoiding schema alterations while maintaining structured configuration across devices.
+- **Cross-Role Feature Retrieval**: Modified routes in `admin.routes.ts` so that `GET /api/v1/admin/features` is positioned before the `requireRole('admin')` middleware. This enables other roles (such as Managers) to retrieve administrative feature override updates, while preserving `POST /api/v1/admin/features/toggle` as restricted strictly to `admin` role.
+
+#### 2. Live Synchronization & startup propagation (`AppContext.tsx`, `backend-api.ts`)
+- **Startup Fetch Effect**: Created a `useEffect` startup fetch hook in `AppContext.tsx` that calls `backendService.getGlobalFeatureFlags()` when a user session becomes active (`user?.id` and `dataReady`). It merges and populates local storage `admin_global_feature_settings` with the active database values, then triggers `computeVisibleFeatures()` to align menus and view ports immediately.
+- **Save on Mutation**: Integrated backend saving inside `AdminFeaturePanel.tsx`'s `saveAndBroadcastFeatures` handler via `backendService.saveGlobalFeatureFlags(settingsToSave)`, assuring modifications made on the matrix are stored database-side in real-time.
+
+#### 3. Grid Toggle and Checkbox Alignment (`AdminFeaturePanel.tsx`, `featureFlags.ts`)
+- **Defaults Alignment**: Exported the master role defaults `ROLE_FEATURES` from `featureFlags.ts`. Configured `getDefaultRoleAccess` inside `AdminFeaturePanel.tsx` to read permissions directly from `ROLE_FEATURES` instead of readiness fallbacks, ensuring the master matrix checkbox states accurately reflect the hardcoded permissions out-of-the-box (e.g. `dataExport` and `dashboard` as active for manager role initially, allowing the administrator to toggle them off).
+
+#### 4. Hardened Role Defaults & Fail-safe Security (`featureFlags.ts`, `AppContext.tsx`)
+- **Strict Least-Privilege Defaults**: Set `dashboard: false` and `dataExport: false` as defaults for the `manager` role in `featureFlags.ts`. This ensures that even in the case of network timeouts, empty database states, or cold starts, the manager is locked out of sensitive views by default.
+- **Dynamic Database Override**: The admin can still dynamically grant or revoke these permissions via the Admin Panel. When granted, the backend's persistent JSON settings override the default to `true` dynamically on login, achieving a secure, fail-safe architecture.
+
+---
+
 ##  Project Documentation
 - [Frontend Architecture](./frontend/FRONTEND_ARCHITECTURE.md)
 

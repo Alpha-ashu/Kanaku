@@ -464,13 +464,17 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const roleFeatures = getVisibleFeaturesForRole(role, import.meta.env.MODE);
     const adminSettings = localStorage.getItem('admin_global_feature_settings');
 
+    console.log('[FEATURE_DEBUG] computeVisibleFeatures started. Role:', role, 'Role Defaults:', roleFeatures);
+
     if (!adminSettings) {
+      console.log('[FEATURE_DEBUG] No admin settings found in localStorage. Using role defaults.');
       setVisibleFeaturesState(roleFeatures);
       return;
     }
 
     try {
       const parsed = JSON.parse(adminSettings);
+      console.log('[FEATURE_DEBUG] Parsed Admin settings:', parsed);
       // Start from role defaults, then apply admin-set readiness per-feature
       const merged: Record<string, boolean> = { ...roleFeatures };
 
@@ -491,20 +495,22 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             isVisible = false;
             break;
           default:
-            isVisible = (roleFeatures as Record<string, boolean>)[key] ?? true;
+            isVisible = (roleFeatures as unknown as Record<string, boolean>)[key] ?? true;
         }
         
         // Explicit role-specific override if present
         if (value?.roleAccess && typeof value.roleAccess[role] === 'boolean') {
+          console.log(`[FEATURE_DEBUG] Found explicit roleAccess override for feature "${key}" role "${role}": ${value.roleAccess[role]}`);
           isVisible = value.roleAccess[role];
         }
 
         merged[key] = isVisible;
       });
 
+      console.log('[FEATURE_DEBUG] Final merged features:', merged);
       setVisibleFeaturesState(merged as unknown as FeatureVisibility);
     } catch (e) {
-      console.error('Failed to apply admin feature settings:', e);
+      console.error('[FEATURE_DEBUG] Failed to apply admin feature settings:', e);
       setVisibleFeaturesState(roleFeatures);
     }
   }, [role]);
@@ -512,6 +518,31 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   useEffect(() => {
     computeVisibleFeatures();
   }, [computeVisibleFeatures]);
+
+  // Sync global feature flags from the backend database when user is authenticated
+  useEffect(() => {
+    const fetchGlobalFlags = async () => {
+      console.log('[FEATURE_DEBUG] fetchGlobalFlags triggered. User ID:', user?.id, 'Data Ready:', dataReady);
+      if (user?.id && dataReady) {
+        try {
+          const { backendService } = await import('@/lib/backend-api');
+          console.log('[FEATURE_DEBUG] Calling backendService.getGlobalFeatureFlags()...');
+          const flags = await backendService.getGlobalFeatureFlags();
+          console.log('[FEATURE_DEBUG] Backend getGlobalFeatureFlags response:', flags);
+          if (flags && Object.keys(flags).length > 0) {
+            localStorage.setItem('admin_global_feature_settings', JSON.stringify(flags));
+            console.log('[FEATURE_DEBUG] Saved flags to localStorage and computing visible features.');
+            computeVisibleFeatures();
+          } else {
+            console.log('[FEATURE_DEBUG] Backend returned empty flags or null:', flags);
+          }
+        } catch (error) {
+          console.warn('[FEATURE_DEBUG] Failed to sync global feature flags from DB on init:', error);
+        }
+      }
+    };
+    void fetchGlobalFlags();
+  }, [user?.id, dataReady, computeVisibleFeatures]);
 
   // Listen for real-time feature flag changes from admin panel (same-tab + cross-tab)
   useEffect(() => {
@@ -656,6 +687,8 @@ export const useApp = () => {
       addAccount: async () => 0,
       visibleFeatures: getVisibleFeaturesForRole('user', import.meta.env.MODE),
       setVisibleFeatures: () => { },
+      goBack: () => { },
+      historyStack: [],
       syncStats: { pendingCount: 0, lastSyncedAt: null, status: 'idle' as const },
       triggerSync: () => { },
     } as AppContextType;

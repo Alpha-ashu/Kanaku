@@ -581,6 +581,22 @@ class BackendService {
     return response.data;
   }
 
+  // ===== GLOBAL FEATURE FLAGS =====
+  async getGlobalFeatureFlags() {
+    try {
+      const response = await this.api.get('/admin/features');
+      return response.data;
+    } catch (error) {
+      console.warn('Failed to fetch global feature flags from backend:', error);
+      return null;
+    }
+  }
+
+  async saveGlobalFeatureFlags(features: any) {
+    const response = await this.api.post('/admin/features/toggle', { features });
+    return response.data;
+  }
+
   // ===== FRIENDS =====
   async createFriend(friend: {
     name: string;

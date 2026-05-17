@@ -19,8 +19,13 @@ import { aiLimitQuerySchema, aiRunBodySchema, aiUserParamsSchema } from '../ai/a
 
 const router = Router();
 
-// All admin routes require authentication and admin role
+// All admin routes require authentication
 router.use(authMiddleware);
+
+// Feature flags (publicly readable by all authenticated users, but writable only by admin)
+router.get('/features', AdminController.getFeatureFlags);
+
+// All other admin routes require admin role
 router.use(requireRole('admin'));
 
 // User management
@@ -36,8 +41,7 @@ router.post('/users/:userId/role', AdminController.updateUserRole);
 router.get('/stats', AdminController.getPlatformStats);
 router.get('/cache/metrics', validateQuery(adminCacheMetricsQuerySchema), AdminController.getCacheMetrics);
 
-// Feature flags
-router.get('/features', AdminController.getFeatureFlags);
+// Feature flags toggle (admin only)
 router.post('/features/toggle', AdminController.toggleFeatureFlag);
 
 // Reports
