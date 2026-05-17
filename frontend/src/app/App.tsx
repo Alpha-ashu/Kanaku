@@ -540,7 +540,7 @@ const AppContent: React.FC = () => {
     return <PINAuth onAuthenticated={setAuthenticated} />;
   }
 
-  console.log('[AppContent] Status:', { authLoading, isInitialized, user: !!user, role });
+
 
   if (authLoading || !isInitialized) {
     return (
