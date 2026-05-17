@@ -523,23 +523,62 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   }, [computeVisibleFeatures]);
 
   // Sync global feature flags from the backend database when user is authenticated
+  // Also poll periodically so cross-session admin changes are picked up without a hard refresh.
   useEffect(() => {
-    if (!user?.id || !dataReady) return;
+    if (!user?.id) return;
+    
     const fetchGlobalFlags = async () => {
       try {
         const { backendService } = await import('@/lib/backend-api');
         const flags = await backendService.getGlobalFeatureFlags();
         if (flags && Object.keys(flags).length > 0) {
-          localStorage.setItem('admin_global_feature_settings', JSON.stringify(flags));
-          computeVisibleFeatures();
+          const currentFlags = localStorage.getItem('admin_global_feature_settings');
+          
+          let isStale = false;
+          if (currentFlags) {
+            try {
+              const localFlags = JSON.parse(currentFlags);
+              // Prevent race conditions: if we just saved locally, the DB might still return old data.
+              // If ANY local flag is newer than the remote flag by > 1s, consider the remote fetch stale and ignore it.
+              for (const key of Object.keys(localFlags)) {
+                const localTime = new Date(localFlags[key]?.lastUpdated || 0).getTime();
+                const remoteTime = new Date(flags[key]?.lastUpdated || 0).getTime();
+                if (localTime > remoteTime + 1000) {
+                  isStale = true;
+                  break;
+                }
+              }
+            } catch (e) {
+              // Ignore parse errors
+            }
+          }
+
+          if (isStale) {
+            return; // Skip this poll, let the DB finish saving the newer local state
+          }
+
+          const newFlags = JSON.stringify(flags);
+          
+          // Only update and recompute if there's an actual change to prevent unnecessary re-renders
+          if (currentFlags !== newFlags) {
+            localStorage.setItem('admin_global_feature_settings', newFlags);
+            computeVisibleFeatures();
+          }
         }
       } catch (error) {
-        console.warn('[AppContext] Failed to sync global feature flags from DB on init:', error);
+        console.warn('[AppContext] Failed to sync global feature flags from DB:', error);
       }
     };
+    
+    // Fetch immediately on mount/auth
     void fetchGlobalFlags();
+    
+    // Poll every 30 seconds for cross-session updates
+    const interval = setInterval(fetchGlobalFlags, 30000);
+    
+    return () => clearInterval(interval);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id, dataReady]); // Intentionally omit computeVisibleFeatures — it's stable via useCallback([role])
+  }, [user?.id]); // Intentionally omit computeVisibleFeatures — it's stable via useCallback([role])
 
   // Listen for real-time feature flag changes from admin panel (same-tab + cross-tab)
   useEffect(() => {
