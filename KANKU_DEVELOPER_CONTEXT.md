@@ -136,6 +136,10 @@ ON CONFLICT (email) DO UPDATE SET role = EXCLUDED.role;
   - Implemented an elegant system-wide fallback screen for the User Profile. If `visibleFeatures?.userProfile === false`, the page renders a high-fidelity glassmorphic card presenting a **Lock icon**, clear notifications detailing that the feature is system-disabled, and a quick navigation action to safely return to the Dashboard.
 - **Settings Visibility Gates (`Settings.tsx`)**:
   - Configured the entire **Notification Settings** control panel to automatically mount/unmount based on `visibleFeatures?.notifications !== false`, ensuring the user settings menu reflects actual system permissions.
+- **Global Search & Actions Palette (`TopBar.tsx`)**: Replaced the static, non-functional search input with a highly responsive, premium, and unified app-wide Command & Search engine that works dynamically for all user roles.
+  - **Dynamic Multimodal Queries**: Connects natively to IndexedDB and App Context to query in real-time across **Navigation & Tools** (auto-adjusting to the user's role, e.g. hiding admin routes for normal users), **Assets & Accounts** (matching by names, balance, subtypes), and **Recent Transactions** (matching by description, category, and amounts).
+  - **Interactive Keyboard Controls**: Integrated native keyboard navigation and focus shortcut (`⌘K` / `Ctrl+K`) that automatically selects the search bar from anywhere on the screen, with full support for `Escape` key close actions.
+  - **First-Class Mobile Experience**: Added a dedicated search toggle icon for mobile headers that opens a gorgeous, full-screen floating glassmorphic overlay for swift query and tap-to-navigate flows.
 
 #### 2. System-wide Responsive Grid Normalization (`CenteredLayout.tsx`)
 - **CenteredLayout Adoption**: Standardized layout wrapping across **13 core components and viewports** to eliminate visual drift, container offset gaps, and scrollbar reflow anomalies.
