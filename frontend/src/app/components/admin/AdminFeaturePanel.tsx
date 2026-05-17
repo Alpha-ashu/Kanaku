@@ -40,6 +40,44 @@ interface FeatureControlBase {
  lastUpdated: Date;
 }
 
+// Explicit feature-to-role access map matching the Master Feature Matrix.
+// This is the DEFAULT state before admin makes any changes.
+// Admin can override any of these via the Feature Panel toggles.
+const FEATURE_DEFAULT_ROLE_ACCESS: Record<string, { admin: boolean; manager: boolean; advisor: boolean; user: boolean }> = {
+ // Core features: advisor + user (admin/manager implied)
+ dashboard:              { admin: true, manager: true,  advisor: true,  user: true  },
+ accounts:               { admin: true, manager: true,  advisor: true,  user: true  },
+ transactions:           { admin: true, manager: true,  advisor: true,  user: true  },
+ loans:                  { admin: true, manager: true,  advisor: true,  user: true  },
+ goals:                  { admin: true, manager: true,  advisor: true,  user: true  },
+ groups:                 { admin: true, manager: true,  advisor: true,  user: true  },
+ calendar:               { admin: true, manager: true,  advisor: true,  user: true  },
+ reports:                { admin: true, manager: true,  advisor: true,  user: true  },
+ todoLists:              { admin: true, manager: true,  advisor: true,  user: true  },
+ investments:            { admin: true, manager: true,  advisor: true,  user: true  },
+ transfer:               { admin: true, manager: true,  advisor: true,  user: true  },
+ // Book Advisor: only for user role (advisors provide sessions, not book them)
+ bookAdvisor:            { admin: true, manager: false, advisor: false, user: true  },
+ // Notifications + Profile + Settings: all roles
+ notifications:          { admin: true, manager: true,  advisor: true,  user: true  },
+ userProfile:            { admin: true, manager: true,  advisor: true,  user: true  },
+ settings:               { admin: true, manager: true,  advisor: true,  user: true  },
+ // Client Management: advisor + manager (not basic user by default)
+ clientManagement:       { admin: true, manager: true,  advisor: true,  user: false },
+ // Advisor Verification: admin + manager only
+ managerPanel:           { admin: true, manager: true,  advisor: false, user: false },
+ // Admin console features: admin only
+ adminPanel:             { admin: true, manager: false, advisor: false, user: false },
+ aiManagement:           { admin: true, manager: false, advisor: false, user: false },
+ advisorPanel:           { admin: true, manager: false, advisor: true,  user: false },
+ // Advanced features
+ taxCalculator:          { admin: true, manager: true,  advisor: true,  user: true  },
+ aiInsights:             { admin: true, manager: false, advisor: true,  user: true  },
+ dataExport:             { admin: true, manager: true,  advisor: true,  user: true  },
+ recurringTransactions:  { admin: true, manager: true,  advisor: true,  user: true  },
+ budgetAlerts:           { admin: true, manager: true,  advisor: true,  user: true  },
+};
+
 const getDefaultRoleAccess = (key: string, readiness: 'unreleased' | 'beta' | 'released' | 'deprecated') => {
  if (readiness === 'unreleased') {
  return { admin: true, manager: false, advisor: false, user: false };
@@ -47,14 +85,10 @@ const getDefaultRoleAccess = (key: string, readiness: 'unreleased' | 'beta' | 'r
  if (readiness === 'deprecated') {
  return { admin: false, manager: false, advisor: false, user: false };
  }
- 
- return {
- admin: ROLE_FEATURES.admin[key as keyof typeof ROLE_FEATURES.admin] ?? true,
- manager: ROLE_FEATURES.manager[key as keyof typeof ROLE_FEATURES.manager] ?? false,
- advisor: ROLE_FEATURES.advisor[key as keyof typeof ROLE_FEATURES.advisor] ?? false,
- user: ROLE_FEATURES.user[key as keyof typeof ROLE_FEATURES.user] ?? false,
- };
+ // For released/beta: use the explicit feature matrix as defaults
+ return FEATURE_DEFAULT_ROLE_ACCESS[key] ?? { admin: true, manager: true, advisor: true, user: true };
 };
+
 
 const FEATURES_BASE: FeatureControlBase[] = [
  // Core Navigation Features
@@ -232,10 +266,17 @@ export const AdminFeaturePanel: React.FC = () => {
  return FEATURES.map(f => {
  const readiness = parsed[f.key]?.readiness || f.readiness;
  const defaultAccess = getDefaultRoleAccess(f.key, readiness);
+ // Merge: start with correct defaults, then layer saved overrides on top.
+ // This ensures stale old saved data (e.g., manager=false for core features) 
+ // is patched with the correct defaults while preserving intentional admin changes.
+ const savedAccess = parsed[f.key]?.roleAccess;
+ const mergedAccess = savedAccess 
+  ? { ...defaultAccess, ...savedAccess } 
+  : defaultAccess;
  return {
  ...f,
  readiness,
- roleAccess: parsed[f.key]?.roleAccess ? { ...defaultAccess, ...parsed[f.key].roleAccess } : defaultAccess,
+ roleAccess: mergedAccess,
  lastUpdated: parsed[f.key]?.lastUpdated ? new Date(parsed[f.key].lastUpdated) : f.lastUpdated
  };
  });

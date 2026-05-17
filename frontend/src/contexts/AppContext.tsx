@@ -95,6 +95,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [language, setLanguage] = useState(() => initialPreferences.language);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [manualRefreshToken, setManualRefreshToken] = useState(0);
+
+  // One-time migration: clear stale admin feature settings when schema changes.
+  // This forces a re-fetch from the backend DB with correct role defaults.
+  const FEATURE_SCHEMA_VERSION = 'v2_role_access_fix';
+  if (localStorage.getItem('feature_schema_version') !== FEATURE_SCHEMA_VERSION) {
+    localStorage.removeItem('admin_global_feature_settings');
+    localStorage.setItem('feature_schema_version', FEATURE_SCHEMA_VERSION);
+  }
+
   const [visibleFeatures, setVisibleFeaturesState] = useState<FeatureVisibility>(() => {
     const stored = localStorage.getItem('visibleFeatures');
     const parsed = stored ? JSON.parse(stored) : {};
