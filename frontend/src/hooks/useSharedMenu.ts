@@ -64,7 +64,7 @@ export const useSharedMenu = () => {
 
       // 2. Feature-based check (uses centralized mapping)
       // Special case: Admin items are ALWAYS visible to admins to prevent lockouts
-      if (['admin-feature-panel', 'admin-ai', 'manager-advisor-verification'].includes(item.id) && role === 'admin') return true;
+      if (['admin-feature-panel', 'admin-ai', 'ai-management', 'manager-advisor-verification', 'advisor-verification'].includes(item.id) && role === 'admin') return true;
 
       return canAccessPage(item.id, visibleFeatures);
     });

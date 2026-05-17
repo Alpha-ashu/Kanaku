@@ -16,6 +16,12 @@ import {
   ShieldCheck,
   ShieldAlert,
   Brain,
+  Calculator,
+  Sparkles,
+  Download,
+  RefreshCw,
+  BellRing,
+  FolderKanban,
 } from 'lucide-react';
 
 export type UserRole = 'admin' | 'manager' | 'advisor' | 'user';
@@ -43,10 +49,17 @@ export const headerMenuItems: NavigationItem[] = [
   { id: 'notifications', label: 'Notifications', icon: Bell, feature: 'notifications' },
   { id: 'user-profile', label: 'Profile', icon: User, feature: 'userProfile' },
   { id: 'settings', label: 'Settings', icon: Settings, feature: 'settings' },
+  // Advanced features
+  { id: 'tax-calculator', label: 'Tax Calculator', icon: Calculator, feature: 'taxCalculator' },
+  { id: 'ai-insights', label: 'AI Insights', icon: Sparkles, feature: 'aiInsights' },
+  { id: 'data-export', label: 'Data Export', icon: Download, feature: 'dataExport' },
+  { id: 'recurring-transactions', label: 'Recurring', icon: RefreshCw, feature: 'recurringTransactions' },
+  { id: 'budget-alerts', label: 'Budget Alerts', icon: BellRing, feature: 'budgetAlerts' },
+  { id: 'client-management', label: 'Client Management', icon: FolderKanban, feature: 'clientManagement', roles: ['admin', 'manager', 'advisor'] },
   // Admin/Manager items
   { id: 'admin-feature-panel', label: 'Admin Panel', icon: ShieldAlert, feature: 'adminPanel', roles: ['admin'] },
-  { id: 'admin-ai', label: 'AI Management', icon: Brain, feature: 'aiManagement', roles: ['admin'] },
-  { id: 'manager-advisor-verification', label: 'Advisor Verification', icon: ShieldCheck, feature: 'managerPanel', roles: ['admin', 'manager'] },
+  { id: 'ai-management', label: 'AI Management', icon: Brain, feature: 'aiManagement', roles: ['admin'] },
+  { id: 'advisor-verification', label: 'Advisor Verification', icon: ShieldCheck, feature: 'managerPanel', roles: ['admin', 'manager'] },
 ];
 
 export const sidebarMenuItems: NavigationItem[] = [
@@ -61,12 +74,20 @@ export const sidebarMenuItems: NavigationItem[] = [
   { id: 'reports', label: 'Reports', icon: BarChart3, feature: 'reports' },
   { id: 'todo-lists', label: 'Todo Lists', icon: CheckSquare, feature: 'todoLists' },
   { id: 'book-advisor', label: 'Book Advisor', icon: BookOpen, feature: 'bookAdvisor' },
+  // Advanced features — visible when enabled by admin
+  { id: 'tax-calculator', label: 'Tax Calculator', icon: Calculator, feature: 'taxCalculator' },
+  { id: 'ai-insights', label: 'AI Insights', icon: Sparkles, feature: 'aiInsights' },
+  { id: 'data-export', label: 'Data Export', icon: Download, feature: 'dataExport' },
+  { id: 'recurring-transactions', label: 'Recurring', icon: RefreshCw, feature: 'recurringTransactions' },
+  { id: 'budget-alerts', label: 'Budget Alerts', icon: BellRing, feature: 'budgetAlerts' },
+  { id: 'client-management', label: 'Clients', icon: FolderKanban, feature: 'clientManagement', roles: ['admin', 'manager', 'advisor'] },
   { id: 'settings', label: 'Settings', icon: Settings, feature: 'settings' },
   // Admin-only items
   { id: 'admin-feature-panel', label: 'Admin Panel', icon: ShieldAlert, feature: 'adminPanel', roles: ['admin'] },
-  { id: 'admin-ai', label: 'AI Management', icon: Brain, feature: 'aiManagement', roles: ['admin'] },
+  { id: 'ai-management', label: 'AI Management', icon: Brain, feature: 'aiManagement', roles: ['admin'] },
   // Manager-only items
-  { id: 'manager-advisor-verification', label: 'Advisor Verification', icon: ShieldCheck, feature: 'managerPanel', roles: ['manager', 'admin'] },
+  { id: 'advisor-verification', label: 'Advisor Verification', icon: ShieldCheck, feature: 'managerPanel', roles: ['manager', 'admin'] },
   // Advisor-only items
   { id: 'advisor-panel', label: 'Advisor Panel', icon: Users, feature: 'advisorPanel', roles: ['advisor'] },
 ];
+
