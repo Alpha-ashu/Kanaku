@@ -231,10 +231,11 @@ export const AdminFeaturePanel: React.FC = () => {
         const parsed = JSON.parse(saved);
         return FEATURES.map(f => {
           const readiness = parsed[f.key]?.readiness || f.readiness;
+          const defaultAccess = getDefaultRoleAccess(f.key, readiness);
           return {
             ...f,
             readiness,
-            roleAccess: parsed[f.key]?.roleAccess || getDefaultRoleAccess(f.key, readiness),
+            roleAccess: parsed[f.key]?.roleAccess ? { ...defaultAccess, ...parsed[f.key].roleAccess } : defaultAccess,
             lastUpdated: parsed[f.key]?.lastUpdated ? new Date(parsed[f.key].lastUpdated) : f.lastUpdated
           };
         });
@@ -362,10 +363,11 @@ export const AdminFeaturePanel: React.FC = () => {
           const parsed = JSON.parse(e.newValue);
           const updatedFeatures = FEATURES.map(f => {
             const readiness = parsed[f.key]?.readiness || f.readiness;
+            const defaultAccess = getDefaultRoleAccess(f.key, readiness);
             return {
               ...f,
               readiness,
-              roleAccess: parsed[f.key]?.roleAccess || getDefaultRoleAccess(f.key, readiness),
+              roleAccess: parsed[f.key]?.roleAccess ? { ...defaultAccess, ...parsed[f.key].roleAccess } : defaultAccess,
               lastUpdated: parsed[f.key]?.lastUpdated ? new Date(parsed[f.key].lastUpdated) : f.lastUpdated
             };
           });

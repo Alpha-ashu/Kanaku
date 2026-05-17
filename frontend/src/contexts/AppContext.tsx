@@ -502,9 +502,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
               isVisible = (roleFeatures as unknown as Record<string, boolean>)[key] ?? true;
           }
 
-          // Explicit role-specific override if present
+          // Explicit role-specific override if present. We must ensure we safely fallback if the object exists but lacks the role key
           if (value?.roleAccess && typeof value.roleAccess[role] === 'boolean') {
             isVisible = value.roleAccess[role];
+          } else if (value?.roleAccess) {
+            // The object exists, but this role is missing (older saved state). Use the baseline features.
+            isVisible = (roleFeatures as unknown as Record<string, boolean>)[key] ?? isVisible;
           }
 
           merged[key] = isVisible;
