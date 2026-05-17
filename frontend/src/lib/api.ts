@@ -198,6 +198,7 @@ interface RequestConfig extends RequestInit {
   showErrorToast?: boolean;
   showSuccessToast?: boolean;
   successMessage?: string;
+  ignoreAuthErrors?: boolean;
 }
 
 class HTTPClient {
@@ -279,7 +280,7 @@ class HTTPClient {
             }
 
             // Handle 401 Unauthorized
-            if (response.status === 401) {
+            if (response.status === 401 && !fetchConfig.ignoreAuthErrors) {
               TokenManager.clearTokens();
               try {
                 // Force sign out to clear stale local storage sessions
@@ -287,6 +288,8 @@ class HTTPClient {
               } catch (e) {
                 // Ignore sign out errors
               }
+              // Wait a tiny bit for local storage to actually clear before redirecting
+              await new Promise(resolve => setTimeout(resolve, 100));
               if (window.location.pathname !== '/login') {
                 window.location.href = '/login';
               }
