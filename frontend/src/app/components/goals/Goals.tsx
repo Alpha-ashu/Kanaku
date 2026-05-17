@@ -8,6 +8,7 @@ import { DeleteConfirmModal } from '@/app/components/shared/DeleteConfirmModal';
 import { Card } from '@/app/components/ui/card';
 import { Button } from '@/app/components/ui/button';
 import { PageHeader } from '@/app/components/ui/PageHeader';
+import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { VOICE_GOAL_DRAFT_KEY, takeVoiceDraft, type VoiceGoalDraft } from '@/lib/voiceDrafts';
@@ -156,7 +157,8 @@ export const Goals: React.FC = () => {
   const completedGoals = goals.filter((goal) => goal.currentAmount >= goal.targetAmount).length;
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8 py-6 lg:py-10 w-full space-y-6 sm:space-y-8 pb-24">
+    <CenteredLayout>
+      <div className="space-y-6 sm:space-y-8">
       
       <div className="flex flex-row flex-wrap items-center justify-between gap-4 w-full">
         <div className="flex items-center gap-4">
@@ -570,7 +572,8 @@ export const Goals: React.FC = () => {
           setGoalToDelete(null);
         }}
       />
-    </div>
+      </div>
+    </CenteredLayout>
   );
 };
 

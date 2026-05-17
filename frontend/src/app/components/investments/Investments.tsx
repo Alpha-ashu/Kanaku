@@ -9,6 +9,7 @@ import { DeleteConfirmModal } from '@/app/components/shared/DeleteConfirmModal';
 import { Card } from '@/app/components/ui/card';
 import { Button } from '@/app/components/ui/button';
 import { PageHeader } from '@/app/components/ui/PageHeader';
+import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
 import { motion } from 'framer-motion';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { cn } from '@/lib/utils';
@@ -187,7 +188,8 @@ export const Investments: React.FC = () => {
   };
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8 py-6 lg:py-10 w-full space-y-6 sm:space-y-8 pb-24">
+    <CenteredLayout>
+      <div className="space-y-6 sm:space-y-8">
       {/*  Header  */}
       <PageHeader
         title="Investments"
@@ -633,7 +635,8 @@ export const Investments: React.FC = () => {
         onClose={() => setClosingInvestment(null)}
         onCompleted={() => setClosingInvestment(null)}
       />
-    </div>
+      </div>
+    </CenteredLayout>
   );
 };
 

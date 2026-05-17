@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { EXPENSE_CATEGORIES, INCOME_CATEGORIES, getSubcategoriesForCategory } from '@/lib/expenseCategories';
 import { getCategoryCartoonIcon } from '@/app/components/ui/CartoonCategoryIcons';
+import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
 
 import { TimeFilter, TimeFilterPeriod, filterByTimePeriod, getPeriodLabel } from '@/app/components/ui/TimeFilter';
 import { formatLocalDate, parseDateInputValue, toLocalDateKey } from '@/lib/dateUtils';
@@ -358,7 +359,8 @@ export const Transactions: React.FC = () => {
   }, []);
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8 py-6 lg:py-10 w-full space-y-6 sm:space-y-8 pb-24">
+    <CenteredLayout>
+      <div className="space-y-6 sm:space-y-8">
       
       <div className="flex flex-row flex-wrap items-center justify-between gap-4 w-full">
         <div className="flex items-center gap-4">
@@ -958,7 +960,8 @@ export const Transactions: React.FC = () => {
         onClose={() => setShowScanModal(false)}
         onTransactionCreated={() => setShowScanModal(false)}
       />
-    </div>
+      </div>
+    </CenteredLayout>
   );
 };
 

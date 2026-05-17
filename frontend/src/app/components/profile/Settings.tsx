@@ -442,54 +442,56 @@ export const Settings: React.FC = () => {
         </motion.div>
 
         {/*  Notification Settings  */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15 }}
-          className="rounded-[30px] overflow-hidden relative bg-white/60 backdrop-blur-xl border border-white/40 shadow-glass"
-        >
-          <div className="p-6 border-b border-white/10">
-            <h3 className="text-lg font-semibold text-gray-900">Notification Settings</h3>
-          </div>
-          <div className="divide-y divide-gray-200">
-            {[
-              { key: 'transactionAlerts', label: 'Transaction Alerts' },
-              { key: 'budgetAlerts', label: 'Budget Alerts' },
-              { key: 'loanReminders', label: 'Loan & EMI Reminders' },
-              { key: 'groupExpenseUpdates', label: 'Group Expense Updates' },
-              { key: 'goalProgressAlerts', label: 'Goal Progress Alerts' },
-              { key: 'appUpdates', label: 'App Updates & Announcements' },
-            ].map(({ key, label }) => (
-              <div key={key} className="p-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <Bell className="text-blue-600" size={18} />
+        {visibleFeatures?.notifications !== false && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            className="rounded-[30px] overflow-hidden relative bg-white/60 backdrop-blur-xl border border-white/40 shadow-glass"
+          >
+            <div className="p-6 border-b border-white/10">
+              <h3 className="text-lg font-semibold text-gray-900">Notification Settings</h3>
+            </div>
+            <div className="divide-y divide-gray-200">
+              {[
+                { key: 'transactionAlerts', label: 'Transaction Alerts' },
+                { key: 'budgetAlerts', label: 'Budget Alerts' },
+                { key: 'loanReminders', label: 'Loan & EMI Reminders' },
+                { key: 'groupExpenseUpdates', label: 'Group Expense Updates' },
+                { key: 'goalProgressAlerts', label: 'Goal Progress Alerts' },
+                { key: 'appUpdates', label: 'App Updates & Announcements' },
+              ].map(({ key, label }) => (
+                <div key={key} className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <Bell className="text-blue-600" size={18} />
+                      </div>
+                      <h4 className="font-medium text-gray-900">{label}</h4>
                     </div>
-                    <h4 className="font-medium text-gray-900">{label}</h4>
-                  </div>
-                  <button
-                    type="button"
-                    aria-label={`Toggle ${label}`}
-                    title={`Toggle ${label}`}
-                    onClick={() => toggleNotif(key)}
-                    className={cn(
-                      'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-black/20',
-                      notifSettings[key] ? 'bg-black' : 'bg-gray-300',
-                    )}
-                  >
-                    <span
+                    <button
+                      type="button"
+                      aria-label={`Toggle ${label}`}
+                      title={`Toggle ${label}`}
+                      onClick={() => toggleNotif(key)}
                       className={cn(
-                        'pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-sm transform transition-transform duration-200',
-                        notifSettings[key] ? 'translate-x-5' : 'translate-x-0',
+                        'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-black/20',
+                        notifSettings[key] ? 'bg-black' : 'bg-gray-300',
                       )}
-                    />
-                  </button>
+                    >
+                      <span
+                        className={cn(
+                          'pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-sm transform transition-transform duration-200',
+                          notifSettings[key] ? 'translate-x-5' : 'translate-x-0',
+                        )}
+                      />
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
 
         {/*  Data Management  */}
         <motion.div
@@ -789,54 +791,56 @@ export const Settings: React.FC = () => {
           </motion.div>
 
           {/*  Notification Settings  */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15 }}
-            className="rounded-[30px] overflow-hidden relative bg-white/60 backdrop-blur-xl border border-white/40 shadow-glass"
-          >
-            <div className="p-6 border-b border-white/10">
-              <h3 className="text-lg font-semibold text-gray-900">Notification Settings</h3>
-            </div>
-            <div className="divide-y divide-gray-200">
-              {[
-                { key: 'transactionAlerts', label: 'Transaction Alerts' },
-                { key: 'budgetAlerts', label: 'Budget Alerts' },
-                { key: 'loanReminders', label: 'Loan & EMI Reminders' },
-                { key: 'groupExpenseUpdates', label: 'Group Expense Updates' },
-                { key: 'goalProgressAlerts', label: 'Goal Progress Alerts' },
-                { key: 'appUpdates', label: 'App Updates & Announcements' },
-              ].map(({ key, label }) => (
-                <div key={key} className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <Bell className="text-blue-600" size={18} />
+          {visibleFeatures?.notifications !== false && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15 }}
+              className="rounded-[30px] overflow-hidden relative bg-white/60 backdrop-blur-xl border border-white/40 shadow-glass"
+            >
+              <div className="p-6 border-b border-white/10">
+                <h3 className="text-lg font-semibold text-gray-900">Notification Settings</h3>
+              </div>
+              <div className="divide-y divide-gray-200">
+                {[
+                  { key: 'transactionAlerts', label: 'Transaction Alerts' },
+                  { key: 'budgetAlerts', label: 'Budget Alerts' },
+                  { key: 'loanReminders', label: 'Loan & EMI Reminders' },
+                  { key: 'groupExpenseUpdates', label: 'Group Expense Updates' },
+                  { key: 'goalProgressAlerts', label: 'Goal Progress Alerts' },
+                  { key: 'appUpdates', label: 'App Updates & Announcements' },
+                ].map(({ key, label }) => (
+                  <div key={key} className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <Bell className="text-blue-600" size={18} />
+                        </div>
+                        <h4 className="font-medium text-gray-900">{label}</h4>
                       </div>
-                      <h4 className="font-medium text-gray-900">{label}</h4>
-                    </div>
-                    <button
-                      type="button"
-                      aria-label={`Toggle ${label}`}
-                      title={`Toggle ${label}`}
-                      onClick={() => toggleNotif(key)}
-                      className={cn(
-                        'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-black/20',
-                        notifSettings[key] ? 'bg-black' : 'bg-gray-300',
-                      )}
-                    >
-                      <span
+                      <button
+                        type="button"
+                        aria-label={`Toggle ${label}`}
+                        title={`Toggle ${label}`}
+                        onClick={() => toggleNotif(key)}
                         className={cn(
-                          'pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-sm transform transition-transform duration-200',
-                          notifSettings[key] ? 'translate-x-5' : 'translate-x-0',
+                          'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-black/20',
+                          notifSettings[key] ? 'bg-black' : 'bg-gray-300',
                         )}
-                      />
-                    </button>
+                      >
+                        <span
+                          className={cn(
+                            'pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-sm transform transition-transform duration-200',
+                            notifSettings[key] ? 'translate-x-5' : 'translate-x-0',
+                          )}
+                        />
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          )}
 
         </div>
 

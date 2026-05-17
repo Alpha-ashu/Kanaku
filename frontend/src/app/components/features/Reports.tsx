@@ -19,6 +19,7 @@ import { Calendar, Download, FileSpreadsheet, FileText, MoreHorizontal, Share2, 
 import { Card } from '@/app/components/ui/card';
 import { Button } from '@/app/components/ui/button';
 import { PageHeader } from '@/app/components/ui/PageHeader';
+import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
 import { motion } from 'framer-motion';
 import { downloadFile, shareFile } from '@/lib/download';
 import { formatLocalDate, parseDateInputValue, toLocalDateKey } from '@/lib/dateUtils';
@@ -326,7 +327,8 @@ export const Reports: React.FC = () => {
   };
 
   return (
-    <div className="px-3 sm:px-4 md:px-6 lg:px-8 py-6 lg:py-10 w-full space-y-6 sm:space-y-8 pb-24">
+    <CenteredLayout>
+      <div className="space-y-6 sm:space-y-8">
       <div className="flex flex-row flex-wrap items-center justify-between gap-4 w-full">
         <div className="flex items-center gap-4">
           <h1 className="text-xl font-black text-slate-900 tracking-tight leading-none">Reports & Analytics</h1>
@@ -696,6 +698,7 @@ export const Reports: React.FC = () => {
           </div>
         </Card>
       </div>
-    </div>
+      </div>
+    </CenteredLayout>
   );
 };

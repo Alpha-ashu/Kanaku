@@ -30,6 +30,7 @@ import { PageHeader } from "@/app/components/ui/PageHeader";
 import { StatementImport } from "@/app/components/transactions/StatementImport";
 import { formatLocalDate } from "@/lib/dateUtils";
 import { CardNetworkLogo, getBankCardLogo } from "@/app/components/ui/AccountLogos";
+import { CenteredLayout } from "@/app/components/shared/CenteredLayout";
 
 type AssetType = "all" | "bank" | "card" | "wallet" | "cash";
 
@@ -335,9 +336,9 @@ export const Accounts: React.FC = () => {
   }, [transactions, selectedAccountId]);
 
   return (
-    <div className="w-full min-h-screen overflow-x-hidden bg-white">
-      <div className="max-w-full mx-auto pb-32 lg:pb-8 w-full">
-        <div className="px-4 sm:px-6 lg:px-8 xl:px-12 pt-6 lg:pt-8 pb-4 lg:pb-6">
+    <CenteredLayout>
+      <div className="w-full">
+        <div className="pb-4 lg:pb-6">
           <PageHeader
             title="Accounts"
             subtitle="Manage your wallets and payment sources"
@@ -353,7 +354,7 @@ export const Accounts: React.FC = () => {
         </div>
 
         {/* Tab Navigation */}
-        <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 mb-6">
+        <div className="w-full mb-6">
           <div className="flex w-full bg-gray-100/80 backdrop-blur-md p-1.5 rounded-2xl border border-white/40 shadow-sm">
             {tabs.map((tab) => {
               const Icon = tab.icon;
@@ -944,7 +945,7 @@ export const Accounts: React.FC = () => {
         </>
         )}
         
-        <div className="lg:hidden px-4 sm:px-6 lg:px-8 xl:px-12 mt-6">
+        <div className="lg:hidden mt-6">
           {selectedAccount && (
             <Card className="bg-white/80 backdrop-blur-xl border-white/60 overflow-hidden shadow-2xl">
               <div className="max-h-[400px] overflow-y-auto">
@@ -1262,7 +1263,7 @@ export const Accounts: React.FC = () => {
           </motion.div>
         </div>
       )}
-    </div>
+    </CenteredLayout>
   );
 };
 

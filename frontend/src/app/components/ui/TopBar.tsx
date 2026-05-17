@@ -55,7 +55,7 @@ const DraggablePageMenuItem: React.FC<DraggablePageMenuItemProps> = ({
 };
 
 export const TopBar: React.FC = () => {
-    const { setCurrentPage } = useApp();
+    const { setCurrentPage, visibleFeatures } = useApp();
     const { orderedItems, handleReorder, handleNavigate, currentPage } = useSharedMenu();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [notificationPopupOpen, setNotificationPopupOpen] = useState(false);
@@ -264,55 +264,59 @@ export const TopBar: React.FC = () => {
                     </div>
 
                     {/* Notification Bell */}
-                    <motion.button
-                        whileTap={{ scale: 0.95 }}
-                        onClick={handleNotificationClick}
-                        className="relative rounded-xl bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 shadow-sm w-10 h-10 shrink-0 flex items-center justify-center transition-colors"
-                    >
-                        <Bell size={20} />
-                        {/* Unread Badge */}
-                        {unreadNotificationsCount > 0 && (
-                            <motion.div
-                                initial={{ scale: 0 }}
-                                animate={{ scale: 1 }}
-                                className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 rounded-full border-2 border-white shadow-sm flex items-center justify-center"
-                            />
-                        )}
-                    </motion.button>
+                    {visibleFeatures?.notifications !== false && (
+                        <motion.button
+                            whileTap={{ scale: 0.95 }}
+                            onClick={handleNotificationClick}
+                            className="relative rounded-xl bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 shadow-sm w-10 h-10 shrink-0 flex items-center justify-center transition-colors"
+                        >
+                            <Bell size={20} />
+                            {/* Unread Badge */}
+                            {unreadNotificationsCount > 0 && (
+                                <motion.div
+                                    initial={{ scale: 0 }}
+                                    animate={{ scale: 1 }}
+                                    className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 rounded-full border-2 border-white shadow-sm flex items-center justify-center"
+                                />
+                            )}
+                        </motion.button>
+                    )}
 
                     {/* Profile Avatar */}
-                    <motion.button
-                        whileTap={{ scale: 0.95 }}
-                        onClick={handleProfileClick}
-                        className="w-10 h-10 rounded-xl bg-gray-200 overflow-hidden shadow-sm shrink-0 hover:shadow-md transition-shadow flex items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-bold text-sm"
-                    >
-                        {(() => {
-                            try {
-                                const profileStr = localStorage.getItem('user_profile');
-                                if (profileStr) {
-                                    const profile = JSON.parse(profileStr);
-                                    if (profile.avatarUrl) {
-                                        return <img src={profile.avatarUrl} alt="Profile" className="w-full h-full object-cover" />;
+                    {visibleFeatures?.userProfile !== false && (
+                        <motion.button
+                            whileTap={{ scale: 0.95 }}
+                            onClick={handleProfileClick}
+                            className="w-10 h-10 rounded-xl bg-gray-200 overflow-hidden shadow-sm shrink-0 hover:shadow-md transition-shadow flex items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-bold text-sm"
+                        >
+                            {(() => {
+                                try {
+                                    const profileStr = localStorage.getItem('user_profile');
+                                    if (profileStr) {
+                                        const profile = JSON.parse(profileStr);
+                                        if (profile.avatarUrl) {
+                                            return <img src={profile.avatarUrl} alt="Profile" className="w-full h-full object-cover" />;
+                                        }
+                                        if (profile.full_name) {
+                                            const names = profile.full_name.split(' ').filter(Boolean);
+                                            const firstPart = names[0]?.[0] || '';
+                                            const secondPart = names.length > 1 ? names[names.length - 1][0] : '';
+                                            return <span>{firstPart}{secondPart}</span>;
+                                        }
+                                        if (profile.displayName) {
+                                            const names = profile.displayName.split(' ').filter(Boolean);
+                                            const firstPart = names[0]?.[0] || '';
+                                            const secondPart = names.length > 1 ? names[names.length - 1][0] : '';
+                                            return <span>{firstPart}{secondPart}</span>;
+                                        }
                                     }
-                                    if (profile.full_name) {
-                                        const names = profile.full_name.split(' ').filter(Boolean);
-                                        const firstPart = names[0]?.[0] || '';
-                                        const secondPart = names.length > 1 ? names[names.length - 1][0] : '';
-                                        return <span>{firstPart}{secondPart}</span>;
-                                    }
-                                    if (profile.displayName) {
-                                        const names = profile.displayName.split(' ').filter(Boolean);
-                                        const firstPart = names[0]?.[0] || '';
-                                        const secondPart = names.length > 1 ? names[names.length - 1][0] : '';
-                                        return <span>{firstPart}{secondPart}</span>;
-                                    }
+                                } catch (e) {
+                                    console.error("Error reading profile for avatar");
                                 }
-                            } catch (e) {
-                                console.error("Error reading profile for avatar");
-                            }
-                            return <span>U</span>;
-                        })()}
-                    </motion.button>
+                                return <span>U</span>;
+                            })()}
+                        </motion.button>
+                    )}
                 </div>
             </div>
         </header>

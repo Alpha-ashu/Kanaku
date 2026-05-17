@@ -10,6 +10,7 @@ import { Button } from '@/app/components/ui/button';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { PageHeader } from '@/app/components/ui/PageHeader';
+import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
 import { ReceiptScanner } from '@/app/components/transactions/ReceiptScanner';
 
 const isOpenLoan = (loan: { status?: string; outstandingBalance: number }) =>
@@ -178,7 +179,8 @@ export const Loans: React.FC = () => {
   };
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8 py-6 lg:py-10 w-full space-y-6 sm:space-y-8 pb-24">
+    <CenteredLayout>
+      <div className="space-y-6 sm:space-y-8">
       
       <div className="flex flex-row flex-wrap items-center justify-between gap-4 w-full">
         <div className="flex items-center gap-4">
@@ -568,7 +570,8 @@ export const Loans: React.FC = () => {
           setLoanToDelete(null);
         }}
       />
-    </div>
+      </div>
+    </CenteredLayout>
   );
 };
 

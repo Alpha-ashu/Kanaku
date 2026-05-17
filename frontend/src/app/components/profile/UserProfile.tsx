@@ -45,7 +45,7 @@ interface VerificationState {
 
 export const UserProfile: React.FC = () => {
   const { user, signOut } = useAuth();
-  const { setCurrentPage, currency, setCurrency } = useApp();
+  const { setCurrentPage, currency, setCurrency, visibleFeatures } = useApp();
   const [isSigningOut, setIsSigningOut] = useState(false);
 
   const handleSignOut = async () => {
@@ -634,6 +634,28 @@ export const UserProfile: React.FC = () => {
       setIsDeleting(false);
     }
   };
+
+  if (visibleFeatures?.userProfile === false) {
+    return (
+      <div className="w-full min-h-screen bg-white flex flex-col items-center justify-center p-4">
+        <div className="text-center max-w-md bg-white/60 backdrop-blur-xl border border-gray-200/50 p-8 rounded-[30px] shadow-glass">
+          <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Lock size={32} />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Feature Disabled</h2>
+          <p className="text-gray-500 mb-6">
+            The User Profile and account settings feature is currently disabled by the system administrator.
+          </p>
+          <Button 
+            onClick={() => setCurrentPage('dashboard')}
+            className="w-full bg-black text-white hover:bg-gray-900 rounded-full py-3 font-semibold transition-all shadow-md"
+          >
+            Go to Dashboard
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full min-h-screen bg-white pb-32 lg:pb-8">

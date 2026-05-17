@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { db, Goal, GoalContribution } from '@/lib/database';
 import { useApp } from '@/contexts/AppContext';
 import { Button } from '@/app/components/ui/button';
+import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
 import { Card } from '@/app/components/ui/card';
 import { getGoalCategoryMeta, getGoalProgress, getMilestoneLabel, getMonthlySuggestion } from '@/lib/goal-utils';
 import { MessageSquare, Plus, Target } from 'lucide-react';
@@ -192,40 +193,24 @@ export const GoalDetail: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white pb-[100px] lg:pb-0">
-      
-      <div className="hidden lg:flex items-center justify-between p-8 border-b border-gray-100">
-        <div className="flex items-center gap-4">
-          <h1 className="text-xl font-black text-slate-900 tracking-tight leading-none">
-            {goal.name}
-          </h1>
+    <CenteredLayout>
+      <div className="space-y-6">
+        
+        <div className="flex items-center justify-between pb-4 border-b border-gray-100">
+          <div className="flex items-center gap-4">
+            <h1 className="text-xl font-black text-slate-900 tracking-tight leading-none">
+              {goal.name}
+            </h1>
+          </div>
+          <button
+            onClick={() => setCurrentPage('goals')}
+            className="px-6 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold rounded-2xl transition-colors"
+          >
+            Back to Goals
+          </button>
         </div>
-        <button
-          onClick={() => setCurrentPage('goals')}
-          className="px-6 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold rounded-2xl transition-colors"
-        >
-          Back to Goals
-        </button>
-      </div>
 
-      
-      <div className="lg:hidden flex flex-col pt-12 pb-6 px-6 relative z-10">
-        <button 
-          onClick={() => setCurrentPage('goals')}
-          className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 mb-6 hover:bg-gray-200 transition-colors"
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M19 12H5M12 19l-7-7 7-7"/>
-          </svg>
-        </button>
-        <div className="flex items-center gap-4">
-          <h1 className="text-xl font-black text-slate-900 tracking-tight leading-none">
-            {goal.name}
-          </h1>
-        </div>
-      </div>
-
-      <div className="px-6 lg:p-8 max-w-5xl mx-auto space-y-6">
+      <div className="space-y-6">
         <div className="bg-white rounded-[32px] p-6 lg:p-8 ring-1 ring-gray-100 shadow-[0_8px_40px_-12px_rgba(0,0,0,0.05)] space-y-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             <div>
@@ -394,6 +379,7 @@ export const GoalDetail: React.FC = () => {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </CenteredLayout>
   );
 };

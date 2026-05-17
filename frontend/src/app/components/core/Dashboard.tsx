@@ -25,6 +25,7 @@ import {
 } from '@/lib/investmentUtils';
 import { AIInsightsCard } from '@/app/components/shared/AIInsightsCard';
 import { CardNetworkLogo, getBankCardLogo } from '@/app/components/ui/AccountLogos';
+import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
 
 interface DashboardProps {
   setCurrentPage?: (page: string) => void;
@@ -304,11 +305,11 @@ export function Dashboard({ setCurrentPage }: DashboardProps) {
   const fadeUp = { initial: { opacity: 0, y: 16 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.35 } };
 
   return (
-    <div className="w-full min-h-screen max-w-[100vw] overflow-x-hidden bg-transparent">
-      <div className="max-w-full mx-auto pb-32 lg:pb-8 w-full overflow-x-hidden">
+    <CenteredLayout>
+      <div className="w-full">
 
         {/* Header */}
-        <div className="px-4 sm:px-6 lg:px-8 xl:px-12 pt-6 lg:pt-8 pb-4 lg:pb-6">
+        <div className="pb-4 lg:pb-6">
           <PageHeader
             title="DashBoard"
             subtitle={`Hello! Here's what's happening with your money ${timePeriod === 'all' ? 'overall' : 'this ' + timePeriod.replace('ly', '')}`}
@@ -325,7 +326,7 @@ export function Dashboard({ setCurrentPage }: DashboardProps) {
         </div>
 
         {stockSetupHint && (
-          <div className="px-4 sm:px-6 lg:px-8 xl:px-12 mb-4">
+          <div className="mb-4">
             <div className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-amber-800">
               <AlertTriangle size={16} className="mt-0.5 shrink-0" />
               <p className="text-sm font-medium">{stockSetupHint}</p>
@@ -334,12 +335,12 @@ export function Dashboard({ setCurrentPage }: DashboardProps) {
         )}
 
         {/* AI Insights Card */}
-        <div className="px-4 sm:px-6 lg:px-8 xl:px-12 mb-6">
+        <div className="mb-6">
           <AIInsightsCard compact />
         </div>
 
         {/* "EUR"EUR 1. Financial Health Hero "EUR"EUR */}
-        <div className="flex justify-center px-4 sm:px-6 lg:px-8 mb-6 lg:mb-8">
+        <div className="flex justify-center mb-6 lg:mb-8">
           <Card variant="mesh-pink" className="w-full max-w-md lg:max-w-lg p-6 lg:p-8 relative overflow-hidden">
             <div className="relative z-10">
               <p className="text-white/80 font-medium mb-1 text-sm text-center">Total Net Worth</p>
@@ -377,7 +378,7 @@ export function Dashboard({ setCurrentPage }: DashboardProps) {
         </div>
 
         {/* Asset Type Tabs */}
-        <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 mb-6">
+        <div className="w-full mb-6">
           <div className="flex w-full bg-gray-100/80 backdrop-blur-md p-1.5 rounded-2xl border border-white/40 shadow-sm">
             {tabs.map((tab) => {
               const Icon = tab.icon;
@@ -444,7 +445,7 @@ export function Dashboard({ setCurrentPage }: DashboardProps) {
         </div>
 
         {/* "EUR"EUR 2. Accounts "EUR"EUR */}
-        <motion.div {...fadeUp} className="px-4 sm:px-6 lg:px-8 xl:px-12 mb-6 lg:mb-8">
+        <motion.div {...fadeUp} className="mb-6 lg:mb-8">
           <SectionHeader title="Accounts" onViewAll={() => setCurrentPage?.('accounts')} />
           <AnimatePresence mode="wait">
             {filteredAccounts.length > 0 ? (
@@ -527,7 +528,7 @@ export function Dashboard({ setCurrentPage }: DashboardProps) {
         </motion.div>
 
         {/* 3. Recent Transactions */}
-        <motion.div {...fadeUp} className="px-4 sm:px-6 lg:px-8 xl:px-12 mb-6 lg:mb-8">
+        <motion.div {...fadeUp} className="mb-6 lg:mb-8">
           <SectionHeader title="Recent Transactions" onViewAll={() => setCurrentPage?.('transactions')} />
           {recentTransactions.length > 0 ? (
             <Card variant="glass" className="divide-y divide-white/10 no-padding overflow-hidden border-white/20">
@@ -559,7 +560,7 @@ export function Dashboard({ setCurrentPage }: DashboardProps) {
         </motion.div>
 
         {/* 4. Loans & EMI */}
-        <motion.div {...fadeUp} className="px-4 sm:px-6 lg:px-8 xl:px-12 mb-6 lg:mb-8">
+        <motion.div {...fadeUp} className="mb-6 lg:mb-8">
           <SectionHeader title="Loans & EMI" onViewAll={() => setCurrentPage?.('loans')} />
           {activeLoans.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -619,7 +620,7 @@ export function Dashboard({ setCurrentPage }: DashboardProps) {
         </motion.div>
 
         {/* 5. Calendar / Upcoming Events */}
-        <motion.div {...fadeUp} className="px-4 sm:px-6 lg:px-8 xl:px-12 mb-6 lg:mb-8">
+        <motion.div {...fadeUp} className="mb-6 lg:mb-8">
           <SectionHeader title="Upcoming Events" onViewAll={() => setCurrentPage?.('calendar')} viewLabel="View Calendar" />
           {upcomingEvents.length > 0 ? (
             <Card className="divide-y divide-gray-100 cursor-pointer hover:shadow-md transition-shadow" onClick={() => setCurrentPage?.('calendar')}>
@@ -668,7 +669,7 @@ export function Dashboard({ setCurrentPage }: DashboardProps) {
         </motion.div>
 
         {/* 6. Borrow, Lend & Groups */}
-        <motion.div {...fadeUp} className="px-4 sm:px-6 lg:px-8 xl:px-12 mb-6 lg:mb-8">
+        <motion.div {...fadeUp} className="mb-6 lg:mb-8">
           <SectionHeader title="Borrow, Lend & Groups" onViewAll={() => setCurrentPage?.('groups')} />
           <Card variant="glass" className="cursor-pointer hover:shadow-xl transition-all border-white/20" onClick={() => setCurrentPage?.('groups')}>
             {(groupStats.borrowed > 0 || groupStats.lent > 0 || groupStats.pendingSettlements > 0 || groupStats.activeGroups > 0) ? (
@@ -726,7 +727,7 @@ export function Dashboard({ setCurrentPage }: DashboardProps) {
         </motion.div>
 
         {/* 7. Investments */}
-        <motion.div {...fadeUp} className="px-4 sm:px-6 lg:px-8 xl:px-12 mb-6 lg:mb-8">
+        <motion.div {...fadeUp} className="mb-6 lg:mb-8">
           <SectionHeader title="Investments" onViewAll={() => setCurrentPage?.('investments')} />
           {investmentStats.count > 0 ? (
             <Card className="cursor-pointer hover:shadow-md transition-all" onClick={() => setCurrentPage?.('investments')}>
@@ -801,7 +802,7 @@ export function Dashboard({ setCurrentPage }: DashboardProps) {
 
         {/* "EUR"EUR 8. Goals Progress "EUR"EUR */}
         {activeGoals.length > 0 && (
-          <motion.div {...fadeUp} className="px-4 sm:px-6 lg:px-8 xl:px-12 mb-6 lg:mb-8">
+          <motion.div {...fadeUp} className="mb-6 lg:mb-8">
             <SectionHeader title="Goals Progress" onViewAll={() => setCurrentPage?.('goals')} />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {activeGoals.map((goal) => {
@@ -833,7 +834,7 @@ export function Dashboard({ setCurrentPage }: DashboardProps) {
         )}
 
       </div>
-    </div>
+    </CenteredLayout>
   );
 }
 
