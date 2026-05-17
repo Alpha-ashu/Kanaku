@@ -114,6 +114,7 @@ ON CONFLICT (email) DO UPDATE SET role = EXCLUDED.role;
 - **Backend Role Support**: Added the `'manager'` role type to `UserRole` union in the backend RBAC middleware (`rbac.ts`), aligning with the database's string-based role capabilities.
 - **403 Forbidden Resolved**: Updated the backend advisor routes (`advisor.routes.ts`) for approving, rejecting, and viewing pending advisor applications (`/admin/applications`) to allow both `'admin'` and `'manager'` roles (`requireRole(['admin', 'manager'])`). Compliance managers can now successfully access the application verification panel without server denial.
 - **Compiler Type Safety**: Resolved strict TypeScript compilation errors in `AdminFeaturePanel.tsx` by declaring a base `FeatureControlBase` array and mapping it to the final `FEATURES: FeatureControl[]` type, preventing string-to-union literal mismatches on `readiness` settings. Corrected a type mismatch on `visibleFeatures` inside `useSharedMenu.ts` with a safe `FeatureVisibility` cast.
+- **Global Settings Preservation**: Solved the feature matrix reset on user logout. Wiped all user-specific credentials during `localStorage.clear()` but preserved `admin_global_feature_settings` along with the PIN keys (`KANKU_encrypted_key` and `KANKU_salt`) across all signout methods in `encryption.ts`, `Settings.tsx`, and `SecurityContext.tsx`. The Master Feature Matrix configuration is now persistent and consistent.
 
 ---
 
