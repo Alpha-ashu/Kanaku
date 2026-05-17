@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { db } from '@/lib/database';
 import { 
-  Download, Upload, Trash2, Database, Calculator, Users, Globe, DollarSign, Eye, EyeOff, 
-  LogOut, Settings as SettingsIcon, Smartphone, RefreshCw, AlertCircle, CheckCircle2, 
-  Bell, ExternalLink, FileText, LayoutDashboard, Wallet, Receipt, Landmark, Target, 
-  TrendingUp, FileBarChart, Calendar, CheckSquare, UserCog, Shield
+  Download, Upload, Trash2, Database, Globe, 
+  Bell, ExternalLink, FileText,
+  Smartphone, RefreshCw
 } from 'lucide-react';
+import { Settings as SettingsIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { useApp } from '@/contexts/AppContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -384,28 +384,27 @@ export const Settings: React.FC = () => {
     toast.success('Stored SMS detections cleared from this device.');
   };
 
-  return (
-    <div className="px-4 sm:px-6 lg:px-8 py-6 lg:py-10 w-full pb-24">
+  // ─── Section definitions ─────────────────────────────────────────────────
+  // Each section declares an optional `featureKey`. If that key is `false`
+  // in visibleFeatures the entire card is hidden and the layout reflows.
+  type SettingsSection = {
+    id: string;
+    featureKey?: keyof typeof visibleFeatures;
+    node: React.ReactNode;
+  };
 
-      <PageHeader
-        title="Settings"
-        subtitle="Manage your preferences, data and privacy"
-        icon={<SettingsIcon size={24} />}
-      />
-
-
-      <div className="lg:hidden space-y-6">
-        {/*  Preferences  */}
+  const sections: SettingsSection[] = [
+    {
+      id: 'preferences',
+      node: (
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
+          key="preferences"
+          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
           className="rounded-[30px] overflow-hidden relative bg-white/60 backdrop-blur-xl border border-white/40 shadow-glass"
         >
           <div className="p-6 border-b border-white/10">
             <h3 className="text-lg font-semibold text-gray-900">Preferences</h3>
           </div>
-
           <div className="divide-y divide-gray-200">
             <div className="p-6">
               <div className="flex items-center justify-between">
@@ -417,93 +416,112 @@ export const Settings: React.FC = () => {
                 </div>
                 <select
                   value={language}
-                  onChange={(e) => {
-                    setLanguage(e.target.value);
-                    toast.success(`Language changed to ${e.target.value}`);
-                  }}
+                  onChange={(e) => { setLanguage(e.target.value); toast.success(`Language changed to ${e.target.value}`); }}
                   className="px-3 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black/10"
                   aria-label="Select language"
                 >
                   <option value="en">English</option>
-                  <option value="es">Espaol (Spanish)</option>
-                  <option value="fr">Franais (French)</option>
+                  <option value="es">Español (Spanish)</option>
+                  <option value="fr">Français (French)</option>
                   <option value="de">Deutsch (German)</option>
                   <option value="it">Italiano (Italian)</option>
-                  <option value="pt">Portugus (Portuguese)</option>
-                  <option value="ja"> (Japanese)</option>
-                  <option value="zh"> (Chinese)</option>
-                  <option value="hi"> (Hindi)</option>
-                  <option value="ar"> (Arabic)</option>
+                  <option value="pt">Português (Portuguese)</option>
+                  <option value="ja">日本語 (Japanese)</option>
+                  <option value="zh">中文 (Chinese)</option>
+                  <option value="hi">हिंदी (Hindi)</option>
+                  <option value="ar">العربية (Arabic)</option>
                 </select>
               </div>
             </div>
-
           </div>
         </motion.div>
-
-        {/*  Notification Settings  */}
-        {visibleFeatures?.notifications !== false && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15 }}
-            className="rounded-[30px] overflow-hidden relative bg-white/60 backdrop-blur-xl border border-white/40 shadow-glass"
-          >
-            <div className="p-6 border-b border-white/10">
-              <h3 className="text-lg font-semibold text-gray-900">Notification Settings</h3>
-            </div>
-            <div className="divide-y divide-gray-200">
-              {[
-                { key: 'transactionAlerts', label: 'Transaction Alerts' },
-                { key: 'budgetAlerts', label: 'Budget Alerts' },
-                { key: 'loanReminders', label: 'Loan & EMI Reminders' },
-                { key: 'groupExpenseUpdates', label: 'Group Expense Updates' },
-                { key: 'goalProgressAlerts', label: 'Goal Progress Alerts' },
-                { key: 'appUpdates', label: 'App Updates & Announcements' },
-              ].map(({ key, label }) => (
-                <div key={key} className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <Bell className="text-blue-600" size={18} />
-                      </div>
-                      <h4 className="font-medium text-gray-900">{label}</h4>
-                    </div>
-                    <button
-                      type="button"
-                      aria-label={`Toggle ${label}`}
-                      title={`Toggle ${label}`}
-                      onClick={() => toggleNotif(key)}
-                      className={cn(
-                        'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-black/20',
-                        notifSettings[key] ? 'bg-black' : 'bg-gray-300',
-                      )}
-                    >
-                      <span
-                        className={cn(
-                          'pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-sm transform transition-transform duration-200',
-                          notifSettings[key] ? 'translate-x-5' : 'translate-x-0',
-                        )}
-                      />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        )}
-
-        {/*  Data Management  */}
+      ),
+    },
+    {
+      id: 'notifications',
+      featureKey: 'notifications',
+      node: (
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
+          key="notifications"
+          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
+          className="rounded-[30px] overflow-hidden relative bg-white/60 backdrop-blur-xl border border-white/40 shadow-glass"
+        >
+          <div className="p-6 border-b border-white/10">
+            <h3 className="text-lg font-semibold text-gray-900">Notification Settings</h3>
+          </div>
+          <div className="divide-y divide-gray-200">
+            {[
+              { key: 'transactionAlerts', label: 'Transaction Alerts' },
+              { key: 'budgetAlerts', label: 'Budget Alerts' },
+              { key: 'loanReminders', label: 'Loan & EMI Reminders' },
+              { key: 'groupExpenseUpdates', label: 'Group Expense Updates' },
+              { key: 'goalProgressAlerts', label: 'Goal Progress Alerts' },
+              { key: 'appUpdates', label: 'App Updates & Announcements' },
+            ].map(({ key, label }) => (
+              <div key={key} className="p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Bell className="text-blue-600" size={18} />
+                    </div>
+                    <h4 className="font-medium text-gray-900">{label}</h4>
+                  </div>
+                  <button
+                    type="button"
+                    aria-label={`Toggle ${label}`}
+                    onClick={() => toggleNotif(key)}
+                    className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-black/20 ${notifSettings[key] ? 'bg-black' : 'bg-gray-300'}`}
+                  >
+                    <span className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-sm transform transition-transform duration-200 ${notifSettings[key] ? 'translate-x-5' : 'translate-x-0'}`} />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      ),
+    },
+    {
+      id: 'sms',
+      node: (
+        <motion.div
+          key="sms"
+          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
+          className="rounded-[30px] overflow-hidden relative bg-white/60 backdrop-blur-xl border border-white/40 shadow-glass"
+        >
+          <div className="p-6 border-b border-white/10">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">SMS Transaction Detection</h3>
+                <p className="text-sm text-gray-500 mt-0.5">Auto-detect bank SMS to track expenses</p>
+              </div>
+              <button
+                type="button"
+                onClick={handleToggleSmsDetection}
+                disabled={isSmsBusy}
+                className={`min-w-[112px] rounded-full px-4 py-2 text-sm font-semibold transition-all shadow-sm ${
+                  smsStatus.enabled ? 'bg-black text-white hover:bg-gray-900' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
+                } ${isSmsBusy ? 'cursor-not-allowed opacity-60' : ''}`}
+              >
+                {isSmsBusy ? 'Working...' : smsStatus.enabled ? 'Turn Off' : 'Turn On'}
+              </button>
+            </div>
+          </div>
+        </motion.div>
+      ),
+    },
+    {
+      id: 'data-management',
+      featureKey: 'dataExport',
+      node: (
+        <motion.div
+          key="data-management"
+          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
           className="rounded-[30px] overflow-hidden relative bg-white/60 backdrop-blur-xl border border-white/40 shadow-glass"
         >
           <div className="p-6 border-b border-white/10">
             <h3 className="text-lg font-semibold text-gray-900">Data Management</h3>
           </div>
-
           <div className="divide-y divide-gray-200">
             <div className="p-6">
               <div className="flex items-center justify-between">
@@ -514,22 +532,11 @@ export const Settings: React.FC = () => {
                   <h4 className="font-medium text-gray-900">Export Data</h4>
                 </div>
                 <div className="flex gap-2">
-                  <button
-                    onClick={() => handleExportData('json')}
-                    className="px-4 py-2 bg-black text-white rounded-full hover:bg-gray-900 transition-all active:scale-95 shadow-lg"
-                  >
-                    JSON
-                  </button>
-                  <button
-                    onClick={() => handleExportData('csv')}
-                    className="px-4 py-2 bg-black text-white rounded-full hover:bg-gray-900 transition-all active:scale-95 shadow-lg"
-                  >
-                    CSV
-                  </button>
+                  <button onClick={() => handleExportData('json')} className="px-4 py-2 bg-black text-white rounded-full hover:bg-gray-900 transition-all active:scale-95 shadow-lg">JSON</button>
+                  <button onClick={() => handleExportData('csv')} className="px-4 py-2 bg-black text-white rounded-full hover:bg-gray-900 transition-all active:scale-95 shadow-lg">CSV</button>
                 </div>
               </div>
             </div>
-
             <div className="p-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -538,15 +545,9 @@ export const Settings: React.FC = () => {
                   </div>
                   <h4 className="font-medium text-gray-900">Import Data</h4>
                 </div>
-                <button
-                  onClick={() => setShowImportModal(true)}
-                  className="px-4 py-2 bg-black text-white rounded-full hover:bg-gray-900 transition-all active:scale-95 cursor-pointer shadow-lg"
-                >
-                  Import
-                </button>
+                <button onClick={() => setShowImportModal(true)} className="px-4 py-2 bg-black text-white rounded-full hover:bg-gray-900 transition-all active:scale-95 cursor-pointer shadow-lg">Import</button>
               </div>
             </div>
-
             <div className="p-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -555,25 +556,14 @@ export const Settings: React.FC = () => {
                   </div>
                   <h4 className="font-medium text-gray-900">Create Backup</h4>
                 </div>
-                <button
-                  onClick={handleCreateBackup}
-                  className="px-4 py-2 bg-black text-white rounded-full hover:bg-gray-900 transition-all active:scale-95 shadow-lg"
-                >
-                  Create
-                </button>
+                <button onClick={handleCreateBackup} className="px-4 py-2 bg-black text-white rounded-full hover:bg-gray-900 transition-all active:scale-95 shadow-lg">Create</button>
               </div>
             </div>
-
             {backups.length > 0 && (
               <div className="p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h4 className="font-medium text-gray-900">Backups ({backups.length})</h4>
-                  <button
-                    onClick={() => setShowBackups(!showBackups)}
-                    className="text-black hover:text-gray-700 text-sm font-medium"
-                  >
-                    {showBackups ? 'Hide' : 'Show'}
-                  </button>
+                  <button onClick={() => setShowBackups(!showBackups)} className="text-black hover:text-gray-700 text-sm font-medium">{showBackups ? 'Hide' : 'Show'}</button>
                 </div>
                 {showBackups && (
                   <div className="space-y-2">
@@ -589,17 +579,11 @@ export const Settings: React.FC = () => {
                 )}
               </div>
             )}
-
             {importHistory.length > 0 && (
               <div className="p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h4 className="font-medium text-gray-900">Recent Imports ({importHistory.length})</h4>
-                  <button
-                    onClick={() => setShowImportHistory(!showImportHistory)}
-                    className="text-black hover:text-gray-700 text-sm font-medium"
-                  >
-                    {showImportHistory ? 'Hide' : 'Show'}
-                  </button>
+                  <button onClick={() => setShowImportHistory(!showImportHistory)} className="text-black hover:text-gray-700 text-sm font-medium">{showImportHistory ? 'Hide' : 'Show'}</button>
                 </div>
                 {showImportHistory && (
                   <div className="space-y-3">
@@ -608,22 +592,15 @@ export const Settings: React.FC = () => {
                         <div className="flex flex-wrap items-start justify-between gap-3">
                           <div>
                             <p className="font-medium text-gray-900">{entry.fileName}</p>
-                            <p className="text-sm text-gray-500 mt-1">
-                              {new Date(entry.createdAt).toLocaleString()}
-                            </p>
+                            <p className="text-sm text-gray-500 mt-1">{new Date(entry.createdAt).toLocaleString()}</p>
                           </div>
                           <div className="text-right text-sm">
                             <p className="text-gray-900 font-medium">{entry.importedRecords} imported</p>
-                            <p className="text-gray-500">{entry.skippedRecords} skipped  {entry.duplicateRecords} duplicates</p>
+                            <p className="text-gray-500">{entry.skippedRecords} skipped · {entry.duplicateRecords} duplicates</p>
                           </div>
                         </div>
                         {entry.createdCategories?.length > 0 && (
-                          <p className="text-sm text-gray-500 mt-2">
-                            Created categories: {entry.createdCategories.join(', ')}
-                          </p>
-                        )}
-                        {entry.sourceKind === 'backup' && (
-                          <p className="text-sm text-gray-500 mt-2">Backup restore</p>
+                          <p className="text-sm text-gray-500 mt-2">Created categories: {entry.createdCategories.join(', ')}</p>
                         )}
                       </div>
                     ))}
@@ -631,7 +608,6 @@ export const Settings: React.FC = () => {
                 )}
               </div>
             )}
-
             <div className="p-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -640,63 +616,19 @@ export const Settings: React.FC = () => {
                   </div>
                   <h4 className="font-medium text-gray-900">Clear All Data</h4>
                 </div>
-                <button
-                  onClick={handleClearAllData}
-                  className="px-4 py-2 bg-red-600 text-white rounded-full hover:bg-red-700 transition-all active:scale-95 shadow-lg"
-                >
-                  Clear All
-                </button>
+                <button onClick={handleClearAllData} className="px-4 py-2 bg-red-600 text-white rounded-full hover:bg-red-700 transition-all active:scale-95 shadow-lg">Clear All</button>
               </div>
             </div>
           </div>
         </motion.div>
-
-        {showImportModal && (
-          <ImportDataModal
-            accounts={accounts}
-            userId={user?.id}
-            onClose={() => setShowImportModal(false)}
-            onImported={async () => {
-              await loadImportHistory();
-              await refreshData();
-            }}
-          />
-        )}
-
+      ),
+    },
+    {
+      id: 'legal',
+      node: (
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="rounded-[30px] overflow-hidden relative bg-white/60 backdrop-blur-xl border border-white/40 shadow-glass"
-        >
-          <div className="p-6 border-b border-white/10">
-            <div className="flex items-center justify-between gap-4">
-              <h3 className="text-lg font-semibold text-gray-900">SMS Transaction Detection</h3>
-              <button
-                type="button"
-                onClick={handleToggleSmsDetection}
-                disabled={isSmsBusy}
-                className={cn(
-                  'min-w-[112px] rounded-full px-4 py-2 text-sm font-semibold transition-all shadow-sm',
-                  smsStatus.enabled
-                    ? 'bg-black text-white hover:bg-gray-900'
-                    : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50',
-                  isSmsBusy && 'cursor-not-allowed opacity-60',
-                )}
-              >
-                {isSmsBusy ? 'Working...' : smsStatus.enabled ? 'Turn Off' : 'Turn On'}
-              </button>
-            </div>
-          </div>
-
-        </motion.div>
-
-
-        {/*  Legal  */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
+          key="legal"
+          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}
           className="rounded-[30px] overflow-hidden relative bg-white/60 backdrop-blur-xl border border-white/40 shadow-glass"
         >
           <div className="p-6 border-b border-white/10">
@@ -711,10 +643,7 @@ export const Settings: React.FC = () => {
                   </div>
                   <h4 className="font-medium text-gray-900">Privacy Policy</h4>
                 </div>
-                <button
-                  onClick={() => setCurrentPage('privacy-policy')}
-                  className="inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-700 font-medium"
-                >
+                <button onClick={() => setCurrentPage('privacy-policy')} className="inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-700 font-medium">
                   View <ExternalLink size={14} />
                 </button>
               </div>
@@ -727,375 +656,54 @@ export const Settings: React.FC = () => {
                   </div>
                   <h4 className="font-medium text-gray-900">Terms &amp; Conditions</h4>
                 </div>
-                <button
-                  onClick={() => setCurrentPage('terms')}
-                  className="inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-700 font-medium"
-                >
+                <button onClick={() => setCurrentPage('terms')} className="inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-700 font-medium">
                   View <ExternalLink size={14} />
                 </button>
               </div>
             </div>
           </div>
         </motion.div>
+      ),
+    },
+  ];
 
+  // Filter sections: hide any section whose feature is explicitly disabled
+  const visibleSections = sections.filter(s =>
+    !s.featureKey || visibleFeatures?.[s.featureKey] !== false
+  );
+
+  // Distribute visible sections across 3 desktop columns (round-robin)
+  const desktopColumns = useMemo(() => {
+    const cols: SettingsSection[][] = [[], [], []];
+    visibleSections.forEach((s, i) => cols[i % 3].push(s));
+    return cols;
+  }, [visibleSections]);
+
+  return (
+    <div className="px-4 sm:px-6 lg:px-8 py-6 lg:py-10 w-full pb-24">
+
+      <PageHeader
+        title="Settings"
+        subtitle="Manage your preferences, data and privacy"
+        icon={<SettingsIcon size={24} />}
+      />
+
+      {/* ── Mobile layout: single stack, feature-filtered ── */}
+      <div className="lg:hidden space-y-6">
+        {visibleSections.map(s => (
+          <React.Fragment key={s.id}>{s.node}</React.Fragment>
+        ))}
       </div>
 
-
+      {/* ── Desktop layout: 3-column grid, dynamically balanced ── */}
       <div className="hidden lg:grid lg:grid-cols-3 gap-6 items-start">
-        {/*  Col 1: Preferences + Notifications  */}
-        <div className="space-y-6">
-          {/*  Preferences  */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="rounded-[30px] overflow-hidden relative bg-white/60 backdrop-blur-xl border border-white/40 shadow-glass"
-          >
-            <div className="p-6 border-b border-white/10">
-              <h3 className="text-lg font-semibold text-gray-900">Preferences</h3>
-            </div>
-
-            <div className="divide-y divide-gray-200">
-              <div className="p-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <Globe className="text-purple-600" size={20} />
-                    </div>
-                    <h4 className="font-medium text-gray-900">Language</h4>
-                  </div>
-                  <select
-                    value={language}
-                    onChange={(e) => {
-                      setLanguage(e.target.value);
-                      toast.success(`Language changed to ${e.target.value}`);
-                    }}
-                    className="px-3 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black/10"
-                    aria-label="Select language"
-                  >
-                    <option value="en">English</option>
-                    <option value="es">Espaol (Spanish)</option>
-                    <option value="fr">Franais (French)</option>
-                    <option value="de">Deutsch (German)</option>
-                    <option value="it">Italiano (Italian)</option>
-                    <option value="pt">Portugus (Portuguese)</option>
-                    <option value="ja"> (Japanese)</option>
-                    <option value="zh"> (Chinese)</option>
-                    <option value="hi"> (Hindi)</option>
-                    <option value="ar"> (Arabic)</option>
-                  </select>
-                </div>
-              </div>
-
-            </div>
-          </motion.div>
-
-          {/*  Notification Settings  */}
-          {visibleFeatures?.notifications !== false && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15 }}
-              className="rounded-[30px] overflow-hidden relative bg-white/60 backdrop-blur-xl border border-white/40 shadow-glass"
-            >
-              <div className="p-6 border-b border-white/10">
-                <h3 className="text-lg font-semibold text-gray-900">Notification Settings</h3>
-              </div>
-              <div className="divide-y divide-gray-200">
-                {[
-                  { key: 'transactionAlerts', label: 'Transaction Alerts' },
-                  { key: 'budgetAlerts', label: 'Budget Alerts' },
-                  { key: 'loanReminders', label: 'Loan & EMI Reminders' },
-                  { key: 'groupExpenseUpdates', label: 'Group Expense Updates' },
-                  { key: 'goalProgressAlerts', label: 'Goal Progress Alerts' },
-                  { key: 'appUpdates', label: 'App Updates & Announcements' },
-                ].map(({ key, label }) => (
-                  <div key={key} className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                          <Bell className="text-blue-600" size={18} />
-                        </div>
-                        <h4 className="font-medium text-gray-900">{label}</h4>
-                      </div>
-                      <button
-                        type="button"
-                        aria-label={`Toggle ${label}`}
-                        title={`Toggle ${label}`}
-                        onClick={() => toggleNotif(key)}
-                        className={cn(
-                          'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-black/20',
-                          notifSettings[key] ? 'bg-black' : 'bg-gray-300',
-                        )}
-                      >
-                        <span
-                          className={cn(
-                            'pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-sm transform transition-transform duration-200',
-                            notifSettings[key] ? 'translate-x-5' : 'translate-x-0',
-                          )}
-                        />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          )}
-
-        </div>
-
-        {/*  Col 2: SMS Detection + Feature Visibility  */}
-        <div className="space-y-6">
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="rounded-[30px] overflow-hidden relative bg-white/60 backdrop-blur-xl border border-white/40 shadow-glass"
-          >
-            <div className="p-6 border-b border-white/10">
-              <div className="flex items-center justify-between gap-4">
-                <h3 className="text-lg font-semibold text-gray-900">SMS Transaction Detection</h3>
-                <button
-                  type="button"
-                  onClick={handleToggleSmsDetection}
-                  disabled={isSmsBusy}
-                  className={cn(
-                    'min-w-[112px] rounded-full px-4 py-2 text-sm font-semibold transition-all shadow-sm',
-                    smsStatus.enabled
-                      ? 'bg-black text-white hover:bg-gray-900'
-                      : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50',
-                    isSmsBusy && 'cursor-not-allowed opacity-60',
-                  )}
-                >
-                  {isSmsBusy ? 'Working...' : smsStatus.enabled ? 'Turn Off' : 'Turn On'}
-                </button>
-              </div>
-            </div>
-
-          </motion.div>
-
-
-        </div>
-
-        {/*  Col 3: Data Management + Legal  */}
-        <div className="space-y-6">
-          {/*  Data Management  */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="rounded-[30px] overflow-hidden relative bg-white/60 backdrop-blur-xl border border-white/40 shadow-glass"
-          >
-            <div className="p-6 border-b border-white/10">
-              <h3 className="text-lg font-semibold text-gray-900">Data Management</h3>
-            </div>
-
-            <div className="divide-y divide-gray-200">
-              <div className="p-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <Download className="text-green-600" size={20} />
-                    </div>
-                    <h4 className="font-medium text-gray-900">Export Data</h4>
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleExportData('json')}
-                      className="px-4 py-2 bg-black text-white rounded-full hover:bg-gray-900 transition-all active:scale-95 shadow-lg"
-                    >
-                      JSON
-                    </button>
-                    <button
-                      onClick={() => handleExportData('csv')}
-                      className="px-4 py-2 bg-black text-white rounded-full hover:bg-gray-900 transition-all active:scale-95 shadow-lg"
-                    >
-                      CSV
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <div className="p-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <Upload className="text-blue-600" size={20} />
-                    </div>
-                    <h4 className="font-medium text-gray-900">Import Data</h4>
-                  </div>
-                  <button
-                    onClick={() => setShowImportModal(true)}
-                    className="px-4 py-2 bg-black text-white rounded-full hover:bg-gray-900 transition-all active:scale-95 cursor-pointer shadow-lg"
-                  >
-                    Import
-                  </button>
-                </div>
-              </div>
-
-              <div className="p-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-yellow-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <Database className="text-yellow-600" size={20} />
-                    </div>
-                    <h4 className="font-medium text-gray-900">Create Backup</h4>
-                  </div>
-                  <button
-                    onClick={handleCreateBackup}
-                    className="px-4 py-2 bg-black text-white rounded-full hover:bg-gray-900 transition-all active:scale-95 shadow-lg"
-                  >
-                    Create
-                  </button>
-                </div>
-              </div>
-
-              {backups.length > 0 && (
-                <div className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h4 className="font-medium text-gray-900">Backups ({backups.length})</h4>
-                    <button
-                      onClick={() => setShowBackups(!showBackups)}
-                      className="text-black hover:text-gray-700 text-sm font-medium"
-                    >
-                      {showBackups ? 'Hide' : 'Show'}
-                    </button>
-                  </div>
-                  {showBackups && (
-                    <div className="space-y-2">
-                      {backups.map((backup, idx) => (
-                        <div key={idx} className="bg-gray-50 p-3 rounded flex justify-between items-center">
-                          <div className="text-sm">
-                            <p className="font-medium">{backup.filename}</p>
-                            <p className="text-gray-500">{new Date(backup.timestamp).toLocaleString()}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {importHistory.length > 0 && (
-                <div className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h4 className="font-medium text-gray-900">Recent Imports ({importHistory.length})</h4>
-                    <button
-                      onClick={() => setShowImportHistory(!showImportHistory)}
-                      className="text-black hover:text-gray-700 text-sm font-medium"
-                    >
-                      {showImportHistory ? 'Hide' : 'Show'}
-                    </button>
-                  </div>
-                  {showImportHistory && (
-                    <div className="space-y-3">
-                      {importHistory.map((entry, idx) => (
-                        <div key={entry.id ?? idx} className="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3">
-                          <div className="flex flex-wrap items-start justify-between gap-3">
-                            <div>
-                              <p className="font-medium text-gray-900">{entry.fileName}</p>
-                              <p className="text-sm text-gray-500 mt-1">
-                                {new Date(entry.createdAt).toLocaleString()}
-                              </p>
-                            </div>
-                            <div className="text-right text-sm">
-                              <p className="text-gray-900 font-medium">{entry.importedRecords} imported</p>
-                              <p className="text-gray-500">{entry.skippedRecords} skipped  {entry.duplicateRecords} duplicates</p>
-                            </div>
-                          </div>
-                          {entry.createdCategories?.length > 0 && (
-                            <p className="text-sm text-gray-500 mt-2">
-                              Created categories: {entry.createdCategories.join(', ')}
-                            </p>
-                          )}
-                          {entry.sourceKind === 'backup' && (
-                            <p className="text-sm text-gray-500 mt-2">Backup restore</p>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              <div className="p-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-red-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <Trash2 className="text-red-600" size={20} />
-                    </div>
-                    <h4 className="font-medium text-gray-900">Clear All Data</h4>
-                  </div>
-                  <button
-                    onClick={handleClearAllData}
-                    className="px-4 py-2 bg-red-600 text-white rounded-full hover:bg-red-700 transition-all active:scale-95 shadow-lg"
-                  >
-                    Clear All
-                  </button>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-
-          {showImportModal && (
-            <ImportDataModal
-              accounts={accounts}
-              userId={user?.id}
-              onClose={() => setShowImportModal(false)}
-              onImported={async () => {
-                await loadImportHistory();
-                await refreshData();
-              }}
-            />
-          )}
-          {/*  Legal  */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-            className="rounded-[30px] overflow-hidden relative bg-white/60 backdrop-blur-xl border border-white/40 shadow-glass"
-          >
-            <div className="p-6 border-b border-white/10">
-              <h3 className="text-lg font-semibold text-gray-900">Legal</h3>
-            </div>
-            <div className="divide-y divide-gray-200">
-              <div className="p-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <FileText className="text-gray-500" size={18} />
-                    </div>
-                    <h4 className="font-medium text-gray-900">Privacy Policy</h4>
-                  </div>
-                  <button
-                    onClick={() => setCurrentPage('privacy-policy')}
-                    className="inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-700 font-medium"
-                  >
-                    View <ExternalLink size={14} />
-                  </button>
-                </div>
-              </div>
-              <div className="p-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <FileText className="text-gray-500" size={18} />
-                    </div>
-                    <h4 className="font-medium text-gray-900">Terms &amp; Conditions</h4>
-                  </div>
-                  <button
-                    onClick={() => setCurrentPage('terms')}
-                    className="inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-700 font-medium"
-                  >
-                    View <ExternalLink size={14} />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-
+        {desktopColumns.map((col, ci) => (
+          <div key={ci} className="space-y-6">
+            {col.map(s => (
+              <React.Fragment key={s.id}>{s.node}</React.Fragment>
+            ))}
+          </div>
+        ))}
       </div>
 
       {showImportModal && (
@@ -1112,5 +720,3 @@ export const Settings: React.FC = () => {
     </div>
   );
 };
-
-
