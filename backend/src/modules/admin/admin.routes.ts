@@ -30,6 +30,7 @@ router.post('/users/:advisorId/approve', AdminController.approveAdvisor);
 router.post('/users/:advisorId/reject', AdminController.rejectAdvisor);
 router.get('/users/activity', AdminController.getUserActivity);
 router.post('/users/:userId/status', AdminController.toggleUserStatus);
+router.post('/users/:userId/role', AdminController.updateUserRole);
 
 // Statistics
 router.get('/stats', AdminController.getPlatformStats);

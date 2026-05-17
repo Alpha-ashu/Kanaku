@@ -82,5 +82,10 @@ export const adminConsoleService = {
   toggleUserStatus: async (userId: string, status: 'verified' | 'blocked') => {
     const res = await apiClient.post(`/admin/users/${userId}/status`, { status });
     return res.data;
+  },
+
+  updateUserRole: async (userId: string, role: 'admin' | 'manager' | 'advisor' | 'user') => {
+    const res = await apiClient.post(`/admin/users/${userId}/role`, { role });
+    return res.data;
   }
 };

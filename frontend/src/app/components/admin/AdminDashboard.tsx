@@ -76,6 +76,21 @@ export const AdminDashboard: React.FC = () => {
     }
   };
 
+  const handleRoleChange = async (user: AdminUserDto, newRole: 'admin' | 'manager' | 'advisor' | 'user') => {
+    if (!confirm(`Are you sure you want to change ${user.name}'s role to ${newRole.toUpperCase()}?`)) return;
+
+    try {
+      await adminConsoleService.updateUserRole(user.id, newRole);
+      toast.success(`Role updated to ${newRole.toUpperCase()} successfully`);
+      fetchData(); // Refresh list
+      if (selectedUser?.id === user.id) {
+        setSelectedUser({ ...user, role: newRole });
+      }
+    } catch (err) {
+      toast.error('Failed to update user role');
+    }
+  };
+
   const handleReset = () => {
     if (confirm('Reset all feature flags to defaults? This cannot be undone.')) {
       resetToDefaults();
@@ -301,17 +316,29 @@ export const AdminDashboard: React.FC = () => {
                       <h3 className="text-xl font-black text-slate-900 tracking-tight">{selectedUser.name}</h3>
                       <p className="text-sm text-slate-400 font-medium">{selectedUser.email}</p>
                     </div>
-                    <button
-                      onClick={() => handleToggleStatus(selectedUser)}
-                      className={cn(
-                        "px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all",
-                        selectedUser.status === 'blocked'
-                          ? "bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
-                          : "bg-rose-50 text-rose-600 hover:bg-rose-100"
-                      )}
-                    >
-                      {selectedUser.status === 'blocked' ? 'Unblock User' : 'Block User'}
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <select
+                        value={selectedUser.role}
+                        onChange={(e) => handleRoleChange(selectedUser, e.target.value as any)}
+                        className="bg-slate-50 border border-slate-200 text-slate-800 text-xs font-bold rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all cursor-pointer"
+                      >
+                        <option value="user">User</option>
+                        <option value="advisor">Advisor</option>
+                        <option value="manager">Manager</option>
+                        <option value="admin">Admin</option>
+                      </select>
+                      <button
+                        onClick={() => handleToggleStatus(selectedUser)}
+                        className={cn(
+                          "px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all",
+                          selectedUser.status === 'blocked'
+                            ? "bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
+                            : "bg-rose-50 text-rose-600 hover:bg-rose-100"
+                        )}
+                      >
+                        {selectedUser.status === 'blocked' ? 'Unblock' : 'Block'}
+                      </button>
+                    </div>
                   </div>
 
                   <div className="flex-1 overflow-y-auto space-y-6">

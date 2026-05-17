@@ -57,7 +57,8 @@ export const headerMenuItems: NavigationItem[] = [
   { id: 'budget-alerts', label: 'Budget Alerts', icon: BellRing, feature: 'budgetAlerts' },
   { id: 'client-management', label: 'Client Management', icon: FolderKanban, feature: 'clientManagement', roles: ['admin', 'manager', 'advisor'] },
   // Admin/Manager items
-  { id: 'admin-feature-panel', label: 'Admin Panel', icon: ShieldAlert, feature: 'adminPanel', roles: ['admin'] },
+  { id: 'admin', label: 'Admin Console', icon: ShieldAlert, feature: 'adminPanel', roles: ['admin'] },
+  { id: 'admin-feature-panel', label: 'Feature Panel', icon: Settings, feature: 'adminPanel', roles: ['admin'] },
   { id: 'ai-management', label: 'AI Management', icon: Brain, feature: 'aiManagement', roles: ['admin'] },
   { id: 'advisor-verification', label: 'Advisor Verification', icon: ShieldCheck, feature: 'managerPanel', roles: ['admin', 'manager'] },
 ];
@@ -83,7 +84,8 @@ export const sidebarMenuItems: NavigationItem[] = [
   { id: 'client-management', label: 'Clients', icon: FolderKanban, feature: 'clientManagement', roles: ['admin', 'manager', 'advisor'] },
   { id: 'settings', label: 'Settings', icon: Settings, feature: 'settings' },
   // Admin-only items
-  { id: 'admin-feature-panel', label: 'Admin Panel', icon: ShieldAlert, feature: 'adminPanel', roles: ['admin'] },
+  { id: 'admin', label: 'Admin Console', icon: ShieldAlert, feature: 'adminPanel', roles: ['admin'] },
+  { id: 'admin-feature-panel', label: 'Feature Panel', icon: Settings, feature: 'adminPanel', roles: ['admin'] },
   { id: 'ai-management', label: 'AI Management', icon: Brain, feature: 'aiManagement', roles: ['admin'] },
   // Manager-only items
   { id: 'advisor-verification', label: 'Advisor Verification', icon: ShieldCheck, feature: 'managerPanel', roles: ['manager', 'admin'] },

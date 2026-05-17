@@ -132,7 +132,7 @@ const ROLE_FEATURES: Record<UserRole, FeatureVisibility> = {
     settings: true,
     clientManagement: true,
     aiManagement: false,
-    dashboard: false,
+    dashboard: true,
     aiInsights: false,
     dataExport: true,
     recurringTransactions: false,

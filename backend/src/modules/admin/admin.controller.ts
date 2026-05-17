@@ -381,11 +381,7 @@ export const getUserActivity = async (req: AuthRequest, res: Response) => {
       prisma.syncQueue.findMany({
         where: userId ? { userId: userId as string } : {},
         take: Number(limit),
-        orderBy: { createdAt: 'desc' },
-        include: { 
-          // prisma doesn't have a direct relation for SyncQueue.userId -> User in this schema yet
-          // based on my check. Let's assume it does for now or just fetch raw.
-        }
+        orderBy: { createdAt: 'desc' }
       }),
       prisma.importLog.findMany({
         where: userId ? { userId: userId as string } : {},
@@ -420,5 +416,46 @@ export const toggleUserStatus = async (req: AuthRequest, res: Response) => {
     res.json({ message: `User ${status} successfully`, user });
   } catch (error: any) {
     res.status(500).json({ error: 'Failed to update user status' });
+  }
+};
+
+// Update user role (admin only)
+export const updateUserRole = async (req: AuthRequest, res: Response) => {
+  try {
+    const { userId } = req.params;
+    const { role } = req.body; // 'admin', 'manager', 'advisor', 'user'
+
+    if (!['admin', 'manager', 'advisor', 'user'].includes(role)) {
+      return res.status(400).json({ error: 'Invalid role specified' });
+    }
+
+    const updated = await prisma.user.update({
+      where: { id: userId },
+      data: { 
+        role,
+        isApproved: role === 'advisor' ? true : undefined
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        isApproved: true
+      }
+    });
+
+    // Notify user
+    await prisma.notification.create({
+      data: {
+        userId: userId,
+        title: 'Role Updated',
+        message: `Your account role has been updated to ${role} by the administrator.`,
+        category: 'system',
+      },
+    });
+
+    res.json({ message: `User role updated to ${role} successfully`, user: updated });
+  } catch (error: any) {
+    res.status(500).json({ error: 'Failed to update user role' });
   }
 };
