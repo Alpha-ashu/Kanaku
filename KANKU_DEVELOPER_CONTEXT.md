@@ -212,11 +212,11 @@ KANKU follows a **feature-modular structure** within the frontend to ensure scal
 
 ##  Design System & Theme
 
-KANKU uses a **Premium Glassmorphic Aesthetic**. All new features must adhere to these standards:
+KANKU uses a **Clean Flat Card Design** aesthetic. All new features must adhere to these standards:
 
 ### **Color Palette**
 - **Primary Gradient**: `#7B4CFF` (Purple) to `#4A9EFF` (Blue).
-- **Surface**: High-transparency white/slate backgrounds with `backdrop-blur-xl`.
+- **Surface**: Clean white (`#FFFFFF`) backgrounds. Nested layout shells (e.g., `bg-gray-50`, `bg-[#F8FAFC]`) are strictly prohibited to avoid a "box-inside-box" feel.
 - **Accents**:
   - Success: Emerald-500
   - Error: Rose-500
@@ -224,10 +224,10 @@ KANKU uses a **Premium Glassmorphic Aesthetic**. All new features must adhere to
   - Bill/Attachment: Orange-400 / Orange-500
 
 ### **UI Tokens**
-- **Corners**: `rounded-[30px]` for cards, `rounded-2xl` (16px) for inner elements.
-- **Glassmorphism (Standard)**: `bg-white/80` or `bg-white/70` with `backdrop-blur-xl` and `border-white/20`.
+- **Corners**: `rounded-[16px]` (16px) for all primary cards and inner elements.
+- **Shadows**: Soft, minimal box shadow for all cards: `box-shadow: 0px 1px 2px rgba(0,0,0,0.04), 0px 4px 12px rgba(0,0,0,0.06); border: 1px solid rgba(0,0,0,0.04);`. Avoid heavy drop shadows or glow effects.
+- **Scrolling Constraints**: Use `min-h-screen` for page wrappers. Do not use restrictive `h-screen` or `overflow-hidden` constraints that interfere with natural mobile scrolling.
 - **Logos & Branding**: Centralized bank/card logo rendering in `src/app/components/ui/AccountLogos.tsx`. This avoids Vite Fast Refresh conflicts by keeping page components as single-export modules.
-- **Shadows**: Premium `shadow-xl shadow-black/5` or `shadow-floating`.
 - **Typography**: Modern Sans-Serif (Inter/Outfit). High contrast (font-black) for titles, muted for metadata.
 
 ### **Stacking Context (Z-Index)**
