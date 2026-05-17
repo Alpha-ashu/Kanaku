@@ -642,7 +642,8 @@ private async loadUserRole(userId, fallbackRole) {
 | `frontend/src/app/components/admin/AdminFeaturePanel.tsx` | Fixed `applyFeatureVisibility` closure; removed `applyFeatureVisibility` from 3 useEffect dep arrays; deep-merged `roleAccess` with `getDefaultRoleAccess` in all 3 localStorage parsing locations |
 | `frontend/src/contexts/AppContext.tsx` | Added `roleAccess` fallback for roles missing from older saved state; kept `computeVisibleFeatures` stable via `useCallback([role])` |
 | `frontend/src/hooks/useSharedMenu.ts` | Removed `updateTrigger` state and its 35-line listener `useEffect`; restored `orderedItems` state; `useMemo` deps now `[role, visibleFeatures]` only |
-| `frontend/src/contexts/AuthContext.tsx` | Changed inner timeout to 8500ms so it doesn't abort before `permissionService` finishes on a cold boot. |
+| `frontend/src/contexts/AuthContext.tsx` | Changed inner timeout to 8500ms. Fixed role case-sensitivity bug where capitalized DB roles like 'Manager' downgraded users to 'user', breaking Client Management routing. |
+| `backend/src/middleware/auth.ts` | Added `manager` role to `normalizeAppRole` and made string matching case-insensitive to ensure reliable route authorization for non-admin privileged roles. |
 | `frontend/src/app/App.tsx` | Route guard now requires `dataReady === true` before enforcing feature gates; stale-path redirect still runs before `dataReady` check |
 | `frontend/src/services/permissionService.ts` | Increased REST API timeout to 8000ms to tolerate Vercel cold-starts on first production load. Added `auth_role_cache` localStorage persistence for instant subsequent loads. Removed Supabase direct query fallback due to RLS 403 errors. |
 
