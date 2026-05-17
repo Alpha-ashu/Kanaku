@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useApp } from '@/contexts/AppContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { PageHeader } from '@/app/components/ui/PageHeader';
-import { ChevronLeft, Settings, ToggleRight, ToggleLeft, Shield, RefreshCw, Brain, BarChart2, ChevronRight, Activity, User } from 'lucide-react';
+import { ChevronLeft, Settings, ToggleRight, ToggleLeft, Shield, RefreshCw, Brain, BarChart2, ChevronRight, Activity, User, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
@@ -242,8 +242,30 @@ export const AdminFeaturePanel: React.FC = () => {
         return FEATURES;
       }
     }
+    // Fallback: no saved data in localStorage → use hardcoded defaults
     return FEATURES;
   });
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const [readinessFilter, setReadinessFilter] = useState<'all' | 'unreleased' | 'beta' | 'released' | 'deprecated'>('all');
+  const [roleFilter, setRoleFilter] = useState<'all' | 'admin' | 'manager' | 'advisor' | 'user'>('all');
+
+  const filteredFeatures = React.useMemo(() => {
+    return features.filter(f => {
+      // 1. Search Query filter (matches name or description, case-insensitive)
+      const matchesSearch = 
+        f.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        f.description.toLowerCase().includes(searchQuery.toLowerCase());
+        
+      // 2. Readiness State filter
+      const matchesReadiness = readinessFilter === 'all' || f.readiness === readinessFilter;
+      
+      // 3. Role Access filter
+      const matchesRole = roleFilter === 'all' || f.roleAccess[roleFilter as keyof typeof f.roleAccess] === true;
+      
+      return matchesSearch && matchesReadiness && matchesRole;
+    });
+  }, [features, searchQuery, readinessFilter, roleFilter]);
 
   // Create broadcast channel for real-time sync across tabs/sessions
   const broadcastChannel = React.useMemo(() => {
@@ -551,15 +573,92 @@ export const AdminFeaturePanel: React.FC = () => {
           </div>
 
           {/* Divider */}
-          <div className="flex items-center gap-4 py-4">
+          <div className="flex items-center gap-4 py-4 mb-6">
             <div className="flex-1 h-px bg-slate-100" />
             <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Master Feature Matrix</span>
             <div className="flex-1 h-px bg-slate-100" />
           </div>
 
+          {/* Filters Bar */}
+          <div className="bg-white/80 backdrop-blur-md rounded-[32px] border border-slate-100 p-6 sm:p-8 mb-8 flex flex-col gap-6 shadow-sm">
+            <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
+              {/* Search Field */}
+              <div className="flex-1 relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                <input
+                  type="text"
+                  placeholder="Search features by name or description..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-12 pr-6 py-4 bg-slate-50 border border-slate-100 hover:border-slate-200 focus:border-slate-300 focus:bg-white rounded-2xl text-sm font-medium text-slate-800 placeholder-slate-400 outline-none transition-all"
+                />
+                {searchQuery && (
+                  <button 
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-black text-slate-400 hover:text-slate-900 transition-colors"
+                  >
+                    CLEAR
+                  </button>
+                )}
+              </div>
+
+              {/* Counter Indicator */}
+              <div className="flex items-center justify-between lg:justify-end gap-3 text-xs font-black text-slate-500 uppercase tracking-widest px-2 lg:px-0">
+                <span>Total Matches:</span>
+                <span className="bg-slate-950 text-white px-3 py-1.5 rounded-xl">
+                  {filteredFeatures.length} of {features.length}
+                </span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2 border-t border-slate-50">
+              {/* Readiness Filter */}
+              <div>
+                <span className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Filter by Readiness</span>
+                <div className="flex flex-wrap gap-2">
+                  {(['all', 'unreleased', 'beta', 'released', 'deprecated'] as const).map((state) => (
+                    <button
+                      key={state}
+                      onClick={() => setReadinessFilter(state)}
+                      className={cn(
+                        "px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+                        readinessFilter === state
+                          ? "bg-slate-900 text-white shadow-md shadow-slate-200"
+                          : "bg-slate-50 text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+                      )}
+                    >
+                      {state}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Role Access Filter */}
+              <div>
+                <span className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Filter by Role Access</span>
+                <div className="flex flex-wrap gap-2">
+                  {(['all', 'admin', 'manager', 'advisor', 'user'] as const).map((roleKey) => (
+                    <button
+                      key={roleKey}
+                      onClick={() => setRoleFilter(roleKey)}
+                      className={cn(
+                        "px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+                        roleFilter === roleKey
+                          ? "bg-violet-600 text-white shadow-md shadow-violet-200"
+                          : "bg-slate-50 text-slate-500 hover:bg-slate-100 hover:text-slate-955"
+                      )}
+                    >
+                      {roleKey === 'all' ? 'All Roles' : `${roleKey} access`}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Features Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {features.map((feature) => (
+            {filteredFeatures.map((feature) => (
               <div
                 key={feature.key}
                 className="bg-white rounded-[32px] border border-slate-100 p-8 hover:shadow-xl hover:shadow-slate-100/50 transition-all flex flex-col"
@@ -634,6 +733,29 @@ export const AdminFeaturePanel: React.FC = () => {
                 </div>
               </div>
             ))}
+
+            {/* Empty State */}
+            {filteredFeatures.length === 0 && (
+              <div className="col-span-full py-16 flex flex-col items-center justify-center text-center bg-white rounded-[32px] border border-slate-100 p-8 shadow-sm">
+                <div className="w-16 h-16 rounded-2xl bg-slate-50 text-slate-400 flex items-center justify-center mb-4">
+                  <Search size={28} />
+                </div>
+                <h4 className="text-lg font-black text-slate-900 uppercase tracking-wide">No Features Found</h4>
+                <p className="text-slate-400 text-sm font-medium mt-2 max-w-md leading-relaxed">
+                  We couldn't find any features matching your search query or selected filter criteria. Try resetting your filters.
+                </p>
+                <button
+                  onClick={() => {
+                    setSearchQuery('');
+                    setReadinessFilter('all');
+                    setRoleFilter('all');
+                  }}
+                  className="mt-6 px-6 py-3 bg-slate-950 text-white text-xs font-black uppercase tracking-widest rounded-xl hover:bg-slate-800 active:scale-95 transition-all"
+                >
+                  Clear Filters
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Feature Readiness Guide */}
