@@ -135,16 +135,18 @@ export const Settings: React.FC = () => {
         console.warn('Permission clear error (non-blocking):', e);
       }
 
-      // Step 3: Clear all storage (PIN preserved)
+      // Step 3: Clear all storage (PIN & admin settings preserved)
       try {
         const pinBackup = {
           hash: localStorage.getItem('KANKU_encrypted_key'),
           salt: localStorage.getItem('KANKU_salt'),
+          adminSettings: localStorage.getItem('admin_global_feature_settings'),
         };
         localStorage.clear();
         sessionStorage.clear();
         if (pinBackup.hash) localStorage.setItem('KANKU_encrypted_key', pinBackup.hash);
         if (pinBackup.salt) localStorage.setItem('KANKU_salt', pinBackup.salt);
+        if (pinBackup.adminSettings) localStorage.setItem('admin_global_feature_settings', pinBackup.adminSettings);
       } catch (e) {
         console.warn('Storage clear error (non-blocking):', e);
       }
@@ -185,16 +187,18 @@ export const Settings: React.FC = () => {
     } catch (error) {
       console.error(' Sign out failed:', error);
 
-      // Force cleanup even on error (PIN preserved)
+      // Force cleanup even on error (PIN & admin settings preserved)
       try {
         const pinBackup = {
           hash: localStorage.getItem('KANKU_encrypted_key'),
           salt: localStorage.getItem('KANKU_salt'),
+          adminSettings: localStorage.getItem('admin_global_feature_settings'),
         };
         localStorage.clear();
         sessionStorage.clear();
         if (pinBackup.hash) localStorage.setItem('KANKU_encrypted_key', pinBackup.hash);
         if (pinBackup.salt) localStorage.setItem('KANKU_salt', pinBackup.salt);
+        if (pinBackup.adminSettings) localStorage.setItem('admin_global_feature_settings', pinBackup.adminSettings);
       } catch (e) {
         // Ignore
       }

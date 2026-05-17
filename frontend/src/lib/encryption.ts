@@ -6,20 +6,22 @@ const SALT_KEY = 'KANKU_salt';
 
 /**
  * Call this BEFORE localStorage.clear() during signout.
- * Returns the PIN keys that must survive the clear.
+ * Returns the PIN keys and global settings that must survive the clear.
  */
-export const backupPINKeys = (): { hash: string | null; salt: string | null } => ({
+export const backupPINKeys = (): { hash: string | null; salt: string | null; adminSettings: string | null } => ({
   hash: localStorage.getItem(STORAGE_KEY),
   salt: localStorage.getItem(SALT_KEY),
+  adminSettings: localStorage.getItem('admin_global_feature_settings'),
 });
 
 /**
  * Call this AFTER localStorage.clear() during signout.
- * Restores the PIN keys so the user is not asked to re-create their PIN.
+ * Restores the PIN keys and global settings so they survive logout.
  */
-export const restorePINKeys = (backup: { hash: string | null; salt: string | null }): void => {
+export const restorePINKeys = (backup: { hash: string | null; salt: string | null; adminSettings?: string | null }): void => {
   if (backup.hash) localStorage.setItem(STORAGE_KEY, backup.hash);
   if (backup.salt) localStorage.setItem(SALT_KEY, backup.salt);
+  if (backup.adminSettings) localStorage.setItem('admin_global_feature_settings', backup.adminSettings);
 };
 
 /**
