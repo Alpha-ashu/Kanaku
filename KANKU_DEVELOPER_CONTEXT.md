@@ -116,6 +116,12 @@ ON CONFLICT (email) DO UPDATE SET role = EXCLUDED.role;
 - **Compiler Type Safety**: Resolved strict TypeScript compilation errors in `AdminFeaturePanel.tsx` by declaring a base `FeatureControlBase` array and mapping it to the final `FEATURES: FeatureControl[]` type, preventing string-to-union literal mismatches on `readiness` settings. Corrected a type mismatch on `visibleFeatures` inside `useSharedMenu.ts` with a safe `FeatureVisibility` cast.
 - **Global Settings Preservation**: Solved the feature matrix reset on user logout. Wiped all user-specific credentials during `localStorage.clear()` but preserved `admin_global_feature_settings` along with the PIN keys (`KANKU_encrypted_key` and `KANKU_salt`) across all signout methods in `encryption.ts`, `Settings.tsx`, and `SecurityContext.tsx`. The Master Feature Matrix configuration is now persistent and consistent.
 
+#### 4. Sidebar Panel Navigation Stabilization & Admin Role Assignment Console (`navigation.ts`, `useSharedMenu.ts`, `AdminDashboard.tsx`, `admin.routes.ts`)
+- **Admin Console Registered**: Created and registered the main `'admin'` page (`Admin Dashboard`) in `sidebarMenuItems` and `headerMenuItems` with a distinctive `ShieldAlert` icon, separate from `'admin-feature-panel'` (Feature Panel).
+- **Core Panels Always Visible**: Modified the `useSharedMenu` filtering hook so that crucial Administrative and Management panels (`admin`, `admin-feature-panel`, `ai-management`, and `advisor-verification`) always bypass the client-side active flags for their respective roles. `admin` and `manager` roles will never be locked out or experience empty slots for core panels.
+- **Team Role Assignment Feature**: Solved the capability gap when new team members join. Added a dynamic User Role selector dropdown (`<select>`) right next to the user block/unblock control inside the `AdminDashboard` UI, allowing administrators to change roles (`'admin' | 'manager' | 'advisor' | 'user'`) dynamically in real-time.
+- **Backend Endpoints & Type Safety**: Registered `/api/v1/admin/users/:userId/role` endpoint in `admin.routes.ts` and `admin.controller.ts` with database integration, user notifications, and full parameter type safety. Cleared a pre-existing Prisma empty `include` object typing error inside `syncQueue` queries to ensure 100% compilation safety.
+
 ---
 
 ### **2026-05-17 (Late Afternoon) — App-Wide CenteredLayout Standardization & Role Visibility Propagation**
