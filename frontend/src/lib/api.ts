@@ -198,7 +198,6 @@ interface RequestConfig extends RequestInit {
   showErrorToast?: boolean;
   showSuccessToast?: boolean;
   successMessage?: string;
-  ignoreAuthErrors?: boolean;
 }
 
 class HTTPClient {
@@ -250,7 +249,7 @@ class HTTPClient {
             signal: controller.signal,
           });
 
-          const data = await this.parseResponseBody(response);
+          const data = (await this.parseResponseBody(response)) as any;
 
           if (!response.ok) {
             if (response.status >= 500 || response.status === 429) {
@@ -280,7 +279,7 @@ class HTTPClient {
             }
 
             // Handle 401 Unauthorized
-            if (response.status === 401 && !fetchConfig.ignoreAuthErrors) {
+            if (response.status === 401) {
               TokenManager.clearTokens();
               try {
                 // Force sign out to clear stale local storage sessions

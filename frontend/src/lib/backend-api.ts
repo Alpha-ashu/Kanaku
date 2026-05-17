@@ -584,7 +584,7 @@ class BackendService {
   // ===== GLOBAL FEATURE FLAGS =====
   async getGlobalFeatureFlags() {
     try {
-      const response = await this.api.get('/admin/features', { ignoreAuthErrors: true });
+      const response = await this.api.get('/admin/features');
       return response.data;
     } catch (error) {
       console.warn('Failed to fetch global feature flags from backend:', error);

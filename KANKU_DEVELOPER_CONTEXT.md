@@ -643,8 +643,6 @@ private async loadUserRole(userId, fallbackRole) {
 | `frontend/src/contexts/AppContext.tsx` | Added `roleAccess` fallback for roles missing from older saved state; kept `computeVisibleFeatures` stable via `useCallback([role])` |
 | `frontend/src/hooks/useSharedMenu.ts` | Removed `updateTrigger` state and its 35-line listener `useEffect`; restored `orderedItems` state; `useMemo` deps now `[role, visibleFeatures]` only |
 | `frontend/src/contexts/AuthContext.tsx` | Changed inner timeout to 8500ms so it doesn't abort before `permissionService` finishes on a cold boot. |
-| `frontend/src/lib/api.ts` | Added `ignoreAuthErrors` to `RequestConfig` to bypass aggressive `401` interceptor logouts; awaited `supabase.auth.signOut()` before redirect to fix infinite loop. |
-| `frontend/src/lib/backend-api.ts` | Added `{ ignoreAuthErrors: true }` to `/admin/features` polling request to stop backend cold-start failures from logging the user out. |
 | `frontend/src/app/App.tsx` | Route guard now requires `dataReady === true` before enforcing feature gates; stale-path redirect still runs before `dataReady` check |
 | `frontend/src/services/permissionService.ts` | Increased REST API timeout to 8000ms to tolerate Vercel cold-starts on first production load. Added `auth_role_cache` localStorage persistence for instant subsequent loads. Removed Supabase direct query fallback due to RLS 403 errors. |
 
