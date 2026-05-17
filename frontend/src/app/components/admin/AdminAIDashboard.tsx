@@ -268,7 +268,7 @@ export const AdminAIDashboard: React.FC = () => {
           <div className="flex items-start gap-3">
             <button
               onClick={() => setCurrentPage('admin-feature-panel')}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors mt-0.5 md:mt-0"
+              className="md:!hidden p-2 hover:bg-gray-100 rounded-lg transition-colors mt-0.5 md:mt-0"
               aria-label="Back to admin panel"
             >
               <ChevronLeft size={24} className="text-gray-600" />

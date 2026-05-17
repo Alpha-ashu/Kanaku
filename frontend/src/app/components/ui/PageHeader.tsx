@@ -46,7 +46,7 @@ export const PageHeaderCard: React.FC<PageHeaderProps> = ({
                     {showBack && (
                         <button
                             onClick={handleBackClick}
-                            className="w-10 h-10 flex items-center justify-center bg-transparent border border-slate-200 hover:bg-slate-100/50 rounded-xl transition-all shrink-0 active:scale-95 group"
+                            className="w-10 h-10 flex lg:!hidden items-center justify-center bg-transparent border border-slate-200 hover:bg-slate-100/50 rounded-xl transition-all shrink-0 active:scale-95 group"
                             aria-label="Go back"
                         >
                             <ChevronLeft size={20} className="text-slate-700 group-hover:-translate-x-0.5 transition-transform" />

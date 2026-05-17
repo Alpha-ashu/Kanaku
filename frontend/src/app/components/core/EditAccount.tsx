@@ -121,7 +121,7 @@ export const EditAccount: React.FC<{ accountId?: number }> = ({ accountId: propA
         <div className="flex items-center gap-4 mb-2">
           <button 
             onClick={() => setCurrentPage('accounts')}
-            className="p-2.5 hover:bg-white rounded-xl transition-all border border-transparent hover:border-slate-200 text-slate-600"
+            className="lg:!hidden p-2.5 hover:bg-white rounded-xl transition-all border border-transparent hover:border-slate-200 text-slate-600"
           >
             <ArrowLeft size={20} />
           </button>

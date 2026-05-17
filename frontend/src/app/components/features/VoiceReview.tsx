@@ -393,7 +393,7 @@ export const VoiceReview: React.FC = () => {
         <div className="flex items-center gap-3">
           <button
             onClick={() => setCurrentPage('voice-input')}
-            className="rounded-lg p-2 transition-colors hover:bg-gray-100 md:hidden"
+            className="rounded-lg p-2 transition-colors hover:bg-gray-100 md:!hidden"
             aria-label="Go back to voice input"
           >
             <ChevronLeft size={24} className="text-gray-600" />

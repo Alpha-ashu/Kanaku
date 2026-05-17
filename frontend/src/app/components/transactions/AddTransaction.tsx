@@ -559,7 +559,7 @@ export function AddTransaction() {
           <div className="flex items-center gap-2 min-w-0">
             <button
               onClick={() => setCurrentPage(returnPage)}
-              className="p-2 text-slate-600 hover:bg-slate-50 rounded-xl transition-all shrink-0"
+              className="lg:!hidden p-2 text-slate-600 hover:bg-slate-50 rounded-xl transition-all shrink-0"
             >
               <ArrowLeft size={18} />
             </button>

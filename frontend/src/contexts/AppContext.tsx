@@ -459,41 +459,62 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     ));
   }, [language, shouldPersistUserSettings]);
 
-  useEffect(() => {
+  // Single source of truth: role defaults + admin overrides (admin wins)
+  const computeVisibleFeatures = useCallback(() => {
     const roleFeatures = getVisibleFeaturesForRole(role, import.meta.env.MODE);
+    const adminSettings = localStorage.getItem('admin_global_feature_settings');
 
-    // Read feature flag overrides from localStorage (set by admin panel)
-    const overrideFlags = localStorage.getItem('featureFlagsOverride');
-    let finalFeatures = roleFeatures;
-
-    if (overrideFlags) {
-      try {
-        const parsed = JSON.parse(overrideFlags);
-        const overrides: Record<string, boolean> = {};
-
-        Object.entries(parsed).forEach(([feature, roleFlags]: [string, any]) => {
-          if (roleFlags[role]) {
-            overrides[feature] = true;
-          } else {
-            overrides[feature] = false;
-          }
-        });
-
-        finalFeatures = {
-          ...roleFeatures,
-          ...overrides,
-        };
-      } catch (e) {
-        console.error('Failed to parse feature flag overrides:', e);
-      }
+    if (!adminSettings) {
+      setVisibleFeaturesState(roleFeatures);
+      return;
     }
 
-    setVisibleFeaturesState((prev) => mergeVisibleFeatures(normalizeFeatures(prev), finalFeatures));
+    try {
+      const parsed = JSON.parse(adminSettings);
+      // Start from role defaults, then apply admin-set readiness per-feature
+      const merged: Record<string, boolean> = { ...roleFeatures };
+
+      Object.entries(parsed).forEach(([key, value]: [string, any]) => {
+        const readiness = value?.readiness;
+        let isVisible: boolean;
+        switch (readiness) {
+          case 'unreleased':
+            isVisible = role === 'admin';
+            break;
+          case 'beta':
+            isVisible = role === 'admin' || role === 'advisor' || role === 'manager';
+            break;
+          case 'released':
+            isVisible = true;
+            break;
+          case 'deprecated':
+            isVisible = false;
+            break;
+          default:
+            isVisible = (roleFeatures as Record<string, boolean>)[key] ?? true;
+        }
+        
+        // Explicit role-specific override if present
+        if (value?.roleAccess && typeof value.roleAccess[role] === 'boolean') {
+          isVisible = value.roleAccess[role];
+        }
+
+        merged[key] = isVisible;
+      });
+
+      setVisibleFeaturesState(merged as unknown as FeatureVisibility);
+    } catch (e) {
+      console.error('Failed to apply admin feature settings:', e);
+      setVisibleFeaturesState(roleFeatures);
+    }
   }, [role]);
 
-  // Listen for changes to feature flags from admin panel (both same-tab and cross-tab)
   useEffect(() => {
-    // BroadcastChannel for cross-tab real-time sync
+    computeVisibleFeatures();
+  }, [computeVisibleFeatures]);
+
+  // Listen for real-time feature flag changes from admin panel (same-tab + cross-tab)
+  useEffect(() => {
     let broadcastChannel: BroadcastChannel | null = null;
     try {
       broadcastChannel = new BroadcastChannel('feature_settings_channel');
@@ -501,61 +522,19 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       // BroadcastChannel not supported
     }
 
-    const applyAdminFeatureSettings = () => {
-      const adminSettings = localStorage.getItem('admin_global_feature_settings');
-      if (!adminSettings) return;
-
-      try {
-        const parsed = JSON.parse(adminSettings);
-        const roleFeatures = getVisibleFeaturesForRole(role, import.meta.env.MODE);
-        const newVisibility: Record<string, boolean> = { ...roleFeatures };
-
-        Object.entries(parsed).forEach(([key, value]: [string, any]) => {
-          const readiness = value.readiness;
-          let isVisible = false;
-
-          switch (readiness) {
-            case 'unreleased':
-              isVisible = role === 'admin';
-              break;
-            case 'beta':
-              isVisible = role === 'admin' || role === 'advisor';
-              break;
-            case 'released':
-              isVisible = true;
-              break;
-            case 'deprecated':
-              isVisible = false;
-              break;
-            default:
-              isVisible = roleFeatures[key as keyof typeof roleFeatures] ?? true;
-          }
-
-          newVisibility[key] = isVisible;
-        });
-
-        setVisibleFeaturesState(newVisibility as unknown as FeatureVisibility);
-      } catch (e) {
-        console.error('Failed to apply admin feature settings:', e);
-      }
-    };
-
-    // Apply on mount
-    applyAdminFeatureSettings();
-
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'admin_global_feature_settings' || e.key === 'featureFlagsOverride') {
-        applyAdminFeatureSettings();
+        computeVisibleFeatures();
       }
     };
 
-    const handleAdminFeatureUpdate = (event: CustomEvent) => {
-      applyAdminFeatureSettings();
+    const handleAdminFeatureUpdate = () => {
+      computeVisibleFeatures();
     };
 
     const handleBroadcastMessage = (event: MessageEvent) => {
       if (event.data.type === 'FEATURE_UPDATE') {
-        applyAdminFeatureSettings();
+        computeVisibleFeatures();
       }
     };
 
@@ -574,7 +553,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         broadcastChannel.close();
       }
     };
-  }, [role]);
+  }, [computeVisibleFeatures]);
 
   // Save visible features to localStorage
   useEffect(() => {
@@ -582,10 +561,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   }, [visibleFeatures]);
 
   const setVisibleFeatures = useCallback((features: FeatureVisibility) => {
-    const roleFeatures = getVisibleFeaturesForRole(role, import.meta.env.MODE);
-    const normalized = normalizeFeatures(features);
-    setVisibleFeaturesState(mergeVisibleFeatures(normalized, roleFeatures));
-  }, [role]);
+    // Admin changes are stored in admin_global_feature_settings — always recompute from that
+    // rather than blindly merging, so admin overrides are never lost.
+    setVisibleFeaturesState(normalizeFeatures(features));
+    // Re-apply the full admin+role merge on next tick so nothing is lost
+    setTimeout(() => computeVisibleFeatures(), 0);
+  }, [computeVisibleFeatures]);
 
   const contextValue = useMemo(() => ({
     currentPage,

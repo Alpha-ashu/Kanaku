@@ -122,7 +122,7 @@ export const AdminAdvisorVerification: React.FC = () => {
 
         {/* Header */}
         <div className="flex items-center gap-4">
-          <button onClick={goBack} className="p-2 hover:bg-gray-100 rounded-xl transition-colors md:hidden">
+          <button onClick={goBack} className="p-2 hover:bg-gray-100 rounded-xl transition-colors md:!hidden">
             <ChevronLeft size={20} className="text-gray-600" />
           </button>
           <div className="flex items-center gap-4">

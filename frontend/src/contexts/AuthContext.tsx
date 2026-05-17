@@ -70,6 +70,7 @@ type RemoteProfileSnapshot = {
   state: string;
   city: string;
   updatedAt: string | null;
+  role: string;
   hasRealProfile: boolean;
 };
 
@@ -164,6 +165,7 @@ const normalizeRemoteProfile = (profile: any): RemoteProfileSnapshot => {
   const state = String(profile?.state ?? '').trim();
   const city = String(profile?.city ?? '').trim();
   const updatedAt = profile?.updated_at ?? profile?.updatedAt ?? null;
+  const role = String(profile?.role ?? '').trim();
 
   return {
     displayName,
@@ -181,6 +183,7 @@ const normalizeRemoteProfile = (profile: any): RemoteProfileSnapshot => {
     state,
     city,
     updatedAt,
+    role,
     hasRealProfile: Boolean(
       displayName ||
       firstName ||
@@ -209,8 +212,8 @@ const resolveUserRole = (_user: User | null): UserRole => {
   if (!_user) return 'user';
   const localProfile = readLocalProfile();
   if (localProfile?.role) {
-    return (['admin', 'manager', 'advisor', 'user'].includes(localProfile.role)) 
-      ? localProfile.role as UserRole 
+    return (['admin', 'manager', 'advisor', 'user'].includes(localProfile.role))
+      ? localProfile.role as UserRole
       : 'user';
   }
   return 'user';
@@ -307,7 +310,7 @@ const syncProfileFromBackend = async (user: User) => {
   }
 
   const run = async () => {
-  // SECURITY FIX (Bug #1): Route through backend API instead of direct Supabase call
+    // SECURITY FIX (Bug #1): Route through backend API instead of direct Supabase call
     let profile: any = null;
     try {
       const response = await api.auth.getProfile();
@@ -383,6 +386,7 @@ const syncProfileFromBackend = async (user: User) => {
         country: remoteProfile.country || localProfile?.country || '',
         state: remoteProfile.state || localProfile?.state || '',
         city: remoteProfile.city || localProfile?.city || '',
+        role: remoteProfile.role || localProfile?.role || 'user',
         updatedAt,
       }));
     };
@@ -688,6 +692,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                   initialSyncDone = true;
                 }
               })();
+            } else {
+              if (isMounted) setLoading(false);
             }
           } else if (event === 'SIGNED_OUT') {
             if (unsubscribeUserCloudSync) {

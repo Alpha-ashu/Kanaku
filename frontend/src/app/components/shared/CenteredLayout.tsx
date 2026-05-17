@@ -7,7 +7,7 @@ interface CenteredLayoutProps {
 
 export const CenteredLayout: React.FC<CenteredLayoutProps> = ({ 
   children, 
-  maxWidth = 'w-full' 
+  maxWidth = 'max-w-[1920px]' 
 }) => {
   return (
     <div className="w-full min-h-screen bg-white overflow-x-hidden">

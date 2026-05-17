@@ -136,7 +136,7 @@ const AppContent: React.FC = () => {
   const appContext = useOptionalApp();
   const { user, role, loading: authLoading, dataReady, dataSyncing, dataSyncError, triggerDataSync } = useAuth();
   const { isAuthenticated, setAuthenticated } = useSecurity();
-  
+
   if (!appContext) {
     return (
       <div className="flex items-center justify-center h-screen bg-gradient-to-br from-pink-500 to-rose-600">
@@ -277,7 +277,7 @@ const AppContent: React.FC = () => {
   useEffect(() => {
     if (!user || authLoading) return;
     const staleAuthPaths = new Set(['login', 'signin', 'auth-callback', '']);
-    
+
     // 1. Handle stale auth paths
     if (staleAuthPaths.has(currentPage)) {
       if (visibleFeatures.dashboard) {
@@ -292,11 +292,11 @@ const AppContent: React.FC = () => {
     const normalizedRole = role?.toLowerCase();
     const isAdmin = normalizedRole === 'admin';
     const isManager = normalizedRole === 'manager';
-    
+
     const isSystemAdminPage = ['admin', 'admin-feature-panel', 'admin-ai', 'sync-monitor'].includes(currentPage);
     const isManagerPage = ['manager-advisor-verification', 'admin-advisor-verification'].includes(currentPage);
     const isPublicPage = ['privacy-policy', 'terms', 'diagnostics', 'auth-callback', 'settings', 'user-profile', 'notifications'].includes(currentPage);
-    
+
     const hasAdminBypass = isAdmin && (isSystemAdminPage || isManagerPage);
     const hasManagerBypass = isManager && isManagerPage;
 
@@ -555,14 +555,14 @@ const AppContent: React.FC = () => {
     const normalizedRole = role?.toLowerCase();
     const isAdmin = normalizedRole === 'admin';
     const isManager = normalizedRole === 'manager';
-    
+
     const isSystemAdminPage = ['admin', 'admin-feature-panel', 'admin-ai', 'sync-monitor'].includes(currentPage);
     const isManagerPage = ['manager-advisor-verification', 'admin-advisor-verification'].includes(currentPage);
     const isPublicPage = ['privacy-policy', 'terms', 'diagnostics', 'auth-callback', 'settings', 'user-profile', 'notifications'].includes(currentPage);
-    
+
     const hasAdminBypass = isAdmin && (isSystemAdminPage || isManagerPage);
     const hasManagerBypass = isManager && isManagerPage;
-    
+
     if (!canAccessPage(currentPage, visibleFeatures) && !hasAdminBypass && !hasManagerBypass && !isPublicPage) {
       console.warn(`[Access Denied] User role ${role} cannot access page: ${currentPage}`);
       if (!visibleFeatures.dashboard) return <Settings />;
@@ -631,7 +631,7 @@ const AppContent: React.FC = () => {
       );
       case 'diagnostics': return <Diagnostics />;
       case 'auth-callback': return <AuthCallback />;
-      case 'admin-feature-panel':
+      case 'admin-feature-panel': return <AdminFeaturePanel />;
       case 'admin': return <AdminDashboard />;
       case 'advisor-panel': return <AdvisorPanel />;
       case 'admin-ai': return <AdminAIDashboard />;

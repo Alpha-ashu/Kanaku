@@ -18,13 +18,13 @@ const DAYS_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 function getStatusBadge(status: string) {
   const map: Record<string, { color: string; label: string }> = {
-    pending:    { color: 'bg-amber-50 text-amber-700 border border-amber-200', label: 'Pending' },
-    accepted:   { color: 'bg-emerald-50 text-emerald-700 border border-emerald-200', label: 'Confirmed' },
-    scheduled:  { color: 'bg-blue-50 text-blue-700 border border-blue-200', label: 'Scheduled' },
-    rejected:   { color: 'bg-red-50 text-red-600 border border-red-200', label: 'Declined' },
+    pending: { color: 'bg-amber-50 text-amber-700 border border-amber-200', label: 'Pending' },
+    accepted: { color: 'bg-emerald-50 text-emerald-700 border border-emerald-200', label: 'Confirmed' },
+    scheduled: { color: 'bg-blue-50 text-blue-700 border border-blue-200', label: 'Scheduled' },
+    rejected: { color: 'bg-red-50 text-red-600 border border-red-200', label: 'Declined' },
     reschedule: { color: 'bg-violet-50 text-violet-700 border border-violet-200', label: 'Rescheduling' },
-    cancelled:  { color: 'bg-gray-100 text-gray-500 border border-gray-200', label: 'Cancelled' },
-    completed:  { color: 'bg-slate-100 text-slate-600 border border-slate-200', label: 'Completed' },
+    cancelled: { color: 'bg-gray-100 text-gray-500 border border-gray-200', label: 'Cancelled' },
+    completed: { color: 'bg-slate-100 text-slate-600 border border-slate-200', label: 'Completed' },
   };
   const s = map[status] ?? map.pending;
   return <span className={cn('px-2.5 py-1 rounded-full text-[11px] font-bold', s.color)}>{s.label}</span>;
@@ -137,7 +137,7 @@ export const AdvisorWorkspace: React.FC = () => {
       {/* Header */}
       <div className="bg-transparent border-b border-gray-100 px-4 lg:px-8 py-4 sticky top-0 z-10">
         <div className="max-w-5xl mx-auto flex items-center gap-3">
-          <button onClick={() => setCurrentPage('dashboard')} className="p-2 hover:bg-gray-100 rounded-xl md:hidden"><ChevronLeft size={20} className="text-gray-600" /></button>
+          <button onClick={() => setCurrentPage('dashboard')} className="p-2 hover:bg-gray-100 rounded-xl md:!hidden"><ChevronLeft size={20} className="text-gray-600" /></button>
           <div className="flex items-center gap-4">
             <h1 className="text-xl font-black text-slate-900 tracking-tight leading-none">Advisor Workspace</h1>
           </div>

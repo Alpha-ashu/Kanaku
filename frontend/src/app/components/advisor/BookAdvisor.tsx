@@ -169,7 +169,7 @@ export const BookAdvisor: React.FC = () => {
       {/* High Density Header */}
       <header className="flex items-center justify-between px-4 lg:px-6 py-4 bg-white border-b border-slate-100 shrink-0">
         <div className="flex items-center gap-3">
-          <button onClick={() => setCurrentPage('dashboard')} className="lg:hidden p-2 text-slate-600 hover:bg-slate-50 rounded-xl transition-all">
+          <button onClick={() => setCurrentPage('dashboard')} className="lg:!hidden p-2 text-slate-600 hover:bg-slate-50 rounded-xl transition-all">
             <ChevronLeft size={20} />
           </button>
           <div className="flex items-center gap-4">

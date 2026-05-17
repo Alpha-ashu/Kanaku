@@ -15,11 +15,13 @@ KANKU follows a **feature-modular structure** within the frontend to ensure scal
   - `transactions/`: AddTransaction, Transfer, PayEMI, StatementImport, ReceiptScanner, BillUpload.
   - `receipt-scanner/`: Shared sub-views for the ReceiptScanner (ReceiptScannerViews.tsx).
   - `features/`: Extended modules (Reports, Calendar, VoiceInput, ToDoLists).
-  - `shared/`: Reusable layouts and complex patterns (AppLayout, QuickActionModal, Diagnostics).
+  - `shared/`: Reusable layouts and complex patterns (AppLayout, QuickActionModal, Diagnostics, CenteredLayout).
   - `ui/`: Low-level, reusable atoms (Buttons, Cards, Inputs, Logos).
+  - `admin/`: Admin-only modules (AdminDashboard, AdminFeaturePanel, AdminAIDashboard).
+  - `manager/`: Manager-only modules (ManagerAdvisorVerification).
 - **`frontend/src/lib/`**: Core services, business logic, and API clients.
 - **`frontend/src/contexts/`**: Global state management (Auth, App, UI).
-- **`frontend/src/services/`**: Domain services (DocumentManagementService, documentIntelligenceService, receiptScannerService, cloudReceiptScanService).
+- **`frontend/src/services/`**: Domain services (DocumentManagementService, documentIntelligenceService, receiptScannerService, cloudReceiptScanService, permissionService, adminConsoleService).
 - **`frontend/src/hooks/`**: Custom hooks (useReceiptScanner, useTransactionCreation).
 - **`frontend/src/types/`**: Shared TypeScript types (receipt.types.ts).
 - **`docs/`**: Archived documentation and implementation guides.
@@ -95,6 +97,84 @@ ON CONFLICT (email) DO UPDATE SET role = EXCLUDED.role;
 ---
 
 ##  Change Log & Evolution
+
+---
+
+### **2026-05-17 (Afternoon) — Master Feature Matrix & Role Visibility Toggles**
+
+#### 1. Routing Deadlock Fix (`App.tsx`)
+- **Problem**: The 'Manage Feature Matrix' button in the Admin Console incorrectly loaded the `<AdminDashboard />` instead of `<AdminFeaturePanel />` due to a duplicate switch fallthrough bug.
+- **Fix**: Separated the switch statements to explicitly return `<AdminFeaturePanel />` for the `'admin-feature-panel'` route.
+
+#### 2. Premium UI Aesthetic Overhaul (`AdminFeaturePanel.tsx`)
+- Transformed the flat, legacy feature management cards into the high-end **Premium Glassmorphic Aesthetic**.
+- Implemented deep drop shadows, hover-scale animations, `bg-gradient-to-r` headers, and `backdrop-blur-md` containers.
+- Replaced standard typography with native-style `font-black uppercase tracking-widest` for pills, status indicators, and headers.
+
+#### 3. Explicit Role Visibility Overrides (`AdminFeaturePanel.tsx`, `AppContext.tsx`)
+- **Problem**: Feature access was strictly derived from high-level generic Readiness states (e.g., Unreleased, Beta). There was no way to individually toggle access per specific role.
+- **Solution**: 
+  - Restructured `FeatureControl` to include an explicit `roleAccess: { admin: boolean, manager: boolean, advisor: boolean, user: boolean }` mapping.
+  - Implemented a "Role Visibility Override" matrix inside every feature card. Administrators can now manually toggle access for each individual role explicitly.
+  - Modified `computeVisibleFeatures` in `AppContext.tsx` to read the `roleAccess` explicit override from `admin_global_feature_settings` broadcast/cache. If an override is set, it overrides the hardcoded readiness logic and updates the active context globally.
+
+---
+
+### **2026-05-17 — Admin Dashboard Stabilization & Auth Race Condition Fixes**
+
+#### 1. Administrative Route Guard & Role Resolution (`App.tsx`, `AuthContext.tsx`, `permissionService.ts`)
+
+**Problem**: Admin users were being redirected away from pages like `admin-ai` with `[Route Guard] Redirecting from disabled page (Role: user)`. The app also got stuck on the loading screen indefinitely.
+
+**Root Causes**:
+- `resolveUserRole()` always returned `'user'` unconditionally — no fallback to local cache.
+- The Route Guard executed before the backend confirmed the user's real role.
+- `setLoading(false)` was never called in scenarios where no `isFreshLogin` or `isAppLoad` condition was met (e.g., `INITIAL_SESSION` for an already-logged-in user when none of the if/else branches matched).
+
+**Fixes Applied**:
+
+1. **`AuthContext.tsx` — Permission-first loading with hard timeout**: The handler now awaits the permission fetch using `Promise.race` with a **5-second timeout**. Loading screen clears in the `finally` block, guaranteeing it always resolves. Cloud sync continues in the background.
+
+2. **`AuthContext.tsx` — Role caching in `resolveUserRole()`**:
+   - Added `role?: string` field to the `LocalProfile` type.
+   - `resolveUserRole()` now reads from `localStorage` (`user_profile.role`) as a startup hint, preventing a `'user'` flash before the backend responds.
+
+3. **`AuthContext.tsx` — Exhaustive `setLoading(false)` coverage**:
+   - Added `else { if (isMounted) setLoading(false); }` for the "no user, not signed out" case (covers `INITIAL_SESSION` with no session).
+   - Added `if (isMounted) setLoading(false)` directly in the `catch` block.
+
+4. **`permissionService.ts` — Manager role permissions**: Added full default permissions map for the `manager` role. Previously missing, causing `undefined` access errors.
+
+5. **`App.tsx` — Route Guard bypass for admin/manager**: Introduced explicit bypass so pages in `isSystemAdminPage` (e.g., `admin-dashboard`, `admin-ai`, `admin-feature-panel`) skip all feature-gate checks for `admin` and `manager` roles.
+
+6. **`App.tsx` — Rules of Hooks fix**: Moved `useAuth()` and `useSecurity()` to the very top of `AppContent`, before the `if (!appContext)` early return. This resolves the React "change in the order of Hooks" warning that caused Fast Refresh instability.
+
+#### 2. AdminDashboard 500 Error Fix (`AdminDashboard.tsx`)
+
+**Problem**: The Admin Dashboard failed to load with `500 Internal Server Error` from the Vite dev server (`Failed to fetch dynamically imported module`).
+
+**Root Cause**: A missing `</div>` closing tag for the Infrastructure/Server Metrics section container created an unbalanced JSX tree, crashing the Vite TypeScript compiler.
+
+**Fix**: Restored the missing closing `</div>` tag and added optional chaining to all stats display paths.
+
+**Type-Safety Fixes**:
+- `setStats(s)` → `if (s) setStats(s)` — prevents `undefined` in `SetStateAction<SystemStatsDto | null>`.
+- `setUsers(u)` → `if (u) setUsers(u)` — prevents `undefined` in `SetStateAction<AdminUserDto[]>`.
+- `setUserActivity(activity)` → `if (activity) setUserActivity(activity)` — prevents `undefined` in `SetStateAction<UserActivityDto | null>`.
+
+#### 3. AdminFeaturePanel Syntax Error (`AdminFeaturePanel.tsx`)
+
+**Problem**: ~30 cascading TypeScript lint errors (missing commas, undeclared `key`, `readiness`, `description`, `lastUpdated`).
+
+**Root Cause**: Missing opening `{` for the `'Client Management'` feature entry in the `FEATURES` array.
+
+**Fix**: Added `{` before `name: 'Client Management'`.
+
+#### 4. CenteredLayout Shared Component (`CenteredLayout.tsx`)
+
+- Created `frontend/src/app/components/shared/CenteredLayout.tsx`.
+- Provides the standard page container: `w-full mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 pt-4 sm:pt-5 lg:pt-6 pb-24 lg:pb-10 flex-1`.
+- Use this instead of duplicating the class string across admin and settings pages.
 
 ---
 
@@ -249,7 +329,7 @@ ON CONFLICT (email) DO UPDATE SET role = EXCLUDED.role;
    - Standardized `shared/` layout components (`AppLayout`, `LimitedModeBanner`).
 2. **Project Root Cleanup**:
    - Moved 70+ standalone documentation files to the `docs/` folder.
-   - Moved truly dead code to `frontend/src/unused/`. (Note: `realTime.ts` and `enhanced-sync.ts` were restored to `src/lib/` after being identified as dependencies).
+   - Moved truly dead code to `frontend/src/unused/`. (Note: `realTime.ts` and `enhanced-sync.ts` were restored to `src/lib/` after being identified as dependencies)
 3. **Path Stabilization**:
    - Fixed lazy-loading paths in `App.tsx` (standardized on feature-folders).
    - Resolved Vite build errors regarding broken relative imports in `AuthFlow.tsx`.
@@ -309,9 +389,12 @@ const getDocumentIdFromTransaction = (tx) => {
 ##  Developer Instructions for New Features
 1. **Reuse UI**: Check `src/app/components/ui/` before creating new primitive elements.
 2. **Standard Headers**: Use `PageHeader` from UI for consistency across modules.
-3. **Local-First**: Always ensure data is saved to `localStorage` or `Dexie` before syncing to the cloud.
-4. **Theme Check**: If a component looks like "Standard Tailwind/Bootstrap," it is wrong. Apply glassmorphism and the primary gradient.
-5. **Frozen Pages**: The **Account Page**, **Add Account** sub-page, **User Profile** page, and **Add Transaction** page are finalized. **DO NOT** modify their layout, logic, or features unless the user specifically requests changes to them.
-6. **Receipt/Bill System**: When adding receipt support to any new module, use `DocumentManagementService` directly. Do NOT reinvent document storage. Pass `initialMode` to `ReceiptScanner` to pre-select the workflow.
-7. **Mobile Responsiveness**: Every list/table must have a mobile card view. Use `hidden lg:block` for desktop tables and `lg:hidden` for mobile card lists. Tapping a row should open a bottom-sheet detail view.
-8. **View Bill Icon**: Always use `Eye` icon from `lucide-react` in `text-orange-400` color. It must be **always visible** (not hover-gated) when `attachedDocumentId` is truthy.
+3. **Standard Page Container**: Use `CenteredLayout` from `shared/` for the page-level padding/max-width wrapper instead of duplicating the class string.
+4. **Local-First**: Always ensure data is saved to `localStorage` or `Dexie` before syncing to the cloud.
+5. **Theme Check**: If a component looks like "Standard Tailwind/Bootstrap," it is wrong. Apply glassmorphism and the primary gradient.
+6. **Frozen Pages**: The **Account Page**, **Add Account** sub-page, **User Profile** page, and **Add Transaction** page are finalized. **DO NOT** modify their layout, logic, or features unless the user specifically requests changes to them.
+7. **Receipt/Bill System**: When adding receipt support to any new module, use `DocumentManagementService` directly. Do NOT reinvent document storage. Pass `initialMode` to `ReceiptScanner` to pre-select the workflow.
+8. **Mobile Responsiveness**: Every list/table must have a mobile card view. Use `hidden lg:block` for desktop tables and `lg:hidden` for mobile card lists. Tapping a row should open a bottom-sheet detail view.
+9. **View Bill Icon**: Always use `Eye` icon from `lucide-react` in `text-orange-400` color. It must be **always visible** (not hover-gated) when `attachedDocumentId` is truthy.
+10. **Hooks Rule**: Never call `useAuth()`, `useSecurity()`, or any hook after a conditional `return`. Always place all hook calls at the top of the component, before any guard clauses.
+11. **Auth Loading**: The `AuthContext` clears `loading` after a permission fetch with a **5-second hard timeout**. If the backend is unreachable, the app falls back to the locally-cached role from `localStorage`. Do not add any logic that waits for `loading === false` AND `dataReady === true` — this will cause hangs.

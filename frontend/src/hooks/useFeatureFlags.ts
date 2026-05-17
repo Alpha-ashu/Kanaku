@@ -39,7 +39,7 @@ export const useFeatureFlags = () => {
   const [flags, setFlags] = useState<FeatureFlagState>(() => {
     const stored = localStorage.getItem(FEATURE_FLAG_STORAGE_KEY);
     if (!stored) return DEFAULT_FEATURE_FLAGS;
-    
+
     try {
       const parsed = JSON.parse(stored);
       // Deep merge stored flags with defaults to ensure new roles/keys exist
@@ -73,7 +73,7 @@ export const useFeatureFlags = () => {
         }
       }
     };
-    
+
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);

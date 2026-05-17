@@ -13,7 +13,7 @@ export const useSharedMenu = () => {
   const [orderedItems, setOrderedItems] = useState<NavigationItem[]>([]);
   const [updateTrigger, setUpdateTrigger] = useState(0);
   const currentPage = app?.currentPage ?? 'dashboard';
-  const setCurrentPage = app?.setCurrentPage ?? (() => {});
+  const setCurrentPage = app?.setCurrentPage ?? (() => { });
   const visibleFeatures = app?.visibleFeatures ?? ({} as Record<string, boolean>);
 
   // Listen for admin feature updates to refresh menu
@@ -61,11 +61,11 @@ export const useSharedMenu = () => {
       if (item.roles && item.roles.length > 0) {
         if (!item.roles.includes(role)) return false;
       }
-      
+
       // 2. Feature-based check (uses centralized mapping)
       // Special case: Admin items are ALWAYS visible to admins to prevent lockouts
       if (['admin-feature-panel', 'admin-ai', 'manager-advisor-verification'].includes(item.id) && role === 'admin') return true;
-      
+
       return canAccessPage(item.id, visibleFeatures);
     });
 

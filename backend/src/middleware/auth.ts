@@ -37,7 +37,7 @@ const getSupabase = () => {
 };
 // Supabase JWT Secret  found in Supabase Dashboard  Project Settings  API  JWT Settings
 const supabaseJwtSecret = process.env.SUPABASE_JWT_SECRET || '';
-const AUTH_STATUS_LOOKUP_TIMEOUT_MS = Number(process.env.AUTH_STATUS_LOOKUP_TIMEOUT_MS || 250);
+const AUTH_STATUS_LOOKUP_TIMEOUT_MS = Number(process.env.AUTH_STATUS_LOOKUP_TIMEOUT_MS || 5000);
 const STATUS_LOOKUP_TIMEOUT = Symbol('auth-status-timeout');
 const ALLOW_TEST_ROLE_FALLBACK = process.env.NODE_ENV === 'test';
 

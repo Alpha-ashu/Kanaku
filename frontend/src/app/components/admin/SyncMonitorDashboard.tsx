@@ -186,7 +186,7 @@ export const SyncMonitorDashboard: React.FC = () => {
         <div className="flex items-center gap-3">
           <button
             onClick={() => setCurrentPage('admin-panel')}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors md:hidden"
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors md:!hidden"
             aria-label="Back to admin panel"
           >
             <ChevronLeft size={24} className="text-gray-600" />
