@@ -222,28 +222,39 @@ KANKU uses a **Clean Flat Card Design** aesthetic. All new features must adhere 
   - Error: Rose-500
   - Warning: Amber-500
   - Bill/Attachment: Orange-400 / Orange-500
+- **Surface**: Clean white (`#FFFFFF`) backgrounds. Nested `bg-gray-50` / `bg-[#F8FAFC]` layout wrappers are **strictly prohibited**.
+- **Accents**: Success: Emerald-500 · Error: Rose-500 · Warning: Amber-500 · Bill: Orange-400/500
 
-### **UI Tokens**
-- **Corners**: `rounded-[16px]` (16px) for all primary cards and inner elements.
-- **Shadows**: Soft, minimal box shadow for all cards: `box-shadow: 0px 1px 2px rgba(0,0,0,0.04), 0px 4px 12px rgba(0,0,0,0.06); border: 1px solid rgba(0,0,0,0.04);`. Avoid heavy drop shadows or glow effects.
-- **Scrolling Constraints**: Use `min-h-screen` for page wrappers. Do not use restrictive `h-screen` or `overflow-hidden` constraints that interfere with natural mobile scrolling.
-- **Logos & Branding**: Centralized bank/card logo rendering in `src/app/components/ui/AccountLogos.tsx`. This avoids Vite Fast Refresh conflicts by keeping page components as single-export modules.
-- **Typography**: Modern Sans-Serif (Inter/Outfit). High contrast (font-black) for titles, muted for metadata.
+### **UI Tokens (ENFORCED)**
+- **Page Wrappers**: Use `min-h-screen` — never `h-screen` or `overflow-hidden` on page roots.
+- **Card Border Radius**: `rounded-[16px]` (16px) for all cards.
+- **Card Shadow**: `box-shadow: 0px 1px 2px rgba(0,0,0,0.04), 0px 4px 12px rgba(0,0,0,0.06)` + `border: 1px solid rgba(0,0,0,0.04)`
+- **Typography**: Inter/Outfit. `font-black` for titles, muted for metadata.
+- **NO Glassmorphism**: `backdrop-blur`, `bg-white/70`, heavy drop shadows are banned on main cards.
+
+### **Responsive Auto-Sizing System**
+
+| Component | CSS Class | React Component |
+| :--- | :--- | :--- |
+| Page shell | `.page-shell` + `.page-content-area` | `<PageShell>` |
+| Fluid container | `.fluid-container` | `<AutoContainer>` |
+| Responsive grid | `.auto-grid`, `.auto-grid-stats` | `<AutoGrid density="stats">` |
+| White card | `.auto-card` | `<AutoCard>` |
+| Fluid text | `.auto-text-xs` … `.auto-text-3xl` | `<AutoText size="2xl">` |
+| Touch button | `.auto-btn`, `.auto-btn-sm`, `.auto-btn-lg` | `<AutoButton>` |
+| Viewport hook | — | `useViewport()` |
+
+> **Key files**: `src/styles/finora-responsive.css` (CSS) · `src/app/components/ui/AutoSizing.tsx` (React)
+
+> **`useViewport()`** returns `{ width, height, breakpoint, isMobile, isTablet, isDesktop, isCompact }` — use it for JS-driven conditional layouts instead of hardcoded breakpoint checks.
 
 ### **Stacking Context (Z-Index)**
-- **Backdrops**: `z-[60]`
-- **Modals/Drawers**: `z-[61]`
-- **Transaction Detail Sheet (mobile)**: `z-[61]`
-- **Bill Preview Modal**: `z-[70]`
-- **Receipt Scanner Overlay**: `z-[80]`
-- **Overlays/Toasts**: `z-[100]`
-- **Modal Popups (Mobile)**: `max-w-lg` for a centered "half-size" floating card effect. Must use `z-[101]` for content and `pointer-events-auto`.
-- **Transaction Rows**: Use consolidated vertical date blocks and flexible horizontal alignment to prevent text overlap in data-dense views.
+- Backdrops: `z-[60]` · Modals: `z-[61]` · Bill Preview: `z-[70]` · Scanner: `z-[80]` · Overlays/Toasts: `z-[100]` · Modal content: `z-[101]`
 
 ###  Database Maintenance Standards
-- **Deduplication**: When implementing imports or syncs, use `deduplicateLocalData` to merge redundant records. Soft-matching should use `(date, amount, description)` for transactions.
-- **Diagnostics**: All core maintenance tools (Deduplicate, Reset) must be exposed in the `Diagnostics` component with appropriate safeguards (confirmations/spinners).
-- **Sync Integrity**: Always prefer `upsert` with `onConflict` (remoteId/cloudId) to prevent upstream duplication during sync cycles.
+- **Deduplication**: Use `deduplicateLocalData`. Soft-match on `(date, amount, description)`.
+- **Diagnostics**: All maintenance tools exposed in the `Diagnostics` component with confirmations.
+- **Sync Integrity**: Always prefer `upsert` with `onConflict` (remoteId/cloudId).
 
 ###  UI Interaction Standards
 - **Popups**: Mobile popups must use `max-w-lg` and `pointer-events-auto` on the container to ensure button interactability.

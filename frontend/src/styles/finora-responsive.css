@@ -1,12 +1,17 @@
-/* Auto-Sizing System - Production Ready with Small Screen Support */
+/* ============================================================
+   KANKU Auto-Sizing System — Fluid, Component-Aware Responsive CSS
+   Covers: 320px → 1920px+
+   Uses CSS clamp() for true fluid scaling, no hard breakpoint jumps
+   ============================================================ */
 
-/* Fluid Container System */
+/* ─── Fluid Container System ─── */
 .fluid-container {
   width: 100%;
   max-width: 100%;
   padding-left: clamp(0.75rem, 4vw, 1.5rem);
   padding-right: clamp(0.75rem, 4vw, 1.5rem);
   margin: 0 auto;
+  box-sizing: border-box;
 }
 
 .fluid-section {
@@ -15,7 +20,25 @@
   padding-bottom: clamp(0.75rem, 3vw, 1.5rem);
 }
 
-/* Auto-Sizing Grid System */
+/* ─── Page Shell (replaces h-screen wrappers) ─── */
+.page-shell {
+  width: 100%;
+  min-height: 100dvh; /* Dynamic viewport height for mobile */
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+  background: #ffffff;
+}
+
+.page-content-area {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-bottom: clamp(5rem, 12vh, 8rem); /* Space for bottom nav */
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ─── Auto-Sizing Grid System ─── */
 .auto-grid {
   display: grid;
   gap: clamp(0.5rem, 2vw, 1rem);
@@ -25,7 +48,7 @@
 .auto-grid-compact {
   display: grid;
   gap: clamp(0.375rem, 1.5vw, 0.75rem);
-  grid-template-columns: repeat(auto-fit, minmax(min(180px, 100%), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(160px, 100%), 1fr));
 }
 
 .auto-grid-spacious {
@@ -34,7 +57,20 @@
   grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
 }
 
-/* Auto-Sizing Flex System */
+/* Stats grid: 2 cols on mobile, auto on wider */
+.auto-grid-stats {
+  display: grid;
+  gap: clamp(0.5rem, 2vw, 1rem);
+  grid-template-columns: repeat(2, 1fr);
+}
+
+@media (min-width: 640px) {
+  .auto-grid-stats {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
+}
+
+/* ─── Auto-Sizing Flex System ─── */
 .auto-flex {
   display: flex;
   gap: clamp(0.5rem, 2vw, 1rem);
@@ -56,716 +92,307 @@
   flex-wrap: wrap;
 }
 
-/* Auto-Sizing Cards */
+.auto-flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: clamp(0.5rem, 2vw, 1rem);
+  flex-wrap: wrap;
+}
+
+/* ─── Auto-Sizing Cards ─── */
 .auto-card {
   width: 100%;
   min-width: 0;
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.04), 0px 4px 12px rgba(0, 0, 0, 0.06);
   padding: clamp(0.75rem, 3vw, 1.5rem);
-  border-radius: clamp(0.375rem, 1.5vw, 0.75rem);
 }
 
 .auto-card-compact {
   width: 100%;
   min-width: 0;
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.04), 0px 4px 12px rgba(0, 0, 0, 0.06);
   padding: clamp(0.5rem, 2.5vw, 1rem);
-  border-radius: clamp(0.25rem, 1vw, 0.5rem);
 }
 
 .auto-card-spacious {
   width: 100%;
   min-width: 0;
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.04), 0px 4px 12px rgba(0, 0, 0, 0.06);
   padding: clamp(1rem, 4vw, 2rem);
-  border-radius: clamp(0.5rem, 2vw, 1rem);
 }
 
-/* Auto-Sizing Heights */
-.auto-height-min {
-  min-height: clamp(100px, 25vh, 150px);
-}
+/* ─── Auto-Sizing Heights ─── */
+.auto-height-min    { min-height: clamp(100px, 20vh, 150px); }
+.auto-height-medium { min-height: clamp(150px, 30vh, 250px); }
+.auto-height-large  { min-height: clamp(200px, 40vh, 350px); }
+.auto-height-full   { min-height: clamp(250px, 50vh, 400px); }
 
-.auto-height-medium {
-  min-height: clamp(150px, 35vh, 250px);
-}
+/* ─── Auto-Sizing Text (fluid scale) ─── */
+.auto-text-xs   { font-size: clamp(0.625rem, 1.8vw, 0.75rem);  line-height: 1.3; }
+.auto-text-sm   { font-size: clamp(0.75rem,  2.5vw, 0.875rem); line-height: 1.4; }
+.auto-text-base { font-size: clamp(0.875rem, 3vw,   1rem);     line-height: 1.5; }
+.auto-text-lg   { font-size: clamp(1rem,     3.5vw, 1.125rem); line-height: 1.4; }
+.auto-text-xl   { font-size: clamp(1.125rem, 4vw,   1.25rem);  line-height: 1.3; }
+.auto-text-2xl  { font-size: clamp(1.25rem,  4.5vw, 1.5rem);   line-height: 1.2; }
+.auto-text-3xl  { font-size: clamp(1.375rem, 5vw,   2rem);     line-height: 1.1; }
 
-.auto-height-large {
-  min-height: clamp(200px, 45vh, 350px);
-}
-
-.auto-height-full {
-  min-height: clamp(250px, 55vh, 400px);
-}
-
-/* Auto-Sizing Text - Optimized for Small Screens */
-.auto-text-xs { 
-  font-size: clamp(0.6rem, 1.8vw, 0.75rem); 
-  line-height: 1.2; 
-}
-
-/* Mobile-First Input Styling */
-.fluid-input {
-  width: 100%;
-  min-height: clamp(2.5rem, 8vh, 3.5rem);
-  padding: 0 1rem;
-  font-size: clamp(0.8125rem, 2.5vw, 1rem);
-}
-
-.mobile-safe-top {
-  padding-top: calc(env(safe-area-inset-top, 0px) + 1rem) !important;
-}
-
-.mobile-safe-top-spacious {
-  padding-top: calc(env(safe-area-inset-top, 0px) + 2.5rem) !important;
-}
-
-.mobile-safe-bottom {
-  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 6rem) !important;
-}
-
-.auto-text-sm { 
-  font-size: clamp(0.75rem, 2.5vw, 0.875rem); 
-  line-height: 1.3; 
-}
-
-.auto-text-base { 
-  font-size: clamp(0.875rem, 3vw, 1rem); 
-  line-height: 1.4; 
-}
-
-.auto-text-lg { 
-  font-size: clamp(1rem, 3.5vw, 1.125rem); 
-  line-height: 1.4; 
-}
-
-.auto-text-xl { 
-  font-size: clamp(1.125rem, 4vw, 1.25rem); 
-  line-height: 1.3; 
-}
-
-.auto-text-2xl { 
-  font-size: clamp(1.25rem, 4.5vw, 1.5rem); 
-  line-height: 1.2; 
-}
-
-.auto-text-3xl { 
-  font-size: clamp(1.375rem, 5vw, 1.75rem); 
-  line-height: 1.2; 
-}
-
-/* Auto-Sizing Buttons - Touch Optimized */
+/* ─── Auto-Sizing Buttons (touch-friendly) ─── */
 .auto-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: auto;
   min-width: clamp(2rem, 12vw, 6rem);
-  height: clamp(2rem, 5vh, 2.75rem);
-  padding: clamp(0.375rem, 2.5vw, 0.75rem) clamp(0.5rem, 3vw, 1rem);
-  font-size: clamp(0.75rem, 2.5vw, 0.875rem);
-  border-radius: clamp(0.25rem, 1.5vw, 0.5rem);
+  min-height: 44px;
+  height: clamp(2.5rem, 6vh, 3rem);
+  padding: clamp(0.375rem, 2.5vw, 0.75rem) clamp(0.75rem, 3vw, 1.25rem);
+  font-size: clamp(0.75rem, 2.5vw, 0.9rem);
+  font-weight: 600;
+  border-radius: 10px;
   transition: all 0.2s ease;
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .auto-btn-sm {
-  width: auto;
-  min-width: clamp(1.75rem, 10vw, 5rem);
-  height: clamp(1.75rem, 4.5vh, 2.5rem);
-  padding: clamp(0.25rem, 2vw, 0.5rem) clamp(0.375rem, 2.5vw, 0.75rem);
-  font-size: clamp(0.625rem, 2vw, 0.75rem);
-  border-radius: clamp(0.1875rem, 1vw, 0.375rem);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  height: clamp(2rem, 5vh, 2.5rem);
+  padding: clamp(0.25rem, 2vw, 0.5rem) clamp(0.5rem, 2.5vw, 0.875rem);
+  font-size: clamp(0.625rem, 2vw, 0.8rem);
+  font-weight: 600;
+  border-radius: 8px;
   transition: all 0.2s ease;
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .auto-btn-lg {
-  width: auto;
-  min-width: clamp(2.5rem, 15vw, 7rem);
-  height: clamp(2.5rem, 6vh, 3.25rem);
-  padding: clamp(0.5rem, 3vw, 1rem) clamp(0.75rem, 3.5vw, 1.25rem);
-  font-size: clamp(0.875rem, 3vw, 1rem);
-  border-radius: clamp(0.375rem, 2vw, 0.625rem);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  height: clamp(3rem, 7vh, 3.5rem);
+  padding: clamp(0.5rem, 3vw, 1rem) clamp(1rem, 4vw, 1.75rem);
+  font-size: clamp(0.875rem, 3vw, 1.05rem);
+  font-weight: 600;
+  border-radius: 12px;
   transition: all 0.2s ease;
   cursor: pointer;
+  white-space: nowrap;
 }
 
-/* Auto-Sizing Icons */
-.auto-icon-xs {
-  width: clamp(0.75rem, 2.5vw, 1rem);
-  height: clamp(0.75rem, 2.5vw, 1rem);
+/* ─── Auto-Sizing Icons ─── */
+.auto-icon-xs   { width: clamp(0.75rem, 2.5vw, 1rem);    height: clamp(0.75rem, 2.5vw, 1rem);    flex-shrink: 0; }
+.auto-icon-sm   { width: clamp(0.875rem, 3vw, 1.25rem);  height: clamp(0.875rem, 3vw, 1.25rem);  flex-shrink: 0; }
+.auto-icon-base { width: clamp(1rem, 3.5vw, 1.5rem);     height: clamp(1rem, 3.5vw, 1.5rem);     flex-shrink: 0; }
+.auto-icon-lg   { width: clamp(1.25rem, 4vw, 1.75rem);   height: clamp(1.25rem, 4vw, 1.75rem);   flex-shrink: 0; }
+.auto-icon-xl   { width: clamp(1.5rem, 4.5vw, 2.5rem);   height: clamp(1.5rem, 4.5vw, 2.5rem);   flex-shrink: 0; }
+
+/* ─── Auto Spacing Tokens ─── */
+.auto-gap-1  { gap: clamp(0.1875rem, 1.5vw, 0.375rem); }
+.auto-gap-2  { gap: clamp(0.375rem,  2vw,   0.75rem);  }
+.auto-gap-3  { gap: clamp(0.5rem,    2.5vw, 1rem);     }
+.auto-gap-4  { gap: clamp(0.75rem,   3vw,   1.5rem);   }
+.auto-gap-6  { gap: clamp(1rem,      4vw,   2rem);     }
+
+.auto-p-1  { padding: clamp(0.1875rem, 1.5vw, 0.375rem); }
+.auto-p-2  { padding: clamp(0.375rem,  2vw,   0.75rem);  }
+.auto-p-3  { padding: clamp(0.5rem,    2.5vw, 1rem);     }
+.auto-p-4  { padding: clamp(0.75rem,   3vw,   1.5rem);   }
+.auto-p-6  { padding: clamp(1rem,      4vw,   2rem);     }
+
+/* ─── Auto Chart Containers ─── */
+.auto-chart       { width: 100%; min-height: clamp(160px, 30vh, 280px); }
+.auto-chart-small { width: 100%; min-height: clamp(120px, 20vh, 200px); }
+.auto-chart-large { width: 100%; min-height: clamp(200px, 40vh, 360px); }
+
+/* ─── Fluid Input ─── */
+.fluid-input {
+  width: 100%;
+  min-height: clamp(2.75rem, 8vh, 3.25rem);
+  padding: 0 clamp(0.75rem, 3vw, 1rem);
+  font-size: 16px; /* Prevents iOS zoom */
+  border-radius: 10px;
+  box-sizing: border-box;
 }
 
-.auto-icon-sm {
-  width: clamp(0.875rem, 3vw, 1.25rem);
-  height: clamp(0.875rem, 3vw, 1.25rem);
-}
+/* ─── Mobile Safe Areas ─── */
+.mobile-safe-top         { padding-top:    calc(env(safe-area-inset-top, 0px)    + 1rem) !important; }
+.mobile-safe-top-spacious{ padding-top:    calc(env(safe-area-inset-top, 0px)    + 2.5rem) !important; }
+.mobile-safe-bottom      { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 6rem) !important; }
 
-.auto-icon-base {
-  width: clamp(1rem, 3.5vw, 1.5rem);
-  height: clamp(1rem, 3.5vw, 1.5rem);
-}
+/* ─── Aspect Ratios ─── */
+.aspect-square { aspect-ratio: 1 / 1; width: 100%; height: auto; }
+.aspect-video  { aspect-ratio: 16 / 9; width: 100%; height: auto; }
+.aspect-photo  { aspect-ratio: 4 / 3; width: 100%; height: auto; }
 
-.auto-icon-lg {
-  width: clamp(1.25rem, 4vw, 1.75rem);
-  height: clamp(1.25rem, 4vw, 1.75rem);
-}
+/* ─── Scrollbar Utilities ─── */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-.auto-icon-xl {
-  width: clamp(1.5rem, 4.5vw, 2rem);
-  height: clamp(1.5rem, 4.5vw, 2rem);
-}
-
-/* Auto-Sizing Spacing */
-.auto-gap-1 { gap: clamp(0.1875rem, 1.5vw, 0.375rem); }
-.auto-gap-2 { gap: clamp(0.375rem, 2vw, 0.75rem); }
-.auto-gap-3 { gap: clamp(0.5rem, 2.5vw, 1rem); }
-.auto-gap-4 { gap: clamp(0.75rem, 3vw, 1.5rem); }
-.auto-gap-6 { gap: clamp(1rem, 4vw, 2rem); }
-
-.auto-p-1 { padding: clamp(0.1875rem, 1.5vw, 0.375rem); }
-.auto-p-2 { padding: clamp(0.375rem, 2vw, 0.75rem); }
-.auto-p-3 { padding: clamp(0.5rem, 2.5vw, 1rem); }
-.auto-p-4 { padding: clamp(0.75rem, 3vw, 1.5rem); }
-.auto-p-6 { padding: clamp(1rem, 4vw, 2rem); }
-
-/* Small Screen Specific Optimizations (320px - 480px) */
-@media (max-width: 480px) {
-  /* Force single column for all grids */
-  .auto-grid,
-  .auto-grid-compact,
-  .auto-grid-spacious {
+/* ─── Breakpoint: Extra Small (320px and below) ─── */
+@media (max-width: 320px) {
+  .auto-grid, .auto-grid-compact, .auto-grid-spacious, .auto-grid-stats {
     grid-template-columns: 1fr;
-    gap: clamp(0.375rem, 2vw, 0.75rem);
+    gap: 0.375rem;
   }
-  
-  /* Compact buttons for small screens */
-  .auto-btn,
-  .auto-btn-sm,
-  .auto-btn-lg {
-    min-width: clamp(1.5rem, 8vw, 4rem);
-    height: clamp(1.75rem, 4.5vh, 2.25rem);
-    padding: clamp(0.25rem, 1.5vw, 0.5rem) clamp(0.375rem, 2vw, 0.75rem);
-    font-size: clamp(0.625rem, 2vw, 0.75rem);
-  }
-  
-  /* Compact cards for small screens */
-  .auto-card,
-  .auto-card-compact,
-  .auto-card-spacious {
-    padding: clamp(0.5rem, 2.5vw, 1rem);
-    border-radius: clamp(0.25rem, 1vw, 0.5rem);
-  }
-  
-  /* Compact text for small screens */
-  .auto-text-xs { font-size: clamp(0.5625rem, 1.75vw, 0.6875rem); }
-  .auto-text-sm { font-size: clamp(0.6875rem, 2.25vw, 0.8125rem); }
-  .auto-text-base { font-size: clamp(0.8125rem, 2.75vw, 0.9375rem); }
-  .auto-text-lg { font-size: clamp(0.9375rem, 3.25vw, 1.0625rem); }
-  .auto-text-xl { font-size: clamp(1.0625rem, 3.75vw, 1.1875rem); }
-  .auto-text-2xl { font-size: clamp(1.1875rem, 4.25vw, 1.375rem); }
-  .auto-text-3xl { font-size: clamp(1.3125rem, 4.75vw, 1.5625rem); }
-  
-  /* Compact containers */
-  .fluid-container {
-    padding-left: clamp(0.375rem, 1.5vw, 0.75rem);
-    padding-right: clamp(0.375rem, 1.5vw, 0.75rem);
-  }
-  
-  .fluid-section {
-    padding: clamp(0.5rem, 2.5vw, 1.5rem);
-  }
-  
-  /* Compact spacing */
-  .auto-flex,
-  .auto-flex-center {
-    gap: clamp(0.25rem, 1.5vw, 0.5rem);
-  }
-  
-  .auto-flex-column {
-    gap: clamp(0.375rem, 2vw, 0.75rem);
-  }
+  .fluid-container { padding-left: 0.5rem; padding-right: 0.5rem; }
+  .auto-btn, .auto-btn-sm, .auto-btn-lg { min-height: 40px; min-width: 60px; }
+  .auto-text-3xl { font-size: 1.1rem; }
 }
 
-/* Extra Small Screens (320px and below) */
-@media (max-width: 320px) {
-  /* Ultra-compact layout */
-  .auto-grid,
-  .auto-grid-compact,
-  .auto-grid-spacious {
-    gap: clamp(0.25rem, 1.5vw, 0.5rem);
+/* ─── Breakpoint: Small Mobile (321–480px) ─── */
+@media (min-width: 321px) and (max-width: 480px) {
+  .auto-grid, .auto-grid-compact, .auto-grid-spacious {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
   }
-  
-  .auto-card,
-  .auto-card-compact,
-  .auto-card-spacious {
-    padding: clamp(0.375rem, 2vw, 0.75rem);
-  }
-  
-  .fluid-container {
-    padding-left: clamp(0.25rem, 1vw, 0.5rem);
-    padding-right: clamp(0.25rem, 1vw, 0.5rem);
-  }
-  
-  .fluid-section {
-    padding: clamp(0.375rem, 2vw, 1rem);
-  }
-  
-  /* Ensure minimum touch targets */
-  .auto-btn,
-  .auto-btn-sm,
-  .auto-btn-lg {
-    min-height: 40px;
-    min-width: 60px;
-  }
+  .aspect-video { aspect-ratio: 4 / 3; } /* More square for small screens */
 }
 
-/* Medium Screens (481px - 768px) */
-@media (min-width: 481px) and (max-width: 768px) {
-  .auto-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: clamp(0.5rem, 2.5vw, 1rem);
-  }
-  
-  .auto-grid-compact {
-    grid-template-columns: repeat(2, 1fr);
-    gap: clamp(0.375rem, 2vw, 0.75rem);
-  }
-  
-  .auto-grid-spacious {
-    grid-template-columns: repeat(2, 1fr);
-    gap: clamp(0.75rem, 3vw, 1.5rem);
-  }
-}
-
-/* Large Screens (769px - 1024px) */
-@media (min-width: 769px) and (max-width: 1024px) {
-  .auto-grid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: clamp(0.75rem, 3vw, 1.5rem);
-  }
-  
-  .auto-grid-compact {
-    grid-template-columns: repeat(3, 1fr);
-    gap: clamp(0.5rem, 2.5vw, 1rem);
-  }
-  
-  .auto-grid-spacious {
-    grid-template-columns: repeat(2, 1fr);
-    gap: clamp(1rem, 4vw, 2rem);
-  }
-}
-
-/* Desktop Screens (1025px+) */
-@media (min-width: 1025px) {
-  .auto-grid {
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: clamp(1rem, 3vw, 1.5rem);
-  }
-  
-  .auto-grid-compact {
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: clamp(0.75rem, 2.5vw, 1.25rem);
-  }
-  
-  .auto-grid-spacious {
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: clamp(1.5rem, 4vw, 2.5rem);
-  }
-}
-
-/* Touch-friendly minimums for all mobile devices */
+/* ─── Breakpoint: Mobile (≤768px) universal fixes ─── */
 @media (max-width: 768px) {
-  .auto-btn,
-  .auto-btn-sm,
-  .auto-btn-lg {
-    min-height: 44px;
-    min-width: 44px;
-  }
-}
-
-/* Responsive aspect ratios */
-.aspect-square {
-  aspect-ratio: 1 / 1;
-  width: 100%;
-  height: auto;
-}
-
-.aspect-video {
-  aspect-ratio: 16 / 9;
-  width: 100%;
-  height: auto;
-}
-
-.aspect-photo {
-  aspect-ratio: 4 / 3;
-  width: 100%;
-  height: auto;
-}
-
-/* Small screen aspect ratio adjustments */
-@media (max-width: 480px) {
-  .aspect-video {
-    aspect-ratio: 4 / 3; /* More square for small screens */
-  }
-}
-/* Mobile Fullscreen Fix - Prevent Left/Right Cropping */
-
-/* Force full viewport usage on mobile */
-@media (max-width: 768px) {
-  /* Reset html and body to use full viewport */
   html, body {
-    width: 100% !important;
-    min-width: 100% !important;
-    max-width: 100% !important;
-    overflow-x: hidden !important;
-    position: relative !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    box-sizing: border-box !important;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+    box-sizing: border-box;
   }
 
-  /* Root container fixes */
-  #root, [data-reactroot], .app-container {
-    width: 100% !important;
-    min-width: 100% !important;
-    max-width: 100% !important;
-    overflow-x: hidden !important;
-    position: relative !important;
+  #root, [data-reactroot] {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
   }
 
-  /* UNIVERSAL PAGE CONTAINER FIXES - All page types */
-  [class*="w-full"][class*="min-h-screen"] {
-    width: 100% !important;
-    min-width: 100% !important;
-    max-width: 100% !important;
-    overflow-x: hidden !important;
-    position: relative !important;
-  }
+  /* Prevent iOS input zoom */
+  input, textarea, select { font-size: 16px !important; }
 
-  [class*="w-full"][class*="min-h-screen"][class*="overflow-x-hidden"] {
-    width: 100% !important;
-    min-width: 100% !important;
-    max-width: 100% !important;
-    overflow-x: hidden !important;
-    position: relative !important;
-  }
+  /* Responsive media */
+  img, video, iframe { max-width: 100% !important; height: auto; }
 
-  /* Main app container */
-  .w-full.min-h-screen.flex.overflow-x-hidden.bg-gray-50.app-container {
-    width: 100% !important;
-    min-width: 100% !important;
-    max-width: 100% !important;
-    overflow-x: hidden !important;
-    position: relative !important;
-  }
+  /* Touch targets */
+  .auto-btn, .auto-btn-sm, .auto-btn-lg { min-height: 44px; min-width: 44px; }
 
-  /* Main content area */
-  main, .flex-1.lg\\:ml-28.flex.flex-col.min-h-screen.mobile-content {
-    width: 100% !important;
-    min-width: 0 !important;
-    max-width: 100% !important;
-    overflow-x: hidden !important;
-    position: relative !important;
-  }
-
-  /* Main element */
-  .flex-1.overflow-y-auto.pb-24.lg\\:pb-0.bg-gray-50.mobile-main {
-    width: 100% !important;
-    min-width: 0 !important;
-    max-width: 100% !important;
-    overflow-x: hidden !important;
-    position: relative !important;
-  }
-
-  /* Dashboard container fixes */
-  .w-full.min-h-screen.overflow-x-hidden.bg-gray-50 {
-    width: 100% !important;
-    min-width: 100% !important;
-    max-width: 100% !important;
-    overflow-x: hidden !important;
-    position: relative !important;
-  }
-
-  /* Dashboard content wrapper */
-  .max-w-full.mx-auto.pb-32.lg\\:pb-8.w-full {
-    width: 100% !important;
-    min-width: 0 !important;
-    max-width: 100% !important;
-    overflow-x: hidden !important;
-    position: relative !important;
-  }
-
-  /* UNIVERSAL CONTENT WRAPPER FIXES */
-  [class*="max-w-full"][class*="mx-auto"] {
-    width: 100% !important;
-    min-width: 0 !important;
-    max-width: 100% !important;
-    overflow-x: hidden !important;
-    position: relative !important;
-  }
-
-  [class*="px-4"][class*="sm:px-6"][class*="lg:px-8"] {
-    padding-left: 1rem !important;
-    padding-right: 1rem !important;
-    box-sizing: border-box !important;
-  }
-
-  [class*="px-4"][class*="sm:px-6"][class*="lg:px-8"][class*="xl:px-12"] {
-    padding-left: 1rem !important;
-    padding-right: 1rem !important;
-    box-sizing: border-box !important;
-  }
-
-  /* Mobile card containers */
-  @media (max-width: 640px) {
-    [class*="px-4"][class*="sm:px-6"][class*="lg:px-8"] {
-      padding-left: 0.75rem !important;
-      padding-right: 0.75rem !important;
-    }
-
-    [class*="px-4"][class*="sm:px-6"][class*="lg:px-8"][class*="xl:px-12"] {
-      padding-left: 0.75rem !important;
-      padding-right: 0.75rem !important;
-    }
-  }
-
-  /* Fix horizontal scrolling containers */
+  /* Horizontal scroll containers */
   .overflow-x-auto {
-    max-width: 100% !important;
-    overflow-x: auto !important;
-    overflow-y: hidden !important;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
-  /* Tab buttons container */
-  .flex.items-center.justify-center.gap-3.overflow-x-auto {
-    width: 100% !important;
-    max-width: 100% !important;
-    overflow-x: auto !important;
-    overflow-y: hidden !important;
-    padding-left: 1rem !important;
-    padding-right: 1rem !important;
-    box-sizing: border-box !important;
+  /* Grids: single column on mobile */
+  [class*="grid"][class*="lg:grid-cols-2"],
+  [class*="grid"][class*="lg:grid-cols-3"],
+  [class*="grid"][class*="lg:grid-cols-4"] {
+    grid-template-columns: 1fr !important;
+    gap: 0.75rem !important;
+  }
+  [class*="grid"][class*="sm:grid-cols-2"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  [class*="grid"][class*="xl:grid-cols-3"],
+  [class*="grid"][class*="xl:grid-cols-4"] {
+    grid-template-columns: 1fr !important;
+    gap: 0.75rem !important;
   }
 
-  /* Account cards container */
-  .flex.gap-3.overflow-x-auto.pb-8.px-3.sm\\:px-4.md\\:px-6 {
-    width: 100% !important;
-    max-width: 100% !important;
-    overflow-x: auto !important;
-    overflow-y: hidden !important;
-    padding-left: 0.75rem !important;
-    padding-right: 0.75rem !important;
-    box-sizing: border-box !important;
-  }
+  /* Forms and modals */
+  form { max-width: 100%; overflow-x: hidden; }
+  [class*="modal"], [class*="Modal"] { max-width: 100%; left: 0; right: 0; }
 
-  /* UNIVERSAL HORIZONTAL SCROLL FIXES */
-  [class*="overflow-x-auto"] {
-    max-width: 100% !important;
-    overflow-x: auto !important;
-    overflow-y: hidden !important;
-  }
-
-  [class*="flex"][class*="gap"][class*="overflow-x-auto"] {
-    width: 100% !important;
-    max-width: 100% !important;
-    overflow-x: auto !important;
-    overflow-y: hidden !important;
-    padding-left: 0.75rem !important;
-    padding-right: 0.75rem !important;
-    box-sizing: border-box !important;
-  }
-
-  /* Individual card fixes */
-  .snap-center.shrink-0 {
-    flex-shrink: 0 !important;
-    min-width: 0 !important;
-  }
-
-  [class*="snap-center"][class*="shrink-0"] {
-    flex-shrink: 0 !important;
-    min-width: 0 !important;
-  }
-
-  /* Bottom navigation fix */
-  .lg\\:hidden.fixed.bottom-0.left-0.right-0.z-40.mobile-only.mobile-bottom-nav {
-    width: 100% !important;
-    left: 0 !important;
-    right: 0 !important;
-    box-sizing: border-box !important;
-  }
-
-  /* UNIVERSAL FIXED BOTTOM ELEMENTS */
+  /* Fixed bottom elements */
   [class*="fixed"][class*="bottom-0"][class*="left-0"][class*="right-0"] {
-    width: 100% !important;
-    left: 0 !important;
-    right: 0 !important;
-    box-sizing: border-box !important;
+    width: 100%;
+    left: 0;
+    right: 0;
+    box-sizing: border-box;
   }
 
-  /* Safe area fixes for notched screens */
-  @supports (padding: max(0px)) {
-    .safe-area-inset-left {
-      padding-left: max(0.5rem, env(safe-area-inset-left)) !important;
-    }
-    
-    .safe-area-inset-right {
-      padding-right: max(0.5rem, env(safe-area-inset-right)) !important;
-    }
-  }
+  /* Table: constrain to viewport */
+  table { max-width: 100%; }
 
-  /* Prevent viewport zooming */
-  input, textarea, select {
-    font-size: 16px !important;
-    -webkit-user-select: text !important;
-    user-select: text !important;
-  }
-
-  /* Ensure all images and media are responsive */
-  img, video, iframe {
-    max-width: 100% !important;
-    height: auto !important;
-  }
-
-  /* Fix any absolute positioned elements */
-  .absolute {
-    max-width: 100% !important;
-  }
-
-  /* Grid fixes for mobile */
-  .grid.grid-cols-1.lg\\:grid-cols-2 {
-    grid-template-columns: 1fr !important;
-    gap: 1rem !important;
-  }
-
-  /* UNIVERSAL GRID FIXES */
-  [class*="grid"][class*="lg:grid-cols-2"] {
-    grid-template-columns: 1fr !important;
-    gap: 1rem !important;
-  }
-
-  [class*="grid"][class*="lg:grid-cols-3"] {
-    grid-template-columns: 1fr !important;
-    gap: 1rem !important;
-  }
-
-  [class*="grid"][class*="xl:grid-cols-2"] {
-    grid-template-columns: 1fr !important;
-    gap: 1rem !important;
-  }
-
-  [class*="grid"][class*="xl:grid-cols-3"] {
-    grid-template-columns: 1fr !important;
-    gap: 1rem !important;
-  }
-
-  /* Flex fixes for mobile */
-  .flex.flex-col.sm\\:flex-row {
-    flex-direction: column !important;
-    gap: 1rem !important;
-  }
-
-  /* UNIVERSAL FLEX FIXES */
-  [class*="flex"][class*="flex-col"][class*="sm:flex-row"] {
-    flex-direction: column !important;
-    gap: 1rem !important;
-  }
-
-  [class*="flex"][class*="flex-col"][class*="md:flex-row"] {
-    flex-direction: column !important;
-    gap: 1rem !important;
-  }
-
-  @media (min-width: 641px) {
-    .flex.flex-col.sm\\:flex-row {
-      flex-direction: row !important;
-      gap: 1.5rem !important;
-    }
-
-    [class*="flex"][class*="flex-col"][class*="sm:flex-row"] {
-      flex-direction: row !important;
-      gap: 1.5rem !important;
-    }
-  }
-
-  @media (min-width: 769px) {
-    [class*="flex"][class*="flex-col"][class*="md:flex-row"] {
-      flex-direction: row !important;
-      gap: 1.5rem !important;
-    }
-  }
-
-  /* UNIVERSAL CARD AND COMPONENT FIXES */
-  [class*="Card"], [class*="card"] {
-    max-width: 100% !important;
-    overflow: hidden !important;
-  }
-
-  /* Modal fixes */
-  [class*="modal"], [class*="Modal"] {
-    max-width: 100% !important;
-    left: 0 !important;
-    right: 0 !important;
-  }
-
-  /* Form fixes */
-  form {
-    max-width: 100% !important;
-    overflow-x: hidden !important;
-  }
-
-  /* Table fixes  do NOT change display here; table structure must stay intact.
-     Tables that shouldn't show on mobile use `hidden sm:block` etc. */
-  table {
-    max-width: 100% !important;
-  }
-}
-
-/* Extra small screens (320px and below) */
-@media (max-width: 320px) {
+  /* Padding normalization for deeply nested content */
   [class*="px-4"][class*="sm:px-6"][class*="lg:px-8"] {
-    padding-left: 0.5rem !important;
-    padding-right: 0.5rem !important;
+    padding-left:  clamp(0.75rem, 3vw, 1rem) !important;
+    padding-right: clamp(0.75rem, 3vw, 1rem) !important;
+    box-sizing: border-box;
   }
 
-  [class*="px-4"][class*="sm:px-6"][class*="lg:px-8"][class*="xl:px-12"] {
-    padding-left: 0.5rem !important;
-    padding-right: 0.5rem !important;
+  /* Safe area insets for notched phones */
+  @supports (padding: max(0px)) {
+    .safe-area-inset-left  { padding-left:  max(0.5rem, env(safe-area-inset-left))  !important; }
+    .safe-area-inset-right { padding-right: max(0.5rem, env(safe-area-inset-right)) !important; }
   }
 
-  .flex.items-center.justify-center.gap-3.overflow-x-auto {
-    padding-left: 0.5rem !important;
-    padding-right: 0.5rem !important;
-  }
-
-  .flex.gap-3.overflow-x-auto.pb-8.px-3.sm\\:px-4.md\\:px-6 {
-    padding-left: 0.5rem !important;
-    padding-right: 0.5rem !important;
-    gap: 0.5rem !important;
-  }
-
-  [class*="flex"][class*="gap"][class*="overflow-x-auto"] {
-    padding-left: 0.5rem !important;
-    padding-right: 0.5rem !important;
-    gap: 0.5rem !important;
+  /* Landscape mode: compress bottom padding */
+  &:is(@media (orientation: landscape)) {
+    [class*="pb-32"][class*="lg:pb-8"] { padding-bottom: 4rem !important; }
   }
 }
 
-/* Landscape mobile fixes */
+/* ─── Breakpoint: Tablet (481–768px) ─── */
+@media (min-width: 481px) and (max-width: 768px) {
+  .auto-grid       { grid-template-columns: repeat(2, 1fr); }
+  .auto-grid-compact { grid-template-columns: repeat(2, 1fr); }
+  .auto-grid-spacious { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ─── Breakpoint: Tablet Landscape / Small Desktop (769–1024px) ─── */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .auto-grid          { grid-template-columns: repeat(3, 1fr); }
+  .auto-grid-compact  { grid-template-columns: repeat(3, 1fr); }
+  .auto-grid-spacious { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ─── Breakpoint: Desktop (1025px+) ─── */
+@media (min-width: 1025px) {
+  .auto-grid          { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+  .auto-grid-compact  { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+  .auto-grid-spacious { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+
+  /* Desktop: grids can be wider */
+  [class*="grid"][class*="lg:grid-cols-2"] { grid-template-columns: repeat(2, 1fr) !important; }
+  [class*="grid"][class*="lg:grid-cols-3"] { grid-template-columns: repeat(3, 1fr) !important; }
+  [class*="grid"][class*="lg:grid-cols-4"] { grid-template-columns: repeat(4, 1fr) !important; }
+
+  /* Desktop flex-row restoration */
+  [class*="flex"][class*="flex-col"][class*="lg:flex-row"] { flex-direction: row !important; }
+}
+
+/* ─── Breakpoint: Wide Desktop (1280px+) ─── */
+@media (min-width: 1280px) {
+  .auto-grid-spacious { grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 1.5rem; }
+  .fluid-container    { padding-left: 2rem; padding-right: 2rem; }
+}
+
+/* ─── Breakpoint: 4K / Ultra-wide (1920px+) ─── */
+@media (min-width: 1920px) {
+  .fluid-container { max-width: 1600px; margin: 0 auto; }
+  .auto-text-3xl   { font-size: 2.25rem; }
+  .auto-text-2xl   { font-size: 1.75rem; }
+}
+
+/* ─── Landscape Mobile ─── */
 @media (max-width: 768px) and (orientation: landscape) {
   [class*="px-4"][class*="sm:px-6"][class*="lg:px-8"] {
-    padding-left: 0.75rem !important;
+    padding-left:  0.75rem !important;
     padding-right: 0.75rem !important;
   }
-
-  [class*="px-4"][class*="sm:px-6"][class*="lg:px-8"][class*="xl:px-12"] {
-    padding-left: 0.75rem !important;
-    padding-right: 0.75rem !important;
-  }
-
-  .pb-32.lg\\:pb-8 {
-    padding-bottom: 4rem !important;
-  }
-
-  [class*="pb-32"][class*="lg:pb-8"] {
-    padding-bottom: 4rem !important;
-  }
+  .page-content-area { padding-bottom: 4rem; }
 }
 
-/* Viewport is controlled via the <meta name="viewport"> tag in index.html */
-/* Do NOT set @viewport here  it is non-standard and overrides the meta tag unexpectedly */
+/* Do NOT set @viewport here — it is non-standard and overrides the HTML meta tag */
