@@ -55,7 +55,7 @@ export const headerMenuItems: NavigationItem[] = [
   { id: 'data-export', label: 'Data Export', icon: Download, feature: 'dataExport' },
   { id: 'recurring-transactions', label: 'Recurring', icon: RefreshCw, feature: 'recurringTransactions' },
   { id: 'budget-alerts', label: 'Budget Alerts', icon: BellRing, feature: 'budgetAlerts' },
-  { id: 'client-management', label: 'Client Management', icon: FolderKanban, feature: 'clientManagement', roles: ['admin', 'manager', 'advisor'] },
+  { id: 'client-management', label: 'Client Management', icon: FolderKanban, feature: 'clientManagement' },
   // Admin/Manager items
   { id: 'admin', label: 'Admin Console', icon: ShieldAlert, feature: 'adminPanel', roles: ['admin'] },
   { id: 'admin-feature-panel', label: 'Feature Panel', icon: Settings, feature: 'adminPanel', roles: ['admin'] },
@@ -81,7 +81,7 @@ export const sidebarMenuItems: NavigationItem[] = [
   { id: 'data-export', label: 'Data Export', icon: Download, feature: 'dataExport' },
   { id: 'recurring-transactions', label: 'Recurring', icon: RefreshCw, feature: 'recurringTransactions' },
   { id: 'budget-alerts', label: 'Budget Alerts', icon: BellRing, feature: 'budgetAlerts' },
-  { id: 'client-management', label: 'Clients', icon: FolderKanban, feature: 'clientManagement', roles: ['admin', 'manager', 'advisor'] },
+  { id: 'client-management', label: 'Clients', icon: FolderKanban, feature: 'clientManagement' },
   { id: 'settings', label: 'Settings', icon: Settings, feature: 'settings' },
   // Admin-only items
   { id: 'admin', label: 'Admin Console', icon: ShieldAlert, feature: 'adminPanel', roles: ['admin'] },

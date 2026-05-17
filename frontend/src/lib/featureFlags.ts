@@ -184,7 +184,7 @@ export const ROLE_FEATURES: Record<UserRole, FeatureVisibility> = {
     notifications: true,
     userProfile: true,
     settings: true,
-    clientManagement: false,
+    clientManagement: true,
     aiManagement: false,
     dashboard: true,
     aiInsights: true,
