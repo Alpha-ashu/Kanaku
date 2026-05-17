@@ -243,26 +243,24 @@ export const AdminDashboard: React.FC = () => {
               </div>
 
               {/* Feature Matrix Quick Access */}
-              <div className="bg-white border border-slate-100 rounded-[32px] p-8 shadow-sm group hover:border-indigo-100 transition-colors">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
-                      <Shield size={24} />
-                    </div>
-                    <div>
-                      <h4 className="text-lg font-black text-slate-900 tracking-tight">Master Feature Matrix</h4>
-                      <p className="text-sm text-slate-500 font-medium leading-relaxed max-w-xl">
-                        Configure role-based access control, manage global feature visibility, and control application readiness across all user segments.
-                      </p>
-                    </div>
+              <div className="bg-white border border-slate-100 rounded-[32px] p-8 shadow-sm group hover:border-indigo-100 transition-colors flex flex-col justify-between h-full">
+                <div className="flex flex-col gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+                    <Shield size={24} />
                   </div>
-                  <button
-                    onClick={() => setCurrentPage('admin-feature-panel')}
-                    className="px-8 py-4 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-indigo-600 transition-all shadow-xl shadow-slate-200 active:scale-95 whitespace-nowrap"
-                  >
-                    Manage Feature Matrix
-                  </button>
+                  <div>
+                    <h4 className="text-lg font-black text-slate-900 tracking-tight">Master Feature Matrix</h4>
+                    <p className="text-sm text-slate-500 font-medium leading-relaxed mt-2">
+                      Configure role-based access control, manage global feature visibility, and control application readiness across all user segments.
+                    </p>
+                  </div>
                 </div>
+                <button
+                  onClick={() => setCurrentPage('admin-feature-panel')}
+                  className="mt-8 w-full py-4 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-indigo-600 transition-all shadow-xl shadow-slate-200 active:scale-95 text-center shrink-0"
+                >
+                  Manage Feature Matrix
+                </button>
               </div>
             </div>
           </div>
