@@ -642,8 +642,9 @@ private async loadUserRole(userId, fallbackRole) {
 | `frontend/src/app/components/admin/AdminFeaturePanel.tsx` | Fixed `applyFeatureVisibility` closure; removed `applyFeatureVisibility` from 3 useEffect dep arrays; deep-merged `roleAccess` with `getDefaultRoleAccess` in all 3 localStorage parsing locations |
 | `frontend/src/contexts/AppContext.tsx` | Added `roleAccess` fallback for roles missing from older saved state; kept `computeVisibleFeatures` stable via `useCallback([role])` |
 | `frontend/src/hooks/useSharedMenu.ts` | Removed `updateTrigger` state and its 35-line listener `useEffect`; restored `orderedItems` state; `useMemo` deps now `[role, visibleFeatures]` only |
+| `frontend/src/contexts/AuthContext.tsx` | Changed inner timeout to 8500ms so it doesn't abort before `permissionService` finishes on a cold boot. |
 | `frontend/src/app/App.tsx` | Route guard now requires `dataReady === true` before enforcing feature gates; stale-path redirect still runs before `dataReady` check |
-| `frontend/src/services/permissionService.ts` | Inner timeout: 15000ms → 3500ms; added `auth_role_cache` localStorage persistence; cache-first role loading with background refresh; `clearPermissions` clears localStorage cache on sign-out |
+| `frontend/src/services/permissionService.ts` | Increased REST API timeout to 8000ms to tolerate Vercel cold-starts on first production load. Added `auth_role_cache` localStorage persistence for instant subsequent loads. Removed Supabase direct query fallback due to RLS 403 errors. |
 
 ---
 

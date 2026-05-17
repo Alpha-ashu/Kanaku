@@ -205,26 +205,6 @@ class PermissionService {
         return cachedRole ?? safeFallback;
       }
 
-      // Fast path: query Supabase directly (avoids backend REST cold-start on Vercel).
-      // Supabase client goes straight to the DB and responds in ~200-500ms.
-      try {
-        const { data: supabaseProfile, error } = await Promise.race([
-          supabase.from('User').select('role, isApproved').eq('id', userId).single(),
-          new Promise<{ data: null; error: string }>((resolve) =>
-            window.setTimeout(() => resolve({ data: null, error: 'timeout' }), 2500)
-          ),
-        ]);
-
-        if (!error && supabaseProfile?.role) {
-          const role = normalizeUserRole(supabaseProfile.role);
-          clearOptionalBackendUnavailable();
-          return this.rememberResolvedRole(userId, role, supabaseProfile.isApproved ?? undefined);
-        }
-      } catch {
-        // Supabase query failed — fall through to REST API
-      }
-
-      // Slow path: REST API (may cold-start on Vercel, but Supabase covered the fast case)
       if (shouldSkipOptionalBackendRequests(API_BASE)) {
         return cachedRole ?? safeFallback;
       }
@@ -233,7 +213,7 @@ class PermissionService {
       const profileResponse = await Promise.race([
         api.auth.getProfile(),
         new Promise<never>((_, reject) => {
-          window.setTimeout(() => reject(new Error('Profile lookup timed out')), PROFILE_LOOKUP_TIMEOUT_MS);
+          window.setTimeout(() => reject(new Error('Profile lookup timed out')), 8000); // 8 seconds to allow Vercel cold-start
         }),
       ]);
 

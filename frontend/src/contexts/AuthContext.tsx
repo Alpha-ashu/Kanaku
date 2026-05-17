@@ -654,12 +654,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
               localStorage.setItem('auth_last_user_id', nextUser.id);
 
               // Wait for permissions first so we have the correct role for the Route Guard.
-              // Hard 5-second timeout so we NEVER get stuck on loading screen if backend is slow.
+              // Hard 8.5-second timeout so we NEVER get stuck on loading screen if backend is slow/offline.
+              // (Needs to be longer than the 8s timeout in permissionService.ts)
               try {
                 const permissions = await Promise.race([
                   permissionService.fetchUserPermissions(nextUser.id, provisionalRole),
                   new Promise<never>((_, reject) =>
-                    setTimeout(() => reject(new Error('Permission fetch timeout')), 5000)
+                    setTimeout(() => reject(new Error('Permission fetch timeout')), 8500)
                   ),
                 ]);
                 if (activeSyncUserId.current === nextUser.id) {
