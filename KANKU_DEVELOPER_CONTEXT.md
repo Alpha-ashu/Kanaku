@@ -2,6 +2,8 @@
 
 This document serves as the single source of truth for the project's architecture, design system, and implementation history. **Any AI assistant or developer working on this project must read this file first to ensure consistency.**
 
+> ⚠️ **Developer Skills & Guidelines**: You **MUST** refer to the skill definitions located in the `docs/skills/` directory (e.g., `frontend.skill.md`, `backend.skill.md`, `database.skill.md`, etc.) for domain-specific development rules, architectural standards, and best practices.
+
 ---
 
 ##  Core Architecture
@@ -681,3 +683,32 @@ Every icon is now **fully self-contained** — zero external ID dependencies, gu
 
 **Affected component**: `frontend/src/app/components/ui/CartoonCategoryIcons.tsx` (all 22 icon exports + `getCategoryCartoonIcon` mapper)
 
+---
+
+#### 7. Feature Flags & Role Synchronization Not Reflecting
+
+**Problem**: The Admin could toggle feature flags in the "Admin Feature Panel" (e.g., enabling "Client Management" for the `advisor` or `user` role), but these changes were **completely ignored** by the UI. Advisors and Managers were also suddenly losing access to features they were supposed to have.
+
+**Root Causes**:
+This was caused by a combination of two separate, compounding bugs:
+
+1. **Case-Sensitive Role Downgrades (Backend & Frontend)**:
+   - When user profiles were stored in the database with capitalized roles (e.g., `"Manager"` or `"Advisor"`), the authentication parsers failed to recognize them because they used strict case-sensitive matching against lowercase strings (`"manager"`, `"advisor"`).
+   - Because the parser failed to match, it **silently downgraded** the user to the standard `"user"` role. Since standard users are blocked from management pages, Advisors and Managers were locked out of their own modules.
+
+2. **Hardcoded Roles in Navigation**:
+   - Even if the Admin enabled a feature flag, the `frontend/src/app/constants/navigation.ts` file had hardcoded `roles: ['admin', 'manager', 'advisor']` properties on several sidebar items. 
+   - This array acted as a rigid whitelist, overriding the dynamic feature flag matrix and forcefully hiding the navigation items from anyone not in that array (like the `"user"` role), making the Admin Feature Panel checkboxes effectively useless.
+
+**Fixes Applied**:
+
+1. **Normalized Roles (Case-Insensitive Matching)**:
+   - Updated `AuthContext.tsx` (`resolveUserRole`) to aggressively trim and cast the database profile role to lowercase (`.toLowerCase()`).
+   - Updated `backend/src/middleware/auth.ts` (`normalizeAppRole`) to explicitly include the `manager` role and ensure it also forces the role string to lowercase before validation.
+
+2. **Removed Hardcoded Navigation Whitelists**:
+   - Stripped the `roles` property out of **ALL** objects in `headerMenuItems` and `sidebarMenuItems` inside `navigation.ts`. 
+   - **Result**: The sidebar visibility is now **100% controlled** by the Admin Feature Panel's dynamic feature flag matrix. If an Admin checks a box for a role, the feature will immediately appear for that role.
+
+3. **Updated Feature Flag Baselines**:
+   - Modified `frontend/src/lib/featureFlags.ts` to set `clientManagement: true` for the `user` role baseline, ensuring standard users have access as requested out of the box.
