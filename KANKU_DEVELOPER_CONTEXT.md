@@ -1138,3 +1138,21 @@ This was caused by a combination of two separate, compounding bugs:
 - **Solution**:
   - Refactored sorting check in `useSharedMenu.ts` to explicitly handle mutual absence: `if (indexA === -1 && indexB === -1) return 0;`.
   - Replicated role-based visibility filtering in `BottomNav.tsx` for mobile devices, protecting mobile users and advisors from unauthorized client view access.
+
+---
+
+---
+
+### **2026-05-18 (Afternoon)  Premium UI Scaling & Transaction Flow Stabilization**
+
+#### 1. Accounts Card & Bank Import Sizing (`Accounts.tsx`, `ImportBankStatementModal.tsx`)
+- **Visual Symmetry**: Resolved layout regressions in the account management grid by setting clean, consistent alignment parameters for all bank card shapes and removing ad-hoc backgrounds on internal cards for a premium, unified aesthetic.
+- **Robust Statement Parser**: Stabilized the statement import engine to reliably process multi-format CSV files by normalizing text case, replacing null headers, and resolving standard row token mismatches.
+
+#### 2. Quick Action & Single-Page Transfer Navigation (`Accounts.tsx`, `AddTransaction.tsx`)
+- **Single-Page Simplicity**: Standardized all money transfers to route directly into the main, high-fidelity `AddTransaction` page instead of a separate workflow, syncing parameters under local storage and providing a robust, premium two-way back button on all viewports.
+- **Storage Cleanup**: Automated quick-action local storage key garbage collection during transaction saves or exit redirects.
+
+#### 3. Voice AI & Period Tab Symmetry (`VoiceInput.tsx`, `TimeFilter.tsx`, `Transactions.tsx`)
+- **Compact Viewport Sizing**: Resolved vertical scrolling regressions on the voice assistant interface by converting hardcoded absolute dimensions into dynamic parent-percentage scaling classes, allowing the beautiful organic VoiceBlob and speak controls to sit fully inside the viewport on all device screen sizes.
+- **Centered Navigation**: Standardized time period selector tabs (Daily, Weekly, Monthly, Yearly) and Transactions date buttons to center-align evenly on mobile and desktop viewports, enhancing visual responsiveness.

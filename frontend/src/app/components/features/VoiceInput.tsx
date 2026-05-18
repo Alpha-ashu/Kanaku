@@ -326,7 +326,7 @@ export const VoiceInput: React.FC<VoiceInputProps> = ({ onTranscript, onClose })
  <div className="flex-1 flex flex-col relative z-10 w-full px-4">
  
  {/* Left Side / Top: The Blob */}
- <div className="flex-1 flex flex-col items-center justify-center relative min-h-[280px] shrink md:min-h-0">
+ <div className="flex-1 flex flex-col items-center justify-center relative min-h-[160px] xs:min-h-[200px] sm:min-h-[260px] shrink md:min-h-0">
  <motion.p 
  animate={{ opacity: isRecording ? [0.6, 1, 0.6] : 1 }}
  transition={{ duration: 2, repeat: Infinity }}
@@ -401,7 +401,7 @@ export const VoiceInput: React.FC<VoiceInputProps> = ({ onTranscript, onClose })
  </div>
 
  {/* Bottom Controls */}
- <div className="w-full max-w-xl mx-auto px-6 md:px-8 pb-[100px] md:pb-10 pt-4 flex justify-between items-center relative z-20 shrink-0 bg-gradient-to-t from-white via-white to-transparent">
+ <div className="w-full max-w-xl mx-auto px-6 md:px-8 pb-[60px] xs:pb-[70px] sm:pb-[80px] md:pb-8 pt-2 flex justify-between items-center relative z-20 shrink-0 bg-gradient-to-t from-white via-white to-transparent">
  <button onClick={() => setShowTextFallback(true)} className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-white/40 backdrop-blur-xl border border-white/60 shadow-sm flex items-center justify-center text-slate-600 hover:bg-white/80 transition-all hover:scale-105">
  <Keyboard size={20} className="md:w-6 md:h-6" />
  </button>
@@ -455,7 +455,11 @@ export const VoiceInput: React.FC<VoiceInputProps> = ({ onTranscript, onClose })
  }
 
  // ── Standalone page mode ─────────────────────────────────────────────────
- return renderContent();
+ return (
+    <div className="w-full h-[calc(100vh-4rem)] sm:h-screen overflow-hidden flex flex-col bg-slate-50/30">
+      {renderContent()}
+    </div>
+  );
 };
 
 // ── Voice Blob Component ─────────────────────────────────────────────────────
@@ -469,7 +473,7 @@ const VoiceBlob = ({ isListening, isProcessing }: { isListening: boolean, isProc
  const particleSpeedMultiplier = activeState === 'processing' ? 0.3 : activeState === 'listening' ? 0.6 : 1;
 
  return (
- <div className="relative flex items-center justify-center w-[280px] h-[280px] md:w-[400px] md:h-[400px] mx-auto perspective-1000">
+ <div className="relative flex items-center justify-center w-[160px] h-[160px] xs:w-[200px] xs:h-[200px] sm:w-[260px] sm:h-[260px] md:w-[360px] md:h-[360px] mx-auto perspective-1000">
  
  {/* Glow Aura */}
  <motion.div
@@ -499,28 +503,8 @@ const VoiceBlob = ({ isListening, isProcessing }: { isListening: boolean, isProc
  transition={{ duration: (4 + (i % 4)) * particleSpeedMultiplier, repeat: Infinity, delay: i * 0.2, ease:"easeInOut" }}
  className={`absolute rounded-full blur-[2px] md:blur-[3px] ${i % 3 === 0 ? 'bg-[#00D9FF]' : i % 3 === 1 ? 'bg-[#FF4FD8]' : 'bg-[#6C3BFF]'}`}
  style={{
- width: `${3 + Math.random() * 5}px`,
- height: `${3 + Math.random() * 5}px`,
- top: `${10 + Math.random() * 80}%`,
- left: `${10 + Math.random() * 80}%`,
- }}
- />
- ))}
-
- {/* Energy Trails */}
- {activeState !== 'idle' && [...Array(8)].map((_, i) => (
- <motion.div
- key={`trail-${i}`}
- animate={{
- y: [100, -100],
- opacity: [0, 0.8, 0],
- scaleY: [1, 2, 1]
- }}
- transition={{ duration: (1.5 + (i % 2)) * particleSpeedMultiplier, repeat: Infinity, delay: i * 0.4, ease:"easeOut" }}
- className="absolute bg-[#A855F7] rounded-full blur-[1px]"
- style={{
- width: '2px',
- height: `${15 + Math.random() * 20}px`,
+ width: `${6 + (i % 5)}px`,
+ height: `${6 + (i % 5)}px`,
  top: `${20 + Math.random() * 60}%`,
  left: `${20 + Math.random() * 60}%`,
  transform: `rotate(${i * 45}deg)`,
@@ -546,7 +530,7 @@ const VoiceBlob = ({ isListening, isProcessing }: { isListening: boolean, isProc
  scale: { duration: 2.5, repeat: Infinity, ease:"easeInOut" },
  borderRadius: { duration: activeState === 'processing' ? 3 : 5, repeat: Infinity, ease:"easeInOut" }
  }}
- className="absolute w-48 h-48 md:w-64 md:h-64 bg-gradient-to-tr from-[#6C3BFF] via-[#4F46E5] to-[#00D9FF] mix-blend-multiply md:mix-blend-normal blur-[15px] md:blur-xl opacity-90"
+ className="absolute w-[70%] h-[70%] bg-gradient-to-tr from-[#6C3BFF] via-[#4F46E5] to-[#00D9FF] mix-blend-multiply md:mix-blend-normal blur-[15px] md:blur-xl opacity-90"
  />
 
  {/* Layer 2: Magenta & Pink Morph */}
@@ -563,7 +547,7 @@ const VoiceBlob = ({ isListening, isProcessing }: { isListening: boolean, isProc
  scale: { duration: 3, repeat: Infinity, ease:"easeInOut" },
  borderRadius: { duration: activeState === 'processing' ? 3.5 : 6, repeat: Infinity, ease:"easeInOut" }
  }}
- className="absolute w-44 h-44 md:w-56 md:h-56 bg-gradient-to-br from-[#FF4FD8] to-[#9333EA] mix-blend-multiply md:mix-blend-normal blur-[18px] md:blur-2xl opacity-85"
+ className="absolute w-[65%] h-[65%] bg-gradient-to-br from-[#FF4FD8] to-[#9333EA] mix-blend-multiply md:mix-blend-normal blur-[18px] md:blur-2xl opacity-85"
  />
 
  {/* Layer 3: Cyan Highlights (Dynamic inner light streaks) */}
@@ -575,7 +559,7 @@ const VoiceBlob = ({ isListening, isProcessing }: { isListening: boolean, isProc
  borderRadius: ["60% 40% 70% 30%","30% 70% 40% 60%","60% 40% 70% 30%"]
  }}
  transition={{ duration: activeState === 'processing' ? 2 : 4, repeat: Infinity, ease:"easeInOut" }}
- className="absolute w-32 h-32 md:w-48 md:h-48 bg-gradient-to-t from-transparent to-[#00D9FF] mix-blend-screen blur-[10px] opacity-60"
+ className="absolute w-[50%] h-[50%] bg-gradient-to-t from-transparent to-[#00D9FF] mix-blend-screen blur-[10px] opacity-60"
  />
 
  {/* Inner Core for 'Intelligence' */}

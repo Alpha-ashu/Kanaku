@@ -162,20 +162,33 @@ export function AddTransaction() {
 
  // State
  const [formData, setFormData] = useState(() => {
- const quickType = localStorage.getItem('quickFormType') as TransactionType | null;
- return {
- type: quickType || 'expense',
- amount: 0,
- accountId: accounts[0]?.id || 0,
- toAccountId: 0,
- category: quickType === 'transfer' ? 'Transfer' : DEFAULT_CATEGORY[quickType as 'expense' | 'income'] || DEFAULT_CATEGORY.expense,
- subcategory: quickType === 'transfer' ? 'Transfer' : '',
- description: '',
- merchant: '',
- date: defaultDateKey,
- notes: '',
- };
+   const quickType = localStorage.getItem('quickFormType') as TransactionType | null;
+   const quickAccountIdStr = localStorage.getItem('quickAccountId');
+   const quickAccountId = quickAccountIdStr ? Number(quickAccountIdStr) : null;
+   const defaultAccountId = quickAccountId && accounts.some(a => a.id === quickAccountId)
+     ? quickAccountId
+     : (accounts[0]?.id || 0);
+
+   return {
+     type: quickType || 'expense',
+     amount: 0,
+     accountId: defaultAccountId,
+     toAccountId: 0,
+     category: quickType === 'transfer' ? 'Transfer' : DEFAULT_CATEGORY[quickType as 'expense' | 'income'] || DEFAULT_CATEGORY.expense,
+     subcategory: quickType === 'transfer' ? 'Transfer' : '',
+     description: '',
+     merchant: '',
+     date: defaultDateKey,
+     notes: '',
+   };
  });
+
+ const clearQuickStorage = () => {
+   localStorage.removeItem('quickFormType');
+   localStorage.removeItem('quickAccountId');
+   localStorage.removeItem('quickExpenseMode');
+   localStorage.removeItem('quickBackPage');
+ };
 
  const [isSubmitting, setIsSubmitting] = useState(false);
  const [showScanner, setShowScanner] = useState(false);
@@ -526,6 +539,7 @@ export function AddTransaction() {
  }
 
  toast.success('Transaction saved');
+ clearQuickStorage();
  refreshData();
  setCurrentPage(returnPage);
  } catch (err) {
@@ -558,8 +572,8 @@ export function AddTransaction() {
  <div className="flex items-center justify-between px-4 lg:px-6 py-3 h-14">
  <div className="flex items-center gap-2 min-w-0">
  <button
- onClick={() => setCurrentPage(returnPage)}
- className="lg:!hidden p-2 text-slate-600 hover:bg-slate-50 rounded-xl transition-all shrink-0"
+ onClick={() => { clearQuickStorage(); setCurrentPage(returnPage); }}
+ className="p-2 text-slate-600 hover:bg-slate-50 rounded-xl transition-all shrink-0"
  >
  <ArrowLeft size={18} />
  </button>

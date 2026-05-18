@@ -795,6 +795,58 @@ class StatementImportService {
       });
     }
 
+    if (transactions.length === 0) {
+      // Step 3: Resilient Line-by-Line Fallback Parsing Loop
+      const FLEXIBLE_DATE_RE = /(\d{1,2}[\s\/\-\.]+(?:\d{1,2}|(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*)[\s\/\-\.]+\d{2,4})/i;
+      const DECIMAL_AMT_RE = /\b\d[\d,]*\.\d{2}\b/g;
+
+      for (const line of lines) {
+        if (SKIP_RE.test(line)) continue;
+        const dateMatch = line.match(FLEXIBLE_DATE_RE);
+        if (!dateMatch) continue;
+
+        const date = parseDate(dateMatch[1]);
+        if (!date || isNaN(date.getTime())) continue;
+
+        const amounts = [...line.matchAll(DECIMAL_AMT_RE)]
+          .map(m => parseAmount(m[0]))
+          .filter((v): v is number => v != null && Number.isFinite(v) && v > 0);
+
+        if (amounts.length === 0) continue;
+
+        const txnAmt = amounts[0];
+        const balance = amounts.length > 1 ? amounts[1] : undefined;
+
+        // Clean and prepare description
+        const rawDesc = line
+          .replace(dateMatch[0], '')
+          .replace(/\b\d[\d,]*\.\d{2}\b/g, '')
+          .replace(/\s+/g, ' ')
+          .trim();
+
+        if (rawDesc.length < 2) continue;
+
+        const isIncome = /\b(cr|credit|credited|deposit|received|salary|refund|interest)\b/i.test(line) && !/\b(dr|debit|debited)\b/i.test(line);
+        const txnType = isIncome ? 'income' : 'expense';
+        const merchantName = pickMerchantName(rawDesc);
+        const cat = await documentIntelligenceService.predictCategory({ merchantName, text: rawDesc, amount: txnAmt, userId });
+
+        transactions.push({
+          transaction_date: date,
+          raw_description: line.slice(0, 400),
+          cleaned_description: cleanDescription(rawDesc),
+          amount: txnAmt,
+          transaction_type: txnType,
+          balance_after_transaction: balance,
+          payment_channel: extractPaymentChannel(line),
+          merchant_name: merchantName,
+          category: cat.category,
+          currency: 'INR',
+          confidenceScore: cat.confidence,
+        });
+      }
+    }
+
     if (transactions.length > 0) {
       const obMatch = text.match(/(?:opening balance|balance\s+b\/f|brought forward)[^\d]*([\d,]+\.\d{2})/i);
       const openingBalance = obMatch ? parseAmount(obMatch[1]) : undefined;

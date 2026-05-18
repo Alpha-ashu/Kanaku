@@ -386,11 +386,11 @@ export const Transactions: React.FC = () => {
  </div>
 
  {/* Scrollable Date Selector */}
- <div className="bg-white/95 backdrop-blur-2xl rounded-[16px] sm:rounded-[32px] p-1 sm:p-5 shadow-[0_8px_25px_rgba(0,0,0,0.02)] border border-white/40 overflow-hidden relative group">
+ <div className="bg-white/95 backdrop-blur-2xl rounded-[16px] sm:rounded-[32px] p-1.5 sm:p-5 shadow-[0_8px_25px_rgba(0,0,0,0.02)] border border-white/40 overflow-hidden relative group">
  
- <div ref={scrollRef} className="flex overflow-x-auto gap-1 sm:gap-4 scrollbar-hide snap-x px-0.5 py-0.5 items-center">
+ <div ref={scrollRef} className="flex justify-start xs:justify-center items-center overflow-x-auto gap-1.5 xs:gap-2 sm:gap-4 scrollbar-hide snap-x px-0.5 py-0.5 w-full">
  {dateRange.length === 0 && (
- <p className="text-slate-400 text-center py-4 font-black uppercase tracking-widest text-[5px] sm:text-[10px] w-full">Loading...</p>
+ <p className="text-slate-400 text-center py-4 font-black uppercase tracking-widest text-[8px] sm:text-[10px] w-full">Loading...</p>
  )}
  {dateRange.map((date, idx) => {
  let isSelected = false;
@@ -420,19 +420,19 @@ export const Transactions: React.FC = () => {
  data-selected={isSelected}
  onClick={() => setSelectedDate(date)}
  className={cn(
- 'flex flex-col items-center justify-center min-w-[38px] sm:min-w-[70px] h-[50px] sm:h-[90px] rounded-[12px] sm:rounded-3xl transition-all duration-500 snap-center relative shrink-0',
+ 'flex flex-col items-center justify-center min-w-[42px] xs:min-w-[50px] sm:min-w-[70px] h-[55px] xs:h-[65px] sm:h-[90px] rounded-[10px] sm:rounded-3xl transition-all duration-500 snap-center relative shrink-0',
  isSelected
  ? 'bg-slate-900 text-white shadow-md scale-105 z-10'
  : 'bg-white hover:bg-slate-100 text-slate-400 hover:text-slate-600'
  )}
  >
  <span className={cn(
- 'text-[6px] sm:text-[10px] font-black tracking-widest mb-0.5 sm:mb-1',
+ 'text-[6px] xs:text-[7px] sm:text-[10px] font-black tracking-widest mb-0.5 sm:mb-1',
  isSelected ? 'text-pink-400' : isWeekend ? 'text-rose-500' : 'text-slate-400'
  )}>
  {subLabel}
  </span>
- <span className="text-xs sm:text-xl font-black tracking-tighter">
+ <span className="text-xs xs:text-sm sm:text-xl font-black tracking-tighter">
  {label}
  </span>
  {isSelected && (

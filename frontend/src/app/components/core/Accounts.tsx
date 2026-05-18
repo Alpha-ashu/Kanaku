@@ -1230,12 +1230,8 @@ export const Accounts: React.FC = () => {
  if (activeCardAccountId) {
  localStorage.setItem('quickAccountId', String(activeCardAccountId));
  }
- if (opt.type === 'transfer') {
- setCurrentPage('transfer');
- } else {
  localStorage.setItem('quickFormType', opt.type);
  setCurrentPage('add-transaction');
- }
  }}
  className={cn(
 "w-full p-4 flex items-center gap-4 rounded-2xl transition-all border border-transparent hover:scale-[1.02] active:scale-[0.98]",
