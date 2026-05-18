@@ -1,11 +1,12 @@
 import React from 'react';
 import {
- Home,
- Wallet,
- Receipt,
- TrendingUp,
- PieChart,
- Plus
+  Home,
+  Wallet,
+  Receipt,
+  TrendingUp,
+  PieChart,
+  Plus,
+  Users
 } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
@@ -16,11 +17,12 @@ import { canAccessPage } from '@/lib/featureFlags';
 
 
 const navigationItems = [
- { id: 'dashboard', label: 'Home', icon: Home },
- { id: 'accounts', label: 'Accounts', icon: Wallet },
- { id: 'quick-add', label: '', icon: Plus, isAction: true },
- { id: 'transactions', label: 'Activity', icon: Receipt },
- { id: 'reports', label: 'Reports', icon: PieChart },
+  { id: 'dashboard', label: 'Home', icon: Home },
+  { id: 'accounts', label: 'Accounts', icon: Wallet },
+  { id: 'quick-add', label: '', icon: Plus, isAction: true },
+  { id: 'transactions', label: 'Activity', icon: Receipt },
+  { id: 'client-management', label: 'Clients', icon: Users },
+  { id: 'reports', label: 'Reports', icon: PieChart },
 ];
 
 interface BottomNavProps {

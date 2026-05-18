@@ -58,6 +58,8 @@ KANKU uses a **Premium Glassmorphic Aesthetic**. All new features must adhere to
 - **Typography**: Modern Sans-Serif (Inter/Outfit). High contrast (font-black) for titles, muted for metadata.
 
 ### **Stacking Context (Z-Index)**
+- **Viewport Fluidity**: Components, fonts, and spacing are built using `clamp()` functions (via `AutoSizing.tsx` and `finora-responsive.css`) to smoothly resize across all screen sizes. Never rely solely on rigid media queries; instead, ensure elements auto-scale proportionally within the container.
+- **Strict Background Layout Rule**: DO NOT use hardcoded background wrappers or height constraints on individual page components (e.g., `class="flex flex-col min-h-screen bg-[#F8FAFC]"`, `h-screen`, `bg-slate-50`). Background layers are managed GLOBALLY at the `index.html` or `AppLayout` level. Page components should be transparent containers (e.g., `w-full flex flex-col`) that inherit the global theme, allowing seamless dark/light mode transitions and preventing scroll-lock bugs. Cards should have a pure, flat, premium shadow design.
 - **Backdrops**: `z-[60]`
 - **Modals/Drawers**: `z-[61]`
 - **Transaction Detail Sheet (mobile)**: `z-[61]`
