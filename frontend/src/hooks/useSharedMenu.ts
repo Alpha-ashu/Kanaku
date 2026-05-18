@@ -43,7 +43,7 @@ export const useSharedMenu = () => {
         const reordered = [...visibleMenuItems].sort((a, b) => {
           const indexA = orderIds.indexOf(a.id);
           const indexB = orderIds.indexOf(b.id);
-          // If item not in saved order, put it at the end
+          if (indexA === -1 && indexB === -1) return 0;
           if (indexA === -1) return 1;
           if (indexB === -1) return -1;
           return indexA - indexB;

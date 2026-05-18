@@ -920,6 +920,200 @@ This was caused by a combination of two separate, compounding bugs:
    - Moved 70+ standalone documentation files to the `docs/` folder.
    - Moved truly dead code to `frontend/src/unused/`. (Note: `realTime.ts` and `enhanced-sync.ts` were restored to `src/lib/` after being identified as dependencies)
 3. **Path Stabilization**:
+#### 2. AdminDashboard 500 Error Fix (`AdminDashboard.tsx`)
+
+**Problem**: The Admin Dashboard failed to load with `500 Internal Server Error` from the Vite dev server (`Failed to fetch dynamically imported module`).
+
+**Root Cause**: A missing `</div>` closing tag for the Infrastructure/Server Metrics section container created an unbalanced JSX tree, crashing the Vite TypeScript compiler.
+
+**Fix**: Restored the missing closing `</div>` tag and added optional chaining to all stats display paths.
+
+**Type-Safety Fixes**:
+- `setStats(s)` → `if (s) setStats(s)` — prevents `undefined` in `SetStateAction<SystemStatsDto | null>`.
+- `setUsers(u)` → `if (u) setUsers(u)` — prevents `undefined` in `SetStateAction<AdminUserDto[]>`.
+- `setUserActivity(activity)` → `if (activity) setUserActivity(activity)` — prevents `undefined` in `SetStateAction<UserActivityDto | null>`.
+
+#### 3. AdminFeaturePanel Syntax Error (`AdminFeaturePanel.tsx`)
+
+**Problem**: ~30 cascading TypeScript lint errors (missing commas, undeclared `key`, `readiness`, `description`, `lastUpdated`).
+
+**Root Cause**: Missing opening `{` for the `'Client Management'` feature entry in the `FEATURES` array.
+
+**Fix**: Added `{` before `name: 'Client Management'`.
+
+#### 4. CenteredLayout Shared Component (`CenteredLayout.tsx`)
+
+- Created `frontend/src/app/components/shared/CenteredLayout.tsx`.
+- Provides the standard page container: `w-full mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 pt-4 sm:pt-5 lg:pt-6 pb-24 lg:pb-10 flex-1`.
+- Use this instead of duplicating the class string across admin and settings pages.
+
+---
+
+---
+
+### **2026-05-16  Account Import Stability, AI Auth & UI Overhaul**
+
+1. **Deduplication Engine Integration**:
+   - Integrated `deduplicateLocalData()` into the `syncUserDataFromBackend` cycle and the primary `AppContext` mount effect.
+   - This prevents duplicate accounts and transactions from appearing during cloud-to-local merges, specifically matching by name, type, and currency.
+2. **Admin AI Authentication Stabilization**:
+   - Standardized `TokenManager` in `frontend/src/lib/api.ts` to use `auth_token` consistently with fallback support for legacy keys.
+   - Refactored `adminAIService.ts` to utilize the centralized `apiClient`, ensuring automatic token resolution from Supabase sessions and robust async error handling.
+   - Synchronized `backend/.env` with project-root Supabase credentials to resolve 401 Unauthorized errors on protected AI endpoints.
+3. **Feature Visibility & Settings UI Overhaul**:
+   - Completely redesigned the "Feature Visibility" grid in `Settings.tsx` to resolve text-icon overlap and alignment regressions.
+   - Introduced a premium icon suite (Lucide) for all features and implemented `min-w-0` + `truncate` logic for robust responsiveness on mobile and desktop.
+   - Standardized feature card aesthetics with `bg-black/5` active states and consistent spacing.
+4. **Modularized Branding System**:
+   - Decoupled 400+ lines of SVG-heavy logo rendering logic into a dedicated utility: `src/app/components/ui/AccountLogos.tsx`.
+   - This resolved persistent Vite Fast Refresh errors (`Duplicate declaration` and `export incompatible`) across core page modules.
+5. **Statement Import Modal Finalization**:
+   - Overhauled the `StatementImport.tsx` UI with a high-fidelity "half-size" glassmorphic popup (`max-w-lg`).
+   - Resolved header collisions and text overlapping in the transaction review grid.
+6. **Account Action Consistency**:
+   - Restricted the "Import" button visibility to only `bank` and `card` account types, removing it from `cash` and `digital` accounts.
+   - Standardized the placement of account management actions across `Accounts.tsx` and `Dashboard.tsx`.
+
+---
+
+---
+
+### **2026-05-14  AddTransaction Workflow & UI Finalization**
+
+1. **Transaction Type Header Restructuring**:
+   - Merged the separate transaction type tabs (`Expense`, `Income`, `Transfer`) into the primary top header bar for a compact, single-row design matching the requested pill-style layout.
+   - Streamlined mobile layout by hiding the title and exposing only the back arrow and tabs.
+2. **Transfer Mode Refinements**:
+   - Added a `transferMethod` state (`bank` vs. `cash`) below the Self/Others sub-mode.
+   - **Bank Transfer**: Shows the standard "To Account" selection.
+   - **Cash Transfer**: Hides the account selection and shows an amber banner acknowledging a direct cash handover.
+   - **Others Selection**: Added a full `Friends` picker (pill chips) for selecting external recipients quickly, combined with a manual text input.
+3. **Loan Form Simplification**:
+   - Institutional loans (`Consumer Loan`, `Personal Loan`, `Home Loan`, `Vehicle Loan`, `Education Loan`, `Credit Card`, `Overdraft`) now automatically hide the individual "Person / Participants" picker, prioritizing the Bank/NBFC dropdown.
+   - Fixed conditional visibility so `Overdraft` behaves correctly as an institutional loan.
+4. **General UI Polish**:
+   - Removed the cluttering "Ref # (Optional)" input field from all modes.
+   - "Date" field now spans the full width of its container.
+   - **Note**: The AddTransaction page layout and logic flow are now finalized and frozen.
+
+---
+
+---
+
+### **2026-05-13 (Afternoon)  Receipt & Transaction UX Overhaul**
+
+#### 1. Receipt Scanner  Dual-Mode Flow (`ReceiptScanner.tsx`, `ReceiptScannerViews.tsx`, `receipt.types.ts`)
+
+**Problem**: Camera and gallery both triggered OCR automatically. No way to just attach a file without running OCR.
+
+**Solution**: Introduced a step-machine with two clearly separated workflows:
+
+| Mode | Flow | OCR? |
+|------|------|------|
+| **Scan Receipt** | Mode  Source (Camera/Gallery)  Preview  OCR  Results |  Yes |
+| **Add Attachment** | Mode  Source (Camera/Gallery)  Save doc  Done |  No |
+
+**New components in `ReceiptScannerViews.tsx`**:
+- `ModeSelectionView`  Two large action cards: "Scan Receipt" (dark) and "Add Attachment" (light).
+- `SourcePickerView`  Camera / Gallery sub-picker reused by both modes. Shows amber info strip in attachment mode.
+
+**Step machine in `ReceiptScanner.tsx`**:
+- `mode`  `source-scan` / `source-attach`  `preview-scan` / `attaching`  `results`
+- Attachment path: `createDocumentRecord`  `updateDocumentStatus('completed')`  `onAttachmentSaved(docId)`. **Zero OCR.**
+- Scan path: existing OCR pipeline unchanged.
+- Supports `initialMode` prop to skip mode selection.
+
+**New props on `ReceiptScannerProps`** (in `receipt.types.ts`):
+- `onAttachmentSaved?: (documentId: number) => void`  called when attachment-only save completes.
+- `initialMode?: 'scan' | 'attachment' | null`  skips mode picker, goes straight to source picker.
+
+---
+
+#### 2. AddTransaction  Inline Receipt Section (`AddTransaction.tsx`)
+
+**Changes**:
+-  Removed standalone camera button from the header.
+-  Added a **"Receipt" card** in the right column (`lg:col-span-5`) with two buttons:
+  - **Scan Receipt** (dark, `ScanLine` icon)  opens scanner in scan mode.
+  - **Add Attachment** (light, `Paperclip` icon)  opens scanner in attachment mode.
+-  Added `attachmentDocumentId` state alongside existing `scanDocumentId`.
+-  On save: links whichever doc ID is set (`scanDocumentId ?? attachmentDocumentId`) to the transaction via `DocumentManagementService.linkTransaction()`.
+-  Shows a green "Attached" badge + removable confirmation row when a receipt/attachment is linked.
+-  `scannerMode` state (`'scan' | 'attachment' | null`) passed as `initialMode` to `ReceiptScanner`.
+
+**Document linking**: The `attachment` field on the transaction is set to `document:{id}` and `importMetadata['Document Id']` is also set. This is how `Transactions.tsx` detects a linked bill to show the Eye icon.
+
+---
+
+#### 3. Transactions Page  Responsive List & View Bill (`Transactions.tsx`)
+
+**Problem**: Single table layout broke on mobile. Eye (View Bill) icon was hidden behind hover. No mobile detail view.
+
+**Solution**:
+
+**Desktop (lg+)**:
+- All 4 columns visible: Details, Category, Account, Amount + Actions.
+- **Eye icon** (`text-orange-400`)  **always visible** (not hover-gated) when a bill is attached.
+- Edit/Delete icons remain hover-only (`opacity-0 group-hover:opacity-100`).
+- "Bill attached" shown as orange `Paperclip` badge in Details cell.
+
+**Mobile (< lg)**:
+- Card-based list showing **Details + Amount** only.
+- Orange `Paperclip` "Bill" badge shown inline when bill exists.
+- `ChevronRight` arrow signals tappable row.
+- Tapping any row opens the **Transaction Detail Bottom Sheet**.
+
+**Mobile Detail Sheet** (`motion.div`, `z-[61]`):
+- Spring-animated slide-up drawer.
+- Drag handle, header with icon + description + date.
+- **Amount hero** with transaction type badge.
+- Full detail rows: Category, Account, Date, Tax Amount, Notes.
+- **"View Attached Bill"**  full-width orange button, always visible when bill attached.
+- **Edit** and **Delete** action buttons (2-column grid).
+- Backdrop tap to close.
+
+---
+
+---
+
+### **2026-05-12 (Morning)  Account Module Finalization & Design Standardization**
+
+1. **Account Module Stabilization**:
+   - The **Account Page** and **Add Account** sub-page have been finalized with a premium responsive layout.
+   - Standardized glassmorphic cards, balance entry, and brand-specific iconography (Bank/Credit Card/Wallet).
+   - **Note**: These pages are considered "Perfect" and should not be edited unless explicitly requested.
+
+---
+
+---
+
+### **2026-05-12 (Evening)  Sync Stabilization & User Profile Finalization**
+
+1. **Synchronization Engine Stabilization**:
+   - Standardized `cloudId` (camelCase) indexing across `backend-sync-service.ts`, `sync-service.ts`, and `offline-sync-engine.ts`.
+   - Resolved persistent `SchemaError` by aligning codebase field names with Dexie Version 11 schema.
+2. **User Profile Finalization**:
+   - Implemented a modernized **Avatar Gallery** with 28 curated high-quality characters (DiceBear).
+   - Fixed selection persistence and preview updates in the profile editor.
+   - Standardized date formatting to `DD-MMM-YYYY` (e.g., 25-Aug-1996) using a custom Popover/Calendar component.
+   - Applied precision rounding (`Math.round`) to all monthly income calculations to resolve floating-point display errors.
+   - **Update Logic Stabilization**: Refactored `avatar-gallery.ts` resolution logic to handle external URLs with query parameters correctly and simplified the `UserProfile` preview logic to use a single-source state (`tempData`), ensuring zero-latency UI updates during selection.
+   - **Note**: The User Profile page is now considered "Perfect" and is frozen for future changes.
+
+---
+
+---
+
+### **2026-05-11  Unified Component Architecture & Project De-cluttering**
+
+1. **Directory Consolidation**:
+   - Eliminated `src/components/`. All active components moved to `src/app/components/`.
+   - Merged `onboarding` into `src/app/components/auth/onboarding/`.
+   - Standardized `shared/` layout components (`AppLayout`, `LimitedModeBanner`).
+2. **Project Root Cleanup**:
+   - Moved 70+ standalone documentation files to the `docs/` folder.
+   - Moved truly dead code to `frontend/src/unused/`. (Note: `realTime.ts` and `enhanced-sync.ts` were restored to `src/lib/` after being identified as dependencies)
+3. **Path Stabilization**:
    - Fixed lazy-loading paths in `App.tsx` (standardized on feature-folders).
    - Resolved Vite build errors regarding broken relative imports in `AuthFlow.tsx`.
 4. **Mobile UX Fixes**:
@@ -927,4 +1121,20 @@ This was caused by a combination of two separate, compounding bugs:
    - Standardized mobile back button placement (left of title) to avoid burger-menu overlap.
    - Optimized bottom navigation spacing for "safe-area" (notch) devices.
 
----
+---
+
+---
+
+### **2026-05-18 (Morning)  Admin Sidebar Gate & Menu Reordering Stabilization**
+
+#### 1. Security Gate for Admin/Advisor Panels (`navigation.ts`, `featureFlags.ts`)
+- **Problem**: The Admin Console navigation item was visible in the sidebar for non-admin roles (Advisors & Users) because it was not mapped in `PAGE_TO_FEATURE_MAPPING`, meaning it bypassed `canAccessPage` filters and defaulted to `true`.
+- **Solution**:
+  - Added `'admin': 'adminPanel'` mapping in `PAGE_TO_FEATURE_MAPPING` inside `featureFlags.ts`.
+  - Defined explicit roles for all role-specific sidebar navigation items (Admin Console, Feature Panel, AI Management, Advisor Verification, Advisor Panel, Client Management, Book Advisor) in `sidebarMenuItems` within `navigation.ts` to establish a robust second line of defense against unauthorized role routing.
+
+#### 2. Unstable Sidebar Sort Logic resolved (`useSharedMenu.ts`, `BottomNav.tsx`)
+- **Problem**: When multiple features were newly unlocked or missing from a user's local `sidebar_menu_order` cache, the sidebar sort callback returned asymmetric values (returning `1` immediately when `indexA === -1`), resulting in corrupted item sorting and potentially hiding pages like `Client Management` from the Advisor view.
+- **Solution**:
+  - Refactored sorting check in `useSharedMenu.ts` to explicitly handle mutual absence: `if (indexA === -1 && indexB === -1) return 0;`.
+  - Replicated role-based visibility filtering in `BottomNav.tsx` for mobile devices, protecting mobile users and advisors from unauthorized client view access.

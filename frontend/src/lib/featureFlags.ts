@@ -242,6 +242,7 @@ export const PAGE_TO_FEATURE_MAPPING: Record<string, FeatureKey> = {
   'todo-lists': 'todoLists',
   'book-advisor': 'bookAdvisor',
   'admin-feature-panel': 'adminPanel',
+  'admin': 'adminPanel',
   'advisor-panel': 'advisorPanel',
   'settings': 'settings',
   'notifications': 'notifications',

@@ -74,22 +74,22 @@ export const sidebarMenuItems: NavigationItem[] = [
   { id: 'groups', label: 'Group Expenses', icon: Users, feature: 'groups' },
   { id: 'reports', label: 'Reports', icon: BarChart3, feature: 'reports' },
   { id: 'todo-lists', label: 'Todo Lists', icon: CheckSquare, feature: 'todoLists' },
-  { id: 'book-advisor', label: 'Book Advisor', icon: BookOpen, feature: 'bookAdvisor' },
+  { id: 'book-advisor', label: 'Book Advisor', icon: BookOpen, feature: 'bookAdvisor', roles: ['admin', 'user'] },
   // Advanced features — visible when enabled by admin
   { id: 'tax-calculator', label: 'Tax Calculator', icon: Calculator, feature: 'taxCalculator' },
   { id: 'ai-insights', label: 'AI Insights', icon: Sparkles, feature: 'aiInsights' },
   { id: 'data-export', label: 'Data Export', icon: Download, feature: 'dataExport' },
   { id: 'recurring-transactions', label: 'Recurring', icon: RefreshCw, feature: 'recurringTransactions' },
   { id: 'budget-alerts', label: 'Budget Alerts', icon: BellRing, feature: 'budgetAlerts' },
-  { id: 'client-management', label: 'Clients', icon: FolderKanban, feature: 'clientManagement' },
+  { id: 'client-management', label: 'Clients', icon: FolderKanban, feature: 'clientManagement', roles: ['admin', 'manager', 'advisor'] },
   { id: 'settings', label: 'Settings', icon: Settings, feature: 'settings' },
   // Admin-only items
-  { id: 'admin', label: 'Admin Console', icon: ShieldAlert, feature: 'adminPanel' },
-  { id: 'admin-feature-panel', label: 'Feature Panel', icon: Settings, feature: 'adminPanel' },
-  { id: 'ai-management', label: 'AI Management', icon: Brain, feature: 'aiManagement' },
+  { id: 'admin', label: 'Admin Console', icon: ShieldAlert, feature: 'adminPanel', roles: ['admin'] },
+  { id: 'admin-feature-panel', label: 'Feature Panel', icon: Settings, feature: 'adminPanel', roles: ['admin'] },
+  { id: 'ai-management', label: 'AI Management', icon: Brain, feature: 'aiManagement', roles: ['admin'] },
   // Manager-only items
-  { id: 'advisor-verification', label: 'Advisor Verification', icon: ShieldCheck, feature: 'managerPanel' },
+  { id: 'advisor-verification', label: 'Advisor Verification', icon: ShieldCheck, feature: 'managerPanel', roles: ['admin', 'manager'] },
   // Advisor-only items
-  { id: 'advisor-panel', label: 'Advisor Panel', icon: Users, feature: 'advisorPanel' },
+  { id: 'advisor-panel', label: 'Advisor Panel', icon: Users, feature: 'advisorPanel', roles: ['admin', 'advisor'] },
 ];
 

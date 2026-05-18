@@ -9,6 +9,7 @@ import {
   Users
 } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { Capacitor } from '@capacitor/core';
 import { cn } from '@/lib/utils';
@@ -21,21 +22,23 @@ const navigationItems = [
   { id: 'accounts', label: 'Accounts', icon: Wallet },
   { id: 'quick-add', label: '', icon: Plus, isAction: true },
   { id: 'transactions', label: 'Activity', icon: Receipt },
-  { id: 'client-management', label: 'Clients', icon: Users },
+  { id: 'client-management', label: 'Clients', icon: Users, roles: ['admin', 'manager', 'advisor'] },
   { id: 'reports', label: 'Reports', icon: PieChart },
 ];
 
 interface BottomNavProps {
- onQuickAdd: () => void;
+  onQuickAdd: () => void;
 }
 
 export const BottomNav: React.FC<BottomNavProps> = ({ onQuickAdd }) => {
- const { currentPage, setCurrentPage, visibleFeatures } = useApp();
+  const { currentPage, setCurrentPage, visibleFeatures } = useApp();
+  const { role } = useAuth();
 
- const filteredNavigationItems = navigationItems.filter(item => {
- if (item.id === 'quick-add') return true;
- return canAccessPage(item.id, visibleFeatures);
- });
+  const filteredNavigationItems = navigationItems.filter(item => {
+    if (item.id === 'quick-add') return true;
+    if ('roles' in item && item.roles && !item.roles.includes(role)) return false;
+    return canAccessPage(item.id, visibleFeatures);
+  });
 
 
  const handleNavigation = async (itemId: string) => {
