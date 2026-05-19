@@ -91,20 +91,19 @@ const NAME_CONTEXT_PATTERN = /(?:to|from|gave|give|lent|with|borrowed from|lent 
 
 //  Segmentation 
 
-const SEGMENT_SEPARATORS = /(?:,\s*(?:and\s+)?|;\s*|(?:\s+and\s+)(?=(?:spent|paid|bought|received|transferred|gave|saved|lent|borrowed)))/gi;
-
 /**
  * Split a multi-action transcript into individual segments.
+ * This regex consumes filler words (and, then, I, etc.) and splits right before an action verb.
  */
+const SEGMENT_SEPARATORS = /\s*(?:(?:,|\b)and\s+)?(?:I\s+|we\s+|then\s+|also\s+|so\s+)*(?=(?:paid|pay|spent|spend|bought|buy|lent|lend|gave|give|borrowed|borrow|saved|save|invested|invest|transferred|transfer|sent|send|received|receive|got|get|split)\b)/gi;
+
 export function segmentTranscript(transcript: string): string[] {
-  const raw = transcript
-    .replace(/\s+/g, ' ')
-    .trim();
+  const raw = transcript.replace(/\s+/g, ' ').trim();
 
   const segments = raw
     .split(SEGMENT_SEPARATORS)
     .map(s => s.trim())
-    .filter(s => s.length > 3);
+    .filter(s => s.length > 2);
 
   return segments.length > 0 ? segments : [raw];
 }

@@ -210,15 +210,14 @@ function extractDescription(text: string): string {
 
 // Split multi-intent sentences like "paid 200 for coffee and bought 500 medicine"
 function splitSentences(text: string): string[] {
-  // Split on explicit connectors
-  const connectors = /\b(?:and also|and then|also then|then also)\b/gi;
-  let parts = text.split(connectors).map(s => s.trim()).filter(Boolean);
-
-  // Further split on verbs if they are clearly starting a new intent
-  // This catches: "Paid 2000 for room spent 500 on groceries"
-  const verbBoundaryPattern = /\s+(?:and\s+)?(?=(?:paid|spent|bought|lent|gave|borrowed|saved|invested|transferred|sent|received|got|split)\b)/gi;
+  // This regex matches any combination of spaces, commas, "and", "then", "also", "so", "I", "we"
+  // that appear immediately before a financial action verb.
+  // By splitting here, we consume and discard the filler text, leaving clean action chunks.
+  const verbBoundaryPattern = /\s*(?:(?:,|\b)and\s+)?(?:I\s+|we\s+|then\s+|also\s+|so\s+)*(?=(?:paid|pay|spent|spend|bought|buy|lent|lend|gave|give|borrowed|borrow|saved|save|invested|invest|transferred|transfer|sent|send|received|receive|got|get|split)\b)/gi;
   
-  return parts.flatMap(p => p.split(verbBoundaryPattern).map(s => s.trim()).filter(Boolean));
+  return text.split(verbBoundaryPattern)
+    .map(s => s.trim())
+    .filter(s => s.length > 2); // Ignore empty or single-character chunks
 }
 
 // Extract a date from natural language
