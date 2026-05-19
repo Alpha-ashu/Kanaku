@@ -464,7 +464,7 @@ export const Accounts: React.FC = () => {
  <div
  key={account.id}
  ref={(el) => { if (el) mobileCardRefs.current[account.id!] = el; }}
- className="snap-start shrink-0 w-screen px-4 [scroll-snap-stop:always]"
+ className="snap-center shrink-0 w-full px-4 [scroll-snap-stop:always]"
  >
  <div
  className={cn(
@@ -474,6 +474,7 @@ export const Accounts: React.FC = () => {
  >
  <Card
  variant={isActive ?"flat" :"default"}
+ noPadding
  className={cn(
 "w-full h-[200px] sm:h-[215px] relative overflow-hidden shrink-0 transition-all duration-300 rounded-[30px] cursor-pointer outline-none focus:ring-0",
  isActive
@@ -672,6 +673,7 @@ export const Accounts: React.FC = () => {
  >
  <Card
  variant="flat"
+ noPadding
  className={cn(
 "w-[420px] h-[230px] relative overflow-hidden shrink-0 transition-all duration-300 rounded-[24px] cursor-pointer group outline-none focus:ring-0",
  isActive
