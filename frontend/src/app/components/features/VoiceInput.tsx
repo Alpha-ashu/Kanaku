@@ -200,13 +200,11 @@ function useVoiceEngine() {
     if (!SR) {
       dispatch({
         type: 'SET_ERROR',
-        payload: { msg: 'Speech recognition not supported. Please type below.', reason: 'not-supported' },
+        payload: { msg: 'Speech recognition not supported in this browser. Please type below.', reason: 'not-supported' },
       });
-      dispatch({ type: 'TOGGLE_MANUAL', payload: true });
       return;
     }
 
-    // Check mic permission
     try {
       await navigator.mediaDevices.getUserMedia({ audio: true });
     } catch {
@@ -220,18 +218,15 @@ function useVoiceEngine() {
     const rec = new SR();
     rec.continuous = true;
     rec.interimResults = true;
-    rec.lang = 'en-IN'; // Better for Indian English / Hinglish
-    rec.maxAlternatives = 3;
+    rec.lang = 'en-US'; // Use en-US for better offline support in Chrome
+    rec.maxAlternatives = 1;
 
     rec.onresult = (e: any) => {
       let interim = '';
       let final = '';
       for (let i = e.resultIndex; i < e.results.length; i++) {
-        // Pick highest-confidence alternative
-        const best = Array.from({ length: e.results[i].length }, (_, j) => e.results[i][j])
-          .sort((a: any, b: any) => b.confidence - a.confidence)[0];
-        if (e.results[i].isFinal) final += best.transcript + ' ';
-        else interim += best.transcript;
+        if (e.results[i].isFinal) final += e.results[i][0].transcript + ' ';
+        else interim += e.results[i][0].transcript;
       }
       if (interim) dispatch({ type: 'SET_INTERIM', payload: interim });
       if (final) {
@@ -250,13 +245,13 @@ function useVoiceEngine() {
         dispatch({
           type: 'SET_ERROR',
           payload: {
-            msg: 'Speech-to-text needs an internet connection. Type your transaction below instead.',
+            msg: 'Offline mode unavailable. Please use the keyboard icon to type your transaction.',
             reason: 'network',
           },
         });
-        dispatch({ type: 'TOGGLE_MANUAL', payload: true });
+        // We do NOT auto-open manual input here anymore to prevent annoying popups
       } else if (e.error !== 'no-speech') {
-        dispatch({ type: 'SET_ERROR', payload: { msg: `ASR error: ${e.error}` } });
+        dispatch({ type: 'SET_ERROR', payload: { msg: `Speech error: ${e.error}` } });
       }
     };
 
@@ -514,18 +509,19 @@ export function VoiceInput() {
       <AnimatePresence>
         {state.showManualInput && (
           <motion.div
-            initial={{ y: '100%' }}
-            animate={{ y: 0 }}
-            exit={{ y: '100%' }}
-            transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-            className="fixed bottom-16 left-0 right-0 z-40 bg-white rounded-t-3xl shadow-[0_-8px_32px_rgba(0,0,0,0.10)] border-t border-slate-100/80"
+            initial={{ opacity: 0, y: 40, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 40, scale: 0.95 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            className="absolute bottom-24 left-4 right-4 md:left-0 md:right-0 md:w-full md:max-w-lg mx-auto z-50 bg-white rounded-3xl shadow-[0_12px_40px_rgba(0,0,0,0.12)] border border-slate-100/80"
           >
-            {/* drag handle */}
-            <div className="w-10 h-1 bg-slate-200 rounded-full mx-auto mt-2.5 mb-3" />
-
-            <div className="px-4 pb-4 space-y-3 max-w-xl mx-auto">
-              {/* Label */}
-              <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Type your transaction</p>
+            <div className="p-5 space-y-4">
+              <div className="flex items-center justify-between">
+                <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Type your transaction</p>
+                <button onClick={() => { dispatch({ type: 'TOGGLE_MANUAL', payload: false }); dispatch({ type: 'CLEAR_ERROR' }); }} className="text-slate-400 hover:bg-slate-100 p-1.5 rounded-full transition-colors">
+                  <X size={16} />
+                </button>
+              </div>
 
               {/* Textarea */}
               <div className="relative">
@@ -555,19 +551,13 @@ export function VoiceInput() {
               </div>
 
               {/* Action buttons */}
-              <div className="flex gap-2">
-                <button
-                  onClick={() => { dispatch({ type: 'TOGGLE_MANUAL', payload: false }); dispatch({ type: 'CLEAR_ERROR' }); }}
-                  className="flex-1 py-3 rounded-2xl border border-slate-200 bg-white text-slate-600 text-sm font-semibold hover:bg-slate-50 transition-colors"
-                >
-                  Cancel
-                </button>
+              <div className="flex justify-end pt-1">
                 <button
                   onClick={processManualInput}
                   disabled={!state.manualInput.trim()}
-                  className="flex-[2] py-3 rounded-2xl bg-gradient-to-r from-violet-600 to-fuchsia-500 text-white text-sm font-black flex items-center justify-center gap-1.5 shadow-lg shadow-violet-200/60 disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-violet-600 to-fuchsia-500 text-white text-sm font-black flex items-center justify-center gap-1.5 shadow-lg shadow-violet-200/60 disabled:opacity-40 disabled:cursor-not-allowed"
                 >
-                  <Sparkles size={14} /> Analyze &amp; Process
+                  <Sparkles size={16} /> Analyze &amp; Process
                 </button>
               </div>
             </div>

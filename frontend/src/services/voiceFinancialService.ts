@@ -210,13 +210,15 @@ function extractDescription(text: string): string {
 
 // Split multi-intent sentences like "paid 200 for coffee and bought 500 medicine"
 function splitSentences(text: string): string[] {
-  // Split on explicit connectors AND on implicit verb-based boundaries
+  // Split on explicit connectors
   const connectors = /\b(?:and also|and then|also then|then also)\b/gi;
-  const parts = text.split(connectors).map(s => s.trim()).filter(Boolean);
+  let parts = text.split(connectors).map(s => s.trim()).filter(Boolean);
 
-  // Further split on "and <verb>" patterns (multi-intent in one breath)
-  const verbPattern = /\s+and\s+(?=(?:paid|spent|bought|lent|gave|borrowed|saved|invested|transferred|sent|received|got|split))/gi;
-  return parts.flatMap(p => p.split(verbPattern).map(s => s.trim()).filter(Boolean));
+  // Further split on verbs if they are clearly starting a new intent
+  // This catches: "Paid 2000 for room spent 500 on groceries"
+  const verbBoundaryPattern = /\s+(?:and\s+)?(?=(?:paid|spent|bought|lent|gave|borrowed|saved|invested|transferred|sent|received|got|split)\b)/gi;
+  
+  return parts.flatMap(p => p.split(verbBoundaryPattern).map(s => s.trim()).filter(Boolean));
 }
 
 // Extract a date from natural language
