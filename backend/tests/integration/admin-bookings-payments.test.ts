@@ -6,6 +6,7 @@ import request from 'supertest';
 import jwt from 'jsonwebtoken';
 import { app } from '../../src/app';
 import { pinService } from '../../src/modules/pin/pin.service';
+import { generateSecurityToken } from '../../src/middleware/securityGate';
 
 const API = '/api/v1';
 
@@ -341,9 +342,11 @@ describe('PIN MODULE', () => {
 
   describe('POST /pin/key-backup', () => {
     it('should reject missing backup payload', async () => {
+      const securityToken = generateSecurityToken('pin-test-user');
       const res = await request(app)
         .post(`${API}/pin/key-backup`)
         .set(getSignedAuthHeaders())
+        .set('x-security-token', securityToken)
         .send({});
 
       expect(res.status).toBe(400);
@@ -355,9 +358,11 @@ describe('PIN MODULE', () => {
         .spyOn(pinService, 'savePinKeyBackup')
         .mockResolvedValueOnce({ success: true, message: 'saved' });
 
+      const securityToken = generateSecurityToken('pin-test-user');
       const res = await request(app)
         .post(`${API}/pin/key-backup`)
         .set(getSignedAuthHeaders())
+        .set('x-security-token', securityToken)
         .send({ backup: 'hash|salt' });
 
       expect(res.status).toBe(200);

@@ -93,10 +93,10 @@ const insertModelRun = async (runType: 'feature_engineering' | 'prediction_engin
   const id = randomUUID();
   const startedAt = new Date();
 
-  await prisma.$executeRawUnsafe(`
+  await prisma.$executeRaw`
     INSERT INTO ai_model_runs (id, run_type, status, started_at, processed_users)
-    VALUES ('${id}', '${runType}', 'running', '${startedAt.toISOString()}', 0)
-  `);
+    VALUES (${id}, ${runType}, 'running', ${startedAt}, 0)
+  `;
 
   return { id, startedAt: startedAt.toISOString() };
 };
@@ -107,15 +107,15 @@ const updateModelRun = async (
   processedUsers: number,
   notes?: string,
 ) => {
-  const notesSql = notes ? `'${notes.replace(/'/g, "''")}'` : 'NULL';
-  await prisma.$executeRawUnsafe(`
+  const completedAt = new Date();
+  await prisma.$executeRaw`
     UPDATE ai_model_runs
-    SET status = '${status}',
-        completed_at = '${new Date().toISOString()}',
+    SET status = ${status},
+        completed_at = ${completedAt},
         processed_users = ${processedUsers},
-        notes = ${notesSql}
-    WHERE id = '${id}'
-  `);
+        notes = ${notes ?? null}
+    WHERE id = ${id}
+  `;
 };
 
 export const recordAIEvent = async (

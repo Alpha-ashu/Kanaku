@@ -1,5 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { AuthRequest } from './auth';
+import { prisma } from '../db/prisma';
+import { logger } from '../config/logger';
 
 export type UserRole = 'admin' | 'manager' | 'advisor' | 'user';
 
@@ -105,19 +107,44 @@ export const ownerOnly = (userIdField: string) => {
 };
 
 /**
- * Audit log helper - Log access attempts
+ * Audit log helper - Log access attempts to database
  */
 export const auditLog = async (
-  userId: string,
+  userId: string | null | undefined,
   action: string,
   resource: string,
   status: 'success' | 'denied',
   details?: any
 ) => {
-  // TODO: Implement audit logging to database
-  // For now, log to console
-  const timestamp = new Date().toISOString();
-  // Audit log recorded
+  try {
+    const finalUserId = userId || 'unauthenticated';
+    const ip = details?.ip || null;
+    const userAgent = details?.userAgent || null;
+
+    const detailsJson = details ? { ...details } : {};
+    delete detailsJson.ip;
+    delete detailsJson.userAgent;
+
+    await prisma.auditLog.create({
+      data: {
+        userId: finalUserId,
+        action,
+        resource,
+        status,
+        ip,
+        userAgent,
+        details: detailsJson,
+      },
+    });
+  } catch (error) {
+    logger.error('Security Audit Logging Failed:', {
+      error: error instanceof Error ? error.message : String(error),
+      userId,
+      action,
+      resource,
+      status,
+    });
+  }
 };
 
 /**
@@ -132,15 +159,14 @@ export const withAudit = (action: string, resource: string) => {
       const statusCode = res.statusCode;
       const status = statusCode >= 400 ? 'denied' : 'success';
 
-      if (req.userId) {
-        auditLog(
-          req.userId,
-          action,
-          resource,
-          status,
-          { statusCode, ip: req.ip, userAgent: req.get('user-agent') }
-        ).catch(err => console.error('Audit log failed:', err));
-      }
+      const finalUserId = req.userId || 'unauthenticated';
+      auditLog(
+        finalUserId,
+        action,
+        resource,
+        status,
+        { statusCode, ip: req.ip, userAgent: req.get('user-agent') }
+      ).catch(err => logger.error('Audit log failed:', err));
 
       return originalSend.call(this, data);
     };

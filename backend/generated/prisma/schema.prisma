@@ -652,6 +652,22 @@ model ai_model_runs {
   @@schema("public")
 }
 
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String
+  action    String
+  resource  String
+  status    String
+  ip        String?
+  userAgent String?
+  details   Json?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+  @@schema("public")
+}
+
 model GroupExpense {
   id                   String               @id @default(uuid())
   userId               String

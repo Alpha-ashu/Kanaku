@@ -144,3 +144,19 @@ BEGIN
       CHECK (confidence_score >= 0 AND confidence_score <= 1) NOT VALID;
   END IF;
 END $$;
+
+CREATE TABLE IF NOT EXISTS public."AuditLog" (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  "userId" TEXT NOT NULL,
+  action TEXT NOT NULL,
+  resource TEXT NOT NULL,
+  status TEXT NOT NULL,
+  ip TEXT,
+  "userAgent" TEXT,
+  details JSONB,
+  "createdAt" TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_audit_log_user_id ON public."AuditLog" ("userId");
+CREATE INDEX IF NOT EXISTS idx_audit_log_created_at ON public."AuditLog" ("createdAt");
+

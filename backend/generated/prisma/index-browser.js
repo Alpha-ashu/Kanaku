@@ -542,6 +542,18 @@ exports.Prisma.Ai_model_runsScalarFieldEnum = {
   notes: 'notes'
 };
 
+exports.Prisma.AuditLogScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  action: 'action',
+  resource: 'resource',
+  status: 'status',
+  ip: 'ip',
+  userAgent: 'userAgent',
+  details: 'details',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.GroupExpenseScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
@@ -678,6 +690,7 @@ exports.Prisma.ModelName = {
   ai_events: 'ai_events',
   ai_insights: 'ai_insights',
   ai_model_runs: 'ai_model_runs',
+  AuditLog: 'AuditLog',
   GroupExpense: 'GroupExpense',
   GroupExpenseMember: 'GroupExpenseMember',
   user_features: 'user_features',

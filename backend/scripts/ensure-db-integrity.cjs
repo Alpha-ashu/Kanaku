@@ -22,7 +22,10 @@ if (!connectionString) {
 
 const sqlPath = path.join(__dirname, 'sql', 'ensure-db-integrity.sql');
 const sql = fs.readFileSync(sqlPath, 'utf8');
-const client = new Client({ connectionString });
+const client = new Client({
+  connectionString,
+  ssl: connectionString.includes('supabase.co') || connectionString.includes('neon.tech') || connectionString.includes('pooler.supabase.com') ? { rejectUnauthorized: false } : undefined
+});
 
 async function main() {
   await client.connect();
