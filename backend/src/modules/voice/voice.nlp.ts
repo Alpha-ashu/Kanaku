@@ -4,6 +4,7 @@
  */
 
 import { logger } from '../../config/logger';
+import { getAIConfigurations } from '../../utils/aiConfig';
 
 export type FinancialActionType =
   | 'expense'
@@ -282,11 +283,20 @@ function cleanTranscript(text: string): string {
 //  Main pipeline 
 
 export async function processVoiceTranscript(transcript: string): Promise<FinancialAction[]> {
+  const config = await getAIConfigurations();
+  
+  if (!config.voice.enabled) {
+    logger.warn('Voice NLP: Voice processing is disabled by configuration');
+    return [];
+  }
+
   const cleaned = cleanTranscript(transcript);
   logger.debug('Voice NLP: cleaned transcript', { original: transcript.slice(0, 100), cleaned: cleaned.slice(0, 100) });
 
   const segments = segmentTranscript(cleaned);
   logger.info('Voice NLP: segmented', { count: segments.length });
+
+  const threshold = config.voice.autoSaveThreshold ?? 0.7;
 
   const actions: FinancialAction[] = segments.map(segment => {
     const { type, confidence } = classifyIntent(segment);
@@ -297,16 +307,16 @@ export async function processVoiceTranscript(transcript: string): Promise<Financ
       rawSegment: segment,
       entities,
       confidence,
-      requiresReview: confidence < 0.7 || !entities.amount,
+      requiresReview: confidence < threshold || !entities.amount,
     };
   });
 
   // If Gemini is configured and any action has low confidence, use it for ambiguous ones
   if (process.env.GOOGLE_API_KEY) {
-    const lowConfidenceActions = actions.filter(a => a.confidence < 0.7);
+    const lowConfidenceActions = actions.filter(a => a.confidence < threshold);
     if (lowConfidenceActions.length > 0) {
       try {
-        await enhanceWithGemini(lowConfidenceActions, transcript);
+        await enhanceWithGemini(lowConfidenceActions, transcript, config.voice.model || 'gemini-1.5-flash', threshold);
       } catch (err: any) {
         logger.warn('Gemini voice enhancement failed, using rule-based results', { error: err.message });
       }
@@ -316,10 +326,15 @@ export async function processVoiceTranscript(transcript: string): Promise<Financ
   return actions.filter(a => a.type !== 'unknown' || a.entities.amount !== undefined);
 }
 
-async function enhanceWithGemini(actions: FinancialAction[], originalTranscript: string): Promise<void> {
+async function enhanceWithGemini(
+  actions: FinancialAction[], 
+  originalTranscript: string, 
+  modelName: string,
+  threshold: number
+): Promise<void> {
   const { GoogleGenerativeAI } = await import('@google/generative-ai');
   const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY!);
-  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+  const model = genAI.getGenerativeModel({ model: modelName });
 
   const segments = actions.map(a => a.rawSegment).join('\n');
   const prompt = `You are a financial assistant. Analyze each sentence and extract financial actions.
@@ -351,7 +366,7 @@ ${segments}`;
       if (result.category) actions[idx].entities.category = result.category;
       if (result.person) actions[idx].entities.person = result.person;
       if (result.description) actions[idx].entities.description = result.description;
-      actions[idx].requiresReview = (actions[idx].confidence ?? 0) < 0.7;
+      actions[idx].requiresReview = (actions[idx].confidence ?? 0) < threshold;
     }
   });
 }

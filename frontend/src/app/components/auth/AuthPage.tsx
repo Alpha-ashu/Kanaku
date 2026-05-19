@@ -3,8 +3,8 @@ import { signIn, signUp } from '@/lib/supabase-helpers';
 import { Shield, Eye, EyeOff, Mail, Lock, User, Check, ArrowRight, Loader2 } from 'lucide-react';
 import { KANKULogo } from '@/app/components/ui/KANKULogo';
 import { toast } from 'sonner';
-import { PrivacyPolicy } from './PrivacyPolicy';
-import { Terms } from './Terms';
+import { PrivacyPolicy } from '@/app/components/marketing/PrivacyPolicy';
+import { Terms } from '@/app/components/marketing/Terms';
 
 interface AuthPageProps {
  onAuthSuccess: () => void;

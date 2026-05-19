@@ -3,10 +3,17 @@ import { AuthRequest, getUserId } from '../../middleware/auth';
 import { prisma } from '../../db/prisma';
 import { processVoiceTranscript, FinancialAction } from './voice.nlp';
 import { logger } from '../../config/logger';
+import { getAIConfigurations } from '../../utils/aiConfig';
 
 export const processVoice = async (req: AuthRequest, res: Response) => {
   try {
     const userId = getUserId(req);
+    const config = await getAIConfigurations();
+    
+    if (!config.voice.enabled) {
+      return res.status(400).json({ error: 'Voice processing is currently disabled by administrator' });
+    }
+
     const { transcript } = req.body as { transcript: string };
 
     if (!transcript || transcript.trim().length === 0) {
@@ -83,20 +90,36 @@ export const learnFromCorrection = async (req: AuthRequest, res: Response) => {
 export const processVoiceAudio = async (req: AuthRequest, res: Response) => {
   try {
     const userId = getUserId(req);
-    const file = req.file;
+    const config = await getAIConfigurations();
 
+    if (!config.voice.enabled) {
+      return res.status(400).json({ error: 'Voice processing is currently disabled by administrator' });
+    }
+
+    const file = req.file;
     if (!file) {
       return res.status(400).json({ error: 'Audio file is required' });
     }
 
     let transcript = '';
+    const provider = config.voice.provider || 'gemini';
 
-    // Check if we have Google Gemini API key
-    if (process.env.GOOGLE_API_KEY) {
+    if (provider === 'webkit') {
+      // Force client-side transcription fallback
+      return res.json({
+        success: false,
+        error: 'Web Speech API (client-side) transcription configured by administrator.',
+        fallbackToWebSpeech: true
+      });
+    }
+
+    // Google Gemini Audio Transcription
+    if (provider === 'gemini' && process.env.GOOGLE_API_KEY) {
       try {
         const { GoogleGenerativeAI } = await import('@google/generative-ai');
         const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
-        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+        const modelName = config.voice.model || 'gemini-1.5-flash';
+        const model = genAI.getGenerativeModel({ model: modelName });
 
         const result = await model.generateContent([
           {
@@ -114,8 +137,8 @@ export const processVoiceAudio = async (req: AuthRequest, res: Response) => {
       }
     }
 
-    // If Gemini failed or was not configured, try OpenAI Whisper if configured
-    if (!transcript && process.env.OPENAI_API_KEY) {
+    // OpenAI Whisper Audio Transcription
+    if (!transcript && (provider === 'whisper' || !transcript) && process.env.OPENAI_API_KEY) {
       try {
         const OpenAIModule = (require as any)('openai');
         const openai = new OpenAIModule({ apiKey: process.env.OPENAI_API_KEY });

@@ -111,4 +111,15 @@ export const adminAIService = {
     const res = await apiClient.post<{ processedUsers: number }>('/admin/ai/run/predictions', {});
     return res.data;
   },
+  
+  getAIConfig: async () => {
+    const res = await apiClient.get<any>('/admin/ai/config');
+    return res.data;
+  },
+
+  updateAIConfig: async (config: any) => {
+    const res = await apiClient.post<any>('/admin/ai/config', config);
+    return res.data;
+  },
 };
+

@@ -153,6 +153,7 @@ export const AddInvestment: React.FC = () => {
  currentValue: livePrice * formData.quantity * buyFxRate,
  profitLoss: (livePrice * formData.quantity * buyFxRate) - totalPurchaseCost,
  purchaseDate: new Date(formData.date),
+ lastUpdated: new Date(),
  updatedAt: new Date(),
  broker: formData.broker,
  description: formData.description,

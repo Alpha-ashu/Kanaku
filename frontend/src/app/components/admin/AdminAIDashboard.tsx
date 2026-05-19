@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
 import { useApp } from '@/contexts/AppContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
 import {
  adminAIService,
  AIAccuracyDto,
@@ -34,6 +35,9 @@ import {
  Database,
  CheckCircle2,
  Settings,
+ Trash2,
+ Plus,
+ AlertCircle,
 } from 'lucide-react';
 import {
  Area,
@@ -173,24 +177,35 @@ export const AdminAIDashboard: React.FC = () => {
  const [rawLoading, setRawLoading] = useState(false);
  const [expandedRaw, setExpandedRaw] = useState<'features' | 'insights' | 'events' | null>('features');
  const [insightFilter, setInsightFilter] = useState<string>('all');
- const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'insights'>('overview');
+ const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'insights' | 'ai-config'>('overview');
+
+ // AI configurations tab state
+ const [aiConfig, setAiConfig] = useState<any>(null);
+ const [savingConfig, setSavingConfig] = useState(false);
+ const [newKeyword, setNewKeyword] = useState('');
+ const [newKeywordCategory, setNewKeywordCategory] = useState('Food & Dining');
+ const [keywordSearch, setKeywordSearch] = useState('');
 
  const loadDashboard = useCallback(async () => {
  setState('loading');
  setError('');
  try {
- const [overviewData, usersData, insightsData, patternsData, accuracyData] = await Promise.all([
+ const [overviewData, usersData, insightsData, patternsData, accuracyData, configData] = await Promise.all([
  adminAIService.getOverview(),
  adminAIService.getUsers(40),
  adminAIService.getInsights(60),
  adminAIService.getPatterns(),
  adminAIService.getAccuracy(),
+ adminAIService.getAIConfig().catch(() => null),
  ]);
- setOverview(overviewData);
- setUsers(usersData);
- setInsights(insightsData);
- setPatterns(patternsData);
- setAccuracy(accuracyData);
+ setOverview(overviewData ?? null);
+ setUsers(usersData ?? []);
+ setInsights(insightsData ?? []);
+ setPatterns(patternsData ?? null);
+ setAccuracy(accuracyData ?? null);
+ if (configData && configData.success) {
+   setAiConfig(configData.data);
+ }
  setState('ready');
  } catch (e) {
  setState('error');
@@ -221,9 +236,83 @@ export const AdminAIDashboard: React.FC = () => {
  const loadRawUserData = async (userId: string) => {
  if (!userId) return;
  setRawLoading(true);
- try { setRawData(await adminAIService.getRawUserData(userId)); }
+ try { setRawData(await adminAIService.getRawUserData(userId) ?? null); }
  catch (e) { setError(e instanceof Error ? e.message : 'Failed to load raw data'); }
  finally { setRawLoading(false); }
+ };
+
+ const updateConfigField = (section: string, field: string, value: any) => {
+   setAiConfig((prev: any) => ({
+     ...prev,
+     [section]: {
+       ...prev[section],
+       [field]: value
+     }
+   }));
+ };
+
+ const updateImportAlias = (aliasField: string, csvString: string) => {
+   const arr = csvString.split(',').map(s => s.trim()).filter(Boolean);
+   setAiConfig((prev: any) => ({
+     ...prev,
+     import: {
+       ...prev.import,
+       columnAliases: {
+         ...prev.import.columnAliases,
+         [aliasField]: arr
+       }
+     }
+   }));
+ };
+
+ const addKeywordRule = () => {
+   if (!newKeyword.trim()) return;
+   const kw = newKeyword.trim().toLowerCase();
+   setAiConfig((prev: any) => ({
+     ...prev,
+     smartRules: {
+       ...prev.smartRules,
+       categoryKeywords: {
+         ...prev.smartRules.categoryKeywords,
+         [kw]: newKeywordCategory
+       }
+     }
+   }));
+   setNewKeyword('');
+   toast.success(`Locally added rule: "${kw}" -> ${newKeywordCategory}. Remember to save.`);
+ };
+
+ const deleteKeywordRule = (kw: string) => {
+   setAiConfig((prev: any) => {
+     const updated = { ...prev.smartRules.categoryKeywords };
+     delete updated[kw];
+     return {
+       ...prev,
+       smartRules: {
+         ...prev.smartRules,
+         categoryKeywords: updated
+       }
+     };
+   });
+   toast.success(`Locally deleted rule for "${kw}". Remember to save.`);
+ };
+
+ const handleSaveConfig = async () => {
+   if (!aiConfig) return;
+   setSavingConfig(true);
+   try {
+     const res = await adminAIService.updateAIConfig(aiConfig);
+     if (res.success) {
+       setAiConfig(res.data);
+       toast.success('AI configurations deployed and saved successfully');
+     } else {
+       toast.error(res.error || 'Failed to save configurations');
+     }
+   } catch (err: any) {
+     toast.error(err.message || 'Failed to save configurations');
+   } finally {
+     setSavingConfig(false);
+   }
  };
 
  // Derived
@@ -396,15 +485,16 @@ export const AdminAIDashboard: React.FC = () => {
  </div>
  </Card>
 
- {/* Tabs: Overview / Users / Insights */}
- <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
- {/* Tab bar */}
- <div className="flex border-b border-gray-100">
- {([
- { id: 'overview', label: 'Charts & Patterns' },
- { id: 'users', label: `User Intelligence (${users.length})` },
- { id: 'insights', label: `AI Insights Feed (${insights.length})` },
- ] as const).map((tab) => (
+  {/* Tabs: Overview / Users / Insights / AI Config */}
+  <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+  {/* Tab bar */}
+  <div className="flex border-b border-gray-100 flex-wrap">
+  {([
+  { id: 'overview', label: 'Charts & Patterns' },
+  { id: 'users', label: `User Intelligence (${users.length})` },
+  { id: 'insights', label: `AI Insights Feed (${insights.length})` },
+  { id: 'ai-config', label: 'AI Settings & Deployment' },
+  ] as const).map((tab) => (
  <button
  key={tab.id}
  onClick={() => setActiveTab(tab.id)}
@@ -676,6 +766,419 @@ export const AdminAIDashboard: React.FC = () => {
  </div>
  ))
  )}
+ </div>
+ </div>
+ )}
+
+ {/* AI CONFIGURATION TAB */}
+ {activeTab === 'ai-config' && aiConfig && (
+ <div className="space-y-6">
+ {/* OCR Engine Config */}
+ <div className="bg-slate-50 border border-slate-200/60 rounded-2xl p-5 space-y-4">
+ <div className="flex items-center gap-2 border-b border-slate-200 pb-3">
+ <Brain size={18} className="text-indigo-600" />
+ <h4 className="font-semibold text-slate-800 text-sm">1. AI Bill Scanning Engine (OCR + Parsing)</h4>
+ </div>
+ <div className="grid gap-4 sm:grid-cols-2">
+ <div>
+ <label className="block text-xs font-semibold text-slate-600 mb-1">OCR Provider</label>
+ <select
+ value={aiConfig.ocr.provider}
+ onChange={(e) => updateConfigField('ocr', 'provider', e.target.value)}
+ className="w-full text-xs border border-slate-200 rounded-lg p-2.5 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
+ >
+ <option value="tesseract">Tesseract-only (Offline/Local heuristic parsing)</option>
+ <option value="gemini">Gemini-only (Direct multimodal LLM scanning)</option>
+ <option value="hybrid">Hybrid (Tesseract OCR + Gemini 1.5 JSON mapper)</option>
+ </select>
+ </div>
+ <div>
+ <label className="block text-xs font-semibold text-slate-600 mb-1">Gemini Model Version</label>
+ <input
+ type="text"
+ value={aiConfig.ocr.model}
+ onChange={(e) => updateConfigField('ocr', 'model', e.target.value)}
+ className="w-full text-xs border border-slate-200 rounded-lg p-2.5 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500 font-mono"
+ placeholder="e.g. gemini-1.5-flash"
+ />
+ </div>
+ <div>
+ <label className="block text-xs font-semibold text-slate-600 mb-1">
+ Confidence Acceptance Threshold: <span className="font-mono text-indigo-600 font-bold">{Math.round(aiConfig.ocr.confidenceThreshold * 100)}%</span>
+ </label>
+ <input
+ type="range"
+ min="0"
+ max="1"
+ step="0.05"
+ value={aiConfig.ocr.confidenceThreshold}
+ onChange={(e) => updateConfigField('ocr', 'confidenceThreshold', parseFloat(e.target.value))}
+ className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+ />
+ <span className="text-[10px] text-slate-400">Scans with confidence below this threshold will prompt manual review.</span>
+ </div>
+ <div className="grid grid-cols-2 gap-3">
+ <div>
+ <label className="block text-xs font-semibold text-slate-600 mb-1">Max Retries</label>
+ <input
+ type="number"
+ min="1"
+ max="10"
+ value={aiConfig.ocr.maxRetries}
+ onChange={(e) => updateConfigField('ocr', 'maxRetries', parseInt(e.target.value))}
+ className="w-full text-xs border border-slate-200 rounded-lg p-2.5 bg-white focus:outline-none"
+ />
+ </div>
+ <div>
+ <label className="block text-xs font-semibold text-slate-600 mb-1">Timeout (ms)</label>
+ <input
+ type="number"
+ step="1000"
+ value={aiConfig.ocr.timeoutMs}
+ onChange={(e) => updateConfigField('ocr', 'timeoutMs', parseInt(e.target.value))}
+ className="w-full text-xs border border-slate-200 rounded-lg p-2.5 bg-white focus:outline-none font-mono"
+ />
+ </div>
+ </div>
+ </div>
+ </div>
+
+ {/* Spreadsheet Import Config */}
+ <div className="bg-slate-50 border border-slate-200/60 rounded-2xl p-5 space-y-4">
+ <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+ <div className="flex items-center gap-2">
+ <Database size={18} className="text-emerald-600" />
+ <h4 className="font-semibold text-slate-800 text-sm">2. Smart Spreadsheet Import Pipeline</h4>
+ </div>
+ <label className="relative inline-flex items-center cursor-pointer">
+ <input
+ type="checkbox"
+ checked={aiConfig.import.enabled}
+ onChange={(e) => updateConfigField('import', 'enabled', e.target.checked)}
+ className="sr-only peer"
+ />
+ <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
+ <span className="ml-2 text-xs font-semibold text-slate-600">Enabled</span>
+ </label>
+ </div>
+ 
+ {aiConfig.import.enabled && (
+ <div className="space-y-4">
+ <div className="grid gap-4 sm:grid-cols-2">
+ <div>
+ <label className="block text-xs font-semibold text-slate-600 mb-1">Allowed File Extensions</label>
+ <div className="flex items-center gap-4 mt-2">
+ {['csv', 'xlsx', 'xls'].map((ext) => {
+ const exists = aiConfig.import.formats.includes(ext);
+ return (
+ <label key={ext} className="flex items-center gap-1.5 text-xs text-slate-700 cursor-pointer">
+ <input
+ type="checkbox"
+ checked={exists}
+ onChange={(e) => {
+ const next = e.target.checked
+ ? [...aiConfig.import.formats, ext]
+ : aiConfig.import.formats.filter((f: string) => f !== ext);
+ updateConfigField('import', 'formats', next);
+ }}
+ className="rounded text-emerald-600 focus:ring-emerald-500"
+ />
+ <span className="font-mono uppercase font-bold text-xs">{ext}</span>
+ </label>
+ );
+ })}
+ </div>
+ </div>
+ <div>
+ <label className="block text-xs font-semibold text-slate-600 mb-1">Duplicate Entry Detection Window</label>
+ <div className="flex items-center gap-2">
+ <input
+ type="number"
+ min="0"
+ max="60"
+ value={aiConfig.import.duplicateCheckWindowDays}
+ onChange={(e) => updateConfigField('import', 'duplicateCheckWindowDays', parseInt(e.target.value))}
+ className="w-20 text-xs border border-slate-200 rounded-lg p-2 bg-white text-center focus:outline-none"
+ />
+ <span className="text-xs text-slate-500 font-semibold">days</span>
+ </div>
+ </div>
+ </div>
+
+ <div className="border-t border-slate-200/80 pt-3">
+ <h5 className="text-xs font-bold text-slate-700 mb-2">Spreadsheet Header Aliases (for automatic column mapping)</h5>
+ <div className="grid gap-4 sm:grid-cols-2">
+ {[
+ { key: 'amount', label: 'Amount column aliases' },
+ { key: 'description', label: 'Description column aliases' },
+ { key: 'date', label: 'Transaction Date column aliases' },
+ { key: 'category', label: 'Category column aliases' }
+ ].map((item) => (
+ <div key={item.key}>
+ <label className="block text-[11px] font-semibold text-slate-500 mb-1 capitalize">{item.label}</label>
+ <input
+ type="text"
+ defaultValue={aiConfig.import.columnAliases[item.key].join(', ')}
+ onBlur={(e) => updateImportAlias(item.key, e.target.value)}
+ className="w-full text-xs border border-slate-200 rounded-lg p-2 bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+ placeholder="e.g. amount, value, debit"
+ />
+ </div>
+ ))}
+ </div>
+ <p className="text-[10px] text-slate-400 mt-2">Enter aliases separated by commas. These aliases are matched fuzzy style during import parsing.</p>
+ </div>
+ </div>
+ )}
+ </div>
+
+ {/* Voice Assistant Config */}
+ <div className="bg-slate-50 border border-slate-200/60 rounded-2xl p-5 space-y-4">
+ <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+ <div className="flex items-center gap-2">
+ <Zap size={18} className="text-violet-600" />
+ <h4 className="font-semibold text-slate-800 text-sm">3. Voice Financial NLP Assistant</h4>
+ </div>
+ <label className="relative inline-flex items-center cursor-pointer">
+ <input
+ type="checkbox"
+ checked={aiConfig.voice.enabled}
+ onChange={(e) => updateConfigField('voice', 'enabled', e.target.checked)}
+ className="sr-only peer"
+ />
+ <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-violet-600"></div>
+ <span className="ml-2 text-xs font-semibold text-slate-600">Enabled</span>
+ </label>
+ </div>
+
+ {aiConfig.voice.enabled && (
+ <div className="grid gap-4 sm:grid-cols-2">
+ <div>
+ <label className="block text-xs font-semibold text-slate-600 mb-1">ASR Speech Engine Provider</label>
+ <select
+ value={aiConfig.voice.provider}
+ onChange={(e) => updateConfigField('voice', 'provider', e.target.value)}
+ className="w-full text-xs border border-slate-200 rounded-lg p-2.5 bg-white focus:outline-none focus:ring-1 focus:ring-violet-500"
+ >
+ <option value="webkit">Web Speech API (Chrome local browser speech recognition)</option>
+ <option value="whisper">OpenAI Whisper-1 API (Requires backend API key)</option>
+ <option value="gemini">Google Gemini Audio Multimodal (Requires backend API key)</option>
+ </select>
+ </div>
+ <div>
+ <label className="block text-xs font-semibold text-slate-600 mb-1">ASR Model Name (Gemini/Whisper)</label>
+ <input
+ type="text"
+ value={aiConfig.voice.model}
+ onChange={(e) => updateConfigField('voice', 'model', e.target.value)}
+ className="w-full text-xs border border-slate-200 rounded-lg p-2.5 bg-white focus:outline-none focus:ring-1 focus:ring-violet-500 font-mono"
+ placeholder="e.g. gemini-1.5-flash or whisper-1"
+ />
+ </div>
+ <div>
+ <label className="block text-xs font-semibold text-slate-600 mb-1">Default Input Language</label>
+ <input
+ type="text"
+ value={aiConfig.voice.language}
+ onChange={(e) => updateConfigField('voice', 'language', e.target.value)}
+ className="w-full text-xs border border-slate-200 rounded-lg p-2.5 bg-white focus:outline-none focus:ring-1 focus:ring-violet-500 font-mono"
+ placeholder="e.g. en-US, en-IN, hi-IN"
+ />
+ </div>
+ <div>
+ <label className="block text-xs font-semibold text-slate-600 mb-1">
+ Auto-save Confidence threshold: <span className="font-mono text-violet-600 font-bold">{Math.round(aiConfig.voice.autoSaveThreshold * 100)}%</span>
+ </label>
+ <input
+ type="range"
+ min="0"
+ max="1"
+ step="0.05"
+ value={aiConfig.voice.autoSaveThreshold}
+ onChange={(e) => updateConfigField('voice', 'autoSaveThreshold', parseFloat(e.target.value))}
+ className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-violet-600"
+ />
+ <span className="text-[10px] text-slate-400">Transcribed segments with intent confidence below this will prompt approval.</span>
+ </div>
+ </div>
+ )}
+ </div>
+
+ {/* Smart Keyword Mappings */}
+ <div className="bg-slate-50 border border-slate-200/60 rounded-2xl p-5 space-y-4">
+ <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+ <div className="flex items-center gap-2">
+ <Sparkles size={18} className="text-amber-500" />
+ <h4 className="font-semibold text-slate-800 text-sm">4. Smart Categorization Rules & Keywords Mappings</h4>
+ </div>
+ <span className="text-xs text-slate-400 font-medium">
+ {Object.keys(aiConfig.smartRules?.categoryKeywords || {}).length} rules configured
+ </span>
+ </div>
+
+ {/* Add keyword rule */}
+ <div className="bg-white border border-slate-200 rounded-xl p-3 grid gap-3 sm:grid-cols-3 items-end">
+ <div>
+ <label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase">Keyword</label>
+ <input
+ type="text"
+ value={newKeyword}
+ onChange={(e) => setNewKeyword(e.target.value)}
+ className="w-full text-xs border border-slate-200 rounded-lg p-2 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+ placeholder="e.g. starbucks, fuel, flat"
+ />
+ </div>
+ <div>
+ <label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase">Map to Category</label>
+ <select
+ value={newKeywordCategory}
+ onChange={(e) => setNewKeywordCategory(e.target.value)}
+ className="w-full text-xs border border-slate-200 rounded-lg p-2 bg-white focus:outline-none"
+ >
+ <option value="Food & Dining">Food & Dining</option>
+ <option value="Transport">Transport</option>
+ <option value="Housing">Housing</option>
+ <option value="Shopping">Shopping</option>
+ <option value="Health">Health</option>
+ <option value="Entertainment">Entertainment</option>
+ <option value="Bills">Bills</option>
+ <option value="Groceries">Groceries</option>
+ <option value="Education">Education</option>
+ <option value="Salary">Salary</option>
+ <option value="Business">Business</option>
+ <option value="Others">Others</option>
+ </select>
+ </div>
+ <button
+ type="button"
+ onClick={addKeywordRule}
+ className="w-full text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 py-2.5 px-3 rounded-lg flex items-center justify-center gap-1.5 transition-colors"
+ >
+ <Plus size={14} /> Add Rule
+ </button>
+ </div>
+
+ {/* Search keyword rules */}
+ <div className="flex gap-2">
+ <input
+ type="text"
+ value={keywordSearch}
+ onChange={(e) => setKeywordSearch(e.target.value)}
+ className="w-full text-xs border border-slate-200 rounded-lg p-2 focus:outline-none"
+ placeholder="Search keyword mappings..."
+ />
+ </div>
+
+ {/* Keyword list */}
+ <div className="max-h-52 overflow-y-auto border border-slate-200 rounded-xl bg-white divide-y divide-slate-100 font-sans">
+ {Object.entries(aiConfig.smartRules?.categoryKeywords || {})
+ .filter(([kw, cat]) => 
+ kw.includes(keywordSearch.toLowerCase()) || 
+ (cat as string).toLowerCase().includes(keywordSearch.toLowerCase())
+ )
+ .map(([kw, cat]) => (
+ <div key={kw} className="flex items-center justify-between px-4 py-2 hover:bg-slate-50 transition-colors">
+ <span className="font-mono text-xs font-semibold text-slate-800">{kw}</span>
+ <div className="flex items-center gap-3">
+ <span className="text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded-lg border border-slate-200">{cat as string}</span>
+ <button
+ type="button"
+ onClick={() => deleteKeywordRule(kw)}
+ className="text-slate-400 hover:text-red-600 p-1 transition-colors"
+ title="Delete rule"
+ >
+ <Trash2 size={13} />
+ </button>
+ </div>
+ </div>
+ ))}
+ </div>
+ </div>
+
+ {/* Rollout & Deployment Control */}
+ <div className="bg-slate-50 border border-slate-200/60 rounded-2xl p-5 space-y-4">
+ <div className="flex items-center gap-2 border-b border-slate-200 pb-3">
+ <Settings size={18} className="text-slate-600" />
+ <h4 className="font-semibold text-slate-800 text-sm">5. Deployments, Rollouts & Versioning</h4>
+ </div>
+ <div className="grid gap-4 sm:grid-cols-2">
+ <div>
+ <label className="block text-xs font-semibold text-slate-600 mb-1">
+ Rollout Target Percentage: <span className="font-mono text-slate-700 font-bold">{aiConfig.deployment.rolloutPercentage}%</span>
+ </label>
+ <input
+ type="range"
+ min="0"
+ max="100"
+ step="5"
+ value={aiConfig.deployment.rolloutPercentage}
+ onChange={(e) => updateConfigField('deployment', 'rolloutPercentage', parseInt(e.target.value))}
+ className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-slate-600"
+ />
+ <span className="text-[10px] text-slate-400">Controls what percentage of users receive the advanced AI feature set.</span>
+ </div>
+ <div>
+ <label className="block text-xs font-semibold text-slate-600 mb-1">Active Release Version</label>
+ <input
+ type="text"
+ value={aiConfig.deployment.activeVersion}
+ onChange={(e) => updateConfigField('deployment', 'activeVersion', e.target.value)}
+ className="w-full text-xs border border-slate-200 rounded-lg p-2.5 bg-white focus:outline-none font-mono"
+ placeholder="e.g. v1.0.0"
+ />
+ </div>
+ <div>
+ <label className="block text-xs font-semibold text-slate-600 mb-1">Target Environment</label>
+ <select
+ value={aiConfig.deployment.environment}
+ onChange={(e) => updateConfigField('deployment', 'environment', e.target.value)}
+ className="w-full text-xs border border-slate-200 rounded-lg p-2.5 bg-white focus:outline-none"
+ >
+ <option value="dev">Development / Sandbox</option>
+ <option value="test">QA / Testing</option>
+ <option value="staging">Staging / Pre-prod</option>
+ <option value="prod">Production</option>
+ </select>
+ </div>
+ <div>
+ <label className="block text-xs font-semibold text-slate-600 mb-1">Beta Testers (Emails, separated by commas)</label>
+ <textarea
+ value={aiConfig.deployment.betaUsers.join(', ')}
+ onChange={(e) => {
+ const list = e.target.value.split(',').map(s => s.trim()).filter(Boolean);
+ updateConfigField('deployment', 'betaUsers', list);
+ }}
+ rows={2}
+ className="w-full text-xs border border-slate-200 rounded-lg p-2 bg-white focus:outline-none focus:ring-1 focus:ring-slate-500"
+ placeholder="user1@example.com, user2@example.com"
+ />
+ </div>
+ </div>
+ </div>
+
+ {/* Save panel */}
+ <div className="flex items-center justify-between border-t border-slate-200 pt-5">
+ <div className="flex items-center gap-1.5 text-xs text-amber-600 bg-amber-50 border border-amber-100 rounded-xl px-3 py-2">
+ <AlertCircle size={14} className="shrink-0" />
+ <span>Deploying configs updates these values globally for all users instantly.</span>
+ </div>
+ <button
+ type="button"
+ onClick={handleSaveConfig}
+ disabled={savingConfig}
+ className="flex items-center gap-2 px-5 py-3 font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition-colors disabled:opacity-50 text-xs shadow-md shadow-indigo-100"
+ >
+ {savingConfig ? (
+ <>
+ <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+ Deploying...
+ </>
+ ) : (
+ <>
+ <CheckCircle2 size={14} /> Deploy Configurations
+ </>
+ )}
+ </button>
  </div>
  </div>
  )}

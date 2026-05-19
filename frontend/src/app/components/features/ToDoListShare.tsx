@@ -22,7 +22,7 @@ export const ToDoListShare: React.FC = () => {
  ];
 
  // Use actual user ID or fallback for demo data
- const currentUserId = user?.id ?? null;
+ const currentUserId = user?.id ?? '';
 
  // Get list ID from localStorage
  useEffect(() => {

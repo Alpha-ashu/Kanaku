@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { pinService } from '../../services/pinService';
+import { pinService } from '@/services/pinService';
 
 interface OnboardingStep3Props {
  data: {

@@ -180,6 +180,7 @@ export function AddTransaction() {
      merchant: '',
      date: defaultDateKey,
      notes: '',
+     payee: '',
    };
  });
 

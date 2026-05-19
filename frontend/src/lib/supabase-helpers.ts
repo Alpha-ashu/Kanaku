@@ -6,6 +6,7 @@
 // =====================================================
 
 import { apiClient } from '@/lib/api';
+import supabase from '@/utils/supabase/client';
 
 // =====================================================
 // TYPE DEFINITIONS (matching database schema)

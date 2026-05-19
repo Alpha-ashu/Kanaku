@@ -263,7 +263,7 @@ class BackendService {
       };
     }
   }
-  private api: AxiosInstance;
+   public api: AxiosInstance;
   private token: string | null = null;
 
   constructor() {

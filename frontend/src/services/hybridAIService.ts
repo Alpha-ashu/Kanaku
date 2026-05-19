@@ -293,7 +293,7 @@ class HybridAIService {
     const offlineTime = performance.now() - offlineStart;
 
     // Benchmark online
-    let onlineBenchmark = null;
+    let onlineBenchmark: { time: number; confidence: number } | null = null;
     if (this.config.enableOnlineFallback) {
       try {
         const onlineStart = performance.now();

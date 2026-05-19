@@ -204,7 +204,7 @@ export const AutoText: React.FC<AutoTextProps> = ({
     '2xl': 'auto-text-2xl',
     '3xl': 'auto-text-3xl',
   };
-  const Tag = as as keyof JSX.IntrinsicElements;
+  const Tag = as as any;
   return (
     <Tag className={cn(sizeClasses[size], className)}>
       {children}

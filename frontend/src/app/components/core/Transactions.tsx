@@ -61,7 +61,7 @@ const getDocumentIdFromTransaction = (transaction: { attachment?: string; import
 };
 
 export const Transactions: React.FC = () => {
- const { accounts, transactions, currency, setCurrentPage } = useApp();
+ const { accounts, transactions, currency, setCurrentPage, refreshData } = useApp();
  const [filterType, setFilterType] = useState<'all' | 'expense' | 'income'>('all');
  const [searchQuery, setSearchQuery] = useState('');
  const [timePeriod, setTimePeriod] = useState<TimeFilterPeriod>('monthly');
@@ -201,7 +201,7 @@ export const Transactions: React.FC = () => {
  }, [selectedDate, timePeriod]);
 
  const dateRange = useMemo(() => {
- const dates = [];
+ const dates: Date[] = [];
  const baseDate = filterReferenceDate;
  
  if (timePeriod === 'daily' || timePeriod === 'weekly') {

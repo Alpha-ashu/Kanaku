@@ -23,7 +23,7 @@ export const ToDoLists: React.FC = () => {
  // Use actual user ID - if not authenticated, show empty state
  const currentUserId = user?.id ?? null;
 
- const toDoLists: ToDoList[] = useLiveQuery(
+ const toDoLists = useLiveQuery<ToDoList[]>(
  () => {
  if (!currentUserId) return Promise.resolve([]);
  return db.toDoLists.filter(list => list.ownerId === currentUserId).toArray();

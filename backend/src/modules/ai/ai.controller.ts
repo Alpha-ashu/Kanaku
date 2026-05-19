@@ -108,3 +108,27 @@ export const runAdminPredictionRefresh = async (_req: AuthRequest, res: Response
     return res.status(500).json({ success: false, error: 'Failed to run AI prediction refresh' });
   }
 };
+
+import { getAIConfigurations, updateAIConfigurations } from '../../utils/aiConfig';
+
+export const getAdminAIConfig = async (_req: AuthRequest, res: Response) => {
+  try {
+    const config = await getAIConfigurations();
+    return res.json({ success: true, data: config });
+  } catch (error) {
+    logger.error('Failed to get AI config', { error });
+    return res.status(500).json({ success: false, error: 'Failed to get AI configuration' });
+  }
+};
+
+export const updateAdminAIConfig = async (req: AuthRequest, res: Response) => {
+  try {
+    const body = req.body;
+    const config = await updateAIConfigurations(body);
+    return res.json({ success: true, data: config, message: 'AI configuration updated successfully' });
+  } catch (error: any) {
+    logger.error('Failed to update AI config', { error });
+    return res.status(500).json({ success: false, error: error.message || 'Failed to update AI configuration' });
+  }
+};
+

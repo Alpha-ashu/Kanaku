@@ -69,7 +69,7 @@ export interface Transaction {
   date: Date;
   tags?: string[];
   attachment?: string;
-  expenseMode?: 'individual' | 'group';
+  expenseMode?: 'individual' | 'group' | 'loan';
   groupExpenseId?: number;
   groupName?: string;
   splitType?: 'equal' | 'custom';
@@ -77,9 +77,22 @@ export interface Transaction {
   importMetadata?: Record<string, string>;
   originalCategory?: string;
   importedAt?: Date;
+  // Loan specific fields on Transaction
+  loanType?: 'borrowed' | 'lent';
+  contactName?: string;
+  interestRate?: number;
+  loanCategory?: string;
+  bankName?: string;
+  tenureMonths?: number;
+  emiAmount?: number;
+  downPayment?: number;
+  receivedAccount?: number;
+  emiDeductionAccountId?: number;
+  notes?: string;
   // Transfer specific fields
   transferToAccountId?: number;
   transferType?: 'self-transfer' | 'other-transfer'; // self-transfer is between own accounts
+  recurrence?: string;
   createdAt?: Date;
   updatedAt?: Date;
   deletedAt?: Date;
@@ -256,6 +269,7 @@ export interface Investment {
   realizedProfitLoss?: number;
   settlementAccountId?: number;
   closeNotes?: string;
+  createdAt?: Date;
   updatedAt?: Date;
   deletedAt?: Date;
   syncStatus?: SyncStatus;

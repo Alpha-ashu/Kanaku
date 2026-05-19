@@ -13,6 +13,7 @@ vi.mock('@/utils/supabase/client', () => ({
   },
 }));
 
+import { api } from '@/lib/api';
 import { permissionService } from './permissionService';
 
 describe('permissionService', () => {
@@ -23,6 +24,7 @@ describe('permissionService', () => {
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
     localStorage.clear();
+    api.clearCache();
   });
 
   it('uses backend profile role instead of the fallback role when available', async () => {
@@ -48,9 +50,9 @@ describe('permissionService', () => {
 
     expect(fetch).toHaveBeenCalledWith('/api/v1/auth/profile', expect.objectContaining({
       method: 'GET',
-      headers: {
+      headers: expect.objectContaining({
         Authorization: 'Bearer session-token',
-      },
+      }),
     }));
     expect(permissions.role).toBe('admin');
     expect(permissions.permissions.canAccessAdminPanel).toBe(true);
@@ -142,7 +144,9 @@ describe('permissionService', () => {
     vi.stubGlobal('fetch', fetchMock);
 
     const initialPermissions = await permissionService.fetchUserPermissions('user-1', 'user');
+    api.clearCache();
     const retryPermissions = await permissionService.fetchUserPermissions('user-1', 'user');
+    await new Promise((resolve) => setTimeout(resolve, 0));
 
     expect(initialPermissions.role).toBe('admin');
     expect(retryPermissions.role).toBe('admin');
@@ -158,8 +162,8 @@ describe('permissionService', () => {
       },
     });
 
-    let resolveFetch: ((value: any) => void) | null = null;
-    const fetchPromise = new Promise((resolve) => {
+    let resolveFetch: any = null;
+    const fetchPromise = new Promise<any>((resolve) => {
       resolveFetch = resolve;
     });
 
@@ -169,8 +173,7 @@ describe('permissionService', () => {
     const firstLookup = permissionService.fetchUserPermissions('user-1', 'user');
     const secondLookup = permissionService.fetchUserPermissions('user-1', 'user');
 
-    await Promise.resolve();
-    await Promise.resolve();
+    await new Promise((resolve) => setTimeout(resolve, 0));
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
 

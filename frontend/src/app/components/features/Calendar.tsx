@@ -107,7 +107,7 @@ export const Calendar: React.FC = () => {
  }, [reminders]);
 
  const calendarDays = useMemo(() => {
- const days = [];
+ const days: Date[] = [];
  const daysInMonth = monthEnd.getDate();
  // Padding from previous month to start on the correct day of week
  const leadingPadding = monthStart.getDay();

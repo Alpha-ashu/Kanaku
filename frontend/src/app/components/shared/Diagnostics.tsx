@@ -3,7 +3,7 @@ import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
 import { useApp } from '@/contexts/AppContext';
 import supabase from '@/utils/supabase/client';
 import { toast } from 'sonner';
-import { ChevronLeft, RefreshCw, Copy, ExternalLink, Database, Trash2, ShieldCheck } from 'lucide-react';
+import { ChevronLeft, RefreshCw, Copy, ExternalLink, Database, Trash2, ShieldCheck, Users, Star, AlertCircle } from 'lucide-react';
 import { db } from '@/lib/database';
 import { deduplicateLocalData } from '@/lib/auth-sync-integration';
 

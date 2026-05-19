@@ -13,6 +13,8 @@ import {
 	getAdminAIUsers,
 	runAdminFeatureRefresh,
 	runAdminPredictionRefresh,
+	getAdminAIConfig,
+	updateAdminAIConfig,
 } from '../ai/ai.controller';
 import { validateBody, validateParams } from '../../middleware/validate';
 import { aiLimitQuerySchema, aiRunBodySchema, aiUserParamsSchema } from '../ai/ai.validation';
@@ -57,5 +59,7 @@ router.get('/ai/accuracy', getAdminAIAccuracy);
 router.get('/ai/raw/:userId', validateParams(aiUserParamsSchema), getAdminAIRawUserData);
 router.post('/ai/run/features', validateBody(aiRunBodySchema), runAdminFeatureRefresh);
 router.post('/ai/run/predictions', validateBody(aiRunBodySchema), runAdminPredictionRefresh);
+router.get('/ai/config', getAdminAIConfig);
+router.post('/ai/config', updateAdminAIConfig);
 
 export { router as adminRoutes };

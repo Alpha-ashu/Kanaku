@@ -108,10 +108,27 @@ const hasSummaryBoundary = (line: string) => {
 
 const isMetadataLine = (line: string) => {
   const normalizedLine = normalizeForMatching(line);
+  const hasDatePattern = /(\d{1,2})\s*[\/\-\.\|]\s*(\d{1,2})\s*[\/\-\.\|]\s*(\d{2,4})/.test(line)
+    || /(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+\d{1,2}/i.test(line)
+    || /\d{1,2}\s+(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i.test(line);
   return (
     MERCHANT_LINE_BLOCKLIST.test(line)
-    || /\b(?:rill|bill|invoice|receipt|token|table|cash memo|cashier|captain|phone|ph|gstin|gst no|vat tin|fssai|address|road|street|lane|avenue|table|stud|date|time)\b/i.test(normalizedLine)
+    || /\b(?:rill|bill|invoice|receipt|token|table|cash memo|cashier|captain|phone|ph|gstin|gst no|vat tin|fssai|address|road|street|lane|avenue|table|stud|date|time|dt)\b/i.test(normalizedLine)
+    || hasDatePattern
   );
+};
+
+const isHeaderOrDateLine = (line: string) => {
+  const normalizedLine = normalizeForMatching(line);
+  const hasDatePattern = /(\d{1,2})\s*[\/\-\.\|]\s*(\d{1,2})\s*[\/\-\.\|]\s*(\d{2,4})/.test(line)
+    || /(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+\d{1,2}/i.test(line)
+    || /\d{1,2}\s+(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i.test(line);
+  
+  if (hasDatePattern) return true;
+
+  const headerMetadataKeywords = /\b(?:gstin|gst\s*no|vat\s*tin|fssai|phone|mobile|tel|address|road|street|lane|avenue|table\s*no|w\.?\s*no|token\s*no|invoice\s*no|bill\s*no|cashier|server|date|time|dt)\b/i;
+  
+  return headerMetadataKeywords.test(normalizedLine) || headerMetadataKeywords.test(line);
 };
 
 const extractAmounts = (text: string, options?: { allowLooseIntegers?: boolean }) => {
@@ -164,12 +181,12 @@ const normalizeYear = (yearToken: string) => {
 const extractDate = (lines: string[]) => {
   const datePatterns: Array<{ re: RegExp; order: 'dmy' | 'ymd' | 'named' }> = [
     // Standard separators: / - .
-    { re: /(\d{1,2})[\/ \-\.](\d{1,2})[\/ \-\.](\d{2,4})/, order: 'dmy' },
-    { re: /(\d{4})[\/ \-\.](\d{1,2})[\/ \-\.](\d{1,2})/, order: 'ymd' },
+    { re: /(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})/, order: 'dmy' },
+    { re: /(\d{4})[\/\-\.](\d{1,2})[\/\-\.](\d{1,2})/, order: 'ymd' },
     // OCR-garbled separators: | l (pipe/lowercase-L often misread from /)
     { re: /(\d{1,2})[|l](\d{1,2})[|l](\d{2,4})/, order: 'dmy' },
     // Spaced separators: "30 / 12 / 2024" or "30 - 12 - 2024"
-    { re: /(\d{1,2})\s*[\/ \-\.]\s*(\d{1,2})\s*[\/ \-\.]\s*(\d{2,4})/, order: 'dmy' },
+    { re: /(\d{1,2})\s*[\/\-\.]\s*(\d{1,2})\s*[\/\-\.]\s*(\d{2,4})/, order: 'dmy' },
     // Named months
     { re: /(\d{1,2})\s+(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*[,.]?\s+(\d{2,4})/i, order: 'named' },
     // Month-first US style: "Dec 30, 2024"
@@ -896,17 +913,19 @@ export async function parseReceiptText(rawText: string, userId?: string): Promis
   const product_total = toRoundedAmount(items.reduce((sum, item) => sum + item.amount, 0));
 
   const taxBreakdown = extractTaxBreakdown(lines);
-  const resolvedTaxAmount = extractTaxAmount(lines, taxBreakdown);
+  let resolvedTaxAmount = extractTaxAmount(lines, taxBreakdown);
   
   const subtotal = extractSectionAmount(lines, RECEIPT_SUBTOTAL_PATTERNS);
   const pretaxAmount = extractPretaxAmount(lines);
-  const resolvedSubtotal = subtotal || pretaxAmount;
+  let resolvedSubtotal = subtotal || pretaxAmount;
 
   // STEP 2 & 3 - CLASSIFY BY CONTEXT AND POSITIONAL UNDERSTANDING
   const candidates: Array<{ amount: number; score: number; isKeywordMatch: boolean; lineIndex: number }> = [];
   
   lines.forEach((line, index) => {
     const normalized = normalizeWhitespace(line).toLowerCase();
+    
+    if (isHeaderOrDateLine(line)) return;
     
     // Ignore low priority keywords entirely for total candidates
     if (/\b(?:qty|quantity|token|table|serial\s*no|w\.?\s*no)\b/i.test(normalized)) return;
@@ -921,13 +940,16 @@ export async function parseReceiptText(rawText: string, userId?: string): Promis
       let score = index * 0.05; // Y-axis positional priority (bottom is highest)
       let isKeywordMatch = false;
 
-      // High priority keywords
-      if (/grand\s*total|final\s*total|net\s*total|net\s*amount|amount\s*payable|total\s*payable|total\s*amount/i.test(line)) {
-        score += 5;
+      // Check against all patterns in RECEIPT_TOTAL_PATTERNS
+      const matchesTotalPattern = RECEIPT_TOTAL_PATTERNS.some((pattern) => pattern.test(line));
+
+      if (matchesTotalPattern && !/sub\s*total|tax/i.test(line)) {
         isKeywordMatch = true;
-      } else if (/\btotal\b/i.test(line) && !/sub\s*total|tax/i.test(line)) {
-        score += 2;
-        isKeywordMatch = true;
+        if (/grand\s*total|final\s*total|net\s*total|net\s*amount|amount\s*payable|total\s*payable|total\s*amount/i.test(line)) {
+          score += 5;
+        } else {
+          score += 3;
+        }
       }
       
       // Ignore subtotal / tax explicitly
@@ -939,7 +961,8 @@ export async function parseReceiptText(rawText: string, userId?: string): Promis
   });
 
   // STEP 4 - MATHEMATICAL VALIDATION
-  const expectedCalculatedTotal = toRoundedAmount(product_total + (resolvedTaxAmount || 0));
+  const baseSubtotal = resolvedSubtotal && resolvedSubtotal > product_total ? resolvedSubtotal : product_total;
+  const expectedCalculatedTotal = toRoundedAmount(baseSubtotal + (resolvedTaxAmount || 0));
   candidates.sort((a, b) => b.score - a.score);
 
   let amount: number | undefined;
@@ -979,9 +1002,38 @@ export async function parseReceiptText(rawText: string, userId?: string): Promis
     break;
   }
 
+  const originalDetectedAmount = amount;
+
+  if (
+    amount
+    && expectedCalculatedTotal > amount
+    && resolvedTaxAmount
+    && (
+      Math.abs(amount + resolvedTaxAmount - expectedCalculatedTotal) <= 0.02
+      || Math.abs(amount - product_total) <= 0.02
+      || Math.abs(amount - (resolvedSubtotal || 0)) <= 0.02
+    )
+  ) {
+    amount = expectedCalculatedTotal;
+  }
+
   if (!amount && expectedCalculatedTotal > 0) {
     amount = expectedCalculatedTotal;
     finalConfidence = 0.85; // High confidence because we derived it mathematically
+  }
+
+  // Derive missing subtotal or tax from total if possible
+  if (amount !== undefined) {
+    if (resolvedSubtotal !== undefined && resolvedTaxAmount === undefined) {
+      const diff = toRoundedAmount(amount - resolvedSubtotal);
+      if (diff > 0) {
+        resolvedTaxAmount = diff;
+      } else if (diff === 0) {
+        resolvedSubtotal = undefined;
+      }
+    } else if (resolvedTaxAmount !== undefined && resolvedSubtotal === undefined) {
+      resolvedSubtotal = toRoundedAmount(amount - resolvedTaxAmount);
+    }
   }
   
   // Extract unique top 5 candidates for UI
@@ -1003,7 +1055,7 @@ export async function parseReceiptText(rawText: string, userId?: string): Promis
 
   const validationResult = buildValidationResult({
     amount,
-    detectedAmount: amount,
+    detectedAmount: originalDetectedAmount,
     subtotal: resolvedSubtotal,
     taxAmount: resolvedTaxAmount,
     taxBreakdown,
@@ -1028,7 +1080,9 @@ export async function parseReceiptText(rawText: string, userId?: string): Promis
     final_amount: amount ? { value: amount, confidence: finalConfidence } : undefined,
     amountMismatchDetected,
     amountCandidates,
+    subtotal: resolvedSubtotal,
     taxAmount: resolvedTaxAmount,
+    taxBreakdown,
     items: cleanedItems,
     confidence: finalConfidence > 0 ? finalConfidence : (merchantName ? 0.3 : 0),
     validationResult,

@@ -2,19 +2,13 @@ import { Response } from 'express';
 import { AuthRequest, getUserId } from '../../middleware/auth';
 import { logger } from '../../config/logger';
 import { categorizeTextForUser } from '../categorization/categorization.engine';
+import { getAIConfigurations } from '../../utils/aiConfig';
 
 type JsonRow = Record<string, string>;
 
-//  Column Mapping 
-
-const AMOUNT_ALIASES = ['amount', 'value', 'debit', 'credit', 'transaction amount', 'txn amount', 'amt'];
-const DESCRIPTION_ALIASES = ['description', 'narration', 'note', 'notes', 'remarks', 'remark', 'particulars', 'details', 'memo'];
-const DATE_ALIASES = ['date', 'transaction date', 'txn date', 'value date', 'posting date', 'booking date'];
-const CATEGORY_ALIASES = ['category', 'type', 'transaction type', 'expense type'];
-
 function fuzzyMatch(col: string, aliases: string[]): boolean {
   const lower = col.toLowerCase().trim();
-  return aliases.some(alias => lower.includes(alias) || alias.includes(lower));
+  return aliases.some(alias => lower.includes(alias.toLowerCase()) || alias.toLowerCase().includes(lower));
 }
 
 interface ColumnMap {
@@ -24,13 +18,13 @@ interface ColumnMap {
   category?: string;
 }
 
-function detectColumns(headers: string[]): ColumnMap {
+function detectColumns(headers: string[], aliases: { amount: string[]; description: string[]; date: string[]; category: string[] }): ColumnMap {
   const map: ColumnMap = {};
   for (const header of headers) {
-    if (!map.amount && fuzzyMatch(header, AMOUNT_ALIASES)) map.amount = header;
-    if (!map.description && fuzzyMatch(header, DESCRIPTION_ALIASES)) map.description = header;
-    if (!map.date && fuzzyMatch(header, DATE_ALIASES)) map.date = header;
-    if (!map.category && fuzzyMatch(header, CATEGORY_ALIASES)) map.category = header;
+    if (!map.amount && fuzzyMatch(header, aliases.amount)) map.amount = header;
+    if (!map.description && fuzzyMatch(header, aliases.description)) map.description = header;
+    if (!map.date && fuzzyMatch(header, aliases.date)) map.date = header;
+    if (!map.category && fuzzyMatch(header, aliases.category)) map.category = header;
   }
   return map;
 }
@@ -136,26 +130,36 @@ const importSessions = new Map<string, ImportPreview>();
 export const uploadImport = async (req: AuthRequest, res: Response) => {
   try {
     const userId = getUserId(req);
+    const config = await getAIConfigurations();
+
+    if (!config.import.enabled) {
+      return res.status(400).json({ error: 'Spreadsheet import is currently disabled by administrator.' });
+    }
+
     const file = req.file; if (!file) {
       return res.status(400).json({ error: 'File is required' });
+    }
+
+    const ext = file.originalname.split('.').pop()?.toLowerCase() || '';
+    const isSupported = config.import.formats.some(f => ext === f.toLowerCase());
+    if (!isSupported) {
+      return res.status(400).json({ error: `File format .${ext} is not allowed. Allowed formats: ${config.import.formats.join(', ')}` });
     }
 
     const contentType = file.mimetype || '';
     let rows: JsonRow[] = [];
 
-    if (contentType.includes('csv') || file.originalname.endsWith('.csv')) {
+    if (contentType.includes('csv') || ext === 'csv') {
       const text = file.buffer.toString('utf-8');
       rows = parseCSV(text);
-    } else if (contentType.includes('excel') || contentType.includes('spreadsheet')
-      || file.originalname.match(/\.xlsx?$/i)) {
-      // Try to parse XLSX if available
+    } else if (contentType.includes('excel') || contentType.includes('spreadsheet') || ext === 'xlsx' || ext === 'xls') {
       try {
         const XLSX = require('xlsx');
         const workbook = XLSX.read(file.buffer, { type: 'buffer' });
         const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
         rows = XLSX.utils.sheet_to_json(firstSheet, { defval: '' }) as JsonRow[];
       } catch {
-        return res.status(400).json({ error: 'Excel parsing unavailable. Please export as CSV.' });
+        return res.status(400).json({ error: 'Excel parsing failed. Please export as CSV.' });
       }
     } else {
       return res.status(400).json({ error: 'Unsupported file type. Upload CSV or Excel.' });
@@ -166,7 +170,7 @@ export const uploadImport = async (req: AuthRequest, res: Response) => {
     }
 
     const headers = Object.keys(rows[0]);
-    const columnMap = detectColumns(headers);
+    const columnMap = detectColumns(headers, config.import.columnAliases);
 
     // Categorize all transactions
     const transactions: ImportedTransaction[] = await Promise.all(

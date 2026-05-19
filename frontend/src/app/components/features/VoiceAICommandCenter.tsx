@@ -309,7 +309,7 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
  
  if (activeLoans.length > 0) {
  // Get the most recent active loan
- matchedLoan = activeLoans.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())[0];
+ matchedLoan = activeLoans.sort((a, b) => (b.updatedAt?.getTime() ?? 0) - (a.updatedAt?.getTime() ?? 0))[0];
  }
  }
 
@@ -370,7 +370,9 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
  createdAt: now,
  updatedAt: now
  });
+ if (friendId !== undefined) {
  queueRecordUpsertSync('friends', friendId);
+ }
  }
 
  // 2. Create corresponding transaction

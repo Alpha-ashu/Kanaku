@@ -416,6 +416,10 @@ export const apiClient = new HTTPClient();
 // ==================== Helper Functions ====================
 
 export const api = {
+  clearCache: () => {
+    profileCache = null;
+    profileRequestInFlight = null;
+  },
   // Authentication
   auth: {
     login: (credentials: { email: string; password: string }) =>

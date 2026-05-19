@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { enhancedSyncService } from '../../lib/enhanced-sync';
-import { getDeviceInfo } from '../../utils/device';
+import { enhancedSyncService } from '@/lib/enhanced-sync';
+import { getDeviceInfo } from '@/utils/device';
 
 interface OnboardingStep4Props {
  data: {

@@ -1040,7 +1040,7 @@ const findClosestCategory = (category: string, candidates: string[]) => {
 
   let bestMatch: { name: string; score: number } | null = null;
 
-  candidates.forEach((candidate) => {
+  for (const candidate of candidates) {
     const normalizedCandidate = normalizeText(candidate);
     let score = 0;
 
@@ -1060,7 +1060,7 @@ const findClosestCategory = (category: string, candidates: string[]) => {
     if (!bestMatch || score > bestMatch.score) {
       bestMatch = { name: candidate, score };
     }
-  });
+  }
 
   return bestMatch && bestMatch.score >= 120 ? bestMatch.name : null;
 };

@@ -4,6 +4,7 @@ import Tesseract from 'tesseract.js';
 import { sanitizeAIInput, sanitizeAIOutput, validateOcrResult } from '../../utils/sanitize';
 import { withCircuitBreaker } from '../../utils/circuitBreaker';
 import { audit } from '../../utils/auditLogger';
+import { getAIConfigurations } from '../../utils/aiConfig';
 
 const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY || '';
 const genAI = new GoogleGenerativeAI(GOOGLE_API_KEY);
@@ -268,51 +269,62 @@ const extractStructuredDataFromText = (rawText: string): Record<string, unknown>
 };
 
 export const scanReceiptWithGemini = async (imageBuffer: Buffer, mimeType: string) => {
+  const config = await getAIConfigurations();
+
+  if (config.ocr.provider === 'tesseract') {
+    logger.info('OCR Provider is set to Tesseract-only. Bypassing Gemini...');
+    return scanReceiptTesseractOnly(imageBuffer);
+  }
+
   if (!GOOGLE_API_KEY) {
-    logger.warn('GOOGLE_API_KEY not configured  falling back to Tesseract-only OCR');
+    logger.warn('GOOGLE_API_KEY not configured - falling back to Tesseract-only OCR');
     return scanReceiptTesseractOnly(imageBuffer);
   }
 
   try {
-    // ----------------------------------------------------------------------
-    // STEP 1: Execute Open-Source Tesseract OCR
-    // ----------------------------------------------------------------------
-    logger.info('Starting open-source Tesseract OCR pass...');
-    const tesseractResult = await Tesseract.recognize(
-      imageBuffer,
-      'eng', // Default to English for fastest execution
-      {
-        logger: m => {
-          if (m.status === 'recognizing text' && Math.round(m.progress * 100) % 20 === 0) {
-            logger.debug(`Tesseract progress: ${Math.round(m.progress * 100)}%`);
+    let rawOcrText = '';
+    
+    // Check if we need to do Tesseract raw extraction (hybrid mode)
+    if (config.ocr.provider === 'hybrid') {
+      logger.info('Starting open-source Tesseract OCR pass...');
+      const tesseractResult = await Tesseract.recognize(
+        imageBuffer,
+        'eng',
+        {
+          logger: m => {
+            if (m.status === 'recognizing text' && Math.round(m.progress * 100) % 20 === 0) {
+              logger.debug(`Tesseract progress: ${Math.round(m.progress * 100)}%`);
+            }
           }
         }
-      }
-    );
-    const rawOcrText = tesseractResult.data.text.trim();
-    logger.info('Tesseract OCR pass complete', { extractedLength: rawOcrText.length });
+      );
+      rawOcrText = tesseractResult.data.text.trim();
+      logger.info('Tesseract OCR pass complete', { extractedLength: rawOcrText.length });
+    }
 
-    //  Sanitise OCR text before feeding to LLM 
-    const { sanitized: cleanText, flagged } = sanitizeAIInput(rawOcrText);
+    // Prepare content for Gemini
+    const { sanitized: cleanText, flagged } = sanitizeAIInput(rawOcrText || '(Direct image input)');
     if (flagged) {
       audit({
         event: 'ai.prompt_injection',
         resource: 'ocr',
         meta: { inputLength: rawOcrText.length, preview: rawOcrText.slice(0, 200) },
       });
-      logger.warn('Prompt-injection pattern detected in OCR text  proceeding with sanitised input');
+      logger.warn('Prompt-injection pattern detected in OCR text - proceeding with sanitised input');
     }
 
-    // ----------------------------------------------------------------------
-    // STEP 2: Execute Gemini Mapping via circuit breaker
-    // ----------------------------------------------------------------------
-    logger.info('Starting Gemini JSON Mapping pass...');
+    // Execute Gemini Mapping via circuit breaker
+    logger.info('Starting Gemini JSON Mapping pass...', { model: config.ocr.model, provider: config.ocr.provider });
 
     const jsonString = await withCircuitBreaker(
-      { name: 'gemini-ocr', failureThreshold: 5, resetTimeoutMs: 60_000 },
+      { 
+        name: 'gemini-ocr', 
+        failureThreshold: config.ocr.maxRetries || 5, 
+        resetTimeoutMs: config.ocr.timeoutMs || 60_000 
+      },
       async () => {
         const model = genAI.getGenerativeModel({
-          model: 'gemini-1.5-flash',
+          model: config.ocr.model || 'gemini-1.5-flash',
           systemInstruction: SYSTEM_INSTRUCTION,
           generationConfig: {
             temperature: 0.1,
@@ -321,10 +333,24 @@ export const scanReceiptWithGemini = async (imageBuffer: Buffer, mimeType: strin
           },
         });
 
-        const result = await model.generateContent([{ text: buildPrompt(cleanText) }]);
-        let text = result.response.text().trim();
+        let result;
+        if (config.ocr.provider === 'gemini') {
+          // Direct image to Gemini
+          result = await model.generateContent([
+            {
+              inlineData: {
+                data: imageBuffer.toString('base64'),
+                mimeType: mimeType || 'image/jpeg'
+              }
+            },
+            { text: buildPrompt('(Image scanned directly)') }
+          ]);
+        } else {
+          // Hybrid: raw text to Gemini
+          result = await model.generateContent([{ text: buildPrompt(cleanText) }]);
+        }
 
-        // Strip markdown code fences if model wraps output in ```json ... ```
+        let text = result.response.text().trim();
         text = text
           .replace(/^```(?:json)?\s*/i, '')
           .replace(/\s*```\s*$/i, '')
@@ -336,7 +362,7 @@ export const scanReceiptWithGemini = async (imageBuffer: Buffer, mimeType: strin
 
     const parsed = JSON.parse(jsonString);
 
-    //  Validate parsed result 
+    // Validate parsed result
     const validation = validateOcrResult(parsed);
     if (!validation.valid) {
       logger.warn('OCR result failed validation', { reason: validation.reason });
@@ -348,21 +374,27 @@ export const scanReceiptWithGemini = async (imageBuffer: Buffer, mimeType: strin
       parsed.items = parsed.items.filter((item: { name?: string }) => item.name && item.name.length > 2);
     }
 
-    logger.info('Hybrid Tesseract+Gemini OCR success', {
+    // If confidence score is below the threshold, log warning or flag it
+    const itemConfidence = parsed.confidence ?? (parsed.items && parsed.items.length > 0 ? 0.9 : 0.7);
+    if (itemConfidence < config.ocr.confidenceThreshold) {
+      logger.warn('OCR processing confidence below threshold', { confidence: itemConfidence, threshold: config.ocr.confidenceThreshold });
+    }
+
+    logger.info('OCR success', {
       merchantName: parsed.merchantName,
       netAmount: parsed.netAmount,
       invoiceNumber: parsed.invoiceNumber,
+      provider: config.ocr.provider,
     });
 
     return parsed;
   } catch (error: any) {
-    logger.error('Hybrid OCR pipeline failed, attempting Tesseract-only fallback', { error: error.message || error });
-    // Graceful degradation: return Tesseract-only result rather than crashing
+    logger.error('OCR pipeline failed, attempting Tesseract-only fallback', { error: error.message || error });
     try {
       return await scanReceiptTesseractOnly(imageBuffer);
     } catch (fallbackErr: any) {
       logger.error('Tesseract-only fallback also failed', { error: fallbackErr.message });
-      throw error; // re-throw original error
+      throw error;
     }
   }
 };
@@ -372,8 +404,10 @@ export const scanReceiptWithGemini = async (imageBuffer: Buffer, mimeType: strin
  * pipeline, or fall back to the heuristic text parser.
  */
 export const scanReceiptFromText = async (text: string): Promise<Record<string, unknown>> => {
+  const config = await getAIConfigurations();
+
   if (!GOOGLE_API_KEY) {
-    logger.info('No GOOGLE_API_KEY  using heuristic text parser for PDF text');
+    logger.info('No GOOGLE_API_KEY - using heuristic text parser for PDF text');
     return extractStructuredDataFromText(text);
   }
 
@@ -381,10 +415,14 @@ export const scanReceiptFromText = async (text: string): Promise<Record<string, 
     const { sanitized: cleanText } = sanitizeAIInput(text);
 
     const jsonString = await withCircuitBreaker(
-      { name: 'gemini-ocr', failureThreshold: 5, resetTimeoutMs: 60_000 },
+      { 
+        name: 'gemini-ocr', 
+        failureThreshold: config.ocr.maxRetries || 5, 
+        resetTimeoutMs: config.ocr.timeoutMs || 60_000 
+      },
       async () => {
         const model = genAI.getGenerativeModel({
-          model: 'gemini-1.5-flash',
+          model: config.ocr.model || 'gemini-1.5-flash',
           systemInstruction: SYSTEM_INSTRUCTION,
           generationConfig: { temperature: 0.1, topP: 0.95, maxOutputTokens: 2048 },
         });
@@ -398,6 +436,13 @@ export const scanReceiptFromText = async (text: string): Promise<Record<string, 
     const parsed = JSON.parse(jsonString);
     const validation = validateOcrResult(parsed);
     if (!validation.valid) throw new Error(`Validation failed: ${validation.reason}`);
+    
+    // Check confidence threshold
+    const confidence = parsed.confidence ?? 0.8;
+    if (confidence < config.ocr.confidenceThreshold) {
+      logger.warn('Text OCR processing confidence below threshold', { confidence, threshold: config.ocr.confidenceThreshold });
+    }
+
     return parsed;
   } catch (err: any) {
     logger.warn('Gemini text structuring failed, falling back to heuristic parser', { error: err.message });

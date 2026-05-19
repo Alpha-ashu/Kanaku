@@ -34,7 +34,7 @@ interface AppContextType {
   updateAccount: (accountId: number, updates: Partial<Account>) => Promise<void>;
   addAccount: (account: Omit<Account, 'id'>) => Promise<number>;
   visibleFeatures: FeatureVisibility;
-  setVisibleFeatures: (features: FeatureVisibility) => void;
+  setVisibleFeatures: (features: FeatureVisibility | ((prev: FeatureVisibility) => FeatureVisibility)) => void;
   // Navigation
   goBack: () => void;
   historyStack: string[];
@@ -639,11 +639,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     localStorage.setItem('visibleFeatures', JSON.stringify(visibleFeatures));
   }, [visibleFeatures]);
 
-  const setVisibleFeatures = useCallback((features: FeatureVisibility) => {
+  const setVisibleFeatures = useCallback((features: FeatureVisibility | ((prev: FeatureVisibility) => FeatureVisibility)) => {
     // Directly update state — do NOT call computeVisibleFeatures here as it creates
     // a re-render loop: setVisibleFeatures → computeVisibleFeatures → setVisibleFeaturesState
     // → visibleFeatures change → storage effect → BroadcastChannel → computeVisibleFeatures again.
-    setVisibleFeaturesState(normalizeFeatures(features));
+    setVisibleFeaturesState((prev) => {
+      const next = typeof features === 'function' ? features(prev) : features;
+      return normalizeFeatures(next);
+    });
   }, []);
 
   const contextValue = useMemo(() => ({

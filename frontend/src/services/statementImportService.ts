@@ -861,7 +861,7 @@ class StatementImportService {
         const curr = chronological[i];
         const prevBalance = i === 0 ? openingBalance : chronological[i - 1].balance_after_transaction;
 
-        if (prevBalance !== undefined && curr.balance_after_transaction !== undefined) {
+        if (typeof prevBalance === 'number' && typeof curr.balance_after_transaction === 'number') {
           const diff = curr.balance_after_transaction - prevBalance;
           if (Math.abs(diff - curr.amount) < 0.05) {
             curr.transaction_type = 'income';
@@ -923,7 +923,7 @@ class StatementImportService {
       const normalizedBank = normalizeText(bankName);
       const match = accounts.find(a => 
         normalizeText(a.name).includes(normalizedBank) || 
-        normalizeText(a.bankName || '').includes(normalizedBank)
+        normalizeText((a as any).bankName || '').includes(normalizedBank)
       );
       if (match) return match;
     }

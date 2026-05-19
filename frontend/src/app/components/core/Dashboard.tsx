@@ -312,7 +312,7 @@ export function Dashboard({ setCurrentPage }: DashboardProps) {
  <div className="pb-4 lg:pb-6">
  <PageHeader
  title="DashBoard"
- subtitle={`Hello! Here's what's happening with your money ${timePeriod === 'all' ? 'overall' : 'this ' + timePeriod.replace('ly', '')}`}
+ subtitle={`Hello! Here's what's happening with your money ${(timePeriod as string) === 'all' ? 'overall' : 'this ' + timePeriod.replace('ly', '')}`}
  icon={<Activity size={24} />}
  >
  <div className="flex flex-row flex-wrap items-center gap-4">

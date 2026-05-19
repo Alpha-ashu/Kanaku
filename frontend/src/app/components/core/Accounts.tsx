@@ -31,12 +31,13 @@ import { StatementImport } from "@/app/components/transactions/StatementImport";
 import { formatLocalDate } from "@/lib/dateUtils";
 import { CardNetworkLogo, getBankCardLogo } from "@/app/components/ui/AccountLogos";
 import { CenteredLayout } from "@/app/components/shared/CenteredLayout";
+import { queueRecordUpsertSync } from "@/lib/auth-sync-integration";
 
 type AssetType = "all" | "bank" | "card" | "wallet" | "cash";
 
 
 
-const getCardStyle = (account: any) => {
+const getCardStyle = (account: any): any => {
     const CARD_COLORS = [
         { id: 'midnight', bg: 'bg-[#0F172A]', glow: 'bg-indigo-500/10', color: '#0F172A' },
         { id: 'emerald', bg: 'bg-[#064E3B]', glow: 'bg-emerald-500/10', color: '#064E3B' },
@@ -207,7 +208,7 @@ export const Accounts: React.FC = () => {
         const handleScroll = () => {
             if (isClickScrolling.current) return;
             const center = carousel.scrollLeft + carousel.clientWidth / 2;
-            let closest: { id: number; dist: number } | null = null;
+            let closest: any = null;
             filteredAccounts.forEach((account) => {
                 const el = cardRefs.current[account.id!];
                 if (!el) return;

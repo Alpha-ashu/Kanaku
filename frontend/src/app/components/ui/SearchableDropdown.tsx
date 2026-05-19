@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Check, ChevronDown, Search, X } from 'lucide-react';
+import { Check, ChevronDown, Search, X, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export interface DropdownOption {

@@ -90,7 +90,7 @@ function reducer(s: VoiceState, a: VA): VoiceState {
 const Waveform = memo(({ active }: { active: boolean }) => {
   const BAR_COUNT = 28;
   const [bars, setBars] = useState<number[]>(Array(BAR_COUNT).fill(4));
-  const animRef = useRef<number>();
+  const animRef = useRef<number | undefined>(undefined);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
 

@@ -100,7 +100,7 @@ export class AppValidator {
 
     try {
       // Check for visibility change listeners
-      const visibilityEvents = [];
+      const visibilityEvents: number[] = [];
       document.addEventListener('visibilitychange', () => {
         visibilityEvents.push(Date.now());
       });

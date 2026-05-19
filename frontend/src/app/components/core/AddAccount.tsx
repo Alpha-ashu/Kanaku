@@ -106,7 +106,7 @@ export const AddAccount: React.FC = () => {
  });
  const [provider, setProvider] = useState('');
  const [userCountry, setUserCountry] = useState('India');
- const [selectedColor, setSelectedColor] = useState({ id: 'midnight', bg: 'bg-[#0F172A]', glow: 'bg-indigo-500/10' });
+ const [selectedColor, setSelectedColor] = useState<{ id: string; bg: string; glow: string; color?: string }>({ id: 'midnight', bg: 'bg-[#0F172A]', glow: 'bg-indigo-500/10', color: '#0F172A' });
 
  const CARD_COLORS = [
  { id: 'midnight', bg: 'bg-[#0F172A]', glow: 'bg-indigo-500/10', color: '#0F172A' },
@@ -139,7 +139,7 @@ export const AddAccount: React.FC = () => {
  const base = INDIAN_WALLETS.map(w => ({
  value: w.name,
  label: w.name,
- description: w.type,
+ description: 'Mobile Wallet',
  icon: <Wallet size={14} className="text-indigo-500" />
  }));
  return [...base, { value: 'Others', label: 'Others', description: 'Manually specify provider', icon: <Globe2 size={14} className="text-slate-400" /> }];
@@ -228,7 +228,7 @@ export const AddAccount: React.FC = () => {
  {formData.type !== 'wallet' && (
  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full">
  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest shrink-0">
- 2. {formData.type === 'wallet' ? 'Wallet Provider' : 'Institution / Provider'}
+  2. Institution / Provider
  </label>
 
  <div className="w-full md:max-w-md">
@@ -482,7 +482,7 @@ export const AddAccount: React.FC = () => {
  {selectedColor.id === 'custom' && (
  <div
  className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full border-2 border-indigo-500 shadow-lg z-30 pointer-events-none transition-all"
- style={{ left: `calc(${(parseInt(selectedColor.color.match(/\d+/)?.[0] || '0') / 360) * 100}% - 8px)` }}
+ style={{ left: `calc(${(parseInt(selectedColor.color?.match(/\d+/)?.[0] || '0') / 360) * 100}% - 8px)` }}
  />
  )}
  </div>

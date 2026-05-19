@@ -33,6 +33,7 @@ describe('api auth token resolution', () => {
     toastSuccess.mockReset();
     vi.unstubAllGlobals();
     localStorage.clear();
+    api.clearCache();
     window.history.replaceState({}, '', '/');
   });
 
@@ -106,7 +107,7 @@ describe('api auth token resolution', () => {
 
     await expect(api.auth.updateProfile({ firstName: 'Test' })).rejects.toMatchObject({
       status: 401,
-      message: 'Unauthorized',
+      message: 'Please sign in to continue.',
     });
 
     expect(window.location.pathname).toBe('/');
@@ -131,7 +132,7 @@ describe('api auth token resolution', () => {
 
     await expect(api.auth.getProfile()).rejects.toMatchObject({
       status: 500,
-      message: 'Internal Server Error',
+      message: 'Something went wrong on our end. Please try again later.',
     });
   });
 });
