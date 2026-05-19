@@ -80,3 +80,102 @@ export const learnFromCorrection = async (req: AuthRequest, res: Response) => {
   }
 };
 
+export const processVoiceAudio = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = getUserId(req);
+    const file = req.file;
+
+    if (!file) {
+      return res.status(400).json({ error: 'Audio file is required' });
+    }
+
+    let transcript = '';
+
+    // Check if we have Google Gemini API key
+    if (process.env.GOOGLE_API_KEY) {
+      try {
+        const { GoogleGenerativeAI } = await import('@google/generative-ai');
+        const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
+        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+
+        const result = await model.generateContent([
+          {
+            inlineData: {
+              data: file.buffer.toString('base64'),
+              mimeType: file.mimetype || 'audio/webm',
+            },
+          },
+          'Transcribe the following audio. Return only the transcription. Do not explain or add commentary.',
+        ]);
+
+        transcript = result.response.text().trim();
+      } catch (geminiErr: any) {
+        logger.error('Gemini transcription failed', { error: geminiErr.message });
+      }
+    }
+
+    // If Gemini failed or was not configured, try OpenAI Whisper if configured
+    if (!transcript && process.env.OPENAI_API_KEY) {
+      try {
+        const OpenAIModule = (require as any)('openai');
+        const openai = new OpenAIModule({ apiKey: process.env.OPENAI_API_KEY });
+        
+        const tempFs = (require as any)('fs');
+        const tempPath = (require as any)('path');
+        const os = (require as any)('os');
+        
+        const tempFilePath = tempPath.join(os.tmpdir(), `voice-${Date.now()}.webm`);
+        tempFs.writeFileSync(tempFilePath, file.buffer);
+        
+        const response = await openai.audio.transcriptions.create({
+          file: tempFs.createReadStream(tempFilePath),
+          model: 'whisper-1',
+        });
+        
+        transcript = response.text;
+        
+        tempFs.unlinkSync(tempFilePath);
+      } catch (openaiErr: any) {
+        logger.error('OpenAI Whisper transcription failed', { error: openaiErr.message });
+      }
+    }
+
+    // If no transcription is available (e.g. no keys or failed), return flag for web speech fallback
+    if (!transcript) {
+      return res.status(503).json({ 
+        error: 'Backend speech-to-text API keys not configured or unavailable. Falling back to local Web Speech API.',
+        fallbackToWebSpeech: true
+      });
+    }
+
+    // Now process the extracted transcript using the NLP pipeline
+    const actions = await processVoiceTranscript(transcript);
+
+    // Store transcript in DB (fail-safe)
+    try {
+      await (prisma as any).voiceTranscript?.create?.({
+        data: {
+          userId,
+          originalText: transcript,
+          cleanedText: transcript,
+          actionsCount: actions.length,
+          processedAt: new Date(),
+        },
+      }).catch(() => {});
+    } catch { /* non-critical */ }
+
+    return res.json({
+      success: true,
+      transcript,
+      actions,
+      totalActions: actions.length,
+      requiresReview: actions.some(a => a.requiresReview),
+    });
+
+  } catch (error: any) {
+    logger.error('Audio voice processing failed', { error: error.message });
+    return res.status(500).json({ error: 'Failed to process voice audio. Please try again.' });
+  }
+};
+
+

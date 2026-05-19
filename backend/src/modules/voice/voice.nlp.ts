@@ -73,13 +73,15 @@ const INVESTMENT_KEYWORDS = [
 
 // Category keyword map
 const CATEGORY_KEYWORDS: Record<string, string[]> = {
-  'Food & Dining': ['food', 'dinner', 'lunch', 'breakfast', 'restaurant', 'cafe', 'coffee', 'eat', 'meal', 'pani puri', 'pizza', 'burger'],
-  'Transport': ['petrol', 'fuel', 'uber', 'ola', 'cab', 'auto', 'bus', 'train', 'metro', 'travel'],
-  'Shopping': ['shopping', 'clothes', 'shoes', 'amazon', 'flipkart', 'mall'],
-  'Health': ['medicine', 'doctor', 'hospital', 'pharmacy', 'medical', 'health'],
-  'Entertainment': ['movie', 'netflix', 'spotify', 'gaming', 'entertainment', 'subscription'],
-  'Bills': ['electricity', 'water', 'gas', 'internet', 'mobile', 'recharge', 'bill'],
-  'Education': ['school', 'college', 'fees', 'course', 'book', 'tuition'],
+  'Food & Dining': ['food', 'dinner', 'lunch', 'breakfast', 'restaurant', 'cafe', 'coffee', 'eat', 'meal', 'pani puri', 'pizza', 'burger', 'swiggy', 'zomato', 'chai', 'tea', 'dhaba'],
+  'Transport': ['petrol', 'fuel', 'uber', 'ola', 'cab', 'auto', 'bus', 'train', 'metro', 'travel', 'rapido', 'rickshaw', 'diesel', 'taxi'],
+  'Housing': ['rent', 'room', 'accommodation', 'hostel', 'pg', 'flat', 'apartment', 'house', 'lodge', 'dormitory', 'maintenance', 'society'],
+  'Shopping': ['shopping', 'clothes', 'shoes', 'amazon', 'flipkart', 'mall', 'shirt', 'dress', 'myntra', 'meesho'],
+  'Health': ['medicine', 'doctor', 'hospital', 'pharmacy', 'medical', 'health', 'gym', 'chemist', 'clinic'],
+  'Entertainment': ['movie', 'netflix', 'spotify', 'gaming', 'entertainment', 'subscription', 'hotstar', 'prime', 'cinema', 'youtube'],
+  'Bills': ['electricity', 'water', 'gas', 'internet', 'mobile', 'recharge', 'bill', 'wifi', 'broadband', 'lpg'],
+  'Groceries': ['grocery', 'groceries', 'vegetables', 'sabzi', 'kirana', 'milk', 'doodh'],
+  'Education': ['school', 'college', 'fees', 'course', 'book', 'tuition', 'coaching'],
   'Salary': ['salary', 'stipend', 'wages', 'payroll'],
   'Business': ['business', 'client', 'project', 'invoice', 'freelance'],
 };
@@ -141,11 +143,21 @@ function detectCategory(text: string): string | undefined {
 
 //  Intent classification 
 
+// Detect if segment is clearly an explicit expense (paid/spent/bought FOR something)
+function isExplicitExpense(lower: string): boolean {
+  return /\b(?:paid|pay|spent|spend|bought|buy|purchased|purchase|got|ordered)\b/.test(lower)
+    && /\b(?:for|on|at|from)\b/.test(lower);
+}
+
 function classifyIntent(segment: string): { type: FinancialActionType; confidence: number } {
   const lower = segment.toLowerCase();
 
-  if (GOAL_KEYWORDS.some(kw => lower.includes(kw))) {
-    return { type: 'goal', confidence: 0.85 };
+  // Check explicit expense FIRST — prevents "paid for room" being misclassified as goal
+  if (isExplicitExpense(lower) && extractAmount(segment) !== undefined) {
+    return { type: 'expense', confidence: 0.92 };
+  }
+  if (INVESTMENT_KEYWORDS.some(kw => lower.includes(kw))) {
+    return { type: 'investment', confidence: 0.80 };
   }
   if (LOAN_BORROW_KEYWORDS.some(kw => lower.includes(kw))) {
     return { type: 'loan_borrow', confidence: 0.85 };
@@ -159,11 +171,13 @@ function classifyIntent(segment: string): { type: FinancialActionType; confidenc
   if (INCOME_KEYWORDS.some(kw => lower.includes(kw))) {
     return { type: 'income', confidence: 0.87 };
   }
-  if (INVESTMENT_KEYWORDS.some(kw => lower.includes(kw))) {
-    return { type: 'investment', confidence: 0.80 };
-  }
   if (EXPENSE_KEYWORDS.some(kw => lower.includes(kw))) {
     return { type: 'expense', confidence: 0.88 };
+  }
+  // GOAL only when no expense-action verb is present
+  if (GOAL_KEYWORDS.some(kw => lower.includes(kw))
+      && !/\b(?:paid|spent|bought|purchased|pay|spend)\b/.test(lower)) {
+    return { type: 'goal', confidence: 0.85 };
   }
   // If we detect an amount but no clear intent, assume expense
   if (extractAmount(segment) !== undefined) {
@@ -174,11 +188,33 @@ function classifyIntent(segment: string): { type: FinancialActionType; confidenc
 
 //  Entity extraction 
 
+function extractCleanDescription(text: string): string {
+  // Try to extract clean noun after "for a/an/the" → "Room"
+  const forMatch = text.match(/\bfor\s+(?:a\s+|an\s+|the\s+)?([a-zA-Z][a-zA-Z\s]{1,30})(?:\s+(?:at|in|on|from|by|with)|[,.]|$)/i)
+    || text.match(/\bfor\s+(?:a\s+|an\s+|the\s+)?([a-zA-Z][a-zA-Z\s]{1,25})/i);
+  if (forMatch) {
+    const s = forMatch[1].trim().replace(/\b(?:yesterday|today|now|cash|card|upi|bank)\b/gi, '').trim();
+    if (s.length > 1) return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+  }
+  const onMatch = text.match(/\bon\s+(?:a\s+|an\s+|the\s+)?([a-zA-Z][a-zA-Z\s]{1,25})/i);
+  if (onMatch) {
+    const s = onMatch[1].trim().replace(/\b(?:yesterday|today|now|cash|card|upi|bank)\b/gi, '').trim();
+    if (s.length > 1) return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+  }
+  // Fallback: strip noise
+  return text
+    .replace(/₹\s*[\d,]+(?:\.\d+)?/g, '')
+    .replace(/\b[\d,]+(?:\.\d+)?\s*(?:rupees?|rs\.?|inr)?\b/gi, '')
+    .replace(/\b(?:i|me|my|a|an|the|and|for|on|at|to|from|with|in|of|paid|spent|bought|purchased|got|received|borrowed|lent|invested|saved)\b/gi, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 function extractEntities(segment: string, type: FinancialActionType): ExtractedEntity {
   const entities: ExtractedEntity = {};
   entities.amount = extractAmount(segment);
   entities.category = detectCategory(segment);
-  entities.description = segment;
+  entities.description = extractCleanDescription(segment);
 
   // Merchant extraction: look for "at/from/on [Merchant]" or "for [description]"
   const merchantMatch = segment.match(/(?:at|from|on)\s+([A-Za-z][A-Za-z\s]{2,20})(?:\s|,|$)/i);

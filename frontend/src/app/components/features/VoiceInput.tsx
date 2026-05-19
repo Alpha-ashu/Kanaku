@@ -1,663 +1,501 @@
-import React, { useReducer, useRef, useEffect, useCallback, memo } from 'react';
+import React, {
+  useReducer, useRef, useEffect, useCallback, memo, useState,
+} from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Mic, Loader2, X, Keyboard, ArrowRight, AlertCircle } from 'lucide-react';
-import { useApp } from '@/contexts/AppContext';
+import {
+  Mic, MicOff, Loader2, X, Keyboard, ArrowRight,
+  AlertCircle, Wifi, WifiOff, RefreshCw, Sparkles,
+  TrendingDown, TrendingUp, Repeat, Target, Briefcase,
+} from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { db } from '@/lib/database';
-import { parseMultipleTransactions } from '@/lib/voiceExpenseParser';
-import { writeVoiceBatchDraft } from '@/lib/voiceDrafts';
+import { processVoiceTranscript, FinancialAction } from '@/services/voiceFinancialService';
+import { VoiceAICommandCenter } from './VoiceAICommandCenter';
 
-// ================================
-// TYPES
-// ================================
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 type VoiceMode = 'idle' | 'listening' | 'processing' | 'error';
-
-interface FinancialAction {
-  type: 'expense' | 'income' | 'lent' | 'borrowed' | 'transfer' | 'goal' | 'group' | 'investment';
-  amount?: number;
-  category?: string;
-  merchant?: string;
-  person?: string;
-  rawText: string;
-}
+type FallbackReason = null | 'network' | 'not-supported' | 'denied';
 
 interface VoiceState {
   mode: VoiceMode;
   transcript: string;
   interimTranscript: string;
   error: string | null;
+  fallbackReason: FallbackReason;
   actions: FinancialAction[];
   showManualInput: boolean;
   manualInput: string;
   showCommandCenter: boolean;
+  retryCount: number;
 }
 
-type VoiceAction =
+type VA =
   | { type: 'START_LISTENING' }
   | { type: 'STOP_LISTENING' }
   | { type: 'SET_INTERIM'; payload: string }
   | { type: 'SET_TRANSCRIPT'; payload: string }
   | { type: 'START_PROCESSING' }
   | { type: 'STOP_PROCESSING' }
-  | { type: 'SET_ERROR'; payload: string }
+  | { type: 'SET_ERROR'; payload: { msg: string; reason?: FallbackReason } }
   | { type: 'CLEAR_ERROR' }
   | { type: 'SET_ACTIONS'; payload: FinancialAction[] }
-  | { type: 'TOGGLE_MANUAL_INPUT'; payload?: boolean }
+  | { type: 'TOGGLE_MANUAL'; payload?: boolean }
   | { type: 'SET_MANUAL_INPUT'; payload: string }
   | { type: 'SHOW_COMMAND_CENTER'; payload: boolean }
+  | { type: 'INCREMENT_RETRY' }
   | { type: 'RESET' };
 
-// ================================
-// REDUCER
-// ================================
-
-const initialState: VoiceState = {
-  mode: 'idle',
-  transcript: '',
-  interimTranscript: '',
-  error: null,
-  actions: [],
-  showManualInput: false,
-  manualInput: '',
-  showCommandCenter: false,
+const init: VoiceState = {
+  mode: 'idle', transcript: '', interimTranscript: '',
+  error: null, fallbackReason: null, actions: [],
+  showManualInput: false, manualInput: '', showCommandCenter: false, retryCount: 0,
 };
 
-function voiceReducer(state: VoiceState, action: VoiceAction): VoiceState {
-  switch (action.type) {
+function reducer(s: VoiceState, a: VA): VoiceState {
+  switch (a.type) {
     case 'START_LISTENING':
-      return {
-        ...state,
-        mode: 'listening',
-        transcript: '',
-        interimTranscript: '',
-        error: null,
-      };
-
+      return { ...s, mode: 'listening', transcript: '', interimTranscript: '', error: null };
     case 'STOP_LISTENING':
-      return {
-        ...state,
-        mode: 'idle',
-      };
-
+      return { ...s, mode: 'idle' };
     case 'SET_INTERIM':
-      return {
-        ...state,
-        interimTranscript: action.payload,
-      };
-
+      return { ...s, interimTranscript: a.payload };
     case 'SET_TRANSCRIPT':
-      return {
-        ...state,
-        transcript: action.payload,
-      };
-
+      return { ...s, transcript: a.payload };
     case 'START_PROCESSING':
-      return {
-        ...state,
-        mode: 'processing',
-      };
-
+      return { ...s, mode: 'processing' };
     case 'STOP_PROCESSING':
-      return {
-        ...state,
-        mode: 'idle',
-      };
-
+      return { ...s, mode: 'idle' };
     case 'SET_ERROR':
-      return {
-        ...state,
-        mode: 'error',
-        error: action.payload,
-      };
-
+      return { ...s, mode: 'error', error: a.payload.msg, fallbackReason: a.payload.reason ?? null };
     case 'CLEAR_ERROR':
-      return {
-        ...state,
-        error: null,
-      };
-
+      return { ...s, error: null, fallbackReason: null, mode: 'idle' };
     case 'SET_ACTIONS':
-      return {
-        ...state,
-        actions: action.payload,
-      };
-
-    case 'TOGGLE_MANUAL_INPUT':
-      return {
-        ...state,
-        showManualInput:
-          action.payload !== undefined
-            ? action.payload
-            : !state.showManualInput,
-      };
-
+      return { ...s, actions: a.payload };
+    case 'TOGGLE_MANUAL':
+      return { ...s, showManualInput: a.payload !== undefined ? a.payload : !s.showManualInput };
     case 'SET_MANUAL_INPUT':
-      return {
-        ...state,
-        manualInput: action.payload,
-      };
-
+      return { ...s, manualInput: a.payload };
     case 'SHOW_COMMAND_CENTER':
-      return {
-        ...state,
-        showCommandCenter: action.payload,
-      };
-
+      return { ...s, showCommandCenter: a.payload };
+    case 'INCREMENT_RETRY':
+      return { ...s, retryCount: s.retryCount + 1 };
     case 'RESET':
-      return initialState;
-
-    default:
-      return state;
+      return init;
+    default: return s;
   }
 }
 
-// ================================
-// LOCAL PARSER
-// ================================
+// ─── Waveform bars using Web Audio API ────────────────────────────────────────
 
-function parseFinancialIntent(text: string): FinancialAction[] {
-  const parsed = parseMultipleTransactions(text);
-  if (parsed.length > 0) {
-    return parsed.map(item => ({
-      type: item.intent as any,
-      amount: item.amount ?? undefined,
-      category: item.category ?? undefined,
-      rawText: text
-    }));
-  }
+const Waveform = memo(({ active }: { active: boolean }) => {
+  const BAR_COUNT = 28;
+  const [bars, setBars] = useState<number[]>(Array(BAR_COUNT).fill(4));
+  const animRef = useRef<number>();
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
 
-  const lower = text.toLowerCase();
-  const amountMatch = lower.match(/(?:₹|rs\.?|inr)?\s?(\d+)/i);
-  const amount = amountMatch ? Number(amountMatch[1]) : undefined;
+  useEffect(() => {
+    if (!active) {
+      setBars(Array(BAR_COUNT).fill(4));
+      cancelAnimationFrame(animRef.current!);
+      streamRef.current?.getTracks().forEach(t => t.stop());
+      return;
+    }
 
-  const expenseKeywords = ['paid', 'spent', 'bought', 'expense'];
-  const incomeKeywords = ['received', 'earned', 'got', 'income'];
-  const lentKeywords = ['lent', 'lent to'];
-  const borrowedKeywords = ['borrowed', 'borrowed from'];
+    let ctx: AudioContext;
+    navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+      streamRef.current = stream;
+      ctx = new AudioContext();
+      const src = ctx.createMediaStreamSource(stream);
+      const analyser = ctx.createAnalyser();
+      analyser.fftSize = 128;
+      src.connect(analyser);
+      analyserRef.current = analyser;
+      const data = new Uint8Array(analyser.frequencyBinCount);
 
-  if (expenseKeywords.some(word => lower.includes(word))) {
-    return [
-      {
-        type: 'expense',
-        amount,
-        category: 'General',
-        rawText: text,
-      },
-    ];
-  }
+      const tick = () => {
+        analyser.getByteFrequencyData(data);
+        const step = Math.floor(data.length / BAR_COUNT);
+        setBars(Array.from({ length: BAR_COUNT }, (_, i) => {
+          const v = data[i * step] ?? 0;
+          return Math.max(4, Math.min(52, (v / 255) * 52));
+        }));
+        animRef.current = requestAnimationFrame(tick);
+      };
+      tick();
+    }).catch(() => {
+      // mic access denied — just animate randomly
+      const tick = () => {
+        setBars(prev => prev.map(() => active ? 4 + Math.random() * 28 : 4));
+        animRef.current = requestAnimationFrame(tick);
+      };
+      tick();
+    });
 
-  if (incomeKeywords.some(word => lower.includes(word))) {
-    return [
-      {
-        type: 'income',
-        amount,
-        rawText: text,
-      },
-    ];
-  }
+    return () => {
+      cancelAnimationFrame(animRef.current!);
+      streamRef.current?.getTracks().forEach(t => t.stop());
+      ctx?.close();
+    };
+  }, [active]);
 
-  if (lentKeywords.some(word => lower.includes(word))) {
-    return [
-      {
-        type: 'lent',
-        amount,
-        rawText: text,
-      },
-    ];
-  }
+  return (
+    <div className="flex items-center justify-center gap-[3px] h-16">
+      {bars.map((h, i) => (
+        <motion.div
+          key={i}
+          animate={{ height: h }}
+          transition={{ duration: 0.05, ease: 'easeOut' }}
+          className={`w-[3px] rounded-full ${active
+            ? 'bg-gradient-to-t from-violet-600 to-fuchsia-400'
+            : 'bg-slate-200'}`}
+          style={{ minHeight: 4 }}
+        />
+      ))}
+    </div>
+  );
+});
+Waveform.displayName = 'Waveform';
 
-  if (borrowedKeywords.some(word => lower.includes(word))) {
-    return [
-      {
-        type: 'borrowed',
-        amount,
-        rawText: text,
-      },
-    ];
-  }
+// ─── Hint chips ───────────────────────────────────────────────────────────────
 
-  return [];
-}
+const HINTS = [
+  { icon: <TrendingDown size={12} />, text: 'Paid ₹500 for food', color: 'bg-rose-50 text-rose-600 border-rose-100' },
+  { icon: <TrendingUp size={12} />, text: 'Got salary ₹50k', color: 'bg-emerald-50 text-emerald-600 border-emerald-100' },
+  { icon: <Repeat size={12} />, text: 'Sent ₹2000 to Savings', color: 'bg-indigo-50 text-indigo-600 border-indigo-100' },
+  { icon: <Target size={12} />, text: 'Saved ₹5000 for trip', color: 'bg-purple-50 text-purple-600 border-purple-100' },
+  { icon: <Briefcase size={12} />, text: 'Invested ₹10k in SIP', color: 'bg-teal-50 text-teal-600 border-teal-100' },
+  { icon: <TrendingDown size={12} />, text: 'Lent ₹3000 to Rahul', color: 'bg-amber-50 text-amber-600 border-amber-100' },
+];
 
-// ================================
-// HOOK
-// ================================
+// ─── Hook ─────────────────────────────────────────────────────────────────────
 
 function useVoiceEngine() {
-  const [state, dispatch] = useReducer(voiceReducer, initialState);
+  const [state, dispatch] = useReducer(reducer, init);
+  const recRef = useRef<any>(null);
+  const transcriptRef = useRef('');
 
-  const recognitionRef = useRef<any>(null);
-  const transcriptRef = useRef<string>('');
-
-  const startListening = useCallback(async () => {
+  const processTranscript = useCallback(async (text: string) => {
+    dispatch({ type: 'START_PROCESSING' });
     try {
-      dispatch({ type: 'START_LISTENING' });
-      transcriptRef.current = '';
-
-      // Check if browser SpeechRecognition is available
-      const SpeechRecognition = window.SpeechRecognition || (window as any).webkitSpeechRecognition;
-      if (!SpeechRecognition) {
+      const res = await processVoiceTranscript(text);
+      if (res.actions?.length > 0) {
+        dispatch({ type: 'SET_ACTIONS', payload: res.actions });
+        dispatch({ type: 'SHOW_COMMAND_CENTER', payload: true });
+      } else {
         dispatch({
           type: 'SET_ERROR',
-          payload: 'Speech recognition is not supported in this browser. Please type your entry.',
+          payload: { msg: 'No financial action detected. Try: "Paid 500 for lunch"' },
         });
-        return;
       }
-
-      // Try requesting microphone permissions first to ensure availability
-      try {
-        await navigator.mediaDevices.getUserMedia({ audio: true });
-      } catch (micErr) {
-        dispatch({
-          type: 'SET_ERROR',
-          payload: 'Microphone permission denied',
-        });
-        return;
-      }
-
-      const rec = new SpeechRecognition();
-      rec.continuous = true;
-      rec.interimResults = true;
-      rec.lang = 'en-US';
-
-      rec.onresult = (event: any) => {
-        let interim = '';
-        let final = '';
-
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          const result = event.results[i];
-          if (result.isFinal) {
-            final += result[0].transcript + ' ';
-          } else {
-            interim += result[0].transcript;
-          }
-        }
-
-        if (interim) {
-          dispatch({ type: 'SET_INTERIM', payload: interim });
-        }
-        if (final) {
-          const newTranscript = (transcriptRef.current + ' ' + final).trim().replace(/\s+/g, ' ');
-          transcriptRef.current = newTranscript;
-          dispatch({ type: 'SET_TRANSCRIPT', payload: newTranscript });
-        }
-      };
-
-      rec.onerror = (event: any) => {
-        console.error('Speech recognition error event:', event);
-        if (event.error === 'not-allowed') {
-          dispatch({
-            type: 'SET_ERROR',
-            payload: 'Microphone permission denied',
-          });
-        } else if (event.error !== 'no-speech') {
-          dispatch({
-            type: 'SET_ERROR',
-            payload: `Voice capture error: ${event.error}`,
-          });
-        }
-      };
-
-      rec.onend = () => {
-        // If recognition stops automatically (e.g., quiet pause), check if we have a transcript
-        const finalVal = transcriptRef.current.trim();
-        if (finalVal) {
-          // Process final transcript
-          const actions = parseFinancialIntent(finalVal);
-          if (actions.length > 0) {
-            dispatch({
-              type: 'SET_ACTIONS',
-              payload: actions,
-            });
-            dispatch({
-              type: 'SHOW_COMMAND_CENTER',
-              payload: true,
-            });
-          }
-        }
-        dispatch({ type: 'STOP_PROCESSING' });
-      };
-
-      recognitionRef.current = rec;
-      rec.start();
-    } catch (error) {
-      dispatch({
-        type: 'SET_ERROR',
-        payload: 'Microphone permission denied',
-      });
+    } catch (err: any) {
+      dispatch({ type: 'SET_ERROR', payload: { msg: err.message || 'Processing failed.' } });
+    } finally {
+      dispatch({ type: 'STOP_PROCESSING' });
     }
   }, []);
 
-  const stopListening = useCallback(() => {
-    if (!recognitionRef.current) return;
+  const startListening = useCallback(async () => {
+    const SR = (window as any).SpeechRecognition ?? (window as any).webkitSpeechRecognition;
+    if (!SR) {
+      dispatch({
+        type: 'SET_ERROR',
+        payload: { msg: 'Speech recognition not supported. Please type below.', reason: 'not-supported' },
+      });
+      dispatch({ type: 'TOGGLE_MANUAL', payload: true });
+      return;
+    }
 
-    dispatch({ type: 'START_PROCESSING' });
-    recognitionRef.current.stop();
-    recognitionRef.current = null;
+    // Check mic permission
+    try {
+      await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch {
+      dispatch({ type: 'SET_ERROR', payload: { msg: 'Microphone access denied.', reason: 'denied' } });
+      return;
+    }
 
-    dispatch({ type: 'STOP_LISTENING' });
+    dispatch({ type: 'START_LISTENING' });
+    transcriptRef.current = '';
 
-    // Wait a brief moment to let state update with the final segments
-    setTimeout(() => {
-      const finalVal = transcriptRef.current.trim();
-      if (finalVal) {
-        const actions = parseFinancialIntent(finalVal);
-        if (actions.length > 0) {
-          dispatch({
-            type: 'SET_ACTIONS',
-            payload: actions,
-          });
-          dispatch({
-            type: 'SHOW_COMMAND_CENTER',
-            payload: true,
-          });
-        }
+    const rec = new SR();
+    rec.continuous = true;
+    rec.interimResults = true;
+    rec.lang = 'en-IN'; // Better for Indian English / Hinglish
+    rec.maxAlternatives = 3;
+
+    rec.onresult = (e: any) => {
+      let interim = '';
+      let final = '';
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        // Pick highest-confidence alternative
+        const best = Array.from({ length: e.results[i].length }, (_, j) => e.results[i][j])
+          .sort((a: any, b: any) => b.confidence - a.confidence)[0];
+        if (e.results[i].isFinal) final += best.transcript + ' ';
+        else interim += best.transcript;
       }
+      if (interim) dispatch({ type: 'SET_INTERIM', payload: interim });
+      if (final) {
+        const next = (transcriptRef.current + ' ' + final).trim().replace(/\s+/g, ' ');
+        transcriptRef.current = next;
+        dispatch({ type: 'SET_TRANSCRIPT', payload: next });
+        dispatch({ type: 'SET_INTERIM', payload: '' });
+      }
+    };
+
+    rec.onerror = (e: any) => {
+      console.warn('[ASR] error:', e.error);
+      if (e.error === 'not-allowed') {
+        dispatch({ type: 'SET_ERROR', payload: { msg: 'Microphone access denied.', reason: 'denied' } });
+      } else if (e.error === 'network') {
+        dispatch({
+          type: 'SET_ERROR',
+          payload: {
+            msg: 'Speech-to-text needs an internet connection. Type your transaction below instead.',
+            reason: 'network',
+          },
+        });
+        dispatch({ type: 'TOGGLE_MANUAL', payload: true });
+      } else if (e.error !== 'no-speech') {
+        dispatch({ type: 'SET_ERROR', payload: { msg: `ASR error: ${e.error}` } });
+      }
+    };
+
+    rec.onend = () => {
+      const val = transcriptRef.current.trim();
+      if (val) processTranscript(val);
+      else dispatch({ type: 'STOP_PROCESSING' });
+    };
+
+    recRef.current = rec;
+    rec.start();
+  }, [processTranscript]);
+
+  const stopListening = useCallback(() => {
+    recRef.current?.stop();
+    recRef.current = null;
+    dispatch({ type: 'STOP_LISTENING' });
+    setTimeout(() => {
+      const val = transcriptRef.current.trim();
+      if (val) processTranscript(val);
     }, 300);
-  }, []);
+  }, [processTranscript]);
 
   const processManualInput = useCallback(() => {
     const text = state.manualInput.trim();
-
     if (!text) return;
+    dispatch({ type: 'SET_TRANSCRIPT', payload: text });
+    dispatch({ type: 'TOGGLE_MANUAL', payload: false });
+    dispatch({ type: 'CLEAR_ERROR' });
+    processTranscript(text);
+  }, [state.manualInput, processTranscript]);
 
-    const actions = parseFinancialIntent(text);
+  return { state, dispatch, startListening, stopListening, processManualInput };
+}
 
-    dispatch({
-      type: 'SET_TRANSCRIPT',
-      payload: text,
-    });
+// ─── Status pill ──────────────────────────────────────────────────────────────
 
-    dispatch({
-      type: 'SET_ACTIONS',
-      payload: actions,
-    });
-
-    dispatch({
-      type: 'SHOW_COMMAND_CENTER',
-      payload: true,
-    });
-
-    dispatch({
-      type: 'TOGGLE_MANUAL_INPUT',
-      payload: false,
-    });
-  }, [state.manualInput]);
-
-  return {
-    state,
-    dispatch,
-    startListening,
-    stopListening,
-    processManualInput,
+const StatusPill = memo(({ mode, fallback }: { mode: VoiceMode; fallback: FallbackReason }) => {
+  const map: Record<string, { label: string; cls: string }> = {
+    idle:       { label: 'Ready', cls: 'bg-slate-100 text-slate-500' },
+    listening:  { label: '● Listening…', cls: 'bg-violet-100 text-violet-600 animate-pulse' },
+    processing: { label: '⟳ Analyzing…', cls: 'bg-indigo-100 text-indigo-600' },
+    error:      { label: fallback === 'network' ? '✕ Offline' : '✕ Error', cls: 'bg-rose-100 text-rose-600' },
   };
-}
-
-// ================================
-// OPTIMIZED VOICE BLOB
-// ================================
-
-const VoiceBlob = memo(
-  ({ mode }: { mode: VoiceMode }) => {
-    const isListening = mode === 'listening';
-    const isProcessing = mode === 'processing';
-
-    return (
-      <div className="relative flex items-center justify-center w-56 h-56">
-        <motion.div
-          animate={{
-            scale: isListening
-              ? [1, 1.1, 1]
-              : isProcessing
-                ? [1, 1.2, 1]
-                : 1,
-            rotate: isListening ? 360 : 0,
-          }}
-          transition={{
-            duration: isListening ? 6 : 2,
-            repeat: Infinity,
-            ease: 'linear',
-          }}
-          className="absolute inset-0 rounded-full bg-gradient-to-br from-violet-500 via-fuchsia-500 to-cyan-400 blur-2xl opacity-70"
-        />
-
-        <motion.div
-          animate={{
-            scale: isListening ? [1, 1.05, 1] : 1,
-          }}
-          transition={{
-            duration: 2,
-            repeat: Infinity,
-          }}
-          className="relative w-36 h-36 rounded-full bg-white/80 backdrop-blur-2xl border border-white/40 shadow-2xl flex items-center justify-center"
-        >
-          {isProcessing ? (
-            <Loader2 className="animate-spin text-slate-900" size={42} />
-          ) : (
-            <Mic className="text-slate-900" size={42} />
-          )}
-        </motion.div>
-      </div>
-    );
-  }
-);
-
-VoiceBlob.displayName = 'VoiceBlob';
-
-// ================================
-// TRANSCRIPT PANEL
-// ================================
-
-const TranscriptPanel = memo(
-  ({ transcript }: { transcript: string }) => {
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-2xl mx-auto text-center"
-      >
-        {transcript ? (
-          <p className="text-2xl font-semibold text-slate-900 leading-relaxed">
-            {transcript}
-          </p>
-        ) : (
-          <div className="space-y-3">
-            <p className="text-slate-400 text-xl">
-              Start speaking your transaction
-            </p>
-
-            <div className="flex flex-wrap gap-3 justify-center">
-              <div className="px-4 py-2 rounded-2xl bg-white shadow-sm border">
-                Paid ₹400 for Uber
-              </div>
-
-              <div className="px-4 py-2 rounded-2xl bg-white shadow-sm border">
-                Lent ₹2000 to Rahul
-              </div>
-            </div>
-          </div>
-        )}
-      </motion.div>
-    );
-  }
-);
-
-TranscriptPanel.displayName = 'TranscriptPanel';
-
-// ================================
-// COMMAND CENTER
-// ================================
-
-function CommandCenter({
-  actions,
-  onClose,
-  onConfirm,
-}: {
-  actions: FinancialAction[];
-  onClose: () => void;
-  onConfirm: () => void;
-}) {
+  const { label, cls } = map[mode] ?? map.idle;
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 40 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: 40 }}
-      className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-end justify-center z-[80]"
-    >
-      <div className="w-full max-w-2xl rounded-t-[2rem] bg-white p-8 shadow-2xl">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-slate-900">
-            AI Detected
-          </h2>
-
-          <button
-            onClick={onClose}
-            className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center"
-          >
-            <X size={20} />
-          </button>
-        </div>
-
-        <div className="space-y-4">
-          {actions.map((action, index) => (
-            <div
-              key={index}
-              className="p-5 rounded-3xl border bg-slate-50"
-            >
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-sm uppercase tracking-wider text-slate-500">
-                  {action.type}
-                </span>
-
-                <span className="text-2xl font-bold text-slate-900">
-                  ₹{action.amount}
-                </span>
-              </div>
-
-              <p className="text-slate-700">{action.rawText}</p>
-            </div>
-          ))}
-        </div>
-
-        <div className="mt-8 flex gap-3 pb-[calc(env(safe-area-inset-bottom,0px)+1rem)]">
-          <button
-            onClick={onClose}
-            className="flex-1 py-4 rounded-2xl border bg-white font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={onConfirm}
-            className="flex-[2] py-4 rounded-2xl bg-slate-900 text-white font-semibold flex items-center justify-center gap-2 hover:bg-slate-800 transition-colors"
-          >
-            Confirm & Review
-            <ArrowRight size={18} />
-          </button>
-        </div>
-      </div>
-    </motion.div>
+    <span className={`text-xs font-bold px-3 py-1 rounded-full ${cls}`}>{label}</span>
   );
-}
+});
+StatusPill.displayName = 'StatusPill';
 
-// ================================
-// MAIN COMPONENT
-// ================================
+// ─── Main component ───────────────────────────────────────────────────────────
 
 export function VoiceInput() {
-  const { setCurrentPage } = useApp();
   const { user } = useAuth();
-  const {
-    state,
-    dispatch,
-    startListening,
-    stopListening,
-    processManualInput,
-  } = useVoiceEngine();
-
-  const isListening = state.mode === 'listening';
+  const { state, dispatch, startListening, stopListening, processManualInput } = useVoiceEngine();
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const isListening  = state.mode === 'listening';
   const isProcessing = state.mode === 'processing';
 
-  const handleConfirm = useCallback(() => {
-    const textToParse = state.transcript || state.manualInput;
+  // Auto-focus manual input when opened
+  useEffect(() => {
+    if (state.showManualInput) setTimeout(() => inputRef.current?.focus(), 100);
+  }, [state.showManualInput]);
 
-    // Save user voice query transcript into database
-    const userLog = {
-      userId: user?.id || 'anonymous',
-      transcript: textToParse,
-      timestamp: new Date().toISOString(),
-    };
-    db.logs.add({
-      id: crypto.randomUUID(),
-      level: 'voice_input',
-      message: JSON.stringify(userLog),
-      timestamp: new Date()
-    }).catch(console.error);
-
-    const parsedItems = parseMultipleTransactions(textToParse);
-    const itemsToSave = parsedItems.length > 0 ? parsedItems : [
-      {
-        intent: 'expense' as const,
-        amount: state.actions[0]?.amount || 0,
-        category: state.actions[0]?.category || null,
-        description: textToParse || 'Voice transaction',
-        confidence: 0.5,
-        date: new Date().toISOString().split('T')[0]
-      }
-    ];
-    writeVoiceBatchDraft(itemsToSave);
-    setCurrentPage('voice-review');
-  }, [state.transcript, state.manualInput, state.actions, setCurrentPage, user]);
+  const handleHintClick = (text: string) => {
+    dispatch({ type: 'SET_MANUAL_INPUT', payload: text });
+    dispatch({ type: 'TOGGLE_MANUAL', payload: true });
+  };
 
   return (
-    <div className="h-[calc(100dvh-4rem)] lg:h-[calc(100vh-4rem)] bg-gradient-to-br from-slate-50 via-white to-slate-100 flex flex-col justify-between pb-[calc(env(safe-area-inset-bottom,0px)+6rem)] lg:pb-6">
-      {/* HEADER */}
-      <div className="flex items-center justify-between px-6 py-6">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900">
-            Voice AI
-          </h1>
-          <p className="text-slate-500 mt-1">
-            Financial Assistant
-          </p>
-        </div>
+    <div className="h-[calc(100dvh-4rem)] lg:h-[calc(100vh-4rem)] flex flex-col pb-[calc(env(safe-area-inset-bottom,0px)+6rem)] lg:pb-6 overflow-hidden">
 
-        <button
-          onClick={() => dispatch({ type: 'TOGGLE_MANUAL_INPUT' })}
-          className="w-12 h-12 rounded-2xl bg-white shadow-lg border flex items-center justify-center hover:bg-slate-50 transition-colors"
-        >
-          <Keyboard size={20} />
-        </button>
+      {/* ── Header ─────────────────────────────────────────── */}
+      <div className="flex items-center justify-between px-6 pt-6 pb-2 shrink-0">
+        <div>
+          <div className="flex items-center gap-2 mb-0.5">
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-600 to-fuchsia-500 flex items-center justify-center shadow-md shadow-violet-200">
+              <Sparkles size={14} className="text-white" />
+            </div>
+            <h1 className="text-2xl font-black text-slate-900 tracking-tight">Voice AI</h1>
+          </div>
+          <p className="text-slate-400 text-sm pl-9">Financial Assistant · Multi-intent</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <StatusPill mode={state.mode} fallback={state.fallbackReason} />
+          <button
+            onClick={() => dispatch({ type: 'TOGGLE_MANUAL' })}
+            className="w-10 h-10 rounded-xl bg-white shadow border flex items-center justify-center hover:bg-violet-50 transition-colors"
+          >
+            <Keyboard size={18} className="text-slate-600" />
+          </button>
+        </div>
       </div>
 
-      {/* MAIN */}
-      <div className="flex-1 flex flex-col items-center justify-center px-6">
-        <VoiceBlob mode={state.mode} />
+      {/* ── Center stage ───────────────────────────────────── */}
+      <div className="flex-1 flex flex-col items-center justify-center px-6 gap-6">
 
-        <div className="mt-12 w-full">
-          <TranscriptPanel transcript={[state.transcript, state.interimTranscript].filter(Boolean).join(' ')} />
+        {/* Orb button */}
+        <div className="relative flex items-center justify-center">
+          {/* Glow rings */}
+          {isListening && (
+            <>
+              {[1, 2, 3].map(n => (
+                <motion.div
+                  key={n}
+                  className="absolute rounded-full border border-violet-400/30"
+                  initial={{ opacity: 0.6, scale: 1 }}
+                  animate={{ opacity: 0, scale: 1 + n * 0.35 }}
+                  transition={{ duration: 2, repeat: Infinity, delay: n * 0.4, ease: 'easeOut' }}
+                  style={{ width: 112, height: 112 }}
+                />
+              ))}
+            </>
+          )}
+
+          {/* Gradient blob */}
+          <motion.div
+            animate={{
+              scale: isListening ? [1, 1.08, 1] : isProcessing ? [1, 1.15, 1] : 1,
+              rotate: isListening ? 360 : 0,
+            }}
+            transition={{ duration: isListening ? 5 : 2, repeat: Infinity, ease: 'linear' }}
+            className={`absolute w-32 h-32 rounded-full blur-2xl opacity-60 ${
+              isListening ? 'bg-gradient-to-br from-violet-500 via-fuchsia-400 to-cyan-400'
+              : isProcessing ? 'bg-gradient-to-br from-indigo-400 to-violet-500'
+              : 'bg-gradient-to-br from-slate-300 to-slate-200'}`}
+          />
+
+          {/* Button */}
+          <motion.button
+            whileTap={{ scale: 0.93 }}
+            onClick={isListening ? stopListening : startListening}
+            disabled={isProcessing}
+            className={`relative z-10 w-28 h-28 rounded-full flex items-center justify-center shadow-2xl transition-all duration-300 ${
+              isListening
+                ? 'bg-gradient-to-br from-violet-600 to-fuchsia-500 text-white'
+                : isProcessing
+                  ? 'bg-slate-900 text-white cursor-not-allowed'
+                  : 'bg-white text-slate-800 hover:shadow-violet-200 border border-slate-100'
+            }`}
+          >
+            {isProcessing ? (
+              <Loader2 size={36} className="animate-spin" />
+            ) : isListening ? (
+              <MicOff size={36} />
+            ) : (
+              <Mic size={36} />
+            )}
+          </motion.button>
         </div>
 
-        {/* ERROR */}
+        {/* Waveform */}
+        <div className="w-full max-w-sm">
+          <Waveform active={isListening} />
+        </div>
+
+        {/* Transcript display */}
+        <AnimatePresence mode="wait">
+          {(state.transcript || state.interimTranscript) ? (
+            <motion.div
+              key="transcript"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              className="w-full max-w-lg bg-white/80 backdrop-blur-md rounded-3xl border border-slate-100 shadow-lg px-6 py-4 text-center"
+            >
+              {state.transcript && (
+                <p className="text-slate-900 font-bold text-lg leading-snug">{state.transcript}</p>
+              )}
+              {state.interimTranscript && (
+                <p className="text-slate-400 text-base mt-1 italic">{state.interimTranscript}</p>
+              )}
+            </motion.div>
+          ) : !isListening && !isProcessing && state.mode !== 'error' ? (
+            <motion.div
+              key="hints"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="w-full max-w-lg space-y-3"
+            >
+              <p className="text-center text-slate-400 text-sm font-medium">Tap mic and say…</p>
+              <div className="flex flex-wrap gap-2 justify-center">
+                {HINTS.map((h, i) => (
+                  <button
+                    key={i}
+                    onClick={() => handleHintClick(h.text)}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-2xl border text-xs font-semibold ${h.color} hover:scale-105 transition-transform`}
+                  >
+                    {h.icon}{h.text}
+                  </button>
+                ))}
+              </div>
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
+
+        {/* Error banner */}
         <AnimatePresence>
           {state.error && (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 10 }}
-              className="mt-8 p-5 rounded-3xl bg-rose-50 border border-rose-200 max-w-md w-full"
+              className="w-full max-w-md"
             >
-              <div className="flex items-start gap-3">
-                <AlertCircle className="text-rose-500 mt-1" size={20} />
-
-                <div>
-                  <h4 className="font-semibold text-rose-900">
-                    Voice Error
-                  </h4>
-
-                  <p className="text-rose-700 text-sm mt-1">
-                    {state.error}
-                  </p>
+              <div className={`rounded-3xl border p-4 ${
+                state.fallbackReason === 'network'
+                  ? 'bg-amber-50 border-amber-200'
+                  : 'bg-rose-50 border-rose-200'
+              }`}>
+                <div className="flex items-start gap-3">
+                  {state.fallbackReason === 'network'
+                    ? <WifiOff size={18} className="text-amber-500 mt-0.5 shrink-0" />
+                    : <AlertCircle size={18} className="text-rose-500 mt-0.5 shrink-0" />
+                  }
+                  <div className="flex-1 min-w-0">
+                    <p className={`text-sm font-semibold ${state.fallbackReason === 'network' ? 'text-amber-900' : 'text-rose-900'}`}>
+                      {state.fallbackReason === 'network' ? 'No Network for ASR' : 'Voice Error'}
+                    </p>
+                    <p className={`text-xs mt-0.5 ${state.fallbackReason === 'network' ? 'text-amber-700' : 'text-rose-700'}`}>
+                      {state.error}
+                    </p>
+                  </div>
+                  <div className="flex gap-2 shrink-0">
+                    {state.fallbackReason === 'network' && (
+                      <button
+                        onClick={() => { dispatch({ type: 'CLEAR_ERROR' }); startListening(); }}
+                        className="text-amber-600 hover:text-amber-800 transition-colors"
+                        title="Retry"
+                      >
+                        <RefreshCw size={16} />
+                      </button>
+                    )}
+                    <button onClick={() => dispatch({ type: 'CLEAR_ERROR' })} className="text-slate-400 hover:text-slate-600">
+                      <X size={16} />
+                    </button>
+                  </div>
                 </div>
               </div>
             </motion.div>
@@ -665,66 +503,71 @@ export function VoiceInput() {
         </AnimatePresence>
       </div>
 
-      {/* FOOTER CONTROLS */}
-      <div className="pb-4 pt-4 flex justify-center">
-        <button
-          onClick={isListening ? stopListening : startListening}
-          disabled={isProcessing}
-          className={`relative w-24 h-24 rounded-full text-white shadow-2xl flex items-center justify-center transition-all duration-300 ${isListening
-            ? 'bg-gradient-to-br from-violet-600 to-fuchsia-500 scale-110'
-            : 'bg-slate-900 hover:scale-105'
-            }`}
-        >
-          {isProcessing ? (
-            <Loader2 className="animate-spin" size={36} />
-          ) : (
-            <Mic size={36} />
-          )}
-        </button>
+      {/* ── Footer mic label ───────────────────────────────── */}
+      <div className="shrink-0 pb-2 text-center">
+        <p className="text-xs text-slate-400">
+          {isListening ? 'Tap to stop · speaks Hinglish + English' : 'Tap mic to start · or use keyboard ⌨'}
+        </p>
       </div>
 
-      {/* MANUAL INPUT */}
+      {/* ── Manual input sheet ─────────────────────────────── */}
       <AnimatePresence>
         {state.showManualInput && (
           <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 40 }}
-            className="fixed bottom-0 left-0 right-0 bg-white rounded-t-[2rem] shadow-2xl p-6 z-40"
+            initial={{ y: '100%' }}
+            animate={{ y: 0 }}
+            exit={{ y: '100%' }}
+            transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+            className="fixed bottom-16 left-0 right-0 z-40 bg-white rounded-t-3xl shadow-[0_-8px_32px_rgba(0,0,0,0.10)] border-t border-slate-100/80"
           >
-            <div className="space-y-4 max-w-2xl mx-auto">
-              <input
-                autoFocus
-                value={state.manualInput}
-                onChange={e =>
-                  dispatch({
-                    type: 'SET_MANUAL_INPUT',
-                    payload: e.target.value,
-                  })
-                }
-                placeholder="Paid 500 for coffee"
-                className="w-full px-5 py-4 rounded-2xl border bg-slate-50 outline-none focus:ring-2 focus:ring-violet-500"
-              />
+            {/* drag handle */}
+            <div className="w-10 h-1 bg-slate-200 rounded-full mx-auto mt-2.5 mb-3" />
 
-              <div className="flex gap-3">
+            <div className="px-4 pb-4 space-y-3 max-w-xl mx-auto">
+              {/* Label */}
+              <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Type your transaction</p>
+
+              {/* Textarea */}
+              <div className="relative">
+                <textarea
+                  ref={inputRef}
+                  rows={2}
+                  value={state.manualInput}
+                  onChange={e => dispatch({ type: 'SET_MANUAL_INPUT', payload: e.target.value })}
+                  onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); processManualInput(); } }}
+                  placeholder="e.g. Paid 2000 for room and spent 500 on groceries"
+                  className="w-full px-4 py-3 rounded-2xl border border-slate-200 bg-slate-50 outline-none focus:ring-2 focus:ring-violet-400 focus:border-transparent text-slate-900 text-sm resize-none leading-relaxed"
+                />
+                <p className="text-[10px] text-slate-400 mt-1 pl-1">Multi-action supported · Enter to process · Shift+Enter for new line</p>
+              </div>
+
+              {/* Quick-fill chips */}
+              <div className="flex flex-wrap gap-1.5">
+                {HINTS.slice(0, 3).map((h, i) => (
+                  <button
+                    key={i}
+                    onClick={() => dispatch({ type: 'SET_MANUAL_INPUT', payload: h.text })}
+                    className={`flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full border ${h.color} hover:scale-105 transition-transform`}
+                  >
+                    {h.icon}{h.text}
+                  </button>
+                ))}
+              </div>
+
+              {/* Action buttons */}
+              <div className="flex gap-2">
                 <button
-                  onClick={() =>
-                    dispatch({
-                      type: 'TOGGLE_MANUAL_INPUT',
-                      payload: false,
-                    })
-                  }
-                  className="flex-1 py-4 rounded-2xl border bg-white"
+                  onClick={() => { dispatch({ type: 'TOGGLE_MANUAL', payload: false }); dispatch({ type: 'CLEAR_ERROR' }); }}
+                  className="flex-1 py-3 rounded-2xl border border-slate-200 bg-white text-slate-600 text-sm font-semibold hover:bg-slate-50 transition-colors"
                 >
                   Cancel
                 </button>
-
                 <button
                   onClick={processManualInput}
-                  className="flex-[2] py-4 rounded-2xl bg-slate-900 text-white flex items-center justify-center gap-2"
+                  disabled={!state.manualInput.trim()}
+                  className="flex-[2] py-3 rounded-2xl bg-gradient-to-r from-violet-600 to-fuchsia-500 text-white text-sm font-black flex items-center justify-center gap-1.5 shadow-lg shadow-violet-200/60 disabled:opacity-40 disabled:cursor-not-allowed"
                 >
-                  Process
-                  <ArrowRight size={18} />
+                  <Sparkles size={14} /> Analyze &amp; Process
                 </button>
               </div>
             </div>
@@ -732,18 +575,19 @@ export function VoiceInput() {
         )}
       </AnimatePresence>
 
-      {/* COMMAND CENTER */}
+      {/* ── Command center overlay ─────────────────────────── */}
       <AnimatePresence>
         {state.showCommandCenter && (
-          <CommandCenter
+          <VoiceAICommandCenter
+            transcript={state.transcript || state.manualInput}
             actions={state.actions}
-            onClose={() =>
-              dispatch({
-                type: 'SHOW_COMMAND_CENTER',
-                payload: false,
-              })
-            }
-            onConfirm={handleConfirm}
+            userId={user?.id}
+            onClose={() => dispatch({ type: 'SHOW_COMMAND_CENTER', payload: false })}
+            onAddMore={() => {
+              dispatch({ type: 'SHOW_COMMAND_CENTER', payload: false });
+              dispatch({ type: 'SET_TRANSCRIPT', payload: '' });
+              startListening();
+            }}
           />
         )}
       </AnimatePresence>
@@ -752,4 +596,3 @@ export function VoiceInput() {
 }
 
 export default VoiceInput;
-

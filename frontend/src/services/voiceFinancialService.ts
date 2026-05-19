@@ -63,6 +63,8 @@ const EXPENSE_CATEGORIES: Record<string, string> = {
   bus: 'Transport', train: 'Transport', rapido: 'Transport', rickshaw: 'Transport',
   // Housing
   rent: 'Housing', maintenance: 'Housing', society: 'Housing', flat: 'Housing',
+  room: 'Housing', accommodation: 'Housing', hostel: 'Housing', pg: 'Housing',
+  apartment: 'Housing', house: 'Housing', lodge: 'Housing', dormitory: 'Housing',
   // Utilities
   electricity: 'Utilities', wifi: 'Utilities', internet: 'Utilities',
   mobile: 'Utilities', phone: 'Utilities', recharge: 'Utilities', water: 'Utilities',
@@ -121,10 +123,46 @@ function extractAmount(text: string): number | undefined {
   return undefined;
 }
 
+// Common nouns that should NEVER be treated as person names
+const COMMON_NOUNS = new Set([
+  'me','my','someone','him','her','them','the','a','an','i',
+  'yesterday','today','tomorrow','now','cash','card','upi','bank',
+  'room','rooms','food','lunch','dinner','breakfast','coffee','tea','hotel',
+  'rent','flat','house','hostel','pg','accommodation','apartment','lodge',
+  'uber','ola','taxi','auto','bus','train','metro','petrol','fuel',
+  'medicine','doctor','hospital','gym','pharmacy','clinic',
+  'netflix','spotify','amazon','movie','cinema','shopping','clothes',
+  'school','college','course','book','fees','tuition','coaching',
+  'salary','freelance','bonus','stipend','invoice','client',
+  'grocery','groceries','vegetables','milk','sabzi','kirana',
+  'electricity','wifi','internet','mobile','phone','recharge','water','gas',
+  'investment','mutual','fund','sip','stock','gold','crypto','bitcoin',
+  'lent','borrowed','paid','spent','received','invested','saved','transferred',
+  'general','miscellaneous','expense','income','transfer','goal','savings',
+]);
+
 function extractPerson(text: string): string | undefined {
-  // Match "to Rahul", "from mom", "with John"
-  const match = text.match(/\b(?:to|from|with|for)\s+([A-Z][a-z]+(?:\s[A-Z][a-z]+)?)/);
-  return match?.[1];
+  // Only extract person for loan/transfer-related sentences
+  // English: "to Rahul", "from Rahul" — but NOT for expense sentences like "paid for room"
+  const loanPattern = /\b(?:gave to|lent to|give to|borrowed from|repaid to|returned to|transferred to|sent to)\s+([A-Za-z]+(?:\s[A-Za-z]+)?)/i;
+  const loanMatch = text.match(loanPattern);
+  if (loanMatch) {
+    const name = loanMatch[1].trim();
+    if (!COMMON_NOUNS.has(name.toLowerCase())) {
+      return name.charAt(0).toUpperCase() + name.slice(1);
+    }
+  }
+
+  // Hinglish: "Rahul ko", "Rahul se"
+  const hingMatch = text.match(/\b([A-Za-z]{3,})\s+(?:ko|se|ne)\b/i);
+  if (hingMatch) {
+    const name = hingMatch[1].trim();
+    if (!COMMON_NOUNS.has(name.toLowerCase())) {
+      return name.charAt(0).toUpperCase() + name.slice(1);
+    }
+  }
+
+  return undefined;
 }
 
 function extractCategory(text: string): string {
@@ -136,11 +174,36 @@ function extractCategory(text: string): string {
 }
 
 function extractDescription(text: string): string {
-  // Remove amount and common filler words for a cleaner description
+  // 1. Try to extract the subject after "for", "on", "at" — gives cleanest label
+  //    e.g. "I paid 2000 for a room" → "Room"
+  //    e.g. "spent 500 on coffee" → "Coffee"
+  const forMatch = text.match(/\bfor\s+(?:a\s+|an\s+|the\s+)?([a-zA-Z][a-zA-Z\s]{1,30})(?:\s+(?:at|in|on|from|by|with)|[,.]|$)/i)
+    || text.match(/\bfor\s+(?:a\s+|an\s+|the\s+)?([a-zA-Z][a-zA-Z\s]{1,25})/i);
+  if (forMatch) {
+    const subject = forMatch[1].trim()
+      .replace(/\b(?:yesterday|today|tomorrow|now|cash|card|upi|bank|gpay|paytm)\b/gi, '')
+      .trim();
+    if (subject.length > 1) {
+      return subject.charAt(0).toUpperCase() + subject.slice(1).toLowerCase();
+    }
+  }
+
+  const onMatch = text.match(/\bon\s+(?:a\s+|an\s+|the\s+)?([a-zA-Z][a-zA-Z\s]{1,25})/i);
+  if (onMatch) {
+    const subject = onMatch[1].trim()
+      .replace(/\b(?:yesterday|today|tomorrow|now|cash|card|upi|bank|gpay|paytm)\b/gi, '')
+      .trim();
+    if (subject.length > 1) {
+      return subject.charAt(0).toUpperCase() + subject.slice(1).toLowerCase();
+    }
+  }
+
+  // 2. Fallback: strip amounts, verbs, filler — then capitalise what remains
   return text
     .replace(/₹\s*[\d,]+(?:\.\d+)?/g, '')
     .replace(/\b[\d,]+(?:\.\d+)?\s*(?:rupees?|rs|inr|k|lakh|lac)?\b/gi, '')
-    .replace(/\b(?:paid|spent|bought|purchased|got|received|borrowed|lent|invested|saved)\b/gi, '')
+    .replace(/\b(?:i|me|my|a|an|the|and|for|on|at|to|from|with|in|of)\b/gi, '')
+    .replace(/\b(?:paid|spent|bought|purchased|got|received|borrowed|lent|invested|saved|transferred|sent)\b/gi, '')
     .replace(/\s+/g, ' ')
     .trim();
 }
@@ -193,20 +256,35 @@ function extractDate(text: string): string | undefined {
   return undefined;
 }
 
+// Detect if a segment is clearly an expense action (paid/spent/bought for something)
+function isExplicitExpense(q: string): boolean {
+  return /\b(?:paid|pay|spent|spend|bought|buy|purchased|purchase|got|ordered)\b/.test(q)
+    && /\b(?:for|on|at|from)\b/.test(q);
+}
+
 function parseSegment(segment: string): FinancialAction {
   const q = segment.toLowerCase();
   const amount = extractAmount(segment);
-  const person = extractPerson(segment);
   const category = extractCategory(segment);
   const description = extractDescription(segment);
   const date = extractDate(segment);
 
-  // QUERY
+  // QUERY — must check before anything else
   if (/\b(?:how much|what is|tell me|show me|what'?s|total|balance|how many|list|summary)\b/.test(q)) {
     return {
       type: 'query', rawSegment: segment,
       entities: { description: segment },
       confidence: 0.9, requiresReview: false,
+    };
+  }
+
+  // EXPLICIT EXPENSE (paid/spent/bought for X) — check EARLY to prevent misclassification as goal
+  // e.g. "I paid 2000 for a room", "spent 500 on food"
+  if (isExplicitExpense(q) && amount) {
+    return {
+      type: 'expense', rawSegment: segment,
+      entities: { amount, category, description: description || 'Expense', date },
+      confidence: 0.92, requiresReview: false,
     };
   }
 
@@ -234,8 +312,26 @@ function parseSegment(segment: string): FinancialAction {
     };
   }
 
+  // Extract person only for loan/transfer intents
+  const person = extractPerson(segment);
+
+  // DEBT SETTLEMENT / REPAYMENT
+  if (/\b(?:settled|settle|paid back|returned|repaid|cleared|clear loan|returned money|returned balance)\b/.test(q) && (person || amount)) {
+    const lowerSegment = segment.toLowerCase();
+    const nameIndex = person ? lowerSegment.indexOf(person.toLowerCase()) : -1;
+    const keywordIndex = lowerSegment.search(/\b(?:paid back|returned|repaid|returned money|returned balance)\b/);
+    const isReceivedBack = (nameIndex !== -1 && keywordIndex !== -1 && nameIndex < keywordIndex) || /\b(?:by|from)\s+[A-Za-z]/i.test(segment);
+    return {
+      type: isReceivedBack ? 'loan_lend' : 'loan_borrow',
+      rawSegment: segment,
+      entities: { amount, person, description: description || (isReceivedBack ? `Loan repayment from ${person || 'someone'}` : `Repaid loan to ${person || 'someone'}`), date },
+      confidence: 0.9,
+      requiresReview: !person,
+    };
+  }
+
   // LOAN — LEND
-  if (/\b(?:lent|gave|lend|given|gave to)\b/.test(q) && (person || amount)) {
+  if (/\b(?:lent|lend|given to|gave to)\b/.test(q) && (person || amount)) {
     return {
       type: 'loan_lend', rawSegment: segment,
       entities: { amount, person, description: description || `Lent to ${person || 'someone'}`, date },
@@ -252,8 +348,9 @@ function parseSegment(segment: string): FinancialAction {
     };
   }
 
-  // GOAL / SAVINGS
-  if (/\b(?:saved|saving|goal|target|put aside|emergency fund|vacation fund|house fund)\b/.test(q)) {
+  // GOAL / SAVINGS — only when explicit saving keywords with NO expense-action verbs
+  if (/\b(?:saved|saving|goal|target|put aside|emergency fund|vacation fund|house fund)\b/.test(q)
+      && !/\b(?:paid|spent|bought|purchased|pay|spend)\b/.test(q)) {
     return {
       type: 'goal', rawSegment: segment,
       entities: { amount, category: 'Savings', description: description || 'Goal Contribution', date },

@@ -34,8 +34,44 @@ import { getActionTypeColor, getActionTypeLabel, FinancialAction } from"@/servic
 import { BudgetCoachService, BudgetInsight } from"@/services/budgetCoachService";
 import { NLQService } from"@/services/nlqService";
 import { VoiceContextStore } from"@/services/voiceContextStore";
-import { saveTransactionWithBackendSync } from"@/lib/auth-sync-integration";
+import { saveTransactionWithBackendSync, queueRecordUpsertSync } from"@/lib/auth-sync-integration";
 import { parseDateInputValue } from"@/lib/dateUtils";
+
+// All supported expense/income categories for the edit dropdown
+const ALL_CATEGORIES = [
+  'Food','Groceries','Transport','Housing','Utilities','Health',
+  'Entertainment','Shopping','Education','Salary','Freelance',
+  'Investment','Savings','Loans','Transfer','Business',
+  'Miscellaneous','General',
+];
+
+// Sanitise a description for display — ensures it's a clean noun phrase, not a full sentence
+function sanitizeLabel(description: string | undefined, rawSegment: string): string {
+  const src = description || rawSegment;
+  // If it looks like a full sentence (contains verb keywords or is very long), clean it
+  if (/\b(?:i paid|i spent|i bought|paid for|spent on|bought for)\b/i.test(src) || src.length > 40) {
+    // Try to pull noun after "for" or "on"
+    const forMatch = src.match(/\bfor\s+(?:a\s+|an\s+|the\s+)?([a-zA-Z][a-zA-Z\s]{1,30})(?:\s+(?:at|in|on|from|by|with)|[,.]|$)/i)
+      || src.match(/\bfor\s+(?:a\s+|an\s+|the\s+)?([a-zA-Z][a-zA-Z\s]{1,25})/i);
+    if (forMatch) {
+      const s = forMatch[1].trim();
+      if (s.length > 1) return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+    }
+    const onMatch = src.match(/\bon\s+(?:a\s+|an\s+|the\s+)?([a-zA-Z][a-zA-Z\s]{1,25})/i);
+    if (onMatch) {
+      const s = onMatch[1].trim();
+      if (s.length > 1) return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+    }
+    // Fallback strip
+    return src
+      .replace(/\b(?:i|me|my|a|an|the|and|for|on|at|to|from|with|in|of)\b/gi, '')
+      .replace(/\b(?:paid|spent|bought|purchased|got|received|borrowed|lent|invested|saved|transferred)\b/gi, '')
+      .replace(/[\d,₹]+(?:\.\d+)?\s*/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+  return src.charAt(0).toUpperCase() + src.slice(1);
+}
 
 interface SmartInsight {
  icon: React.ReactNode;
@@ -49,13 +85,15 @@ interface VoiceAICommandCenterProps {
  actions: FinancialAction[];
  onClose: () => void;
  onAddMore: () => void;
+ userId?: string;
 }
 
 export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
  transcript,
  actions: initialActions,
  onClose,
- onAddMore
+ onAddMore,
+ userId
 }) => {
  const { accounts, currency, goals, setCurrentPage } = useApp();
  const [actions, setActions] = useState<FinancialAction[]>(initialActions);
@@ -149,14 +187,35 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
  const now = new Date();
 
  try {
+ // Save user voice query transcript into database logs
+ const userLog = {
+ userId: userId || 'anonymous',
+ transcript,
+ timestamp: now.toISOString(),
+ };
+ await db.logs.add({
+ id: crypto.randomUUID(),
+ level: 'voice_input',
+ message: JSON.stringify(userLog),
+ timestamp: now
+ }).catch(console.error);
+
  for (const action of actions) {
  if (action.type === 'query') continue;
  if (!action.entities.amount) continue;
 
+ const account = await db.accounts.get(selectedAccountId);
+ if (!account) continue;
+
  if (action.type === 'expense' || action.type === 'income' || action.type === 'subscription' || action.type === 'bill_scan') {
+ const isIncome = action.type === 'income';
+ const amount = action.entities.amount;
+ const nextBalance = isIncome ? (account.balance + amount) : (account.balance - amount);
+
+ // Save transaction using the backend sync wrapper
  await saveTransactionWithBackendSync({
  type: (action.type === 'bill_scan' || action.type === 'subscription') ? 'expense' : action.type,
- amount: action.entities.amount,
+ amount: amount,
  accountId: selectedAccountId,
  category: action.entities.category || 'Miscellaneous',
  description: action.entities.description || action.rawSegment,
@@ -167,6 +226,14 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
  createdAt: now,
  updatedAt: now
  });
+
+ // Update account balance
+ await db.accounts.update(selectedAccountId, {
+ balance: nextBalance,
+ updatedAt: now
+ });
+ queueRecordUpsertSync('accounts', selectedAccountId);
+
  successCount++;
  } else if (action.type === 'goal' && action.entities.amount) {
  // Context-aware: match goal by description, rawSegment, or category
@@ -181,64 +248,270 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
  ) || goals[0];
 
  if (targetGoal) {
+ const amount = action.entities.amount;
+
+ // Add contribution
  await db.goalContributions.add({
  goalId: targetGoal.id!,
- amount: action.entities.amount,
+ amount: amount,
  accountId: selectedAccountId,
  date: now,
  notes: action.entities.description || `Voice contribution for ${targetGoal.name}`
  });
  
+ // Update Goal
  await db.goals.update(targetGoal.id!, {
- currentAmount: targetGoal.currentAmount + action.entities.amount,
+ currentAmount: targetGoal.currentAmount + amount,
  updatedAt: now
  });
+ queueRecordUpsertSync('goals', targetGoal.id!);
+
+ // Deduct from account balance
+ await db.accounts.update(selectedAccountId, {
+ balance: account.balance - amount,
+ updatedAt: now
+ });
+ queueRecordUpsertSync('accounts', selectedAccountId);
+
+ // Add corresponding transaction
+ const transactionId = await db.transactions.add({
+ type: 'expense',
+ amount: amount,
+ accountId: selectedAccountId,
+ category: 'Savings',
+ description: action.entities.description || `Goal contribution: ${targetGoal.name}`,
+ date: now,
+ tags: ['goal', 'voice-ai'],
+ createdAt: now,
+ updatedAt: now
+ });
+ queueRecordUpsertSync('transactions', transactionId);
+
  successCount++;
  }
  } else if (action.type === 'loan_borrow' || action.type === 'loan_lend') {
  const type = action.type === 'loan_borrow' ? 'borrowed' : 'lent';
  const personName = action.entities.person || 'Unknown';
+ const amount = action.entities.amount;
+
+ // Check if this is a settlement/repayment command
+ const isRepayment = /\b(?:settled|settle|paid back|returned|repaid|cleared|clear loan|returned money|returned balance)\b/i.test(action.rawSegment);
  
- await db.loans.add({
+ let matchedLoan: Loan | undefined;
+ if (isRepayment && personName !== 'Unknown') {
+ // Find active loan with this person of the matching type
+ const activeLoans = await db.loans.filter(l => 
+ l.contactPerson?.toLowerCase() === personName.toLowerCase() && 
+ l.type === type &&
+ l.outstandingBalance > 0 &&
+ l.status !== 'completed'
+ ).toArray();
+ 
+ if (activeLoans.length > 0) {
+ // Get the most recent active loan
+ matchedLoan = activeLoans.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())[0];
+ }
+ }
+
+ if (matchedLoan) {
+ // Record repayment on existing loan
+ const newOutstanding = Math.max(0, matchedLoan.outstandingBalance - amount);
+ await db.loanPayments.add({
+ loanId: matchedLoan.id!,
+ amount: amount,
+ accountId: selectedAccountId,
+ date: now,
+ notes: action.entities.description || `Voice repayment/settlement`
+ });
+
+ await db.loans.update(matchedLoan.id!, {
+ outstandingBalance: newOutstanding,
+ status: newOutstanding <= 0 ? 'completed' : 'active',
+ updatedAt: now
+ });
+ queueRecordUpsertSync('loans', matchedLoan.id!);
+
+ // Corresponding transaction
+ const isLentLoanRepayment = matchedLoan.type === 'lent';
+ const txnType = isLentLoanRepayment ? 'income' : 'expense';
+ const transactionId = await db.transactions.add({
+ type: txnType,
+ amount: amount,
+ accountId: selectedAccountId,
+ category: 'Loans',
+ subcategory: isLentLoanRepayment ? 'Loan Repayment Received' : 'Loan Repayment Sent',
+ description: action.entities.description || `Repayment for loan: ${matchedLoan.name}`,
+ merchant: personName,
+ date: now,
+ tags: ['loan-repayment', 'voice-ai'],
+ createdAt: now,
+ updatedAt: now
+ });
+ queueRecordUpsertSync('transactions', transactionId);
+
+ // Update account balance (receiving back lent money increases balance, repaying borrowed money decreases balance)
+ const nextBalance = isLentLoanRepayment ? (account.balance + amount) : (account.balance - amount);
+ await db.accounts.update(selectedAccountId, {
+ balance: nextBalance,
+ updatedAt: now
+ });
+ queueRecordUpsertSync('accounts', selectedAccountId);
+
+ } else {
+ // Standard new loan flow
+ // 1. Friend contact creation/lookup
+ let friend = await db.friends.filter(f => f.name.toLowerCase() === personName.toLowerCase() && !f.deletedAt).first();
+ let friendId: number | undefined;
+ if (friend) {
+ friendId = friend.id;
+ } else if (personName !== 'Unknown') {
+ friendId = await db.friends.add({
+ name: personName,
+ createdAt: now,
+ updatedAt: now
+ });
+ queueRecordUpsertSync('friends', friendId);
+ }
+
+ // 2. Create corresponding transaction
+ const isBorrow = type === 'borrowed';
+ const txnType = isBorrow ? 'income' : 'expense';
+ const transactionId = await db.transactions.add({
+ type: txnType,
+ amount: amount,
+ accountId: selectedAccountId,
+ category: 'Loans',
+ subcategory: isBorrow ? 'Loan Received' : 'Loan Disbursed',
+ description: action.entities.description || `${isBorrow ? 'Borrowed from' : 'Lent to'} ${personName}`,
+ merchant: personName,
+ date: now,
+ tags: ['loan', 'voice-ai'],
+ createdAt: now,
+ updatedAt: now
+ });
+ queueRecordUpsertSync('transactions', transactionId);
+
+ // 3. Create Loan entry
+ const loanId = await db.loans.add({
  type,
- name: action.entities.description || `${type === 'borrowed' ? 'Borrowed from' : 'Lent to'} ${personName}`,
- principalAmount: action.entities.amount,
- outstandingBalance: action.entities.amount,
+ name: action.entities.description || `${isBorrow ? 'Borrowed from' : 'Lent to'} ${personName}`,
+ principalAmount: amount,
+ outstandingBalance: amount,
  status: 'active',
  contactPerson: personName,
+ friendId,
  accountId: selectedAccountId,
  loanDate: now,
- createdAt: now
+ createdAt: now,
+ updatedAt: now
  });
+ queueRecordUpsertSync('loans', loanId);
+
+ // 4. Update account balance (borrowing adds money, lending takes money)
+ const nextBalance = isBorrow ? (account.balance + amount) : (account.balance - amount);
+ await db.accounts.update(selectedAccountId, {
+ balance: nextBalance,
+ updatedAt: now
+ });
+ queueRecordUpsertSync('accounts', selectedAccountId);
+ }
+
  successCount++;
  } else if (action.type === 'transfer') {
- await db.transactions.add({
+ const amount = action.entities.amount;
+ let transferToAccountId: number | undefined;
+ 
+ // Context-aware transfer destination search
+ const destinationName = action.entities.person || action.entities.merchant || action.entities.description;
+ if (destinationName) {
+ const targetAcc = accounts.find(a => 
+ a.id !== selectedAccountId && 
+ a.name.toLowerCase().includes(destinationName.toLowerCase())
+ );
+ if (targetAcc) {
+ transferToAccountId = targetAcc.id;
+ }
+ }
+
+ // Update source account balance
+ await db.accounts.update(selectedAccountId, {
+ balance: account.balance - amount,
+ updatedAt: now
+ });
+ queueRecordUpsertSync('accounts', selectedAccountId);
+
+ // Update destination account balance if found
+ if (transferToAccountId) {
+ const destAccount = await db.accounts.get(transferToAccountId);
+ if (destAccount) {
+ await db.accounts.update(transferToAccountId, {
+ balance: destAccount.balance + amount,
+ updatedAt: now
+ });
+ queueRecordUpsertSync('accounts', transferToAccountId);
+ }
+ }
+
+ // Add transfer transaction
+ const transactionId = await db.transactions.add({
  type: 'transfer',
- amount: action.entities.amount,
+ amount: amount,
  accountId: selectedAccountId,
+ transferToAccountId,
  category: 'Transfer',
- description: action.entities.description || 'Voice Transfer',
+ description: action.entities.description || `Voice Transfer to ${destinationName || 'other account'}`,
  date: now,
  transferType: 'other-transfer',
  groupName: action.entities.person, 
- createdAt: now
+ createdAt: now,
+ updatedAt: now
  });
+ queueRecordUpsertSync('transactions', transactionId);
+
  successCount++;
  } else if (action.type === 'investment') {
- await db.investments.add({
+ const amount = action.entities.amount;
+
+ // Update account balance (investment costs money from funding account)
+ await db.accounts.update(selectedAccountId, {
+ balance: account.balance - amount,
+ updatedAt: now
+ });
+ queueRecordUpsertSync('accounts', selectedAccountId);
+
+ // Add investment record
+ const investmentId = await db.investments.add({
  assetType: (action.entities.assetType?.toLowerCase() as any) || (action.entities.category?.toLowerCase() as any) || 'other',
  assetName: action.entities.description || 'Voice Investment',
  quantity: action.entities.quantity || 1,
- buyPrice: action.entities.amount / (action.entities.quantity || 1),
- currentPrice: action.entities.amount / (action.entities.quantity || 1),
- totalInvested: action.entities.amount,
- currentValue: action.entities.amount,
+ buyPrice: amount / (action.entities.quantity || 1),
+ currentPrice: amount / (action.entities.quantity || 1),
+ totalInvested: amount,
+ currentValue: amount,
  profitLoss: 0,
  purchaseDate: now,
  lastUpdated: now,
  fundingAccountId: selectedAccountId,
- positionStatus: 'open'
+ positionStatus: 'open',
+ createdAt: now,
+ updatedAt: now
  });
+ queueRecordUpsertSync('investments', investmentId);
+
+ // Add corresponding transaction
+ const transactionId = await db.transactions.add({
+ type: 'expense',
+ amount: amount,
+ accountId: selectedAccountId,
+ category: 'Investment',
+ description: `Invested in ${action.entities.description || 'Asset'}`,
+ date: now,
+ tags: ['investment', 'voice-ai'],
+ createdAt: now,
+ updatedAt: now
+ });
+ queueRecordUpsertSync('transactions', transactionId);
+
  successCount++;
  }
  }
@@ -414,7 +687,7 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
  />
  ) : (
  <h4 className="text-sm md:text-xl font-bold text-slate-900 cursor-text hover:bg-slate-50 rounded px-1 transition-colors break-words line-clamp-4" onClick={() => setEditingIndex(index)}>
- {action.entities.description || action.rawSegment}
+ {sanitizeLabel(action.entities.description, action.rawSegment)}
  </h4>
  )}
  {editingIndex !== index && <Edit3 size={14} className="text-slate-300 opacity-0 group-hover/edit:opacity-100 cursor-pointer absolute -right-6" onClick={() => setEditingIndex(index)} />}
@@ -423,20 +696,16 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
  {editingIndex === index ? (
  <select 
  className="text-[11px] bg-slate-100 text-slate-600 px-2.5 py-1 rounded-lg font-bold uppercase tracking-wider outline-none" 
- value={action.entities.category ||"General"} 
+ value={action.entities.category || "General"} 
  onChange={e => handleEntityUpdate(index, { category: e.target.value })}
  onBlur={() => setEditingIndex(null)}
  >
- <option value="General">General</option>
- <option value="Food">Food</option>
- <option value="Transport">Transport</option>
- <option value="Housing">Housing</option>
- <option value="Shopping">Shopping</option>
- <option value="Health">Health</option>
- <option value="Entertainment">Entertainment</option>
+ {ALL_CATEGORIES.map(cat => (
+ <option key={cat} value={cat}>{cat}</option>
+ ))}
  </select>
  ) : (
- <span className="text-[11px] bg-slate-100 text-slate-600 px-2.5 py-1 rounded-lg font-bold uppercase tracking-wider cursor-pointer hover:bg-slate-200" onClick={() => setEditingIndex(index)}>{action.entities.category ||"General"}</span>
+ <span className="text-[11px] bg-slate-100 text-slate-600 px-2.5 py-1 rounded-lg font-bold uppercase tracking-wider cursor-pointer hover:bg-slate-200" onClick={() => setEditingIndex(index)}>{action.entities.category || "General"}</span>
  )}
  {action.type === 'subscription' && (
  <span className="text-[11px] bg-pink-50 text-pink-600 px-2.5 py-1 rounded-lg font-bold uppercase tracking-wider flex items-center gap-1">

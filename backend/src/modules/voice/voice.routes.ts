@@ -2,7 +2,8 @@ import { Router } from 'express';
 import { authMiddleware } from '../../middleware/auth';
 import { validateBody } from '../../middleware/validate';
 import { z } from 'zod';
-import { processVoice, learnFromCorrection } from './voice.controller';
+import { processVoice, learnFromCorrection, processVoiceAudio } from './voice.controller';
+import { uploadSingle } from '../../middleware/upload';
 
 const router = Router();
 
@@ -18,6 +19,12 @@ const learnSchema = z.object({
 });
 
 /**
+ * POST /api/v1/voice/process-audio
+ * Transcribe and process an uploaded audio file
+ */
+router.post('/process-audio', authMiddleware, uploadSingle('audio'), processVoiceAudio);
+
+/**
  * POST /api/v1/voice/process
  * Analyze a voice transcript and extract financial actions
  */
@@ -30,4 +37,5 @@ router.post('/process', authMiddleware, validateBody(processVoiceSchema), proces
 router.post('/learn', authMiddleware, validateBody(learnSchema), learnFromCorrection);
 
 export default router;
+
 
