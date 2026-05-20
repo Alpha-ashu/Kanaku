@@ -800,24 +800,8 @@ export const financialDataCaptureService = {
     if (duplicate.duplicate) {
       if (duplicateDecision === 'notify') {
         options?.onDuplicateNotify?.(duplicate);
-        return {
-          saved: false,
-          duplicate: true,
-          duplicateTransactionId: duplicate.duplicateTransactionId,
-          message: duplicate.reason || 'Potential duplicate transaction detected',
-        };
       }
 
-      if (duplicateDecision === 'ignore') {
-        return {
-          saved: false,
-          duplicate: true,
-          duplicateTransactionId: duplicate.duplicateTransactionId,
-          message: 'Duplicate ignored',
-        };
-      }
-
-      // Merge strategy: keep existing row and attach import note to it.
       if (duplicateDecision === 'merge' && duplicate.duplicateTransactionId) {
         const existing = await db.transactions.get(duplicate.duplicateTransactionId);
         if (existing) {
@@ -861,9 +845,10 @@ export const financialDataCaptureService = {
 
     return {
       saved: true,
-      duplicate: false,
+      duplicate: duplicate.duplicate,
+      duplicateTransactionId: duplicate.duplicateTransactionId,
       transactionId: id,
-      message: 'Transaction saved',
+      message: duplicate.duplicate ? 'Transaction saved (potential duplicate)' : 'Transaction saved',
     };
   },
 

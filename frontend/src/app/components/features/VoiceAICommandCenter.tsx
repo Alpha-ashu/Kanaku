@@ -177,363 +177,350 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
  };
 
  const confirmAll = async () => {
- if (!selectedAccountId) {
- toast.error("Please select an account for these transactions");
- return;
- }
+    if (!selectedAccountId) {
+      toast.error("Please select an account for these transactions");
+      return;
+    }
 
- setIsSaving(true);
- let successCount = 0;
- const now = new Date();
+    setIsSaving(true);
+    let successCount = 0;
+    const now = new Date();
 
- try {
- // Save user voice query transcript into database logs
- const userLog = {
- userId: userId || 'anonymous',
- transcript,
- timestamp: now.toISOString(),
- };
- await db.logs.add({
- id: crypto.randomUUID(),
- level: 'voice_input',
- message: JSON.stringify(userLog),
- timestamp: now
- }).catch(console.error);
+    try {
+      // Save user voice query transcript into database logs
+      const userLog = {
+        userId: userId || 'anonymous',
+        transcript,
+        timestamp: now.toISOString(),
+      };
+      await db.logs.add({
+        id: crypto.randomUUID(),
+        level: 'voice_input',
+        message: JSON.stringify(userLog),
+        timestamp: now
+      }).catch(console.error);
 
- for (const action of actions) {
- if (action.type === 'query') continue;
- if (!action.entities.amount) continue;
+      // Verify selected account exists
+      const primaryAccount = await db.accounts.get(selectedAccountId);
+      if (!primaryAccount) {
+        toast.error("Selected account not found");
+        return;
+      }
 
- const account = await db.accounts.get(selectedAccountId);
- if (!account) continue;
+      // Net balance changes: accountId -> changeAmount
+      const netBalanceChanges = new Map<number, number>();
 
- if (action.type === 'expense' || action.type === 'income' || action.type === 'subscription' || action.type === 'bill_scan') {
- const isIncome = action.type === 'income';
- const amount = action.entities.amount;
- const nextBalance = isIncome ? (account.balance + amount) : (account.balance - amount);
+      for (const action of actions) {
+        if (action.type === 'query') continue;
+        if (!action.entities.amount) continue;
 
- // Save transaction using the backend sync wrapper
- await saveTransactionWithBackendSync({
- type: (action.type === 'bill_scan' || action.type === 'subscription') ? 'expense' : action.type,
- amount: amount,
- accountId: selectedAccountId,
- category: action.entities.category || 'Miscellaneous',
- description: action.entities.description || action.rawSegment,
- date: action.entities.date ? parseDateInputValue(action.entities.date) || now : now,
- merchant: action.entities.merchant || '',
- tags: ['voice-ai', action.type],
- recurrence: action.entities.recurrence,
- createdAt: now,
- updatedAt: now
- });
+        if (action.type === 'expense' || action.type === 'income' || action.type === 'subscription' || action.type === 'bill_scan') {
+          const isIncome = action.type === 'income';
+          const amount = action.entities.amount;
 
- // Update account balance
- await db.accounts.update(selectedAccountId, {
- balance: nextBalance,
- updatedAt: now
- });
- queueRecordUpsertSync('accounts', selectedAccountId);
+          // Save transaction using the backend sync wrapper
+          await saveTransactionWithBackendSync({
+            type: (action.type === 'bill_scan' || action.type === 'subscription') ? 'expense' : action.type,
+            amount: amount,
+            accountId: selectedAccountId,
+            category: action.entities.category || 'Miscellaneous',
+            description: action.entities.description || action.rawSegment,
+            date: action.entities.date ? parseDateInputValue(action.entities.date) || now : now,
+            merchant: action.entities.merchant || '',
+            tags: ['voice-ai', action.type],
+            recurrence: action.entities.recurrence,
+            createdAt: now,
+            updatedAt: now
+          });
 
- successCount++;
- } else if (action.type === 'goal' && action.entities.amount) {
- // Context-aware: match goal by description, rawSegment, or category
- const searchTerm = [
- action.entities.description,
- action.rawSegment,
- action.entities.category
- ].join(' ').toLowerCase();
- const targetGoal = goals.find(g =>
- searchTerm.includes(g.name.toLowerCase()) ||
- g.name.toLowerCase().split(' ').some(word => word.length > 3 && searchTerm.includes(word))
- ) || goals[0];
+          // Accumulate balance change
+          const change = isIncome ? amount : -amount;
+          netBalanceChanges.set(selectedAccountId, (netBalanceChanges.get(selectedAccountId) || 0) + change);
 
- if (targetGoal) {
- const amount = action.entities.amount;
+          successCount++;
+        } else if (action.type === 'goal' && action.entities.amount) {
+          // Context-aware: match goal by description, rawSegment, or category
+          const searchTerm = [
+            action.entities.description,
+            action.rawSegment,
+            action.entities.category
+          ].join(' ').toLowerCase();
+          const targetGoal = goals.find(g =>
+            searchTerm.includes(g.name.toLowerCase()) ||
+            g.name.toLowerCase().split(' ').some(word => word.length > 3 && searchTerm.includes(word))
+          ) || goals[0];
 
- // Add contribution
- await db.goalContributions.add({
- goalId: targetGoal.id!,
- amount: amount,
- accountId: selectedAccountId,
- date: now,
- notes: action.entities.description || `Voice contribution for ${targetGoal.name}`
- });
- 
- // Update Goal
- await db.goals.update(targetGoal.id!, {
- currentAmount: targetGoal.currentAmount + amount,
- updatedAt: now
- });
- queueRecordUpsertSync('goals', targetGoal.id!);
+          if (targetGoal) {
+            const amount = action.entities.amount;
 
- // Deduct from account balance
- await db.accounts.update(selectedAccountId, {
- balance: account.balance - amount,
- updatedAt: now
- });
- queueRecordUpsertSync('accounts', selectedAccountId);
+            // Add contribution
+            await db.goalContributions.add({
+              goalId: targetGoal.id!,
+              amount: amount,
+              accountId: selectedAccountId,
+              date: now,
+              notes: action.entities.description || `Voice contribution for ${targetGoal.name}`
+            });
+            
+            // Update Goal
+            await db.goals.update(targetGoal.id!, {
+              currentAmount: targetGoal.currentAmount + amount,
+              updatedAt: now
+            });
+            queueRecordUpsertSync('goals', targetGoal.id!);
 
- // Add corresponding transaction
- const transactionId = await db.transactions.add({
- type: 'expense',
- amount: amount,
- accountId: selectedAccountId,
- category: 'Savings',
- description: action.entities.description || `Goal contribution: ${targetGoal.name}`,
- date: now,
- tags: ['goal', 'voice-ai'],
- createdAt: now,
- updatedAt: now
- });
- queueRecordUpsertSync('transactions', transactionId);
+            // Accumulate balance change
+            netBalanceChanges.set(selectedAccountId, (netBalanceChanges.get(selectedAccountId) || 0) - amount);
 
- successCount++;
- }
- } else if (action.type === 'loan_borrow' || action.type === 'loan_lend') {
- const type = action.type === 'loan_borrow' ? 'borrowed' : 'lent';
- const personName = action.entities.person || 'Unknown';
- const amount = action.entities.amount;
+            // Add corresponding transaction
+            const transactionId = await db.transactions.add({
+              type: 'expense',
+              amount: amount,
+              accountId: selectedAccountId,
+              category: 'Savings',
+              description: action.entities.description || `Goal contribution: ${targetGoal.name}`,
+              date: now,
+              tags: ['goal', 'voice-ai'],
+              createdAt: now,
+              updatedAt: now
+            });
+            queueRecordUpsertSync('transactions', transactionId);
 
- // Check if this is a settlement/repayment command
- const isRepayment = /\b(?:settled|settle|paid back|returned|repaid|cleared|clear loan|returned money|returned balance)\b/i.test(action.rawSegment);
- 
- let matchedLoan: Loan | undefined;
- if (isRepayment && personName !== 'Unknown') {
- // Find active loan with this person of the matching type
- const activeLoans = await db.loans.filter(l => 
- l.contactPerson?.toLowerCase() === personName.toLowerCase() && 
- l.type === type &&
- l.outstandingBalance > 0 &&
- l.status !== 'completed'
- ).toArray();
- 
- if (activeLoans.length > 0) {
- // Get the most recent active loan
- matchedLoan = activeLoans.sort((a, b) => (b.updatedAt?.getTime() ?? 0) - (a.updatedAt?.getTime() ?? 0))[0];
- }
- }
+            successCount++;
+          }
+        } else if (action.type === 'loan_borrow' || action.type === 'loan_lend') {
+          const type = action.type === 'loan_borrow' ? 'borrowed' : 'lent';
+          const personName = action.entities.person || 'Unknown';
+          const amount = action.entities.amount;
 
- if (matchedLoan) {
- // Record repayment on existing loan
- const newOutstanding = Math.max(0, matchedLoan.outstandingBalance - amount);
- await db.loanPayments.add({
- loanId: matchedLoan.id!,
- amount: amount,
- accountId: selectedAccountId,
- date: now,
- notes: action.entities.description || `Voice repayment/settlement`
- });
+          // Check if this is a settlement/repayment command
+          const isRepayment = /\b(?:settled|settle|paid back|returned|repaid|cleared|clear loan|returned money|returned balance)\b/i.test(action.rawSegment);
+          
+          let matchedLoan: Loan | undefined;
+          if (isRepayment && personName !== 'Unknown') {
+            // Find active loan with this person of the matching type
+            const activeLoans = await db.loans.filter(l => 
+              l.contactPerson?.toLowerCase() === personName.toLowerCase() && 
+              l.type === type &&
+              l.outstandingBalance > 0 &&
+              l.status !== 'completed'
+            ).toArray();
+            
+            if (activeLoans.length > 0) {
+              // Get the most recent active loan
+              matchedLoan = activeLoans.sort((a, b) => (b.updatedAt?.getTime() ?? 0) - (a.updatedAt?.getTime() ?? 0))[0];
+            }
+          }
 
- await db.loans.update(matchedLoan.id!, {
- outstandingBalance: newOutstanding,
- status: newOutstanding <= 0 ? 'completed' : 'active',
- updatedAt: now
- });
- queueRecordUpsertSync('loans', matchedLoan.id!);
+          if (matchedLoan) {
+            // Record repayment on existing loan
+            const newOutstanding = Math.max(0, matchedLoan.outstandingBalance - amount);
+            await db.loanPayments.add({
+              loanId: matchedLoan.id!,
+              amount: amount,
+              accountId: selectedAccountId,
+              date: now,
+              notes: action.entities.description || `Voice repayment/settlement`
+            });
 
- // Corresponding transaction
- const isLentLoanRepayment = matchedLoan.type === 'lent';
- const txnType = isLentLoanRepayment ? 'income' : 'expense';
- const transactionId = await db.transactions.add({
- type: txnType,
- amount: amount,
- accountId: selectedAccountId,
- category: 'Loans',
- subcategory: isLentLoanRepayment ? 'Loan Repayment Received' : 'Loan Repayment Sent',
- description: action.entities.description || `Repayment for loan: ${matchedLoan.name}`,
- merchant: personName,
- date: now,
- tags: ['loan-repayment', 'voice-ai'],
- createdAt: now,
- updatedAt: now
- });
- queueRecordUpsertSync('transactions', transactionId);
+            await db.loans.update(matchedLoan.id!, {
+              outstandingBalance: newOutstanding,
+              status: newOutstanding <= 0 ? 'completed' : 'active',
+              updatedAt: now
+            });
+            queueRecordUpsertSync('loans', matchedLoan.id!);
 
- // Update account balance (receiving back lent money increases balance, repaying borrowed money decreases balance)
- const nextBalance = isLentLoanRepayment ? (account.balance + amount) : (account.balance - amount);
- await db.accounts.update(selectedAccountId, {
- balance: nextBalance,
- updatedAt: now
- });
- queueRecordUpsertSync('accounts', selectedAccountId);
+            // Corresponding transaction
+            const isLentLoanRepayment = matchedLoan.type === 'lent';
+            const txnType = isLentLoanRepayment ? 'income' : 'expense';
+            const transactionId = await db.transactions.add({
+              type: txnType,
+              amount: amount,
+              accountId: selectedAccountId,
+              category: 'Loans',
+              subcategory: isLentLoanRepayment ? 'Loan Repayment Received' : 'Loan Repayment Sent',
+              description: action.entities.description || `Repayment for loan: ${matchedLoan.name}`,
+              merchant: personName,
+              date: now,
+              tags: ['loan-repayment', 'voice-ai'],
+              createdAt: now,
+              updatedAt: now
+            });
+            queueRecordUpsertSync('transactions', transactionId);
 
- } else {
- // Standard new loan flow
- // 1. Friend contact creation/lookup
- let friend = await db.friends.filter(f => f.name.toLowerCase() === personName.toLowerCase() && !f.deletedAt).first();
- let friendId: number | undefined;
- if (friend) {
- friendId = friend.id;
- } else if (personName !== 'Unknown') {
- friendId = await db.friends.add({
- name: personName,
- createdAt: now,
- updatedAt: now
- });
- if (friendId !== undefined) {
- queueRecordUpsertSync('friends', friendId);
- }
- }
+            // Accumulate balance change
+            const change = isLentLoanRepayment ? amount : -amount;
+            netBalanceChanges.set(selectedAccountId, (netBalanceChanges.get(selectedAccountId) || 0) + change);
 
- // 2. Create corresponding transaction
- const isBorrow = type === 'borrowed';
- const txnType = isBorrow ? 'income' : 'expense';
- const transactionId = await db.transactions.add({
- type: txnType,
- amount: amount,
- accountId: selectedAccountId,
- category: 'Loans',
- subcategory: isBorrow ? 'Loan Received' : 'Loan Disbursed',
- description: action.entities.description || `${isBorrow ? 'Borrowed from' : 'Lent to'} ${personName}`,
- merchant: personName,
- date: now,
- tags: ['loan', 'voice-ai'],
- createdAt: now,
- updatedAt: now
- });
- queueRecordUpsertSync('transactions', transactionId);
+          } else {
+            // Standard new loan flow
+            // 1. Friend contact creation/lookup
+            let friend = await db.friends.filter(f => f.name.toLowerCase() === personName.toLowerCase() && !f.deletedAt).first();
+            let friendId: number | undefined;
+            if (friend) {
+              friendId = friend.id;
+            } else if (personName !== 'Unknown') {
+              friendId = await db.friends.add({
+                name: personName,
+                createdAt: now,
+                updatedAt: now
+              });
+              if (friendId !== undefined) {
+                queueRecordUpsertSync('friends', friendId);
+              }
+            }
 
- // 3. Create Loan entry
- const loanId = await db.loans.add({
- type,
- name: action.entities.description || `${isBorrow ? 'Borrowed from' : 'Lent to'} ${personName}`,
- principalAmount: amount,
- outstandingBalance: amount,
- status: 'active',
- contactPerson: personName,
- friendId,
- accountId: selectedAccountId,
- loanDate: now,
- createdAt: now,
- updatedAt: now
- });
- queueRecordUpsertSync('loans', loanId);
+            // 2. Create corresponding transaction
+            const isBorrow = type === 'borrowed';
+            const txnType = isBorrow ? 'income' : 'expense';
+            const transactionId = await db.transactions.add({
+              type: txnType,
+              amount: amount,
+              accountId: selectedAccountId,
+              category: 'Loans',
+              subcategory: isBorrow ? 'Loan Received' : 'Loan Disbursed',
+              description: action.entities.description || `${isBorrow ? 'Borrowed from' : 'Lent to'} ${personName}`,
+              merchant: personName,
+              date: now,
+              tags: ['loan', 'voice-ai'],
+              createdAt: now,
+              updatedAt: now
+            });
+            queueRecordUpsertSync('transactions', transactionId);
 
- // 4. Update account balance (borrowing adds money, lending takes money)
- const nextBalance = isBorrow ? (account.balance + amount) : (account.balance - amount);
- await db.accounts.update(selectedAccountId, {
- balance: nextBalance,
- updatedAt: now
- });
- queueRecordUpsertSync('accounts', selectedAccountId);
- }
+            // 3. Create Loan entry
+            const loanId = await db.loans.add({
+              type,
+              name: action.entities.description || `${isBorrow ? 'Borrowed from' : 'Lent to'} ${personName}`,
+              principalAmount: amount,
+              outstandingBalance: amount,
+              status: 'active',
+              contactPerson: personName,
+              friendId,
+              accountId: selectedAccountId,
+              loanDate: now,
+              createdAt: now,
+              updatedAt: now
+            });
+            queueRecordUpsertSync('loans', loanId);
 
- successCount++;
- } else if (action.type === 'transfer') {
- const amount = action.entities.amount;
- let transferToAccountId: number | undefined;
- 
- // Context-aware transfer destination search
- const destinationName = action.entities.person || action.entities.merchant || action.entities.description;
- if (destinationName) {
- const targetAcc = accounts.find(a => 
- a.id !== selectedAccountId && 
- a.name.toLowerCase().includes(destinationName.toLowerCase())
- );
- if (targetAcc) {
- transferToAccountId = targetAcc.id;
- }
- }
+            // Accumulate balance change
+            const change = isBorrow ? amount : -amount;
+            netBalanceChanges.set(selectedAccountId, (netBalanceChanges.get(selectedAccountId) || 0) + change);
+          }
 
- // Update source account balance
- await db.accounts.update(selectedAccountId, {
- balance: account.balance - amount,
- updatedAt: now
- });
- queueRecordUpsertSync('accounts', selectedAccountId);
+          successCount++;
+        } else if (action.type === 'transfer') {
+          const amount = action.entities.amount;
+          let transferToAccountId: number | undefined;
+          
+          // Context-aware transfer destination search
+          const destinationName = action.entities.person || action.entities.merchant || action.entities.description;
+          if (destinationName) {
+            const targetAcc = accounts.find(a => 
+              a.id !== selectedAccountId && 
+              a.name.toLowerCase().includes(destinationName.toLowerCase())
+            );
+            if (targetAcc) {
+              transferToAccountId = targetAcc.id;
+            }
+          }
 
- // Update destination account balance if found
- if (transferToAccountId) {
- const destAccount = await db.accounts.get(transferToAccountId);
- if (destAccount) {
- await db.accounts.update(transferToAccountId, {
- balance: destAccount.balance + amount,
- updatedAt: now
- });
- queueRecordUpsertSync('accounts', transferToAccountId);
- }
- }
+          // Accumulate balance changes
+          netBalanceChanges.set(selectedAccountId, (netBalanceChanges.get(selectedAccountId) || 0) - amount);
+          if (transferToAccountId) {
+            netBalanceChanges.set(transferToAccountId, (netBalanceChanges.get(transferToAccountId) || 0) + amount);
+          }
 
- // Add transfer transaction
- const transactionId = await db.transactions.add({
- type: 'transfer',
- amount: amount,
- accountId: selectedAccountId,
- transferToAccountId,
- category: 'Transfer',
- description: action.entities.description || `Voice Transfer to ${destinationName || 'other account'}`,
- date: now,
- transferType: 'other-transfer',
- groupName: action.entities.person, 
- createdAt: now,
- updatedAt: now
- });
- queueRecordUpsertSync('transactions', transactionId);
+          // Add transfer transaction
+          const transactionId = await db.transactions.add({
+            type: 'transfer',
+            amount: amount,
+            accountId: selectedAccountId,
+            transferToAccountId,
+            category: 'Transfer',
+            description: action.entities.description || `Voice Transfer to ${destinationName || 'other account'}`,
+            date: now,
+            transferType: 'other-transfer',
+            groupName: action.entities.person, 
+            createdAt: now,
+            updatedAt: now
+          });
+          queueRecordUpsertSync('transactions', transactionId);
 
- successCount++;
- } else if (action.type === 'investment') {
- const amount = action.entities.amount;
+          successCount++;
+        } else if (action.type === 'investment') {
+          const amount = action.entities.amount;
 
- // Update account balance (investment costs money from funding account)
- await db.accounts.update(selectedAccountId, {
- balance: account.balance - amount,
- updatedAt: now
- });
- queueRecordUpsertSync('accounts', selectedAccountId);
+          // Accumulate balance change
+          netBalanceChanges.set(selectedAccountId, (netBalanceChanges.get(selectedAccountId) || 0) - amount);
 
- // Add investment record
- const investmentId = await db.investments.add({
- assetType: (action.entities.assetType?.toLowerCase() as any) || (action.entities.category?.toLowerCase() as any) || 'other',
- assetName: action.entities.description || 'Voice Investment',
- quantity: action.entities.quantity || 1,
- buyPrice: amount / (action.entities.quantity || 1),
- currentPrice: amount / (action.entities.quantity || 1),
- totalInvested: amount,
- currentValue: amount,
- profitLoss: 0,
- purchaseDate: now,
- lastUpdated: now,
- fundingAccountId: selectedAccountId,
- positionStatus: 'open',
- createdAt: now,
- updatedAt: now
- });
- queueRecordUpsertSync('investments', investmentId);
+          // Add investment record
+          const investmentId = await db.investments.add({
+            assetType: (action.entities.assetType?.toLowerCase() as any) || (action.entities.category?.toLowerCase() as any) || 'other',
+            assetName: action.entities.description || 'Voice Investment',
+            quantity: action.entities.quantity || 1,
+            buyPrice: amount / (action.entities.quantity || 1),
+            currentPrice: amount / (action.entities.quantity || 1),
+            totalInvested: amount,
+            currentValue: amount,
+            profitLoss: 0,
+            purchaseDate: now,
+            lastUpdated: now,
+            fundingAccountId: selectedAccountId,
+            positionStatus: 'open',
+            createdAt: now,
+            updatedAt: now
+          });
+          queueRecordUpsertSync('investments', investmentId);
 
- // Add corresponding transaction
- const transactionId = await db.transactions.add({
- type: 'expense',
- amount: amount,
- accountId: selectedAccountId,
- category: 'Investment',
- description: `Invested in ${action.entities.description || 'Asset'}`,
- date: now,
- tags: ['investment', 'voice-ai'],
- createdAt: now,
- updatedAt: now
- });
- queueRecordUpsertSync('transactions', transactionId);
+          // Add corresponding transaction
+          const transactionId = await db.transactions.add({
+            type: 'expense',
+            amount: amount,
+            accountId: selectedAccountId,
+            category: 'Investment',
+            description: `Invested in ${action.entities.description || 'Asset'}`,
+            date: now,
+            tags: ['investment', 'voice-ai'],
+            createdAt: now,
+            updatedAt: now
+          });
+          queueRecordUpsertSync('transactions', transactionId);
 
- successCount++;
- }
- }
+          successCount++;
+        }
+      }
 
- toast.success(`Successfully processed ${successCount} financial action${successCount !== 1 ? 's' : ''}`);
+      // Execute single cumulative updates per affected account
+      for (const [accountId, netChange] of netBalanceChanges.entries()) {
+        if (netChange === 0) continue;
+        const account = await db.accounts.get(accountId);
+        if (account) {
+          await db.accounts.update(accountId, {
+            balance: account.balance + netChange,
+            updatedAt: now
+          });
+          queueRecordUpsertSync('accounts', accountId);
+        }
+      }
 
- // Save confirmed actions to context memory for future context-aware parsing
- VoiceContextStore.addRecentActions(
- actions
- .filter(a => a.type !== 'query')
- .map(a => ({
- type: a.type,
- description: a.entities.description || a.rawSegment,
- amount: a.entities.amount,
- person: a.entities.person,
- }))
- );
+      toast.success(`Successfully processed ${successCount} financial action${successCount !== 1 ? 's' : ''}`);
 
- onClose();
- setCurrentPage('transactions');
+      // Save confirmed actions to context memory for future context-aware parsing
+      VoiceContextStore.addRecentActions(
+        actions
+          .filter(a => a.type !== 'query')
+          .map(a => ({
+            type: a.type,
+            description: a.entities.description || a.rawSegment,
+            amount: a.entities.amount,
+            person: a.entities.person,
+          }))
+      );
+
+      onClose();
+      setCurrentPage('transactions');
  } catch (error) {
  console.error("AI Command Center Save Error:", error);
  toast.error("Failed to complete some actions.");

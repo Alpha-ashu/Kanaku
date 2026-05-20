@@ -337,6 +337,31 @@ export const ResultsView: React.FC<{
  <div className="col-span-2 p-2 bg-white rounded-xl border border-gray-100">
  <NumberField label="Tax Amount" value={scanResult.taxAmount} onChange={(value) => onFieldChange('taxAmount', value)} />
  </div>
+
+ <div className="col-span-2 p-2 bg-white rounded-xl border border-gray-100">
+ <DateField
+ label="Date"
+ value={scanResult.date}
+ onChange={(value) => onFieldChange('date', value)}
+ />
+ </div>
+
+ <div className="col-span-2 p-2 bg-white rounded-xl border border-gray-100">
+ <SelectField
+ label="Category"
+ value={scanResult.category || 'Shopping'}
+ options={expenseCategoryOptions}
+ onChange={(value) => onFieldChange('category', value)}
+ />
+ </div>
+
+ <div className="col-span-2 sm:col-span-4 p-2 bg-white rounded-xl border border-gray-100">
+ <SubcategoryField
+ category={scanResult.category || 'Shopping'}
+ value={scanResult.subcategory || ''}
+ onChange={onSubcategoryChange}
+ />
+ </div>
  </div>
  </section>
 

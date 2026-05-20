@@ -87,7 +87,10 @@ export class TransactionService {
     );
 
     if (savedTransaction.saved && savedTransaction.transactionId) {
-      await this.updateAccountBalance(accountId, currentBalance - amount);
+      const account = await db.accounts.get(accountId);
+      if (account) {
+        await this.updateAccountBalance(accountId, Number(account.balance) - amount);
+      }
     }
 
     return savedTransaction;

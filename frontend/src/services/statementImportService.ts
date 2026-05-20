@@ -682,7 +682,7 @@ class StatementImportService {
 
     const transactions: ParsedTransaction[] = [];
 
-    const DATE_START_RE = /^(\d{1,2}[\s\/\-\.](?:\d{1,2}|(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*)[\s\/\-\.]\d{2,4})(?=\D|$)/i;
+    const DATE_START_RE = /^\s*(?:\d+\s+)?(\d{1,2}[\s\/\-\.](?:\d{1,2}|(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*)[\s\/\-\.]\d{2,4})(?=\D|$)/i;
     const DATE_INLINE_RE = /(?:^|[^\d])\d{2}-\d{2}-\d{4}(?=\D|$)/;
     let isDateFirst = false;
     for (const line of lines.slice(0, 15)) {
@@ -702,7 +702,7 @@ class StatementImportService {
       }
     } else {
       const TRAILING_AMT_RE = /[\d,]+\.\d{2}(?:\s+[\d,]+\.\d{2})?\s*$/;
-      const NEW_TXN_RE = /^(?:UPI\/|NEFT|RTGS|IMPS|POS\/|CASH|ATM|ACH\/|INB\/|BIL\/|\d{1,2}[/-]\d{1,2}[/-]\d{2,4}|\d{1,2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+\d{2,4})/i;
+      const NEW_TXN_RE = /^\s*(?:\d+\s+)?(?:UPI\/|NEFT|RTGS|IMPS|POS\/|CASH|ATM|ACH\/|INB\/|BIL\/|\d{1,2}[/-]\d{1,2}[/-]\d{2,4}|\d{1,2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+\d{2,4})/i;
       let hasAmt = false;
       for (const line of lines) {
         if (SKIP_RE.test(line)) continue;
