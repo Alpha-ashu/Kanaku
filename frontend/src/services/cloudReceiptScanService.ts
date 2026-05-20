@@ -6,6 +6,35 @@ const API_BASE = (import.meta.env.VITE_API_URL || '/api/v1').replace(/\/+$/, '')
 const MAX_LONG_EDGE = 1920;
 const JPEG_QUALITY = 0.86;
 
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const fetchWithRetries = async (
+  url: string,
+  options: RequestInit = {},
+  retries = 2,
+  backoff = 500,
+): Promise<Response> => {
+  try {
+    const response = await fetch(url, options);
+    if (response.ok) {
+      return response;
+    }
+
+    if (retries > 0 && response.status >= 500) {
+      await sleep(backoff);
+      return fetchWithRetries(url, options, retries - 1, Math.min(backoff * 2, 5000));
+    }
+
+    return response;
+  } catch (error) {
+    if (retries > 0) {
+      await sleep(backoff);
+      return fetchWithRetries(url, options, retries - 1, Math.min(backoff * 2, 5000));
+    }
+    throw error;
+  }
+};
+
 const getAuthToken = async () => {
   const { data: { session } } = await supabase.auth.getSession();
   if (session?.access_token) return session.access_token;
@@ -19,20 +48,31 @@ const getAuthToken = async () => {
   return token || null;
 };
 
-const loadImage = (file: File) =>
-  new Promise<HTMLImageElement>((resolve, reject) => {
-    const url = URL.createObjectURL(file);
-    const image = new Image();
-    image.onload = () => {
-      URL.revokeObjectURL(url);
-      resolve(image);
-    };
-    image.onerror = () => {
-      URL.revokeObjectURL(url);
-      reject(new Error('Unable to load receipt image'));
-    };
-    image.src = url;
+const loadImage = (file: File) => new Promise<HTMLImageElement>(async (resolve, reject) => {
+  const readAsDataUrl = (f: File) => new Promise<string>((res, rej) => {
+    const fr = new FileReader();
+    fr.onerror = () => rej(new Error('Failed to read receipt file'));
+    fr.onload = () => res(String(fr.result));
+    fr.readAsDataURL(f);
   });
+
+  try {
+    let dataUrl: string;
+    try {
+      dataUrl = await readAsDataUrl(file);
+    } catch (err) {
+      await new Promise((r) => setTimeout(r, 150));
+      dataUrl = await readAsDataUrl(file);
+    }
+
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error('Unable to load receipt image'));
+    image.src = dataUrl;
+  } catch (err) {
+    reject(err);
+  }
+});
 
 const compressImageForUpload = async (file: File) => {
   const image = await loadImage(file);
@@ -133,7 +173,7 @@ export class CloudReceiptScanService {
     const startUrl = `${API_BASE}/receipts/start`;
     onProgress?.({ status: 'Uploading and starting AI extraction job...', progress: 35 });
     
-    const startResponse = await fetch(startUrl, {
+    const startResponse = await fetchWithRetries(startUrl, {
       method: 'POST',
       headers,
       body: formData,
@@ -154,8 +194,15 @@ export class CloudReceiptScanService {
     while (attempts < maxAttempts) {
       onProgress?.({ status: `AI extracting details (Attempt ${attempts + 1})...`, progress: 40 + (attempts * 2) });
       
-      const statusResponse = await fetch(statusUrl, { headers });
-      if (!statusResponse.ok) throw new Error('Failed to check OCR status');
+      const statusResponse = await fetchWithRetries(statusUrl, { headers });
+      if (!statusResponse.ok) {
+        if (statusResponse.status >= 500 && attempts < maxAttempts - 1) {
+          await sleep(2000);
+          attempts += 1;
+          continue;
+        }
+        throw new Error('Failed to check OCR status');
+      }
       
       const job = await statusResponse.json();
       if (job.status === 'completed') {

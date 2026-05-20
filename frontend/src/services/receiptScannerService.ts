@@ -722,31 +722,45 @@ async function renderPdfToCanvas(file: File) {
 }
 
 async function loadImageToCanvas(file: File) {
-  const imageUrl = URL.createObjectURL(file);
+  // Use FileReader -> data URL to avoid intermittent ERR_UPLOAD_FILE_CHANGED
+  // Some platforms (OneDrive, cloud-sync) can mutate file entries while
+  // the browser is resolving an object URL. Reading to a data URL is more
+  // robust and avoids transient upload-file-changed errors.
+  const readAsDataUrl = (f: File) => new Promise<string>((resolve, reject) => {
+    const fr = new FileReader();
+    fr.onerror = () => reject(new Error('Failed to read receipt file'));
+    fr.onload = () => resolve(String(fr.result));
+    fr.readAsDataURL(f);
+  });
 
+  // Try reading once, retry once on failure with small delay
+  let dataUrl: string;
   try {
-    const image = await new Promise<HTMLImageElement>((resolve, reject) => {
-      const element = new Image();
-      element.onload = () => resolve(element);
-      element.onerror = () => reject(new Error('Failed to load receipt image'));
-      element.src = imageUrl;
-    });
-
-    const scale = Math.min(1, 2200 / Math.max(image.width, image.height));
-    const canvas = document.createElement('canvas');
-    const context = canvas.getContext('2d');
-
-    if (!context) {
-      throw new Error('Canvas context unavailable');
-    }
-
-    canvas.width = Math.max(1, Math.round(image.width * scale));
-    canvas.height = Math.max(1, Math.round(image.height * scale));
-    context.drawImage(image, 0, 0, canvas.width, canvas.height);
-    return canvas;
-  } finally {
-    URL.revokeObjectURL(imageUrl);
+    dataUrl = await readAsDataUrl(file);
+  } catch (err) {
+    await new Promise((r) => setTimeout(r, 150));
+    dataUrl = await readAsDataUrl(file);
   }
+
+  const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+    const element = new Image();
+    element.onload = () => resolve(element);
+    element.onerror = () => reject(new Error('Failed to load receipt image'));
+    element.src = dataUrl;
+  });
+
+  const scale = Math.min(1, 2200 / Math.max(image.width, image.height));
+  const canvas = document.createElement('canvas');
+  const context = canvas.getContext('2d');
+
+  if (!context) {
+    throw new Error('Canvas context unavailable');
+  }
+
+  canvas.width = Math.max(1, Math.round(image.width * scale));
+  canvas.height = Math.max(1, Math.round(image.height * scale));
+  context.drawImage(image, 0, 0, canvas.width, canvas.height);
+  return canvas;
 }
 
 function trimCanvas(canvas: HTMLCanvasElement) {

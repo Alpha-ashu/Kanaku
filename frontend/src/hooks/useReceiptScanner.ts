@@ -99,11 +99,14 @@ export const useReceiptScanner = () => {
           });
         } catch (cloudError: any) {
           const errMsg = cloudError?.message || 'Cloud OCR unavailable';
+          const isPdf = selectedFile.type === 'application/pdf';
           if (errMsg.includes('GOOGLE_API_KEY')) {
             toast.error('AI Engine requires a GOOGLE_API_KEY. Falling back to basic on-device OCR.', {
               description: 'Please add GOOGLE_API_KEY to your backend .env file for professional extraction.',
               duration: 8000
             });
+          } else if (isPdf) {
+            toast.warning('Cloud OCR service unavailable. Rendering PDF to image and using on-device OCR...', { duration: 5000 });
           } else {
             toast.warning(`${errMsg}. Falling back to on-device OCR.`, { duration: 5000 });
           }

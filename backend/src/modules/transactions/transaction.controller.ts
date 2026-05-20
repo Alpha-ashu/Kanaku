@@ -70,6 +70,14 @@ function normalizeTransaction<T extends TransactionWithTags>(transaction: T): Om
   };
 }
 
+const handleTransactionDatabaseError = (error: unknown, next: NextFunction) => {
+  if (isDatabaseUnavailableError(error)) {
+    console.warn('Transaction API: Database unavailable - converting to 503 response', { errorMsg: (error as Error)?.message });
+    return next(new AppError(503, 'DATABASE_UNAVAILABLE', 'Database service is temporarily unavailable. Please try again shortly.', false));
+  }
+  return next(error as Error);
+};
+
 type BalanceImpactTransaction = {
   type?: string | null;
   amount?: Prisma.Decimal | number | string | null;
@@ -172,6 +180,7 @@ export const getTransactions = async (req: AuthRequest, res: Response, next: Nex
     });
   } catch (error) {
     if (isDatabaseUnavailableError(error)) {
+      console.warn('Transaction list: Database unavailable - returning empty list', { errorMsg: (error as Error)?.message });
       return res.json({
         success: true,
         data: [],
@@ -305,7 +314,7 @@ export const createTransaction = async (req: AuthRequest, res: Response, next: N
 
     res.status(201).json(normalizeTransaction(transaction));
   } catch (error: unknown) {
-    next(error);
+    handleTransactionDatabaseError(error, next);
   }
 };
 
@@ -329,7 +338,7 @@ export const getTransaction = async (req: AuthRequest, res: Response, next: Next
 
     res.json({ success: true, data: normalizeTransaction(transaction) });
   } catch (error) {
-    next(error);
+    handleTransactionDatabaseError(error, next);
   }
 };
 
@@ -424,7 +433,7 @@ export const updateTransaction = async (req: AuthRequest, res: Response, next: N
 
     res.json({ success: true, data: normalizeTransaction(updated) });
   } catch (error) {
-    next(error);
+    handleTransactionDatabaseError(error, next);
   }
 };
 
@@ -466,7 +475,7 @@ export const deleteTransaction = async (req: AuthRequest, res: Response, next: N
 
     res.json({ success: true, message: 'Transaction deleted' });
   } catch (error) {
-    next(error);
+    handleTransactionDatabaseError(error, next);
   }
 };
 
@@ -491,6 +500,6 @@ export const getAccountTransactions = async (req: AuthRequest, res: Response, ne
 
     res.json(transactions.map(normalizeTransaction));
   } catch (error) {
-    next(error);
+    handleTransactionDatabaseError(error, next);
   }
 };
