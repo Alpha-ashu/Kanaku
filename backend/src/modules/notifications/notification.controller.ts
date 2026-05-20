@@ -38,11 +38,11 @@ export const getNotification = async (req: AuthRequest, res: Response) => {
     const userId = getUserId(req);
     const { id } = req.params;
 
-    const notification = await prisma.notification.findUnique({
-      where: { id },
+    const notification = await prisma.notification.findFirst({
+      where: { id, userId },
     });
 
-    if (!notification || notification.userId !== userId) {
+    if (!notification) {
       return res.status(403).json({ error: 'Access denied' });
     }
 
@@ -58,11 +58,11 @@ export const markAsRead = async (req: AuthRequest, res: Response) => {
     const userId = getUserId(req);
     const { id } = req.params;
 
-    const notification = await prisma.notification.findUnique({
-      where: { id },
+    const notification = await prisma.notification.findFirst({
+      where: { id, userId },
     });
 
-    if (!notification || notification.userId !== userId) {
+    if (!notification) {
       return res.status(403).json({ error: 'Access denied' });
     }
 
@@ -108,11 +108,11 @@ export const deleteNotification = async (req: AuthRequest, res: Response) => {
     const userId = getUserId(req);
     const { id } = req.params;
 
-    const notification = await prisma.notification.findUnique({
-      where: { id },
+    const notification = await prisma.notification.findFirst({
+      where: { id, userId },
     });
 
-    if (!notification || notification.userId !== userId) {
+    if (!notification) {
       return res.status(403).json({ error: 'Access denied' });
     }
 

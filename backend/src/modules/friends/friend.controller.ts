@@ -60,8 +60,8 @@ export const updateFriend = async (req: AuthRequest, res: Response, next: NextFu
     const { id } = req.params;
     const { name, email, phone } = req.body;
 
-    const existing = await prisma.friend.findUnique({ where: { id } });
-    if (!existing || existing.userId !== userId) {
+    const existing = await prisma.friend.findFirst({ where: { id, userId } });
+    if (!existing) {
       throw AppError.notFound('Friend');
     }
 
@@ -85,8 +85,8 @@ export const deleteFriend = async (req: AuthRequest, res: Response, next: NextFu
     const userId = getUserId(req);
     const { id } = req.params;
 
-    const existing = await prisma.friend.findUnique({ where: { id } });
-    if (!existing || existing.userId !== userId) {
+    const existing = await prisma.friend.findFirst({ where: { id, userId } });
+    if (!existing) {
       throw AppError.notFound('Friend');
     }
 

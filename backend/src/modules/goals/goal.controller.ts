@@ -66,11 +66,11 @@ export const getGoal = async (req: AuthRequest, res: Response, next: NextFunctio
     const userId = getUserId(req);
     const { id } = req.params;
 
-    const goal = await prisma.goal.findUnique({
-      where: { id },
+    const goal = await prisma.goal.findFirst({
+      where: { id, userId },
     });
 
-    if (!goal || goal.userId !== userId) {
+    if (!goal) {
       throw AppError.notFound('Goal');
     }
 
@@ -87,11 +87,11 @@ export const updateGoal = async (req: AuthRequest, res: Response, next: NextFunc
     const body = req.body;
 
     // Verify ownership
-    const goal = await prisma.goal.findUnique({
-      where: { id },
+    const goal = await prisma.goal.findFirst({
+      where: { id, userId },
     });
 
-    if (!goal || goal.userId !== userId) {
+    if (!goal) {
       throw AppError.notFound('Goal');
     }
 
@@ -144,11 +144,11 @@ export const deleteGoal = async (req: AuthRequest, res: Response, next: NextFunc
     const { id } = req.params;
 
     // Verify ownership
-    const goal = await prisma.goal.findUnique({
-      where: { id },
+    const goal = await prisma.goal.findFirst({
+      where: { id, userId },
     });
 
-    if (!goal || goal.userId !== userId) {
+    if (!goal) {
       throw AppError.notFound('Goal');
     }
 

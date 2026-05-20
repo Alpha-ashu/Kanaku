@@ -157,11 +157,11 @@ export const deleteBill = async (req: AuthRequest, res: Response, next: NextFunc
     const userId = getUserId(req);
     const { id } = req.params;
 
-    const bill = await prisma.expenseBill.findUnique({
-      where: { id },
+    const bill = await prisma.expenseBill.findFirst({
+      where: { id, userId },
     });
 
-    if (!bill || bill.userId !== userId) {
+    if (!bill) {
       throw AppError.notFound('Bill');
     }
 

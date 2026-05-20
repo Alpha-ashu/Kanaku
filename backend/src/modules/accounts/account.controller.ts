@@ -67,8 +67,8 @@ export const getAccount = async (req: AuthRequest, res: Response, next: NextFunc
     const userId = getUserId(req);
     const { id } = req.params;
 
-    const account = await prisma.account.findUnique({
-      where: { id },
+    const account = await prisma.account.findFirst({
+      where: { id, userId },
       include: {
         transactions: {
           orderBy: { date: 'desc' },
@@ -77,7 +77,7 @@ export const getAccount = async (req: AuthRequest, res: Response, next: NextFunc
       },
     });
 
-    if (!account || account.userId !== userId) {
+    if (!account) {
       throw AppError.notFound('Account');
     }
 
@@ -94,11 +94,11 @@ export const updateAccount = async (req: AuthRequest, res: Response, next: NextF
     const body = req.body;
 
     // Verify ownership
-    const account = await prisma.account.findUnique({
-      where: { id },
+    const account = await prisma.account.findFirst({
+      where: { id, userId },
     });
 
-    if (!account || account.userId !== userId) {
+    if (!account) {
       throw AppError.notFound('Account');
     }
 
@@ -144,11 +144,11 @@ export const deleteAccount = async (req: AuthRequest, res: Response, next: NextF
     const { id } = req.params;
 
     // Verify ownership
-    const account = await prisma.account.findUnique({
-      where: { id },
+    const account = await prisma.account.findFirst({
+      where: { id, userId },
     });
 
-    if (!account || account.userId !== userId) {
+    if (!account) {
       throw AppError.notFound('Account');
     }
 

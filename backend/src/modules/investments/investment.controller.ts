@@ -77,8 +77,8 @@ export const updateInvestment = async (req: AuthRequest, res: Response, next: Ne
     const { id } = req.params;
     const body = req.body as Record<string, unknown>;
 
-    const existing = await prisma.investment.findUnique({ where: { id } });
-    if (!existing || existing.userId !== userId) {
+    const existing = await prisma.investment.findFirst({ where: { id, userId } });
+    if (!existing) {
       throw AppError.notFound('Investment');
     }
 
@@ -121,8 +121,8 @@ export const deleteInvestment = async (req: AuthRequest, res: Response, next: Ne
     const userId = getUserId(req);
     const { id } = req.params;
 
-    const existing = await prisma.investment.findUnique({ where: { id } });
-    if (!existing || existing.userId !== userId) {
+    const existing = await prisma.investment.findFirst({ where: { id, userId } });
+    if (!existing) {
       throw AppError.notFound('Investment');
     }
 

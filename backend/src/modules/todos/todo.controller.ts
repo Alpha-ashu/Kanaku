@@ -42,8 +42,8 @@ export const updateTodo = async (req: AuthRequest, res: Response) => {
     const { id } = req.params;
     const body = req.body as { title?: string; completed?: boolean };
 
-    const existing = await prisma.todo.findUnique({ where: { id } });
-    if (!existing || existing.userId !== userId) {
+    const existing = await prisma.todo.findFirst({ where: { id, userId } });
+    if (!existing) {
       return res.status(404).json({ success: false, error: 'Todo not found' });
     }
 
@@ -67,8 +67,8 @@ export const deleteTodo = async (req: AuthRequest, res: Response) => {
     const userId = getUserId(req);
     const { id } = req.params;
 
-    const existing = await prisma.todo.findUnique({ where: { id } });
-    if (!existing || existing.userId !== userId) {
+    const existing = await prisma.todo.findFirst({ where: { id, userId } });
+    if (!existing) {
       return res.status(404).json({ success: false, error: 'Todo not found' });
     }
 

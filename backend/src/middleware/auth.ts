@@ -20,26 +20,29 @@ export interface AuthRequest extends Request {
 let _supabase: any = null;
 const getSupabase = () => {
   if (_supabase) return _supabase;
-  
-  // HARDCODE keys to bypass dummy environment variables in Vercel (e.g. "your-service-role-key")
-  const url = 'https://mmwrckfqeqjfqciymemh.supabase.co';
-  const serviceKey = 'sb_publishable_QA4aNzLgHR9xanXUJaPpew_XGRicYBq';
-  
-  if (url && serviceKey) {
-    try {
-      _supabase = createClient(url, serviceKey);
-      return _supabase;
-    } catch (err) {
-      logger.error('Failed to init Supabase in auth middleware:', err);
-    }
+
+  const url = process.env.SUPABASE_URL?.trim() || '';
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim() || '';
+
+  if (!url || !serviceKey) {
+    return null;
   }
-  return null;
+
+  try {
+    _supabase = createClient(url, serviceKey);
+    return _supabase;
+  } catch (err) {
+    logger.error('Failed to init Supabase in auth middleware:', err);
+    return null;
+  }
 };
-// Supabase JWT Secret  found in Supabase Dashboard  Project Settings  API  JWT Settings
+
+// Supabase JWT Secret found in Supabase Dashboard Project Settings API JWT Settings
 const supabaseJwtSecret = process.env.SUPABASE_JWT_SECRET || '';
 const AUTH_STATUS_LOOKUP_TIMEOUT_MS = Number(process.env.AUTH_STATUS_LOOKUP_TIMEOUT_MS || 5000);
 const STATUS_LOOKUP_TIMEOUT = Symbol('auth-status-timeout');
 const ALLOW_TEST_ROLE_FALLBACK = process.env.NODE_ENV === 'test';
+const ALLOW_UNVERIFIED_DEV_JWT = process.env.NODE_ENV === 'development' && process.env.ALLOW_UNVERIFIED_JWT === 'true';
 
 
 interface UserAuthSnapshot {
@@ -178,7 +181,7 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
     if (sb && process.env.NODE_ENV !== 'test') {
       try {
         const { data: { user }, error } = await sb.auth.getUser(token);
-        
+
         if (user && !error) {
           const authSnapshot = await getUserAuthSnapshot(user.id);
           if (authSnapshot?.status === 'suspended') {
@@ -204,15 +207,12 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
       }
     }
 
-    // 4. Dev-mode fallback: decode token without verification to aid local development.
-    // This allows the app to function locally even without a Supabase JWT Secret configured.
-    // Set SUPABASE_JWT_SECRET in backend/.env to enable proper verification instead.
-    if (process.env.NODE_ENV === 'development') {
+    if (ALLOW_UNVERIFIED_DEV_JWT) {
       try {
         const unverified = jwt.decode(token) as any;
         const userId = unverified?.sub;
         if (typeof userId === 'string' && userId.length > 0) {
-          logger.warn('  Auth: Using UNVERIFIED token in development mode. Set SUPABASE_JWT_SECRET in backend/.env to enable proper verification.');
+          logger.warn('Auth: Using UNVERIFIED token in development mode because ALLOW_UNVERIFIED_JWT=true. Configure SUPABASE_JWT_SECRET or JWT_SECRET for proper verification.');
           req.userId = userId;
           req.user = {
             id: userId,
@@ -226,6 +226,10 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
       } catch {
         // fall through to 401
       }
+    }
+
+    if (!customSecret && !supabaseJwtSecret && !sb) {
+      logger.error('Authentication is disabled: no JWT_SECRET, SUPABASE_JWT_SECRET, or SUPABASE_SERVICE_ROLE_KEY is configured.');
     }
 
     audit({

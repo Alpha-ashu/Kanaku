@@ -81,12 +81,12 @@ export const getLoan = async (req: AuthRequest, res: Response, next: NextFunctio
     const userId = getUserId(req);
     const { id } = req.params;
 
-    const loan = await prisma.loan.findUnique({
-      where: { id },
+    const loan = await prisma.loan.findFirst({
+      where: { id, userId },
       include: { payments: { orderBy: { date: 'desc' } } },
     });
 
-    if (!loan || loan.userId !== userId) {
+    if (!loan) {
       throw AppError.notFound('Loan');
     }
 
@@ -103,11 +103,11 @@ export const updateLoan = async (req: AuthRequest, res: Response, next: NextFunc
     const body = req.body;
 
     // Verify ownership
-    const loan = await prisma.loan.findUnique({
-      where: { id },
+    const loan = await prisma.loan.findFirst({
+      where: { id, userId },
     });
 
-    if (!loan || loan.userId !== userId) {
+    if (!loan) {
       throw AppError.notFound('Loan');
     }
 
@@ -175,11 +175,11 @@ export const deleteLoan = async (req: AuthRequest, res: Response, next: NextFunc
     const { id } = req.params;
 
     // Verify ownership
-    const loan = await prisma.loan.findUnique({
-      where: { id },
+    const loan = await prisma.loan.findFirst({
+      where: { id, userId },
     });
 
-    if (!loan || loan.userId !== userId) {
+    if (!loan) {
       throw AppError.notFound('Loan');
     }
 
@@ -214,11 +214,11 @@ export const addLoanPayment = async (req: AuthRequest, res: Response, next: Next
     }
 
     // Verify ownership
-    const loan = await prisma.loan.findUnique({
-      where: { id },
+    const loan = await prisma.loan.findFirst({
+      where: { id, userId },
     });
 
-    if (!loan || loan.userId !== userId) {
+    if (!loan) {
       throw AppError.notFound('Loan');
     }
 
