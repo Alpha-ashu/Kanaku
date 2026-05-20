@@ -8,8 +8,14 @@ export const getSession = async (req: AuthRequest, res: Response) => {
     const userId = getUserId(req);
     const { id } = req.params;
 
-    const session = await prisma.advisorSession.findUnique({
-      where: { id },
+    const session = await prisma.advisorSession.findFirst({
+      where: {
+        id,
+        OR: [
+          { advisorId: userId },
+          { clientId: userId },
+        ],
+      },
       include: {
         booking: true,
         advisor: {
@@ -56,17 +62,18 @@ export const sendMessage = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ error: 'Message cannot be empty' });
     }
 
-    const session = await prisma.advisorSession.findUnique({
-      where: { id: sessionId },
+    const session = await prisma.advisorSession.findFirst({
+      where: {
+        id: sessionId,
+        OR: [
+          { advisorId: userId },
+          { clientId: userId },
+        ],
+      },
     });
 
     if (!session) {
       return res.status(404).json({ error: 'Session not found' });
-    }
-
-    // Verify user is involved in session
-    if (session.advisorId !== userId && session.clientId !== userId) {
-      return res.status(403).json({ error: 'Access denied' });
     }
 
     // Session must be in progress
@@ -115,8 +122,14 @@ export const getMessages = async (req: AuthRequest, res: Response) => {
     const userId = getUserId(req);
     const { id: sessionId } = req.params;
 
-    const session = await prisma.advisorSession.findUnique({
-      where: { id: sessionId },
+    const session = await prisma.advisorSession.findFirst({
+      where: {
+        id: sessionId,
+        OR: [
+          { advisorId: userId },
+          { clientId: userId },
+        ],
+      },
     });
 
     if (!session) {
@@ -150,11 +163,11 @@ export const startSession = async (req: AuthRequest, res: Response) => {
     const advisorId = getUserId(req);
     const { id } = req.params;
 
-    const session = await prisma.advisorSession.findUnique({
-      where: { id },
+    const session = await prisma.advisorSession.findFirst({
+      where: { id, advisorId },
     });
 
-    if (!session || session.advisorId !== advisorId) {
+    if (!session) {
       return res.status(403).json({ error: 'Access denied' });
     }
 
@@ -194,11 +207,11 @@ export const completeSession = async (req: AuthRequest, res: Response) => {
     const { id } = req.params;
     const { notes } = req.body;
 
-    const session = await prisma.advisorSession.findUnique({
-      where: { id },
+    const session = await prisma.advisorSession.findFirst({
+      where: { id, advisorId },
     });
 
-    if (!session || session.advisorId !== advisorId) {
+    if (!session) {
       return res.status(403).json({ error: 'Access denied' });
     }
 
@@ -264,8 +277,14 @@ export const cancelSession = async (req: AuthRequest, res: Response) => {
     const { id } = req.params;
     const { reason } = req.body;
 
-    const session = await prisma.advisorSession.findUnique({
-      where: { id },
+    const session = await prisma.advisorSession.findFirst({
+      where: {
+        id,
+        OR: [
+          { advisorId: userId },
+          { clientId: userId },
+        ],
+      },
     });
 
     if (!session) {

@@ -46,6 +46,10 @@ export async function trustDevice(userId: string, deviceId: string, deviceInfo?:
   const existing = await prisma.device.findUnique({ where: { deviceId } });
 
   if (existing) {
+    if (existing.userId !== userId) {
+      throw new Error('DEVICE_ID_CONFLICT');
+    }
+
     await prisma.device.update({
       where: { deviceId },
       data: {

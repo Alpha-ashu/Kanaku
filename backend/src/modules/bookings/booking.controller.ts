@@ -121,8 +121,14 @@ export const getBooking = async (req: AuthRequest, res: Response) => {
     const userId = getUserId(req);
     const { id } = req.params;
 
-    const booking = await prisma.bookingRequest.findUnique({
-      where: { id },
+    const booking = await prisma.bookingRequest.findFirst({
+      where: {
+        id,
+        OR: [
+          { clientId: userId },
+          { advisorId: userId },
+        ],
+      },
       include: {
         client: {
           select: { id: true, name: true, email: true },
@@ -154,11 +160,11 @@ export const acceptBooking = async (req: AuthRequest, res: Response) => {
     const advisorId = getUserId(req);
     const { id } = req.params;
 
-    const booking = await prisma.bookingRequest.findUnique({
-      where: { id },
+    const booking = await prisma.bookingRequest.findFirst({
+      where: { id, advisorId },
     });
 
-    if (!booking || booking.advisorId !== advisorId) {
+    if (!booking) {
       return res.status(403).json({ error: 'Access denied' });
     }
 
@@ -204,11 +210,11 @@ export const rejectBooking = async (req: AuthRequest, res: Response) => {
     const { id } = req.params;
     const { reason } = req.body;
 
-    const booking = await prisma.bookingRequest.findUnique({
-      where: { id },
+    const booking = await prisma.bookingRequest.findFirst({
+      where: { id, advisorId },
     });
 
-    if (!booking || booking.advisorId !== advisorId) {
+    if (!booking) {
       return res.status(403).json({ error: 'Access denied' });
     }
 
@@ -246,11 +252,11 @@ export const rescheduleBooking = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ error: 'proposedDate and proposedTime are required' });
     }
 
-    const booking = await prisma.bookingRequest.findUnique({
-      where: { id },
+    const booking = await prisma.bookingRequest.findFirst({
+      where: { id, advisorId },
     });
 
-    if (!booking || booking.advisorId !== advisorId) {
+    if (!booking) {
       return res.status(403).json({ error: 'Access denied' });
     }
 
@@ -291,11 +297,11 @@ export const cancelBooking = async (req: AuthRequest, res: Response) => {
     const clientId = getUserId(req);
     const { id } = req.params;
 
-    const booking = await prisma.bookingRequest.findUnique({
-      where: { id },
+    const booking = await prisma.bookingRequest.findFirst({
+      where: { id, clientId },
     });
 
-    if (!booking || booking.clientId !== clientId) {
+    if (!booking) {
       return res.status(403).json({ error: 'Access denied' });
     }
 
@@ -357,8 +363,8 @@ export const markFeePaid = async (req: AuthRequest, res: Response) => {
     const { bookingId } = req.params;
     const { amount, paymentMethod, paymentReference } = req.body;
 
-    const booking = await prisma.bookingRequest.findUnique({ where: { id: bookingId } });
-    if (!booking || booking.advisorId !== advisorId) {
+    const booking = await prisma.bookingRequest.findFirst({ where: { id: bookingId, advisorId } });
+    if (!booking) {
       return res.status(403).json({ error: 'Access denied' });
     }
 

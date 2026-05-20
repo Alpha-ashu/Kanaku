@@ -63,6 +63,10 @@ class SyncService {
       });
 
       if (existingDevice) {
+        if (existingDevice.userId !== userId) {
+          throw new Error('DEVICE_ID_CONFLICT');
+        }
+
         // Update existing device
         const updatedDevice = await prisma.device.update({
           where: { deviceId: deviceInfo.deviceId },
@@ -109,7 +113,7 @@ class SyncService {
       const { userId, deviceId, lastSyncedAt, entityTypes } = request;
 
       // Update device last seen
-      await this.updateDeviceLastSeen(deviceId);
+      await this.updateDeviceLastSeen(deviceId, userId);
 
       // Build where clause for incremental sync
       const whereClause = lastSyncedAt 
@@ -195,7 +199,7 @@ class SyncService {
       const errors: string[] = [];
 
       // Update device last seen
-      await this.updateDeviceLastSeen(deviceId);
+      await this.updateDeviceLastSeen(deviceId, userId);
 
       // Process each entity
       for (const entity of entities) {
@@ -590,12 +594,12 @@ class SyncService {
     }
   }
 
-  private async updateDeviceLastSeen(deviceId: string) {
-    await prisma.device.update({
-      where: { deviceId },
+  private async updateDeviceLastSeen(deviceId: string, userId: string) {
+    await prisma.device.updateMany({
+      where: { deviceId, userId },
       data: { lastSeenAt: new Date() },
     }).catch(() => {
-      // Device might not exist, ignore
+      // Device might not exist or belong to another user, ignore
     });
   }
 
