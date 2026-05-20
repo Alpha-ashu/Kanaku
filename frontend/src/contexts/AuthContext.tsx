@@ -663,49 +663,44 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
               // Always record the current user so we can detect future switches
               localStorage.setItem('auth_last_user_id', nextUser.id);
 
-              // Wait for permissions first so we have the correct role for the Route Guard.
-              // Hard 8.5-second timeout so we NEVER get stuck on loading screen if backend is slow/offline.
-              // (Needs to be longer than the 8s timeout in permissionService.ts)
-              try {
-                const permissions = await Promise.race([
-                  permissionService.fetchUserPermissions(nextUser.id, provisionalRole),
-                  new Promise<never>((_, reject) =>
-                    setTimeout(() => reject(new Error('Permission fetch timeout')), 8500)
-                  ),
-                ]);
-                if (activeSyncUserId.current === nextUser.id) {
-                  setRole(permissions.role);
-                }
-              } catch (permError) {
-                console.warn('Permission fetch failed/timed out, using provisional role:', permError);
-              } finally {
-                // Always clear loading screen once role is resolved (or timed out)
-                if (isMounted) setLoading(false);
+              // UNBLOCK UI INSTANTLY: Set provisional role and loading to false immediately
+              if (isMounted) {
+                setRole(provisionalRole);
+                setLoading(false);
               }
 
-              // Run heavy cloud sync in background
+              // Run permissions fetch and heavy cloud sync in the background
               void (async () => {
+                try {
+                  const permissions = await permissionService.fetchUserPermissions(nextUser.id, provisionalRole);
+                  if (activeSyncUserId.current === nextUser.id && isMounted) {
+                    setRole(permissions.role);
+                  }
+                } catch (permError) {
+                  console.warn('Background permission fetch failed/timed out, using provisional role:', permError);
+                }
+
                 try {
                   // If we already have local accounts stored in offline Dexie database, set dataReady immediately
                   // to avoid showing a blocking sync screen for a clean, smooth, and immediate load.
                   const localAccountsCount = await db.accounts.count().catch(() => 0);
                   const hasLocalData = localAccountsCount > 0;
-                  if (hasLocalData && activeSyncUserId.current === nextUser.id) {
+                  if (hasLocalData && activeSyncUserId.current === nextUser.id && isMounted) {
                     setDataReady(true);
                   }
 
                   await syncFromSupabase(nextUser);
-                  if (activeSyncUserId.current === nextUser.id) {
+                  if (activeSyncUserId.current === nextUser.id && isMounted) {
                     setDataReady(true);
                   }
                 } catch (syncError) {
                   console.warn('Background sync failed (non-blocking):', syncError);
-                  if (activeSyncUserId.current === nextUser.id) {
+                  if (activeSyncUserId.current === nextUser.id && isMounted) {
                     setDataSyncError(formatSupabaseError(syncError));
                     setDataReady(true);
                   }
                 } finally {
-                  if (activeSyncUserId.current === nextUser.id) {
+                  if (activeSyncUserId.current === nextUser.id && isMounted) {
                     setDataSyncing(false);
                   }
                   initialSyncDone = true;

@@ -286,7 +286,7 @@ const parseOcrSpaceRawText = (rawText: string): JsonMap => {
   const lines = rawText.split('\n').map(l => l.trim()).filter(Boolean);
   const result: JsonMap = {};
 
-  // Extract numbers from end of line: "Grand Total    70.00"  70
+  // Extract numbers from end of line
   const extractLineAmount = (line: string): number | undefined => {
     const m = line.match(/([\d,]+\.?\d*)\s*$/);
     if (!m) return undefined;
@@ -294,22 +294,38 @@ const parseOcrSpaceRawText = (rawText: string): JsonMap => {
     return Number.isFinite(n) && n > 0 ? n : undefined;
   };
 
-  // Identify merchant: first meaningful non-numeric, non-label line
-  const labelPattern = /^(sub|net|dis|tax|cgst|sgst|igst|gst|total|grand|amount|invoice|bill|date|time|phone|tel|gstin|table|token|rs\.?|inr|qty|rate|mrp|item|particulars|sl)/i;
-  for (const line of lines.slice(0, 8)) {
-    if (line.length >= 3 && !labelPattern.test(line) && !/^\d/.test(line) && !result.merchantName) {
-      result.merchantName = line;
+  // Merchant Name Extraction
+  const merchantSuffixPattern = /^(.*?)(Veg Restaurant|Restaurant|Cafe|Coffee|Diner|Bistro|Grill|Bakery|Mart|Supermarket|Traders|Store|Foods|Retail|Sweets|Kitchen|Hotel)\b/i;
+  let merchantFound = false;
+  for (const line of lines.slice(0, 10)) {
+    const match = line.match(merchantSuffixPattern);
+    if (match && match[1].trim().length >= 3) {
+      result.merchantName = `${match[1].trim()} ${match[2].trim()}`;
+      merchantFound = true;
+      break;
+    }
+  }
+  if (!merchantFound) {
+    const blocklist = /date|time|invoice|bill|token|table|gst|tax|vat|fssai|phone|tel|mobile|www\.|http|address|road|street|lane|particulars|qty|quantity|rate|amount|subtotal|total|thank\s*you|visit\s*again/i;
+    for (const line of lines.slice(0, 8)) {
+      if (line.length >= 3 && line.length <= 40 && !blocklist.test(line) && !/^\d/.test(line)) {
+        result.merchantName = line;
+        break;
+      }
     }
   }
 
   const taxBreakdown: Array<{ name: string; rate?: number; amount: number }> = [];
   const items: Array<{ name: string; quantity?: number; rate?: number; amount: number }> = [];
+  let discountAmount: number | undefined;
+  let discountPercent: number | undefined;
 
-  for (const line of lines) {
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
     const lower = line.toLowerCase();
     const amount = extractLineAmount(line);
 
-    // Date
+    // Date Extraction
     if (!result.date) {
       const dateMatch = line.match(/(\d{1,2})[\/-](\d{1,2})[\/-](\d{2,4})/);
       if (dateMatch) {
@@ -319,13 +335,13 @@ const parseOcrSpaceRawText = (rawText: string): JsonMap => {
       }
     }
 
-    // Time
+    // Time Extraction
     if (!result.time && /\d{1,2}:\d{2}/.test(line)) {
-      const tm = line.match(/(\d{1,2}:\d{2}(?::\d{2})?)/);
-      if (tm) result.time = tm[1];
+      const tm = line.match(/(\d{1,2}:\d{2}(?::\d{2})?(?:\s?[AP]M)?)/i);
+      if (tm) result.time = tm[1].toUpperCase();
     }
 
-    // Invoice / Bill number
+    // Invoice Number
     if (!result.invoiceNumber && /(bill|invoice|token|receipt)\s*(no\.?|#|number)?\s*[:\s]\s*(\w+)/i.test(line)) {
       const m2 = line.match(/(bill|invoice|token|receipt)\s*(no\.?|#|number)?\s*[:\s]\s*(\w+)/i);
       if (m2) result.invoiceNumber = m2[3];
@@ -337,7 +353,7 @@ const parseOcrSpaceRawText = (rawText: string): JsonMap => {
       if (gstMatch) result.gstin = gstMatch[0];
     }
 
-    // Payment method
+    // Payment Method
     if (!result.paymentMethod && /(upi|cash|card|gpay|paytm|credit|debit|neft|imps|netbanking)/i.test(line)) {
       const pm = line.match(/(upi|cash|card|gpay|paytm|credit|debit|neft|imps|netbanking)/i);
       if (pm) result.paymentMethod = pm[1].toUpperCase();
@@ -345,50 +361,127 @@ const parseOcrSpaceRawText = (rawText: string): JsonMap => {
 
     if (amount === undefined) continue;
 
-    // Totals
+    // Totals & Discounts
     if (/grand\s*total|amount\s*payable|net\s*payable|total\s*amount\s*due/i.test(lower)) {
       result.netAmount = amount;
     } else if (/^sub\s*total|subtotal/i.test(lower)) {
       result.preTaxSubtotal = amount;
-    } else if (/^(dis\b|discount)/i.test(lower)) {
-      result.discountAmount = amount;
     } else if (/net\s*total|taxable\s*value|net\s*amt/i.test(lower)) {
       result.net_total = amount;
     } else if (/^total/i.test(lower) && !result.netAmount) {
       result.total = amount;
+    } else if (/(?:dis\b|discount|less|promo)/i.test(lower)) {
+      discountAmount = amount;
+      const pctMatch = line.match(/(?:@\s*|less\s*|dis.*\s*)(\d+(?:\.\d+)?)\s*%/i);
+      if (pctMatch) {
+        discountPercent = parseFloat(pctMatch[1]);
+      }
     }
 
-    // Tax lines: CGST @9% 5.31
-    const taxMatch = line.match(/^(CGST|SGST|IGST|GST|VAT|Service\s*Tax|Service\s*Charge)\s*(?:@\s*([\d.]+)\s*%?)?/i);
+    // Taxes
+    const taxMatch = line.match(/^(CGST|SGST|IGST|GST|VAT|Service\s*Tax|Service\s*Charge)\b/i);
     if (taxMatch) {
+      let rate: number | undefined;
+      const rateMatch = line.match(/(\d+(?:\.\d+)?)\s*%/);
+      if (rateMatch) {
+        rate = parseFloat(rateMatch[1]);
+      }
       taxBreakdown.push({
         name: taxMatch[1].toUpperCase(),
-        rate: taxMatch[2] ? parseFloat(taxMatch[2]) : undefined,
-        amount,
+        rate,
+        amount
       });
     }
   }
 
-  // Extract items: lines like "MEDU WADA    1   65   65"
-  for (const line of lines) {
-    const itemMatch = line.match(/^([A-Za-z][A-Za-z\s]{2,30})\s+(\d+)\s+([\d.]+)\s+([\d.]+)\s*$/);
-    if (itemMatch) {
-      const [, name, qty, rate, amt] = itemMatch;
-      items.push({
-        name: name.trim(),
-        quantity: parseInt(qty),
-        rate: parseFloat(rate),
-        amount: parseFloat(amt),
-      });
+  // CGST/SGST Rate typo correction (e.g. CGST 69% vs SGST @9% -> normalize both to 9%)
+  const cgst = taxBreakdown.find(t => t.name === 'CGST');
+  const sgst = taxBreakdown.find(t => t.name === 'SGST');
+  if (cgst && sgst && cgst.amount === sgst.amount) {
+    if (cgst.rate !== sgst.rate) {
+      const correctRate = (cgst.rate !== undefined && cgst.rate <= 28) ? cgst.rate : sgst.rate;
+      cgst.rate = correctRate;
+      sgst.rate = correctRate;
     }
   }
 
-  if (taxBreakdown.length > 0) result.taxBreakdown = taxBreakdown as unknown as string;
-  if (items.length > 0) result.items = items as unknown as string;
+  // Extract items
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const nextLine = lines[i + 1];
+    const nextNextLine = lines[i + 2];
+
+    const labelPattern = /^(sub|net|dis|tax|cgst|sgst|igst|gst|total|grand|amount|invoice|bill|date|time|phone|tel|gstin|table|token|rs\.?|inr|qty|rate|mrp|item|particulars|sl|thank\s*you|visit\s*again)/i;
+    if (labelPattern.test(line) || /^\d/.test(line) || line.length < 3) continue;
+
+    // Case A: single line item
+    const singleLineMatch = line.match(/^([A-Za-z0-9\s&()+\-/,.]{3,40}?)\s+(\d+)\s+([\d.]+)\s+([\d.]+)\s*$/) ||
+                             line.match(/^([A-Za-z0-9\s&()+\-/,.]{3,40}?)\s+(\d+)\s+([\d.]+)\s*$/);
+    if (singleLineMatch) {
+      const name = singleLineMatch[1].trim();
+      const qty = parseInt(singleLineMatch[2]);
+      const rate = parseFloat(singleLineMatch[3]);
+      const amt = singleLineMatch[4] ? parseFloat(singleLineMatch[4]) : qty * rate;
+      items.push({ name, quantity: qty, rate, amount: amt });
+      continue;
+    }
+
+    // Case B: multi-line split item
+    if (nextLine) {
+      const splitNumbersMatch = nextLine.match(/^\s*(\d+)\s+([\d.]+)\s+([\d.]+)\s*$/) ||
+                                 nextLine.match(/^\s*(\d+)\s+([\d.]+)\s*$/);
+      if (splitNumbersMatch) {
+        const name = line.trim();
+        const qty = parseInt(splitNumbersMatch[1]);
+        const rate = parseFloat(splitNumbersMatch[2]);
+        let amt = splitNumbersMatch[3] ? parseFloat(splitNumbersMatch[3]) : qty * rate;
+
+        if (nextNextLine && /^\s*[\d.]+\s*$/.test(nextNextLine)) {
+          const nextAmt = parseFloat(nextNextLine.trim());
+          if (Math.abs(nextAmt - qty * rate) < 1.0) {
+            amt = nextAmt;
+            i += 2;
+          } else {
+            i += 1;
+          }
+        } else {
+          i += 1;
+        }
+
+        items.push({ name, quantity: qty, rate, amount: amt });
+        continue;
+      }
+    }
+
+    // Case C: simple name + amount
+    const simpleLineMatch = line.match(/^([A-Za-z0-9\s&()+\-/,.]{3,40}?)\s+([\d.]+)\s*$/);
+    if (simpleLineMatch) {
+      const name = simpleLineMatch[1].trim();
+      const amt = parseFloat(simpleLineMatch[2]);
+      items.push({ name, quantity: 1, rate: amt, amount: amt });
+    }
+  }
+
+  // Reconstruct missing amounts if necessary
+  const taxSum = taxBreakdown.reduce((s, t) => s + t.amount, 0);
+  const discountVal = discountAmount || 0;
+
+  if (result.preTaxSubtotal !== undefined && result.netAmount === undefined) {
+    result.netAmount = Number(((result.preTaxSubtotal as number) - discountVal + taxSum).toFixed(2));
+  } else if (result.netAmount !== undefined && result.preTaxSubtotal === undefined) {
+    result.preTaxSubtotal = Number(((result.netAmount as number) + discountVal - taxSum).toFixed(2));
+  }
+
+  if (taxBreakdown.length > 0) result.taxBreakdown = taxBreakdown;
+  if (items.length > 0) result.items = items;
+  if (discountAmount !== undefined) {
+    result.discountAmount = discountAmount;
+    if (discountPercent !== undefined) result.discountPercent = discountPercent;
+  }
   result.currency = 'INR';
 
   return result;
-};
+};;
 
 const extractJson = async (response: globalThis.Response): Promise<JsonMap> => {
   const text = await response.text();

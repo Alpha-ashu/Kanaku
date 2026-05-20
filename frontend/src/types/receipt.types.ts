@@ -44,6 +44,10 @@ export interface ReceiptScanResult {
   location?: string;          // "INDIA" | "USA" | "EU" | "UAE" | "UK" | "UNKNOWN"
   taxBreakdown?: TaxComponent[];   // CGST/SGST/VAT/Sales Tax breakdown
 
+  // Discount fields
+  discountAmount?: number;     // discount value in currency units
+  discountPercent?: number;    // discount rate as a percentage (e.g. 10 for 10%)
+
   // Validation
   validationResult?: TotalValidationResult;
 
