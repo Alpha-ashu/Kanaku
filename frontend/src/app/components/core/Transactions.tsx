@@ -1,6 +1,8 @@
 import React, { useState, useMemo, useEffect, useDeferredValue } from 'react';
 import { useApp } from '@/contexts/AppContext';
 import { db, type DocumentRecord } from '@/lib/database';
+import { deleteTransactionWithBackendSync, queueRecordUpsertSync } from '@/lib/auth-sync-integration';
+import { applyAccountBalanceDeltas, buildTransactionAggregation, getTransactionAccountDeltas } from '@/lib/transactionAggregation';
 import { Plus, TrendingUp, TrendingDown, Search, Camera, Edit2, Trash2, ArrowUpRight, ArrowDownLeft, Repeat2, Wallet, Receipt, Layers, Eye, X, ChevronRight, FileText, Paperclip } from 'lucide-react';
 import { toast } from 'sonner';
 import { DeleteConfirmModal } from '@/app/components/shared/DeleteConfirmModal';
@@ -114,13 +116,12 @@ export const Transactions: React.FC = () => {
  }, [timeFilteredTransactions, filterType, normalizedSearch]);
 
  const stats = useMemo(() => {
- let expenses = 0;
- let income = 0;
- for (const transaction of timeFilteredTransactions) {
- if (transaction.type === 'expense') expenses += transaction.amount;
- if (transaction.type === 'income') income += transaction.amount;
- }
- return { expenses, income, netFlow: income - expenses };
+ const aggregation = buildTransactionAggregation(timeFilteredTransactions);
+ return {
+ expenses: aggregation.totalExpenses,
+ income: aggregation.totalIncome,
+ netFlow: aggregation.netFlow,
+ };
  }, [timeFilteredTransactions]);
 
  const taxStats = useMemo(() => {
@@ -286,50 +287,22 @@ export const Transactions: React.FC = () => {
  const tx = await db.transactions.get(transactionToDelete.id);
  if (tx) {
  const now = new Date();
- const account = await db.accounts.get(tx.accountId);
+ const reverseDeltas = new Map(
+ Array.from(getTransactionAccountDeltas(tx).entries()).map(([accountId, delta]) => [accountId, -delta]),
+ );
 
- if (account) {
- if (tx.type === 'transfer') {
- // Revert source account (add back the amount)
- await db.accounts.update(tx.accountId, {
- balance: account.balance + tx.amount,
- updatedAt: now
- });
-
- // Revert target account if it was a self-transfer or withdrawal
- if (tx.transferToAccountId) {
- const targetAcc = await db.accounts.get(tx.transferToAccountId);
- if (targetAcc) {
- await db.accounts.update(tx.transferToAccountId, {
- balance: targetAcc.balance - tx.amount,
- updatedAt: now
- });
- }
- }
- } else {
- // Revert Expense/Income/Loan
- let adjustment = tx.type === 'income' ? -tx.amount : tx.amount;
- 
- // Special case: Borrowed loans were inflows (added to balance), so subtract to revert
- if (tx.expenseMode === 'loan' && tx.loanType === 'borrowed') {
- adjustment = -tx.amount;
- }
- 
- await db.accounts.update(tx.accountId, {
- balance: account.balance + adjustment,
- updatedAt: now
- });
- }
+ // 2. Delete the transaction first so a backend failure cannot leave balance-only changes behind.
+ await deleteTransactionWithBackendSync(transactionToDelete.id);
+ await applyAccountBalanceDeltas(reverseDeltas, now);
+ for (const accountId of reverseDeltas.keys()) {
+ queueRecordUpsertSync('accounts', accountId);
  }
 
- // 2. Clean up linked group expenses if any
+ // 3. Clean up linked group expenses if any
  if (tx.groupExpenseId) {
  await db.groupExpenses.delete(tx.groupExpenseId);
  }
  }
-
- // 3. Delete the transaction
- await db.transactions.delete(transactionToDelete.id);
  
  toast.success('Transaction deleted and balance reverted');
  setDeleteModalOpen(false);

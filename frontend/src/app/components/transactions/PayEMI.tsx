@@ -3,6 +3,7 @@ import { useApp } from '@/contexts/AppContext';
 import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
 import { PageHeader } from '@/app/components/ui/PageHeader';
 import { db } from '@/lib/database';
+import { applyAccountBalanceDeltas } from '@/lib/transactionAggregation';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { toast } from 'sonner';
 import { CreditCard, AlertCircle, DollarSign, Calendar } from 'lucide-react';
@@ -97,10 +98,7 @@ export const PayEMI: React.FC = () => {
  status: newBalance <= 0 ? 'completed' : 'active',
  });
 
- // Update account balance
- await db.accounts.update(paymentAccount.id, {
- balance: paymentAccount.balance - paymentAmount,
- });
+ await applyAccountBalanceDeltas(new Map([[paymentAccount.id as number, -paymentAmount]]));
 
  toast.success(`EMI payment of ${formatCurrency(paymentAmount)} recorded successfully`);
  

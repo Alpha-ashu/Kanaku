@@ -19,6 +19,7 @@ import { CategoryDropdown } from '@/app/components/ui/CategoryDropdown';
 import { parseDateInputValue, toLocalDateKey } from '@/lib/dateUtils';
 import { backendService } from '@/lib/backend-api';
 import { saveTransactionWithBackendSync } from '@/lib/auth-sync-integration';
+import { applyAccountBalanceDeltas } from '@/lib/transactionAggregation';
 import type { VoiceIntent } from '@/lib/voiceExpenseParser';
 import {
  VOICE_BATCH_DRAFT_KEY,
@@ -242,11 +243,7 @@ export const VoiceReview: React.FC = () => {
  });
  }
 
- const currentAccount = await db.accounts.get(accountId);
- await db.accounts.update(accountId, {
- balance: (currentAccount?.balance || 0) - accountBalanceDelta,
- updatedAt: new Date(),
- });
+ await applyAccountBalanceDeltas(new Map([[accountId, -accountBalanceDelta]]));
 
  toast.success('Voice save has been undone');
  } catch (error) {
@@ -353,10 +350,7 @@ export const VoiceReview: React.FC = () => {
  balanceDelta -= item.amount;
  }
 
- await db.accounts.update(accountId, {
- balance: account.balance + balanceDelta,
- updatedAt: new Date(),
- });
+ await applyAccountBalanceDeltas(new Map([[accountId, balanceDelta]]));
 
  const remainingItems = items.filter((_, index) => !savedItemIndices.has(index));
 

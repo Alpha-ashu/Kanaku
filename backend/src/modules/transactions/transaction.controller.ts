@@ -70,6 +70,65 @@ function normalizeTransaction<T extends TransactionWithTags>(transaction: T): Om
   };
 }
 
+type BalanceImpactTransaction = {
+  type?: string | null;
+  amount?: Prisma.Decimal | number | string | null;
+  accountId?: string | null;
+  transferToAccountId?: string | null;
+};
+
+function addBalanceDelta(deltas: Map<string, number>, accountId: string | null | undefined, delta: number) {
+  if (!accountId || !Number.isFinite(delta) || delta === 0) return;
+  deltas.set(accountId, Math.round(((deltas.get(accountId) ?? 0) + delta) * 100) / 100);
+}
+
+function getBalanceImpactDeltas(transaction: BalanceImpactTransaction): Map<string, number> {
+  const deltas = new Map<string, number>();
+  const amount = Math.round(Number(transaction.amount ?? 0) * 100) / 100;
+  if (!Number.isFinite(amount) || amount <= 0 || !transaction.accountId) return deltas;
+
+  if (transaction.type === 'transfer') {
+    addBalanceDelta(deltas, transaction.accountId, -amount);
+    addBalanceDelta(deltas, transaction.transferToAccountId, amount);
+    return deltas;
+  }
+
+  addBalanceDelta(deltas, transaction.accountId, transaction.type === 'income' ? amount : -amount);
+  return deltas;
+}
+
+function mergeBalanceDeltas(...deltaSets: Array<Map<string, number>>): Map<string, number> {
+  const merged = new Map<string, number>();
+  for (const deltas of deltaSets) {
+    for (const [accountId, delta] of deltas.entries()) {
+      addBalanceDelta(merged, accountId, delta);
+    }
+  }
+  return merged;
+}
+
+function reverseBalanceDeltas(deltas: Map<string, number>): Map<string, number> {
+  const reversed = new Map<string, number>();
+  for (const [accountId, delta] of deltas.entries()) {
+    addBalanceDelta(reversed, accountId, -delta);
+  }
+  return reversed;
+}
+
+async function applyBalanceDeltas(
+  tx: Prisma.TransactionClient,
+  userId: string,
+  deltas: Map<string, number>,
+) {
+  for (const [accountId, delta] of deltas.entries()) {
+    if (!delta) continue;
+    await tx.account.updateMany({
+      where: { id: accountId, userId, deletedAt: null },
+      data: { balance: { increment: delta } },
+    });
+  }
+}
+
 export const getTransactions = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const userId = getUserId(req);
@@ -190,14 +249,14 @@ export const createTransaction = async (req: AuthRequest, res: Response, next: N
           throw AppError.badRequest('Insufficient balance', 'INSUFFICIENT_BALANCE');
         }
 
-        // Update both balances atomically
+        // Update both balances atomically using deltas so concurrent creates cannot overwrite earlier changes.
         await tx.account.update({
           where: { id: accountId },
-          data: { balance: Number(sourceAccount.balance) - numericAmount },
+          data: { balance: { decrement: numericAmount } },
         });
         await tx.account.update({
           where: { id: transferToAccountId },
-          data: { balance: Number(destinationAccount.balance) + numericAmount },
+          data: { balance: { increment: numericAmount } },
         });
       } else {
         // Validate account ownership
@@ -211,7 +270,7 @@ export const createTransaction = async (req: AuthRequest, res: Response, next: N
         const balanceAdjustment = type === 'income' ? numericAmount : -numericAmount;
         await tx.account.update({
           where: { id: accountId },
-          data: { balance: Number(account.balance) + balanceAdjustment },
+          data: { balance: { increment: balanceAdjustment } },
         });
       }
 
@@ -306,6 +365,9 @@ export const updateTransaction = async (req: AuthRequest, res: Response, next: N
     if (updates.tags !== undefined) {
       updates.tags = serializeTags(updates.tags);
     }
+    if (updates.amount !== undefined) {
+      updates.amount = Math.round(Number(updates.amount) * 100) / 100;
+    }
 
     // Verify ownership
     const transaction = await prisma.transaction.findFirst({
@@ -320,13 +382,40 @@ export const updateTransaction = async (req: AuthRequest, res: Response, next: N
       throw AppError.notFound('Transaction');
     }
 
-    const updated = await prisma.transaction.update({
-      where: { id },
-      data: {
-        ...updates,
-        version: { increment: 1 },
-      },
-      include: { account: true },
+    const updated = await prisma.$transaction(async (tx) => {
+      const nextTransaction: BalanceImpactTransaction = {
+        type: String(updates.type ?? transaction.type),
+        amount: updates.amount !== undefined ? Number(updates.amount) : Number(transaction.amount),
+        accountId: transaction.accountId,
+        transferToAccountId: updates.transferToAccountId !== undefined
+          ? String(updates.transferToAccountId || '')
+          : transaction.transferToAccountId,
+      };
+
+      if (nextTransaction.type === 'transfer' && nextTransaction.transferToAccountId) {
+        const destinationAccount = await tx.account.findUnique({
+          where: { id: nextTransaction.transferToAccountId },
+        });
+        if (!destinationAccount || destinationAccount.userId !== userId) {
+          throw AppError.forbidden('Invalid destination account', 'INVALID_DESTINATION_ACCOUNT');
+        }
+      }
+
+      const balanceDelta = mergeBalanceDeltas(
+        reverseBalanceDeltas(getBalanceImpactDeltas(transaction)),
+        getBalanceImpactDeltas(nextTransaction),
+      );
+
+      await applyBalanceDeltas(tx, userId, balanceDelta);
+
+      return tx.transaction.update({
+        where: { id },
+        data: {
+          ...updates,
+          version: { increment: 1 },
+        },
+        include: { account: true },
+      });
     });
 
     await cacheDeleteByPrefix('transactions:');
@@ -357,10 +446,18 @@ export const deleteTransaction = async (req: AuthRequest, res: Response, next: N
       throw AppError.notFound('Transaction');
     }
 
-    // Soft delete
-    await prisma.transaction.update({
-      where: { id },
-      data: { deletedAt: new Date() },
+    await prisma.$transaction(async (tx) => {
+      await applyBalanceDeltas(
+        tx,
+        userId,
+        reverseBalanceDeltas(getBalanceImpactDeltas(transaction)),
+      );
+
+      // Soft delete
+      await tx.transaction.update({
+        where: { id },
+        data: { deletedAt: new Date() },
+      });
     });
 
     await cacheDeleteByPrefix('transactions:');

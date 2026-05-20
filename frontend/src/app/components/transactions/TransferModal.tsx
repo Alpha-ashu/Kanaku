@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { db } from '@/lib/database';
+import { queueRecordUpsertSync } from '@/lib/auth-sync-integration';
+import { applyTransactionAccountImpact } from '@/lib/transactionAggregation';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { toast } from 'sonner';
 import { ArrowRightLeft } from 'lucide-react';
@@ -61,44 +63,29 @@ export const TransferModal: React.FC<TransferModalProps> = ({
  return;
  }
 
- // Create expense transaction in source account (outflow)
- await db.transactions.add({
+ const now = new Date();
+ const transferTransaction = {
  type: 'transfer',
  amount: formData.amount,
  accountId: formData.fromAccountId,
  category: 'Transfer',
  subcategory: 'Transfer Out',
  description: formData.description || `Transfer to ${toAccount.name}`,
- date: new Date(),
+ date: now,
  transferToAccountId: formData.toAccountId,
  transferType: formData.transferType,
- updatedAt: new Date(),
- });
+ createdAt: now,
+ updatedAt: now,
+ } as const;
 
- // Create income transaction in destination account (inflow)
- await db.transactions.add({
- type: 'transfer',
- amount: formData.amount,
- accountId: formData.toAccountId,
- category: 'Transfer',
- subcategory: 'Transfer In',
- description: formData.description || `Transfer from ${fromAccount.name}`,
- date: new Date(),
- transferToAccountId: formData.fromAccountId,
- transferType: formData.transferType,
- updatedAt: new Date(),
+ const transactionId = await db.transaction('rw', [db.transactions, db.accounts], async () => {
+ const savedId = await db.transactions.add(transferTransaction);
+ await applyTransactionAccountImpact(transferTransaction, now);
+ return savedId;
  });
-
- // Update account balances
- await db.accounts.update(formData.fromAccountId, {
- balance: fromAccount.balance - formData.amount,
- updatedAt: new Date(),
- });
-
- await db.accounts.update(formData.toAccountId, {
- balance: toAccount.balance + formData.amount,
- updatedAt: new Date(),
- });
+ queueRecordUpsertSync('transactions', Number(transactionId));
+ queueRecordUpsertSync('accounts', formData.fromAccountId);
+ queueRecordUpsertSync('accounts', formData.toAccountId);
 
  toast.success(` Transfer completed: ${currency} ${formData.amount.toFixed(2)} from ${fromAccount.name} to ${toAccount.name}`);
  setFormData({

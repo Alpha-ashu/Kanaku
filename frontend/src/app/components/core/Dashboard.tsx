@@ -16,6 +16,7 @@ import { TimeFilter, TimeFilterPeriod, filterByTimePeriod, getPeriodLabel } from
 import { fetchMultipleQuotes, getStockDataSetupHint, StockQuote } from '@/lib/stockApi';
 import { formatCurrencyAmount } from '@/lib/currencyUtils';
 import { formatLocalDate } from '@/lib/dateUtils';
+import { buildTransactionAggregation } from '@/lib/transactionAggregation';
 import { getCategoryCartoonIcon } from '@/app/components/ui/CartoonCategoryIcons';
 import {
  getInvestmentDisplayName,
@@ -111,12 +112,9 @@ export function Dashboard({ setCurrentPage }: DashboardProps) {
  }, [timeFilteredTransactions, filteredAccountIdSet, activeTab]);
 
  const stats = useMemo(() => {
- let income = 0;
- let expense = 0;
- for (const transaction of timeFilteredTransactions) {
- if (transaction.type === 'income') income += transaction.amount;
- if (transaction.type === 'expense') expense += transaction.amount;
- }
+ const aggregation = buildTransactionAggregation(timeFilteredTransactions);
+ const income = aggregation.totalIncome;
+ const expense = aggregation.totalExpenses;
 
  const totalBalance = accounts.filter(a => a.isActive).reduce((sum, a) => sum + a.balance, 0);
  const savingsRate = income > 0 ? ((income - expense) / income) * 100 : 0;

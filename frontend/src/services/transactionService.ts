@@ -1,13 +1,13 @@
-import { db } from '@/lib/database';
 import { financialDataCaptureService } from './financialDataCaptureService';
 import type { ReceiptScanResult } from '@/types/receipt.types';
+import { queueRecordUpsertSync } from '@/lib/auth-sync-integration';
 
 export interface CreateTransactionParams {
   scanResult: ReceiptScanResult;
   accountId: number;
   userId: string;
   currency: string;
-  currentBalance: number;
+  currentBalance?: number;
   onDuplicateNotify?: () => void;
 }
 
@@ -51,7 +51,6 @@ export class TransactionService {
       accountId,
       userId,
       currency,
-      currentBalance,
       onDuplicateNotify,
     } = params;
 
@@ -83,23 +82,15 @@ export class TransactionService {
         userId,
         duplicateDecision: 'notify',
         onDuplicateNotify: onDuplicateNotify || (() => {}),
+        applyAccountImpact: true,
       },
     );
 
     if (savedTransaction.saved && savedTransaction.transactionId) {
-      const account = await db.accounts.get(accountId);
-      if (account) {
-        await this.updateAccountBalance(accountId, Number(account.balance) - amount);
-      }
+      queueRecordUpsertSync('transactions', savedTransaction.transactionId);
+      queueRecordUpsertSync('accounts', accountId);
     }
 
     return savedTransaction;
-  }
-
-  private async updateAccountBalance(accountId: number, newBalance: number): Promise<void> {
-    await db.accounts.update(accountId, {
-      balance: newBalance,
-      updatedAt: new Date(),
-    });
   }
 }

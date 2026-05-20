@@ -26,6 +26,7 @@ import {
   type SmartImportPreview,
   type ThirdPartyImportResult,
 } from '@/services/smartExpenseImportService';
+import { applyTransactionAccountImpact } from '@/lib/transactionAggregation';
 
 export type DuplicateDecision = 'ignore' | 'merge' | 'notify';
 export type AiTaskKind =
@@ -792,6 +793,7 @@ export const financialDataCaptureService = {
       duplicateDecision?: DuplicateDecision;
       userId?: string;
       onDuplicateNotify?: (duplicate: DuplicateCheckResult) => void;
+      applyAccountImpact?: boolean;
     },
   ): Promise<SaveDraftResult> {
     const duplicateDecision = options?.duplicateDecision || 'notify';
@@ -839,9 +841,16 @@ export const financialDataCaptureService = {
       importMetadata: draft.importMetadata,
       createdAt: new Date(),
       updatedAt: new Date(),
+      syncStatus: 'pending',
     };
 
-    const id = await db.transactions.add(record);
+    const id = await db.transaction('rw', [db.transactions, db.accounts], async () => {
+      const transactionId = await db.transactions.add(record);
+      if (options?.applyAccountImpact) {
+        await applyTransactionAccountImpact(record);
+      }
+      return transactionId;
+    });
 
     return {
       saved: true,

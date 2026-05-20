@@ -36,6 +36,7 @@ import { NLQService } from"@/services/nlqService";
 import { VoiceContextStore } from"@/services/voiceContextStore";
 import { saveTransactionWithBackendSync, queueRecordUpsertSync } from"@/lib/auth-sync-integration";
 import { parseDateInputValue } from"@/lib/dateUtils";
+import { applyAccountBalanceDeltas } from"@/lib/transactionAggregation";
 
 // All supported expense/income categories for the edit dropdown
 const ALL_CATEGORIES = [
@@ -492,17 +493,9 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
         }
       }
 
-      // Execute single cumulative updates per affected account
-      for (const [accountId, netChange] of netBalanceChanges.entries()) {
-        if (netChange === 0) continue;
-        const account = await db.accounts.get(accountId);
-        if (account) {
-          await db.accounts.update(accountId, {
-            balance: account.balance + netChange,
-            updatedAt: now
-          });
-          queueRecordUpsertSync('accounts', accountId);
-        }
+      await applyAccountBalanceDeltas(netBalanceChanges, now);
+      for (const accountId of netBalanceChanges.keys()) {
+        queueRecordUpsertSync('accounts', accountId);
       }
 
       toast.success(`Successfully processed ${successCount} financial action${successCount !== 1 ? 's' : ''}`);

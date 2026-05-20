@@ -4,6 +4,8 @@
  */
 
 import { db, type Transaction } from '@/lib/database';
+import { queueRecordUpsertSync } from '@/lib/auth-sync-integration';
+import { applyAccountBalanceDeltas } from '@/lib/transactionAggregation';
 import { documentIntelligenceService } from './documentIntelligenceService';
 import { createWorker } from 'tesseract.js';
 // @ts-ignore
@@ -216,13 +218,13 @@ function detectColumns(headerRow: string[]): TransactionColumns {
   headerRow.forEach((header, index) => {
     const normalized = normalizeHeader(header);
 
-    if (!columns.date && (normalized.includes('date') || normalized.includes('time'))) columns.date = index;
-    if (!columns.description && (normalized.includes('description') || normalized.includes('narration') || normalized.includes('particulars') || normalized.includes('details') || normalized.includes('merchant') || normalized.includes('remark'))) columns.description = index;
-    if (!columns.debit && (normalized.includes('debit') || normalized.includes('withdrawal') || normalized.includes('out') || normalized.includes('spent') || normalized.includes('payment'))) columns.debit = index;
-    if (!columns.credit && (normalized.includes('credit') || normalized.includes('deposit') || normalized.includes('in') || normalized.includes('received') || normalized.includes('income'))) columns.credit = index;
-    if (!columns.amount && (normalized.includes('amount') || normalized.includes('value') || normalized.includes('total') || normalized.includes('price'))) columns.amount = index;
-    if (!columns.balance && (normalized.includes('balance') || normalized.includes('closing') || normalized.includes('running'))) columns.balance = index;
-    if (!columns.currency && (normalized.includes('currency') || normalized.includes('ccy'))) columns.currency = index;
+    if (columns.date == null && (normalized.includes('date') || normalized.includes('valuedate') || normalized.includes('postingdate') || normalized.includes('transactiondate') || normalized.includes('time'))) columns.date = index;
+    if (columns.description == null && (normalized.includes('description') || normalized.includes('narration') || normalized.includes('particulars') || normalized.includes('details') || normalized.includes('transactionremarks') || normalized.includes('remarks') || normalized.includes('merchant') || normalized.includes('memo'))) columns.description = index;
+    if (columns.debit == null && (normalized.includes('debit') || normalized.includes('withdrawal') || normalized.includes('withdraw') || normalized.includes('dramount') || normalized === 'dr' || normalized.includes('outflow') || normalized.includes('paidout') || normalized.includes('spent') || normalized.includes('payment'))) columns.debit = index;
+    if (columns.credit == null && (normalized.includes('credit') || normalized.includes('deposit') || normalized.includes('cramount') || normalized === 'cr' || normalized.includes('inflow') || normalized.includes('paidin') || normalized.includes('received') || normalized.includes('income'))) columns.credit = index;
+    if (columns.amount == null && (normalized.includes('amount') || normalized.includes('txnamount') || normalized.includes('transactionamount') || normalized.includes('value') || normalized.includes('total') || normalized.includes('price'))) columns.amount = index;
+    if (columns.balance == null && (normalized.includes('balance') || normalized.includes('closing') || normalized.includes('running') || normalized.includes('availablebalance'))) columns.balance = index;
+    if (columns.currency == null && (normalized.includes('currency') || normalized.includes('ccy'))) columns.currency = index;
   });
 
   return columns;
@@ -340,7 +342,9 @@ class StatementImportService {
 
   async importTransactions(transactions: ParsedTransaction[], options: StatementImportOptions): Promise<ImportApplyResult> {
     const validTransactions = transactions.filter((transaction) =>
-      transaction.transaction_date && !Number.isNaN(transaction.transaction_date.getTime()),
+      !transaction.isDuplicate
+      && transaction.transaction_date
+      && !Number.isNaN(transaction.transaction_date.getTime()),
     );
 
     if (validTransactions.length === 0) {
@@ -360,6 +364,8 @@ class StatementImportService {
         category: transaction.category || 'Others',
         merchant: transaction.merchant_name,
         createdAt: new Date(),
+        updatedAt: new Date(),
+        syncStatus: 'pending',
         paymentChannel: transaction.payment_channel,
         balanceAfter: transaction.balance_after_transaction,
         rawDescription: transaction.raw_description,
@@ -370,16 +376,20 @@ class StatementImportService {
         .map((key) => Number(key))
         .filter((key) => Number.isFinite(key));
 
-      const account = await db.accounts.get(options.accountId);
-      if (account) {
+      const latestBalanceSnapshot = validTransactions
+        .filter((transaction) => typeof transaction.balance_after_transaction === 'number')
+        .sort((left, right) => right.transaction_date.getTime() - left.transaction_date.getTime())[0];
+
+      if (latestBalanceSnapshot?.balance_after_transaction != null) {
+        await db.accounts.update(options.accountId, {
+          balance: latestBalanceSnapshot.balance_after_transaction,
+          updatedAt: new Date(),
+        });
+      } else {
         const netChange = validTransactions.reduce((sum, transaction) => (
           sum + (transaction.transaction_type === 'income' ? transaction.amount : -Math.abs(transaction.amount))
         ), 0);
-
-        await db.accounts.update(options.accountId, {
-          balance: account.balance + netChange,
-          updatedAt: new Date(),
-        });
+        await applyAccountBalanceDeltas(new Map([[options.accountId, netChange]]));
       }
 
       for (const transaction of validTransactions) {
@@ -409,6 +419,11 @@ class StatementImportService {
         });
       }
     });
+
+    for (const transactionId of insertedTransactionIds) {
+      queueRecordUpsertSync('transactions', transactionId);
+    }
+    queueRecordUpsertSync('accounts', options.accountId);
 
     return {
       importedCount: validTransactions.length,
@@ -471,27 +486,38 @@ class StatementImportService {
       const credit = parseAmount(row[columns.credit ?? -1]);
       const fallbackAmount = parseAmount(row[columns.amount ?? -1]);
       const balance = parseAmount(row[columns.balance ?? -1]) ?? undefined;
-      const amount = credit ?? debit ?? fallbackAmount;
-      if (amount == null || !Number.isFinite(amount)) continue;
+      const debitAmount = debit != null && Math.abs(debit) > 0 ? Math.abs(debit) : null;
+      const creditAmount = credit != null && Math.abs(credit) > 0 ? Math.abs(credit) : null;
+      const amount = creditAmount ?? debitAmount ?? (fallbackAmount != null ? Math.abs(fallbackAmount) : null);
+      if (amount == null || !Number.isFinite(amount) || amount <= 0) continue;
 
       let transactionType: 'income' | 'expense' | 'transfer' = 'expense';
-      if (credit != null && Math.abs(credit) > 0 && (debit == null || Math.abs(debit) === 0)) {
+      const normalizedDescription = normalizeText(description);
+      const rowDirectionText = normalizeText(row.join(' '));
+      const hasCreditSignal = /\b(cr|credit|credited|deposit|deposited|received|salary|refund|interest|cashback)\b/i.test(rowDirectionText);
+      const hasDebitSignal = /\b(dr|debit|debited|withdrawal|withdrawn|paid|purchase|pos|atm|upi dr|transfer to)\b/i.test(rowDirectionText);
+
+      if (creditAmount != null && debitAmount == null) {
         transactionType = 'income';
-      } else if (debit != null && Math.abs(debit) > 0) {
+      } else if (debitAmount != null) {
         transactionType = 'expense';
-      } else if (amount != null) {
-        // If only one amount column, try to infer from sign or description
-        if (amount > 0) transactionType = 'income';
-        else if (amount < 0) transactionType = 'expense';
-        else if (normalizeText(description).includes('transfer')) transactionType = 'transfer';
-        else if (normalizeText(description).includes('salary') || normalizeText(description).includes('refund')) transactionType = 'income';
+      } else if (fallbackAmount != null) {
+        if (fallbackAmount < 0 || hasDebitSignal) {
+          transactionType = 'expense';
+        } else if (hasCreditSignal) {
+          transactionType = 'income';
+        } else if (normalizedDescription.includes('transfer')) {
+          transactionType = 'transfer';
+        } else {
+          transactionType = 'expense';
+        }
       }
 
       const merchantName = pickMerchantName(description);
       const categoryPrediction = await documentIntelligenceService.predictCategory({
         merchantName,
         text: description,
-        amount: Math.abs(amount),
+        amount,
         userId,
       });
 
@@ -508,6 +534,23 @@ class StatementImportService {
         confidenceScore: categoryPrediction.confidence,
         currency: row[columns.currency ?? -1] || undefined,
       });
+    }
+
+    const chronological = transactions.length > 1 && transactions[0].transaction_date > transactions[transactions.length - 1].transaction_date
+      ? [...transactions].reverse()
+      : transactions;
+
+    for (let index = 1; index < chronological.length; index += 1) {
+      const previousBalance = chronological[index - 1].balance_after_transaction;
+      const current = chronological[index];
+      if (typeof previousBalance !== 'number' || typeof current.balance_after_transaction !== 'number') continue;
+
+      const diff = current.balance_after_transaction - previousBalance;
+      if (Math.abs(diff - current.amount) < 0.05) {
+        current.transaction_type = 'income';
+      } else if (Math.abs(diff + current.amount) < 0.05) {
+        current.transaction_type = 'expense';
+      }
     }
 
     return transactions;

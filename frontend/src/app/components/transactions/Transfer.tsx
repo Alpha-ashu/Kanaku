@@ -2,7 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '@/contexts/AppContext';
 import { db } from '@/lib/database';
-import { saveTransactionWithBackendSync } from '@/lib/auth-sync-integration';
+import { queueRecordUpsertSync, saveTransactionWithBackendSync } from '@/lib/auth-sync-integration';
+import { applyTransactionAccountImpact } from '@/lib/transactionAggregation';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { toast } from 'sonner';
 import { 
@@ -58,7 +59,7 @@ export const Transfer: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
  const toAccount = await db.accounts.get(formData.toAccountId);
  if (!fromAccount || !toAccount) { toast.error('Account not found'); return; }
 
- await saveTransactionWithBackendSync({
+ const savedTransfer = await saveTransactionWithBackendSync({
  type: 'transfer',
  amount: amountNum,
  accountId: formData.fromAccountId,
@@ -71,8 +72,9 @@ export const Transfer: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
  updatedAt: new Date(),
  });
 
- await db.accounts.update(formData.fromAccountId, { balance: fromAccount.balance - amountNum, updatedAt: new Date() });
- await db.accounts.update(formData.toAccountId, { balance: toAccount.balance + amountNum, updatedAt: new Date() });
+ await applyTransactionAccountImpact(savedTransfer);
+ queueRecordUpsertSync('accounts', formData.fromAccountId);
+ queueRecordUpsertSync('accounts', formData.toAccountId);
 
  toast.success(`Transferred ${formatCurrency(amountNum)} from ${fromAccount.name} to ${toAccount.name}`);
  refreshData();

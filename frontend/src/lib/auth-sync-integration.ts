@@ -4,6 +4,10 @@ import { db } from '@/lib/database';
 import { apiClient } from '@/lib/api';
 import { markOptionalBackendUnavailable, shouldSkipOptionalBackendRequests } from '@/lib/apiBase';
 import {
+  applyTransactionAccountImpact,
+  getTransactionAccountDeltas,
+} from '@/lib/transactionAggregation';
+import {
   clearSupabaseTemporaryUnavailable,
   filterAvailableSupabaseTables,
   isSupabaseConnectivityError,
@@ -2243,7 +2247,7 @@ export async function deleteTransactionWithBackendSync(localId: number) {
 export async function saveTransactionAndUpdateAccountWithBackendSync(
   transaction: any,
   accountId: number,
-  nextAccountBalance: number,
+  _nextAccountBalance: number,
 ) {
   initializeBackendSync();
 
@@ -2254,20 +2258,19 @@ export async function saveTransactionAndUpdateAccountWithBackendSync(
     updatedAt: now,
   };
 
-  const savedId = await db.transactions.add(dbTransaction);
-
-  try {
-    await db.accounts.update(accountId, {
-      balance: nextAccountBalance,
-      updatedAt: now,
-    });
-  } catch (error) {
-    await db.transactions.delete(savedId);
-    throw error;
-  }
+  const savedId = await db.transaction('rw', [db.transactions, db.accounts], async () => {
+    const transactionId = await db.transactions.add(dbTransaction);
+    await applyTransactionAccountImpact(dbTransaction, now);
+    return transactionId;
+  });
 
   queueRecordUpsertSync('transactions', savedId, toNumber(transaction?.remoteId));
-  queueRecordUpsertSync('accounts', accountId);
+  for (const impactedAccountId of getTransactionAccountDeltas(dbTransaction).keys()) {
+    queueRecordUpsertSync('accounts', impactedAccountId);
+  }
+  if (!getTransactionAccountDeltas(dbTransaction).has(accountId)) {
+    queueRecordUpsertSync('accounts', accountId);
+  }
 
   return { ...dbTransaction, id: savedId };
 }

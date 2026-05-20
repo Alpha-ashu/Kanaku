@@ -89,6 +89,8 @@ const CATEGORY_KEYWORDS: Record<string, string[]> = {
 
 // Indian name detection heuristic (capitalized word after give/gave/received/from/to)
 const NAME_CONTEXT_PATTERN = /(?:to|from|gave|give|lent|with|borrowed from|lent to)\s+([A-Z][a-z]+(?: [A-Z][a-z]+)*)/g;
+const AMOUNT_BETWEEN_PERSON_PATTERN = /\b(?:lent|lend|gave|give|sent|send|transferred|transfer|repaid|returned|paid back)\b\s+(?:₹\s*)?(?:rs\.?\s*)?[\d,]+(?:\.\d+)?\s*(?:rupees?|rs|inr|k|thousand|hazaar|hazar|lakh|lac|lacs|cr|crore)?\s+(?:to|for)\s+([A-Z][a-z]+(?: [A-Z][a-z]+)*)/i;
+const BORROW_AMOUNT_PERSON_PATTERN = /\b(?:borrowed|borrow|took)\b\s+(?:₹\s*)?(?:rs\.?\s*)?[\d,]+(?:\.\d+)?\s*(?:rupees?|rs|inr|k|thousand|hazaar|hazar|lakh|lac|lacs|cr|crore)?\s+from\s+([A-Z][a-z]+(?: [A-Z][a-z]+)*)/i;
 
 //  Segmentation 
 
@@ -228,7 +230,15 @@ function extractEntities(segment: string, type: FinancialActionType): ExtractedE
     const nameMatch = NAME_CONTEXT_PATTERN.exec(segment);
     if (nameMatch) {
       entities.person = nameMatch[1];
+    } else if (type === 'loan_borrow') {
+      const borrowAmountMatch = segment.match(BORROW_AMOUNT_PERSON_PATTERN);
+      if (borrowAmountMatch) entities.person = borrowAmountMatch[1];
     } else {
+      const amountBetweenMatch = segment.match(AMOUNT_BETWEEN_PERSON_PATTERN);
+      if (amountBetweenMatch) entities.person = amountBetweenMatch[1];
+    }
+
+    if (!entities.person) {
       // Fallback: look for capitalized word after "gave/lent/from/to"
       const simpleMatch = segment.match(/(?:gave|lent|to|from|borrowed from)\s+([A-Z][a-z]+)/);
       if (simpleMatch) entities.person = simpleMatch[1];

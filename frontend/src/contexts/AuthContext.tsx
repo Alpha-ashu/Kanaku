@@ -575,6 +575,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
               if (activeSyncUserId.current === session.user.id) {
                 setRole(permissions.role);
               }
+
+              // If we already have local accounts stored in offline Dexie database, set dataReady immediately
+              // to avoid showing a blocking sync screen for a clean, smooth, and immediate load.
+              const localAccountsCount = await db.accounts.count().catch(() => 0);
+              const hasLocalData = localAccountsCount > 0;
+              if (hasLocalData && activeSyncUserId.current === session.user.id) {
+                setDataReady(true);
+              }
+
               await syncFromSupabase(session.user);
               if (activeSyncUserId.current === session.user.id) {
                 setDataReady(true);
@@ -677,6 +686,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
               // Run heavy cloud sync in background
               void (async () => {
                 try {
+                  // If we already have local accounts stored in offline Dexie database, set dataReady immediately
+                  // to avoid showing a blocking sync screen for a clean, smooth, and immediate load.
+                  const localAccountsCount = await db.accounts.count().catch(() => 0);
+                  const hasLocalData = localAccountsCount > 0;
+                  if (hasLocalData && activeSyncUserId.current === nextUser.id) {
+                    setDataReady(true);
+                  }
+
                   await syncFromSupabase(nextUser);
                   if (activeSyncUserId.current === nextUser.id) {
                     setDataReady(true);

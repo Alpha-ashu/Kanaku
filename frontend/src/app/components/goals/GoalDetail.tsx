@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { db, Goal, GoalContribution } from '@/lib/database';
+import { applyAccountBalanceDeltas } from '@/lib/transactionAggregation';
 import { useApp } from '@/contexts/AppContext';
 import { Button } from '@/app/components/ui/button';
 import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
@@ -176,7 +177,7 @@ export const GoalDetail: React.FC = () => {
  updatedAt: new Date(),
  });
 
- await db.accounts.update(accountId, { balance: account.balance - amount });
+ await applyAccountBalanceDeltas(new Map([[accountId, -amount]]));
 
  toast.success('Contribution added');
  setAmount(0);

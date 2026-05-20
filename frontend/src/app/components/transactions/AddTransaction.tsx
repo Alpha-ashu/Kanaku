@@ -3,7 +3,8 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { useApp } from '@/contexts/AppContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { db } from '@/lib/database';
-import { queueTransactionInsertSync, saveTransactionWithBackendSync } from '@/lib/auth-sync-integration';
+import { saveTransactionWithBackendSync } from '@/lib/auth-sync-integration';
+import { applyTransactionAccountImpact } from '@/lib/transactionAggregation';
 import { DocumentManagementService } from '@/services/documentManagementService';
 import { backendService } from '@/lib/backend-api';
 import {
@@ -410,15 +411,7 @@ export function AddTransaction() {
  updatedAt: now,
  });
 
- if (transferSubType === 'self' || isWithdrawal) {
- const targetAcc = accounts.find(a => a.id === targetAccId);
- await db.accounts.update(formData.accountId, { balance: selectedAccount.balance - formData.amount, updatedAt: now });
- if (targetAcc) {
- await db.accounts.update(targetAccId, { balance: targetAcc.balance + formData.amount, updatedAt: now });
- }
- } else {
- await db.accounts.update(formData.accountId, { balance: selectedAccount.balance - formData.amount, updatedAt: now });
- }
+ await applyTransactionAccountImpact(result, now);
  } else {
  let payload: any = {
  ...formData,
@@ -448,15 +441,7 @@ export function AddTransaction() {
  }
 
  result = await saveTransactionWithBackendSync(payload);
- let balanceAdjustment = formData.type === 'expense' ? -formData.amount : formData.amount;
-
- // Special case: Borrowed loans increase the account balance (inflow)
- if (isExpense && expenseMode === 'loan' && loanType === 'borrowed') {
- balanceAdjustment = formData.amount;
- }
-
- const newBalance = selectedAccount.balance + balanceAdjustment;
- await db.accounts.update(formData.accountId, { balance: newBalance, updatedAt: now });
+ await applyTransactionAccountImpact(result, now);
 
  // Create GroupExpense record so it appears in the Groups page 
  if (isExpense && expenseMode === 'group' && result?.id && groupParticipants.length > 0) {

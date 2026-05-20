@@ -142,12 +142,38 @@ const COMMON_NOUNS = new Set([
 ]);
 
 function extractPerson(text: string): string | undefined {
+  const amountText = String.raw`(?:₹\s*)?(?:rs\.?\s*)?[\d,]+(?:\.\d+)?\s*(?:rupees?|rs|inr|k|thousand|hazaar|hazar|lakh|lac|lacs|cr|crore)?`;
+
   // Only extract person for loan/transfer-related sentences
   // English: "to Rahul", "from Rahul" — but NOT for expense sentences like "paid for room"
   const loanPattern = /\b(?:gave to|lent to|give to|borrowed from|repaid to|returned to|transferred to|sent to)\s+([A-Za-z]+(?:\s[A-Za-z]+)?)/i;
   const loanMatch = text.match(loanPattern);
   if (loanMatch) {
     const name = loanMatch[1].trim();
+    if (!COMMON_NOUNS.has(name.toLowerCase())) {
+      return name.charAt(0).toUpperCase() + name.slice(1);
+    }
+  }
+
+  const amountBetweenPattern = new RegExp(
+    String.raw`\b(?:lent|lend|gave|give|sent|send|transferred|transfer|repaid|returned|paid back)\b\s+${amountText}\s+(?:to|for)\s+([A-Za-z]+(?:\s[A-Za-z]+)?)`,
+    'i',
+  );
+  const amountBetweenMatch = text.match(amountBetweenPattern);
+  if (amountBetweenMatch) {
+    const name = amountBetweenMatch[1].trim();
+    if (!COMMON_NOUNS.has(name.toLowerCase())) {
+      return name.charAt(0).toUpperCase() + name.slice(1);
+    }
+  }
+
+  const borrowAmountPattern = new RegExp(
+    String.raw`\b(?:borrowed|borrow|took)\b\s+${amountText}\s+(?:from)\s+([A-Za-z]+(?:\s[A-Za-z]+)?)`,
+    'i',
+  );
+  const borrowAmountMatch = text.match(borrowAmountPattern);
+  if (borrowAmountMatch) {
+    const name = borrowAmountMatch[1].trim();
     if (!COMMON_NOUNS.has(name.toLowerCase())) {
       return name.charAt(0).toUpperCase() + name.slice(1);
     }

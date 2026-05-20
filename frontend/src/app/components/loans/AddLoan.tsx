@@ -2,7 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '@/contexts/AppContext';
 import { db } from '@/lib/database';
-import { queueTransactionInsertSync } from '@/lib/auth-sync-integration';
+import { queueRecordUpsertSync, queueTransactionInsertSync } from '@/lib/auth-sync-integration';
+import { applyTransactionAccountImpact } from '@/lib/transactionAggregation';
 import { backendService } from '@/lib/backend-api';
 import { SearchableDropdown } from '@/app/components/ui/SearchableDropdown';
 import { CreditCard, UserPlus, X, Check, ArrowLeft, Loader2, Calculator, Calendar, Wallet, AlignLeft, Info, Sparkles, TrendingDown, Target, Banknote } from 'lucide-react';
@@ -70,8 +71,6 @@ export const AddLoan: React.FC = () => {
  try {
  const now = new Date();
  const lenderName = formData.lenderName.trim();
- const newBalance = selectedAccount.balance + formData.principalAmount;
-
  const transactionRecord = {
  type: 'income' as const,
  amount: formData.principalAmount,
@@ -108,10 +107,11 @@ export const AddLoan: React.FC = () => {
  createdAt: now,
  updatedAt: now,
  });
- await db.accounts.update(formData.accountId, { balance: newBalance, updatedAt: now });
+ await applyTransactionAccountImpact(transactionRecord, now);
  });
 
  queueTransactionInsertSync(transactionId, transactionRecord);
+ queueRecordUpsertSync('accounts', formData.accountId);
 
  try {
  await backendService.createLoan({

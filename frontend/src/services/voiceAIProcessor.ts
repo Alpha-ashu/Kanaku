@@ -124,15 +124,9 @@ class VoiceAIProcessor {
           }
         }
 
-        // Process if we have substantial content
+        // Wait until recognition ends so multi-command input is parsed as one complete transcript.
         if (finalTranscript.trim().length > 10) {
-          const results = await this.parseVoiceExpenses(finalTranscript.trim());
-          console.log(' Voice processing results:', results);
-
-          // Auto-resolve with first result for instant UX
-          if (results.length > 0) {
-            resolve(results);
-          }
+          console.log(' Voice transcript updated:', finalTranscript.trim());
         }
       };
 

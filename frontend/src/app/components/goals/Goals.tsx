@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useApp } from '@/contexts/AppContext';
 import { db } from '@/lib/database';
+import { applyAccountBalanceDeltas } from '@/lib/transactionAggregation';
 import { getGoalCategoryMeta, getGoalProgress, getMilestoneLabel, getMonthlySuggestion } from '@/lib/goal-utils';
 import { Bell, Calendar, Edit2, Plus, Sparkles, Target, Trash2, TrendingUp, Users } from 'lucide-react';
 import { toast } from 'sonner';
@@ -624,9 +625,7 @@ const ContributeModal: React.FC<{
  });
  // Goal and contribution updates are synced through local DB hooks.
 
- await db.accounts.update(accountId, {
- balance: account.balance - amount,
- });
+ await applyAccountBalanceDeltas(new Map([[accountId, -amount]]));
 
  toast.success('Contribution added successfully');
  onClose();
