@@ -82,9 +82,28 @@ export const updateInvestment = async (req: AuthRequest, res: Response, next: Ne
       throw AppError.notFound('Investment');
     }
 
-    const updates: Record<string, unknown> = { ...body, lastUpdated: new Date(), updatedAt: new Date() };
+    const allowedKeys = [
+      'assetType',
+      'assetName',
+      'quantity',
+      'buyPrice',
+      'currentPrice',
+      'totalInvested',
+      'currentValue',
+      'profitLoss',
+      'purchaseDate',
+      'positionStatus',
+    ];
+    const updates: Record<string, any> = {};
+    for (const key of allowedKeys) {
+      if (body[key] !== undefined) {
+        updates[key] = body[key];
+      }
+    }
+    updates.lastUpdated = new Date();
+    updates.updatedAt = new Date();
+
     if (typeof updates.purchaseDate === 'string') updates.purchaseDate = toDate(updates.purchaseDate);
-    if (typeof updates.lastUpdated === 'string') updates.lastUpdated = toDate(updates.lastUpdated);
 
     const updated = await prisma.investment.update({
       where: { id },

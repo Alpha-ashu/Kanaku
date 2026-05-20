@@ -276,6 +276,8 @@ class SyncService {
     localTimestamp: Date,
     conflicts: any[]
   ) {
+    const { id: _, userId: __, ...sanitizedData } = data || {};
+
     if (operation === 'delete') {
       // Soft delete
       await prisma.account.update({
@@ -289,7 +291,7 @@ class SyncService {
     } else if (operation === 'create') {
       await prisma.account.create({
         data: {
-          ...data,
+          ...sanitizedData,
           id: entityId,
           userId,
           deviceId,
@@ -307,7 +309,7 @@ class SyncService {
         // Account doesn't exist, create it
         await prisma.account.create({
           data: {
-            ...data,
+            ...sanitizedData,
             id: entityId,
             userId,
             deviceId,
@@ -330,7 +332,8 @@ class SyncService {
           await prisma.account.update({
             where: { id: entityId },
             data: {
-              ...data,
+              ...sanitizedData,
+              userId,
               deviceId,
               syncStatus: 'synced',
               updatedAt: localTimestamp,
@@ -350,6 +353,8 @@ class SyncService {
     localTimestamp: Date,
     conflicts: any[]
   ) {
+    const { id: _, userId: __, ...sanitizedData } = data || {};
+
     if (operation === 'delete') {
       await prisma.transaction.update({
         where: { id: entityId, userId },
@@ -361,9 +366,9 @@ class SyncService {
       });
     } else if (operation === 'create') {
       // Generate dedup hash to prevent duplicate transactions from multi-device sync
-      const amount = data?.amount ?? 0;
-      const dateStr = data?.date ? new Date(data.date).toISOString().slice(0, 10) : '';
-      const desc = data?.description ?? '';
+      const amount = sanitizedData?.amount ?? 0;
+      const dateStr = sanitizedData?.date ? new Date(sanitizedData.date).toISOString().slice(0, 10) : '';
+      const desc = sanitizedData?.description ?? '';
       const dedupHash = createHash('sha256').update(`${userId}:${amount}:${dateStr}:${desc}`).digest('hex');
 
       const existingDup = await prisma.transaction.findUnique({ where: { dedupHash } });
@@ -374,7 +379,7 @@ class SyncService {
 
       await prisma.transaction.create({
         data: {
-          ...data,
+          ...sanitizedData,
           id: entityId,
           userId,
           deviceId,
@@ -390,9 +395,9 @@ class SyncService {
       });
 
       if (!existing) {
-        const amount = data?.amount ?? 0;
-        const dateStr = data?.date ? new Date(data.date).toISOString().slice(0, 10) : '';
-        const desc = data?.description ?? '';
+        const amount = sanitizedData?.amount ?? 0;
+        const dateStr = sanitizedData?.date ? new Date(sanitizedData.date).toISOString().slice(0, 10) : '';
+        const desc = sanitizedData?.description ?? '';
         const dedupHash = createHash('sha256').update(`${userId}:${amount}:${dateStr}:${desc}`).digest('hex');
 
         const existingDup = await prisma.transaction.findUnique({ where: { dedupHash } });
@@ -402,7 +407,7 @@ class SyncService {
 
         await prisma.transaction.create({
           data: {
-            ...data,
+            ...sanitizedData,
             id: entityId,
             userId,
             deviceId,
@@ -413,7 +418,7 @@ class SyncService {
           },
         });
       } else {
-        const localVersion = typeof data?.version === 'number' ? data.version : 0;
+        const localVersion = typeof sanitizedData?.version === 'number' ? sanitizedData.version : 0;
         if (localVersion <= existing.version) {
           // Server version is same or newer  conflict
           conflicts.push({
@@ -426,8 +431,9 @@ class SyncService {
           await prisma.transaction.update({
             where: { id: entityId },
             data: {
-              ...data,
+              ...sanitizedData,
               version: localVersion,
+              userId,
               deviceId,
               syncStatus: 'synced',
               updatedAt: localTimestamp,
@@ -447,6 +453,8 @@ class SyncService {
     localTimestamp: Date,
     conflicts: any[]
   ) {
+    const { id: _, userId: __, ...sanitizedData } = data || {};
+
     if (operation === 'delete') {
       await prisma.goal.update({
         where: { id: entityId, userId },
@@ -459,7 +467,7 @@ class SyncService {
     } else if (operation === 'create') {
       await prisma.goal.create({
         data: {
-          ...data,
+          ...sanitizedData,
           id: entityId,
           userId,
           deviceId,
@@ -476,7 +484,7 @@ class SyncService {
       if (!existing) {
         await prisma.goal.create({
           data: {
-            ...data,
+            ...sanitizedData,
             id: entityId,
             userId,
             deviceId,
@@ -497,7 +505,8 @@ class SyncService {
           await prisma.goal.update({
             where: { id: entityId },
             data: {
-              ...data,
+              ...sanitizedData,
+              userId,
               deviceId,
               syncStatus: 'synced',
               updatedAt: localTimestamp,
@@ -517,6 +526,8 @@ class SyncService {
     localTimestamp: Date,
     conflicts: any[]
   ) {
+    const { id: _, userId: __, ...sanitizedData } = data || {};
+
     if (operation === 'delete') {
       await prisma.loan.update({
         where: { id: entityId, userId },
@@ -529,7 +540,7 @@ class SyncService {
     } else if (operation === 'create') {
       await prisma.loan.create({
         data: {
-          ...data,
+          ...sanitizedData,
           id: entityId,
           userId,
           deviceId,
@@ -546,7 +557,7 @@ class SyncService {
       if (!existing) {
         await prisma.loan.create({
           data: {
-            ...data,
+            ...sanitizedData,
             id: entityId,
             userId,
             deviceId,
@@ -567,7 +578,8 @@ class SyncService {
           await prisma.loan.update({
             where: { id: entityId },
             data: {
-              ...data,
+              ...sanitizedData,
+              userId,
               deviceId,
               syncStatus: 'synced',
               updatedAt: localTimestamp,
