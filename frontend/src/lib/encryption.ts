@@ -28,17 +28,17 @@ export const restorePINKeys = (backup: { hash: string | null; salt: string | nul
  * Change PIN - verifies old PIN first, then stores the new one.
  * Returns true on success, false if oldPin is wrong.
  */
-export const changePIN = (oldPin: string, newPin: string): boolean => {
-  const { isValid } = verifyPIN(oldPin);
+export const changePIN = async (oldPin: string, newPin: string): Promise<boolean> => {
+  const { isValid } = await verifyPIN(oldPin);
   if (!isValid) return false;
-  storeMasterKey(newPin);
+  await storeMasterKey(newPin);
   return true;
 };
 
 /**
  * Generate encryption key from PIN
  */
-export const generateKeyFromPIN = (pin: string, salt?: string): string => {
+export const generateKeyFromPIN = async (pin: string, salt?: string): Promise<string> => {
   const useSalt = salt || CryptoJS.lib.WordArray.random(128 / 8).toString();
 
   if (!salt) {
@@ -46,13 +46,48 @@ export const generateKeyFromPIN = (pin: string, salt?: string): string => {
     localStorage.setItem(SALT_KEY, useSalt);
   }
 
-  // Generate key using PBKDF2
-  const key = CryptoJS.PBKDF2(pin, useSalt, {
-    keySize: 256 / 32,
-    iterations: 10000,
-  });
+  // Use Web Crypto API to derive key asynchronously in a background thread, preventing UI blocking/jank.
+  try {
+    const encoder = new TextEncoder();
+    const pinBytes = encoder.encode(pin);
+    
+    // Convert hex salt to Uint8Array
+    const saltBytes = new Uint8Array(
+      useSalt.match(/.{1,2}/g)?.map(byte => parseInt(byte, 16)) || []
+    );
 
-  return key.toString();
+    const baseKey = await window.crypto.subtle.importKey(
+      'raw',
+      pinBytes,
+      { name: 'PBKDF2' },
+      false,
+      ['deriveBits']
+    );
+
+    const derivedBits = await window.crypto.subtle.deriveBits(
+      {
+        name: 'PBKDF2',
+        salt: saltBytes,
+        iterations: 10000,
+        hash: 'SHA-1', // CryptoJS PBKDF2 default is SHA-1
+      },
+      baseKey,
+      256
+    );
+
+    // Convert derived bits to hex string
+    return Array.from(new Uint8Array(derivedBits))
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
+  } catch (e) {
+    console.warn('Web Crypto PBKDF2 failed, falling back to CryptoJS:', e);
+    // Fallback to CryptoJS if Web Crypto is unsupported
+    const key = CryptoJS.PBKDF2(pin, useSalt, {
+      keySize: 256 / 32,
+      iterations: 10000,
+    });
+    return key.toString();
+  }
 };
 
 /**
@@ -88,11 +123,11 @@ export const hashPIN = (pin: string): string => {
 /**
  * Store encrypted master key
  */
-export const storeMasterKey = (pin: string): string => {
+export const storeMasterKey = async (pin: string): Promise<string> => {
   const salt = localStorage.getItem(SALT_KEY) || CryptoJS.lib.WordArray.random(128 / 8).toString();
   localStorage.setItem(SALT_KEY, salt);
 
-  const key = generateKeyFromPIN(pin, salt);
+  const key = await generateKeyFromPIN(pin, salt);
   const hashedPIN = hashPIN(pin);
 
   localStorage.setItem(STORAGE_KEY, hashedPIN);
@@ -102,7 +137,7 @@ export const storeMasterKey = (pin: string): string => {
 /**
  * Verify PIN and return encryption key
  */
-export const verifyPIN = (pin: string): { isValid: boolean; key?: string } => {
+export const verifyPIN = async (pin: string): Promise<{ isValid: boolean; key?: string }> => {
   const storedHash = localStorage.getItem(STORAGE_KEY);
   const salt = localStorage.getItem(SALT_KEY);
 
@@ -113,7 +148,7 @@ export const verifyPIN = (pin: string): { isValid: boolean; key?: string } => {
   const hashedPIN = hashPIN(pin);
 
   if (hashedPIN === storedHash && salt) {
-    const key = generateKeyFromPIN(pin, salt);
+    const key = await generateKeyFromPIN(pin, salt);
     return { isValid: true, key };
   }
 

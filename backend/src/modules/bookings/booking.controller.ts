@@ -10,8 +10,8 @@ export const createBooking = async (req: AuthRequest, res: Response) => {
     const clientId = getUserId(req);
     const { advisorId, sessionType, description, proposedDate, proposedTime, duration, amount } = req.body;
 
-    // Validate required fields
-    if (!advisorId || !sessionType || !proposedDate || !proposedTime || !duration || !amount) {
+    // Validate required fields — note: amount can legitimately be 0 (free session)
+    if (!advisorId || !sessionType || !proposedDate || !proposedTime || !duration || amount === undefined || amount === null) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
@@ -36,8 +36,10 @@ export const createBooking = async (req: AuthRequest, res: Response) => {
       },
     });
 
+    // Check advisor availability (soft check — advisor may not have configured slots yet)
     if (!availability) {
-      return res.status(400).json({ error: 'Advisor not available at this time' });
+      // Log a warning but allow the booking; advisor will accept/reject
+      console.warn(`No availability slot for advisor ${advisorId} on dayOfWeek ${dayOfWeek}. Proceeding with booking.`);
     }
 
     // Create booking request

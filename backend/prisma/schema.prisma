@@ -290,6 +290,7 @@ model Investment {
   profitLoss    Decimal   @db.Decimal(12,2) // Computed by trigger: currentValue - totalInvested
   purchaseDate  DateTime
   lastUpdated   DateTime
+  metadata      Json?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   deletedAt     DateTime?

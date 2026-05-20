@@ -258,144 +258,151 @@ const ScanningOverlay: React.FC<{ progress: number; status: string }> = ({ progr
 // 
 
 export const ResultsView: React.FC<{
- scanResult: ReceiptScanResult;
- accounts: Account[];
- selectedAccountId: number | null;
- currency: string;
- expenseCategoryOptions: string[];
- isFormPrefillMode: boolean;
- expenseMode: 'individual' | 'group';
- onAccountChange: (id: number | null) => void;
- onFieldChange: ScanFieldUpdater;
- onSubcategoryChange: (value: string) => void;
- onRescan: () => void;
- onSubmit: () => void;
+  scanResult: ReceiptScanResult;
+  accounts: Account[];
+  selectedAccountId: number | null;
+  currency: string;
+  expenseCategoryOptions: string[];
+  isFormPrefillMode: boolean;
+  expenseMode: 'individual' | 'group';
+  onAccountChange: (id: number | null) => void;
+  onFieldChange: ScanFieldUpdater;
+  onSubcategoryChange: (value: string) => void;
+  onRescan: () => void;
+  onSubmit: () => void;
 }> = ({
- scanResult,
- accounts,
- selectedAccountId,
- currency,
- expenseCategoryOptions,
- isFormPrefillMode,
- expenseMode,
- onAccountChange,
- onFieldChange,
- onSubcategoryChange,
- onRescan,
- onSubmit,
+  scanResult,
+  accounts,
+  selectedAccountId,
+  currency,
+  expenseCategoryOptions,
+  isFormPrefillMode,
+  expenseMode,
+  onAccountChange,
+  onFieldChange,
+  onSubcategoryChange,
+  onRescan,
+  onSubmit,
 }) => {
- const effectiveCurrency = scanResult.currency || currency;
+  const effectiveCurrency = scanResult.currency || currency;
 
- return (
- <div className="KANKU-receipt-review">
- <div className="KANKU-receipt-review__top">
- <ConfidenceBadge confidence={scanResult.confidence ?? 0} />
- {scanResult.location && scanResult.location !== 'UNKNOWN' && (
- <LocationBadge location={scanResult.location} />
- )}
- </div>
+  return (
+    <div className="KANKU-receipt-review">
+      {/* Confidence + optional location */}
+      <div className="KANKU-receipt-review__top">
+        <div className="min-w-0">
+          <ConfidenceBadge confidence={scanResult.confidence ?? 0} />
+        </div>
+        {scanResult.location && scanResult.location !== 'UNKNOWN' && (
+          <LocationBadge location={scanResult.location} />
+        )}
+      </div>
 
- {((scanResult.validationResult && !scanResult.validationResult.isValid) || scanResult.amountMismatchDetected) && (
- <ValidationWarning
- calculated={scanResult.validationResult?.calculated ?? 0}
- detected={scanResult.validationResult?.detected ?? scanResult.amount ?? 0}
- currency={effectiveCurrency}
- amountMismatchDetected={scanResult.amountMismatchDetected}
- amountCandidates={scanResult.amountCandidates}
- onSelectCandidate={(val) => onFieldChange('amount', val)}
- />
- )}
+      {/* Validation warning */}
+      {((scanResult.validationResult && !scanResult.validationResult.isValid) || scanResult.amountMismatchDetected) && (
+        <ValidationWarning
+          calculated={scanResult.validationResult?.calculated ?? 0}
+          detected={scanResult.validationResult?.detected ?? scanResult.amount ?? 0}
+          currency={effectiveCurrency}
+          amountMismatchDetected={scanResult.amountMismatchDetected}
+          amountCandidates={scanResult.amountCandidates}
+          onSelectCandidate={(val) => onFieldChange('amount', val)}
+        />
+      )}
 
- {scanResult.description && (
- <SmartDescriptionBadge description={scanResult.description} />
- )}
+      {/* AI description */}
+      {scanResult.description && (
+        <SmartDescriptionBadge description={scanResult.description} />
+      )}
 
- <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 mt-4">
- {/* Main Grid Area */}
- <section className="col-span-1 lg:col-span-8 bg-white rounded-2xl border border-gray-100 shadow-sm flex flex-col">
- <div className="flex items-center justify-between border-b border-gray-50 px-4 py-3 bg-white/50 rounded-t-2xl">
- <p className="text-sm font-bold text-gray-900">Review Data</p>
- <p className="text-xs font-semibold text-gray-500">
- {scanResult.items?.length || 0} item{scanResult.items?.length === 1 ? '' : 's'}
- </p>
- </div>
+      {/* ── Main fields card ── */}
+      <div className="KANKU-receipt-card">
+        {/* Card header */}
+        <div className="KANKU-receipt-card__head">
+          <p className="KANKU-receipt-card__title">Review Data</p>
+          <p className="text-xs font-semibold text-gray-400">
+            {scanResult.items?.length || 0} item{scanResult.items?.length === 1 ? '' : 's'}
+          </p>
+        </div>
 
- <div className="p-3 grid grid-cols-2 sm:grid-cols-4 gap-2">
- <div className="col-span-2 sm:col-span-4 p-2 bg-white rounded-xl border border-gray-100">
- <AmountField
- amount={scanResult.amount}
- currency={effectiveCurrency}
- hasError={scanResult.amountMismatchDetected}
- onChange={(value) => onFieldChange('amount', value)}
- />
- </div>
+        {/* Fields grid */}
+        <div className="KANKU-receipt-fields">
+          {/* Amount */}
+          <AmountField
+            amount={scanResult.amount}
+            currency={effectiveCurrency}
+            hasError={scanResult.amountMismatchDetected}
+            onChange={(value) => onFieldChange('amount', value)}
+          />
 
- <div className="col-span-2 p-2 bg-white rounded-xl border border-gray-100">
- <TextField label="Merchant" value={scanResult.merchantName || ''} onChange={(value) => onFieldChange('merchantName', value)} placeholder="Merchant name" />
- </div>
+          {/* Merchant */}
+          <TextField
+            label="Merchant"
+            value={scanResult.merchantName || ''}
+            onChange={(value) => onFieldChange('merchantName', value)}
+            placeholder="Merchant name"
+          />
 
- <div className="col-span-2 p-2 bg-white rounded-xl border border-gray-100">
- <NumberField label="Tax Amount" value={scanResult.taxAmount} onChange={(value) => onFieldChange('taxAmount', value)} />
- </div>
+          {/* Tax Amount */}
+          <NumberField
+            label="Tax Amount"
+            value={scanResult.taxAmount}
+            onChange={(value) => onFieldChange('taxAmount', value)}
+          />
 
- <div className="col-span-2 p-2 bg-white rounded-xl border border-gray-100">
- <DateField
- label="Date"
- value={scanResult.date}
- onChange={(value) => onFieldChange('date', value)}
- />
- </div>
+          {/* Date */}
+          <DateField
+            label="Date"
+            value={scanResult.date}
+            onChange={(value) => onFieldChange('date', value)}
+          />
 
- <div className="col-span-2 p-2 bg-white rounded-xl border border-gray-100">
- <SelectField
- label="Category"
- value={scanResult.category || 'Shopping'}
- options={expenseCategoryOptions}
- onChange={(value) => onFieldChange('category', value)}
- />
- </div>
+          {/* Category */}
+          <SelectField
+            label="Category"
+            value={scanResult.category || 'Shopping'}
+            options={expenseCategoryOptions}
+            onChange={(value) => onFieldChange('category', value)}
+          />
 
- <div className="col-span-2 sm:col-span-4 p-2 bg-white rounded-xl border border-gray-100">
- <SubcategoryField
- category={scanResult.category || 'Shopping'}
- value={scanResult.subcategory || ''}
- onChange={onSubcategoryChange}
- />
- </div>
- </div>
- </section>
+          {/* Subcategory */}
+          <SubcategoryField
+            category={scanResult.category || 'Shopping'}
+            value={scanResult.subcategory || ''}
+            onChange={onSubcategoryChange}
+          />
+        </div>
+      </div>
 
- {/* Sidebar Area */}
- <aside className="col-span-1 lg:col-span-4 flex flex-col gap-3">
- <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
- <AccountSelector
- accounts={accounts}
- selectedId={selectedAccountId}
- currency={currency}
- onChange={onAccountChange}
- />
- </div>
+      {/* ── Account selector — full width ── */}
+      <AccountSelector
+        accounts={accounts}
+        selectedId={selectedAccountId}
+        currency={currency}
+        onChange={onAccountChange}
+      />
 
- {scanResult.items && scanResult.items.length > 0 && (
- <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden max-h-48 flex flex-col">
- <ItemsPanel items={scanResult.items} currency={effectiveCurrency} />
- </div>
- )}
+      {/* ── Detected items — full width ── */}
+      {scanResult.items && scanResult.items.length > 0 && (
+        <ItemsPanel items={scanResult.items} currency={effectiveCurrency} />
+      )}
 
- <div className="mt-auto">
- <ActionButtons
- onRescan={onRescan}
- onSubmit={onSubmit}
- isFormPrefillMode={isFormPrefillMode}
- expenseMode={expenseMode}
- isDisabled={!selectedAccountId || !scanResult.amount}
- />
- </div>
- </aside>
- </div>
- </div>
- );
- };
+      {/* ── Tax breakdown — full width ── */}
+      {scanResult.taxBreakdown && scanResult.taxBreakdown.length > 0 && (
+        <TaxBreakdownPanel taxes={scanResult.taxBreakdown} currency={effectiveCurrency} />
+      )}
+
+      {/* ── Action buttons ── */}
+      <ActionButtons
+        onRescan={onRescan}
+        onSubmit={onSubmit}
+        isFormPrefillMode={isFormPrefillMode}
+        expenseMode={expenseMode}
+        isDisabled={!selectedAccountId || !scanResult.amount}
+      />
+    </div>
+  );
+};
 
 // 
 // INTELLIGENCE BADGES & PANELS
@@ -584,7 +591,7 @@ const ItemsPanel: React.FC<{
  {items.map((item, idx) => (
  <div key={idx} className="flex items-center justify-between px-4 py-2.5">
  <div className="min-w-0 flex-1 mr-3">
- <p className="truncate text-sm font-medium text-gray-800">{item.name}</p>
+ <p className="break-words text-sm font-medium text-gray-800">{item.name}</p>
  {item.quantity !== undefined && item.rate !== undefined && (
  <p className="text-[11px] text-gray-400">
  {item.quantity} {currency} {item.rate.toFixed(2)}
@@ -829,17 +836,17 @@ const ActionButtons: React.FC<{
  expenseMode: 'individual' | 'group';
  isDisabled: boolean;
 }> = ({ onRescan, onSubmit, isFormPrefillMode, expenseMode, isDisabled }) => (
- <div className="KANKU-receipt-actions">
+ <div className="flex gap-2.5">
  <button
  onClick={onRescan}
- className="flex-[0.4] flex items-center justify-center gap-1.5 rounded-xl border border-gray-200 py-3 text-sm font-semibold text-gray-600 transition-colors hover:bg-gray-50"
+ className="flex shrink-0 items-center justify-center gap-2 rounded-xl border border-gray-200 px-5 py-3 text-sm font-semibold text-gray-600 transition-colors hover:bg-gray-50 active:scale-95"
  >
- <RefreshCw size={13} /> Rescan
+ <RefreshCw size={14} /> Rescan
  </button>
  <button
  onClick={onSubmit}
  disabled={isDisabled}
- className="flex-1 rounded-xl bg-black py-3 text-sm font-bold text-white shadow-lg transition-colors hover:bg-gray-900 disabled:opacity-40"
+ className="flex flex-1 items-center justify-center rounded-xl bg-gray-900 py-3 text-sm font-bold text-white shadow-lg transition-colors hover:bg-black disabled:opacity-40 active:scale-[0.98]"
  >
  {isFormPrefillMode
  ? `Use in ${expenseMode === 'group' ? 'Group' : 'Individual'} Expense`
@@ -847,4 +854,3 @@ const ActionButtons: React.FC<{
  </button>
  </div>
 );
-

@@ -72,7 +72,7 @@ const getCardStyle = (account: any): any => {
 };
 
 export const Accounts: React.FC = () => {
-    const { accounts, transactions, currency, setCurrentPage } = useApp();
+    const { accounts, transactions, currency, setCurrentPage, refreshData } = useApp();
     const [selectedAccountId, setSelectedAccountId] = useState<number | null>(
         null,
     );
@@ -1191,7 +1191,7 @@ export const Accounts: React.FC = () => {
                     accountType={statementImportOpen.accountType}
                     onSuccess={() => {
                         setStatementImportOpen(null);
-                        window.location.reload();
+                        refreshData();
                     }}
                     onCancel={() => setStatementImportOpen(null)}
                 />

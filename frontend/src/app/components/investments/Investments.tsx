@@ -3,7 +3,7 @@ import { useApp } from '@/contexts/AppContext';
 import { db } from '@/lib/database';
 import { backendService } from '@/lib/backend-api';
 import { queueTransactionDeleteSync } from '@/lib/auth-sync-integration';
-import { Plus, TrendingUp, TrendingDown, Edit2, Trash2, BarChart3, Activity, RefreshCw } from 'lucide-react';
+import { Plus, TrendingUp, TrendingDown, Edit2, Trash2, BarChart3, Activity, RefreshCw, Gem } from 'lucide-react';
 import { toast } from 'sonner';
 import { DeleteConfirmModal } from '@/app/components/shared/DeleteConfirmModal';
 import { Card } from '@/app/components/ui/card';
@@ -15,6 +15,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { cn } from '@/lib/utils';
 import { LiveMarket } from '@/app/components/investments/LiveMarket';
 import { LiveMarketTicker } from '@/app/components/investments/LiveMarketTicker';
+import { WealthVaultDashboard } from '@/app/components/investments/WealthVaultDashboard';
 import { fetchMultipleQuotes, StockQuote } from '@/lib/stockApi';
 import { formatCurrencyAmount, formatNativeMoney } from '@/lib/currencyUtils';
 import { CloseInvestmentModal } from '@/app/components/investments/CloseInvestmentModal';
@@ -27,7 +28,7 @@ import {
 
 const COLORS = ['#000000', '#666666', '#999999', '#CCCCCC', '#E5E5E5', '#F0F0F0'];
 
-type Tab = 'portfolio' | 'market';
+type Tab = 'portfolio' | 'market' | 'vault';
 
 export const Investments: React.FC = () => {
  const { investments, currency, setCurrentPage, refreshData } = useApp();
@@ -215,6 +216,7 @@ export const Investments: React.FC = () => {
  {([
  { id: 'portfolio', label: 'My Portfolio', icon: BarChart3 },
  { id: 'market', label: 'Live Market', icon: Activity },
+ { id: 'vault', label: 'Wealth Vault', icon: Gem },
  ] as const).map(({ id, label, icon: Icon }) => (
  <button
  key={id}
@@ -243,6 +245,17 @@ export const Investments: React.FC = () => {
  <div className="min-h-[480px] h-auto lg:h-[calc(100svh-22rem)] lg:max-h-[820px]">
  <LiveMarket />
  </div>
+ </motion.div>
+ )}
+
+ {/* WEALTH VAULT TAB */}
+ {activeTab === 'vault' && (
+ <motion.div
+ initial={{ opacity: 0, y: 12 }}
+ animate={{ opacity: 1, y: 0 }}
+ className="w-full"
+ >
+ <WealthVaultDashboard />
  </motion.div>
  )}
 

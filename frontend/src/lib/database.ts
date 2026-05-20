@@ -234,7 +234,7 @@ export interface Investment {
   id?: number;
   remoteId?: number;
   cloudId?: string;
-  assetType: 'stock' | 'crypto' | 'forex' | 'gold' | 'silver' | 'other';
+  assetType: 'stock' | 'crypto' | 'forex' | 'gold' | 'silver' | 'platinum' | 'bronze' | 'real_estate' | 'business' | 'other';
   assetName: string;
   quantity: number;
   buyPrice: number;
@@ -269,6 +269,7 @@ export interface Investment {
   realizedProfitLoss?: number;
   settlementAccountId?: number;
   closeNotes?: string;
+  metadata?: Record<string, any>;
   createdAt?: Date;
   updatedAt?: Date;
   deletedAt?: Date;
@@ -1040,6 +1041,47 @@ export class OfflineSyncDB extends ProductionDB {
       toDoLists:       '++id, cloudId, ownerId, createdAt, archived, syncStatus',
       toDoItems:       '++id, cloudId, listId, completed, dueDate, priority, syncStatus',
       // Keep other tables same as version 10
+      loanPayments: '++id, loanId, date',
+      goalContributions: '++id, goalId, date',
+      notifications:'++id, type, userId, isRead, createdAt, remoteId',
+      gold:         '++id, type, unit, purchaseDate',
+      logs:         'id, level, timestamp',
+      errorReports: 'id, timestamp',
+      backups:      'id, timestamp',
+      settings:     'key',
+      categories:   'id, type',
+      importHistories: '++id, createdAt, fileType, sourceKind, userId',
+      budgets:      'id, category, period',
+      groups:       'id',
+      taxCalculations: '++id, year',
+      financeAdvisors: '++id, verified, rating',
+      advisorSessions: '++id, advisorId, date, status',
+      expenseCategories: 'id, type',
+      expenseBills:    '++id, transactionId, uploadedAt',
+      toDoListShares:  '++id, listId, sharedWithUserId',
+      advisorAssignments: '++id, advisorId, userId, status',
+      chatMessages:    '++id, conversationId, timestamp, isRead',
+      chatConversations: '++id, conversationId, advisorId, userId',
+      bookingRequests: '++id, advisorId, userId, status, createdAt, sequenceNumber',
+      merchantProfiles: '++id, normalizedName, suggestedCategory, userId, updatedAt',
+      userCategoryPreferences: '++id, merchantKey, keywordKey, userId, updatedAt',
+      documents:       '++id, documentType, userId, processingStatus, uploadDate, accountId',
+      smsTransactions: '++id, &sourceSmsId, userId, status, transactionType, date, matchedAccountId, linkedTransactionId, detectedAt',
+      syncQueue:     '++id, userId, table, status, createdAt',
+      syncEventLogs: '++id, userId, eventType, timestamp',
+    });
+
+    // Version 12: No index changes, just bump for Family Wealth Vault schema alignment
+    this.version(12).stores({
+      accounts:     '++id, remoteId, cloudId, type, isActive, syncStatus',
+      friends:      '++id, remoteId, cloudId, name, createdAt, syncStatus',
+      transactions: '++id, remoteId, cloudId, type, accountId, category, date, syncStatus',
+      loans:        '++id, remoteId, cloudId, type, status, dueDate, friendId, syncStatus',
+      goals:        '++id, remoteId, cloudId, isGroupGoal, targetDate, syncStatus',
+      groupExpenses:'++id, remoteId, cloudId, date, syncStatus',
+      investments:  '++id, remoteId, cloudId, assetType, positionStatus, assetCurrency, baseCurrency, syncStatus',
+      toDoLists:       '++id, cloudId, ownerId, createdAt, archived, syncStatus',
+      toDoItems:       '++id, cloudId, listId, completed, dueDate, priority, syncStatus',
       loanPayments: '++id, loanId, date',
       goalContributions: '++id, goalId, date',
       notifications:'++id, type, userId, isRead, createdAt, remoteId',

@@ -128,9 +128,9 @@ export const PINSetup: React.FC<PINSetupProps> = ({
  }
  }
 
- const localResult = verifyPIN(candidatePin);
+ const localResult = await verifyPIN(candidatePin);
  if (!localResult.isValid) {
- storeMasterKey(candidatePin);
+ await storeMasterKey(candidatePin);
  }
 
  // Only allow local fallback for PIN creation (not verification)

@@ -22,7 +22,7 @@ export const EditInvestment: React.FC = () => {
  const { accounts, investments, currency, setCurrentPage, refreshData } = useApp();
  const activeAccounts = accounts.filter((account) => account.isActive);
  const [formData, setFormData] = useState({
- assetType: 'stock' as 'stock' | 'crypto' | 'forex' | 'gold' | 'silver' | 'other',
+ assetType: 'stock' as 'stock' | 'crypto' | 'forex' | 'gold' | 'silver' | 'platinum' | 'bronze' | 'real_estate' | 'business' | 'other',
  assetName: '',
  quantity: 0,
  buyPrice: 0,
@@ -31,6 +31,7 @@ export const EditInvestment: React.FC = () => {
  fundingAccountId: activeAccounts[0]?.id || 0,
  purchaseFees: 0,
  });
+ const [metadata, setMetadata] = useState<Record<string, any>>({});
  const [selectedId, setSelectedId] = useState<number | null>(null);
  const [assetCurrencyCode, setAssetCurrencyCode] = useState(() => normalizeCurrencyCode(currency));
  const selectedInvestment = selectedId != null
@@ -61,6 +62,15 @@ export const EditInvestment: React.FC = () => {
  fundingAccountId: investment.fundingAccountId ?? activeAccounts[0]?.id ?? 0,
  purchaseFees: investment.purchaseFees ?? 0,
  });
+ // Load metadata if present
+ if ((investment as any).metadata) {
+ try {
+   const meta = typeof (investment as any).metadata === 'string'
+     ? JSON.parse((investment as any).metadata)
+     : (investment as any).metadata;
+   setMetadata(meta ?? {});
+ } catch { setMetadata({}); }
+ }
  }
  }
  }, [activeAccounts, investments]);
@@ -377,8 +387,12 @@ export const EditInvestment: React.FC = () => {
  <option value="stock">Stock</option>
  <option value="crypto">Cryptocurrency</option>
  <option value="forex">Forex</option>
- <option value="gold">Gold</option>
- <option value="silver">Silver</option>
+ <option value="gold">🥇 Gold</option>
+ <option value="silver">🥈 Silver</option>
+ <option value="platinum">💎 Platinum</option>
+ <option value="bronze">🏆 Bronze</option>
+ <option value="real_estate">🏠 Real Estate</option>
+ <option value="business">🏢 Business</option>
  <option value="other">Other</option>
  </select>
  </div>
@@ -396,6 +410,104 @@ export const EditInvestment: React.FC = () => {
  title="Asset Name"
  />
  </div>
+
+ {/* Physical Metal Metadata */}
+ {['gold', 'silver', 'platinum', 'bronze'].includes(formData.assetType) && (
+ <div className="rounded-lg border border-amber-200 bg-amber-50/50 p-4 space-y-4">
+ <p className="text-sm font-bold text-amber-800 mb-2">📦 Physical Asset Details</p>
+ <div className="grid grid-cols-2 gap-4">
+ <div>
+ <label className="block text-xs font-medium text-gray-600 mb-1">Weight (grams)</label>
+ <input type="number" step="0.01" value={metadata.weightGrams || ''} onChange={e => setMetadata(prev => ({ ...prev, weightGrams: parseFloat(e.target.value) || 0 }))} className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm" placeholder="0.00" title="Weight in grams" />
+ </div>
+ <div>
+ <label className="block text-xs font-medium text-gray-600 mb-1">Purity</label>
+ <input type="text" value={metadata.purity || ''} onChange={e => setMetadata(prev => ({ ...prev, purity: e.target.value }))} className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm" placeholder="e.g. 22K (916)" title="Purity" />
+ </div>
+ <div>
+ <label className="block text-xs font-medium text-gray-600 mb-1">Form</label>
+ <select value={metadata.form || ''} onChange={e => setMetadata(prev => ({ ...prev, form: e.target.value }))} className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm" title="Form">
+ <option value="">Select form</option>
+ <option value="jewelry">Jewelry</option>
+ <option value="coin">Coin</option>
+ <option value="bar">Bar</option>
+ <option value="biscuit">Biscuit</option>
+ <option value="other">Other</option>
+ </select>
+ </div>
+ <div>
+ <label className="block text-xs font-medium text-gray-600 mb-1">BIS HUID</label>
+ <input type="text" value={metadata.hallmarkNumber || ''} onChange={e => setMetadata(prev => ({ ...prev, hallmarkNumber: e.target.value.toUpperCase().slice(0, 6) }))} className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm tracking-widest" placeholder="6-digit" maxLength={6} title="BIS HUID" />
+ </div>
+ <div>
+ <label className="block text-xs font-medium text-gray-600 mb-1">Jeweler</label>
+ <input type="text" value={metadata.jewelerName || ''} onChange={e => setMetadata(prev => ({ ...prev, jewelerName: e.target.value }))} className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm" placeholder="Shop name" title="Jeweler" />
+ </div>
+ <div>
+ <label className="block text-xs font-medium text-gray-600 mb-1">Storage / Locker</label>
+ <input type="text" value={metadata.lockerName || ''} onChange={e => setMetadata(prev => ({ ...prev, lockerName: e.target.value }))} className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm" placeholder="e.g. Home Safe" title="Storage" />
+ </div>
+ </div>
+ <div>
+ <label className="block text-xs font-medium text-gray-600 mb-1">Ownership</label>
+ <div className="flex gap-2">
+ {(['self', 'inherited', 'gifted'] as const).map(tag => (
+ <button key={tag} type="button" onClick={() => setMetadata(prev => ({ ...prev, ownershipTag: tag }))} className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${metadata.ownershipTag === tag ? 'bg-amber-600 text-white' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
+ {tag === 'self' ? '🛒 Self' : tag === 'inherited' ? '👨‍👩‍👧 Inherited' : '🎁 Gifted'}
+ </button>
+ ))}
+ </div>
+ </div>
+ </div>
+ )}
+
+ {/* Real Estate Metadata */}
+ {formData.assetType === 'real_estate' && (
+ <div className="rounded-lg border border-indigo-200 bg-indigo-50/50 p-4 space-y-4">
+ <p className="text-sm font-bold text-indigo-800 mb-2">🏠 Property Details</p>
+ <div className="grid grid-cols-2 gap-4">
+ <div>
+ <label className="block text-xs font-medium text-gray-600 mb-1">Property Type</label>
+ <select value={metadata.propertyType || ''} onChange={e => setMetadata(prev => ({ ...prev, propertyType: e.target.value }))} className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm" title="Property Type">
+ <option value="">Select type</option>
+ <option value="Residential">Residential</option>
+ <option value="Commercial">Commercial</option>
+ <option value="Agricultural Land">Agricultural Land</option>
+ <option value="Plot / Land">Plot / Land</option>
+ </select>
+ </div>
+ <div>
+ <label className="block text-xs font-medium text-gray-600 mb-1">Location</label>
+ <input type="text" value={metadata.location || ''} onChange={e => setMetadata(prev => ({ ...prev, location: e.target.value }))} className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm" placeholder="City, Area" title="Location" />
+ </div>
+ <div>
+ <label className="block text-xs font-medium text-gray-600 mb-1">Area (sq.ft)</label>
+ <input type="number" value={metadata.areaSqft || ''} onChange={e => setMetadata(prev => ({ ...prev, areaSqft: parseFloat(e.target.value) || 0 }))} className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm" title="Area" />
+ </div>
+ <div>
+ <label className="block text-xs font-medium text-gray-600 mb-1">Rental Yield %</label>
+ <input type="number" step="0.1" value={metadata.rentalYield || ''} onChange={e => setMetadata(prev => ({ ...prev, rentalYield: parseFloat(e.target.value) || 0 }))} className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm" title="Rental Yield" />
+ </div>
+ </div>
+ </div>
+ )}
+
+ {/* Business Metadata */}
+ {formData.assetType === 'business' && (
+ <div className="rounded-lg border border-emerald-200 bg-emerald-50/50 p-4 space-y-4">
+ <p className="text-sm font-bold text-emerald-800 mb-2">🏢 Business Details</p>
+ <div className="grid grid-cols-2 gap-4">
+ <div>
+ <label className="block text-xs font-medium text-gray-600 mb-1">Ownership %</label>
+ <input type="number" min={0} max={100} value={metadata.ownershipPercent || ''} onChange={e => setMetadata(prev => ({ ...prev, ownershipPercent: parseFloat(e.target.value) || 0 }))} className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm" title="Ownership %" />
+ </div>
+ <div>
+ <label className="block text-xs font-medium text-gray-600 mb-1">Sector</label>
+ <input type="text" value={metadata.sector || ''} onChange={e => setMetadata(prev => ({ ...prev, sector: e.target.value }))} className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm" placeholder="e.g. Retail" title="Sector" />
+ </div>
+ </div>
+ </div>
+ )}
 
  <div className="grid grid-cols-2 gap-6">
  <div>

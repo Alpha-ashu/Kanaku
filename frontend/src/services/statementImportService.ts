@@ -14,7 +14,7 @@ import * as pdfjsLib from 'pdfjs-dist/build/pdf.mjs';
 import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
-const STANDARD_FONT_DATA_URL = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/standard_fonts/`;
+const STANDARD_FONT_DATA_URL = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjsLib.version}/standard_fonts/`;
 
 export interface ParsedTransaction {
   transaction_date: Date;
@@ -258,6 +258,64 @@ function generateDuplicateKey(accountId: number, transaction: ParsedTransaction)
   return `${accountId}|${dateKey}|${Math.abs(transaction.amount).toFixed(2)}|${descriptionKey.slice(0, 60)}`;
 }
 
+function isBoilerplateText(text: string): boolean {
+  const normalized = text.toLowerCase();
+  
+  // High confidence boilerplate phrases
+  const directPhrases = [
+    'unless the constituent brings',
+    'does not seek any information',
+    'do not click on any link',
+    'always login through',
+    'do not share atm',
+    'banking ombudsman',
+    'computer output - does not',
+    'does not require signature',
+    'computer generated statement',
+    'beware of phishing',
+    'security alert',
+    'malicious code',
+    'fake website',
+    'change in the address of account'
+  ];
+  
+  if (directPhrases.some(phrase => normalized.includes(phrase))) {
+    return true;
+  }
+
+  // Count matches of boilerplate keywords
+  const keywords = [
+    'phishing',
+    'ombudsman',
+    'constituent',
+    'discrepancy',
+    'unauthorised debits',
+    'pass sheet',
+    'be deemed as correct',
+    'rbi',
+    'nrupatunga',
+    'bangalore-560001',
+    'merchant / trader',
+    'digital payment channel',
+    'computer output',
+    'require signature'
+  ];
+
+  let matchCount = 0;
+  for (const keyword of keywords) {
+    if (normalized.includes(keyword)) {
+      matchCount++;
+    }
+  }
+
+  // If we have 2 or more of these distinct bank footer keywords in a single block, it is definitely a footer.
+  if (matchCount >= 2) {
+    return true;
+  }
+
+  return false;
+}
+
 class StatementImportService {
   async parseStatement(file: File, options: StatementImportOptions): Promise<ImportResult> {
     const errors: string[] = [];
@@ -480,7 +538,7 @@ class StatementImportService {
     for (const row of rows.slice(1)) {
       const date = parseDate(row[columns.date ?? -1]);
       const description = (row[columns.description ?? -1] || '').trim();
-      if (!date || !description) continue;
+      if (!date || !description || isBoilerplateText(description)) continue;
 
       const debit = parseAmount(row[columns.debit ?? -1]);
       const credit = parseAmount(row[columns.credit ?? -1]);
@@ -760,6 +818,7 @@ class StatementImportService {
 
     for (const block of blocks) {
       const fullText = block.join(' ');
+      if (isBoilerplateText(fullText)) continue;
 
       const dateMatch = fullText.match(ANY_DATE_RE);
       if (!dateMatch) continue;
@@ -844,7 +903,7 @@ class StatementImportService {
       const DECIMAL_AMT_RE = /\b\d[\d,]*\.\d{2}\b/g;
 
       for (const line of lines) {
-        if (SKIP_RE.test(line)) continue;
+        if (SKIP_RE.test(line) || isBoilerplateText(line)) continue;
         const dateMatch = line.match(FLEXIBLE_DATE_RE);
         if (!dateMatch) continue;
 

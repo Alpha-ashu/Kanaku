@@ -43,6 +43,7 @@ export const createInvestment = async (req: AuthRequest, res: Response, next: Ne
       profitLoss?: number;
       purchaseDate: string;
       lastUpdated?: string;
+      metadata?: any;
     };
 
     const totalInvested = body.totalInvested ?? body.quantity * body.buyPrice;
@@ -62,6 +63,7 @@ export const createInvestment = async (req: AuthRequest, res: Response, next: Ne
         profitLoss,
         purchaseDate: toDate(body.purchaseDate),
         lastUpdated: toDate(body.lastUpdated),
+        metadata: body.metadata !== undefined ? body.metadata : undefined,
       },
     });
 
@@ -93,6 +95,7 @@ export const updateInvestment = async (req: AuthRequest, res: Response, next: Ne
       'profitLoss',
       'purchaseDate',
       'positionStatus',
+      'metadata',
     ];
     const updates: Record<string, any> = {};
     for (const key of allowedKeys) {

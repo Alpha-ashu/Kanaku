@@ -775,6 +775,7 @@ async function mapLocalRecordToRemote(table: SyncedTableName, record: any, userI
         realized_profit_loss: record.realizedProfitLoss ?? null,
         settlement_account_id: remoteSettlementAccountId ?? null,
         close_notes: record.closeNotes ?? null,
+        metadata: record.metadata ?? null,
       };
 
       return attachRemoteTimestamps('investments', base, record);
@@ -1016,12 +1017,13 @@ export async function deduplicateLocalData() {
 
       const toDelete = new Set<number>();
       const seenByRemoteId = new Map<number, number>(); // remoteId -> localId
+      const seenByCloudId = new Map<string, number>();  // cloudId -> localId
       const seenByNameKey = new Map<string, number>();  // nameKey -> localId
 
-      // Sort: prefer records with remoteId, then by latest updatedAt
+      // Sort: prefer records with remoteId or cloudId (canonical link to server), then by latest updatedAt
       const sorted = [...all].sort((a, b) => {
-        const ridA = toNumber(a.remoteId);
-        const ridB = toNumber(b.remoteId);
+        const ridA = toNumber(a.remoteId) || a.cloudId;
+        const ridB = toNumber(b.remoteId) || b.cloudId;
         if (ridA && !ridB) return -1;
         if (!ridA && ridB) return 1;
         return (toDate(b.updatedAt)?.getTime() ?? 0) - (toDate(a.updatedAt)?.getTime() ?? 0);
@@ -1029,6 +1031,7 @@ export async function deduplicateLocalData() {
 
       for (const row of sorted) {
         const rid = toNumber(row.remoteId);
+        const cid = row.cloudId ? String(row.cloudId).trim() : undefined;
         const nameKey = nameKeyFn(row);
         const lid = Number(row.id);
 
@@ -1040,9 +1043,17 @@ export async function deduplicateLocalData() {
           seenByRemoteId.set(rid, lid);
         }
 
+        if (cid) {
+          if (seenByCloudId.has(cid)) {
+            toDelete.add(lid);
+            continue;
+          }
+          seenByCloudId.set(cid, lid);
+        }
+
         if (nameKey) {
           if (seenByNameKey.has(nameKey)) {
-            // If the existing one has a remoteId but this one doesn't, we definitely delete this one
+            // If the existing one has a remoteId/cloudId but this one doesn't, we definitely delete this one
             // If both have/don't have, we delete this one because it's sorted after (older/less canonical)
             toDelete.add(lid);
             continue;
@@ -1433,6 +1444,7 @@ async function syncUserDataFromBackend(
     realizedProfitLoss: investment.realizedProfitLoss ?? undefined,
     settlementAccountId: investment.settlementAccountId ? accountCloudToLocal.get(String(investment.settlementAccountId)) : undefined,
     closeNotes: investment.closeNotes ?? undefined,
+    metadata: investment.metadata ?? undefined,
     createdAt: toDate(investment.createdAt) ?? new Date(),
     updatedAt: toDate(investment.updatedAt),
     deletedAt: toDate(investment.deletedAt),

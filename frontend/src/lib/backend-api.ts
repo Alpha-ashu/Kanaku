@@ -224,6 +224,7 @@ class BackendService {
     realizedProfitLoss?: number;
     settlementAccountId?: number;
     closeNotes?: string;
+    metadata?: Record<string, any>;
   }) {
     const localInvestment = normalizeInvestmentDates(investment);
 
@@ -273,8 +274,28 @@ class BackendService {
 
     // Add token to every request
     this.api.interceptors.request.use((config) => {
-      if (this.token) {
-        config.headers.Authorization = `Bearer ${this.token}`;
+      let token = this.token;
+
+      if (!token) {
+        // Dynamic fallback: Try to resolve the token directly from the Supabase session stored in localStorage
+        try {
+          const sbKey = Object.keys(localStorage).find(
+            (key) => key.startsWith('sb-') && key.endsWith('-auth-token')
+          );
+          if (sbKey) {
+            const sessionData = localStorage.getItem(sbKey);
+            if (sessionData) {
+              const session = JSON.parse(sessionData);
+              token = session?.access_token || null;
+            }
+          }
+        } catch (e) {
+          // Ignore localStorage parsing issues
+        }
+      }
+
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
       }
       return config;
     });

@@ -132,105 +132,105 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  // eslint-disable-next-line react-hooks/exhaustive-deps
  }, [pin]);
 
- // Submit logic 
- const handleSubmit = async () => {
- if (pin.length !== 6 || isSubmitting) return;
- setIsSubmitting(true);
+  // Submit logic 
+  const handleSubmit = async () => {
+    if (pin.length !== 6 || isSubmitting) return;
+    setIsSubmitting(true);
 
- try {
- if (isCreating) {
- if (createStage === 'enter') {
- // Move to confirm stage
- setFirstPin(pin);
- setPin('');
- setCreateStage('confirm');
- setIsSubmitting(false);
- return;
- }
+    try {
+      if (isCreating) {
+        if (createStage === 'enter') {
+          // Move to confirm stage
+          setFirstPin(pin);
+          setPin('');
+          setCreateStage('confirm');
+          setIsSubmitting(false);
+          return;
+        }
 
- // Confirm stage - check match
- if (pin !== firstPin) {
- triggerShake("PINs don't match. Try again.");
- setCreateStage('enter');
- setFirstPin('');
- setIsSubmitting(false);
- return;
- }
+        // Confirm stage - check match
+        if (pin !== firstPin) {
+          triggerShake("PINs don't match. Try again.");
+          setCreateStage('enter');
+          setFirstPin('');
+          setIsSubmitting(false);
+          return;
+        }
 
- // Server sync is best-effort - always proceed after PINs match.
- // Guest mode: skip server entirely.
- if (!isGuestMode()) {
- pinService.createPin(pin)
- .then(result => {
- if (result.success) {
- const backup = backupPINKeys();
- if (backup.hash && backup.salt) {
- pinService.saveKeyBackup(`${backup.hash}|${backup.salt}`).catch(() => { });
- }
- }
- })
- .catch(() => { });
- }
+        // Server sync is best-effort - always proceed after PINs match.
+        // Guest mode: skip server entirely.
+        if (!isGuestMode()) {
+          pinService.createPin(pin)
+            .then(result => {
+              if (result.success) {
+                const backup = backupPINKeys();
+                if (backup.hash && backup.salt) {
+                  pinService.saveKeyBackup(`${backup.hash}|${backup.salt}`).catch(() => { });
+                }
+              }
+            })
+            .catch(() => { });
+        }
 
- const key = storeMasterKey(pin);
- await finalizeAuth(key, 'PIN created! Welcome to KANKU');
+        const key = await storeMasterKey(pin);
+        await finalizeAuth(key, 'PIN created! Welcome to KANKU');
 
- } else {
- // Verify existing PIN (local-first) 
- // Guest mode: verify locally only, no server call.
- const localResult = verifyPIN(pin);
+      } else {
+        // Verify existing PIN (local-first) 
+        // Guest mode: verify locally only, no server call.
+        const localResult = await verifyPIN(pin);
 
- if (localResult.isValid && localResult.key) {
- // Local PIN correct - in non-guest mode also sync to server background
- if (!isGuestMode()) {
- pinService.verifyPin({ pin })
- .then(async serverResult => {
- if (!serverResult.success && isPinMissing(serverResult)) {
- const repair = await pinService.createPin(pin);
- if (repair.success) {
- const backup = backupPINKeys();
- if (backup.hash && backup.salt) {
- pinService.saveKeyBackup(`${backup.hash}|${backup.salt}`).catch(() => { });
- }
- }
- }
- })
- .catch(() => { });
- }
+        if (localResult.isValid && localResult.key) {
+          // Local PIN correct - in non-guest mode also sync to server background
+          if (!isGuestMode()) {
+            pinService.verifyPin({ pin })
+              .then(async serverResult => {
+                if (!serverResult.success && isPinMissing(serverResult)) {
+                  const repair = await pinService.createPin(pin);
+                  if (repair.success) {
+                    const backup = backupPINKeys();
+                    if (backup.hash && backup.salt) {
+                      pinService.saveKeyBackup(`${backup.hash}|${backup.salt}`).catch(() => { });
+                    }
+                  }
+                }
+              })
+              .catch(() => { });
+          }
 
- await finalizeAuth(localResult.key, 'Welcome back!');
- return;
- }
+          await finalizeAuth(localResult.key, 'Welcome back!');
+          return;
+        }
 
- // Local hash missing or mismatched - fall back to server 
- // (e.g. user cleared storage, or PIN was set on another device)
- const serverResult = await pinService.verifyPin({ pin });
+        // Local hash missing or mismatched - fall back to server 
+        // (e.g. user cleared storage, or PIN was set on another device)
+        const serverResult = await pinService.verifyPin({ pin });
 
- if (!serverResult.success) {
- if (isPinServiceUnavailable(serverResult)) {
- // Server down AND local failed no way to verify
- triggerShake('Unable to verify PIN right now. Please try again.');
- } else {
- triggerShake('Incorrect PIN. Please try again.');
- }
- setIsSubmitting(false);
- return;
- }
+        if (!serverResult.success) {
+          if (isPinServiceUnavailable(serverResult)) {
+            // Server down AND local failed no way to verify
+            triggerShake('Unable to verify PIN right now. Please try again.');
+          } else {
+            triggerShake('Incorrect PIN. Please try again.');
+          }
+          setIsSubmitting(false);
+          return;
+        }
 
- // Server verified restore local keys from backup so future locks work
- const kbr = await pinService.getKeyBackup();
- if (kbr.success && kbr.backup) {
- const [hash, salt] = kbr.backup.split('|');
- if (hash && salt) restorePINKeys({ hash, salt });
- }
- const key = storeMasterKey(pin); // re-derive and store locally
- await finalizeAuth(key, 'Welcome back!');
- }
- } catch {
- triggerShake('Something went wrong. Please try again.');
- setIsSubmitting(false);
- }
- };
+        // Server verified restore local keys from backup so future locks work
+        const kbr = await pinService.getKeyBackup();
+        if (kbr.success && kbr.backup) {
+          const [hash, salt] = kbr.backup.split('|');
+          if (hash && salt) restorePINKeys({ hash, salt });
+        }
+        const key = await storeMasterKey(pin); // re-derive and store locally
+        await finalizeAuth(key, 'Welcome back!');
+      }
+    } catch {
+      triggerShake('Something went wrong. Please try again.');
+      setIsSubmitting(false);
+    }
+  };
 
  const handleSignOut = async () => {
  setIsLoggingOut(true);

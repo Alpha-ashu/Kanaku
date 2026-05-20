@@ -11,6 +11,7 @@ export const investmentCreateSchema = z.object({
   profitLoss: z.number().optional(),
   purchaseDate: z.string().datetime().or(z.string().min(1)),
   lastUpdated: z.string().datetime().or(z.string().min(1)).optional(),
+  metadata: z.any().optional(),
 });
 
 export const investmentUpdateSchema = investmentCreateSchema.partial();

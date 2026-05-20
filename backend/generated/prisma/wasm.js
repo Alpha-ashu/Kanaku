@@ -679,7 +679,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "K:\\Project\\Finora\\backend\\generated\\prisma",
+      "value": "K:\\Project\\kenku\\Finora\\backend\\generated\\prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -701,12 +701,12 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "K:\\Project\\Finora\\backend\\prisma\\schema.prisma",
+    "sourceFilePath": "K:\\Project\\kenku\\Finora\\backend\\prisma\\schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
     "rootEnvPath": null,
-    "schemaEnvPath": "../../.env"
+    "schemaEnvPath": "../../../.env"
   },
   "relativePath": "../../prisma",
   "clientVersion": "6.19.2",
