@@ -722,30 +722,90 @@ async function renderPdfToCanvas(file: File) {
 }
 
 async function loadImageToCanvas(file: File) {
-  // Use FileReader -> data URL to avoid intermittent ERR_UPLOAD_FILE_CHANGED
-  // Some platforms (OneDrive, cloud-sync) can mutate file entries while
-  // the browser is resolving an object URL. Reading to a data URL is more
-  // robust and avoids transient upload-file-changed errors.
+  // Robust file-to-canvas loading with multiple fallback strategies
+  // Handles cloud-synced filesystems (OneDrive, Drive) that can mutate file entries
+  
   const readAsDataUrl = (f: File) => new Promise<string>((resolve, reject) => {
     const fr = new FileReader();
-    fr.onerror = () => reject(new Error('Failed to read receipt file'));
-    fr.onload = () => resolve(String(fr.result));
-    fr.readAsDataURL(f);
+    const timeout = setTimeout(() => {
+      reject(new Error('FileReader timeout - file may be inaccessible'));
+      fr.abort();
+    }, 15000);
+    
+    fr.onerror = () => {
+      clearTimeout(timeout);
+      reject(new Error(`FileReader error: ${fr.error?.message || 'Unknown error'}`));
+    };
+    fr.onabort = () => {
+      clearTimeout(timeout);
+      reject(new Error('FileReader was aborted'));
+    };
+    fr.onload = () => {
+      clearTimeout(timeout);
+      resolve(String(fr.result));
+    };
+    
+    try {
+      fr.readAsDataURL(f);
+    } catch (err) {
+      clearTimeout(timeout);
+      reject(new Error(`Failed to start FileReader: ${err instanceof Error ? err.message : String(err)}`));
+    }
   });
 
-  // Try reading once, retry once on failure with small delay
-  let dataUrl: string;
-  try {
-    dataUrl = await readAsDataUrl(file);
-  } catch (err) {
-    await new Promise((r) => setTimeout(r, 150));
-    dataUrl = await readAsDataUrl(file);
+  // Strategy 1: Try FileReader with retries
+  let dataUrl: string | null = null;
+  let lastError: Error | null = null;
+  
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      if (attempt > 0) {
+        await new Promise((r) => setTimeout(r, 100 * (attempt + 1))); // Exponential backoff
+      }
+      dataUrl = await readAsDataUrl(file);
+      break;
+    } catch (err) {
+      lastError = err instanceof Error ? err : new Error(String(err));
+      console.warn(`FileReader attempt ${attempt + 1} failed:`, lastError.message);
+    }
+  }
+
+  if (!dataUrl && lastError) {
+    // Fallback: Try blob.stream() or direct Image load
+    try {
+      const blobUrl = URL.createObjectURL(file);
+      try {
+        // Try loading directly from blob URL
+        dataUrl = await new Promise<string>((resolve, reject) => {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          const img = new Image();
+          img.onload = () => {
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx?.drawImage(img, 0, 0);
+            resolve(canvas.toDataURL('image/png'));
+          };
+          img.onerror = () => reject(new Error('Failed to load image from blob URL'));
+          img.src = blobUrl;
+        });
+      } finally {
+        URL.revokeObjectURL(blobUrl);
+      }
+    } catch (fallbackErr) {
+      console.error('All file reading strategies failed:', { lastError, fallbackErr });
+      throw new Error(`Unable to read receipt file after 3 attempts: ${lastError.message}. File may be corrupted, inaccessible, or in an unsupported format.`);
+    }
+  }
+
+  if (!dataUrl) {
+    throw new Error('Failed to read receipt file: No data URL could be generated');
   }
 
   const image = await new Promise<HTMLImageElement>((resolve, reject) => {
     const element = new Image();
     element.onload = () => resolve(element);
-    element.onerror = () => reject(new Error('Failed to load receipt image'));
+    element.onerror = () => reject(new Error('Failed to load receipt image from data URL'));
     element.src = dataUrl;
   });
 
@@ -754,7 +814,7 @@ async function loadImageToCanvas(file: File) {
   const context = canvas.getContext('2d');
 
   if (!context) {
-    throw new Error('Canvas context unavailable');
+    throw new Error('Canvas context unavailable - browser may not support canvas drawing');
   }
 
   canvas.width = Math.max(1, Math.round(image.width * scale));
@@ -886,24 +946,64 @@ export async function preprocessReceiptFile(file: File): Promise<Blob> {
 }
 
 export async function preprocessReceiptFileVariants(file: File): Promise<Array<{ label: string; blob: Blob }>> {
-  const baseCanvas = await loadImageToCanvas(file);
-  const trimmed = trimCanvas(baseCanvas);
+  try {
+    const baseCanvas = await loadImageToCanvas(file);
+    const trimmed = trimCanvas(baseCanvas);
 
-  // Skip variants derived from tiny trimmed canvases - Tesseract can't handle them
-  if (trimmed.width < 32 || trimmed.height < 32) {
-    return [];
+    // Skip variants derived from tiny trimmed canvases - Tesseract can't handle them
+    if (trimmed.width < 32 || trimmed.height < 32) {
+      console.warn(`Image too small after trimming: ${trimmed.width}x${trimmed.height}. Returning fallback.`);
+      // Return single upscaled canvas as fallback
+      const upscaled = upscaleCanvasForOcr(baseCanvas);
+      const blob = await canvasToBlob(upscaled);
+      return [{ label: 'original', blob }];
+    }
+
+    // Parallel processing for faster variants generation
+    const [cleanVariant, enhancedVariant] = await Promise.all([
+      canvasToBlob(upscaleCanvasForOcr(cloneCanvas(trimmed))),
+      canvasToBlob(upscaleCanvasForOcr(enhanceCanvas(cloneCanvas(trimmed)))),
+    ]);
+
+    return [
+      { label: 'clean', blob: cleanVariant },
+      { label: 'enhanced', blob: enhancedVariant },
+    ];
+  } catch (err) {
+    const errorMsg = err instanceof Error ? err.message : String(err);
+    console.error('Failed to preprocess receipt variants:', errorMsg);
+    
+    // Try one last fallback: create minimal processing variant
+    try {
+      const blobUrl = URL.createObjectURL(file);
+      try {
+        const img = new Image();
+        return await new Promise<Array<{ label: string; blob: Blob }>>((resolve, reject) => {
+          img.onload = async () => {
+            try {
+              const canvas = document.createElement('canvas');
+              canvas.width = img.width;
+              canvas.height = img.height;
+              const ctx = canvas.getContext('2d');
+              ctx?.drawImage(img, 0, 0);
+              const upscaled = upscaleCanvasForOcr(canvas);
+              const blob = await canvasToBlob(upscaled);
+              resolve([{ label: 'fallback', blob }]);
+            } catch (e) {
+              reject(e);
+            }
+          };
+          img.onerror = () => reject(new Error('Failed to load fallback image'));
+          img.src = blobUrl;
+        });
+      } finally {
+        URL.revokeObjectURL(blobUrl);
+      }
+    } catch (fallbackErr) {
+      console.error('Fallback preprocessing also failed:', fallbackErr);
+      throw new Error(`Image processing failed: ${errorMsg}. Please try with a different image.`);
+    }
   }
-
-  // Parallel processing for faster variants generation
-  const [cleanVariant, enhancedVariant] = await Promise.all([
-    canvasToBlob(upscaleCanvasForOcr(cloneCanvas(trimmed))),
-    canvasToBlob(upscaleCanvasForOcr(enhanceCanvas(cloneCanvas(trimmed)))),
-  ]);
-
-  return [
-    { label: 'clean', blob: cleanVariant },
-    { label: 'enhanced', blob: enhancedVariant },
-  ];
 }
 
 export async function parseReceiptText(rawText: string, userId?: string): Promise<ReceiptScannerResult> {
