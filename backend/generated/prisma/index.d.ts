@@ -11424,6 +11424,8 @@ export namespace Prisma {
     isActive: boolean | null
     isTrusted: boolean | null
     lastSeenAt: Date | null
+    fcmToken: string | null
+    publicKey: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -11439,6 +11441,8 @@ export namespace Prisma {
     isActive: boolean | null
     isTrusted: boolean | null
     lastSeenAt: Date | null
+    fcmToken: string | null
+    publicKey: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -11454,6 +11458,8 @@ export namespace Prisma {
     isActive: number
     isTrusted: number
     lastSeenAt: number
+    fcmToken: number
+    publicKey: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -11471,6 +11477,8 @@ export namespace Prisma {
     isActive?: true
     isTrusted?: true
     lastSeenAt?: true
+    fcmToken?: true
+    publicKey?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -11486,6 +11494,8 @@ export namespace Prisma {
     isActive?: true
     isTrusted?: true
     lastSeenAt?: true
+    fcmToken?: true
+    publicKey?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -11501,6 +11511,8 @@ export namespace Prisma {
     isActive?: true
     isTrusted?: true
     lastSeenAt?: true
+    fcmToken?: true
+    publicKey?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -11589,6 +11601,8 @@ export namespace Prisma {
     isActive: boolean
     isTrusted: boolean
     lastSeenAt: Date
+    fcmToken: string | null
+    publicKey: string | null
     createdAt: Date
     updatedAt: Date
     _count: DeviceCountAggregateOutputType | null
@@ -11621,6 +11635,8 @@ export namespace Prisma {
     isActive?: boolean
     isTrusted?: boolean
     lastSeenAt?: boolean
+    fcmToken?: boolean
+    publicKey?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -11637,6 +11653,8 @@ export namespace Prisma {
     isActive?: boolean
     isTrusted?: boolean
     lastSeenAt?: boolean
+    fcmToken?: boolean
+    publicKey?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -11653,6 +11671,8 @@ export namespace Prisma {
     isActive?: boolean
     isTrusted?: boolean
     lastSeenAt?: boolean
+    fcmToken?: boolean
+    publicKey?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -11669,11 +11689,13 @@ export namespace Prisma {
     isActive?: boolean
     isTrusted?: boolean
     lastSeenAt?: boolean
+    fcmToken?: boolean
+    publicKey?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type DeviceOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "deviceId" | "deviceName" | "deviceType" | "platform" | "appVersion" | "isActive" | "isTrusted" | "lastSeenAt" | "createdAt" | "updatedAt", ExtArgs["result"]["device"]>
+  export type DeviceOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "deviceId" | "deviceName" | "deviceType" | "platform" | "appVersion" | "isActive" | "isTrusted" | "lastSeenAt" | "fcmToken" | "publicKey" | "createdAt" | "updatedAt", ExtArgs["result"]["device"]>
   export type DeviceInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
   }
@@ -11700,6 +11722,8 @@ export namespace Prisma {
       isActive: boolean
       isTrusted: boolean
       lastSeenAt: Date
+      fcmToken: string | null
+      publicKey: string | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["device"]>
@@ -12136,6 +12160,8 @@ export namespace Prisma {
     readonly isActive: FieldRef<"Device", 'Boolean'>
     readonly isTrusted: FieldRef<"Device", 'Boolean'>
     readonly lastSeenAt: FieldRef<"Device", 'DateTime'>
+    readonly fcmToken: FieldRef<"Device", 'String'>
+    readonly publicKey: FieldRef<"Device", 'String'>
     readonly createdAt: FieldRef<"Device", 'DateTime'>
     readonly updatedAt: FieldRef<"Device", 'DateTime'>
   }
@@ -18669,6 +18695,7 @@ export namespace Prisma {
     profitLoss: number
     purchaseDate: number
     lastUpdated: number
+    metadata: number
     createdAt: number
     updatedAt: number
     deletedAt: number
@@ -18743,6 +18770,7 @@ export namespace Prisma {
     profitLoss?: true
     purchaseDate?: true
     lastUpdated?: true
+    metadata?: true
     createdAt?: true
     updatedAt?: true
     deletedAt?: true
@@ -18848,6 +18876,7 @@ export namespace Prisma {
     profitLoss: Decimal
     purchaseDate: Date
     lastUpdated: Date
+    metadata: JsonValue | null
     createdAt: Date
     updatedAt: Date
     deletedAt: Date | null
@@ -18885,6 +18914,7 @@ export namespace Prisma {
     profitLoss?: boolean
     purchaseDate?: boolean
     lastUpdated?: boolean
+    metadata?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     deletedAt?: boolean
@@ -18904,6 +18934,7 @@ export namespace Prisma {
     profitLoss?: boolean
     purchaseDate?: boolean
     lastUpdated?: boolean
+    metadata?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     deletedAt?: boolean
@@ -18923,6 +18954,7 @@ export namespace Prisma {
     profitLoss?: boolean
     purchaseDate?: boolean
     lastUpdated?: boolean
+    metadata?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     deletedAt?: boolean
@@ -18942,12 +18974,13 @@ export namespace Prisma {
     profitLoss?: boolean
     purchaseDate?: boolean
     lastUpdated?: boolean
+    metadata?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     deletedAt?: boolean
   }
 
-  export type InvestmentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "assetType" | "assetName" | "quantity" | "buyPrice" | "currentPrice" | "totalInvested" | "currentValue" | "profitLoss" | "purchaseDate" | "lastUpdated" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["investment"]>
+  export type InvestmentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "assetType" | "assetName" | "quantity" | "buyPrice" | "currentPrice" | "totalInvested" | "currentValue" | "profitLoss" | "purchaseDate" | "lastUpdated" | "metadata" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["investment"]>
   export type InvestmentInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
   }
@@ -18976,6 +19009,7 @@ export namespace Prisma {
       profitLoss: Prisma.Decimal
       purchaseDate: Date
       lastUpdated: Date
+      metadata: Prisma.JsonValue | null
       createdAt: Date
       updatedAt: Date
       deletedAt: Date | null
@@ -19415,6 +19449,7 @@ export namespace Prisma {
     readonly profitLoss: FieldRef<"Investment", 'Decimal'>
     readonly purchaseDate: FieldRef<"Investment", 'DateTime'>
     readonly lastUpdated: FieldRef<"Investment", 'DateTime'>
+    readonly metadata: FieldRef<"Investment", 'Json'>
     readonly createdAt: FieldRef<"Investment", 'DateTime'>
     readonly updatedAt: FieldRef<"Investment", 'DateTime'>
     readonly deletedAt: FieldRef<"Investment", 'DateTime'>
@@ -22266,11 +22301,16 @@ export namespace Prisma {
   export type NotificationMinAggregateOutputType = {
     id: string | null
     userId: string | null
+    sourceUserId: string | null
     title: string | null
     message: string | null
     type: string | null
     category: string | null
     deepLink: string | null
+    priority: string | null
+    channels: string | null
+    deliveryStatus: string | null
+    encryptedPayload: string | null
     isRead: boolean | null
     createdAt: Date | null
     readAt: Date | null
@@ -22280,11 +22320,16 @@ export namespace Prisma {
   export type NotificationMaxAggregateOutputType = {
     id: string | null
     userId: string | null
+    sourceUserId: string | null
     title: string | null
     message: string | null
     type: string | null
     category: string | null
     deepLink: string | null
+    priority: string | null
+    channels: string | null
+    deliveryStatus: string | null
+    encryptedPayload: string | null
     isRead: boolean | null
     createdAt: Date | null
     readAt: Date | null
@@ -22294,11 +22339,16 @@ export namespace Prisma {
   export type NotificationCountAggregateOutputType = {
     id: number
     userId: number
+    sourceUserId: number
     title: number
     message: number
     type: number
     category: number
     deepLink: number
+    priority: number
+    channels: number
+    deliveryStatus: number
+    encryptedPayload: number
     isRead: number
     createdAt: number
     readAt: number
@@ -22310,11 +22360,16 @@ export namespace Prisma {
   export type NotificationMinAggregateInputType = {
     id?: true
     userId?: true
+    sourceUserId?: true
     title?: true
     message?: true
     type?: true
     category?: true
     deepLink?: true
+    priority?: true
+    channels?: true
+    deliveryStatus?: true
+    encryptedPayload?: true
     isRead?: true
     createdAt?: true
     readAt?: true
@@ -22324,11 +22379,16 @@ export namespace Prisma {
   export type NotificationMaxAggregateInputType = {
     id?: true
     userId?: true
+    sourceUserId?: true
     title?: true
     message?: true
     type?: true
     category?: true
     deepLink?: true
+    priority?: true
+    channels?: true
+    deliveryStatus?: true
+    encryptedPayload?: true
     isRead?: true
     createdAt?: true
     readAt?: true
@@ -22338,11 +22398,16 @@ export namespace Prisma {
   export type NotificationCountAggregateInputType = {
     id?: true
     userId?: true
+    sourceUserId?: true
     title?: true
     message?: true
     type?: true
     category?: true
     deepLink?: true
+    priority?: true
+    channels?: true
+    deliveryStatus?: true
+    encryptedPayload?: true
     isRead?: true
     createdAt?: true
     readAt?: true
@@ -22425,11 +22490,16 @@ export namespace Prisma {
   export type NotificationGroupByOutputType = {
     id: string
     userId: string
+    sourceUserId: string | null
     title: string
     message: string
     type: string
     category: string | null
     deepLink: string | null
+    priority: string
+    channels: string
+    deliveryStatus: string
+    encryptedPayload: string | null
     isRead: boolean
     createdAt: Date
     readAt: Date | null
@@ -22456,11 +22526,16 @@ export namespace Prisma {
   export type NotificationSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     userId?: boolean
+    sourceUserId?: boolean
     title?: boolean
     message?: boolean
     type?: boolean
     category?: boolean
     deepLink?: boolean
+    priority?: boolean
+    channels?: boolean
+    deliveryStatus?: boolean
+    encryptedPayload?: boolean
     isRead?: boolean
     createdAt?: boolean
     readAt?: boolean
@@ -22471,11 +22546,16 @@ export namespace Prisma {
   export type NotificationSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     userId?: boolean
+    sourceUserId?: boolean
     title?: boolean
     message?: boolean
     type?: boolean
     category?: boolean
     deepLink?: boolean
+    priority?: boolean
+    channels?: boolean
+    deliveryStatus?: boolean
+    encryptedPayload?: boolean
     isRead?: boolean
     createdAt?: boolean
     readAt?: boolean
@@ -22486,11 +22566,16 @@ export namespace Prisma {
   export type NotificationSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     userId?: boolean
+    sourceUserId?: boolean
     title?: boolean
     message?: boolean
     type?: boolean
     category?: boolean
     deepLink?: boolean
+    priority?: boolean
+    channels?: boolean
+    deliveryStatus?: boolean
+    encryptedPayload?: boolean
     isRead?: boolean
     createdAt?: boolean
     readAt?: boolean
@@ -22501,18 +22586,23 @@ export namespace Prisma {
   export type NotificationSelectScalar = {
     id?: boolean
     userId?: boolean
+    sourceUserId?: boolean
     title?: boolean
     message?: boolean
     type?: boolean
     category?: boolean
     deepLink?: boolean
+    priority?: boolean
+    channels?: boolean
+    deliveryStatus?: boolean
+    encryptedPayload?: boolean
     isRead?: boolean
     createdAt?: boolean
     readAt?: boolean
     deletedAt?: boolean
   }
 
-  export type NotificationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "title" | "message" | "type" | "category" | "deepLink" | "isRead" | "createdAt" | "readAt" | "deletedAt", ExtArgs["result"]["notification"]>
+  export type NotificationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "sourceUserId" | "title" | "message" | "type" | "category" | "deepLink" | "priority" | "channels" | "deliveryStatus" | "encryptedPayload" | "isRead" | "createdAt" | "readAt" | "deletedAt", ExtArgs["result"]["notification"]>
   export type NotificationInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
   }
@@ -22531,11 +22621,16 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: string
       userId: string
+      sourceUserId: string | null
       title: string
       message: string
       type: string
       category: string | null
       deepLink: string | null
+      priority: string
+      channels: string
+      deliveryStatus: string
+      encryptedPayload: string | null
       isRead: boolean
       createdAt: Date
       readAt: Date | null
@@ -22966,11 +23061,16 @@ export namespace Prisma {
   interface NotificationFieldRefs {
     readonly id: FieldRef<"Notification", 'String'>
     readonly userId: FieldRef<"Notification", 'String'>
+    readonly sourceUserId: FieldRef<"Notification", 'String'>
     readonly title: FieldRef<"Notification", 'String'>
     readonly message: FieldRef<"Notification", 'String'>
     readonly type: FieldRef<"Notification", 'String'>
     readonly category: FieldRef<"Notification", 'String'>
     readonly deepLink: FieldRef<"Notification", 'String'>
+    readonly priority: FieldRef<"Notification", 'String'>
+    readonly channels: FieldRef<"Notification", 'String'>
+    readonly deliveryStatus: FieldRef<"Notification", 'String'>
+    readonly encryptedPayload: FieldRef<"Notification", 'String'>
     readonly isRead: FieldRef<"Notification", 'Boolean'>
     readonly createdAt: FieldRef<"Notification", 'DateTime'>
     readonly readAt: FieldRef<"Notification", 'DateTime'>
@@ -25660,10 +25760,14 @@ export namespace Prisma {
 
   export type SyncQueueAvgAggregateOutputType = {
     retryCount: number | null
+    maxRetries: number | null
+    processingTime: number | null
   }
 
   export type SyncQueueSumAggregateOutputType = {
     retryCount: number | null
+    maxRetries: number | null
+    processingTime: number | null
   }
 
   export type SyncQueueMinAggregateOutputType = {
@@ -25677,6 +25781,8 @@ export namespace Prisma {
     status: string | null
     errorMessage: string | null
     retryCount: number | null
+    maxRetries: number | null
+    processingTime: number | null
     createdAt: Date | null
     processedAt: Date | null
   }
@@ -25692,6 +25798,8 @@ export namespace Prisma {
     status: string | null
     errorMessage: string | null
     retryCount: number | null
+    maxRetries: number | null
+    processingTime: number | null
     createdAt: Date | null
     processedAt: Date | null
   }
@@ -25707,6 +25815,8 @@ export namespace Prisma {
     status: number
     errorMessage: number
     retryCount: number
+    maxRetries: number
+    processingTime: number
     createdAt: number
     processedAt: number
     _all: number
@@ -25715,10 +25825,14 @@ export namespace Prisma {
 
   export type SyncQueueAvgAggregateInputType = {
     retryCount?: true
+    maxRetries?: true
+    processingTime?: true
   }
 
   export type SyncQueueSumAggregateInputType = {
     retryCount?: true
+    maxRetries?: true
+    processingTime?: true
   }
 
   export type SyncQueueMinAggregateInputType = {
@@ -25732,6 +25846,8 @@ export namespace Prisma {
     status?: true
     errorMessage?: true
     retryCount?: true
+    maxRetries?: true
+    processingTime?: true
     createdAt?: true
     processedAt?: true
   }
@@ -25747,6 +25863,8 @@ export namespace Prisma {
     status?: true
     errorMessage?: true
     retryCount?: true
+    maxRetries?: true
+    processingTime?: true
     createdAt?: true
     processedAt?: true
   }
@@ -25762,6 +25880,8 @@ export namespace Prisma {
     status?: true
     errorMessage?: true
     retryCount?: true
+    maxRetries?: true
+    processingTime?: true
     createdAt?: true
     processedAt?: true
     _all?: true
@@ -25864,6 +25984,8 @@ export namespace Prisma {
     status: string
     errorMessage: string | null
     retryCount: number
+    maxRetries: number
+    processingTime: number | null
     createdAt: Date
     processedAt: Date | null
     _count: SyncQueueCountAggregateOutputType | null
@@ -25898,6 +26020,8 @@ export namespace Prisma {
     status?: boolean
     errorMessage?: boolean
     retryCount?: boolean
+    maxRetries?: boolean
+    processingTime?: boolean
     createdAt?: boolean
     processedAt?: boolean
   }, ExtArgs["result"]["syncQueue"]>
@@ -25913,6 +26037,8 @@ export namespace Prisma {
     status?: boolean
     errorMessage?: boolean
     retryCount?: boolean
+    maxRetries?: boolean
+    processingTime?: boolean
     createdAt?: boolean
     processedAt?: boolean
   }, ExtArgs["result"]["syncQueue"]>
@@ -25928,6 +26054,8 @@ export namespace Prisma {
     status?: boolean
     errorMessage?: boolean
     retryCount?: boolean
+    maxRetries?: boolean
+    processingTime?: boolean
     createdAt?: boolean
     processedAt?: boolean
   }, ExtArgs["result"]["syncQueue"]>
@@ -25943,11 +26071,13 @@ export namespace Prisma {
     status?: boolean
     errorMessage?: boolean
     retryCount?: boolean
+    maxRetries?: boolean
+    processingTime?: boolean
     createdAt?: boolean
     processedAt?: boolean
   }
 
-  export type SyncQueueOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "deviceId" | "entityType" | "entityId" | "operation" | "data" | "status" | "errorMessage" | "retryCount" | "createdAt" | "processedAt", ExtArgs["result"]["syncQueue"]>
+  export type SyncQueueOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "deviceId" | "entityType" | "entityId" | "operation" | "data" | "status" | "errorMessage" | "retryCount" | "maxRetries" | "processingTime" | "createdAt" | "processedAt", ExtArgs["result"]["syncQueue"]>
 
   export type $SyncQueuePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "SyncQueue"
@@ -25963,6 +26093,8 @@ export namespace Prisma {
       status: string
       errorMessage: string | null
       retryCount: number
+      maxRetries: number
+      processingTime: number | null
       createdAt: Date
       processedAt: Date | null
     }, ExtArgs["result"]["syncQueue"]>
@@ -26398,6 +26530,8 @@ export namespace Prisma {
     readonly status: FieldRef<"SyncQueue", 'String'>
     readonly errorMessage: FieldRef<"SyncQueue", 'String'>
     readonly retryCount: FieldRef<"SyncQueue", 'Int'>
+    readonly maxRetries: FieldRef<"SyncQueue", 'Int'>
+    readonly processingTime: FieldRef<"SyncQueue", 'Int'>
     readonly createdAt: FieldRef<"SyncQueue", 'DateTime'>
     readonly processedAt: FieldRef<"SyncQueue", 'DateTime'>
   }
@@ -45031,6 +45165,8 @@ export namespace Prisma {
     isActive: 'isActive',
     isTrusted: 'isTrusted',
     lastSeenAt: 'lastSeenAt',
+    fcmToken: 'fcmToken',
+    publicKey: 'publicKey',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -45148,6 +45284,7 @@ export namespace Prisma {
     profitLoss: 'profitLoss',
     purchaseDate: 'purchaseDate',
     lastUpdated: 'lastUpdated',
+    metadata: 'metadata',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
     deletedAt: 'deletedAt'
@@ -45196,11 +45333,16 @@ export namespace Prisma {
   export const NotificationScalarFieldEnum: {
     id: 'id',
     userId: 'userId',
+    sourceUserId: 'sourceUserId',
     title: 'title',
     message: 'message',
     type: 'type',
     category: 'category',
     deepLink: 'deepLink',
+    priority: 'priority',
+    channels: 'channels',
+    deliveryStatus: 'deliveryStatus',
+    encryptedPayload: 'encryptedPayload',
     isRead: 'isRead',
     createdAt: 'createdAt',
     readAt: 'readAt',
@@ -45250,6 +45392,8 @@ export namespace Prisma {
     status: 'status',
     errorMessage: 'errorMessage',
     retryCount: 'retryCount',
+    maxRetries: 'maxRetries',
+    processingTime: 'processingTime',
     createdAt: 'createdAt',
     processedAt: 'processedAt'
   };
@@ -45539,19 +45683,19 @@ export namespace Prisma {
   export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
 
 
-  export const JsonNullValueInput: {
-    JsonNull: typeof JsonNull
-  };
-
-  export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
-
-
   export const NullableJsonNullValueInput: {
     DbNull: typeof DbNull,
     JsonNull: typeof JsonNull
   };
 
   export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
+
+
+  export const JsonNullValueInput: {
+    JsonNull: typeof JsonNull
+  };
+
+  export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
 
 
   export const QueryMode: {
@@ -46226,6 +46370,8 @@ export namespace Prisma {
     isActive?: BoolFilter<"Device"> | boolean
     isTrusted?: BoolFilter<"Device"> | boolean
     lastSeenAt?: DateTimeFilter<"Device"> | Date | string
+    fcmToken?: StringNullableFilter<"Device"> | string | null
+    publicKey?: StringNullableFilter<"Device"> | string | null
     createdAt?: DateTimeFilter<"Device"> | Date | string
     updatedAt?: DateTimeFilter<"Device"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -46242,6 +46388,8 @@ export namespace Prisma {
     isActive?: SortOrder
     isTrusted?: SortOrder
     lastSeenAt?: SortOrder
+    fcmToken?: SortOrderInput | SortOrder
+    publicKey?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     user?: UserOrderByWithRelationInput
@@ -46261,6 +46409,8 @@ export namespace Prisma {
     isActive?: BoolFilter<"Device"> | boolean
     isTrusted?: BoolFilter<"Device"> | boolean
     lastSeenAt?: DateTimeFilter<"Device"> | Date | string
+    fcmToken?: StringNullableFilter<"Device"> | string | null
+    publicKey?: StringNullableFilter<"Device"> | string | null
     createdAt?: DateTimeFilter<"Device"> | Date | string
     updatedAt?: DateTimeFilter<"Device"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -46277,6 +46427,8 @@ export namespace Prisma {
     isActive?: SortOrder
     isTrusted?: SortOrder
     lastSeenAt?: SortOrder
+    fcmToken?: SortOrderInput | SortOrder
+    publicKey?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: DeviceCountOrderByAggregateInput
@@ -46298,6 +46450,8 @@ export namespace Prisma {
     isActive?: BoolWithAggregatesFilter<"Device"> | boolean
     isTrusted?: BoolWithAggregatesFilter<"Device"> | boolean
     lastSeenAt?: DateTimeWithAggregatesFilter<"Device"> | Date | string
+    fcmToken?: StringNullableWithAggregatesFilter<"Device"> | string | null
+    publicKey?: StringNullableWithAggregatesFilter<"Device"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Device"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Device"> | Date | string
   }
@@ -46820,6 +46974,7 @@ export namespace Prisma {
     profitLoss?: DecimalFilter<"Investment"> | Decimal | DecimalJsLike | number | string
     purchaseDate?: DateTimeFilter<"Investment"> | Date | string
     lastUpdated?: DateTimeFilter<"Investment"> | Date | string
+    metadata?: JsonNullableFilter<"Investment">
     createdAt?: DateTimeFilter<"Investment"> | Date | string
     updatedAt?: DateTimeFilter<"Investment"> | Date | string
     deletedAt?: DateTimeNullableFilter<"Investment"> | Date | string | null
@@ -46839,6 +46994,7 @@ export namespace Prisma {
     profitLoss?: SortOrder
     purchaseDate?: SortOrder
     lastUpdated?: SortOrder
+    metadata?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     deletedAt?: SortOrderInput | SortOrder
@@ -46861,6 +47017,7 @@ export namespace Prisma {
     profitLoss?: DecimalFilter<"Investment"> | Decimal | DecimalJsLike | number | string
     purchaseDate?: DateTimeFilter<"Investment"> | Date | string
     lastUpdated?: DateTimeFilter<"Investment"> | Date | string
+    metadata?: JsonNullableFilter<"Investment">
     createdAt?: DateTimeFilter<"Investment"> | Date | string
     updatedAt?: DateTimeFilter<"Investment"> | Date | string
     deletedAt?: DateTimeNullableFilter<"Investment"> | Date | string | null
@@ -46880,6 +47037,7 @@ export namespace Prisma {
     profitLoss?: SortOrder
     purchaseDate?: SortOrder
     lastUpdated?: SortOrder
+    metadata?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     deletedAt?: SortOrderInput | SortOrder
@@ -46906,6 +47064,7 @@ export namespace Prisma {
     profitLoss?: DecimalWithAggregatesFilter<"Investment"> | Decimal | DecimalJsLike | number | string
     purchaseDate?: DateTimeWithAggregatesFilter<"Investment"> | Date | string
     lastUpdated?: DateTimeWithAggregatesFilter<"Investment"> | Date | string
+    metadata?: JsonNullableWithAggregatesFilter<"Investment">
     createdAt?: DateTimeWithAggregatesFilter<"Investment"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Investment"> | Date | string
     deletedAt?: DateTimeNullableWithAggregatesFilter<"Investment"> | Date | string | null
@@ -47109,11 +47268,16 @@ export namespace Prisma {
     NOT?: NotificationWhereInput | NotificationWhereInput[]
     id?: StringFilter<"Notification"> | string
     userId?: StringFilter<"Notification"> | string
+    sourceUserId?: StringNullableFilter<"Notification"> | string | null
     title?: StringFilter<"Notification"> | string
     message?: StringFilter<"Notification"> | string
     type?: StringFilter<"Notification"> | string
     category?: StringNullableFilter<"Notification"> | string | null
     deepLink?: StringNullableFilter<"Notification"> | string | null
+    priority?: StringFilter<"Notification"> | string
+    channels?: StringFilter<"Notification"> | string
+    deliveryStatus?: StringFilter<"Notification"> | string
+    encryptedPayload?: StringNullableFilter<"Notification"> | string | null
     isRead?: BoolFilter<"Notification"> | boolean
     createdAt?: DateTimeFilter<"Notification"> | Date | string
     readAt?: DateTimeNullableFilter<"Notification"> | Date | string | null
@@ -47124,11 +47288,16 @@ export namespace Prisma {
   export type NotificationOrderByWithRelationInput = {
     id?: SortOrder
     userId?: SortOrder
+    sourceUserId?: SortOrderInput | SortOrder
     title?: SortOrder
     message?: SortOrder
     type?: SortOrder
     category?: SortOrderInput | SortOrder
     deepLink?: SortOrderInput | SortOrder
+    priority?: SortOrder
+    channels?: SortOrder
+    deliveryStatus?: SortOrder
+    encryptedPayload?: SortOrderInput | SortOrder
     isRead?: SortOrder
     createdAt?: SortOrder
     readAt?: SortOrderInput | SortOrder
@@ -47142,11 +47311,16 @@ export namespace Prisma {
     OR?: NotificationWhereInput[]
     NOT?: NotificationWhereInput | NotificationWhereInput[]
     userId?: StringFilter<"Notification"> | string
+    sourceUserId?: StringNullableFilter<"Notification"> | string | null
     title?: StringFilter<"Notification"> | string
     message?: StringFilter<"Notification"> | string
     type?: StringFilter<"Notification"> | string
     category?: StringNullableFilter<"Notification"> | string | null
     deepLink?: StringNullableFilter<"Notification"> | string | null
+    priority?: StringFilter<"Notification"> | string
+    channels?: StringFilter<"Notification"> | string
+    deliveryStatus?: StringFilter<"Notification"> | string
+    encryptedPayload?: StringNullableFilter<"Notification"> | string | null
     isRead?: BoolFilter<"Notification"> | boolean
     createdAt?: DateTimeFilter<"Notification"> | Date | string
     readAt?: DateTimeNullableFilter<"Notification"> | Date | string | null
@@ -47157,11 +47331,16 @@ export namespace Prisma {
   export type NotificationOrderByWithAggregationInput = {
     id?: SortOrder
     userId?: SortOrder
+    sourceUserId?: SortOrderInput | SortOrder
     title?: SortOrder
     message?: SortOrder
     type?: SortOrder
     category?: SortOrderInput | SortOrder
     deepLink?: SortOrderInput | SortOrder
+    priority?: SortOrder
+    channels?: SortOrder
+    deliveryStatus?: SortOrder
+    encryptedPayload?: SortOrderInput | SortOrder
     isRead?: SortOrder
     createdAt?: SortOrder
     readAt?: SortOrderInput | SortOrder
@@ -47177,11 +47356,16 @@ export namespace Prisma {
     NOT?: NotificationScalarWhereWithAggregatesInput | NotificationScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Notification"> | string
     userId?: StringWithAggregatesFilter<"Notification"> | string
+    sourceUserId?: StringNullableWithAggregatesFilter<"Notification"> | string | null
     title?: StringWithAggregatesFilter<"Notification"> | string
     message?: StringWithAggregatesFilter<"Notification"> | string
     type?: StringWithAggregatesFilter<"Notification"> | string
     category?: StringNullableWithAggregatesFilter<"Notification"> | string | null
     deepLink?: StringNullableWithAggregatesFilter<"Notification"> | string | null
+    priority?: StringWithAggregatesFilter<"Notification"> | string
+    channels?: StringWithAggregatesFilter<"Notification"> | string
+    deliveryStatus?: StringWithAggregatesFilter<"Notification"> | string
+    encryptedPayload?: StringNullableWithAggregatesFilter<"Notification"> | string | null
     isRead?: BoolWithAggregatesFilter<"Notification"> | boolean
     createdAt?: DateTimeWithAggregatesFilter<"Notification"> | Date | string
     readAt?: DateTimeNullableWithAggregatesFilter<"Notification"> | Date | string | null
@@ -47355,6 +47539,8 @@ export namespace Prisma {
     status?: StringFilter<"SyncQueue"> | string
     errorMessage?: StringNullableFilter<"SyncQueue"> | string | null
     retryCount?: IntFilter<"SyncQueue"> | number
+    maxRetries?: IntFilter<"SyncQueue"> | number
+    processingTime?: IntNullableFilter<"SyncQueue"> | number | null
     createdAt?: DateTimeFilter<"SyncQueue"> | Date | string
     processedAt?: DateTimeNullableFilter<"SyncQueue"> | Date | string | null
   }
@@ -47370,6 +47556,8 @@ export namespace Prisma {
     status?: SortOrder
     errorMessage?: SortOrderInput | SortOrder
     retryCount?: SortOrder
+    maxRetries?: SortOrder
+    processingTime?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     processedAt?: SortOrderInput | SortOrder
   }
@@ -47388,6 +47576,8 @@ export namespace Prisma {
     status?: StringFilter<"SyncQueue"> | string
     errorMessage?: StringNullableFilter<"SyncQueue"> | string | null
     retryCount?: IntFilter<"SyncQueue"> | number
+    maxRetries?: IntFilter<"SyncQueue"> | number
+    processingTime?: IntNullableFilter<"SyncQueue"> | number | null
     createdAt?: DateTimeFilter<"SyncQueue"> | Date | string
     processedAt?: DateTimeNullableFilter<"SyncQueue"> | Date | string | null
   }, "id">
@@ -47403,6 +47593,8 @@ export namespace Prisma {
     status?: SortOrder
     errorMessage?: SortOrderInput | SortOrder
     retryCount?: SortOrder
+    maxRetries?: SortOrder
+    processingTime?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     processedAt?: SortOrderInput | SortOrder
     _count?: SyncQueueCountOrderByAggregateInput
@@ -47426,6 +47618,8 @@ export namespace Prisma {
     status?: StringWithAggregatesFilter<"SyncQueue"> | string
     errorMessage?: StringNullableWithAggregatesFilter<"SyncQueue"> | string | null
     retryCount?: IntWithAggregatesFilter<"SyncQueue"> | number
+    maxRetries?: IntWithAggregatesFilter<"SyncQueue"> | number
+    processingTime?: IntNullableWithAggregatesFilter<"SyncQueue"> | number | null
     createdAt?: DateTimeWithAggregatesFilter<"SyncQueue"> | Date | string
     processedAt?: DateTimeNullableWithAggregatesFilter<"SyncQueue"> | Date | string | null
   }
@@ -49488,6 +49682,8 @@ export namespace Prisma {
     isActive?: boolean
     isTrusted?: boolean
     lastSeenAt?: Date | string
+    fcmToken?: string | null
+    publicKey?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutDevicesInput
@@ -49504,6 +49700,8 @@ export namespace Prisma {
     isActive?: boolean
     isTrusted?: boolean
     lastSeenAt?: Date | string
+    fcmToken?: string | null
+    publicKey?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -49518,6 +49716,8 @@ export namespace Prisma {
     isActive?: BoolFieldUpdateOperationsInput | boolean
     isTrusted?: BoolFieldUpdateOperationsInput | boolean
     lastSeenAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
+    publicKey?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutDevicesNestedInput
@@ -49534,6 +49734,8 @@ export namespace Prisma {
     isActive?: BoolFieldUpdateOperationsInput | boolean
     isTrusted?: BoolFieldUpdateOperationsInput | boolean
     lastSeenAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
+    publicKey?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -49549,6 +49751,8 @@ export namespace Prisma {
     isActive?: boolean
     isTrusted?: boolean
     lastSeenAt?: Date | string
+    fcmToken?: string | null
+    publicKey?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -49563,6 +49767,8 @@ export namespace Prisma {
     isActive?: BoolFieldUpdateOperationsInput | boolean
     isTrusted?: BoolFieldUpdateOperationsInput | boolean
     lastSeenAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
+    publicKey?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -49578,6 +49784,8 @@ export namespace Prisma {
     isActive?: BoolFieldUpdateOperationsInput | boolean
     isTrusted?: BoolFieldUpdateOperationsInput | boolean
     lastSeenAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
+    publicKey?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -50165,6 +50373,7 @@ export namespace Prisma {
     profitLoss: Decimal | DecimalJsLike | number | string
     purchaseDate: Date | string
     lastUpdated: Date | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -50184,6 +50393,7 @@ export namespace Prisma {
     profitLoss: Decimal | DecimalJsLike | number | string
     purchaseDate: Date | string
     lastUpdated: Date | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -50201,6 +50411,7 @@ export namespace Prisma {
     profitLoss?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     purchaseDate?: DateTimeFieldUpdateOperationsInput | Date | string
     lastUpdated?: DateTimeFieldUpdateOperationsInput | Date | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -50220,6 +50431,7 @@ export namespace Prisma {
     profitLoss?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     purchaseDate?: DateTimeFieldUpdateOperationsInput | Date | string
     lastUpdated?: DateTimeFieldUpdateOperationsInput | Date | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -50238,6 +50450,7 @@ export namespace Prisma {
     profitLoss: Decimal | DecimalJsLike | number | string
     purchaseDate: Date | string
     lastUpdated: Date | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -50255,6 +50468,7 @@ export namespace Prisma {
     profitLoss?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     purchaseDate?: DateTimeFieldUpdateOperationsInput | Date | string
     lastUpdated?: DateTimeFieldUpdateOperationsInput | Date | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -50273,6 +50487,7 @@ export namespace Prisma {
     profitLoss?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     purchaseDate?: DateTimeFieldUpdateOperationsInput | Date | string
     lastUpdated?: DateTimeFieldUpdateOperationsInput | Date | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -50499,11 +50714,16 @@ export namespace Prisma {
 
   export type NotificationCreateInput = {
     id?: string
+    sourceUserId?: string | null
     title: string
     message: string
     type?: string
     category?: string | null
     deepLink?: string | null
+    priority?: string
+    channels?: string
+    deliveryStatus?: string
+    encryptedPayload?: string | null
     isRead?: boolean
     createdAt?: Date | string
     readAt?: Date | string | null
@@ -50514,11 +50734,16 @@ export namespace Prisma {
   export type NotificationUncheckedCreateInput = {
     id?: string
     userId: string
+    sourceUserId?: string | null
     title: string
     message: string
     type?: string
     category?: string | null
     deepLink?: string | null
+    priority?: string
+    channels?: string
+    deliveryStatus?: string
+    encryptedPayload?: string | null
     isRead?: boolean
     createdAt?: Date | string
     readAt?: Date | string | null
@@ -50527,11 +50752,16 @@ export namespace Prisma {
 
   export type NotificationUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    sourceUserId?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     message?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     category?: NullableStringFieldUpdateOperationsInput | string | null
     deepLink?: NullableStringFieldUpdateOperationsInput | string | null
+    priority?: StringFieldUpdateOperationsInput | string
+    channels?: StringFieldUpdateOperationsInput | string
+    deliveryStatus?: StringFieldUpdateOperationsInput | string
+    encryptedPayload?: NullableStringFieldUpdateOperationsInput | string | null
     isRead?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -50542,11 +50772,16 @@ export namespace Prisma {
   export type NotificationUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
+    sourceUserId?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     message?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     category?: NullableStringFieldUpdateOperationsInput | string | null
     deepLink?: NullableStringFieldUpdateOperationsInput | string | null
+    priority?: StringFieldUpdateOperationsInput | string
+    channels?: StringFieldUpdateOperationsInput | string
+    deliveryStatus?: StringFieldUpdateOperationsInput | string
+    encryptedPayload?: NullableStringFieldUpdateOperationsInput | string | null
     isRead?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -50556,11 +50791,16 @@ export namespace Prisma {
   export type NotificationCreateManyInput = {
     id?: string
     userId: string
+    sourceUserId?: string | null
     title: string
     message: string
     type?: string
     category?: string | null
     deepLink?: string | null
+    priority?: string
+    channels?: string
+    deliveryStatus?: string
+    encryptedPayload?: string | null
     isRead?: boolean
     createdAt?: Date | string
     readAt?: Date | string | null
@@ -50569,11 +50809,16 @@ export namespace Prisma {
 
   export type NotificationUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
+    sourceUserId?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     message?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     category?: NullableStringFieldUpdateOperationsInput | string | null
     deepLink?: NullableStringFieldUpdateOperationsInput | string | null
+    priority?: StringFieldUpdateOperationsInput | string
+    channels?: StringFieldUpdateOperationsInput | string
+    deliveryStatus?: StringFieldUpdateOperationsInput | string
+    encryptedPayload?: NullableStringFieldUpdateOperationsInput | string | null
     isRead?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -50583,11 +50828,16 @@ export namespace Prisma {
   export type NotificationUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
+    sourceUserId?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     message?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     category?: NullableStringFieldUpdateOperationsInput | string | null
     deepLink?: NullableStringFieldUpdateOperationsInput | string | null
+    priority?: StringFieldUpdateOperationsInput | string
+    channels?: StringFieldUpdateOperationsInput | string
+    deliveryStatus?: StringFieldUpdateOperationsInput | string
+    encryptedPayload?: NullableStringFieldUpdateOperationsInput | string | null
     isRead?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -50762,6 +51012,8 @@ export namespace Prisma {
     status?: string
     errorMessage?: string | null
     retryCount?: number
+    maxRetries?: number
+    processingTime?: number | null
     createdAt?: Date | string
     processedAt?: Date | string | null
   }
@@ -50777,6 +51029,8 @@ export namespace Prisma {
     status?: string
     errorMessage?: string | null
     retryCount?: number
+    maxRetries?: number
+    processingTime?: number | null
     createdAt?: Date | string
     processedAt?: Date | string | null
   }
@@ -50792,6 +51046,8 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     errorMessage?: NullableStringFieldUpdateOperationsInput | string | null
     retryCount?: IntFieldUpdateOperationsInput | number
+    maxRetries?: IntFieldUpdateOperationsInput | number
+    processingTime?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
@@ -50807,6 +51063,8 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     errorMessage?: NullableStringFieldUpdateOperationsInput | string | null
     retryCount?: IntFieldUpdateOperationsInput | number
+    maxRetries?: IntFieldUpdateOperationsInput | number
+    processingTime?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
@@ -50822,6 +51080,8 @@ export namespace Prisma {
     status?: string
     errorMessage?: string | null
     retryCount?: number
+    maxRetries?: number
+    processingTime?: number | null
     createdAt?: Date | string
     processedAt?: Date | string | null
   }
@@ -50837,6 +51097,8 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     errorMessage?: NullableStringFieldUpdateOperationsInput | string | null
     retryCount?: IntFieldUpdateOperationsInput | number
+    maxRetries?: IntFieldUpdateOperationsInput | number
+    processingTime?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
@@ -50852,6 +51114,8 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     errorMessage?: NullableStringFieldUpdateOperationsInput | string | null
     retryCount?: IntFieldUpdateOperationsInput | number
+    maxRetries?: IntFieldUpdateOperationsInput | number
+    processingTime?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
@@ -53138,6 +53402,8 @@ export namespace Prisma {
     isActive?: SortOrder
     isTrusted?: SortOrder
     lastSeenAt?: SortOrder
+    fcmToken?: SortOrder
+    publicKey?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -53153,6 +53419,8 @@ export namespace Prisma {
     isActive?: SortOrder
     isTrusted?: SortOrder
     lastSeenAt?: SortOrder
+    fcmToken?: SortOrder
+    publicKey?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -53168,6 +53436,8 @@ export namespace Prisma {
     isActive?: SortOrder
     isTrusted?: SortOrder
     lastSeenAt?: SortOrder
+    fcmToken?: SortOrder
+    publicKey?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -53469,6 +53739,29 @@ export namespace Prisma {
     duplicateRecords?: SortOrder
     failedRecords?: SortOrder
   }
+  export type JsonNullableFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonNullableFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
 
   export type InvestmentCountOrderByAggregateInput = {
     id?: SortOrder
@@ -53483,6 +53776,7 @@ export namespace Prisma {
     profitLoss?: SortOrder
     purchaseDate?: SortOrder
     lastUpdated?: SortOrder
+    metadata?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     deletedAt?: SortOrder
@@ -53540,6 +53834,32 @@ export namespace Prisma {
     totalInvested?: SortOrder
     currentValue?: SortOrder
     profitLoss?: SortOrder
+  }
+  export type JsonNullableWithAggregatesFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonNullableWithAggregatesFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedJsonNullableFilter<$PrismaModel>
+    _max?: NestedJsonNullableFilter<$PrismaModel>
   }
 
   export type DecimalNullableFilter<$PrismaModel = never> = {
@@ -53702,11 +54022,16 @@ export namespace Prisma {
   export type NotificationCountOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
+    sourceUserId?: SortOrder
     title?: SortOrder
     message?: SortOrder
     type?: SortOrder
     category?: SortOrder
     deepLink?: SortOrder
+    priority?: SortOrder
+    channels?: SortOrder
+    deliveryStatus?: SortOrder
+    encryptedPayload?: SortOrder
     isRead?: SortOrder
     createdAt?: SortOrder
     readAt?: SortOrder
@@ -53716,11 +54041,16 @@ export namespace Prisma {
   export type NotificationMaxOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
+    sourceUserId?: SortOrder
     title?: SortOrder
     message?: SortOrder
     type?: SortOrder
     category?: SortOrder
     deepLink?: SortOrder
+    priority?: SortOrder
+    channels?: SortOrder
+    deliveryStatus?: SortOrder
+    encryptedPayload?: SortOrder
     isRead?: SortOrder
     createdAt?: SortOrder
     readAt?: SortOrder
@@ -53730,11 +54060,16 @@ export namespace Prisma {
   export type NotificationMinOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
+    sourceUserId?: SortOrder
     title?: SortOrder
     message?: SortOrder
     type?: SortOrder
     category?: SortOrder
     deepLink?: SortOrder
+    priority?: SortOrder
+    channels?: SortOrder
+    deliveryStatus?: SortOrder
+    encryptedPayload?: SortOrder
     isRead?: SortOrder
     createdAt?: SortOrder
     readAt?: SortOrder
@@ -53818,6 +54153,17 @@ export namespace Prisma {
     createdAt?: SortOrder
   }
 
+  export type IntNullableFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableFilter<$PrismaModel> | number | null
+  }
+
   export type SyncQueueCountOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
@@ -53829,12 +54175,16 @@ export namespace Prisma {
     status?: SortOrder
     errorMessage?: SortOrder
     retryCount?: SortOrder
+    maxRetries?: SortOrder
+    processingTime?: SortOrder
     createdAt?: SortOrder
     processedAt?: SortOrder
   }
 
   export type SyncQueueAvgOrderByAggregateInput = {
     retryCount?: SortOrder
+    maxRetries?: SortOrder
+    processingTime?: SortOrder
   }
 
   export type SyncQueueMaxOrderByAggregateInput = {
@@ -53848,6 +54198,8 @@ export namespace Prisma {
     status?: SortOrder
     errorMessage?: SortOrder
     retryCount?: SortOrder
+    maxRetries?: SortOrder
+    processingTime?: SortOrder
     createdAt?: SortOrder
     processedAt?: SortOrder
   }
@@ -53863,12 +54215,32 @@ export namespace Prisma {
     status?: SortOrder
     errorMessage?: SortOrder
     retryCount?: SortOrder
+    maxRetries?: SortOrder
+    processingTime?: SortOrder
     createdAt?: SortOrder
     processedAt?: SortOrder
   }
 
   export type SyncQueueSumOrderByAggregateInput = {
     retryCount?: SortOrder
+    maxRetries?: SortOrder
+    processingTime?: SortOrder
+  }
+
+  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedIntNullableFilter<$PrismaModel>
+    _max?: NestedIntNullableFilter<$PrismaModel>
   }
 
   export type TodoCountOrderByAggregateInput = {
@@ -54414,17 +54786,6 @@ export namespace Prisma {
     not?: NestedFloatFilter<$PrismaModel> | number
   }
 
-  export type IntNullableFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableFilter<$PrismaModel> | number | null
-  }
-
   export type AiScanCountOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
@@ -54491,22 +54852,6 @@ export namespace Prisma {
     _sum?: NestedFloatFilter<$PrismaModel>
     _min?: NestedFloatFilter<$PrismaModel>
     _max?: NestedFloatFilter<$PrismaModel>
-  }
-
-  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _avg?: NestedFloatNullableFilter<$PrismaModel>
-    _sum?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedIntNullableFilter<$PrismaModel>
-    _max?: NestedIntNullableFilter<$PrismaModel>
   }
   export type JsonFilter<$PrismaModel = never> =
     | PatchUndefined<
@@ -54650,29 +54995,6 @@ export namespace Prisma {
   export type ai_model_runsSumOrderByAggregateInput = {
     processed_users?: SortOrder
   }
-  export type JsonNullableFilter<$PrismaModel = never> =
-    | PatchUndefined<
-        Either<Required<JsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>,
-        Required<JsonNullableFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>
-
-  export type JsonNullableFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    path?: string[]
-    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
-    string_contains?: string | StringFieldRefInput<$PrismaModel>
-    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
-    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
-    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-  }
 
   export type AuditLogCountOrderByAggregateInput = {
     id?: SortOrder
@@ -54706,32 +55028,6 @@ export namespace Prisma {
     ip?: SortOrder
     userAgent?: SortOrder
     createdAt?: SortOrder
-  }
-  export type JsonNullableWithAggregatesFilter<$PrismaModel = never> =
-    | PatchUndefined<
-        Either<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
-        Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
-
-  export type JsonNullableWithAggregatesFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    path?: string[]
-    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
-    string_contains?: string | StringFieldRefInput<$PrismaModel>
-    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
-    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
-    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedJsonNullableFilter<$PrismaModel>
-    _max?: NestedJsonNullableFilter<$PrismaModel>
   }
 
   export type AccountNullableScalarRelationFilter = {
@@ -55774,6 +56070,14 @@ export namespace Prisma {
     upsert?: UserUpsertWithoutRefreshTokensInput
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutRefreshTokensInput, UserUpdateWithoutRefreshTokensInput>, UserUncheckedUpdateWithoutRefreshTokensInput>
+  }
+
+  export type NullableIntFieldUpdateOperationsInput = {
+    set?: number | null
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
   }
 
   export type UserCreateNestedOneWithoutTodosInput = {
@@ -57004,14 +57308,6 @@ export namespace Prisma {
     divide?: number
   }
 
-  export type NullableIntFieldUpdateOperationsInput = {
-    set?: number | null
-    increment?: number
-    decrement?: number
-    multiply?: number
-    divide?: number
-  }
-
   export type UserUpdateOneRequiredWithoutAiScansNestedInput = {
     create?: XOR<UserCreateWithoutAiScansInput, UserUncheckedCreateWithoutAiScansInput>
     connectOrCreate?: UserCreateOrConnectWithoutAiScansInput
@@ -57375,6 +57671,29 @@ export namespace Prisma {
     _min?: NestedFloatNullableFilter<$PrismaModel>
     _max?: NestedFloatNullableFilter<$PrismaModel>
   }
+  export type NestedJsonNullableFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<NestedJsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>,
+        Required<NestedJsonNullableFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>
+
+  export type NestedJsonNullableFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
 
   export type NestedDecimalNullableFilter<$PrismaModel = never> = {
     equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
@@ -57403,22 +57722,6 @@ export namespace Prisma {
     _max?: NestedDecimalNullableFilter<$PrismaModel>
   }
 
-  export type NestedFloatWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel>
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatWithAggregatesFilter<$PrismaModel> | number
-    _count?: NestedIntFilter<$PrismaModel>
-    _avg?: NestedFloatFilter<$PrismaModel>
-    _sum?: NestedFloatFilter<$PrismaModel>
-    _min?: NestedFloatFilter<$PrismaModel>
-    _max?: NestedFloatFilter<$PrismaModel>
-  }
-
   export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel> | null
     in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
@@ -57434,6 +57737,22 @@ export namespace Prisma {
     _min?: NestedIntNullableFilter<$PrismaModel>
     _max?: NestedIntNullableFilter<$PrismaModel>
   }
+
+  export type NestedFloatWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedFloatFilter<$PrismaModel>
+    _min?: NestedFloatFilter<$PrismaModel>
+    _max?: NestedFloatFilter<$PrismaModel>
+  }
   export type NestedJsonFilter<$PrismaModel = never> =
     | PatchUndefined<
         Either<Required<NestedJsonFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonFilterBase<$PrismaModel>>, 'path'>>,
@@ -57442,29 +57761,6 @@ export namespace Prisma {
     | OptionalFlat<Omit<Required<NestedJsonFilterBase<$PrismaModel>>, 'path'>>
 
   export type NestedJsonFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    path?: string[]
-    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
-    string_contains?: string | StringFieldRefInput<$PrismaModel>
-    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
-    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
-    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-  }
-  export type NestedJsonNullableFilter<$PrismaModel = never> =
-    | PatchUndefined<
-        Either<Required<NestedJsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>,
-        Required<NestedJsonNullableFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>
-
-  export type NestedJsonNullableFilterBase<$PrismaModel = never> = {
     equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
     path?: string[]
     mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
@@ -63935,6 +64231,8 @@ export namespace Prisma {
     isActive?: boolean
     isTrusted?: boolean
     lastSeenAt?: Date | string
+    fcmToken?: string | null
+    publicKey?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -63949,6 +64247,8 @@ export namespace Prisma {
     isActive?: boolean
     isTrusted?: boolean
     lastSeenAt?: Date | string
+    fcmToken?: string | null
+    publicKey?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -64181,6 +64481,7 @@ export namespace Prisma {
     profitLoss: Decimal | DecimalJsLike | number | string
     purchaseDate: Date | string
     lastUpdated: Date | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -64198,6 +64499,7 @@ export namespace Prisma {
     profitLoss: Decimal | DecimalJsLike | number | string
     purchaseDate: Date | string
     lastUpdated: Date | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -64265,11 +64567,16 @@ export namespace Prisma {
 
   export type NotificationCreateWithoutUserInput = {
     id?: string
+    sourceUserId?: string | null
     title: string
     message: string
     type?: string
     category?: string | null
     deepLink?: string | null
+    priority?: string
+    channels?: string
+    deliveryStatus?: string
+    encryptedPayload?: string | null
     isRead?: boolean
     createdAt?: Date | string
     readAt?: Date | string | null
@@ -64278,11 +64585,16 @@ export namespace Prisma {
 
   export type NotificationUncheckedCreateWithoutUserInput = {
     id?: string
+    sourceUserId?: string | null
     title: string
     message: string
     type?: string
     category?: string | null
     deepLink?: string | null
+    priority?: string
+    channels?: string
+    deliveryStatus?: string
+    encryptedPayload?: string | null
     isRead?: boolean
     createdAt?: Date | string
     readAt?: Date | string | null
@@ -64929,6 +65241,8 @@ export namespace Prisma {
     isActive?: BoolFilter<"Device"> | boolean
     isTrusted?: BoolFilter<"Device"> | boolean
     lastSeenAt?: DateTimeFilter<"Device"> | Date | string
+    fcmToken?: StringNullableFilter<"Device"> | string | null
+    publicKey?: StringNullableFilter<"Device"> | string | null
     createdAt?: DateTimeFilter<"Device"> | Date | string
     updatedAt?: DateTimeFilter<"Device"> | Date | string
   }
@@ -65125,6 +65439,7 @@ export namespace Prisma {
     profitLoss?: DecimalFilter<"Investment"> | Decimal | DecimalJsLike | number | string
     purchaseDate?: DateTimeFilter<"Investment"> | Date | string
     lastUpdated?: DateTimeFilter<"Investment"> | Date | string
+    metadata?: JsonNullableFilter<"Investment">
     createdAt?: DateTimeFilter<"Investment"> | Date | string
     updatedAt?: DateTimeFilter<"Investment"> | Date | string
     deletedAt?: DateTimeNullableFilter<"Investment"> | Date | string | null
@@ -65191,11 +65506,16 @@ export namespace Prisma {
     NOT?: NotificationScalarWhereInput | NotificationScalarWhereInput[]
     id?: StringFilter<"Notification"> | string
     userId?: StringFilter<"Notification"> | string
+    sourceUserId?: StringNullableFilter<"Notification"> | string | null
     title?: StringFilter<"Notification"> | string
     message?: StringFilter<"Notification"> | string
     type?: StringFilter<"Notification"> | string
     category?: StringNullableFilter<"Notification"> | string | null
     deepLink?: StringNullableFilter<"Notification"> | string | null
+    priority?: StringFilter<"Notification"> | string
+    channels?: StringFilter<"Notification"> | string
+    deliveryStatus?: StringFilter<"Notification"> | string
+    encryptedPayload?: StringNullableFilter<"Notification"> | string | null
     isRead?: BoolFilter<"Notification"> | boolean
     createdAt?: DateTimeFilter<"Notification"> | Date | string
     readAt?: DateTimeNullableFilter<"Notification"> | Date | string | null
@@ -67446,6 +67766,8 @@ export namespace Prisma {
     isActive?: boolean
     isTrusted?: boolean
     lastSeenAt?: Date | string
+    fcmToken?: string | null
+    publicKey?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -67539,6 +67861,7 @@ export namespace Prisma {
     profitLoss: Decimal | DecimalJsLike | number | string
     purchaseDate: Date | string
     lastUpdated: Date | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -67565,11 +67888,16 @@ export namespace Prisma {
 
   export type NotificationCreateManyUserInput = {
     id?: string
+    sourceUserId?: string | null
     title: string
     message: string
     type?: string
     category?: string | null
     deepLink?: string | null
+    priority?: string
+    channels?: string
+    deliveryStatus?: string
+    encryptedPayload?: string | null
     isRead?: boolean
     createdAt?: Date | string
     readAt?: Date | string | null
@@ -68041,6 +68369,8 @@ export namespace Prisma {
     isActive?: BoolFieldUpdateOperationsInput | boolean
     isTrusted?: BoolFieldUpdateOperationsInput | boolean
     lastSeenAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
+    publicKey?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -68055,6 +68385,8 @@ export namespace Prisma {
     isActive?: BoolFieldUpdateOperationsInput | boolean
     isTrusted?: BoolFieldUpdateOperationsInput | boolean
     lastSeenAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
+    publicKey?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -68069,6 +68401,8 @@ export namespace Prisma {
     isActive?: BoolFieldUpdateOperationsInput | boolean
     isTrusted?: BoolFieldUpdateOperationsInput | boolean
     lastSeenAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
+    publicKey?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -68318,6 +68652,7 @@ export namespace Prisma {
     profitLoss?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     purchaseDate?: DateTimeFieldUpdateOperationsInput | Date | string
     lastUpdated?: DateTimeFieldUpdateOperationsInput | Date | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -68335,6 +68670,7 @@ export namespace Prisma {
     profitLoss?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     purchaseDate?: DateTimeFieldUpdateOperationsInput | Date | string
     lastUpdated?: DateTimeFieldUpdateOperationsInput | Date | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -68352,6 +68688,7 @@ export namespace Prisma {
     profitLoss?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     purchaseDate?: DateTimeFieldUpdateOperationsInput | Date | string
     lastUpdated?: DateTimeFieldUpdateOperationsInput | Date | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -68418,11 +68755,16 @@ export namespace Prisma {
 
   export type NotificationUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
+    sourceUserId?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     message?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     category?: NullableStringFieldUpdateOperationsInput | string | null
     deepLink?: NullableStringFieldUpdateOperationsInput | string | null
+    priority?: StringFieldUpdateOperationsInput | string
+    channels?: StringFieldUpdateOperationsInput | string
+    deliveryStatus?: StringFieldUpdateOperationsInput | string
+    encryptedPayload?: NullableStringFieldUpdateOperationsInput | string | null
     isRead?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -68431,11 +68773,16 @@ export namespace Prisma {
 
   export type NotificationUncheckedUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
+    sourceUserId?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     message?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     category?: NullableStringFieldUpdateOperationsInput | string | null
     deepLink?: NullableStringFieldUpdateOperationsInput | string | null
+    priority?: StringFieldUpdateOperationsInput | string
+    channels?: StringFieldUpdateOperationsInput | string
+    deliveryStatus?: StringFieldUpdateOperationsInput | string
+    encryptedPayload?: NullableStringFieldUpdateOperationsInput | string | null
     isRead?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -68444,11 +68791,16 @@ export namespace Prisma {
 
   export type NotificationUncheckedUpdateManyWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
+    sourceUserId?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     message?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     category?: NullableStringFieldUpdateOperationsInput | string | null
     deepLink?: NullableStringFieldUpdateOperationsInput | string | null
+    priority?: StringFieldUpdateOperationsInput | string
+    channels?: StringFieldUpdateOperationsInput | string
+    deliveryStatus?: StringFieldUpdateOperationsInput | string
+    encryptedPayload?: NullableStringFieldUpdateOperationsInput | string | null
     isRead?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null

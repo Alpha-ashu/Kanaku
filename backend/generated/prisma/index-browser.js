@@ -213,6 +213,8 @@ exports.Prisma.DeviceScalarFieldEnum = {
   isActive: 'isActive',
   isTrusted: 'isTrusted',
   lastSeenAt: 'lastSeenAt',
+  fcmToken: 'fcmToken',
+  publicKey: 'publicKey',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -312,6 +314,7 @@ exports.Prisma.InvestmentScalarFieldEnum = {
   profitLoss: 'profitLoss',
   purchaseDate: 'purchaseDate',
   lastUpdated: 'lastUpdated',
+  metadata: 'metadata',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   deletedAt: 'deletedAt'
@@ -351,11 +354,16 @@ exports.Prisma.LoanPaymentScalarFieldEnum = {
 exports.Prisma.NotificationScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
+  sourceUserId: 'sourceUserId',
   title: 'title',
   message: 'message',
   type: 'type',
   category: 'category',
   deepLink: 'deepLink',
+  priority: 'priority',
+  channels: 'channels',
+  deliveryStatus: 'deliveryStatus',
+  encryptedPayload: 'encryptedPayload',
   isRead: 'isRead',
   createdAt: 'createdAt',
   readAt: 'readAt',
@@ -396,6 +404,8 @@ exports.Prisma.SyncQueueScalarFieldEnum = {
   status: 'status',
   errorMessage: 'errorMessage',
   retryCount: 'retryCount',
+  maxRetries: 'maxRetries',
+  processingTime: 'processingTime',
   createdAt: 'createdAt',
   processedAt: 'processedAt'
 };
@@ -634,12 +644,12 @@ exports.Prisma.SortOrder = {
   desc: 'desc'
 };
 
-exports.Prisma.JsonNullValueInput = {
+exports.Prisma.NullableJsonNullValueInput = {
+  DbNull: Prisma.DbNull,
   JsonNull: Prisma.JsonNull
 };
 
-exports.Prisma.NullableJsonNullValueInput = {
-  DbNull: Prisma.DbNull,
+exports.Prisma.JsonNullValueInput = {
   JsonNull: Prisma.JsonNull
 };
 

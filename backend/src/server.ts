@@ -4,6 +4,8 @@ import { logger } from './config/logger';
 import { initializeSocket } from './sockets/index';
 import { closeRedis, initRedis } from './cache/redis';
 import { startAIBackgroundJobs, stopAIBackgroundJobs } from './modules/ai/ai.engine';
+import { initializeNotificationWorkers } from './workers/index';
+import { getQueues } from './config/queue';
 
 const PORT = process.env.PORT || 3000;
 
@@ -44,6 +46,19 @@ const server = app.listen(PORT, () => {
 initializeSocket(server);
 
 void initRedis();
+
+// Initialize notification workers
+try {
+  const { pushQueue, emailQueue } = getQueues();
+  const workers = initializeNotificationWorkers(pushQueue, emailQueue);
+  logger.info('Notification workers initialized', {
+    pushWorker: !!workers.pushWorker,
+    emailWorker: !!workers.emailWorker,
+  });
+} catch (error) {
+  logger.error('Failed to initialize notification workers:', error);
+}
+
 startAIBackgroundJobs();
 
 const shutdown = async (signal: string) => {

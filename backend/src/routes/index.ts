@@ -13,6 +13,7 @@ import { sessionRoutes } from '../modules/sessions/session.routes';
 import { paymentRoutes } from '../modules/payments/payment.routes';
 import { adminRoutes } from '../modules/admin/admin.routes';
 import { notificationRoutes } from '../modules/notifications/notification.routes';
+import { deviceRoutes } from '../modules/devices/device.routes';
 import { stockRoutes } from '../modules/stocks/stock.routes';
 import { friendRoutes } from '../modules/friends/friend.routes';
 import { investmentRoutes } from '../modules/investments/investment.routes';
@@ -77,6 +78,9 @@ router.use('/payments', paymentRoutes);
 
 // Notification routes
 router.use('/notifications', notificationRoutes);
+
+// Device registration & management routes
+router.use('/devices', deviceRoutes);
 
 // Secure bill uploads
 router.use('/bills', lazyRoute(() => require('../modules/bills/bills.routes'), 'billsRoutes'));
