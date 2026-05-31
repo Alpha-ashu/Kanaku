@@ -162,7 +162,7 @@ export async function sendMulticastPushNotifications(
       },
     };
 
-    const response = await messaging.sendMulticast({
+    const response = await messaging.sendEachForMulticast({
       ...message,
       tokens: fcmTokens,
     } as any);

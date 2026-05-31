@@ -1,4 +1,4 @@
-import { Queue, Worker, QueueScheduler } from "bullmq";
+import { Queue } from "bullmq";
 import Redis from "ioredis";
 
 /**
@@ -37,18 +37,8 @@ export function initializeQueues() {
     connection: redisConnection,
   });
 
-  // Add queue schedulers (runs in background, manages repeating jobs)
-  const emailScheduler = new QueueScheduler("email-notifications", {
-    connection: redisConnection,
-  });
-
-  const pushScheduler = new QueueScheduler("push-notifications", {
-    connection: redisConnection,
-  });
-
-  const syncScheduler = new QueueScheduler("sync-operations", {
-    connection: redisConnection,
-  });
+  // NOTE: QueueScheduler was removed in BullMQ v5. The scheduler is now built
+  // into the Queue itself and requires no separate instance.
 
   console.log("✓ Job queues initialized (email, push, sync)");
 
@@ -56,7 +46,6 @@ export function initializeQueues() {
     emailQueue,
     pushQueue,
     syncQueue,
-    schedulers: [emailScheduler, pushScheduler, syncScheduler],
   };
 }
 
@@ -90,10 +79,16 @@ export async function closeRedisConnections() {
   }
 }
 
+/**
+ * Alias for initializeQueues — satisfies the named import in server.ts.
+ */
+export const getQueues = initializeQueues;
+
 export default {
   redisConnection,
   redisSubscriber,
   initializeQueues,
+  getQueues,
   testRedisConnection,
   closeRedisConnections,
 };

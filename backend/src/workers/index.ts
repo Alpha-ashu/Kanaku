@@ -89,7 +89,8 @@ export const initializePushWorker = (pushQueue: Queue) => {
           return { status: 'skipped', reason: 'firebase_not_initialized' };
         }
 
-        const payload = {
+        // firebase-admin v13: use send() with token field instead of sendToDevice()
+        const fcmMessage = {
           notification: {
             title,
             body: message,
@@ -101,27 +102,26 @@ export const initializePushWorker = (pushQueue: Queue) => {
             type: 'in-app-notification',
             ...(deepLink && { deepLink }),
           },
+          token: fcmToken,
+          android: {
+            priority: (priority === 'high' ? 'high' : 'normal') as 'high' | 'normal',
+            ttl: 86400 * 1000, // 24 hours in ms
+          },
         };
 
-        const options = {
-          priority: priority === 'high' ? 'high' : 'normal',
-          timeToLive: 86400, // 24 hours
-        };
-
-        const response = await admin.messaging().sendToDevice(fcmToken, payload, options);
+        const messageId = await admin.messaging().send(fcmMessage);
 
         logger.info('Push notification sent', {
           notificationId,
           deviceId,
-          response: response.successCount > 0 ? 'success' : 'failed',
+          messageId,
         });
 
         return {
           status: 'sent',
           notificationId,
           deviceId,
-          successCount: response.successCount,
-          failureCount: response.failureCount,
+          messageId,
         };
       } catch (error) {
         logger.error('Push notification worker error', {
