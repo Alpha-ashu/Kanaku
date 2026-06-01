@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { db, Account, Transaction, Loan, Goal, Investment, GroupExpense, Friend } from '@/lib/database';
 import { isBoilerplateDescription } from '@/services/smartExpenseImportService';
 import { useAuth } from '@/contexts/AuthContext';
-import { getVisibleFeaturesForRole, mergeVisibleFeatures, normalizeFeatures, FeatureVisibility } from '@/lib/featureFlags';
+import { getVisibleFeaturesForRole, mergeVisibleFeatures, normalizeFeatures, FeatureVisibility, computeSubFeatureMap } from '@/lib/featureFlags';
 import { type SyncStats, useSyncStats, offlineSyncEngine } from '@/lib/offline-sync-engine';
 import { deduplicateLocalData, saveAccountWithBackendSync, syncUserDataFromCloud, updateAccountWithBackendSync } from '@/lib/auth-sync-integration';
 import { backendSyncService } from '@/lib/backend-sync-service';
@@ -35,6 +35,8 @@ interface AppContextType {
   addAccount: (account: Omit<Account, 'id'>) => Promise<number>;
   visibleFeatures: FeatureVisibility;
   setVisibleFeatures: (features: FeatureVisibility | ((prev: FeatureVisibility) => FeatureVisibility)) => void;
+  /** Level-2 sub-feature visibility: { module: { childKey: boolean } } */
+  subFeatures: Record<string, Record<string, boolean>>;
   // Navigation
   goBack: () => void;
   historyStack: string[];
@@ -108,6 +110,16 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const stored = localStorage.getItem('visibleFeatures');
     const parsed = stored ? JSON.parse(stored) : {};
     return normalizeFeatures(parsed);
+  });
+
+  const [subFeatures, setSubFeatures] = useState<Record<string, Record<string, boolean>>>(() => {
+    try {
+      const raw = localStorage.getItem('admin_global_feature_settings');
+      const saved = raw ? JSON.parse(raw) : null;
+      return computeSubFeatureMap('user', saved);
+    } catch {
+      return computeSubFeatureMap('user', null);
+    }
   });
   const { role, user, dataReady } = useAuth();
   const attemptedBalanceRepairKeyRef = useRef<string | null>(null);
@@ -473,6 +485,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
       if (!adminSettings) {
         setVisibleFeaturesState(roleFeatures);
+        setSubFeatures(computeSubFeatureMap(role, null));
         return;
       }
 
@@ -512,9 +525,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         });
 
         setVisibleFeaturesState(merged as unknown as FeatureVisibility);
+        // CRITICAL: Also recompute sub-features whenever module visibility changes
+        // This ensures feature gate toggles in admin panel immediately reflect in app
+        setSubFeatures(computeSubFeatureMap(role, parsed));
       } catch (e) {
         console.error('[AppContext] Failed to apply admin feature settings:', e);
         setVisibleFeaturesState(roleFeatures);
+        setSubFeatures(computeSubFeatureMap(role, null));
       }
     });
   }, [role]);
@@ -596,12 +613,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       }
     };
 
-    const handleAdminFeatureUpdate = () => {
+    const handleAdminFeatureUpdate = (e: Event) => {
+      const event = e as CustomEvent;
+      console.log('[AppContext] Admin feature update detected, recomputing visible features:', event.detail);
       computeVisibleFeatures();
     };
 
     const handleBroadcastMessage = (event: MessageEvent) => {
       if (event.data.type === 'FEATURE_UPDATE') {
+        console.log('[AppContext] Feature broadcast received from another tab/session', event.data.timestamp);
         computeVisibleFeatures();
       }
     };
@@ -660,6 +680,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     addAccount,
     visibleFeatures,
     setVisibleFeatures,
+    subFeatures,
     goBack,
     historyStack: historyStackRef.current,
     syncStats,
@@ -686,6 +707,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     addAccount,
     visibleFeatures,
     setVisibleFeatures,
+    subFeatures,
     goBack,
     syncStats,
     triggerSync,
@@ -726,6 +748,7 @@ export const useApp = () => {
       addAccount: async () => 0,
       visibleFeatures: getVisibleFeaturesForRole('user', import.meta.env.MODE),
       setVisibleFeatures: () => { },
+      subFeatures: computeSubFeatureMap('user', null),
       goBack: () => { },
       historyStack: [],
       syncStats: { pendingCount: 0, lastSyncedAt: null, status: 'idle' as const },
@@ -738,3 +761,18 @@ export const useApp = () => {
 
 export const useOptionalApp = () => useContext(AppContext);
 
+/**
+ * Hook: returns whether a specific sub-feature is enabled for the current user.
+ *
+ * @param moduleKey  - e.g. 'accounts'
+ * @param childKey   - e.g. 'deleteAccount'
+ *
+ * @example
+ *   const canDelete = useSubFeature('accounts', 'deleteAccount');
+ *   // Use in JSX: {canDelete && <DeleteButton />}
+ */
+export function useSubFeature(moduleKey: string, childKey: string): boolean {
+  const ctx = useContext(AppContext);
+  if (!ctx) return true; // outside provider → allow (fail-open)
+  return ctx.subFeatures?.[moduleKey]?.[childKey] ?? true;
+}

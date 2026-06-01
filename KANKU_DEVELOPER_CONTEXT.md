@@ -1973,3 +1973,44 @@ See `frontend/src/lib/app-integration-guide.tsx` for complete implementation exa
 ---
 
 
+### **2026-06-01 — Phase 3: Hierarchical Feature Flag Management System**
+
+#### 1. Dynamic Two-Level Feature Flag Architecture
+- **Hierarchical Access Control**: Upgraded the flat, single-level module ON/OFF feature flag system to a hierarchical, two-level system:
+  - **Level 1 (Module Toggle)**: Page-level entry control (readiness & role access maps) - remains fully backward compatible.
+  - **Level 2 (Sub-feature Toggles)**: Nested action-level control maps (`children` settings) - allows independent toggling of page sub-features (e.g. creating/editing/deleting accounts, importing bank statements, data exports) per user role.
+- **Fail-Open Propagation**: Standardized context resolution logic so that if a module is OFF, all its sub-features are implicitly OFF. If ON, child flags independently control the rendering/access.
+
+#### 2. Declarative Access Control with `FeatureGate`
+- **FeatureGate React Component (`FeatureGate.tsx`)**: Created a reusable UI gate supporting `hide` and `disable` fallback modes. Wraps nested components (e.g. Delete buttons) with zero prop drilling, resolving permission hooks dynamically from `AppContext`.
+- **`useSubFeature` Convenience Hook**: Exposed a lightweight hook in `AppContext` to check specific sub-feature permissions inline in JS logic.
+
+#### 3. Admin UI accordion inside `AdminFeaturePanel`
+- **Sub-Features Accordion**: Added a collapsible, animated sub-feature accordion panel inside each module card in the Admin Feature Panel. Collapsed by default (animated via CSS transition) to preserve existing UI layout and theme.
+- **Interactive Toggles**: Allows administrator to toggle the sub-feature overall state (`ON`/`OFF`) and override access levels for each of the 4 roles (`admin`, `manager`, `advisor`, `user`) independently.
+
+#### 4. API-Level Backend Middleware Enforcement
+- **Backend featureGate Middleware (`featureGate.middleware.ts`)**: Implemented robust backend middleware (`requireFeature`) with a 30-second in-memory cache to prevent database load spikes on high-frequency API endpoints.
+- **Cache Invalidation**: Automatically clears the middleware in-memory cache whenever global feature settings are modified via the `/admin/features/toggle` endpoint.
+- **Route Protection**: Integrated the middleware to gate critical accounts, transactions, and import endpoints:
+  - `POST /api/v1/accounts/` -> `requireFeature('accounts', 'createAccount')`
+  - `PUT /api/v1/accounts/:id` -> `requireFeature('accounts', 'editAccount')`
+  - `DELETE /api/v1/accounts/:id` -> `requireFeature('accounts', 'deleteAccount')`
+  - `POST /api/v1/transactions/` -> `requireFeature('transactions', 'addTransaction')`
+  - `PUT /api/v1/transactions/:id` -> `requireFeature('transactions', 'editTransaction')`
+  - `DELETE /api/v1/transactions/:id` -> `requireFeature('transactions', 'deleteTransaction')`
+  - `POST /api/v1/import/upload` & `POST /api/v1/import/confirm` -> `requireFeature('accounts', 'importStatement')`
+
+#### Files Changed / Created
+
+| File | Change |
+|---|---|
+| `frontend/src/lib/featureFlags.ts` | Added `SubFeatureKey`, definitions map `SUB_FEATURE_DEFINITIONS`, and resolution functions `isSubFeatureEnabled`, `computeSubFeatureMap` |
+| `frontend/src/app/components/ui/FeatureGate.tsx` | [NEW] Declarative UI gate component |
+| `frontend/src/contexts/AppContext.tsx` | Added `subFeatures` context state and `useSubFeature` hook |
+| `frontend/src/app/components/admin/AdminFeaturePanel.tsx` | Added sub-features accordion UI, override toggles, and state serialization |
+| `backend/src/middleware/featureGate.ts` | [NEW] Express route guarding middleware with 30s caching and cache invalidation |
+| `backend/src/modules/admin/admin.controller.ts` | Invalidate cache on toggle success path |
+| `backend/src/modules/accounts/account.routes.ts` | Gated POST, PUT, DELETE with `requireFeature` |
+| `backend/src/modules/transactions/transaction.routes.ts` | Gated POST, PUT, DELETE with `requireFeature` |
+| `backend/src/modules/import/import.routes.ts` | Gated upload and confirm endpoints |

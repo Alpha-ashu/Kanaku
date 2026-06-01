@@ -140,23 +140,29 @@ model ChatMessage {
 }
 
 model Device {
-  id         String   @id @default(uuid())
-  userId     String
-  deviceId   String   @unique
-  deviceName String?
-  deviceType String?
-  platform   String?
-  appVersion String?
-  isActive   Boolean  @default(true)
-  isTrusted  Boolean  @default(false)
-  lastSeenAt DateTime @default(now())
+  id           String    @id @default(uuid())
+  userId       String
+  deviceId     String    @unique
+  deviceName   String?
+  deviceType   String?
+  platform     String?
+  appVersion   String?
+  isActive     Boolean   @default(true)
+  isTrusted    Boolean   @default(false)
+  lastSeenAt   DateTime  @default(now())
   // Notification System Fields
-  fcmToken   String? // Firebase Cloud Messaging token for push notifications
-  publicKey  String? // Optional public key for E2E encryption (TweetNaCl format)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fcmToken     String? // Firebase Cloud Messaging token for push notifications
+  publicKey    String? // Optional public key for E2E encryption (TweetNaCl format)
+  osType       String?
+  osVersion    String?
+  apnsToken    String?
+  lastSyncedAt DateTime? @default(now())
+  metadata     Json?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@unique([userId, deviceId], name: "userId_deviceId")
   @@index([deviceId])
   @@index([isActive])
   @@index([userId])
@@ -364,6 +370,7 @@ model Notification {
   deepLink         String?
   priority         String    @default("normal") // high, normal, low
   channels         String    @default("app") // JSON array: ["app", "email", "push"]
+  metadata         Json?
   // Multi-channel Delivery Tracking
   deliveryStatus   String    @default("{}") // JSON: {app: sent, email: queued, push: failed}
   encryptedPayload String? // Optional encrypted payload (if E2E encryption enabled)
@@ -421,10 +428,13 @@ model RefreshToken {
 model SyncQueue {
   id             String    @id @default(uuid())
   userId         String
-  deviceId       String
+  deviceId       String?
   entityType     String // transaction, group, friend, goal, etc.
   entityId       String
-  operation      String // create, update, delete
+  operation      String? // create, update, delete
+  action         String?
+  sourceDeviceId String?
+  metadata       Json?
   data           String? // JSON payload
   status         String    @default("pending") // pending, processing, synced, failed
   errorMessage   String?

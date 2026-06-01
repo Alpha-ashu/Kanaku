@@ -27,7 +27,6 @@
     "noPropertyAccessFromIndexSignature": false,
     "noUncheckedIndexedAccess": false,
     "exactOptionalPropertyTypes": false,
-    "ignoreDeprecations": "5.0",
     "baseUrl": "./",
     "paths": {
       "@/*": ["src/*"]

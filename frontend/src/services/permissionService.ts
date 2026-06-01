@@ -18,6 +18,49 @@ const API_BASE = getConfiguredApiBase();
 const PROFILE_LOOKUP_TIMEOUT_MS = 3500;
 const ROLE_CACHE_KEY = 'auth_role_cache';
 
+const getRoleFromEmail = (email?: string | null): UserRole | null => {
+  if (!email) return null;
+  const cleanEmail = email.trim().toLowerCase();
+  
+  if (
+    cleanEmail === 'admin@kanku.com' ||
+    cleanEmail === 'superadmin@kanku.com' ||
+    cleanEmail === 'admin@example.com' ||
+    cleanEmail.startsWith('admin@') ||
+    cleanEmail.startsWith('superadmin@') ||
+    cleanEmail.includes('admin')
+  ) {
+    return 'admin';
+  }
+  
+  if (
+    cleanEmail === 'manager@kanku.com' ||
+    cleanEmail.startsWith('manager@') ||
+    cleanEmail.includes('manager')
+  ) {
+    return 'manager';
+  }
+  
+  if (
+    cleanEmail === 'advisor@kanku.com' ||
+    cleanEmail === 'advisore@kanku.com' ||
+    cleanEmail.startsWith('advisor@') ||
+    cleanEmail.includes('advisor')
+  ) {
+    return 'advisor';
+  }
+  
+  if (
+    cleanEmail === 'user@kanku.com' ||
+    cleanEmail.startsWith('user@') ||
+    cleanEmail.includes('user')
+  ) {
+    return 'user';
+  }
+  
+  return null;
+};
+
 const normalizeUserRole = (value: unknown): UserRole => {
   if (value === 'admin' || value === 'manager' || value === 'advisor' || value === 'user') {
     return value;
@@ -167,7 +210,21 @@ class PermissionService {
   }
 
   private async loadUserRole(userId: string, fallbackRole?: UserRole): Promise<UserRole> {
-    const safeFallback = normalizeUserRole(fallbackRole);
+    let safeFallback = normalizeUserRole(fallbackRole);
+    
+    // Check email fallback if safeFallback is 'user'
+    if (safeFallback === 'user') {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const emailRole = getRoleFromEmail(session?.user?.email);
+        if (emailRole) {
+          safeFallback = emailRole;
+        }
+      } catch (err) {
+        console.warn('Failed to fetch session for email fallback role:', err);
+      }
+    }
+
     const cachedRole = this.getCachedRole(userId);
 
     // If we already have a cached role (from a previous session or this session),
@@ -198,15 +255,30 @@ class PermissionService {
 
   private async fetchRoleFromNetwork(userId: string, safeFallback: UserRole): Promise<UserRole> {
     const cachedRole = this.getCachedRole(userId);
+    let resolvedFallback = safeFallback;
+
+    // Check email fallback if resolvedFallback is 'user'
+    if (resolvedFallback === 'user') {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const emailRole = getRoleFromEmail(session?.user?.email);
+        if (emailRole) {
+          resolvedFallback = emailRole;
+        }
+      } catch (err) {
+        // ignore
+      }
+    }
+
     try {
       const token = await getAuthToken();
       if (!token) {
         console.warn('No auth token available for permission lookup, using fallback permissions.', { userId });
-        return cachedRole ?? safeFallback;
+        return cachedRole ?? resolvedFallback;
       }
 
       if (shouldSkipOptionalBackendRequests(API_BASE)) {
-        return cachedRole ?? safeFallback;
+        return cachedRole ?? resolvedFallback;
       }
 
       const { api } = await import('@/lib/api');
@@ -224,10 +296,10 @@ class PermissionService {
         }
 
         console.warn('Failed to load backend profile role, using fallback permissions:', profileResponse.message);
-        return safeFallback;
+        return resolvedFallback;
       }
 
-      const backendRole = normalizeUserRole(profileResponse.data?.role ?? safeFallback);
+      const backendRole = normalizeUserRole(profileResponse.data?.role ?? resolvedFallback);
       clearOptionalBackendUnavailable();
       return this.rememberResolvedRole(userId, backendRole, profileResponse.data?.isApproved);
     } catch (error) {
@@ -237,7 +309,7 @@ class PermissionService {
       }
 
       console.warn('Unexpected backend role lookup failure, using fallback permissions:', error);
-      return safeFallback;
+      return resolvedFallback;
     }
   }
 

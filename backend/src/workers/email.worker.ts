@@ -1,9 +1,7 @@
 import { Worker, Job } from "bullmq";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "../utils/prisma";
 import sgMail from "@sendgrid/mail";
 import { redisConnection } from "../config/queue";
-
-const prisma = new PrismaClient();
 
 /**
  * Email Worker

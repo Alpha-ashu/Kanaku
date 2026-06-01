@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useDeferredValue } from 'react';
-import { useApp } from '@/contexts/AppContext';
+import { useApp, useSubFeature } from '@/contexts/AppContext';
 import { db, type DocumentRecord } from '@/lib/database';
 import { deleteTransactionWithBackendSync, queueRecordUpsertSync } from '@/lib/auth-sync-integration';
 import { applyAccountBalanceDeltas, buildTransactionAggregation, getTransactionAccountDeltas } from '@/lib/transactionAggregation';
@@ -64,6 +64,10 @@ const getDocumentIdFromTransaction = (transaction: { attachment?: string; import
 
 export const Transactions: React.FC = () => {
  const { accounts, transactions, currency, setCurrentPage, refreshData } = useApp();
+ const canAdd = useSubFeature('transactions', 'addTransaction');
+ const canEdit = useSubFeature('transactions', 'editTransaction');
+ const canDelete = useSubFeature('transactions', 'deleteTransaction');
+ const canImport = useSubFeature('transactions', 'importStatement');
  const [filterType, setFilterType] = useState<'all' | 'expense' | 'income'>('all');
  const [searchQuery, setSearchQuery] = useState('');
  const [timePeriod, setTimePeriod] = useState<TimeFilterPeriod>('monthly');
@@ -340,6 +344,7 @@ export const Transactions: React.FC = () => {
  <h1 className="text-xl font-black text-slate-900 tracking-tight leading-none">Transactions</h1>
  </div>
  <div className="flex items-center gap-3">
+ {canImport && (
  <Button
  variant="secondary"
  onClick={() => setShowScanModal(true)}
@@ -348,6 +353,8 @@ export const Transactions: React.FC = () => {
  <Camera size={18} className="mr-2" />
  Scan Bill
  </Button>
+ )}
+ {canAdd && (
  <Button
  onClick={() => setShowTransactionTypeModal(true)}
  className="shadow-lg bg-gray-900 hover:bg-gray-800 text-white h-12 px-5 rounded-2xl font-bold"
@@ -355,6 +362,7 @@ export const Transactions: React.FC = () => {
  <Plus size={18} className="mr-2" />
  Add Transaction
  </Button>
+ )}
  </div>
  </div>
 
@@ -639,14 +647,18 @@ export const Transactions: React.FC = () => {
  </Button>
  )}
  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+ {canEdit && (
  <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-blue-600"
  onClick={() => { localStorage.setItem('editTransactionId', transaction.id?.toString() || ''); setCurrentPage('add-transaction'); }}>
  <Edit2 size={14} />
  </Button>
+ )}
+ {canDelete && (
  <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-red-500"
  onClick={() => handleDeleteTransaction(transaction.id!, transaction.description)}>
  <Trash2 size={14} />
  </Button>
+ )}
  </div>
  </div>
  </td>
@@ -801,18 +813,22 @@ export const Transactions: React.FC = () => {
 
  {/* Action buttons */}
  <div className="px-6 pb-8 pt-3 grid grid-cols-2 gap-3">
+ {canEdit && (
  <button
  onClick={() => { localStorage.setItem('editTransactionId', tx.id?.toString() || ''); setCurrentPage('add-transaction'); setSelectedTransaction(null); }}
  className="flex items-center justify-center gap-2 py-3 rounded-2xl bg-blue-50 border border-blue-100 text-blue-600 font-black text-sm hover:bg-blue-100 active:scale-[0.98] transition-all"
  >
  <Edit2 size={15} /> Edit
  </button>
+ )}
+ {canDelete && (
  <button
  onClick={() => { handleDeleteTransaction(tx.id!, tx.description); setSelectedTransaction(null); }}
  className="flex items-center justify-center gap-2 py-3 rounded-2xl bg-rose-50 border border-rose-100 text-rose-600 font-black text-sm hover:bg-rose-100 active:scale-[0.98] transition-all"
  >
  <Trash2 size={15} /> Delete
  </button>
+ )}
  </div>
  </div>
  </motion.div>

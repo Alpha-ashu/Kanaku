@@ -49,7 +49,7 @@ export class CrossDeviceSyncService {
           type: notification.type,
           deepLink: notification.deepLink,
           priority: notification.priority || 'normal',
-          channels: notification.channels || ['app', 'push'],
+          channels: JSON.stringify(notification.channels || ['app', 'push']),
           metadata: {
             broadcastDevices: activeDevices.length,
             targetDeviceIds: activeDevices.map((d) => d.deviceId),
@@ -273,7 +273,7 @@ export class CrossDeviceSyncService {
           type: 'reminder',
           priority: 'high',
           deepLink: reminder.deepLink,
-          channels: ['app', 'push'],
+          channels: JSON.stringify(['app', 'push']),
           metadata: {
             scheduledTime: reminder.scheduledTime.toISOString(),
             category: reminder.category,

@@ -11426,6 +11426,10 @@ export namespace Prisma {
     lastSeenAt: Date | null
     fcmToken: string | null
     publicKey: string | null
+    osType: string | null
+    osVersion: string | null
+    apnsToken: string | null
+    lastSyncedAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -11443,6 +11447,10 @@ export namespace Prisma {
     lastSeenAt: Date | null
     fcmToken: string | null
     publicKey: string | null
+    osType: string | null
+    osVersion: string | null
+    apnsToken: string | null
+    lastSyncedAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -11460,6 +11468,11 @@ export namespace Prisma {
     lastSeenAt: number
     fcmToken: number
     publicKey: number
+    osType: number
+    osVersion: number
+    apnsToken: number
+    lastSyncedAt: number
+    metadata: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -11479,6 +11492,10 @@ export namespace Prisma {
     lastSeenAt?: true
     fcmToken?: true
     publicKey?: true
+    osType?: true
+    osVersion?: true
+    apnsToken?: true
+    lastSyncedAt?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -11496,6 +11513,10 @@ export namespace Prisma {
     lastSeenAt?: true
     fcmToken?: true
     publicKey?: true
+    osType?: true
+    osVersion?: true
+    apnsToken?: true
+    lastSyncedAt?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -11513,6 +11534,11 @@ export namespace Prisma {
     lastSeenAt?: true
     fcmToken?: true
     publicKey?: true
+    osType?: true
+    osVersion?: true
+    apnsToken?: true
+    lastSyncedAt?: true
+    metadata?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -11603,6 +11629,11 @@ export namespace Prisma {
     lastSeenAt: Date
     fcmToken: string | null
     publicKey: string | null
+    osType: string | null
+    osVersion: string | null
+    apnsToken: string | null
+    lastSyncedAt: Date | null
+    metadata: JsonValue | null
     createdAt: Date
     updatedAt: Date
     _count: DeviceCountAggregateOutputType | null
@@ -11637,6 +11668,11 @@ export namespace Prisma {
     lastSeenAt?: boolean
     fcmToken?: boolean
     publicKey?: boolean
+    osType?: boolean
+    osVersion?: boolean
+    apnsToken?: boolean
+    lastSyncedAt?: boolean
+    metadata?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -11655,6 +11691,11 @@ export namespace Prisma {
     lastSeenAt?: boolean
     fcmToken?: boolean
     publicKey?: boolean
+    osType?: boolean
+    osVersion?: boolean
+    apnsToken?: boolean
+    lastSyncedAt?: boolean
+    metadata?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -11673,6 +11714,11 @@ export namespace Prisma {
     lastSeenAt?: boolean
     fcmToken?: boolean
     publicKey?: boolean
+    osType?: boolean
+    osVersion?: boolean
+    apnsToken?: boolean
+    lastSyncedAt?: boolean
+    metadata?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -11691,11 +11737,16 @@ export namespace Prisma {
     lastSeenAt?: boolean
     fcmToken?: boolean
     publicKey?: boolean
+    osType?: boolean
+    osVersion?: boolean
+    apnsToken?: boolean
+    lastSyncedAt?: boolean
+    metadata?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type DeviceOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "deviceId" | "deviceName" | "deviceType" | "platform" | "appVersion" | "isActive" | "isTrusted" | "lastSeenAt" | "fcmToken" | "publicKey" | "createdAt" | "updatedAt", ExtArgs["result"]["device"]>
+  export type DeviceOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "deviceId" | "deviceName" | "deviceType" | "platform" | "appVersion" | "isActive" | "isTrusted" | "lastSeenAt" | "fcmToken" | "publicKey" | "osType" | "osVersion" | "apnsToken" | "lastSyncedAt" | "metadata" | "createdAt" | "updatedAt", ExtArgs["result"]["device"]>
   export type DeviceInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
   }
@@ -11724,6 +11775,11 @@ export namespace Prisma {
       lastSeenAt: Date
       fcmToken: string | null
       publicKey: string | null
+      osType: string | null
+      osVersion: string | null
+      apnsToken: string | null
+      lastSyncedAt: Date | null
+      metadata: Prisma.JsonValue | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["device"]>
@@ -12162,6 +12218,11 @@ export namespace Prisma {
     readonly lastSeenAt: FieldRef<"Device", 'DateTime'>
     readonly fcmToken: FieldRef<"Device", 'String'>
     readonly publicKey: FieldRef<"Device", 'String'>
+    readonly osType: FieldRef<"Device", 'String'>
+    readonly osVersion: FieldRef<"Device", 'String'>
+    readonly apnsToken: FieldRef<"Device", 'String'>
+    readonly lastSyncedAt: FieldRef<"Device", 'DateTime'>
+    readonly metadata: FieldRef<"Device", 'Json'>
     readonly createdAt: FieldRef<"Device", 'DateTime'>
     readonly updatedAt: FieldRef<"Device", 'DateTime'>
   }
@@ -22347,6 +22408,7 @@ export namespace Prisma {
     deepLink: number
     priority: number
     channels: number
+    metadata: number
     deliveryStatus: number
     encryptedPayload: number
     isRead: number
@@ -22406,6 +22468,7 @@ export namespace Prisma {
     deepLink?: true
     priority?: true
     channels?: true
+    metadata?: true
     deliveryStatus?: true
     encryptedPayload?: true
     isRead?: true
@@ -22498,6 +22561,7 @@ export namespace Prisma {
     deepLink: string | null
     priority: string
     channels: string
+    metadata: JsonValue | null
     deliveryStatus: string
     encryptedPayload: string | null
     isRead: boolean
@@ -22534,6 +22598,7 @@ export namespace Prisma {
     deepLink?: boolean
     priority?: boolean
     channels?: boolean
+    metadata?: boolean
     deliveryStatus?: boolean
     encryptedPayload?: boolean
     isRead?: boolean
@@ -22554,6 +22619,7 @@ export namespace Prisma {
     deepLink?: boolean
     priority?: boolean
     channels?: boolean
+    metadata?: boolean
     deliveryStatus?: boolean
     encryptedPayload?: boolean
     isRead?: boolean
@@ -22574,6 +22640,7 @@ export namespace Prisma {
     deepLink?: boolean
     priority?: boolean
     channels?: boolean
+    metadata?: boolean
     deliveryStatus?: boolean
     encryptedPayload?: boolean
     isRead?: boolean
@@ -22594,6 +22661,7 @@ export namespace Prisma {
     deepLink?: boolean
     priority?: boolean
     channels?: boolean
+    metadata?: boolean
     deliveryStatus?: boolean
     encryptedPayload?: boolean
     isRead?: boolean
@@ -22602,7 +22670,7 @@ export namespace Prisma {
     deletedAt?: boolean
   }
 
-  export type NotificationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "sourceUserId" | "title" | "message" | "type" | "category" | "deepLink" | "priority" | "channels" | "deliveryStatus" | "encryptedPayload" | "isRead" | "createdAt" | "readAt" | "deletedAt", ExtArgs["result"]["notification"]>
+  export type NotificationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "sourceUserId" | "title" | "message" | "type" | "category" | "deepLink" | "priority" | "channels" | "metadata" | "deliveryStatus" | "encryptedPayload" | "isRead" | "createdAt" | "readAt" | "deletedAt", ExtArgs["result"]["notification"]>
   export type NotificationInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
   }
@@ -22629,6 +22697,7 @@ export namespace Prisma {
       deepLink: string | null
       priority: string
       channels: string
+      metadata: Prisma.JsonValue | null
       deliveryStatus: string
       encryptedPayload: string | null
       isRead: boolean
@@ -23069,6 +23138,7 @@ export namespace Prisma {
     readonly deepLink: FieldRef<"Notification", 'String'>
     readonly priority: FieldRef<"Notification", 'String'>
     readonly channels: FieldRef<"Notification", 'String'>
+    readonly metadata: FieldRef<"Notification", 'Json'>
     readonly deliveryStatus: FieldRef<"Notification", 'String'>
     readonly encryptedPayload: FieldRef<"Notification", 'String'>
     readonly isRead: FieldRef<"Notification", 'Boolean'>
@@ -25777,6 +25847,8 @@ export namespace Prisma {
     entityType: string | null
     entityId: string | null
     operation: string | null
+    action: string | null
+    sourceDeviceId: string | null
     data: string | null
     status: string | null
     errorMessage: string | null
@@ -25794,6 +25866,8 @@ export namespace Prisma {
     entityType: string | null
     entityId: string | null
     operation: string | null
+    action: string | null
+    sourceDeviceId: string | null
     data: string | null
     status: string | null
     errorMessage: string | null
@@ -25811,6 +25885,9 @@ export namespace Prisma {
     entityType: number
     entityId: number
     operation: number
+    action: number
+    sourceDeviceId: number
+    metadata: number
     data: number
     status: number
     errorMessage: number
@@ -25842,6 +25919,8 @@ export namespace Prisma {
     entityType?: true
     entityId?: true
     operation?: true
+    action?: true
+    sourceDeviceId?: true
     data?: true
     status?: true
     errorMessage?: true
@@ -25859,6 +25938,8 @@ export namespace Prisma {
     entityType?: true
     entityId?: true
     operation?: true
+    action?: true
+    sourceDeviceId?: true
     data?: true
     status?: true
     errorMessage?: true
@@ -25876,6 +25957,9 @@ export namespace Prisma {
     entityType?: true
     entityId?: true
     operation?: true
+    action?: true
+    sourceDeviceId?: true
+    metadata?: true
     data?: true
     status?: true
     errorMessage?: true
@@ -25976,10 +26060,13 @@ export namespace Prisma {
   export type SyncQueueGroupByOutputType = {
     id: string
     userId: string
-    deviceId: string
+    deviceId: string | null
     entityType: string
     entityId: string
-    operation: string
+    operation: string | null
+    action: string | null
+    sourceDeviceId: string | null
+    metadata: JsonValue | null
     data: string | null
     status: string
     errorMessage: string | null
@@ -26016,6 +26103,9 @@ export namespace Prisma {
     entityType?: boolean
     entityId?: boolean
     operation?: boolean
+    action?: boolean
+    sourceDeviceId?: boolean
+    metadata?: boolean
     data?: boolean
     status?: boolean
     errorMessage?: boolean
@@ -26033,6 +26123,9 @@ export namespace Prisma {
     entityType?: boolean
     entityId?: boolean
     operation?: boolean
+    action?: boolean
+    sourceDeviceId?: boolean
+    metadata?: boolean
     data?: boolean
     status?: boolean
     errorMessage?: boolean
@@ -26050,6 +26143,9 @@ export namespace Prisma {
     entityType?: boolean
     entityId?: boolean
     operation?: boolean
+    action?: boolean
+    sourceDeviceId?: boolean
+    metadata?: boolean
     data?: boolean
     status?: boolean
     errorMessage?: boolean
@@ -26067,6 +26163,9 @@ export namespace Prisma {
     entityType?: boolean
     entityId?: boolean
     operation?: boolean
+    action?: boolean
+    sourceDeviceId?: boolean
+    metadata?: boolean
     data?: boolean
     status?: boolean
     errorMessage?: boolean
@@ -26077,7 +26176,7 @@ export namespace Prisma {
     processedAt?: boolean
   }
 
-  export type SyncQueueOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "deviceId" | "entityType" | "entityId" | "operation" | "data" | "status" | "errorMessage" | "retryCount" | "maxRetries" | "processingTime" | "createdAt" | "processedAt", ExtArgs["result"]["syncQueue"]>
+  export type SyncQueueOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "deviceId" | "entityType" | "entityId" | "operation" | "action" | "sourceDeviceId" | "metadata" | "data" | "status" | "errorMessage" | "retryCount" | "maxRetries" | "processingTime" | "createdAt" | "processedAt", ExtArgs["result"]["syncQueue"]>
 
   export type $SyncQueuePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "SyncQueue"
@@ -26085,10 +26184,13 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: string
       userId: string
-      deviceId: string
+      deviceId: string | null
       entityType: string
       entityId: string
-      operation: string
+      operation: string | null
+      action: string | null
+      sourceDeviceId: string | null
+      metadata: Prisma.JsonValue | null
       data: string | null
       status: string
       errorMessage: string | null
@@ -26526,6 +26628,9 @@ export namespace Prisma {
     readonly entityType: FieldRef<"SyncQueue", 'String'>
     readonly entityId: FieldRef<"SyncQueue", 'String'>
     readonly operation: FieldRef<"SyncQueue", 'String'>
+    readonly action: FieldRef<"SyncQueue", 'String'>
+    readonly sourceDeviceId: FieldRef<"SyncQueue", 'String'>
+    readonly metadata: FieldRef<"SyncQueue", 'Json'>
     readonly data: FieldRef<"SyncQueue", 'String'>
     readonly status: FieldRef<"SyncQueue", 'String'>
     readonly errorMessage: FieldRef<"SyncQueue", 'String'>
@@ -45167,6 +45272,11 @@ export namespace Prisma {
     lastSeenAt: 'lastSeenAt',
     fcmToken: 'fcmToken',
     publicKey: 'publicKey',
+    osType: 'osType',
+    osVersion: 'osVersion',
+    apnsToken: 'apnsToken',
+    lastSyncedAt: 'lastSyncedAt',
+    metadata: 'metadata',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -45341,6 +45451,7 @@ export namespace Prisma {
     deepLink: 'deepLink',
     priority: 'priority',
     channels: 'channels',
+    metadata: 'metadata',
     deliveryStatus: 'deliveryStatus',
     encryptedPayload: 'encryptedPayload',
     isRead: 'isRead',
@@ -45388,6 +45499,9 @@ export namespace Prisma {
     entityType: 'entityType',
     entityId: 'entityId',
     operation: 'operation',
+    action: 'action',
+    sourceDeviceId: 'sourceDeviceId',
+    metadata: 'metadata',
     data: 'data',
     status: 'status',
     errorMessage: 'errorMessage',
@@ -46372,6 +46486,11 @@ export namespace Prisma {
     lastSeenAt?: DateTimeFilter<"Device"> | Date | string
     fcmToken?: StringNullableFilter<"Device"> | string | null
     publicKey?: StringNullableFilter<"Device"> | string | null
+    osType?: StringNullableFilter<"Device"> | string | null
+    osVersion?: StringNullableFilter<"Device"> | string | null
+    apnsToken?: StringNullableFilter<"Device"> | string | null
+    lastSyncedAt?: DateTimeNullableFilter<"Device"> | Date | string | null
+    metadata?: JsonNullableFilter<"Device">
     createdAt?: DateTimeFilter<"Device"> | Date | string
     updatedAt?: DateTimeFilter<"Device"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -46390,6 +46509,11 @@ export namespace Prisma {
     lastSeenAt?: SortOrder
     fcmToken?: SortOrderInput | SortOrder
     publicKey?: SortOrderInput | SortOrder
+    osType?: SortOrderInput | SortOrder
+    osVersion?: SortOrderInput | SortOrder
+    apnsToken?: SortOrderInput | SortOrder
+    lastSyncedAt?: SortOrderInput | SortOrder
+    metadata?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     user?: UserOrderByWithRelationInput
@@ -46398,6 +46522,7 @@ export namespace Prisma {
   export type DeviceWhereUniqueInput = Prisma.AtLeast<{
     id?: string
     deviceId?: string
+    userId_deviceId?: DeviceUserId_deviceIdCompoundUniqueInput
     AND?: DeviceWhereInput | DeviceWhereInput[]
     OR?: DeviceWhereInput[]
     NOT?: DeviceWhereInput | DeviceWhereInput[]
@@ -46411,10 +46536,15 @@ export namespace Prisma {
     lastSeenAt?: DateTimeFilter<"Device"> | Date | string
     fcmToken?: StringNullableFilter<"Device"> | string | null
     publicKey?: StringNullableFilter<"Device"> | string | null
+    osType?: StringNullableFilter<"Device"> | string | null
+    osVersion?: StringNullableFilter<"Device"> | string | null
+    apnsToken?: StringNullableFilter<"Device"> | string | null
+    lastSyncedAt?: DateTimeNullableFilter<"Device"> | Date | string | null
+    metadata?: JsonNullableFilter<"Device">
     createdAt?: DateTimeFilter<"Device"> | Date | string
     updatedAt?: DateTimeFilter<"Device"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
-  }, "id" | "deviceId">
+  }, "id" | "deviceId" | "userId_deviceId">
 
   export type DeviceOrderByWithAggregationInput = {
     id?: SortOrder
@@ -46429,6 +46559,11 @@ export namespace Prisma {
     lastSeenAt?: SortOrder
     fcmToken?: SortOrderInput | SortOrder
     publicKey?: SortOrderInput | SortOrder
+    osType?: SortOrderInput | SortOrder
+    osVersion?: SortOrderInput | SortOrder
+    apnsToken?: SortOrderInput | SortOrder
+    lastSyncedAt?: SortOrderInput | SortOrder
+    metadata?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: DeviceCountOrderByAggregateInput
@@ -46452,6 +46587,11 @@ export namespace Prisma {
     lastSeenAt?: DateTimeWithAggregatesFilter<"Device"> | Date | string
     fcmToken?: StringNullableWithAggregatesFilter<"Device"> | string | null
     publicKey?: StringNullableWithAggregatesFilter<"Device"> | string | null
+    osType?: StringNullableWithAggregatesFilter<"Device"> | string | null
+    osVersion?: StringNullableWithAggregatesFilter<"Device"> | string | null
+    apnsToken?: StringNullableWithAggregatesFilter<"Device"> | string | null
+    lastSyncedAt?: DateTimeNullableWithAggregatesFilter<"Device"> | Date | string | null
+    metadata?: JsonNullableWithAggregatesFilter<"Device">
     createdAt?: DateTimeWithAggregatesFilter<"Device"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Device"> | Date | string
   }
@@ -47276,6 +47416,7 @@ export namespace Prisma {
     deepLink?: StringNullableFilter<"Notification"> | string | null
     priority?: StringFilter<"Notification"> | string
     channels?: StringFilter<"Notification"> | string
+    metadata?: JsonNullableFilter<"Notification">
     deliveryStatus?: StringFilter<"Notification"> | string
     encryptedPayload?: StringNullableFilter<"Notification"> | string | null
     isRead?: BoolFilter<"Notification"> | boolean
@@ -47296,6 +47437,7 @@ export namespace Prisma {
     deepLink?: SortOrderInput | SortOrder
     priority?: SortOrder
     channels?: SortOrder
+    metadata?: SortOrderInput | SortOrder
     deliveryStatus?: SortOrder
     encryptedPayload?: SortOrderInput | SortOrder
     isRead?: SortOrder
@@ -47319,6 +47461,7 @@ export namespace Prisma {
     deepLink?: StringNullableFilter<"Notification"> | string | null
     priority?: StringFilter<"Notification"> | string
     channels?: StringFilter<"Notification"> | string
+    metadata?: JsonNullableFilter<"Notification">
     deliveryStatus?: StringFilter<"Notification"> | string
     encryptedPayload?: StringNullableFilter<"Notification"> | string | null
     isRead?: BoolFilter<"Notification"> | boolean
@@ -47339,6 +47482,7 @@ export namespace Prisma {
     deepLink?: SortOrderInput | SortOrder
     priority?: SortOrder
     channels?: SortOrder
+    metadata?: SortOrderInput | SortOrder
     deliveryStatus?: SortOrder
     encryptedPayload?: SortOrderInput | SortOrder
     isRead?: SortOrder
@@ -47364,6 +47508,7 @@ export namespace Prisma {
     deepLink?: StringNullableWithAggregatesFilter<"Notification"> | string | null
     priority?: StringWithAggregatesFilter<"Notification"> | string
     channels?: StringWithAggregatesFilter<"Notification"> | string
+    metadata?: JsonNullableWithAggregatesFilter<"Notification">
     deliveryStatus?: StringWithAggregatesFilter<"Notification"> | string
     encryptedPayload?: StringNullableWithAggregatesFilter<"Notification"> | string | null
     isRead?: BoolWithAggregatesFilter<"Notification"> | boolean
@@ -47531,10 +47676,13 @@ export namespace Prisma {
     NOT?: SyncQueueWhereInput | SyncQueueWhereInput[]
     id?: StringFilter<"SyncQueue"> | string
     userId?: StringFilter<"SyncQueue"> | string
-    deviceId?: StringFilter<"SyncQueue"> | string
+    deviceId?: StringNullableFilter<"SyncQueue"> | string | null
     entityType?: StringFilter<"SyncQueue"> | string
     entityId?: StringFilter<"SyncQueue"> | string
-    operation?: StringFilter<"SyncQueue"> | string
+    operation?: StringNullableFilter<"SyncQueue"> | string | null
+    action?: StringNullableFilter<"SyncQueue"> | string | null
+    sourceDeviceId?: StringNullableFilter<"SyncQueue"> | string | null
+    metadata?: JsonNullableFilter<"SyncQueue">
     data?: StringNullableFilter<"SyncQueue"> | string | null
     status?: StringFilter<"SyncQueue"> | string
     errorMessage?: StringNullableFilter<"SyncQueue"> | string | null
@@ -47548,10 +47696,13 @@ export namespace Prisma {
   export type SyncQueueOrderByWithRelationInput = {
     id?: SortOrder
     userId?: SortOrder
-    deviceId?: SortOrder
+    deviceId?: SortOrderInput | SortOrder
     entityType?: SortOrder
     entityId?: SortOrder
-    operation?: SortOrder
+    operation?: SortOrderInput | SortOrder
+    action?: SortOrderInput | SortOrder
+    sourceDeviceId?: SortOrderInput | SortOrder
+    metadata?: SortOrderInput | SortOrder
     data?: SortOrderInput | SortOrder
     status?: SortOrder
     errorMessage?: SortOrderInput | SortOrder
@@ -47568,10 +47719,13 @@ export namespace Prisma {
     OR?: SyncQueueWhereInput[]
     NOT?: SyncQueueWhereInput | SyncQueueWhereInput[]
     userId?: StringFilter<"SyncQueue"> | string
-    deviceId?: StringFilter<"SyncQueue"> | string
+    deviceId?: StringNullableFilter<"SyncQueue"> | string | null
     entityType?: StringFilter<"SyncQueue"> | string
     entityId?: StringFilter<"SyncQueue"> | string
-    operation?: StringFilter<"SyncQueue"> | string
+    operation?: StringNullableFilter<"SyncQueue"> | string | null
+    action?: StringNullableFilter<"SyncQueue"> | string | null
+    sourceDeviceId?: StringNullableFilter<"SyncQueue"> | string | null
+    metadata?: JsonNullableFilter<"SyncQueue">
     data?: StringNullableFilter<"SyncQueue"> | string | null
     status?: StringFilter<"SyncQueue"> | string
     errorMessage?: StringNullableFilter<"SyncQueue"> | string | null
@@ -47585,10 +47739,13 @@ export namespace Prisma {
   export type SyncQueueOrderByWithAggregationInput = {
     id?: SortOrder
     userId?: SortOrder
-    deviceId?: SortOrder
+    deviceId?: SortOrderInput | SortOrder
     entityType?: SortOrder
     entityId?: SortOrder
-    operation?: SortOrder
+    operation?: SortOrderInput | SortOrder
+    action?: SortOrderInput | SortOrder
+    sourceDeviceId?: SortOrderInput | SortOrder
+    metadata?: SortOrderInput | SortOrder
     data?: SortOrderInput | SortOrder
     status?: SortOrder
     errorMessage?: SortOrderInput | SortOrder
@@ -47610,10 +47767,13 @@ export namespace Prisma {
     NOT?: SyncQueueScalarWhereWithAggregatesInput | SyncQueueScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"SyncQueue"> | string
     userId?: StringWithAggregatesFilter<"SyncQueue"> | string
-    deviceId?: StringWithAggregatesFilter<"SyncQueue"> | string
+    deviceId?: StringNullableWithAggregatesFilter<"SyncQueue"> | string | null
     entityType?: StringWithAggregatesFilter<"SyncQueue"> | string
     entityId?: StringWithAggregatesFilter<"SyncQueue"> | string
-    operation?: StringWithAggregatesFilter<"SyncQueue"> | string
+    operation?: StringNullableWithAggregatesFilter<"SyncQueue"> | string | null
+    action?: StringNullableWithAggregatesFilter<"SyncQueue"> | string | null
+    sourceDeviceId?: StringNullableWithAggregatesFilter<"SyncQueue"> | string | null
+    metadata?: JsonNullableWithAggregatesFilter<"SyncQueue">
     data?: StringNullableWithAggregatesFilter<"SyncQueue"> | string | null
     status?: StringWithAggregatesFilter<"SyncQueue"> | string
     errorMessage?: StringNullableWithAggregatesFilter<"SyncQueue"> | string | null
@@ -49684,6 +49844,11 @@ export namespace Prisma {
     lastSeenAt?: Date | string
     fcmToken?: string | null
     publicKey?: string | null
+    osType?: string | null
+    osVersion?: string | null
+    apnsToken?: string | null
+    lastSyncedAt?: Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutDevicesInput
@@ -49702,6 +49867,11 @@ export namespace Prisma {
     lastSeenAt?: Date | string
     fcmToken?: string | null
     publicKey?: string | null
+    osType?: string | null
+    osVersion?: string | null
+    apnsToken?: string | null
+    lastSyncedAt?: Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -49718,6 +49888,11 @@ export namespace Prisma {
     lastSeenAt?: DateTimeFieldUpdateOperationsInput | Date | string
     fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
     publicKey?: NullableStringFieldUpdateOperationsInput | string | null
+    osType?: NullableStringFieldUpdateOperationsInput | string | null
+    osVersion?: NullableStringFieldUpdateOperationsInput | string | null
+    apnsToken?: NullableStringFieldUpdateOperationsInput | string | null
+    lastSyncedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutDevicesNestedInput
@@ -49736,6 +49911,11 @@ export namespace Prisma {
     lastSeenAt?: DateTimeFieldUpdateOperationsInput | Date | string
     fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
     publicKey?: NullableStringFieldUpdateOperationsInput | string | null
+    osType?: NullableStringFieldUpdateOperationsInput | string | null
+    osVersion?: NullableStringFieldUpdateOperationsInput | string | null
+    apnsToken?: NullableStringFieldUpdateOperationsInput | string | null
+    lastSyncedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -49753,6 +49933,11 @@ export namespace Prisma {
     lastSeenAt?: Date | string
     fcmToken?: string | null
     publicKey?: string | null
+    osType?: string | null
+    osVersion?: string | null
+    apnsToken?: string | null
+    lastSyncedAt?: Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -49769,6 +49954,11 @@ export namespace Prisma {
     lastSeenAt?: DateTimeFieldUpdateOperationsInput | Date | string
     fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
     publicKey?: NullableStringFieldUpdateOperationsInput | string | null
+    osType?: NullableStringFieldUpdateOperationsInput | string | null
+    osVersion?: NullableStringFieldUpdateOperationsInput | string | null
+    apnsToken?: NullableStringFieldUpdateOperationsInput | string | null
+    lastSyncedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -49786,6 +49976,11 @@ export namespace Prisma {
     lastSeenAt?: DateTimeFieldUpdateOperationsInput | Date | string
     fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
     publicKey?: NullableStringFieldUpdateOperationsInput | string | null
+    osType?: NullableStringFieldUpdateOperationsInput | string | null
+    osVersion?: NullableStringFieldUpdateOperationsInput | string | null
+    apnsToken?: NullableStringFieldUpdateOperationsInput | string | null
+    lastSyncedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -50722,6 +50917,7 @@ export namespace Prisma {
     deepLink?: string | null
     priority?: string
     channels?: string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     deliveryStatus?: string
     encryptedPayload?: string | null
     isRead?: boolean
@@ -50742,6 +50938,7 @@ export namespace Prisma {
     deepLink?: string | null
     priority?: string
     channels?: string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     deliveryStatus?: string
     encryptedPayload?: string | null
     isRead?: boolean
@@ -50760,6 +50957,7 @@ export namespace Prisma {
     deepLink?: NullableStringFieldUpdateOperationsInput | string | null
     priority?: StringFieldUpdateOperationsInput | string
     channels?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     deliveryStatus?: StringFieldUpdateOperationsInput | string
     encryptedPayload?: NullableStringFieldUpdateOperationsInput | string | null
     isRead?: BoolFieldUpdateOperationsInput | boolean
@@ -50780,6 +50978,7 @@ export namespace Prisma {
     deepLink?: NullableStringFieldUpdateOperationsInput | string | null
     priority?: StringFieldUpdateOperationsInput | string
     channels?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     deliveryStatus?: StringFieldUpdateOperationsInput | string
     encryptedPayload?: NullableStringFieldUpdateOperationsInput | string | null
     isRead?: BoolFieldUpdateOperationsInput | boolean
@@ -50799,6 +50998,7 @@ export namespace Prisma {
     deepLink?: string | null
     priority?: string
     channels?: string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     deliveryStatus?: string
     encryptedPayload?: string | null
     isRead?: boolean
@@ -50817,6 +51017,7 @@ export namespace Prisma {
     deepLink?: NullableStringFieldUpdateOperationsInput | string | null
     priority?: StringFieldUpdateOperationsInput | string
     channels?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     deliveryStatus?: StringFieldUpdateOperationsInput | string
     encryptedPayload?: NullableStringFieldUpdateOperationsInput | string | null
     isRead?: BoolFieldUpdateOperationsInput | boolean
@@ -50836,6 +51037,7 @@ export namespace Prisma {
     deepLink?: NullableStringFieldUpdateOperationsInput | string | null
     priority?: StringFieldUpdateOperationsInput | string
     channels?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     deliveryStatus?: StringFieldUpdateOperationsInput | string
     encryptedPayload?: NullableStringFieldUpdateOperationsInput | string | null
     isRead?: BoolFieldUpdateOperationsInput | boolean
@@ -51004,10 +51206,13 @@ export namespace Prisma {
   export type SyncQueueCreateInput = {
     id?: string
     userId: string
-    deviceId: string
+    deviceId?: string | null
     entityType: string
     entityId: string
-    operation: string
+    operation?: string | null
+    action?: string | null
+    sourceDeviceId?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     data?: string | null
     status?: string
     errorMessage?: string | null
@@ -51021,10 +51226,13 @@ export namespace Prisma {
   export type SyncQueueUncheckedCreateInput = {
     id?: string
     userId: string
-    deviceId: string
+    deviceId?: string | null
     entityType: string
     entityId: string
-    operation: string
+    operation?: string | null
+    action?: string | null
+    sourceDeviceId?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     data?: string | null
     status?: string
     errorMessage?: string | null
@@ -51038,10 +51246,13 @@ export namespace Prisma {
   export type SyncQueueUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
-    deviceId?: StringFieldUpdateOperationsInput | string
+    deviceId?: NullableStringFieldUpdateOperationsInput | string | null
     entityType?: StringFieldUpdateOperationsInput | string
     entityId?: StringFieldUpdateOperationsInput | string
-    operation?: StringFieldUpdateOperationsInput | string
+    operation?: NullableStringFieldUpdateOperationsInput | string | null
+    action?: NullableStringFieldUpdateOperationsInput | string | null
+    sourceDeviceId?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     data?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     errorMessage?: NullableStringFieldUpdateOperationsInput | string | null
@@ -51055,10 +51266,13 @@ export namespace Prisma {
   export type SyncQueueUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
-    deviceId?: StringFieldUpdateOperationsInput | string
+    deviceId?: NullableStringFieldUpdateOperationsInput | string | null
     entityType?: StringFieldUpdateOperationsInput | string
     entityId?: StringFieldUpdateOperationsInput | string
-    operation?: StringFieldUpdateOperationsInput | string
+    operation?: NullableStringFieldUpdateOperationsInput | string | null
+    action?: NullableStringFieldUpdateOperationsInput | string | null
+    sourceDeviceId?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     data?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     errorMessage?: NullableStringFieldUpdateOperationsInput | string | null
@@ -51072,10 +51286,13 @@ export namespace Prisma {
   export type SyncQueueCreateManyInput = {
     id?: string
     userId: string
-    deviceId: string
+    deviceId?: string | null
     entityType: string
     entityId: string
-    operation: string
+    operation?: string | null
+    action?: string | null
+    sourceDeviceId?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     data?: string | null
     status?: string
     errorMessage?: string | null
@@ -51089,10 +51306,13 @@ export namespace Prisma {
   export type SyncQueueUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
-    deviceId?: StringFieldUpdateOperationsInput | string
+    deviceId?: NullableStringFieldUpdateOperationsInput | string | null
     entityType?: StringFieldUpdateOperationsInput | string
     entityId?: StringFieldUpdateOperationsInput | string
-    operation?: StringFieldUpdateOperationsInput | string
+    operation?: NullableStringFieldUpdateOperationsInput | string | null
+    action?: NullableStringFieldUpdateOperationsInput | string | null
+    sourceDeviceId?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     data?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     errorMessage?: NullableStringFieldUpdateOperationsInput | string | null
@@ -51106,10 +51326,13 @@ export namespace Prisma {
   export type SyncQueueUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
-    deviceId?: StringFieldUpdateOperationsInput | string
+    deviceId?: NullableStringFieldUpdateOperationsInput | string | null
     entityType?: StringFieldUpdateOperationsInput | string
     entityId?: StringFieldUpdateOperationsInput | string
-    operation?: StringFieldUpdateOperationsInput | string
+    operation?: NullableStringFieldUpdateOperationsInput | string | null
+    action?: NullableStringFieldUpdateOperationsInput | string | null
+    sourceDeviceId?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     data?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     errorMessage?: NullableStringFieldUpdateOperationsInput | string | null
@@ -53390,6 +53613,34 @@ export namespace Prisma {
     message?: SortOrder
     timestamp?: SortOrder
   }
+  export type JsonNullableFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonNullableFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
+
+  export type DeviceUserId_deviceIdCompoundUniqueInput = {
+    userId: string
+    deviceId: string
+  }
 
   export type DeviceCountOrderByAggregateInput = {
     id?: SortOrder
@@ -53404,6 +53655,11 @@ export namespace Prisma {
     lastSeenAt?: SortOrder
     fcmToken?: SortOrder
     publicKey?: SortOrder
+    osType?: SortOrder
+    osVersion?: SortOrder
+    apnsToken?: SortOrder
+    lastSyncedAt?: SortOrder
+    metadata?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -53421,6 +53677,10 @@ export namespace Prisma {
     lastSeenAt?: SortOrder
     fcmToken?: SortOrder
     publicKey?: SortOrder
+    osType?: SortOrder
+    osVersion?: SortOrder
+    apnsToken?: SortOrder
+    lastSyncedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -53438,8 +53698,38 @@ export namespace Prisma {
     lastSeenAt?: SortOrder
     fcmToken?: SortOrder
     publicKey?: SortOrder
+    osType?: SortOrder
+    osVersion?: SortOrder
+    apnsToken?: SortOrder
+    lastSyncedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+  }
+  export type JsonNullableWithAggregatesFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonNullableWithAggregatesFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedJsonNullableFilter<$PrismaModel>
+    _max?: NestedJsonNullableFilter<$PrismaModel>
   }
 
   export type ExpenseBillCountOrderByAggregateInput = {
@@ -53739,29 +54029,6 @@ export namespace Prisma {
     duplicateRecords?: SortOrder
     failedRecords?: SortOrder
   }
-  export type JsonNullableFilter<$PrismaModel = never> =
-    | PatchUndefined<
-        Either<Required<JsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>,
-        Required<JsonNullableFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>
-
-  export type JsonNullableFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    path?: string[]
-    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
-    string_contains?: string | StringFieldRefInput<$PrismaModel>
-    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
-    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
-    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-  }
 
   export type InvestmentCountOrderByAggregateInput = {
     id?: SortOrder
@@ -53834,32 +54101,6 @@ export namespace Prisma {
     totalInvested?: SortOrder
     currentValue?: SortOrder
     profitLoss?: SortOrder
-  }
-  export type JsonNullableWithAggregatesFilter<$PrismaModel = never> =
-    | PatchUndefined<
-        Either<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
-        Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
-
-  export type JsonNullableWithAggregatesFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    path?: string[]
-    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
-    string_contains?: string | StringFieldRefInput<$PrismaModel>
-    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
-    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
-    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedJsonNullableFilter<$PrismaModel>
-    _max?: NestedJsonNullableFilter<$PrismaModel>
   }
 
   export type DecimalNullableFilter<$PrismaModel = never> = {
@@ -54030,6 +54271,7 @@ export namespace Prisma {
     deepLink?: SortOrder
     priority?: SortOrder
     channels?: SortOrder
+    metadata?: SortOrder
     deliveryStatus?: SortOrder
     encryptedPayload?: SortOrder
     isRead?: SortOrder
@@ -54171,6 +54413,9 @@ export namespace Prisma {
     entityType?: SortOrder
     entityId?: SortOrder
     operation?: SortOrder
+    action?: SortOrder
+    sourceDeviceId?: SortOrder
+    metadata?: SortOrder
     data?: SortOrder
     status?: SortOrder
     errorMessage?: SortOrder
@@ -54194,6 +54439,8 @@ export namespace Prisma {
     entityType?: SortOrder
     entityId?: SortOrder
     operation?: SortOrder
+    action?: SortOrder
+    sourceDeviceId?: SortOrder
     data?: SortOrder
     status?: SortOrder
     errorMessage?: SortOrder
@@ -54211,6 +54458,8 @@ export namespace Prisma {
     entityType?: SortOrder
     entityId?: SortOrder
     operation?: SortOrder
+    action?: SortOrder
+    sourceDeviceId?: SortOrder
     data?: SortOrder
     status?: SortOrder
     errorMessage?: SortOrder
@@ -64233,6 +64482,11 @@ export namespace Prisma {
     lastSeenAt?: Date | string
     fcmToken?: string | null
     publicKey?: string | null
+    osType?: string | null
+    osVersion?: string | null
+    apnsToken?: string | null
+    lastSyncedAt?: Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -64249,6 +64503,11 @@ export namespace Prisma {
     lastSeenAt?: Date | string
     fcmToken?: string | null
     publicKey?: string | null
+    osType?: string | null
+    osVersion?: string | null
+    apnsToken?: string | null
+    lastSyncedAt?: Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -64575,6 +64834,7 @@ export namespace Prisma {
     deepLink?: string | null
     priority?: string
     channels?: string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     deliveryStatus?: string
     encryptedPayload?: string | null
     isRead?: boolean
@@ -64593,6 +64853,7 @@ export namespace Prisma {
     deepLink?: string | null
     priority?: string
     channels?: string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     deliveryStatus?: string
     encryptedPayload?: string | null
     isRead?: boolean
@@ -65243,6 +65504,11 @@ export namespace Prisma {
     lastSeenAt?: DateTimeFilter<"Device"> | Date | string
     fcmToken?: StringNullableFilter<"Device"> | string | null
     publicKey?: StringNullableFilter<"Device"> | string | null
+    osType?: StringNullableFilter<"Device"> | string | null
+    osVersion?: StringNullableFilter<"Device"> | string | null
+    apnsToken?: StringNullableFilter<"Device"> | string | null
+    lastSyncedAt?: DateTimeNullableFilter<"Device"> | Date | string | null
+    metadata?: JsonNullableFilter<"Device">
     createdAt?: DateTimeFilter<"Device"> | Date | string
     updatedAt?: DateTimeFilter<"Device"> | Date | string
   }
@@ -65514,6 +65780,7 @@ export namespace Prisma {
     deepLink?: StringNullableFilter<"Notification"> | string | null
     priority?: StringFilter<"Notification"> | string
     channels?: StringFilter<"Notification"> | string
+    metadata?: JsonNullableFilter<"Notification">
     deliveryStatus?: StringFilter<"Notification"> | string
     encryptedPayload?: StringNullableFilter<"Notification"> | string | null
     isRead?: BoolFilter<"Notification"> | boolean
@@ -67768,6 +68035,11 @@ export namespace Prisma {
     lastSeenAt?: Date | string
     fcmToken?: string | null
     publicKey?: string | null
+    osType?: string | null
+    osVersion?: string | null
+    apnsToken?: string | null
+    lastSyncedAt?: Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -67896,6 +68168,7 @@ export namespace Prisma {
     deepLink?: string | null
     priority?: string
     channels?: string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     deliveryStatus?: string
     encryptedPayload?: string | null
     isRead?: boolean
@@ -68371,6 +68644,11 @@ export namespace Prisma {
     lastSeenAt?: DateTimeFieldUpdateOperationsInput | Date | string
     fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
     publicKey?: NullableStringFieldUpdateOperationsInput | string | null
+    osType?: NullableStringFieldUpdateOperationsInput | string | null
+    osVersion?: NullableStringFieldUpdateOperationsInput | string | null
+    apnsToken?: NullableStringFieldUpdateOperationsInput | string | null
+    lastSyncedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -68387,6 +68665,11 @@ export namespace Prisma {
     lastSeenAt?: DateTimeFieldUpdateOperationsInput | Date | string
     fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
     publicKey?: NullableStringFieldUpdateOperationsInput | string | null
+    osType?: NullableStringFieldUpdateOperationsInput | string | null
+    osVersion?: NullableStringFieldUpdateOperationsInput | string | null
+    apnsToken?: NullableStringFieldUpdateOperationsInput | string | null
+    lastSyncedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -68403,6 +68686,11 @@ export namespace Prisma {
     lastSeenAt?: DateTimeFieldUpdateOperationsInput | Date | string
     fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
     publicKey?: NullableStringFieldUpdateOperationsInput | string | null
+    osType?: NullableStringFieldUpdateOperationsInput | string | null
+    osVersion?: NullableStringFieldUpdateOperationsInput | string | null
+    apnsToken?: NullableStringFieldUpdateOperationsInput | string | null
+    lastSyncedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -68763,6 +69051,7 @@ export namespace Prisma {
     deepLink?: NullableStringFieldUpdateOperationsInput | string | null
     priority?: StringFieldUpdateOperationsInput | string
     channels?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     deliveryStatus?: StringFieldUpdateOperationsInput | string
     encryptedPayload?: NullableStringFieldUpdateOperationsInput | string | null
     isRead?: BoolFieldUpdateOperationsInput | boolean
@@ -68781,6 +69070,7 @@ export namespace Prisma {
     deepLink?: NullableStringFieldUpdateOperationsInput | string | null
     priority?: StringFieldUpdateOperationsInput | string
     channels?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     deliveryStatus?: StringFieldUpdateOperationsInput | string
     encryptedPayload?: NullableStringFieldUpdateOperationsInput | string | null
     isRead?: BoolFieldUpdateOperationsInput | boolean
@@ -68799,6 +69089,7 @@ export namespace Prisma {
     deepLink?: NullableStringFieldUpdateOperationsInput | string | null
     priority?: StringFieldUpdateOperationsInput | string
     channels?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     deliveryStatus?: StringFieldUpdateOperationsInput | string
     encryptedPayload?: NullableStringFieldUpdateOperationsInput | string | null
     isRead?: BoolFieldUpdateOperationsInput | boolean

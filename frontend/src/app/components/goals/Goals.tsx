@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useApp } from '@/contexts/AppContext';
+import { useApp, useSubFeature } from '@/contexts/AppContext';
 import { db } from '@/lib/database';
 import { applyAccountBalanceDeltas } from '@/lib/transactionAggregation';
 import { getGoalCategoryMeta, getGoalProgress, getMilestoneLabel, getMonthlySuggestion } from '@/lib/goal-utils';
@@ -16,6 +16,9 @@ import { VOICE_GOAL_DRAFT_KEY, takeVoiceDraft, type VoiceGoalDraft } from '@/lib
 
 export const Goals: React.FC = () => {
  const { goals, accounts, currency, setCurrentPage } = useApp();
+ const canCreateGoal = useSubFeature('goals', 'createGoal');
+ const canEditGoal = useSubFeature('goals', 'editGoal');
+ const canDeleteGoal = useSubFeature('goals', 'deleteGoal');
  const [showContributeModal, setShowContributeModal] = useState<number | null>(null);
  const [activeContributionDraft, setActiveContributionDraft] = useState<VoiceGoalDraft | null>(null);
  const [pendingVoiceGoalDraft, setPendingVoiceGoalDraft] = useState<VoiceGoalDraft | null>(null);
@@ -165,6 +168,7 @@ export const Goals: React.FC = () => {
  <div className="flex items-center gap-4">
  <h1 className="text-xl font-black text-slate-900 tracking-tight leading-none">Goals & Savings</h1>
  </div>
+ {canCreateGoal && (
  <Button
  onClick={() => setCurrentPage('add-goal')}
  className="shadow-lg bg-gray-900 hover:bg-gray-800 text-white h-12 px-6 rounded-2xl font-bold flex items-center gap-2"
@@ -172,6 +176,7 @@ export const Goals: React.FC = () => {
  <Plus size={18} />
  <span>Add Goal</span>
  </Button>
+ )}
  </div>
 
  {/* Summary Stats */}
@@ -273,6 +278,7 @@ export const Goals: React.FC = () => {
  </div>
  </div>
  <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+ {canEditGoal && (
  <button
  onClick={() => handleEditClick(goal)}
  className="p-1 sm:p-1.5 hover:bg-gray-100 rounded-lg transition-colors text-gray-600"
@@ -281,6 +287,8 @@ export const Goals: React.FC = () => {
  >
  <Edit2 size={14} className="sm:w-4 sm:h-4" />
  </button>
+ )}
+ {canDeleteGoal && (
  <button
  onClick={() => handleDeleteGoal(goal.id!, goal.name)}
  className="p-1 sm:p-1.5 hover:bg-red-100 rounded-lg transition-colors text-red-600"
@@ -289,6 +297,7 @@ export const Goals: React.FC = () => {
  >
  <Trash2 size={14} className="sm:w-4 sm:h-4" />
  </button>
+ )}
  <span className={cn(
 "px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs font-bold flex-shrink-0",
  progress >= 100

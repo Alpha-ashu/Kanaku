@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { useApp } from '@/contexts/AppContext';
+import { useApp, useSubFeature } from '@/contexts/AppContext';
 import { db } from '@/lib/database';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Plus, DollarSign, TrendingUp, AlertCircle, Edit2, Trash2, Home, Users, ScanLine, Paperclip, ChevronDown, ExternalLink, FileText, Check, X } from 'lucide-react';
@@ -33,6 +33,10 @@ const getEffectiveLoanStatus = (loan: { dueDate?: Date | string; outstandingBala
 
 export const Loans: React.FC = () => {
  const { loans, currency, accounts, setCurrentPage } = useApp();
+ const canBorrow = useSubFeature('loans', 'borrowMoney');
+ const canLend = useSubFeature('loans', 'lendMoney');
+ const canDelete = useSubFeature('loans', 'loanSettlement');
+ const canAddLoan = canBorrow || canLend;
  const loanPayments = useLiveQuery(() => db.loanPayments.toArray(), []) || [];
  const [showPaymentModal, setShowPaymentModal] = useState<number | null>(null);
  const [editingLoanId, setEditingLoanId] = useState<number | null>(null);
@@ -186,6 +190,7 @@ export const Loans: React.FC = () => {
  <div className="flex items-center gap-4">
  <h1 className="text-xl font-black text-slate-900 tracking-tight leading-none">Loans & EMIs</h1>
  </div>
+ {canAddLoan && (
  <Button
  onClick={() => {
  localStorage.setItem('quickFormType', 'expense');
@@ -198,6 +203,7 @@ export const Loans: React.FC = () => {
  <Plus size={18} />
  <span>Add Loan</span>
  </Button>
+ )}
  </div>
 
  {/* Stats */}
@@ -282,7 +288,6 @@ export const Loans: React.FC = () => {
  )}
 
  {/* Loans Grid */}
- {/* Loans Grid */}
  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
  {['borrowed', 'lent', 'emi'].map((type, idx) => (
  <motion.div key={type} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.1 }}>
@@ -303,6 +308,7 @@ export const Loans: React.FC = () => {
  )}
  </div>
  <div className="flex items-center gap-2">
+ {canAddLoan && (
  <button
  onClick={() => handleEditClick(loan)}
  className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors text-gray-600"
@@ -310,6 +316,8 @@ export const Loans: React.FC = () => {
  >
  <Edit2 size={14} />
  </button>
+ )}
+ {canDelete && (
  <button
  onClick={() => handleDeleteLoan(loan.id!, loan.name)}
  className="p-1.5 hover:bg-red-100 rounded-lg transition-colors text-red-600"
@@ -317,6 +325,7 @@ export const Loans: React.FC = () => {
  >
  <Trash2 size={14} />
  </button>
+ )}
  <span className={cn("px-2 py-0.5 text-xs font-bold rounded-full", getLoanStatusColor(loan))}>
  {effectiveStatus}
  </span>
@@ -487,6 +496,7 @@ export const Loans: React.FC = () => {
  <h4 className="font-display font-bold text-gray-500 text-sm line-through decoration-gray-300">{loan.name}</h4>
  <span className="inline-block mt-1 px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[9px] font-black uppercase rounded-lg">Settled</span>
  </div>
+ {canDelete && (
  <button
  onClick={() => handleDeleteLoan(loan.id!, loan.name)}
  className="p-1.5 hover:bg-red-50 rounded-lg transition-colors text-gray-300 hover:text-red-600"
@@ -494,6 +504,7 @@ export const Loans: React.FC = () => {
  >
  <Trash2 size={14} />
  </button>
+ )}
  </div>
  <div className="flex items-center justify-between mt-auto">
  <p className="text-[10px] font-bold text-gray-400 uppercase">Paid: {formatCurrency(loan.principalAmount)}</p>

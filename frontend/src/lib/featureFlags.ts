@@ -112,7 +112,6 @@ export const ROLE_FEATURES: Record<UserRole, FeatureVisibility> = {
     budgetAlerts: true,
   },
   manager: {
-    // Manager baseline: only their workspace features. Admin can unlock more via Feature Panel.
     accounts: true,
     transactions: true,
     loans: true,
@@ -140,7 +139,6 @@ export const ROLE_FEATURES: Record<UserRole, FeatureVisibility> = {
     budgetAlerts: true,
   },
   advisor: {
-    // Advisor baseline: all core financial features enabled. Admin can toggle individual ones.
     accounts: true,
     transactions: true,
     loans: true,
@@ -152,7 +150,7 @@ export const ROLE_FEATURES: Record<UserRole, FeatureVisibility> = {
     todoLists: true,
     transfer: true,
     taxCalculator: true,
-    bookAdvisor: false, // Advisors provide sessions, they don't book themselves
+    bookAdvisor: false,
     adminPanel: false,
     managerPanel: false,
     advisorPanel: true,
@@ -168,7 +166,6 @@ export const ROLE_FEATURES: Record<UserRole, FeatureVisibility> = {
     budgetAlerts: true,
   },
   user: {
-    // User baseline: all core features on. Client management off by default (advisor-specific).
     accounts: true,
     transactions: true,
     loans: true,
@@ -211,8 +208,6 @@ export function getVisibleFeaturesForRole(
   env = 'development',
 ): FeatureVisibility {
   const base = ROLE_FEATURES[role] || ROLE_FEATURES.user;
-
-  // In production, all roles have access to bookAdvisor
   return base;
 }
 
@@ -221,11 +216,9 @@ export function mergeVisibleFeatures(
   roleFeatures: FeatureVisibility,
 ): FeatureVisibility {
   const result: Partial<FeatureVisibility> = {};
-
   (Object.keys(base) as FeatureKey[]).forEach((key) => {
     result[key] = Boolean(base[key]) && Boolean(roleFeatures[key]);
   });
-
   return result as FeatureVisibility;
 }
 
@@ -263,6 +256,164 @@ export const PAGE_TO_FEATURE_MAPPING: Record<string, FeatureKey> = {
 
 export function canAccessPage(page: string, features: FeatureVisibility): boolean {
   const featureKey = PAGE_TO_FEATURE_MAPPING[page];
-  if (!featureKey) return true; // If not mapped, assume public/essential
+  if (!featureKey) return true;
   return features[featureKey] !== false;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LEVEL 2: Sub-Feature (Child) System
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Role access map — same shape as module-level roleAccess */
+export interface SubFeatureRoleAccess {
+  admin: boolean;
+  manager: boolean;
+  advisor: boolean;
+  user: boolean;
+}
+
+/** Runtime state for one child feature */
+export interface SubFeatureState {
+  name: string;
+  key: string;
+  enabled: boolean;
+  roleAccess: SubFeatureRoleAccess;
+}
+
+/** All children for a module, keyed by child key */
+export type ModuleSubFeatures = Record<string, SubFeatureState>;
+
+/** Hardcoded default definitions for all modules */
+export const SUB_FEATURE_DEFINITIONS: Record<string, ModuleSubFeatures> = {
+  accounts: {
+    importStatement: { name: 'Import Bank Statement', key: 'importStatement', enabled: true, roleAccess: { admin: true, manager: true,  advisor: true,  user: true  } },
+    exportData:      { name: 'Export Data',            key: 'exportData',      enabled: true, roleAccess: { admin: true, manager: true,  advisor: true,  user: true  } },
+    createAccount:   { name: 'Create Account',         key: 'createAccount',   enabled: true, roleAccess: { admin: true, manager: true,  advisor: true,  user: true  } },
+    editAccount:     { name: 'Edit Account',           key: 'editAccount',     enabled: true, roleAccess: { admin: true, manager: true,  advisor: true,  user: true  } },
+    deleteAccount:   { name: 'Delete Account',         key: 'deleteAccount',   enabled: true, roleAccess: { admin: true, manager: true,  advisor: false, user: false } },
+    accountTransfer: { name: 'Account Transfer',       key: 'accountTransfer', enabled: true, roleAccess: { admin: true, manager: true,  advisor: true,  user: true  } },
+  },
+  transactions: {
+    addTransaction:    { name: 'Add Transaction',    key: 'addTransaction',    enabled: true, roleAccess: { admin: true, manager: true,  advisor: true,  user: true  } },
+    editTransaction:   { name: 'Edit Transaction',   key: 'editTransaction',   enabled: true, roleAccess: { admin: true, manager: true,  advisor: true,  user: true  } },
+    deleteTransaction: { name: 'Delete Transaction', key: 'deleteTransaction', enabled: true, roleAccess: { admin: true, manager: true,  advisor: false, user: false } },
+    importStatement:   { name: 'Import Statement',   key: 'importStatement',   enabled: true, roleAccess: { admin: true, manager: true,  advisor: true,  user: true  } },
+    exportStatement:   { name: 'Export Statement',   key: 'exportStatement',   enabled: true, roleAccess: { admin: true, manager: true,  advisor: true,  user: true  } },
+  },
+  goals: {
+    createGoal:  { name: 'Create Goal',  key: 'createGoal',  enabled: true, roleAccess: { admin: true, manager: true,  advisor: true,  user: true } },
+    editGoal:    { name: 'Edit Goal',    key: 'editGoal',    enabled: true, roleAccess: { admin: true, manager: true,  advisor: true,  user: true } },
+    deleteGoal:  { name: 'Delete Goal',  key: 'deleteGoal',  enabled: true, roleAccess: { admin: true, manager: true,  advisor: false, user: true } },
+    groupGoals:  { name: 'Group Goals',  key: 'groupGoals',  enabled: true, roleAccess: { admin: true, manager: true,  advisor: true,  user: true } },
+    goalSharing: { name: 'Goal Sharing', key: 'goalSharing', enabled: true, roleAccess: { admin: true, manager: false, advisor: true,  user: true } },
+  },
+  loans: {
+    borrowMoney:    { name: 'Borrow Money',    key: 'borrowMoney',    enabled: true, roleAccess: { admin: true, manager: true,  advisor: true,  user: true } },
+    lendMoney:      { name: 'Lend Money',      key: 'lendMoney',      enabled: true, roleAccess: { admin: true, manager: true,  advisor: true,  user: true } },
+    emiReminder:    { name: 'EMI Reminder',    key: 'emiReminder',    enabled: true, roleAccess: { admin: true, manager: true,  advisor: true,  user: true } },
+    loanSettlement: { name: 'Loan Settlement', key: 'loanSettlement', enabled: true, roleAccess: { admin: true, manager: true,  advisor: false, user: true } },
+  },
+  investments: {
+    addInvestment:      { name: 'Add Investment',      key: 'addInvestment',      enabled: true, roleAccess: { admin: true, manager: true,  advisor: true,  user: true  } },
+    portfolioAnalytics: { name: 'Portfolio Analytics', key: 'portfolioAnalytics', enabled: true, roleAccess: { admin: true, manager: true,  advisor: true,  user: true  } },
+    sipTracking:        { name: 'SIP Tracking',        key: 'sipTracking',        enabled: true, roleAccess: { admin: true, manager: false, advisor: true,  user: true  } },
+    groupInvestments:   { name: 'Group Investments',   key: 'groupInvestments',   enabled: true, roleAccess: { admin: true, manager: true,  advisor: true,  user: false } },
+  },
+  reports: {
+    pdfExport:       { name: 'PDF Export',    key: 'pdfExport',       enabled: true, roleAccess: { admin: true, manager: true,  advisor: true,  user: true  } },
+    excelExport:     { name: 'Excel Export',  key: 'excelExport',     enabled: true, roleAccess: { admin: true, manager: true,  advisor: true,  user: true  } },
+    csvExport:       { name: 'CSV Export',    key: 'csvExport',       enabled: true, roleAccess: { admin: true, manager: true,  advisor: true,  user: true  } },
+    aiInsightsReport:{ name: 'AI Insights',   key: 'aiInsightsReport',enabled: true, roleAccess: { admin: true, manager: false, advisor: true,  user: true  } },
+    forecasting:     { name: 'Forecasting',   key: 'forecasting',     enabled: true, roleAccess: { admin: true, manager: true,  advisor: true,  user: false } },
+  },
+  bookAdvisor: {
+    createBooking:    { name: 'Create Booking',    key: 'createBooking',    enabled: true,  roleAccess: { admin: true, manager: false, advisor: false, user: true  } },
+    chat:             { name: 'Chat',              key: 'chat',             enabled: true,  roleAccess: { admin: true, manager: true,  advisor: true,  user: true  } },
+    reviews:          { name: 'Reviews',           key: 'reviews',          enabled: true,  roleAccess: { admin: true, manager: false, advisor: false, user: true  } },
+    ratings:          { name: 'Ratings',           key: 'ratings',          enabled: true,  roleAccess: { admin: true, manager: false, advisor: false, user: true  } },
+    sessionRecording: { name: 'Session Recording', key: 'sessionRecording', enabled: false, roleAccess: { admin: true, manager: false, advisor: false, user: false } },
+  },
+  groups: {
+    createGroup:   { name: 'Create Group',   key: 'createGroup',   enabled: true, roleAccess: { admin: true, manager: true,  advisor: true,  user: true } },
+    editGroup:     { name: 'Edit Group',     key: 'editGroup',     enabled: true, roleAccess: { admin: true, manager: true,  advisor: true,  user: true } },
+    addMember:     { name: 'Add Member',     key: 'addMember',     enabled: true, roleAccess: { admin: true, manager: true,  advisor: true,  user: true } },
+    settleExpense: { name: 'Settle Expense', key: 'settleExpense', enabled: true, roleAccess: { admin: true, manager: true,  advisor: false, user: true } },
+  },
+  dashboard: {
+    quickActions:   { name: 'Quick Actions',   key: 'quickActions',   enabled: true, roleAccess: { admin: true, manager: true,  advisor: true, user: true } },
+    aiSummary:      { name: 'AI Summary',      key: 'aiSummary',      enabled: true, roleAccess: { admin: true, manager: false, advisor: true, user: true } },
+    recentActivity: { name: 'Recent Activity', key: 'recentActivity', enabled: true, roleAccess: { admin: true, manager: true,  advisor: true, user: true } },
+  },
+  notifications: {
+    pushNotifications:  { name: 'Push Notifications',   key: 'pushNotifications',  enabled: true, roleAccess: { admin: true, manager: true, advisor: true, user: true } },
+    emailNotifications: { name: 'Email Notifications',  key: 'emailNotifications', enabled: true, roleAccess: { admin: true, manager: true, advisor: true, user: true } },
+    inAppNotifications: { name: 'In-App Notifications', key: 'inAppNotifications', enabled: true, roleAccess: { admin: true, manager: true, advisor: true, user: true } },
+  },
+};
+
+/** Returns hardcoded default sub-features for a module */
+export function getSubFeatureDefaults(moduleKey: string): ModuleSubFeatures {
+  return SUB_FEATURE_DEFINITIONS[moduleKey] ?? {};
+}
+
+/**
+ * Resolves whether a specific sub-feature is accessible for the current role.
+ * Resolution: moduleEnabled(role) && child.enabled && child.roleAccess[role]
+ */
+export function isSubFeatureEnabled(
+  moduleKey: string,
+  childKey: string,
+  role: UserRole,
+  savedSettings?: Record<string, any> | null,
+): boolean {
+  // Step 1: check if parent module is enabled for this role
+  if (savedSettings) {
+    const mod = savedSettings[moduleKey];
+    if (mod) {
+      const r = mod.readiness;
+      if (r === 'deprecated') return false;
+      if (r === 'unreleased' && role !== 'admin') return false;
+      if (mod.roleAccess && typeof mod.roleAccess[role] === 'boolean') {
+        if (!mod.roleAccess[role]) return false;
+      }
+    }
+  }
+
+  // Step 2: look up the child definition
+  const moduleDefs = SUB_FEATURE_DEFINITIONS[moduleKey];
+  if (!moduleDefs) return true;
+  const childDef = moduleDefs[childKey];
+  if (!childDef) return true;
+
+  // Step 3: overlay saved child settings
+  let childEnabled = childDef.enabled;
+  let childRoleAccess = { ...childDef.roleAccess };
+
+  if (savedSettings) {
+    const saved = savedSettings[moduleKey]?.children?.[childKey];
+    if (saved) {
+      if (typeof saved.enabled === 'boolean') childEnabled = saved.enabled;
+      if (saved.roleAccess) childRoleAccess = { ...childRoleAccess, ...saved.roleAccess };
+    }
+  }
+
+  return childEnabled && (childRoleAccess[role] ?? true);
+}
+
+/**
+ * Computes the full sub-feature visibility map for a role.
+ * Returns: { accounts: { deleteAccount: false, ... }, goals: { createGoal: true, ... }, ... }
+ */
+export function computeSubFeatureMap(
+  role: UserRole,
+  savedSettings?: Record<string, any> | null,
+): Record<string, Record<string, boolean>> {
+  const result: Record<string, Record<string, boolean>> = {};
+  for (const moduleKey of Object.keys(SUB_FEATURE_DEFINITIONS)) {
+    result[moduleKey] = {};
+    for (const childKey of Object.keys(SUB_FEATURE_DEFINITIONS[moduleKey])) {
+      result[moduleKey][childKey] = isSubFeatureEnabled(moduleKey, childKey, role, savedSettings);
+    }
+  }
+  return result;
 }

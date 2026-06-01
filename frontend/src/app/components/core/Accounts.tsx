@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect, useCallback } from "react";
-import { useApp } from "@/contexts/AppContext";
+import { useApp, useSubFeature } from "@/contexts/AppContext";
 import { db } from "@/lib/database";
 import {
     Plus,
@@ -73,6 +73,10 @@ const getCardStyle = (account: any): any => {
 
 export const Accounts: React.FC = () => {
     const { accounts, transactions, currency, setCurrentPage, refreshData } = useApp();
+    const canImport = useSubFeature('accounts', 'importStatement');
+    const canCreate = useSubFeature('accounts', 'createAccount');
+    const canEdit = useSubFeature('accounts', 'editAccount');
+    const canDelete = useSubFeature('accounts', 'deleteAccount');
     const [selectedAccountId, setSelectedAccountId] = useState<number | null>(
         null,
     );
@@ -344,6 +348,7 @@ export const Accounts: React.FC = () => {
                         title="Accounts"
                         subtitle="Manage your wallets and payment sources"
                     >
+                        {canCreate && (
                         <Button
                             onClick={() => setCurrentPage("add-account")}
                             className="shadow-lg bg-gray-900 hover:bg-gray-800 text-white h-12 px-6 rounded-2xl font-bold flex items-center gap-2"
@@ -351,6 +356,7 @@ export const Accounts: React.FC = () => {
                             <Plus size={18} />
                             <span>Add Account</span>
                         </Button>
+                        )}
                     </PageHeader>
                 </div>
 
@@ -442,12 +448,14 @@ export const Accounts: React.FC = () => {
                                     <li>- UPI wallet or Cash</li>
                                 </ul>
                             </div>
+                            {canCreate && (
                             <button
                                 onClick={() => setCurrentPage("add-account")}
                                 className="shrink-0 mt-1 bg-white text-purple-700 hover:bg-purple-50 font-semibold text-sm px-4 py-2 rounded-xl transition-colors whitespace-nowrap"
                             >
                                 + Add Account
                             </button>
+                            )}
                         </div>
                     </motion.div>
                 )}
@@ -523,18 +531,22 @@ export const Accounts: React.FC = () => {
                                                         <div className="flex items-center gap-1.5">
                                                             {isActive ? (
                                                                 <>
+                                                                    {canEdit && (
                                                                     <button
                                                                         onClick={(e) => handleEditAccount(account, e)}
                                                                         className="w-7 h-7 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-all active:scale-90 border border-white/10"
                                                                         aria-label={`Edit ${account.name} account`}
                                                                         title="Edit"
                                                                     ><Edit2 size={11} /></button>
+                                                                    )}
+                                                                    {canDelete && (
                                                                     <button
                                                                         onClick={(e) => { e.stopPropagation(); handleDeleteAccount(account.id!, account.name); }}
                                                                         className="w-7 h-7 flex items-center justify-center rounded-full bg-red-500/40 hover:bg-red-500/70 text-white transition-all active:scale-90 border border-red-400/20"
                                                                         aria-label={`Delete ${account.name} account`}
                                                                         title="Delete"
                                                                     ><Trash2 size={11} /></button>
+                                                                    )}
                                                                 </>
                                                             ) : (
                                                                 /* Mastercard-style rings for inactive */
@@ -581,7 +593,7 @@ export const Accounts: React.FC = () => {
                                                                 className="inline-flex items-center justify-center font-medium transition-colors disabled:opacity-50 disabled:pointer-events-none font-display tracking-tight focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring rounded-xl shadow-lg bg-black text-white hover:bg-gray-900 text-xs h-8 px-3">
                                                                 <Plus size={11} className="mr-0.5" />Add
                                                             </Button>
-                                                            {(account.type === 'bank' || account.type === 'card') && (
+                                                            {canImport && (account.type === 'bank' || account.type === 'card') && (
                                                                 <Button size="sm"
                                                                     onClick={(e) => { e.stopPropagation(); setStatementImportOpen({ accountId: account.id!, accountName: account.name, accountType: account.type }); }}
                                                                     className={cn(
@@ -725,18 +737,22 @@ export const Accounts: React.FC = () => {
                                                                         >
                                                                             - ACTIVE
                                                                         </motion.span>
+                                                                        {canEdit && (
                                                                         <button
                                                                             onClick={(e) => handleEditAccount(account, e)}
                                                                             className="w-8 h-8 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-all active:scale-90 border border-white/10"
                                                                             aria-label={`Edit ${account.name} account`}
                                                                             title="Edit"
                                                                         ><Edit2 size={13} /></button>
+                                                                        )}
+                                                                        {canDelete && (
                                                                         <button
                                                                             onClick={(e) => { e.stopPropagation(); handleDeleteAccount(account.id!, account.name); }}
                                                                             className="w-8 h-8 flex items-center justify-center rounded-full bg-red-500/40 hover:bg-red-500/70 text-white transition-all active:scale-90 border border-red-400/20"
                                                                             aria-label={`Delete ${account.name} account`}
                                                                             title="Delete"
                                                                         ><Trash2 size={13} /></button>
+                                                                        )}
                                                                     </>
                                                                 ) : (
                                                                     <div className="flex -space-x-3 opacity-30">
@@ -791,7 +807,7 @@ export const Accounts: React.FC = () => {
                                                                     className="inline-flex items-center justify-center font-medium transition-colors disabled:opacity-50 disabled:pointer-events-none font-display tracking-tight focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring rounded-xl shadow-lg bg-black text-white hover:bg-gray-900 text-xs sm:text-sm h-9 sm:h-10 px-3 sm:px-4">
                                                                     <Plus size={13} className="mr-1" />Add
                                                                 </Button>
-                                                                {(account.type === 'bank' || account.type === 'card') && (
+                                                                {canImport && (account.type === 'bank' || account.type === 'card') && (
                                                                     <Button size="sm"
                                                                         onClick={(e) => { e.stopPropagation(); setStatementImportOpen({ accountId: account.id!, accountName: account.name, accountType: account.type }); }}
                                                                         className={cn(
@@ -1050,6 +1066,7 @@ export const Accounts: React.FC = () => {
                                 <button
                                     onClick={() => { setEditModalOpen(false); setEditingAccount(null); }}
                                     className="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 transition-all active:scale-90"
+                                    aria-label="Close edit account dialog"
                                 >
                                     <X size={18} />
                                 </button>
@@ -1145,6 +1162,7 @@ export const Accounts: React.FC = () => {
                                             "relative w-12 h-6.5 rounded-full transition-all duration-300 shadow-inner",
                                             editingAccount.isActive ? "bg-slate-900" : "bg-slate-200"
                                         )}
+                                        aria-label={`Toggle account active state: currently ${editingAccount.isActive ? 'active' : 'inactive'}`}
                                     >
                                         <div
                                             className={cn(

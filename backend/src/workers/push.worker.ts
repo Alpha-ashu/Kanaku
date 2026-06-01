@@ -1,9 +1,7 @@
 import { Worker, Job } from "bullmq";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "../utils/prisma";
 import { redisConnection } from "../config/queue";
 import { sendPushNotification } from "../config/firebase";
-
-const prisma = new PrismaClient();
 
 /**
  * Push Notification Worker

@@ -69,6 +69,13 @@ export const initializePushWorker = (pushQueue: Queue) => {
   const redisConnection = new Redis({
     host: process.env.REDIS_HOST || 'localhost',
     port: parseInt(process.env.REDIS_PORT || '6379'),
+    password: process.env.REDIS_PASSWORD || undefined,
+    db: parseInt(process.env.REDIS_DB || '0'),
+    maxRetriesPerRequest: null,
+  });
+
+  redisConnection.on('error', (error) => {
+    // Handle error event to prevent unhandled AggregateError logs in dev environment
   });
 
   const worker = new Worker(
@@ -145,6 +152,10 @@ export const initializePushWorker = (pushQueue: Queue) => {
     logger.error(`Push job ${job?.id} failed:`, err.message);
   });
 
+  worker.on('error', (err) => {
+    // Suppress/log connection errors when Redis is offline in dev
+  });
+
   logger.info('Push notification worker initialized');
   return worker;
 };
@@ -156,6 +167,13 @@ export const initializeEmailWorker = (emailQueue: Queue) => {
   const redisConnection = new Redis({
     host: process.env.REDIS_HOST || 'localhost',
     port: parseInt(process.env.REDIS_PORT || '6379'),
+    password: process.env.REDIS_PASSWORD || undefined,
+    db: parseInt(process.env.REDIS_DB || '0'),
+    maxRetriesPerRequest: null,
+  });
+
+  redisConnection.on('error', (error) => {
+    // Handle error event to prevent unhandled AggregateError logs in dev environment
   });
 
   const transporter = getEmailTransporter();
@@ -222,6 +240,10 @@ export const initializeEmailWorker = (emailQueue: Queue) => {
 
   worker.on('failed', (job, err) => {
     logger.error(`Email job ${job?.id} failed:`, err.message);
+  });
+
+  worker.on('error', (err) => {
+    // Suppress/log connection errors when Redis is offline in dev
   });
 
   logger.info('Email notification worker initialized');

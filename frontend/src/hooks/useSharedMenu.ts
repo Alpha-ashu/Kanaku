@@ -5,8 +5,6 @@ import { sidebarMenuItems, NavigationItem } from '@/app/constants/navigation';
 import { canAccessPage, FeatureVisibility } from '@/lib/featureFlags';
 
 
-const MENU_ORDER_KEY = 'sidebar_menu_order';
-
 export const useSharedMenu = () => {
   const app = useOptionalApp();
   const { role } = useAuth();
@@ -14,6 +12,8 @@ export const useSharedMenu = () => {
   const setCurrentPage = app?.setCurrentPage ?? (() => { });
   const visibleFeatures = (app?.visibleFeatures ?? {}) as FeatureVisibility;
   const [orderedItems, setOrderedItems] = useState<NavigationItem[]>([]);
+
+  const menuOrderKey = useMemo(() => `sidebar_menu_order_${role}`, [role]);
 
   // Filter menu items based on RBAC and user's feature visibility preferences
   const visibleMenuItems = useMemo(() => {
@@ -35,7 +35,7 @@ export const useSharedMenu = () => {
 
   // Load saved order from localStorage
   useEffect(() => {
-    const savedOrder = localStorage.getItem(MENU_ORDER_KEY);
+    const savedOrder = localStorage.getItem(menuOrderKey);
     if (savedOrder) {
       try {
         const orderIds: string[] = JSON.parse(savedOrder);
@@ -43,10 +43,28 @@ export const useSharedMenu = () => {
         const reordered = [...visibleMenuItems].sort((a, b) => {
           const indexA = orderIds.indexOf(a.id);
           const indexB = orderIds.indexOf(b.id);
-          if (indexA === -1 && indexB === -1) return 0;
-          if (indexA === -1) return 1;
-          if (indexB === -1) return -1;
-          return indexA - indexB;
+          
+          if (indexA !== -1 && indexB !== -1) {
+            return indexA - indexB;
+          }
+
+          // Fallback to default index in sidebarMenuItems if either or both are not in savedOrder
+          const defaultIndexA = sidebarMenuItems.findIndex(item => item.id === a.id);
+          const defaultIndexB = sidebarMenuItems.findIndex(item => item.id === b.id);
+
+          if (indexA === -1 && indexB === -1) {
+            return defaultIndexA - defaultIndexB;
+          }
+
+          if (indexA === -1) {
+            return defaultIndexA - defaultIndexB;
+          }
+
+          if (indexB === -1) {
+            return defaultIndexA - defaultIndexB;
+          }
+
+          return 0;
         });
         setOrderedItems(reordered);
       } catch {
@@ -55,16 +73,16 @@ export const useSharedMenu = () => {
     } else {
       setOrderedItems(visibleMenuItems);
     }
-  }, [visibleMenuItems]);
+  }, [visibleMenuItems, menuOrderKey]);
 
   // Save order to localStorage whenever it changes
   const handleReorder = useCallback((newOrder: NavigationItem[]) => {
     setOrderedItems(newOrder);
     const orderIds = newOrder.map(item => item.id);
-    localStorage.setItem(MENU_ORDER_KEY, JSON.stringify(orderIds));
+    localStorage.setItem(menuOrderKey, JSON.stringify(orderIds));
     // Dispatch custom event to notify other components
     window.dispatchEvent(new CustomEvent('menuOrderChanged', { detail: newOrder }));
-  }, []);
+  }, [menuOrderKey]);
 
   // Listen for order changes from other components
   useEffect(() => {

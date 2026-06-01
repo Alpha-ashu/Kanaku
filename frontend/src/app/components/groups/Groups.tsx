@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useApp } from '@/contexts/AppContext';
+import { useApp, useSubFeature } from '@/contexts/AppContext';
 import { db } from '@/lib/database';
 import { queueTransactionDeleteSync } from '@/lib/auth-sync-integration';
 import { Avatar, AvatarFallback, AvatarImage } from '@/app/components/ui/avatar';
@@ -11,6 +11,7 @@ import { DeleteConfirmModal } from '@/app/components/shared/DeleteConfirmModal';
 import { PageHeader } from '@/app/components/ui/PageHeader';
 import { readVoiceDraft, VOICE_GROUP_DRAFT_KEY, type VoiceGroupDraft } from '@/lib/voiceDrafts';
 import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
+import { cn } from '@/lib/utils';
 
 const avatarToneClasses = [
  'bg-rose-100 text-rose-700',
@@ -43,6 +44,10 @@ const formatDisplayName = (value: string) =>
 
 export const Groups: React.FC = () => {
  const { groupExpenses, friends, currency, setCurrentPage } = useApp();
+ const canCreate = useSubFeature('groups', 'createGroup');
+ const canEdit = useSubFeature('groups', 'editGroup');
+ const canAddMember = useSubFeature('groups', 'addMember');
+ const canSettle = useSubFeature('groups', 'settleExpense');
  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
  const [groupToDelete, setGroupToDelete] = useState<{ id: number; name: string } | null>(null);
  const [isDeleting, setIsDeleting] = useState(false);
@@ -224,23 +229,27 @@ export const Groups: React.FC = () => {
  <div className="flex items-center gap-4">
  <h1 className="text-xl font-black text-slate-900 tracking-tight leading-none">Group Expenses</h1>
  </div>
- <div className="flex gap-3">
- <Button
- variant="secondary"
- onClick={() => setCurrentPage('add-friends')}
- className="shadow-sm border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 h-12 px-5 rounded-2xl font-bold flex items-center gap-2"
- >
- <Plus size={18} />
- <span>Friend</span>
- </Button>
- <Button
- onClick={openGroupExpenseForm}
- className="shadow-lg bg-gray-900 hover:bg-gray-800 text-white h-12 px-5 rounded-2xl font-bold flex items-center gap-2"
- >
- <Plus size={18} />
- <span>Expense</span>
- </Button>
- </div>
+  <div className="flex gap-3">
+  {canAddMember && (
+  <Button
+  variant="secondary"
+  onClick={() => setCurrentPage('add-friends')}
+  className="shadow-sm border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 h-12 px-5 rounded-2xl font-bold flex items-center gap-2"
+  >
+  <Plus size={18} />
+  <span>Friend</span>
+  </Button>
+  )}
+  {canCreate && (
+  <Button
+  onClick={openGroupExpenseForm}
+  className="shadow-lg bg-gray-900 hover:bg-gray-800 text-white h-12 px-5 rounded-2xl font-bold flex items-center gap-2"
+  >
+  <Plus size={18} />
+  <span>Expense</span>
+  </Button>
+  )}
+  </div>
  </div>
 
  <section className="rounded-[28px] border border-gray-200 bg-white p-5 shadow-sm">
@@ -375,23 +384,27 @@ export const Groups: React.FC = () => {
  </div>
 
  {editingGroupId !== expense.id && (
- <div className="flex shrink-0 gap-1.5">
- <button
- onClick={() => handleEditClick(expense.id!, expense.name)}
- className="flex h-9 w-9 items-center justify-center rounded-2xl bg-gray-100 text-gray-600 transition-colors hover:bg-gray-200"
- title="Edit group name"
- >
- <Edit2 size={16} />
- </button>
- <button
- onClick={() => handleDeleteGroup(expense.id!, expense.name)}
- className="flex h-9 w-9 items-center justify-center rounded-2xl bg-red-50 text-red-600 transition-colors hover:bg-red-100"
- title="Delete group"
- >
- <Trash2 size={16} />
- </button>
- </div>
- )}
+  <div className="flex shrink-0 gap-1.5">
+  {canEdit && (
+  <button
+  onClick={() => handleEditClick(expense.id!, expense.name)}
+  className="flex h-9 w-9 items-center justify-center rounded-2xl bg-gray-100 text-gray-600 transition-colors hover:bg-gray-200"
+  title="Edit group name"
+  >
+  <Edit2 size={16} />
+  </button>
+  )}
+  {canSettle && (
+  <button
+  onClick={() => handleDeleteGroup(expense.id!, expense.name)}
+  className="flex h-9 w-9 items-center justify-center rounded-2xl bg-red-50 text-red-600 transition-colors hover:bg-red-100"
+  title="Delete group"
+  >
+  <Trash2 size={16} />
+  </button>
+  )}
+  </div>
+  )}
  </div>
 
  {editingGroupId !== expense.id && (
@@ -468,13 +481,23 @@ export const Groups: React.FC = () => {
  return (
  <button
  key={`${expense.id}-${member.originalIndex}-${member.name}`}
- onClick={() => handleToggleMemberPayment(expense.id!, member.originalIndex, member.paid)}
- className={`shrink-0 rounded-2xl border px-3 py-2 text-left transition-colors ${
- isPaid
- ? 'border-emerald-200 bg-emerald-50'
- : 'border-amber-200 bg-amber-50'
- }`}
- title="Toggle payment status"
+ onClick={() => {
+   if (!canSettle) {
+     toast.error('You do not have permission to settle expenses.');
+     return;
+   }
+   handleToggleMemberPayment(expense.id!, member.originalIndex, member.paid);
+ }}
+ disabled={!canSettle}
+ className={cn(
+   "shrink-0 rounded-2xl border px-3 py-2 text-left transition-all",
+   !canSettle
+     ? "opacity-60 cursor-not-allowed border-gray-100 bg-gray-50 text-gray-400"
+     : isPaid
+     ? "border-emerald-200 bg-emerald-50 hover:scale-[1.02] active:scale-[0.98]"
+     : "border-amber-200 bg-amber-50 hover:scale-[1.02] active:scale-[0.98]"
+ )}
+ title={canSettle ? "Toggle payment status" : "Settle permission required"}
  >
  <div className="flex items-center gap-2">
  <Avatar className="h-7 w-7 rounded-full">
@@ -511,13 +534,15 @@ export const Groups: React.FC = () => {
  <p className="mx-auto max-w-sm text-sm text-gray-500 mb-5">
  Start a shared bill and it will appear here as a compact tracker card.
  </p>
- <button
- onClick={openGroupExpenseForm}
- className="inline-flex items-center gap-2 rounded-2xl bg-black px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-gray-900"
- >
- <Plus size={16} />
- Create Group Expense
- </button>
+  {canCreate && (
+  <button
+  onClick={openGroupExpenseForm}
+  className="inline-flex items-center gap-2 rounded-2xl bg-black px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-gray-900"
+  >
+  <Plus size={16} />
+  Create Group Expense
+  </button>
+  )}
  </div>
  )}
 

@@ -1,10 +1,8 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "../../utils/prisma";
 import { v4 as uuidv4 } from "uuid";
 import * as nacl from "tweetnacl";
 import * as naclUtil from "tweetnacl-util";
 import { Queue } from "bullmq";
-
-const prisma = new PrismaClient();
 
 export interface CreateNotificationInput {
   userId: string;

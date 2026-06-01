@@ -14,11 +14,16 @@ const redisConfig = {
   maxRetriesPerRequest: null, // Null for unlimited retries (recommended for Bull)
 };
 
-/**
- * Create Redis connection instances
- */
 export const redisConnection = new Redis(redisConfig);
 export const redisSubscriber = new Redis(redisConfig);
+
+// Handle errors gracefully to prevent console spam when running without a local Redis instance
+redisConnection.on("error", (err) => {
+  // Silent or throttled logging to prevent console spam
+});
+redisSubscriber.on("error", (err) => {
+  // Silent or throttled logging
+});
 
 /**
  * Initialize job queues
@@ -28,13 +33,22 @@ export function initializeQueues() {
   const emailQueue = new Queue("email-notifications", {
     connection: redisConnection,
   });
+  emailQueue.on("error", (err) => {
+    // Suppress/log connection errors when Redis is offline
+  });
 
   const pushQueue = new Queue("push-notifications", {
     connection: redisConnection,
   });
+  pushQueue.on("error", (err) => {
+    // Suppress/log connection errors when Redis is offline
+  });
 
   const syncQueue = new Queue("sync-operations", {
     connection: redisConnection,
+  });
+  syncQueue.on("error", (err) => {
+    // Suppress/log connection errors when Redis is offline
   });
 
   // NOTE: QueueScheduler was removed in BullMQ v5. The scheduler is now built

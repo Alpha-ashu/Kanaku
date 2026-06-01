@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
-import { useApp } from '@/contexts/AppContext';
+import { useApp, useSubFeature } from '@/contexts/AppContext';
 import { db } from '@/lib/database';
 import { backendService } from '@/lib/backend-api';
 import { queueTransactionDeleteSync } from '@/lib/auth-sync-integration';
@@ -32,6 +32,9 @@ type Tab = 'portfolio' | 'market' | 'vault';
 
 export const Investments: React.FC = () => {
  const { investments, currency, setCurrentPage, refreshData } = useApp();
+ const canAdd = useSubFeature('investments', 'addInvestment');
+ const canEdit = canAdd; // edit follows addInvestment permission
+ const canDelete = canAdd; // delete follows addInvestment permission
  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
  const [investmentToDelete, setInvestmentToDelete] = useState<{ id: number; name: string } | null>(null);
  const [isDeleting, setIsDeleting] = useState(false);
@@ -197,6 +200,7 @@ export const Investments: React.FC = () => {
  subtitle="Track your investment portfolio"
  icon={<BarChart3 size={20} className="sm:w-6 sm:h-6" />}
  >
+ {canAdd && (
  <Button
  onClick={() => setCurrentPage('add-investment')}
  className="shadow-lg bg-gray-900 hover:bg-gray-800 text-white h-12 px-6 rounded-2xl font-bold flex items-center gap-2"
@@ -204,6 +208,7 @@ export const Investments: React.FC = () => {
  <Plus size={18} />
  <span>Add Investment</span>
  </Button>
+ )}
  </PageHeader>
 
  {/* Live Market Ticker */}
@@ -446,6 +451,7 @@ export const Investments: React.FC = () => {
  </td>
  <td className="px-6 py-4 whitespace-nowrap text-center">
  <div className="flex gap-2 justify-center">
+ {canEdit && (
  <button
  onClick={() => { localStorage.setItem('editingInvestmentId', inv.id!.toString()); setCurrentPage('edit-investment'); }}
  className="text-gray-600 hover:text-gray-900 transition-colors p-1.5 hover:bg-gray-100 rounded-lg"
@@ -453,6 +459,7 @@ export const Investments: React.FC = () => {
  >
  <Edit2 size={16} />
  </button>
+ )}
  <button
  onClick={() => setClosingInvestment(inv)}
  className="px-3 py-1.5 rounded-lg bg-black text-white text-xs font-semibold hover:bg-gray-900 transition-colors"
@@ -460,6 +467,7 @@ export const Investments: React.FC = () => {
  >
  Complete Order
  </button>
+ {canDelete && (
  <button
  onClick={() => handleDeleteInvestment(inv.id!, inv.assetName)}
  className="text-red-600 hover:text-red-900 transition-colors p-1.5 hover:bg-red-100 rounded-lg"
@@ -467,6 +475,7 @@ export const Investments: React.FC = () => {
  >
  <Trash2 size={16} />
  </button>
+ )}
  </div>
  </td>
  </tr>
@@ -496,6 +505,7 @@ export const Investments: React.FC = () => {
  </div>
  </div>
  <div className="flex gap-1.5 shrink-0">
+ {canEdit && (
  <button
  onClick={() => { localStorage.setItem('editingInvestmentId', inv.id!.toString()); setCurrentPage('edit-investment'); }}
  className="text-gray-500 hover:text-gray-900 transition-colors p-2 hover:bg-gray-100 rounded-xl"
@@ -503,6 +513,8 @@ export const Investments: React.FC = () => {
  >
  <Edit2 size={15} />
  </button>
+ )}
+ {canDelete && (
  <button
  onClick={() => handleDeleteInvestment(inv.id!, inv.assetName)}
  className="text-red-500 hover:text-red-700 transition-colors p-2 hover:bg-red-50 rounded-xl"
@@ -510,6 +522,7 @@ export const Investments: React.FC = () => {
  >
  <Trash2 size={15} />
  </button>
+ )}
  </div>
  </div>
 
@@ -618,6 +631,7 @@ export const Investments: React.FC = () => {
  </div>
  <h3 className="text-2xl font-display font-bold text-gray-900 mb-2">No investments yet</h3>
  <p className="text-gray-500 mb-6 max-w-md mx-auto">Start tracking your investment portfolio today</p>
+ {canAdd && (
  <Button
  onClick={() => setCurrentPage('add-investment')}
  className="rounded-full h-11 px-6 shadow-lg bg-black text-white hover:bg-gray-900 transition-transform active:scale-95"
@@ -625,6 +639,7 @@ export const Investments: React.FC = () => {
  <Plus size={18} className="mr-2" />
  Add Your First Investment
  </Button>
+ )}
  </motion.div>
  </Card>
  )}

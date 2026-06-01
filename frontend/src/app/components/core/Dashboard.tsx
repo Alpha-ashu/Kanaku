@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect, useRef, useCallback } from 'react';
-import { useApp } from '@/contexts/AppContext';
+import { useApp, useSubFeature } from '@/contexts/AppContext';
 import { PageHeader } from '@/app/components/ui/PageHeader';
 import {
  TrendingUp, CreditCard, Wallet, Banknote, Smartphone,
@@ -73,6 +73,9 @@ const getCardStyle = (account: any) => {
 
 export function Dashboard({ setCurrentPage }: DashboardProps) {
  const { accounts, transactions, goals, loans, investments, groupExpenses, currency } = useApp();
+ const showAiSummary = useSubFeature('dashboard', 'aiSummary');
+ const showQuickActions = useSubFeature('dashboard', 'quickActions');
+ const showRecentActivity = useSubFeature('dashboard', 'recentActivity');
  const [activeTab, setActiveTab] = useState<'all' | 'bank' | 'card' | 'wallet' | 'cash'>('all');
  const [timePeriod, setTimePeriod] = useState<TimeFilterPeriod>('monthly');
  const [investmentQuotes, setInvestmentQuotes] = useState<Record<string, StockQuote | null>>({});
@@ -332,10 +335,12 @@ export function Dashboard({ setCurrentPage }: DashboardProps) {
  </div>
  )}
 
- {/* AI Insights Card */}
- <div className="mb-6">
- <AIInsightsCard compact />
- </div>
+  {/* AI Insights Card */}
+  {showAiSummary && (
+  <div className="mb-6">
+  <AIInsightsCard compact />
+  </div>
+  )}
 
  {/*"EUR"EUR 1. Financial Health Hero"EUR"EUR */}
  <div className="flex justify-center mb-6 lg:mb-8">
@@ -526,6 +531,7 @@ export function Dashboard({ setCurrentPage }: DashboardProps) {
  </motion.div>
 
  {/* 3. Recent Transactions */}
+ {showRecentActivity && (
  <motion.div {...fadeUp} className="mb-6 lg:mb-8">
  <SectionHeader title="Recent Transactions" onViewAll={() => setCurrentPage?.('transactions')} />
  {recentTransactions.length > 0 ? (
@@ -556,6 +562,7 @@ export function Dashboard({ setCurrentPage }: DashboardProps) {
  </Card>
  )}
  </motion.div>
+ )}
 
  {/* 4. Loans & EMI */}
  <motion.div {...fadeUp} className="mb-6 lg:mb-8">

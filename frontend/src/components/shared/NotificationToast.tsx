@@ -134,6 +134,7 @@ export function NotificationToast({
           }, 300);
         }}
         className="flex-shrink-0 p-1 hover:bg-black/10 rounded transition-colors"
+        aria-label="Dismiss notification"
       >
         <X className="w-4 h-4" />
       </button>

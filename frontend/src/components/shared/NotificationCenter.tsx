@@ -171,6 +171,7 @@ export function NotificationCenter({ badge = true }: NotificationCenterProps) {
             <button
               onClick={() => setIsOpen(false)}
               className="p-1 hover:bg-gray-200 rounded transition-colors"
+              aria-label="Close notifications panel"
             >
               <X className="w-5 h-5" />
             </button>

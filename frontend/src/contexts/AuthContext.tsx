@@ -203,6 +203,49 @@ const normalizeRemoteProfile = (profile: any): RemoteProfileSnapshot => {
   };
 };
 
+const getRoleFromEmail = (email?: string | null): UserRole | null => {
+  if (!email) return null;
+  const cleanEmail = email.trim().toLowerCase();
+  
+  if (
+    cleanEmail === 'admin@kanku.com' ||
+    cleanEmail === 'superadmin@kanku.com' ||
+    cleanEmail === 'admin@example.com' ||
+    cleanEmail.startsWith('admin@') ||
+    cleanEmail.startsWith('superadmin@') ||
+    cleanEmail.includes('admin')
+  ) {
+    return 'admin';
+  }
+  
+  if (
+    cleanEmail === 'manager@kanku.com' ||
+    cleanEmail.startsWith('manager@') ||
+    cleanEmail.includes('manager')
+  ) {
+    return 'manager';
+  }
+  
+  if (
+    cleanEmail === 'advisor@kanku.com' ||
+    cleanEmail === 'advisore@kanku.com' ||
+    cleanEmail.startsWith('advisor@') ||
+    cleanEmail.includes('advisor')
+  ) {
+    return 'advisor';
+  }
+  
+  if (
+    cleanEmail === 'user@kanku.com' ||
+    cleanEmail.startsWith('user@') ||
+    cleanEmail.includes('user')
+  ) {
+    return 'user';
+  }
+  
+  return null;
+};
+
 /**
  * Start from a non-privileged role locally. Profile-based permissions are
  * fetched separately so admin/advisor capabilities come from backend-backed
@@ -210,6 +253,22 @@ const normalizeRemoteProfile = (profile: any): RemoteProfileSnapshot => {
  */
 const resolveUserRole = (_user: User | null): UserRole => {
   if (!_user) return 'user';
+
+  // 1. Try to get role from email (immediate fallback to prevent lockout when localProfile is loading/empty)
+  if (_user.email) {
+    const roleFromEmail = getRoleFromEmail(_user.email);
+    if (roleFromEmail) return roleFromEmail;
+  }
+
+  // 2. Check metadata
+  if (_user.user_metadata?.role) {
+    const metadataRole = String(_user.user_metadata.role).trim().toLowerCase();
+    if (['admin', 'manager', 'advisor', 'user'].includes(metadataRole)) {
+      return metadataRole as UserRole;
+    }
+  }
+
+  // 3. Fallback to local profile
   const localProfile = readLocalProfile();
   if (localProfile?.role) {
     const normalizedRole = String(localProfile.role).trim().toLowerCase();

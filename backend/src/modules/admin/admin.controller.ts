@@ -5,6 +5,7 @@ import { prisma } from '../../db/prisma';
 import { logger } from '../../config/logger';
 import { getCacheMetricsSnapshot, getRedisStatus, resetCacheMetrics } from '../../cache/redis';
 import { getSystemMetrics } from '../../utils/system';
+import { invalidateFeatureCache } from '../../middleware/featureGate';
 
 // Get all users (admin only)
 export const getAllUsers = async (req: AuthRequest, res: Response) => {
@@ -287,6 +288,8 @@ export const toggleFeatureFlag = async (req: AuthRequest, res: Response) => {
         },
       });
     }
+
+    invalidateFeatureCache();
 
     res.json({
       message: 'Global feature flags saved successfully',
