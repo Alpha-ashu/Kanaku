@@ -1,13 +1,27 @@
 import { Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 import { AuthRequest } from './auth';
 import { AppError } from '../utils/AppError';
 import { logger } from '../config/logger';
 
-const SECURITY_JWT_SECRET = process.env.SECURITY_JWT_SECRET || process.env.JWT_SECRET;
-if (!SECURITY_JWT_SECRET) {
-  throw new Error('CRITICAL: SECURITY_JWT_SECRET or JWT_SECRET must be set. Cannot start with hardcoded fallback.');
-}
+const getSecuritySecret = (): string => {
+  const envSecret = process.env.SECURITY_JWT_SECRET || 
+                    process.env.JWT_SECRET || 
+                    process.env.SUPABASE_JWT_SECRET || 
+                    process.env.SUPABASE_SERVICE_ROLE_KEY;
+                    
+  if (envSecret) {
+    return envSecret;
+  }
+  
+  // Fall back to a random key generated at startup rather than throwing a fatal error
+  // which crashes the entire serverless application on Vercel.
+  logger.warn('WARNING: No JWT or Supabase secrets configured in environment for SecurityGate. Generating a dynamic runtime secure key.');
+  return crypto.randomBytes(32).toString('hex');
+};
+
+const SECURITY_JWT_SECRET = getSecuritySecret();
 
 export interface SecurityGateRequest extends AuthRequest {
   securityVerified?: boolean;
