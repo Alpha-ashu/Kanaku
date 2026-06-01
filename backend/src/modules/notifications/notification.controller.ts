@@ -58,23 +58,23 @@ export const markAsRead = async (req: AuthRequest, res: Response) => {
     const userId = getUserId(req);
     const { id } = req.params;
 
-    const notification = await prisma.notification.findFirst({
+    const updated = await prisma.notification.updateMany({
       where: { id, userId },
-    });
-
-    if (!notification) {
-      return res.status(403).json({ error: 'Access denied' });
-    }
-
-    const updated = await prisma.notification.update({
-      where: { id },
       data: {
         isRead: true,
         readAt: new Date(),
       },
     });
 
-    res.json(updated);
+    if (updated.count === 0) {
+      return res.status(403).json({ error: 'Access denied or notification not found' });
+    }
+
+    const notification = await prisma.notification.findUnique({
+      where: { id },
+    });
+
+    res.json(notification);
   } catch (error: any) {
     res.status(500).json({ error: error.message || 'Failed to mark notification as read' });
   }

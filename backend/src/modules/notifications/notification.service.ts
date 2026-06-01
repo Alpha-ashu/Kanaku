@@ -179,20 +179,22 @@ export class NotificationService {
    * Mark a single notification as read
    */
   async markAsRead(notificationId: string, userId: string) {
-    const notification = await prisma.notification.update({
-      where: { id: notificationId },
+    // Verify ownership and update atomically
+    const result = await prisma.notification.updateMany({
+      where: { id: notificationId, userId },
       data: {
         isRead: true,
         readAt: new Date(),
       },
     });
 
-    // Verify ownership
-    if (notification.userId !== userId) {
-      throw new Error("Unauthorized: notification does not belong to user");
+    if (result.count === 0) {
+      throw new Error("Unauthorized: notification does not belong to user or not found");
     }
 
-    return notification;
+    return prisma.notification.findUnique({
+      where: { id: notificationId },
+    });
   }
 
   /**

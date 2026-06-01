@@ -139,7 +139,7 @@ export const initializePushWorker = (pushQueue: Queue) => {
       }
     },
     {
-      connection: redisConnection,
+      connection: redisConnection as any,
       concurrency: 10, // Process 10 notifications concurrently
     }
   );
@@ -229,7 +229,7 @@ export const initializeEmailWorker = (emailQueue: Queue) => {
       }
     },
     {
-      connection: redisConnection,
+      connection: redisConnection as any,
       concurrency: 5, // Process 5 emails concurrently
     }
   );

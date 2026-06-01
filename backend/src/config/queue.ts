@@ -31,21 +31,21 @@ redisSubscriber.on("error", (err) => {
 export function initializeQueues() {
   // Create queues
   const emailQueue = new Queue("email-notifications", {
-    connection: redisConnection,
+    connection: redisConnection as any,
   });
   emailQueue.on("error", (err) => {
     // Suppress/log connection errors when Redis is offline
   });
 
   const pushQueue = new Queue("push-notifications", {
-    connection: redisConnection,
+    connection: redisConnection as any,
   });
   pushQueue.on("error", (err) => {
     // Suppress/log connection errors when Redis is offline
   });
 
   const syncQueue = new Queue("sync-operations", {
-    connection: redisConnection,
+    connection: redisConnection as any,
   });
   syncQueue.on("error", (err) => {
     // Suppress/log connection errors when Redis is offline

@@ -222,26 +222,27 @@ export const addLoanPayment = async (req: AuthRequest, res: Response, next: Next
       throw AppError.notFound('Loan');
     }
 
-    // Create payment record
-    const payment = await prisma.loanPayment.create({
-      data: {
-        loanId: id,
-        amount: numericAmount,
-        accountId,
-        date: new Date(),
-        notes,
-      },
-    });
-
-    // Update outstanding balance
+    // Atomically create payment record and update outstanding balance
     const newBalance = Math.max(0, Number(loan.outstandingBalance) - numericAmount);
-    await prisma.loan.update({
-      where: { id },
-      data: {
-        outstandingBalance: newBalance,
-        status: newBalance === 0 ? 'completed' : 'active',
-      },
-    });
+
+    const [payment] = await prisma.$transaction([
+      prisma.loanPayment.create({
+        data: {
+          loanId: id,
+          amount: numericAmount,
+          accountId,
+          date: new Date(),
+          notes,
+        },
+      }),
+      prisma.loan.update({
+        where: { id },
+        data: {
+          outstandingBalance: newBalance,
+          status: newBalance === 0 ? 'completed' : 'active',
+        },
+      }),
+    ]);
 
     await cacheDeleteByPrefix('loans:');
 

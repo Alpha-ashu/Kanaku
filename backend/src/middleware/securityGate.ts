@@ -4,7 +4,10 @@ import { AuthRequest } from './auth';
 import { AppError } from '../utils/AppError';
 import { logger } from '../config/logger';
 
-const SECURITY_JWT_SECRET = process.env.SECURITY_JWT_SECRET || process.env.JWT_SECRET || 'security-gate-secret';
+const SECURITY_JWT_SECRET = process.env.SECURITY_JWT_SECRET || process.env.JWT_SECRET;
+if (!SECURITY_JWT_SECRET) {
+  throw new Error('CRITICAL: SECURITY_JWT_SECRET or JWT_SECRET must be set. Cannot start with hardcoded fallback.');
+}
 
 export interface SecurityGateRequest extends AuthRequest {
   securityVerified?: boolean;

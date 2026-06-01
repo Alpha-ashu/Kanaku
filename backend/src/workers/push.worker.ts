@@ -172,7 +172,7 @@ export function createPushWorker() {
       }
     },
     {
-      connection: redisConnection,
+      connection: redisConnection as any,
       concurrency: parseInt(process.env.NOTIFICATION_EMAIL_BATCH_SIZE || "10"),
     }
   );

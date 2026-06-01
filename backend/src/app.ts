@@ -11,6 +11,8 @@ import { getCircuitBreakerStatus } from './utils/circuitBreaker';
 import { sanitize } from './utils/sanitize';
 import { logger } from './config/logger';
 
+import { isAllowedOrigin } from './config/cors';
+
 const app = express();
 
 //  Request ID stamping (B-1) 
@@ -41,44 +43,6 @@ app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" },
 }));
 
-const buildAllowedOrigins = () => {
-  const origins = (process.env.CORS_ORIGIN || process.env.FRONTEND_URL || '')
-    .split(',')
-    .map(origin => origin.trim())
-    .filter(Boolean);
-
-  if (process.env.NODE_ENV !== 'production') {
-    origins.push(
-      'http://localhost:5173',
-      'http://127.0.0.1:5173',
-      'http://localhost:9002',
-      'http://127.0.0.1:9002',
-    );
-  }
-
-  if (process.env.VERCEL_URL) {
-    origins.push(`https://${process.env.VERCEL_URL}`);
-  }
-
-  return Array.from(new Set(origins));
-};
-
-const allowedOrigins = buildAllowedOrigins();
-const allowAllOrigins = allowedOrigins.length === 0 || allowedOrigins.includes('*');
-
-const isAllowedOrigin = (origin: string) => {
-  if (allowAllOrigins) return true;
-  if (allowedOrigins.includes(origin)) return true;
-
-  const wildcard = allowedOrigins.find(value => value.startsWith('*.'));
-  if (wildcard) {
-    const suffix = wildcard.slice(1);
-    return origin.endsWith(suffix);
-  }
-
-  return false;
-};
-
 app.use(cors({
   origin(origin, callback) {
     if (!origin || isAllowedOrigin(origin)) {
@@ -95,22 +59,30 @@ app.use(cors({
 app.use(express.json({ limit: '1mb' }));
 
 //  Global body sanitization (B-4) 
-// Strip HTML/script tags from all string fields in the request body.
+// Strip HTML/script tags from all string fields in the request body (including arrays & nested objects).
 app.use((req, _res, next) => {
   if (req.body && typeof req.body === 'object') {
+    const sanitizeValue = (val: any): any => {
+      if (typeof val === 'string') {
+        return sanitize(val);
+      }
+      if (Array.isArray(val)) {
+        return val.map(sanitizeValue);
+      }
+      if (val && typeof val === 'object') {
+        return sanitizeObject(val as Record<string, unknown>);
+      }
+      return val;
+    };
+
     const sanitizeObject = (obj: Record<string, unknown>): Record<string, unknown> => {
       const result: Record<string, unknown> = {};
       for (const [key, value] of Object.entries(obj)) {
-        if (typeof value === 'string') {
-          result[key] = sanitize(value);
-        } else if (value && typeof value === 'object' && !Array.isArray(value)) {
-          result[key] = sanitizeObject(value as Record<string, unknown>);
-        } else {
-          result[key] = value;
-        }
+        result[key] = sanitizeValue(value);
       }
       return result;
     };
+
     req.body = sanitizeObject(req.body);
   }
   next();

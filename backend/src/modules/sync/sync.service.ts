@@ -52,6 +52,16 @@ export interface SyncResponse {
 }
 
 class SyncService {
+  private pickAllowedFields(data: any, allowed: readonly string[]): Record<string, any> {
+    const result: Record<string, any> = {};
+    if (!data || typeof data !== 'object') return result;
+    for (const key of allowed) {
+      if (data[key] !== undefined) {
+        result[key] = data[key];
+      }
+    }
+    return result;
+  }
   /**
    * Register or update a device for a user
    */
@@ -280,7 +290,8 @@ class SyncService {
     localTimestamp: Date,
     conflicts: any[]
   ) {
-    const { id: _, userId: __, ...sanitizedData } = data || {};
+    const allowed = ['name', 'type', 'provider', 'country', 'balance', 'currency', 'color', 'icon', 'syncStatus'];
+    const sanitizedData = this.pickAllowedFields(data, allowed);
 
     if (operation === 'delete') {
       // Soft delete
@@ -302,7 +313,7 @@ class SyncService {
           syncStatus: 'synced',
           createdAt: localTimestamp,
           updatedAt: localTimestamp,
-        },
+        } as any,
       });
     } else if (operation === 'update') {
       const existing = await prisma.account.findUnique({
@@ -320,7 +331,7 @@ class SyncService {
             syncStatus: 'synced',
             createdAt: localTimestamp,
             updatedAt: localTimestamp,
-          },
+          } as any,
         });
       } else {
         // Check for conflict
@@ -357,7 +368,12 @@ class SyncService {
     localTimestamp: Date,
     conflicts: any[]
   ) {
-    const { id: _, userId: __, ...sanitizedData } = data || {};
+    const allowed = [
+      'accountId', 'type', 'amount', 'category', 'subcategory', 
+      'description', 'merchant', 'date', 'tags', 'transferToAccountId', 
+      'transferType', 'version', 'syncStatus'
+    ];
+    const sanitizedData = this.pickAllowedFields(data, allowed);
 
     if (operation === 'delete') {
       await prisma.transaction.update({
@@ -391,7 +407,7 @@ class SyncService {
           syncStatus: 'synced',
           createdAt: localTimestamp,
           updatedAt: localTimestamp,
-        },
+        } as any,
       });
     } else if (operation === 'update') {
       const existing = await prisma.transaction.findUnique({
@@ -419,7 +435,7 @@ class SyncService {
             syncStatus: 'synced',
             createdAt: localTimestamp,
             updatedAt: localTimestamp,
-          },
+          } as any,
         });
       } else {
         const localVersion = typeof sanitizedData?.version === 'number' ? sanitizedData.version : 0;
@@ -457,7 +473,8 @@ class SyncService {
     localTimestamp: Date,
     conflicts: any[]
   ) {
-    const { id: _, userId: __, ...sanitizedData } = data || {};
+    const allowed = ['name', 'targetAmount', 'currentAmount', 'targetDate', 'category', 'isGroupGoal', 'syncStatus'];
+    const sanitizedData = this.pickAllowedFields(data, allowed);
 
     if (operation === 'delete') {
       await prisma.goal.update({
@@ -478,7 +495,7 @@ class SyncService {
           syncStatus: 'synced',
           createdAt: localTimestamp,
           updatedAt: localTimestamp,
-        },
+        } as any,
       });
     } else if (operation === 'update') {
       const existing = await prisma.goal.findUnique({
@@ -495,7 +512,7 @@ class SyncService {
             syncStatus: 'synced',
             createdAt: localTimestamp,
             updatedAt: localTimestamp,
-          },
+          } as any,
         });
       } else {
         if (existing.updatedAt > localTimestamp) {
@@ -530,7 +547,11 @@ class SyncService {
     localTimestamp: Date,
     conflicts: any[]
   ) {
-    const { id: _, userId: __, ...sanitizedData } = data || {};
+    const allowed = [
+      'name', 'type', 'principalAmount', 'outstandingBalance', 'interestRate', 
+      'emiAmount', 'dueDate', 'frequency', 'contactPerson', 'status', 'syncStatus'
+    ];
+    const sanitizedData = this.pickAllowedFields(data, allowed);
 
     if (operation === 'delete') {
       await prisma.loan.update({
@@ -551,7 +572,7 @@ class SyncService {
           syncStatus: 'synced',
           createdAt: localTimestamp,
           updatedAt: localTimestamp,
-        },
+        } as any,
       });
     } else if (operation === 'update') {
       const existing = await prisma.loan.findUnique({
@@ -568,7 +589,7 @@ class SyncService {
             syncStatus: 'synced',
             createdAt: localTimestamp,
             updatedAt: localTimestamp,
-          },
+          } as any,
         });
       } else {
         if (existing.updatedAt > localTimestamp) {

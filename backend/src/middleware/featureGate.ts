@@ -147,8 +147,12 @@ export const requireFeature = (moduleKey: string, childKey?: string) => {
       return next();
     } catch (error) {
       logger.error(`[FeatureGate] Error checking sub-feature gate: ${moduleKey}.${childKey}`, error);
-      // In case of unexpected server errors checking feature gate, we fail-open for stability but log it.
-      return next();
+      // Fail closed on error to prevent bypassing feature guards
+      return res.status(503).json({
+        success: false,
+        error: 'Feature temporarily unavailable. Please try again.',
+        code: 'FEATURE_GATE_ERROR',
+      });
     }
   };
 };

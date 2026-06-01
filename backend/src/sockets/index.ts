@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import jwt from 'jsonwebtoken';
 import { Server, Socket } from 'socket.io';
 import { prisma } from '../db/prisma';
+import { isAllowedOrigin } from '../config/cors';
 
 interface AuthenticatedSocket extends Socket {
   userId: string;
@@ -39,7 +40,13 @@ export class SocketManager {
   constructor(httpServer: any) {
     this.io = new Server(httpServer, {
       cors: {
-        origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+        origin: (origin, callback) => {
+          if (!origin || isAllowedOrigin(origin)) {
+            callback(null, true);
+          } else {
+            callback(null, false);
+          }
+        },
         methods: ['GET', 'POST'],
         credentials: true,
       },
@@ -704,85 +711,164 @@ export class SocketManager {
     return data;
   }
 
-  private sanitizeMutablePayload(payload: any) {
-    const {
-      id,
-      userId,
-      createdAt,
-      updatedAt,
-      deletedAt,
-      ...rest
-    } = payload || {};
-
-    return { id, rest };
+  private pickAllowedFields(payload: any, allowed: string[]) {
+    const result: Record<string, any> = {};
+    if (!payload || typeof payload !== 'object') return result;
+    for (const key of allowed) {
+      if (payload[key] !== undefined) {
+        result[key] = payload[key];
+      }
+    }
+    return result;
   }
 
   private async saveTransaction(userId: string, transaction: any) {
-    const { id, rest } = this.sanitizeMutablePayload(transaction);
+    if (!transaction || typeof transaction !== 'object') {
+      throw new Error('Invalid transaction payload');
+    }
+
+    const { id } = transaction;
+
+    const allowed = [
+      'accountId', 'type', 'amount', 'category', 'subcategory', 
+      'description', 'merchant', 'date', 'tags', 'transferToAccountId', 
+      'transferType', 'version', 'syncStatus'
+    ];
+    const filtered = this.pickAllowedFields(transaction, allowed);
+
+    if (!filtered.accountId) throw new Error('accountId is required');
+    if (filtered.type && !['income', 'expense', 'transfer'].includes(filtered.type)) {
+      throw new Error('Invalid transaction type');
+    }
+    if (filtered.amount !== undefined) {
+      const amount = Number(filtered.amount);
+      if (!Number.isFinite(amount) || amount <= 0) {
+        throw new Error('Transaction amount must be a positive number');
+      }
+      filtered.amount = Number(amount.toFixed(2));
+    }
+    if (filtered.date) {
+      filtered.date = new Date(filtered.date);
+      if (isNaN(filtered.date.getTime())) {
+        throw new Error('Invalid transaction date');
+      }
+    }
 
     if (id) {
       return prisma.transaction.update({
         where: { id, userId },
         data: {
-          ...rest,
+          ...filtered,
           updatedAt: new Date(),
-        },
+        } as any,
       });
     }
 
     return prisma.transaction.create({
       data: {
-        ...rest,
+        ...filtered,
         userId,
         createdAt: new Date(),
         updatedAt: new Date(),
-      },
+      } as any,
     });
   }
 
   private async saveAccount(userId: string, account: any) {
-    const { id, rest } = this.sanitizeMutablePayload(account);
+    if (!account || typeof account !== 'object') {
+      throw new Error('Invalid account payload');
+    }
+
+    const { id } = account;
+
+    const allowed = [
+      'name', 'type', 'provider', 'country', 'balance', 'currency', 
+      'color', 'icon', 'syncStatus'
+    ];
+    const filtered = this.pickAllowedFields(account, allowed);
+
+    if (!filtered.name) throw new Error('Account name is required');
+    if (!filtered.type) throw new Error('Account type is required');
+    if (filtered.balance !== undefined) {
+      const balance = Number(filtered.balance);
+      if (!Number.isFinite(balance) || balance < 0) {
+        throw new Error('Account balance must be a non-negative number');
+      }
+      filtered.balance = balance;
+    }
 
     if (id) {
       return prisma.account.update({
         where: { id, userId },
         data: {
-          ...rest,
+          ...filtered,
           updatedAt: new Date(),
-        },
+        } as any,
       });
     }
 
     return prisma.account.create({
       data: {
-        ...rest,
+        ...filtered,
         userId,
         createdAt: new Date(),
         updatedAt: new Date(),
-      },
+      } as any,
     });
   }
 
   private async saveGoal(userId: string, goal: any) {
-    const { id, rest } = this.sanitizeMutablePayload(goal);
+    if (!goal || typeof goal !== 'object') {
+      throw new Error('Invalid goal payload');
+    }
+
+    const { id } = goal;
+
+    const allowed = [
+      'name', 'targetAmount', 'currentAmount', 'targetDate', 'category', 
+      'isGroupGoal', 'syncStatus'
+    ];
+    const filtered = this.pickAllowedFields(goal, allowed);
+
+    if (!filtered.name) throw new Error('Goal name is required');
+    if (filtered.targetAmount !== undefined) {
+      const targetAmount = Number(filtered.targetAmount);
+      if (!Number.isFinite(targetAmount) || targetAmount <= 0) {
+        throw new Error('Goal target amount must be a positive number');
+      }
+      filtered.targetAmount = targetAmount;
+    }
+    if (filtered.currentAmount !== undefined) {
+      const currentAmount = Number(filtered.currentAmount);
+      if (!Number.isFinite(currentAmount) || currentAmount < 0) {
+        throw new Error('Goal current amount must be a non-negative number');
+      }
+      filtered.currentAmount = currentAmount;
+    }
+    if (filtered.targetDate) {
+      filtered.targetDate = new Date(filtered.targetDate);
+      if (isNaN(filtered.targetDate.getTime())) {
+        throw new Error('Invalid goal target date');
+      }
+    }
 
     if (id) {
       return prisma.goal.update({
         where: { id, userId },
         data: {
-          ...rest,
+          ...filtered,
           updatedAt: new Date(),
-        },
+        } as any,
       });
     }
 
     return prisma.goal.create({
       data: {
-        ...rest,
+        ...filtered,
         userId,
         createdAt: new Date(),
         updatedAt: new Date(),
-      },
+      } as any,
     });
   }
 
