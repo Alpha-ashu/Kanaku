@@ -133,7 +133,7 @@ class HybridAIService {
       const processingTime = performance.now() - startTime;
       console.log(` Voice processing completed (${processingTime.toFixed(2)}ms)`);
 
-      return voiceResults.map(result => ({
+      return voiceResults.map((result: any) => ({
         data: result,
         source: 'offline' as const,
         confidence: result.confidence,

@@ -208,11 +208,11 @@ export const Settings: React.FC = () => {
  }
  };
 
- const toggleFeature = (feature: string) => {
- const updated = { ...visibleFeatures, [feature]: !visibleFeatures[feature] };
- setVisibleFeatures(updated);
- toast.success('Feature visibility updated');
- };
+  const toggleFeature = (feature: string) => {
+    const updated = { ...visibleFeatures, [feature]: !(visibleFeatures as any)[feature] } as any;
+    setVisibleFeatures(updated);
+    toast.success('Feature visibility updated');
+  };
 
  const handleExportData = async (format: 'json' | 'csv' = 'json') => {
  try {

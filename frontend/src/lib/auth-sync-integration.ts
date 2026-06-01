@@ -406,7 +406,7 @@ export function queueRecordDeleteSync(table: SyncedTableName, localId: number, r
 function bindTableHooks(table: SyncedTableName) {
   const localTable: any = getLocalTable(table);
 
-  localTable.hook('creating', function (_primKey, obj: any) {
+  localTable.hook('creating', function (this: any, _primKey: any, obj: any) {
     if (isCloudSyncSuppressed()) return;
 
     this.onsuccess = (primaryKey: number) => {
@@ -414,7 +414,7 @@ function bindTableHooks(table: SyncedTableName) {
     };
   });
 
-  localTable.hook('updating', function (_mods, primKey, obj: any) {
+  localTable.hook('updating', function (this: any, _mods: any, primKey: any, obj: any) {
     if (isCloudSyncSuppressed()) return;
 
     this.onsuccess = () => {
@@ -422,7 +422,7 @@ function bindTableHooks(table: SyncedTableName) {
     };
   });
 
-  localTable.hook('deleting', function (primKey, obj: any) {
+  localTable.hook('deleting', function (this: any, primKey: any, obj: any) {
     if (isCloudSyncSuppressed()) return;
 
     this.onsuccess = () => {
@@ -2043,7 +2043,7 @@ export function subscribeToUserCloudSync(userId: string) {
     );
   }
 
-  channel.subscribe((status) => {
+  channel.subscribe((status: any) => {
     if (status === 'SUBSCRIBED') {
       clearSupabaseTemporaryUnavailable();
       scheduleCloudPull(userId, subscribableTables, 200);

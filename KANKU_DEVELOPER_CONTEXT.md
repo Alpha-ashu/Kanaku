@@ -2079,3 +2079,52 @@ See `frontend/src/lib/app-integration-guide.tsx` for complete implementation exa
 | `frontend/src/app/components/admin/AdminFeaturePanel.tsx` | Restored premium configuration popup modal overlay for sub-features using Framer Motion |
 | `frontend/src/app/components/core/Sidebar.tsx` | Compact vertical sidebar styling (smaller width, icons, gaps) to fit all features without scrolling |
 | `frontend/src/app/components/ui/TopBar.tsx` | Redesigned TopBar to float as a horizontal card with inner alignment aligned to card boundaries |
+
+---
+
+### **2026-06-01 — Phase 5: Mobile Navigation & Backend Compiler Integrity**
+
+#### 1. Mobile Navigation & Drawer Card Refinement
+- **Glassmorphic Floating Drawer**: Redesigned the mobile navigation slide-out panel inside [TopBar.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/ui/TopBar.tsx) to render as a floating, glassmorphic card offset from the viewport borders (`h-[calc(100vh-24px)] my-3 ml-3 rounded-[32px] border border-slate-100 shadow-2xl`).
+- **Minimal UI cleanup**: Cleaned up the drawer interface by removing the drag-and-drop guidelines explanation panel to fit compact screen spaces.
+- **Drawer Footer Card**: Integrated a premium user profile footer card inside the mobile drawer containing the user's name, email, role badge, and user avatar alongside a hoverable Log Out icon button linked to the Supabase auth `signOut` routine.
+
+#### 2. Role-Specific Bottom Navigation
+- **Dynamic Access Maps**: Implemented credential-based page lists in [BottomNav.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/core/BottomNav.tsx) (Admin, Manager, User, Advisor) matching required feature-flag visibilities via `canAccessPage`.
+- **Symmetric Manager Layout**: Arranged navigation items for the Manager role symmetrically as a 3-item list (Home/Dashboard, Plus Action, Advisor Verification) to place the prominent black action button in the center.
+- **Dynamic Width & Tab Indicator Capsule**:
+  - Automatically scales container width down to a centered floating pill layout (`w-[260px]`) for 3 or fewer navigation options, preventing stretched icons.
+  - Positioned the active tab indicator slightly offset at `top-1` with `rounded-full` capsule styling and a subtle shadow, preventing any clipping under the parent's `overflow-hidden`.
+
+#### 3. AI Insights Fetch Gating
+- **Console Warning Prevention**: Gated the `/ai/insights` fetch request inside [AIInsightsCard.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/shared/AIInsightsCard.tsx) to skip network requests entirely when `aiAutomation` is disabled, eliminating 403 Forbidden console log noise.
+
+#### 4. Compiler Integrity & Strict Type Safety
+- **Backend Route Middleware Signature**: Corrected the `requireAIFeature` middleware invocation signature in backend [receipt.routes.ts](file:///k:/Project/kenku/Finora/backend/src/modules/receipts/receipt.routes.ts) from 3 arguments to the correct 2 arguments (`moduleKey`, `capabilityKey`) and chained with standard `requireFeature('transactions')` to verify standard module access.
+- **Removed Redundant TSConfig Options**: Completely deleted the `"ignoreDeprecations"` option from the root [tsconfig.json](file:///k:/Project/kenku/Finora/tsconfig.json). Since the project configuration uses modern compiler flags (`target: ES2020`, `moduleResolution: bundler`), this option was redundant and caused compiler warnings.
+- **Strict Type Error Resolution**: Resolved multiple latent strict compiler warnings across the codebase:
+  - Fixed union type widening (`RegExpMatchArray | false`) in [receiptScannerService.ts](file:///k:/Project/kenku/Finora/frontend/src/services/receiptScannerService.ts) using ternary checks.
+  - Added explicit parameter type annotations in [NewUserOnboarding.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/auth/onboarding/NewUserOnboarding.tsx), [AuthContext.tsx](file:///k:/Project/kenku/Finora/frontend/src/contexts/AuthContext.tsx), [auth-sync-integration.ts](file:///k:/Project/kenku/Finora/frontend/src/lib/auth-sync-integration.ts), [test.ts](file:///k:/Project/kenku/Finora/frontend/src/utils/supabase/test.ts), and [hybridAIService.ts](file:///k:/Project/kenku/Finora/frontend/src/services/hybridAIService.ts).
+  - Explicitly typed the recursive return signature of `fetchCurrencyConversionRate` in [investmentUtils.ts](file:///k:/Project/kenku/Finora/frontend/src/lib/investmentUtils.ts) as `Promise<number>`.
+  - Added dynamic index signature casting to `any` in [TaxCalculatorPage.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/features/TaxCalculatorPage.tsx), [Settings.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/profile/Settings.tsx), and [FeatureGate.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/ui/FeatureGate.tsx).
+  - Excluded the deprecated `frontend/src/unused` directory from typechecking.
+
+#### Files Changed / Created
+
+| File | Change |
+|---|---|
+| `tsconfig.json` | Removed redundant `ignoreDeprecations` option; excluded `frontend/src/unused` directory |
+| `backend/src/modules/receipts/receipt.routes.ts` | Fixed `requireAIFeature` parameter list; chained `requireFeature('transactions')` |
+| `frontend/src/app/components/core/BottomNav.tsx` | Implemented symmetric role-specific layouts, dynamic width scaling, and offset active tab indicator capsule |
+| `frontend/src/app/components/ui/TopBar.tsx` | Refactored mobile drawer into inset floating card; added user profile footer card and Log Out action |
+| `frontend/src/app/components/shared/AIInsightsCard.tsx` | Gated `/ai/insights` fetch behind `aiAutomation` flag to prevent 403 Forbidden warnings |
+| `frontend/src/services/receiptScannerService.ts` | Fixed RegExp match array union indexing |
+| `frontend/src/app/components/auth/onboarding/NewUserOnboarding.tsx` | Fixed implicit parameter type warning in auth handler |
+| `frontend/src/app/components/profile/Settings.tsx` | Cast `visibleFeatures` to `any` to allow dynamic string indexing |
+| `frontend/src/app/components/ui/FeatureGate.tsx` | Cast `visibleFeatures` to `any` to prevent indexing errors |
+| `frontend/src/contexts/AuthContext.tsx` | Typed auth change event callback parameters |
+| `frontend/src/lib/auth-sync-integration.ts` | Explicitly typed Dexie `.hook` callbacks, local `this` contexts, and subscription status |
+| `frontend/src/lib/investmentUtils.ts` | Annotated explicit recursive conversion rate async return type as `Promise<number>` |
+| `frontend/src/services/hybridAIService.ts` | Typed map function voice processor result |
+| `frontend/src/utils/supabase/test.ts` | Annotated table map parameter with explicit type |
+

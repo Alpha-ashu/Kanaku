@@ -43,18 +43,19 @@ export const NewUserOnboarding: React.FC = () => {
  });
 
  React.useEffect(() => {
- supabase.auth.getUser().then(({ data: { user } }) => {
- if (user) {
- const metaName = user.user_metadata?.first_name
- ? `${user.user_metadata.first_name} ${user.user_metadata.last_name || ''}`.trim()
- : user.user_metadata?.full_name || '';
- if (metaName) {
- setOnboardingData(prev => ({ ...prev, displayName: metaName, accountHolderName: metaName }));
- }
- }
- setIsInitializing(false);
- });
- }, []);
+    supabase.auth.getUser().then((res: any) => {
+      const user = res.data?.user;
+      if (user) {
+        const metaName = user.user_metadata?.first_name
+          ? `${user.user_metadata.first_name} ${user.user_metadata.last_name || ''}`.trim()
+          : user.user_metadata?.full_name || '';
+        if (metaName) {
+          setOnboardingData(prev => ({ ...prev, displayName: metaName, accountHolderName: metaName }));
+        }
+      }
+      setIsInitializing(false);
+    });
+  }, []);
 
  const updateOnboardingData = (data: Partial<OnboardingData>) => {
  setOnboardingData(prev => ({ ...prev, ...data }));

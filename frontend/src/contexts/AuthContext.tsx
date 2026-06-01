@@ -675,7 +675,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     // Listen for auth changes cleanly. This fires immediately with INITIAL_SESSION, 
     // replacing the need to manually call getSession() and dodging React StrictMode lock races.
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      async (event: any, session: any) => {
         if (!isMounted) return;
         setSession(session);
         const nextUser = session?.user ?? null;

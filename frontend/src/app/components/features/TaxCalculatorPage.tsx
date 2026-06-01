@@ -79,7 +79,8 @@ export const TaxCalculator: React.FC<{ onBack?: () => void }> = ({ onBack }) => 
  }, [transactions, year]);
 
  const calculateTax = () => {
- const brackets = TAX_BRACKETS[country as keyof typeof TAX_BRACKETS]?.[year as keyof typeof TAX_BRACKETS[keyof typeof TAX_BRACKETS]]?.[filingStatus as string];
+ const yearBrackets = TAX_BRACKETS[country as keyof typeof TAX_BRACKETS]?.[year as keyof typeof TAX_BRACKETS[keyof typeof TAX_BRACKETS]] as any;
+ const brackets = yearBrackets?.[filingStatus];
 
  if (!brackets) {
  toast.error('Tax brackets not available for selected options');

@@ -656,7 +656,7 @@ const extractItems = (lines: string[], totalAmount?: number) => {
 
     // ── Case A: single-line item with name + qty + rate + amount on one line ──
     const singleFull = line.match(/^([A-Za-z0-9\s&()+\-/,.]{3,40}?)\s+(\d+)\s+([\d.]+)\s+([\d.]+)\s*$/);
-    const singleShort = !singleFull && line.match(/^([A-Za-z0-9\s&()+\-/,.]{3,40}?)\s+(\d+)\s+([\d.]+)\s*$/);
+    const singleShort = singleFull ? null : line.match(/^([A-Za-z0-9\s&()+\-/,.]{3,40}?)\s+(\d+)\s+([\d.]+)\s*$/);
     if (singleFull || singleShort) {
       const m = (singleFull || singleShort)!;
       const name = normalizeItemName(m[1]);
@@ -681,7 +681,7 @@ const extractItems = (lines: string[], totalAmount?: number) => {
       && line.length >= 3
     ) {
       const splitFull = nextLine.match(/^\s*(\d+)\s+([\d.]+)\s+([\d.]+)\s*$/);
-      const splitShort = !splitFull && nextLine.match(/^\s*(\d+)\s+([\d.]+)\s*$/);
+      const splitShort = splitFull ? null : nextLine.match(/^\s*(\d+)\s+([\d.]+)\s*$/);
       if (splitFull || splitShort) {
         const m = (splitFull || splitShort)!;
         const name = normalizeItemName(line);

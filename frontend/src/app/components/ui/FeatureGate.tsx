@@ -52,7 +52,7 @@ export const FeatureGate: React.FC<FeatureGateProps> = ({
   const isEnabled = useMemo(() => {
     if (!childKey) {
       // Module-level gate: use visibleFeatures logic
-      return visibleFeatures?.[moduleKey] !== false;
+      return (visibleFeatures as any)?.[moduleKey] !== false;
     }
 
     // Sub-feature gate: use subFeatures logic
@@ -92,7 +92,7 @@ export function useFeatureGate(moduleKey: string, childKey?: string): boolean {
 
   return useMemo(() => {
     if (!childKey) {
-      return visibleFeatures?.[moduleKey] !== false;
+      return (visibleFeatures as any)?.[moduleKey] !== false;
     }
 
     return subFeatures?.[moduleKey]?.[childKey] ?? true;

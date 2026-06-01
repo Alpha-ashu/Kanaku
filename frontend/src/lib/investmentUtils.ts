@@ -108,7 +108,7 @@ export const getRequiredInvestmentQuoteSymbols = (
 export const fetchCurrencyConversionRate = async (
   fromCurrency: string,
   toCurrency: string,
-) => {
+): Promise<number> => {
   const from = normalizeCurrencyCode(fromCurrency);
   const to = normalizeCurrencyCode(toCurrency);
 

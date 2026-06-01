@@ -22,7 +22,7 @@ async function testQuery() {
         .eq('table_schema', 'public');
         
       if (!tablesError && tables) {
-        console.log(' Available tables:', tables.map(t => t.table_name));
+        console.log(' Available tables:', tables.map((t: any) => t.table_name));
       }
     } else {
       console.log(' Query successful!');
