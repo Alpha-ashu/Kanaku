@@ -4,6 +4,7 @@ import { validateBody } from '../../middleware/validate';
 import { captureAIEvent } from './ai.controller';
 import { aiEventBodySchema } from './ai.validation';
 import { getAIQuotaInfo } from '../../utils/aiUsageTracker';
+import { requireAIFeature } from '../../middleware/featureGate';
 import {
   runAllAgents,
   runFinancialHealthScoreAgent,
@@ -29,7 +30,7 @@ router.get('/quota', async (req: AuthRequest, res: Response) => {
 //  AI Agents Endpoints 
 
 // Run all agents and return consolidated insights
-router.get('/insights', async (req: AuthRequest, res: Response) => {
+router.get('/insights', requireAIFeature('aiAutomation'), async (req: AuthRequest, res: Response) => {
   try {
     const userId = getUserId(req);
     const results = await runAllAgents(userId);
@@ -52,14 +53,14 @@ router.get('/insights', async (req: AuthRequest, res: Response) => {
   }
 });
 
-router.get('/health-score', async (req: AuthRequest, res: Response) => {
+router.get('/health-score', requireAIFeature('aiAutomation', 'healthScoring'), async (req: AuthRequest, res: Response) => {
   try {
     const result = await runFinancialHealthScoreAgent(getUserId(req));
     res.json(result.output);
   } catch { res.status(500).json({ error: 'Failed to compute health score' }); }
 });
 
-router.get('/recommendations', async (req: AuthRequest, res: Response) => {
+router.get('/recommendations', requireAIFeature('aiAutomation', 'smartCategorization'), async (req: AuthRequest, res: Response) => {
   try {
     const userId = getUserId(req);
     const [budget, goals, investments] = await Promise.all([
@@ -72,21 +73,21 @@ router.get('/recommendations', async (req: AuthRequest, res: Response) => {
   } catch { res.status(500).json({ error: 'Failed to fetch recommendations' }); }
 });
 
-router.get('/fraud-alerts', async (req: AuthRequest, res: Response) => {
+router.get('/fraud-alerts', requireAIFeature('aiAutomation', 'anomalyDetection'), async (req: AuthRequest, res: Response) => {
   try {
     const result = await runFraudDetectionAgent(getUserId(req));
     res.json({ flags: result.output?.flags ?? [] });
   } catch { res.status(500).json({ error: 'Failed to check fraud alerts' }); }
 });
 
-router.get('/bill-predictions', async (req: AuthRequest, res: Response) => {
+router.get('/bill-predictions', requireAIFeature('aiAutomation', 'subscriptionDetection'), async (req: AuthRequest, res: Response) => {
   try {
     const result = await runBillPredictionAgent(getUserId(req));
     res.json({ predictions: result.output?.predictions ?? [] });
   } catch { res.status(500).json({ error: 'Failed to get bill predictions' }); }
 });
 
-router.get('/spending-patterns', async (req: AuthRequest, res: Response) => {
+router.get('/spending-patterns', requireAIFeature('aiAutomation', 'smartCategorization'), async (req: AuthRequest, res: Response) => {
   try {
     const result = await runSpendingPatternAgent(getUserId(req));
     res.json({ insights: result.output?.insights ?? [] });

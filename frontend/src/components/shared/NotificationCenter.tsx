@@ -228,4 +228,4 @@ export function NotificationCenter({ badge = true }: NotificationCenterProps) {
   );
 }
 
-export { Notification };
+export type { Notification };

@@ -39,7 +39,7 @@ export function useToast(): UseToastReturn {
       setToasts((prev) => [...prev, toast]);
 
       // Auto-remove after duration (if not persistent)
-      if (toast.duration > 0) {
+      if ((toast.duration ?? 0) > 0) {
         setTimeout(() => {
           setToasts((prev) => prev.filter((t) => t.id !== id));
         }, toast.duration);
@@ -146,4 +146,4 @@ export function useToast(): UseToastReturn {
   };
 }
 
-export { ToastNotification };
+export type { ToastNotification };

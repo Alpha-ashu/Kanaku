@@ -1,11 +1,28 @@
 import React, { useCallback, useState } from 'react';
 import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import { Mic, MicOff, Trash2, Plus } from 'lucide-react';
 import { useVoiceAssistant } from '@/hooks/useVoiceAssistant';
 import { voiceTransactionService } from '@/services/voiceTransactionService';
 import type { ParsedTransaction, ParsedGroupExpense } from '@/services/voiceCommandParser';
+
+// Lightweight local shims for shadcn/ui primitives not available in this project
+const Card: React.FC<{ className?: string; children: React.ReactNode }> = ({ className = '', children }) => (
+  <div className={`rounded-lg border bg-white shadow-sm ${className}`}>{children}</div>
+);
+type ButtonVariant = 'default' | 'destructive' | 'outline' | 'ghost';
+const Button: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: ButtonVariant; size?: string }> = ({
+  variant = 'default', size, className = '', children, ...rest
+}) => {
+  const base = 'inline-flex items-center justify-center font-medium transition-colors focus:outline-none disabled:opacity-50 disabled:pointer-events-none';
+  const variants: Record<ButtonVariant, string> = {
+    default: 'bg-slate-900 text-white hover:bg-slate-800',
+    destructive: 'bg-red-600 text-white hover:bg-red-700',
+    outline: 'border border-slate-200 bg-white hover:bg-slate-50 text-slate-900',
+    ghost: 'hover:bg-slate-100 text-slate-900',
+  };
+  const sizes: Record<string, string> = { sm: 'text-sm px-3 py-1.5 rounded-md', lg: 'text-base px-4 py-2.5 rounded-xl', default: 'text-sm px-4 py-2 rounded-lg' };
+  return <button className={`${base} ${variants[variant]} ${sizes[size ?? 'default']} ${className}`} {...rest}>{children}</button>;
+};
 
 interface VoiceAssistantProps {
   accountId?: number;

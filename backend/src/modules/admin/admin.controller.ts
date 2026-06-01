@@ -5,7 +5,8 @@ import { prisma } from '../../db/prisma';
 import { logger } from '../../config/logger';
 import { getCacheMetricsSnapshot, getRedisStatus, resetCacheMetrics } from '../../cache/redis';
 import { getSystemMetrics } from '../../utils/system';
-import { invalidateFeatureCache } from '../../middleware/featureGate';
+import { invalidateFeatureCache, invalidateAIFeatureCache } from '../../middleware/featureGate';
+import { getSocketManager } from '../../sockets';
 
 // Get all users (admin only)
 export const getAllUsers = async (req: AuthRequest, res: Response) => {
@@ -291,6 +292,16 @@ export const toggleFeatureFlag = async (req: AuthRequest, res: Response) => {
 
     invalidateFeatureCache();
 
+    // Broadcast real-time update to all connected clients
+    try {
+      getSocketManager().broadcastToAll('feature_flags_updated', {
+        type: 'global',
+        timestamp: new Date().toISOString(),
+      });
+    } catch {
+      // Socket not initialized (e.g. during tests) — non-blocking
+    }
+
     res.json({
       message: 'Global feature flags saved successfully',
       features,
@@ -300,6 +311,106 @@ export const toggleFeatureFlag = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ error: 'Failed to toggle feature flag' });
   }
 };
+
+// AI Feature flags management
+export const getAIFeatureFlags = async (req: AuthRequest, res: Response) => {
+  try {
+    const adminUser = await prisma.user.findFirst({
+      where: { role: 'admin' },
+    });
+
+    if (!adminUser) {
+      return res.json({});
+    }
+
+    const settings = await prisma.userSettings.findUnique({
+      where: { userId: adminUser.id },
+    });
+
+    if (!settings || !settings.settings) {
+      return res.json({});
+    }
+
+    const parsedSettings = JSON.parse(settings.settings);
+    const aiFeatureFlags = parsedSettings.admin_ai_feature_settings || {};
+    res.json(aiFeatureFlags);
+  } catch (error: any) {
+    logger.error('Failed to fetch AI feature flags', { error });
+    res.status(500).json({ error: 'Failed to fetch AI feature flags' });
+  }
+};
+
+// Save AI feature flags (admin only)
+export const toggleAIFeatureFlags = async (req: AuthRequest, res: Response) => {
+  try {
+    const { features } = req.body;
+
+    if (!features) {
+      return res.status(400).json({ error: 'Missing required field: features' });
+    }
+
+    const adminUser = await prisma.user.findFirst({
+      where: { role: 'admin' },
+    });
+
+    if (!adminUser) {
+      return res.status(404).json({ error: 'Admin user not found' });
+    }
+
+    let settings = await prisma.userSettings.findUnique({
+      where: { userId: adminUser.id },
+    });
+
+    let currentSettings: Record<string, any> = {};
+    if (settings && settings.settings) {
+      try {
+        currentSettings = JSON.parse(settings.settings);
+      } catch {
+        currentSettings = {};
+      }
+    }
+
+    currentSettings.admin_ai_feature_settings = features;
+
+    if (!settings) {
+      settings = await prisma.userSettings.create({
+        data: {
+          userId: adminUser.id,
+          settings: JSON.stringify(currentSettings),
+        },
+      });
+    } else {
+      settings = await prisma.userSettings.update({
+        where: { userId: adminUser.id },
+        data: {
+          settings: JSON.stringify(currentSettings),
+          updatedAt: new Date(),
+        },
+      });
+    }
+
+    invalidateAIFeatureCache();
+
+    // Broadcast real-time update to all connected clients
+    try {
+      getSocketManager().broadcastToAll('feature_flags_updated', {
+        type: 'ai',
+        timestamp: new Date().toISOString(),
+      });
+    } catch {
+      // Socket not initialized (e.g. during tests) — non-blocking
+    }
+
+    res.json({
+      message: 'Global AI feature flags saved successfully',
+      features,
+    });
+  } catch (error: any) {
+    logger.error('Failed to toggle AI feature flags', { error });
+    res.status(500).json({ error: 'Failed to toggle AI feature flags' });
+  }
+};
+
 
 // Get users report (admin only)
 export const getUsersReport = async (req: AuthRequest, res: Response) => {

@@ -365,7 +365,34 @@ const getDocumentIdFromTransaction = (tx) => {
 
 ##  Change Log & Evolution
 
-#### 1. Root Cause: Infinite Re-render Loop in `AdminFeaturePanel.tsx` (`applyFeatureVisibility`)
+### **2026-06-01 — Date & Month Timeline Selector Redesign & Realignment**
+
+#### 1. Transactions Month Selector Redesign (`Transactions.tsx`)
+
+**Problem**: The horizontal month/year/day timeline selector wrapper on the Transactions page was not centered, felt too large/chunky, and when items overflowed, they could clip on the left (making them unscrollable) due to dynamic flexbox `justify-center` alignment constraints. Furthermore, the active item centering scroll logic had timing issues during state changes.
+
+**Fix**:
+- **Centered and Smaller Card**: Restricted the wrapper card container to `max-w-2xl mx-auto w-full` and reduced card padding to `p-1.5 sm:p-2.5`, making it a tight, compact, and centered control panel.
+- **Button Slimming**: Scaled down button heights (`h-[48px] sm:h-[64px]`), widths (`min-w-[38px] sm:min-w-[56px]`), rounded corners (`rounded-lg sm:rounded-2xl`), and text size scaling (sublabels to `text-[7px] sm:text-[9px]` and labels to `text-xs sm:text-base`) for a much cleaner and premium look.
+- **Dynamic Flexbox Alignment**: Omitted `justify-center` on the scrolling flex container when items overflow (detecting `dateRange.length > 5`), preventing left-clipping and restoring full scrollability. Centered the items when they fit (such as in the yearly view).
+- **Robust Centering Scroll Effect**: Refactored the `useEffect` centering trigger to run with a safe `setTimeout` of 50ms (allowing stable browser layout computation) and added `dateRange` to its dependency array, resolving timing and race conditions on tab/period switches.
+- **Removed Redundant Period Label**: Removed the redundant label `<p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{getPeriodLabel(timePeriod)}</p>` from the filter bar wrapper.
+
+#### 2. Dashboard Header Period Label Removal (`Dashboard.tsx`)
+
+**Problem**: The Dashboard header had a redundant period label element (`<p className="text-xs font-black text-slate-400 uppercase tracking-widest hidden md:block">`) and its vertical divider line, which created visual clutter.
+
+**Fix**: Removed both the divider line (`<div className="hidden xl:block h-8 w-px bg-slate-200 mx-2" />`) and the period label paragraph from `Dashboard.tsx` header section.
+
+#### 3. TopBar Logo & App Name Visibility (`TopBar.tsx`)
+
+**Problem**: The KANKU logo and app name were hidden on screens smaller than `lg` (mobile and tablet viewports) inside the top header floating card `flex items-center justify-between px-4 lg:px-6 h-16 w-full`, leaving the top header unidentified on mobile.
+
+**Fix**: Changed the container class from `hidden lg:flex` to `flex items-center gap-2 sm:gap-3 mr-2 sm:mr-4 shrink-0` to render the logo and app name next to the mobile menu button on all screen sizes, scaling logo dimensions to `w-7 h-7 sm:w-8 sm:h-8` and label text to `text-sm sm:text-xl` for perfect responsive fit. Added dynamic, unique linearGradient IDs via React `useId` to [KANKULogo.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/ui/KANKULogo.tsx) to resolve DOM ID collision issues that rendered the logo blank when multiple instances coexisted.
+
+---
+
+#### 4. Root Cause: Infinite Re-render Loop in `AdminFeaturePanel.tsx` (`applyFeatureVisibility`)
 
 **Problem**: The `adminFeatureUpdate` CustomEvent was being dispatched 50+ times per second, and `useSharedMenu.ts` was logging `"Admin feature update detected, refreshing menu"` hundreds of times on every load.
 
@@ -2014,3 +2041,41 @@ See `frontend/src/lib/app-integration-guide.tsx` for complete implementation exa
 | `backend/src/modules/accounts/account.routes.ts` | Gated POST, PUT, DELETE with `requireFeature` |
 | `backend/src/modules/transactions/transaction.routes.ts` | Gated POST, PUT, DELETE with `requireFeature` |
 | `backend/src/modules/import/import.routes.ts` | Gated upload and confirm endpoints |
+
+---
+
+### **2026-06-01 — Phase 4: Real-time Feature Sync, AI Capability Gating, and UI Realignment**
+
+#### 1. Real-time Feature Sync & WebSocket Integration
+- **Immediate Broadcast Propagation**: Added real-time sync via WebSockets. Whenever the Admin saves feature flags or AI capability settings:
+  - The backend broadcasts a `feature_flags_updated` socket event to all active client tabs.
+  - Clients instantly capture this event and trigger `fetchGlobalFlags()` to recompute visible features, sub-features, and AI capabilities in real-time without needing a page reload.
+  - Falls back to 30-second polling in case of socket disconnection.
+
+#### 2. Multimodal AI Capability Gating
+- **OCR Scan Visibility Controls**: Gated the **Scan Receipt** button in [AddTransaction.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/transactions/AddTransaction.tsx) to hide when OCR is disabled. In this state, the **Add Attachment** button dynamically scales to occupy the full width of the container.
+- **Voice Assistant Quick Action Gating**: Gated the **Voice** quick action button in [QuickActionModal.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/shared/QuickActionModal.tsx) to hide when the Voice Assistant is disabled.
+- **Routing & Rendering Guards**:
+  - Implemented client-side route guards in [App.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/App.tsx) (both in the navigation check `useEffect` and the render-level `renderPage` function) to redirect users away from `voice-input`, `voice-review`, and `ai-insights` pages if their corresponding master AI modules are disabled.
+  - Integrated gates inside [useSharedMenu.ts](file:///k:/Project/kenku/Finora/frontend/src/hooks/useSharedMenu.ts) to automatically filter out **AI Insights** from the sidebar navigation menu if `aiAutomation` is disabled.
+
+#### 3. Sub-Feature Modal Popup Restoration
+- **Premium Glassmorphic Modal**: Restored the configuration popup modal inside [AdminFeaturePanel.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/admin/AdminFeaturePanel.tsx) to manage nested sub-features and role access.
+- **Framer Motion Overlay**: Replaced the inline accordion list with an overlay modal featuring a high-end backdrop blur, slide-up animations, and granular role visibility overrides for the 4 primary user roles.
+
+#### 4. Navigation & Layout Realignment
+- **Compact Sidebar Navigation**: Redesigned [Sidebar.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/core/Sidebar.tsx) to fit all navigation items vertically on desktop viewports without scrolling. Reduced spacing to `space-y-2`, button sizes to `w-10 h-10` with `rounded-xl` active overlays, and icon sizes to `size={20}`.
+- **Floating Horizontal TopBar Card**: Reconstructed [TopBar.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/ui/TopBar.tsx) to float as a premium card-like header (`fixed top-3 left-3 right-3 lg:top-4 lg:left-[112px] lg:right-6`) with `rounded-3xl` and shadow. Removed the viewport-relative `layout-container` constraints inside the header to align items to the card boundaries.
+- **App Layout Top Padding**: Adjusted the top padding of the `<main>` layout container in [App.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/App.tsx) from `pt-16` to `pt-24 lg:pt-28` to align perfectly with the floating header coordinates.
+
+#### Files Changed / Created
+
+| File | Change |
+|---|---|
+| `frontend/src/app/components/transactions/AddTransaction.tsx` | Gated OCR Scan button with useAICapability check; dynamically expanded Add Attachment button layout |
+| `frontend/src/app/components/shared/QuickActionModal.tsx` | Filtered out Voice entry button if voiceAssistant is disabled |
+| `frontend/src/app/App.tsx` | Implemented route guards and render-level security for voice-input/review and ai-insights pages; adjusted main container pt |
+| `frontend/src/hooks/useSharedMenu.ts` | Gated AI Insights menu item based on aiAutomation capability status |
+| `frontend/src/app/components/admin/AdminFeaturePanel.tsx` | Restored premium configuration popup modal overlay for sub-features using Framer Motion |
+| `frontend/src/app/components/core/Sidebar.tsx` | Compact vertical sidebar styling (smaller width, icons, gaps) to fit all features without scrolling |
+| `frontend/src/app/components/ui/TopBar.tsx` | Redesigned TopBar to float as a horizontal card with inner alignment aligned to card boundaries |

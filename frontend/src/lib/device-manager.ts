@@ -388,4 +388,4 @@ export class DeviceManager {
 // Export singleton instance
 export const deviceManager = new DeviceManager();
 
-export { RegisteredDevice, DeviceRegistrationData };
+export type { RegisteredDevice, DeviceRegistrationData };

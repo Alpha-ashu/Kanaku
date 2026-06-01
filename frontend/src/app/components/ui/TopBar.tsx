@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useApp } from '@/contexts/AppContext';
-import { Search, Bell, Menu, GripVertical, Wallet, Target, Users, CalendarClock, MessageSquare, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Search, Bell, Menu, GripVertical, Wallet, Target, Users, CalendarClock, MessageSquare, CheckCircle2, AlertCircle, LogOut } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from '@/app/components/ui/sheet';
 import { NavigationItem } from '@/app/constants/navigation';
 import { NotificationPopup } from '@/app/components/ui/NotificationPopup';
@@ -19,46 +19,51 @@ interface DraggablePageMenuItemProps {
 }
 
 const DraggablePageMenuItem: React.FC<DraggablePageMenuItemProps> = ({
- item,
- isActive,
- onNavigate,
+  item,
+  isActive,
+  onNavigate,
 }) => {
- const Icon = item.icon;
- const dragControls = useDragControls();
+  const Icon = item.icon;
+  const dragControls = useDragControls();
 
- return (
- <Reorder.Item
- value={item}
- dragListener={false}
- dragControls={dragControls}
- className="relative"
- whileDrag={{ scale: 1.02, zIndex: 50, backgroundColor: 'rgba(0,0,0,0.05)' }}
- transition={{ type:"spring", stiffness: 300, damping: 25 }}
- >
- <button
- onClick={() => onNavigate(item.id)}
- className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl mb-1 transition-colors ${isActive
- ? 'bg-black text-white shadow-lg'
- : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
- }`}
- >
- <div
- className="cursor-grab active:cursor-grabbing touch-none p-1 -ml-2"
- onPointerDown={(e) => dragControls.start(e)}
- >
- <GripVertical size={16} className="text-gray-400" />
- </div>
- <Icon size={20} />
- <span className="font-bold text-sm">{item.label}</span>
- </button>
- </Reorder.Item>
- );
+  return (
+    <Reorder.Item
+      value={item}
+      dragListener={false}
+      dragControls={dragControls}
+      className="relative animate-in fade-in slide-in-from-left-2 duration-200"
+      whileDrag={{ scale: 1.02, zIndex: 50, backgroundColor: 'rgba(241, 245, 249, 0.8)' }}
+      transition={{ type: "spring", stiffness: 300, damping: 25 }}
+    >
+      <button
+        onClick={() => onNavigate(item.id)}
+        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl mb-1.5 transition-all duration-200 relative group text-left ${isActive
+          ? 'bg-slate-900 text-white shadow-lg shadow-slate-900/10 font-bold'
+          : 'text-slate-600 hover:bg-slate-50 hover:text-slate-950 font-medium'
+        }`}
+      >
+        {isActive && (
+          <div className="absolute left-1.5 top-1/2 -translate-y-1/2 w-1 h-5 bg-indigo-500 rounded-full" />
+        )}
+        <div
+          className={`cursor-grab active:cursor-grabbing touch-none p-1 -ml-1.5 rounded transition-colors ${
+            isActive ? 'text-slate-400 hover:bg-slate-800' : 'text-slate-400 hover:bg-slate-100'
+          }`}
+          onPointerDown={(e) => dragControls.start(e)}
+        >
+          <GripVertical size={15} />
+        </div>
+        <Icon size={18} className={`transition-transform duration-200 group-hover:scale-105 ${isActive ? 'text-indigo-400' : 'text-slate-500 group-hover:text-slate-800'}`} />
+        <span className="text-sm tracking-wide">{item.label}</span>
+      </button>
+    </Reorder.Item>
+  );
 };
 
 export const TopBar: React.FC = () => {
  const { setCurrentPage, visibleFeatures, accounts, transactions } = useApp();
  const { orderedItems, handleReorder, handleNavigate, currentPage } = useSharedMenu();
- const { role } = useAuth();
+ const { role, user, signOut } = useAuth();
  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
  const [notificationPopupOpen, setNotificationPopupOpen] = useState(false);
  const [searchQuery, setSearchQuery] = useState('');
@@ -305,7 +310,7 @@ export const TopBar: React.FC = () => {
  };
 
  return (
- <header className="fixed top-0 left-0 right-0 z-[60] bg-white/70 backdrop-blur-xl border-b border-white/20 shadow-sm shadow-slate-200/20 transition-all duration-300">
+ <header className="fixed top-3 left-3 right-3 lg:top-4 lg:left-[112px] lg:right-6 z-[60] bg-white/80 backdrop-blur-2xl border border-slate-100 rounded-3xl shadow-lg shadow-slate-100/40 transition-all duration-300">
  {/* Notification Popup */}
  <NotificationPopup
  isOpen={notificationPopupOpen}
@@ -315,7 +320,7 @@ export const TopBar: React.FC = () => {
  />
 
  {/* Top Header Row - Menu, Search, Bell, Profile */}
- <div className="layout-container layout-header flex items-center justify-between px-4 lg:px-8">
+ <div className="flex items-center justify-between px-4 lg:px-6 h-16 w-full">
  {/* Left: Menu and Search */}
  <div className="flex items-center gap-2 md:gap-3 lg:gap-4 flex-1 max-w-2xl">
  {/* Mobile Menu Button */}
@@ -326,39 +331,105 @@ export const TopBar: React.FC = () => {
  </button>
  </SheetTrigger>
 
- {/* Desktop Logo & Name */}
- <div className="hidden lg:flex items-center gap-3 mr-4">
- <KANKULogo className="w-8 h-8" />
- <span className="text-xl font-bold font-display text-gray-900 tracking-tight">KANKU</span>
- </div>
- <SheetContent side="left" className="w-[280px] p-0 bg-white border-r border-gray-100 text-gray-900 z-[100]">
+  {/* Logo & Name */}
+  <div className="flex items-center gap-2 sm:gap-3 mr-2 sm:mr-4 shrink-0">
+    <KANKULogo className="w-7 h-7 sm:w-8 sm:h-8" />
+    <span className="text-sm sm:text-xl font-bold font-display text-gray-900 tracking-tight">KANKU</span>
+  </div>
+ <SheetContent side="left" className="w-[270px] h-[calc(100vh-24px)] my-3 ml-3 rounded-[32px] bg-white border border-slate-100 shadow-2xl text-slate-900 z-[100] p-0 overflow-hidden flex flex-col focus:outline-none">
  <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
  <SheetDescription className="sr-only">Main navigation menu</SheetDescription>
- <div className="flex flex-col h-full">
- <div className="p-6 border-b border-gray-100 flex items-center gap-3">
- <KANKULogo className="w-8 h-8" />
- <h1 className="text-2xl font-bold font-display text-gray-900">KANKU</h1>
- </div>
+  <div className="flex flex-col h-full bg-white text-slate-900">
+    {/* Header Block */}
+    <div className="p-5 border-b border-slate-100 bg-gradient-to-b from-slate-50/50 to-white flex items-center justify-between gap-3 shrink-0">
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 rounded-2xl bg-slate-900 p-2 flex items-center justify-center shadow-md shadow-slate-900/10">
+          <KANKULogo className="w-full h-full text-white" />
+        </div>
+        <div className="flex flex-col">
+          <h1 className="text-base font-black font-display tracking-tight text-slate-900 leading-none">KANKU</h1>
+          <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-1">Fintech Suite</span>
+        </div>
+      </div>
+      <div className="px-2 py-0.5 rounded-full bg-indigo-50 border border-indigo-100 text-[9px] font-bold text-indigo-600">
+        v1.2.0
+      </div>
+    </div>
 
- <nav className="flex-1 p-4 overflow-y-auto scrollbar-hide">
- <p className="text-xs text-gray-400 mb-3 px-2">Drag to reorder menu items</p>
- <Reorder.Group
- axis="y"
- values={orderedItems}
- onReorder={handleReorder}
- className="space-y-1"
- >
- {orderedItems.map((item) => (
- <DraggablePageMenuItem
- key={item.id}
- item={item}
- isActive={currentPage === item.id}
- onNavigate={handleMenuItemClick}
- />
- ))}
- </Reorder.Group>
- </nav>
- </div>
+    {/* Navigation List */}
+    <nav className="flex-1 px-4 py-2 overflow-y-auto scrollbar-hide">
+      <Reorder.Group
+        axis="y"
+        values={orderedItems}
+        onReorder={handleReorder}
+        className="space-y-1"
+      >
+        {orderedItems.map((item) => (
+          <DraggablePageMenuItem
+            key={item.id}
+            item={item}
+            isActive={currentPage === item.id}
+            onNavigate={handleMenuItemClick}
+          />
+        ))}
+      </Reorder.Group>
+    </nav>
+
+    {/* Profile & Action Footer */}
+    {(() => {
+      const profileStr = typeof window !== 'undefined' ? localStorage.getItem('user_profile') : null;
+      let displayName = 'User';
+      let email = user?.email || 'user@kanku.com';
+      let avatarUrl = '';
+      let roleName = role ? role.toUpperCase() : 'USER';
+      
+      if (profileStr) {
+        try {
+          const profile = JSON.parse(profileStr);
+          displayName = profile.full_name || profile.displayName || displayName;
+          avatarUrl = profile.avatarUrl || '';
+        } catch (e) {
+          console.error("Error reading profile for drawer footer", e);
+        }
+      }
+
+      return (
+        <div className="p-4 border-t border-slate-100 bg-slate-50/50 shrink-0">
+          <div className="flex items-center gap-3 p-3 bg-white border border-slate-100 rounded-2xl shadow-sm shadow-slate-100/50">
+            {/* Avatar */}
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white font-bold text-sm shrink-0 flex items-center justify-center overflow-hidden shadow-sm shadow-indigo-100">
+              {avatarUrl ? (
+                <img src={avatarUrl} alt={displayName} className="w-full h-full object-cover" />
+              ) : (
+                <span>{displayName.charAt(0).toUpperCase()}</span>
+              )}
+            </div>
+            {/* User Details */}
+            <div className="flex-1 min-w-0">
+              <h3 className="text-xs font-black text-slate-800 truncate">{displayName}</h3>
+              <p className="text-[10px] text-slate-400 truncate font-semibold text-left">{email}</p>
+              <div className="text-left mt-0.5">
+                <span className="inline-flex px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider bg-slate-100 text-slate-500">
+                  {roleName}
+                </span>
+              </div>
+            </div>
+            {/* Logout Button */}
+            <button
+              onClick={async () => {
+                await signOut();
+                setMobileMenuOpen(false);
+              }}
+              className="p-2 rounded-xl text-slate-400 hover:text-red-600 hover:bg-red-50 active:bg-red-100 transition-all duration-200 shrink-0"
+              title="Sign out"
+            >
+              <LogOut size={18} />
+            </button>
+          </div>
+        </div>
+      );
+    })()}
+  </div>
  </SheetContent>
  </Sheet>
 

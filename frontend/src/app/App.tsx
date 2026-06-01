@@ -155,7 +155,7 @@ const AppContent: React.FC = () => {
     );
   }
 
-  const { currentPage, setCurrentPage, visibleFeatures } = appContext;
+  const { currentPage, setCurrentPage, visibleFeatures, aiCapabilities } = appContext;
   const [isInitialized, setIsInitialized] = useState(false);
   const [showQuickAction, setShowQuickAction] = useState(false);
   // Landing page: shown only to confirmed unauthenticated visitors (set via effect
@@ -311,6 +311,30 @@ const AppContent: React.FC = () => {
     const hasAdminBypass = isAdmin && (isSystemAdminPage || isManagerPage);
     const hasManagerBypass = isManager && isManagerPage;
 
+    // Gate AI/Voice assistant pages based on AI capability settings
+    const isVoiceDisabled = aiCapabilities?.voiceAssistant?.enabled === false;
+    const isAIDisabled = aiCapabilities?.aiAutomation?.enabled === false;
+
+    if (isVoiceDisabled && (currentPage === 'voice-input' || currentPage === 'voice-review')) {
+      console.warn(`[Route Guard] Redirecting from disabled voice page: ${currentPage}`);
+      if (visibleFeatures.dashboard) {
+        setCurrentPage('dashboard');
+      } else {
+        setCurrentPage('settings');
+      }
+      return;
+    }
+
+    if (isAIDisabled && currentPage === 'ai-insights') {
+      console.warn(`[Route Guard] Redirecting from disabled AI insights page: ${currentPage}`);
+      if (visibleFeatures.dashboard) {
+        setCurrentPage('dashboard');
+      } else {
+        setCurrentPage('settings');
+      }
+      return;
+    }
+
     if (!canAccessPage(currentPage, visibleFeatures) && !hasAdminBypass && !hasManagerBypass && !isPublicPage) {
       console.warn(`[Route Guard] Redirecting from disabled page: ${currentPage} (Role: ${role})`);
       if (visibleFeatures.dashboard && currentPage !== 'dashboard') {
@@ -319,7 +343,7 @@ const AppContent: React.FC = () => {
         setCurrentPage('settings');
       }
     }
-  }, [user, authLoading, dataReady, currentPage, setCurrentPage, visibleFeatures, role]);
+  }, [user, authLoading, dataReady, currentPage, setCurrentPage, visibleFeatures, role, aiCapabilities]);
 
   const setupNativeFeatures = async () => {
     try {
@@ -574,6 +598,22 @@ const AppContent: React.FC = () => {
     const hasAdminBypass = isAdmin && (isSystemAdminPage || isManagerPage);
     const hasManagerBypass = isManager && isManagerPage;
 
+    // Gate AI/Voice assistant pages based on AI capability settings
+    const isVoiceDisabled = aiCapabilities?.voiceAssistant?.enabled === false;
+    const isAIDisabled = aiCapabilities?.aiAutomation?.enabled === false;
+
+    if (isVoiceDisabled && (currentPage === 'voice-input' || currentPage === 'voice-review')) {
+      console.warn(`[Access Denied] Voice assistant is disabled. Cannot render page: ${currentPage}`);
+      if (!visibleFeatures.dashboard) return <Settings />;
+      return <Dashboard setCurrentPage={setCurrentPage} />;
+    }
+
+    if (isAIDisabled && currentPage === 'ai-insights') {
+      console.warn(`[Access Denied] AI Insights is disabled. Cannot render page: ${currentPage}`);
+      if (!visibleFeatures.dashboard) return <Settings />;
+      return <Dashboard setCurrentPage={setCurrentPage} />;
+    }
+
     if (!canAccessPage(currentPage, visibleFeatures) && !hasAdminBypass && !hasManagerBypass && !isPublicPage) {
       console.warn(`[Access Denied] User role ${role} cannot access page: ${currentPage}`);
       if (!visibleFeatures.dashboard) return <Settings />;
@@ -681,7 +721,7 @@ const AppContent: React.FC = () => {
         <div className="w-full lg:max-w-[90%] xl:max-w-[85%] mx-auto flex flex-col flex-1 mobile-content relative">
           <LimitedModeBanner />
           <TopBar />
-          <main className="w-full pt-16 overflow-x-hidden mobile-safe-bottom mobile-main flex-1 bg-transparent">
+          <main className="w-full pt-24 lg:pt-28 overflow-x-hidden mobile-safe-bottom mobile-main flex-1 bg-transparent">
             {dataSyncError && (
               <div className="px-4 sm:px-6 pt-4">
                 <div className="flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 shadow-sm">

@@ -4,6 +4,7 @@ import { validateBody } from '../../middleware/validate';
 import { z } from 'zod';
 import { processVoice, learnFromCorrection, processVoiceAudio } from './voice.controller';
 import { uploadSingle } from '../../middleware/upload';
+import { requireAIFeature } from '../../middleware/featureGate';
 
 const router = Router();
 
@@ -22,19 +23,19 @@ const learnSchema = z.object({
  * POST /api/v1/voice/process-audio
  * Transcribe and process an uploaded audio file
  */
-router.post('/process-audio', authMiddleware, uploadSingle('audio'), processVoiceAudio);
+router.post('/process-audio', authMiddleware, requireAIFeature('voiceAssistant'), uploadSingle('audio'), processVoiceAudio);
 
 /**
  * POST /api/v1/voice/process
  * Analyze a voice transcript and extract financial actions
  */
-router.post('/process', authMiddleware, validateBody(processVoiceSchema), processVoice);
+router.post('/process', authMiddleware, requireAIFeature('voiceAssistant'), validateBody(processVoiceSchema), processVoice);
 
 /**
  * POST /api/v1/voice/learn
  * Record user corrections for improved future recognition
  */
-router.post('/learn', authMiddleware, validateBody(learnSchema), learnFromCorrection);
+router.post('/learn', authMiddleware, requireAIFeature('voiceAssistant'), validateBody(learnSchema), learnFromCorrection);
 
 export default router;
 

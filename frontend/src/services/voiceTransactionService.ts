@@ -33,7 +33,7 @@ export class VoiceTransactionService {
     accountId?: number,
     userId?: string,
   ): Promise<any[]> {
-    const results = [];
+    const results: any[] = [];
 
     for (const tx of transactions) {
       try {

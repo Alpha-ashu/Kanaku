@@ -156,3 +156,110 @@ export const requireFeature = (moduleKey: string, childKey?: string) => {
     }
   };
 };
+
+// --- AI Feature Management ---
+
+let cachedAIFeatures: any = null;
+let cacheAITimestamp = 0;
+
+export const invalidateAIFeatureCache = () => {
+  cachedAIFeatures = null;
+  cacheAITimestamp = 0;
+  logger.info('[FeatureGate] AI feature flags cache invalidated');
+};
+
+const getAIGlobalFeatures = async () => {
+  const now = Date.now();
+  if (cachedAIFeatures && (now - cacheAITimestamp < CACHE_TTL_MS)) {
+    return cachedAIFeatures;
+  }
+
+  try {
+    const adminUser = await prisma.user.findFirst({
+      where: { role: 'admin' },
+    });
+
+    if (!adminUser) {
+      return {};
+    }
+
+    const settings = await prisma.userSettings.findUnique({
+      where: { userId: adminUser.id },
+    });
+
+    if (!settings || !settings.settings) {
+      return {};
+    }
+
+    const parsedSettings = JSON.parse(settings.settings);
+    cachedAIFeatures = parsedSettings.admin_ai_feature_settings || {};
+    cacheAITimestamp = now;
+    return cachedAIFeatures;
+  } catch (error) {
+    logger.error('[FeatureGate] Failed to fetch AI feature flags from database:', error);
+    return cachedAIFeatures || {};
+  }
+};
+
+export const requireAIFeature = (moduleKey: string, capabilityKey?: string) => {
+  return async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      const userRole = req.user?.role || 'user';
+      const features = await getAIGlobalFeatures();
+
+      const moduleSettings = features[moduleKey];
+      
+      let moduleEnabled = true;
+      let moduleRoleAllowed = true;
+      
+      if (moduleSettings) {
+        if (typeof moduleSettings.enabled === 'boolean') {
+          moduleEnabled = moduleSettings.enabled;
+        }
+        if (moduleSettings.roleAccess && typeof moduleSettings.roleAccess[userRole] === 'boolean') {
+          moduleRoleAllowed = moduleSettings.roleAccess[userRole];
+        }
+      }
+
+      if (!moduleEnabled) {
+        return res.status(403).json({ error: `AI Module '${moduleKey}' is currently disabled.` });
+      }
+
+      if (!moduleRoleAllowed) {
+        return res.status(403).json({ error: `You do not have access to AI Module '${moduleKey}'.` });
+      }
+
+      if (capabilityKey) {
+        let capEnabled = true;
+        let capRoleAllowed = true;
+
+        const savedCap = moduleSettings?.capabilities?.[capabilityKey];
+        if (savedCap) {
+          if (typeof savedCap.enabled === 'boolean') {
+            capEnabled = savedCap.enabled;
+          }
+          if (savedCap.roleAccess && typeof savedCap.roleAccess[userRole] === 'boolean') {
+            capRoleAllowed = savedCap.roleAccess[userRole];
+          }
+        }
+
+        if (!capEnabled) {
+          return res.status(403).json({ error: `AI Capability '${capabilityKey}' is currently disabled.` });
+        }
+
+        if (!capRoleAllowed) {
+          return res.status(403).json({ error: `You do not have access to AI Capability '${capabilityKey}'.` });
+        }
+      }
+
+      return next();
+    } catch (error) {
+      logger.error(`[FeatureGate] Error checking AI feature gate: ${moduleKey}.${capabilityKey}`, error);
+      return res.status(503).json({
+        success: false,
+        error: 'AI Feature temporarily unavailable. Please try again.',
+        code: 'AI_FEATURE_GATE_ERROR',
+      });
+    }
+  };
+};

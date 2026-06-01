@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { db, Account, Transaction, Loan, Goal, Investment, GroupExpense, Friend } from '@/lib/database';
 import { isBoilerplateDescription } from '@/services/smartExpenseImportService';
 import { useAuth } from '@/contexts/AuthContext';
-import { getVisibleFeaturesForRole, mergeVisibleFeatures, normalizeFeatures, FeatureVisibility, computeSubFeatureMap } from '@/lib/featureFlags';
+import { getVisibleFeaturesForRole, mergeVisibleFeatures, normalizeFeatures, FeatureVisibility, computeSubFeatureMap, AIModuleKey, computeAICapabilityMap } from '@/lib/featureFlags';
 import { type SyncStats, useSyncStats, offlineSyncEngine } from '@/lib/offline-sync-engine';
 import { deduplicateLocalData, saveAccountWithBackendSync, syncUserDataFromCloud, updateAccountWithBackendSync } from '@/lib/auth-sync-integration';
 import { backendSyncService } from '@/lib/backend-sync-service';
@@ -12,6 +12,7 @@ import {
   mergeStoredUserSettings,
   readStoredAppPreferences,
 } from '@/lib/userPreferences';
+import socketClient from '@/lib/socket-client';
 
 interface AppContextType {
   currentPage: string;
@@ -37,6 +38,8 @@ interface AppContextType {
   setVisibleFeatures: (features: FeatureVisibility | ((prev: FeatureVisibility) => FeatureVisibility)) => void;
   /** Level-2 sub-feature visibility: { module: { childKey: boolean } } */
   subFeatures: Record<string, Record<string, boolean>>;
+  /** Level-3 AI capability visibility: { moduleKey: { capabilityKey: boolean } } */
+  aiCapabilities: Record<string, Record<string, boolean>>;
   // Navigation
   goBack: () => void;
   historyStack: string[];
@@ -119,6 +122,16 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       return computeSubFeatureMap('user', saved);
     } catch {
       return computeSubFeatureMap('user', null);
+    }
+  });
+
+  const [aiCapabilities, setAiCapabilities] = useState<Record<string, Record<string, boolean>>>(() => {
+    try {
+      const raw = localStorage.getItem('admin_ai_feature_settings');
+      const saved = raw ? JSON.parse(raw) : null;
+      return computeAICapabilityMap('user', saved);
+    } catch {
+      return computeAICapabilityMap('user', null);
     }
   });
   const { role, user, dataReady } = useAuth();
@@ -482,6 +495,17 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       computeScheduledRef.current = false;
       const roleFeatures = getVisibleFeaturesForRole(role, import.meta.env.MODE);
       const adminSettings = localStorage.getItem('admin_global_feature_settings');
+      const adminAISettings = localStorage.getItem('admin_ai_feature_settings');
+
+      let parsedAI = null;
+      if (adminAISettings) {
+        try {
+          parsedAI = JSON.parse(adminAISettings);
+        } catch (e) {
+          console.warn('[AppContext] Failed to parse admin_ai_feature_settings:', e);
+        }
+      }
+      setAiCapabilities(computeAICapabilityMap(role, parsedAI));
 
       if (!adminSettings) {
         setVisibleFeaturesState(roleFeatures);
@@ -540,82 +564,142 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     computeVisibleFeatures();
   }, [computeVisibleFeatures]);
 
-  // Sync global feature flags from the backend database when user is authenticated
-  // Also poll periodically so cross-session admin changes are picked up without a hard refresh.
-  useEffect(() => {
-    if (!user?.id) return;
-    
-    const fetchGlobalFlags = async () => {
-      try {
-        const { backendService } = await import('@/lib/backend-api');
-        const flags = await backendService.getGlobalFeatureFlags();
-        if (flags && Object.keys(flags).length > 0) {
-          const currentFlags = localStorage.getItem('admin_global_feature_settings');
-          
-          let isStale = false;
-          if (currentFlags) {
-            try {
-              const localFlags = JSON.parse(currentFlags);
-              // Prevent race conditions: if we just saved locally, the DB might still return old data.
-              // If ANY local flag is newer than the remote flag by > 1s, consider the remote fetch stale and ignore it.
-              for (const key of Object.keys(localFlags)) {
-                const localTime = new Date(localFlags[key]?.lastUpdated || 0).getTime();
-                const remoteTime = new Date(flags[key]?.lastUpdated || 0).getTime();
-                if (localTime > remoteTime + 1000) {
-                  isStale = true;
-                  break;
-                }
+  // Fetch and apply both global and AI feature flags from the backend DB.
+  // Exposed as a stable callback so it can be triggered both by the polling
+  // interval below and by the real-time WebSocket subscriber.
+  const fetchGlobalFlags = useCallback(async () => {
+    try {
+      const { backendService } = await import('@/lib/backend-api');
+
+      let changed = false;
+
+      // 1. Fetch normal feature flags
+      const flags = await backendService.getGlobalFeatureFlags();
+      if (flags && Object.keys(flags).length > 0) {
+        const currentFlags = localStorage.getItem('admin_global_feature_settings');
+
+        let isStale = false;
+        if (currentFlags && role === 'admin') {
+          try {
+            const localFlags = JSON.parse(currentFlags);
+            for (const key of Object.keys(localFlags)) {
+              const localTime = new Date(localFlags[key]?.lastUpdated || 0).getTime();
+              const remoteTime = new Date(flags[key]?.lastUpdated || 0).getTime();
+              if (localTime > remoteTime + 1000) {
+                isStale = true;
+                break;
               }
-            } catch (e) {
-              // Ignore parse errors
             }
-          }
-
-          if (isStale) {
-            return; // Skip this poll, let the DB finish saving the newer local state
-          }
-
-          const newFlags = JSON.stringify(flags);
-          
-          // Only update and recompute if there's an actual change to prevent unnecessary re-renders
-          if (currentFlags !== newFlags) {
-            localStorage.setItem('admin_global_feature_settings', newFlags);
-            computeVisibleFeatures();
+          } catch (e) {
+            // Ignore parse errors
           }
         }
-      } catch (error) {
-        console.warn('[AppContext] Failed to sync global feature flags from DB:', error);
+
+        if (!isStale) {
+          const newFlags = JSON.stringify(flags);
+          if (currentFlags !== newFlags) {
+            localStorage.setItem('admin_global_feature_settings', newFlags);
+            changed = true;
+          }
+        }
       }
-    };
-    
+
+      // 2. Fetch AI feature flags
+      const aiFlags = await backendService.getAIFeatureFlags();
+      if (aiFlags && Object.keys(aiFlags).length > 0) {
+        const currentAIFlags = localStorage.getItem('admin_ai_feature_settings');
+
+        let isAIStale = false;
+        if (currentAIFlags && role === 'admin') {
+          try {
+            const localAIFlags = JSON.parse(currentAIFlags);
+            for (const key of Object.keys(localAIFlags)) {
+              const localTime = new Date(localAIFlags[key]?.lastUpdated || 0).getTime();
+              const remoteTime = new Date(aiFlags[key]?.lastUpdated || 0).getTime();
+              if (localTime > remoteTime + 1000) {
+                isAIStale = true;
+                break;
+              }
+            }
+          } catch (e) {
+            // Ignore parse errors
+          }
+        }
+
+        if (!isAIStale) {
+          const newAIFlags = JSON.stringify(aiFlags);
+          if (currentAIFlags !== newAIFlags) {
+            localStorage.setItem('admin_ai_feature_settings', newAIFlags);
+            changed = true;
+          }
+        }
+      }
+
+      if (changed) {
+        computeVisibleFeatures();
+      }
+    } catch (error) {
+      console.warn('[AppContext] Failed to sync global feature flags from DB:', error);
+    }
+  }, [role, computeVisibleFeatures]);
+
+  // Sync global feature flags from the backend on mount and every 30 s as a fallback.
+  // Real-time updates come from the WebSocket subscriber below.
+  useEffect(() => {
+    if (!user?.id) return;
+
     // Fetch immediately on mount/auth
     void fetchGlobalFlags();
-    
-    // Poll every 30 seconds for cross-session updates
+
+    // Keep polling as a fallback for missed socket events (e.g. reconnect gaps)
     const interval = setInterval(fetchGlobalFlags, 30000);
-    
+
     return () => clearInterval(interval);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id]); // Intentionally omit computeVisibleFeatures — it's stable via useCallback([role])
+  }, [user?.id, fetchGlobalFlags]);
+
+  // Real-time feature flag sync via WebSocket.
+  // When the admin saves flags the backend broadcasts 'feature_flags_updated'
+  // to all connected clients, which triggers an immediate re-fetch here.
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const unsubscribe = socketClient.on('feature_flags_updated', () => {
+      console.log('[AppContext] feature_flags_updated received via WebSocket — re-fetching flags');
+      void fetchGlobalFlags();
+    });
+
+    return unsubscribe;
+  }, [user?.id, fetchGlobalFlags]);
 
   // Listen for real-time feature flag changes from admin panel (same-tab + cross-tab)
   useEffect(() => {
     let broadcastChannel: BroadcastChannel | null = null;
+    let aiBroadcastChannel: BroadcastChannel | null = null;
     try {
       broadcastChannel = new BroadcastChannel('feature_settings_channel');
     } catch {
       // BroadcastChannel not supported
     }
 
+    try {
+      aiBroadcastChannel = new BroadcastChannel('ai_feature_settings_channel');
+    } catch {
+      // BroadcastChannel not supported
+    }
+
     const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'admin_global_feature_settings' || e.key === 'featureFlagsOverride') {
+      if (
+        e.key === 'admin_global_feature_settings' ||
+        e.key === 'featureFlagsOverride' ||
+        e.key === 'admin_ai_feature_settings'
+      ) {
         computeVisibleFeatures();
       }
     };
 
     const handleAdminFeatureUpdate = (e: Event) => {
-      const event = e as CustomEvent;
-      console.log('[AppContext] Admin feature update detected, recomputing visible features:', event.detail);
+      console.log('[AppContext] Admin feature update detected, recomputing visible features');
       computeVisibleFeatures();
     };
 
@@ -626,19 +710,35 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       }
     };
 
+    const handleAIBroadcastMessage = (event: MessageEvent) => {
+      if (event.data.type === 'AI_FEATURE_UPDATE') {
+        console.log('[AppContext] AI Feature broadcast received from another tab/session', event.data.timestamp);
+        computeVisibleFeatures();
+      }
+    };
+
     if (broadcastChannel) {
       broadcastChannel.addEventListener('message', handleBroadcastMessage);
+    }
+    if (aiBroadcastChannel) {
+      aiBroadcastChannel.addEventListener('message', handleAIBroadcastMessage);
     }
 
     window.addEventListener('storage', handleStorageChange);
     window.addEventListener('adminFeatureUpdate', handleAdminFeatureUpdate as EventListener);
+    window.addEventListener('adminAIFeatureUpdate', handleAdminFeatureUpdate as EventListener);
 
     return () => {
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('adminFeatureUpdate', handleAdminFeatureUpdate as EventListener);
+      window.removeEventListener('adminAIFeatureUpdate', handleAdminFeatureUpdate as EventListener);
       if (broadcastChannel) {
         broadcastChannel.removeEventListener('message', handleBroadcastMessage);
         broadcastChannel.close();
+      }
+      if (aiBroadcastChannel) {
+        aiBroadcastChannel.removeEventListener('message', handleAIBroadcastMessage);
+        aiBroadcastChannel.close();
       }
     };
   }, [computeVisibleFeatures]);
@@ -681,6 +781,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     visibleFeatures,
     setVisibleFeatures,
     subFeatures,
+    aiCapabilities,
     goBack,
     historyStack: historyStackRef.current,
     syncStats,
@@ -708,6 +809,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     visibleFeatures,
     setVisibleFeatures,
     subFeatures,
+    aiCapabilities,
     goBack,
     syncStats,
     triggerSync,
@@ -749,6 +851,7 @@ export const useApp = () => {
       visibleFeatures: getVisibleFeaturesForRole('user', import.meta.env.MODE),
       setVisibleFeatures: () => { },
       subFeatures: computeSubFeatureMap('user', null),
+      aiCapabilities: computeAICapabilityMap('user', null),
       goBack: () => { },
       historyStack: [],
       syncStats: { pendingCount: 0, lastSyncedAt: null, status: 'idle' as const },
@@ -775,4 +878,15 @@ export function useSubFeature(moduleKey: string, childKey: string): boolean {
   const ctx = useContext(AppContext);
   if (!ctx) return true; // outside provider → allow (fail-open)
   return ctx.subFeatures?.[moduleKey]?.[childKey] ?? true;
+}
+
+export function useAICapability(moduleKey: AIModuleKey, capabilityKey?: string): boolean {
+  const ctx = useContext(AppContext);
+  if (!ctx) return true; // outside provider → allow (fail-open)
+  
+  if (!capabilityKey) {
+    // Check master toggle
+    return ctx.aiCapabilities?.[moduleKey]?.enabled ?? true;
+  }
+  return ctx.aiCapabilities?.[moduleKey]?.[capabilityKey] ?? true;
 }

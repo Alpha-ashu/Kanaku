@@ -17,6 +17,7 @@ import {
 import { backendService } from '@/lib/backend-api';
 import { shouldSkipOptionalBackendRequests } from '@/lib/apiBase';
 import { pinService } from '@/services/pinService';
+import socketClient from '@/lib/socket-client';
 
 interface AuthContextType {
   user: User | null;
@@ -685,8 +686,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         // PERSISTENCE FIX: Sync token to backend service for authenticated requests
         if (session?.access_token) {
           backendService.setToken(session.access_token);
+
+          // Connect WebSocket so this client receives real-time broadcasts (e.g. feature flag updates)
+          const deviceId = localStorage.getItem('device_id') || (() => {
+            const id = crypto.randomUUID();
+            localStorage.setItem('device_id', id);
+            return id;
+          })();
+          socketClient.connect(session.access_token, deviceId).catch((err) => {
+            // Non-blocking — app works fine without the socket
+            console.warn('[AuthContext] Socket connection failed (non-blocking):', err);
+          });
         } else if (event === 'SIGNED_OUT') {
           backendService.clearToken();
+          socketClient.disconnect();
         }
 
         try {
@@ -822,6 +835,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         console.error('Local-only sign out fallback also failed:', localSignOutError);
       }
     } finally {
+      socketClient.disconnect();
       setUser(null);
       setSession(null);
       setRole('user');

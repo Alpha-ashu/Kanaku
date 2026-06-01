@@ -1,8 +1,16 @@
 import React, { useState } from 'react';
 import VoiceAssistant from '@/components/VoiceAssistant';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
+
+// Local shims — shadcn/ui is not installed in this project
+const Card: React.FC<{ className?: string; children: React.ReactNode }> = ({ className = '', children }) => (
+  <div className={`rounded-lg border bg-white shadow-sm ${className}`}>{children}</div>
+);
+const Button: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: string; size?: string }> = ({
+  variant, size, className = '', children, ...rest
+}) => (
+  <button className={`inline-flex items-center justify-center font-medium transition-colors rounded-lg px-3 py-1.5 text-sm hover:bg-slate-100 text-slate-900 ${className}`} {...rest}>{children}</button>
+);
 
 /**
  * Example page showing how to integrate the Voice Assistant component

@@ -179,4 +179,4 @@ export function useDeviceSync(
   };
 }
 
-export { SyncEvent };
+export type { SyncEvent };

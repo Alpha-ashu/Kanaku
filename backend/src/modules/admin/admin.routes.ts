@@ -26,6 +26,7 @@ router.use(authMiddleware);
 
 // Feature flags (publicly readable by all authenticated users, but writable only by admin)
 router.get('/features', AdminController.getFeatureFlags);
+router.get('/ai-features', AdminController.getAIFeatureFlags);
 
 // All other admin routes require admin role
 router.use(requireRole('admin'));
@@ -45,6 +46,7 @@ router.get('/cache/metrics', validateQuery(adminCacheMetricsQuerySchema), AdminC
 
 // Feature flags toggle (admin only)
 router.post('/features/toggle', AdminController.toggleFeatureFlag);
+router.post('/ai-features/toggle', AdminController.toggleAIFeatureFlags);
 
 // Reports
 router.get('/reports/users', AdminController.getUsersReport);

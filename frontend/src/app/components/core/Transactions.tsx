@@ -196,15 +196,6 @@ export const Transactions: React.FC = () => {
 
  const scrollRef = React.useRef<HTMLDivElement>(null);
 
- useEffect(() => {
- if (scrollRef.current) {
- const activeElement = scrollRef.current.querySelector('[data-selected="true"]');
- if (activeElement) {
- activeElement.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
- }
- }
- }, [selectedDate, timePeriod]);
-
  const dateRange = useMemo(() => {
  const dates: Date[] = [];
  const baseDate = filterReferenceDate;
@@ -234,10 +225,24 @@ export const Transactions: React.FC = () => {
  return dates;
  }, [timePeriod, filterReferenceDate]);
 
- const visibleTransactions = useMemo(
- () => filteredTransactions.slice(0, visibleCount),
- [filteredTransactions, visibleCount]
- );
+ useEffect(() => {
+    let timeoutId: any;
+    if (scrollRef.current) {
+      timeoutId = setTimeout(() => {
+        if (scrollRef.current) {
+          const activeElement = scrollRef.current.querySelector('[data-selected="true"]');
+          if (activeElement) {
+            activeElement.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+          }
+        }
+      }, 50);
+    }
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [selectedDate, timePeriod, dateRange]);
+
+ const visibleTransactions = useMemo(() => filteredTransactions.slice(0, visibleCount), [filteredTransactions, visibleCount]);
 
  const hasMoreTransactions = filteredTransactions.length > visibleTransactions.length;
  const shouldAnimateRows = visibleTransactions.length <= 60;
@@ -366,69 +371,74 @@ export const Transactions: React.FC = () => {
  </div>
  </div>
 
- {/* Scrollable Date Selector */}
- <div className="bg-white/95 backdrop-blur-2xl rounded-[16px] sm:rounded-[32px] p-1.5 sm:p-5 shadow-[0_8px_25px_rgba(0,0,0,0.02)] border border-white/40 overflow-hidden relative group">
- 
- <div ref={scrollRef} className="flex justify-start xs:justify-center items-center overflow-x-auto gap-1.5 xs:gap-2 sm:gap-4 scrollbar-hide snap-x px-0.5 py-0.5 w-full">
- {dateRange.length === 0 && (
- <p className="text-slate-400 text-center py-4 font-black uppercase tracking-widest text-[8px] sm:text-[10px] w-full">Loading...</p>
- )}
- {dateRange.map((date, idx) => {
- let isSelected = false;
- let label = '';
- let subLabel = '';
- let isWeekend = false;
+  {/* Scrollable Date Selector */}
+  <div className="max-w-2xl mx-auto w-full bg-white/95 backdrop-blur-2xl rounded-2xl p-1.5 sm:p-2.5 shadow-[0_8px_25px_rgba(0,0,0,0.02)] border border-white/40 overflow-hidden relative group">
+    
+    <div 
+      ref={scrollRef} 
+      className={cn(
+        "flex items-center overflow-x-auto gap-1.5 sm:gap-2.5 scrollbar-hide snap-x px-3 py-1 w-full",
+        dateRange.length <= 5 ? "justify-center" : "justify-start"
+      )}
+    >
+      {dateRange.length === 0 && (
+        <p className="text-slate-400 text-center py-4 font-black uppercase tracking-widest text-[8px] sm:text-[10px] w-full">Loading...</p>
+      )}
+      {dateRange.map((date, idx) => {
+        let isSelected = false;
+        let label = '';
+        let subLabel = '';
+        let isWeekend = false;
 
- if (timePeriod === 'daily' || timePeriod === 'weekly') {
- isSelected = toLocalDateKey(date) === toLocalDateKey(selectedDate);
- const dayNameRaw = date.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
- subLabel = dayNameRaw === 'WED' ? 'WEN' : dayNameRaw;
- label = date.getDate().toString();
- isWeekend = date.getDay() === 0 || date.getDay() === 6;
- } else if (timePeriod === 'monthly') {
- isSelected = date.getMonth() === selectedDate.getMonth() && date.getFullYear() === selectedDate.getFullYear();
- label = date.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
- subLabel = date.getFullYear().toString();
- } else if (timePeriod === 'yearly') {
- isSelected = date.getFullYear() === selectedDate.getFullYear();
- label = date.getFullYear().toString();
- subLabel = 'YEAR';
- }
+        if (timePeriod === 'daily' || timePeriod === 'weekly') {
+          isSelected = toLocalDateKey(date) === toLocalDateKey(selectedDate);
+          const dayNameRaw = date.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
+          subLabel = dayNameRaw === 'WED' ? 'WEN' : dayNameRaw;
+          label = date.getDate().toString();
+          isWeekend = date.getDay() === 0 || date.getDay() === 6;
+        } else if (timePeriod === 'monthly') {
+          isSelected = date.getMonth() === selectedDate.getMonth() && date.getFullYear() === selectedDate.getFullYear();
+          label = date.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
+          subLabel = date.getFullYear().toString();
+        } else if (timePeriod === 'yearly') {
+          isSelected = date.getFullYear() === selectedDate.getFullYear();
+          label = date.getFullYear().toString();
+          subLabel = 'YEAR';
+        }
 
- return (
- <button
- key={idx}
- data-selected={isSelected}
- onClick={() => setSelectedDate(date)}
- className={cn(
- 'flex flex-col items-center justify-center min-w-[42px] xs:min-w-[50px] sm:min-w-[70px] h-[55px] xs:h-[65px] sm:h-[90px] rounded-[10px] sm:rounded-3xl transition-all duration-500 snap-center relative shrink-0',
- isSelected
- ? 'bg-slate-900 text-white shadow-md scale-105 z-10'
- : 'bg-white hover:bg-slate-100 text-slate-400 hover:text-slate-600'
- )}
- >
- <span className={cn(
- 'text-[6px] xs:text-[7px] sm:text-[10px] font-black tracking-widest mb-0.5 sm:mb-1',
- isSelected ? 'text-pink-400' : isWeekend ? 'text-rose-500' : 'text-slate-400'
- )}>
- {subLabel}
- </span>
- <span className="text-xs xs:text-sm sm:text-xl font-black tracking-tighter">
- {label}
- </span>
- {isSelected && (
- <div className="absolute -bottom-0.5 sm:-bottom-1 w-0.5 sm:w-1.5 h-0.5 sm:h-1.5 bg-pink-500 rounded-full" />
- )}
- </button>
- );
- })}
- </div>
- </div>
+        return (
+          <button
+            key={idx}
+            data-selected={isSelected}
+            onClick={() => setSelectedDate(date)}
+            className={cn(
+              'flex flex-col items-center justify-center min-w-[38px] sm:min-w-[56px] h-[48px] sm:h-[64px] rounded-lg sm:rounded-2xl transition-all duration-500 snap-center relative shrink-0',
+              isSelected
+                ? 'bg-slate-900 text-white shadow-md scale-105 z-10'
+                : 'bg-white hover:bg-slate-100 text-slate-400 hover:text-slate-600'
+            )}
+          >
+            <span className={cn(
+              'text-[7px] sm:text-[9px] font-bold tracking-wider mb-0.5',
+              isSelected ? 'text-pink-400' : isWeekend ? 'text-rose-500' : 'text-slate-400'
+            )}>
+              {subLabel}
+            </span>
+            <span className="text-xs sm:text-base font-black tracking-tight">
+              {label}
+            </span>
+            {isSelected && (
+              <div className="absolute -bottom-0.5 w-1 h-1 bg-pink-500 rounded-full" />
+            )}
+          </button>
+        );
+      })}
+    </div>
+  </div>
 
  {/* Filter Bar */}
  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
  <TimeFilter value={timePeriod} onChange={setTimePeriod} />
- <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{getPeriodLabel(timePeriod)}</p>
  </div>
 
  {/* Stats Board */}

@@ -58,17 +58,22 @@ export function useDeviceRegistration(
     }
 
     try {
-      // Check if Firebase Messaging is available
+      // Firebase Cloud Messaging is optional — only runs if the firebase package is available.
+      // Dynamic imports are guarded so missing the package is non-fatal.
       if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
-        // Dynamic import to avoid bundle bloat if not needed
-        const messaging = (await import('firebase/messaging')).getMessaging;
-        const getToken = (await import('firebase/messaging')).getToken;
-        const initializeApp = (await import('firebase/app')).initializeApp;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const firebaseMessaging = await import('firebase/messaging' as any).catch(() => null);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const firebaseApp = await import('firebase/app' as any).catch(() => null);
 
-        // This assumes Firebase is already initialized in your app
-        // If not, you'll need to initialize it here
+        if (!firebaseMessaging || !firebaseApp) {
+          console.info('Firebase SDK not installed — push notifications disabled.');
+          return undefined;
+        }
+
+        const { getMessaging, getToken } = firebaseMessaging;
         try {
-          const msg = messaging();
+          const msg = getMessaging();
           const token = await getToken(msg, {
             vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
           });
@@ -252,4 +257,4 @@ export function useDeviceRegistration(
   };
 }
 
-export { RegisteredDevice };
+export type { RegisteredDevice };

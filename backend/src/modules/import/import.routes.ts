@@ -3,7 +3,7 @@ import { authMiddleware } from '../../middleware/auth';
 import multer from 'multer';
 import { uploadImport, confirmImport, getImportSession } from './import.controller';
 import { validateBody } from '../../middleware/validate';
-import { requireFeature } from '../../middleware/featureGate';
+import { requireFeature, requireAIFeature } from '../../middleware/featureGate';
 import { z } from 'zod';
 
 const router = Router();
@@ -26,7 +26,7 @@ const confirmImportSchema = z.object({
  */
 router.post('/upload', authMiddleware, requireFeature('accounts', 'importStatement'), upload.single('file'), uploadImport);
 router.post('/confirm', authMiddleware, requireFeature('accounts', 'importStatement'), validateBody(confirmImportSchema), confirmImport);
-router.get('/:sessionId', authMiddleware, getImportSession);
+router.get('/:sessionId', authMiddleware, requireFeature('accounts', 'importStatement'), getImportSession);
 
 export default router;
 

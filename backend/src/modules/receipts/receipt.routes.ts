@@ -3,6 +3,7 @@ import { authMiddleware } from '../../middleware/auth';
 import { authenticatedRateLimit } from '../../middleware/rateLimit';
 import { uploadSingle } from '../../middleware/upload';
 import { validateQuery } from '../../middleware/validate';
+import { requireAIFeature } from '../../middleware/featureGate';
 import { BILL_MAX_UPLOAD_BYTES } from '../../utils/uploadPolicy';
 import { scanReceipt, startReceiptScan, getScanStatus } from './receipt.controller';
 import { receiptScanQuerySchema } from './receipt.validation';
@@ -18,6 +19,7 @@ router.post(
     max: 10,
     scope: 'api-ocr-start',
   }),
+  requireAIFeature('ocrEngine', 'transactionOCR', 'transactions'),
   uploadSingle('file', { maxBytes: BILL_MAX_UPLOAD_BYTES }),
   startReceiptScan,
 );
@@ -41,6 +43,7 @@ router.post(
     scope: 'api-receipts-scan',
   }),
   validateQuery(receiptScanQuerySchema),
+  requireAIFeature('ocrEngine', 'transactionOCR', 'transactions'),
   uploadSingle('file', { maxBytes: BILL_MAX_UPLOAD_BYTES }),
   scanReceipt,
 );

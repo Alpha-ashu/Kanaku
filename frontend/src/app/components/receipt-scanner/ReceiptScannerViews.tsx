@@ -32,22 +32,25 @@ export type ScanFieldUpdater = <K extends keyof ReceiptScanResult>(
 
 export const ModeSelectionView: React.FC<{
  onSelectMode: (mode: 'scan' | 'attachment') => void;
-}> = ({ onSelectMode }) => (
+ isOcrEnabled?: boolean;
+}> = ({ onSelectMode, isOcrEnabled = true }) => (
  <div className="space-y-4 pt-2">
  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Choose an action</p>
  <div className="grid grid-cols-1 gap-3">
- <button
- onClick={() => onSelectMode('scan')}
- className="flex items-center gap-4 p-5 rounded-[24px] bg-slate-900 text-white hover:bg-slate-800 active:scale-[0.98] transition-all shadow-xl shadow-slate-200"
- >
- <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center shrink-0">
- <ScanLine size={22} />
- </div>
- <div className="text-left">
- <p className="text-sm font-black uppercase tracking-wide">Scan Receipt</p>
- <p className="text-[11px] font-semibold text-white/50 mt-0.5">AI reads &amp; auto-fills expense details</p>
- </div>
- </button>
+ {isOcrEnabled && (
+  <button
+  onClick={() => onSelectMode('scan')}
+  className="flex items-center gap-4 p-5 rounded-[24px] bg-slate-900 text-white hover:bg-slate-800 active:scale-[0.98] transition-all shadow-xl shadow-slate-200"
+  >
+  <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center shrink-0">
+  <ScanLine size={22} />
+  </div>
+  <div className="text-left">
+  <p className="text-sm font-black uppercase tracking-wide">Scan Receipt</p>
+  <p className="text-[11px] font-semibold text-white/50 mt-0.5">AI reads &amp; auto-fills expense details</p>
+  </div>
+  </button>
+ )}
 
  <button
  onClick={() => onSelectMode('attachment')}

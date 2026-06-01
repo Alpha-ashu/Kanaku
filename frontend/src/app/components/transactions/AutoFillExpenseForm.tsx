@@ -4,6 +4,7 @@ import { motion } from 'motion/react';
 import { ocrEngine, ExpenseData } from '@/services/tesseractOCRService';
 import { createVoiceAIProcessor, VoiceExpenseResult } from '@/services/voiceAIProcessor';
 import { KANKUAI } from '@/services/KANKUIntelligenceEngine';
+import { useAICapability } from '@/contexts/AppContext';
 
 // AUTO-FILL EXPENSE FORM LOGIC
 // This component provides instant UX with AI-powered form filling
@@ -30,9 +31,16 @@ export const AutoFillExpenseForm: React.FC<AutoFillExpenseFormProps> = ({
  const [extractedData, setExtractedData] = useState<ExpenseData | VoiceExpenseResult | null>(null);
  const [confidence, setConfidence] = useState(0);
  const [error, setError] = useState<string | null>(null);
+ const voiceEnabled = useAICapability('voiceAssistant');
 
  // Initialize voice processor
  const [voiceProcessor] = useState(() => createVoiceAIProcessor(userId));
+
+ useEffect(() => {
+   if (!voiceEnabled && activeTab === 'voice') {
+     setActiveTab('camera');
+   }
+ }, [voiceEnabled, activeTab]);
 
  const isVoiceExpenseResult = (
  data: ExpenseData | VoiceExpenseResult,
@@ -260,16 +268,18 @@ export const AutoFillExpenseForm: React.FC<AutoFillExpenseFormProps> = ({
  <Camera className="w-4 h-4 inline mr-2" />
  Camera
  </button>
- <button
- onClick={() => setActiveTab('voice')}
- className={`flex-1 py-3 px-4 text-sm font-medium transition-colors ${activeTab === 'voice'
- ? 'text-blue-600 border-b-2 border-blue-600'
- : 'text-gray-600 hover:text-gray-900'
- }`}
- >
- <Mic className="w-4 h-4 inline mr-2" />
- Voice
- </button>
+ {voiceEnabled && (
+    <button
+    onClick={() => setActiveTab('voice')}
+    className={`flex-1 py-3 px-4 text-sm font-medium transition-colors ${activeTab === 'voice'
+    ? 'text-blue-600 border-b-2 border-blue-600'
+    : 'text-gray-600 hover:text-gray-900'
+    }`}
+    >
+    <Mic className="w-4 h-4 inline mr-2" />
+    Voice
+    </button>
+  )}
  <button
  onClick={() => setActiveTab('upload')}
  className={`flex-1 py-3 px-4 text-sm font-medium transition-colors ${activeTab === 'upload'

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { X, ScanLine, Paperclip, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { useApp } from '@/contexts/AppContext';
+import { useApp, useAICapability } from '@/contexts/AppContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useReceiptScanner } from '@/hooks/useReceiptScanner';
 import { useTransactionCreation } from '@/hooks/useTransactionCreation';
@@ -44,6 +44,7 @@ export const ReceiptScanner: React.FC<ReceiptScannerProps> = ({
 }) => {
  const { accounts, currency, setCurrentPage } = useApp();
  const { user } = useAuth();
+ const isOcrEnabled = useAICapability('ocrEngine', 'transactionOCR');
 
  const {
  selectedFile,
@@ -70,7 +71,8 @@ export const ReceiptScanner: React.FC<ReceiptScannerProps> = ({
 
  // Step machine 
  const [step, setStep] = useState<Step>(() =>
- initialMode === 'scan' ? 'source-scan'
+ !isOcrEnabled ? 'source-attach'
+ : initialMode === 'scan' ? 'source-scan'
  : initialMode === 'attachment' ? 'source-attach'
  : 'mode'
  );
@@ -98,7 +100,8 @@ export const ReceiptScanner: React.FC<ReceiptScannerProps> = ({
  clearFile();
  setAttachFile(null);
  setSelectedAccountId(accounts[0]?.id ?? null);
- setStep(initialMode === 'scan' ? 'source-scan'
+ setStep(!isOcrEnabled ? 'source-attach'
+ : initialMode === 'scan' ? 'source-scan'
  : initialMode === 'attachment' ? 'source-attach'
  : 'mode');
  onClose();
@@ -263,6 +266,7 @@ export const ReceiptScanner: React.FC<ReceiptScannerProps> = ({
  {step === 'mode' && (
  <ModeSelectionView
  onSelectMode={(mode) => setStep(mode === 'scan' ? 'source-scan' : 'source-attach')}
+ isOcrEnabled={isOcrEnabled}
  />
  )}
 

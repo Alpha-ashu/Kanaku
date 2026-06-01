@@ -292,6 +292,7 @@ export const SUB_FEATURE_DEFINITIONS: Record<string, ModuleSubFeatures> = {
     editAccount:     { name: 'Edit Account',           key: 'editAccount',     enabled: true, roleAccess: { admin: true, manager: true,  advisor: true,  user: true  } },
     deleteAccount:   { name: 'Delete Account',         key: 'deleteAccount',   enabled: true, roleAccess: { admin: true, manager: true,  advisor: false, user: false } },
     accountTransfer: { name: 'Account Transfer',       key: 'accountTransfer', enabled: true, roleAccess: { admin: true, manager: true,  advisor: true,  user: true  } },
+    reconciliation:  { name: 'Reconciliation',         key: 'reconciliation',  enabled: true, roleAccess: { admin: true, manager: true,  advisor: true,  user: true  } },
   },
   transactions: {
     addTransaction:    { name: 'Add Transaction',    key: 'addTransaction',    enabled: true, roleAccess: { admin: true, manager: true,  advisor: true,  user: true  } },
@@ -299,6 +300,10 @@ export const SUB_FEATURE_DEFINITIONS: Record<string, ModuleSubFeatures> = {
     deleteTransaction: { name: 'Delete Transaction', key: 'deleteTransaction', enabled: true, roleAccess: { admin: true, manager: true,  advisor: false, user: false } },
     importStatement:   { name: 'Import Statement',   key: 'importStatement',   enabled: true, roleAccess: { admin: true, manager: true,  advisor: true,  user: true  } },
     exportStatement:   { name: 'Export Statement',   key: 'exportStatement',   enabled: true, roleAccess: { admin: true, manager: true,  advisor: true,  user: true  } },
+    attachBill:        { name: 'Attach Bill',        key: 'attachBill',        enabled: true, roleAccess: { admin: true, manager: true,  advisor: true,  user: true  } },
+  },
+  settings: {
+    importThirdPartyData: { name: 'Import Third Party Financial Data', key: 'importThirdPartyData', enabled: true, roleAccess: { admin: true, manager: true, advisor: true, user: true } },
   },
   goals: {
     createGoal:  { name: 'Create Goal',  key: 'createGoal',  enabled: true, roleAccess: { admin: true, manager: true,  advisor: true,  user: true } },
@@ -417,3 +422,132 @@ export function computeSubFeatureMap(
   }
   return result;
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LEVEL 3: AI Feature (Capability) Management System
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type AIModuleKey = 'ocrEngine' | 'voiceAssistant' | 'aiAutomation';
+
+export interface AICapabilityDef {
+  name: string;
+  key: string;
+  enabled: boolean;
+  roleAccess: Record<UserRole, boolean>;
+}
+
+export interface AIModuleDef {
+  name: string;
+  key: AIModuleKey;
+  enabled: boolean;
+  capabilities: Record<string, AICapabilityDef>;
+  roleAccess: Record<UserRole, boolean>;
+}
+
+export const AI_MODULE_DEFINITIONS: Record<AIModuleKey, AIModuleDef> = {
+  ocrEngine: {
+    name: 'OCR Engine',
+    key: 'ocrEngine',
+    enabled: true,
+    roleAccess: { admin: true, manager: true, advisor: true, user: true },
+    capabilities: {
+      transactionOCR:   { name: 'Transaction OCR',    key: 'transactionOCR',   enabled: true, roleAccess: { admin: true, manager: true, advisor: true, user: true } },
+      expenseOCR:       { name: 'Expense OCR',        key: 'expenseOCR',       enabled: true, roleAccess: { admin: true, manager: true, advisor: true, user: true } },
+      incomeOCR:        { name: 'Income OCR',         key: 'incomeOCR',        enabled: true, roleAccess: { admin: true, manager: true, advisor: true, user: true } },
+      goalOCR:          { name: 'Goal OCR',           key: 'goalOCR',          enabled: true, roleAccess: { admin: true, manager: true, advisor: true, user: true } },
+      investmentOCR:    { name: 'Investment OCR',     key: 'investmentOCR',    enabled: true, roleAccess: { admin: true, manager: true, advisor: true, user: true } },
+      loanOCR:          { name: 'Loan OCR',           key: 'loanOCR',          enabled: true, roleAccess: { admin: true, manager: true, advisor: true, user: true } },
+      bankStatementOCR: { name: 'Bank Statement OCR', key: 'bankStatementOCR', enabled: true, roleAccess: { admin: true, manager: true, advisor: true, user: true } },
+    },
+  },
+  voiceAssistant: {
+    name: 'Voice Assistant',
+    key: 'voiceAssistant',
+    enabled: true,
+    roleAccess: { admin: true, manager: true, advisor: true, user: true },
+    capabilities: {
+      voiceLogging: { name: 'Voice Expense Logging', key: 'voiceLogging', enabled: true, roleAccess: { admin: true, manager: true, advisor: true, user: true } },
+      voiceQueries: { name: 'Natural Language Queries', key: 'voiceQueries', enabled: true, roleAccess: { admin: true, manager: true, advisor: true, user: true } },
+      intentClassification: { name: 'Intent Classification', key: 'intentClassification', enabled: true, roleAccess: { admin: true, manager: true, advisor: true, user: true } },
+    },
+  },
+  aiAutomation: {
+    name: 'AI Automation',
+    key: 'aiAutomation',
+    enabled: true,
+    roleAccess: { admin: true, manager: true, advisor: true, user: true },
+    capabilities: {
+      smartCategorization: { name: 'Smart Categorization', key: 'smartCategorization', enabled: true, roleAccess: { admin: true, manager: true, advisor: true, user: true } },
+      subscriptionDetection: { name: 'Recurring Subscription Detection', key: 'subscriptionDetection', enabled: true, roleAccess: { admin: true, manager: true, advisor: true, user: true } },
+      healthScoring: { name: 'Financial Health Scoring', key: 'healthScoring', enabled: true, roleAccess: { admin: true, manager: true, advisor: true, user: true } },
+      anomalyDetection: { name: 'Fraud/Anomaly Detection', key: 'anomalyDetection', enabled: true, roleAccess: { admin: true, manager: true, advisor: true, user: true } },
+    },
+  },
+};
+
+/**
+ * Resolves whether a specific AI capability is enabled.
+ */
+export function isAICapabilityEnabled(
+  moduleKey: AIModuleKey,
+  capabilityKey: string,
+  role: UserRole,
+  savedSettings?: Record<string, any> | null,
+): boolean {
+  const defaultDef = AI_MODULE_DEFINITIONS[moduleKey];
+  let moduleEnabled = defaultDef ? defaultDef.enabled : true;
+  let moduleRoleAccess = defaultDef ? { ...defaultDef.roleAccess } : { admin: true, manager: true, advisor: true, user: true };
+
+  if (savedSettings && savedSettings[moduleKey]) {
+    const savedMod = savedSettings[moduleKey];
+    if (typeof savedMod.enabled === 'boolean') moduleEnabled = savedMod.enabled;
+    if (savedMod.roleAccess) moduleRoleAccess = { ...moduleRoleAccess, ...savedMod.roleAccess };
+  }
+
+  if (!moduleEnabled) return false;
+  if (!moduleRoleAccess[role]) return false;
+
+  const defaultCap = defaultDef?.capabilities?.[capabilityKey];
+  let capabilityEnabled = defaultCap ? defaultCap.enabled : true;
+  let capabilityRoleAccess = defaultCap ? { ...defaultCap.roleAccess } : { admin: true, manager: true, advisor: true, user: true };
+
+  if (savedSettings && savedSettings[moduleKey]?.capabilities?.[capabilityKey]) {
+    const savedCap = savedSettings[moduleKey].capabilities[capabilityKey];
+    if (typeof savedCap.enabled === 'boolean') capabilityEnabled = savedCap.enabled;
+    if (savedCap.roleAccess) capabilityRoleAccess = { ...capabilityRoleAccess, ...savedCap.roleAccess };
+  }
+
+  return capabilityEnabled && capabilityRoleAccess[role];
+}
+
+/**
+ * Computes the full AI capability visibility map for a role.
+ */
+export function computeAICapabilityMap(
+  role: UserRole,
+  savedSettings?: Record<string, any> | null,
+): Record<string, Record<string, boolean>> {
+  const result: Record<string, Record<string, boolean>> = {};
+  for (const moduleKey of Object.keys(AI_MODULE_DEFINITIONS) as AIModuleKey[]) {
+    result[moduleKey] = {};
+    
+    const defaultDef = AI_MODULE_DEFINITIONS[moduleKey];
+    let moduleEnabled = defaultDef ? defaultDef.enabled : true;
+    let moduleRoleAccess = defaultDef ? { ...defaultDef.roleAccess } : { admin: true, manager: true, advisor: true, user: true };
+
+    if (savedSettings && savedSettings[moduleKey]) {
+      const savedMod = savedSettings[moduleKey];
+      if (typeof savedMod.enabled === 'boolean') moduleEnabled = savedMod.enabled;
+      if (savedMod.roleAccess) moduleRoleAccess = { ...moduleRoleAccess, ...savedMod.roleAccess };
+    }
+
+    const isMasterEnabled = moduleEnabled && moduleRoleAccess[role];
+    result[moduleKey]['enabled'] = isMasterEnabled;
+    
+    for (const capabilityKey of Object.keys(defaultDef.capabilities)) {
+      result[moduleKey][capabilityKey] = isMasterEnabled && isAICapabilityEnabled(moduleKey, capabilityKey, role, savedSettings);
+    }
+  }
+  return result;
+}
+

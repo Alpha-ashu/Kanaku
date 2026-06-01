@@ -895,6 +895,10 @@ export class SocketManager {
     this.io.to(`device:${deviceId}`).emit(event, data);
   }
 
+  public broadcastToAll(event: string, data: any) {
+    this.io.emit(event, data);
+  }
+
   public getConnectedUsers(): string[] {
     return Array.from(this.connectedUsers.keys());
   }

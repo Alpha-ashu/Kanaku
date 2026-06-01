@@ -35,10 +35,10 @@ const DraggableSidebarItem: React.FC<DraggableSidebarItemProps> = ({
  <TooltipTrigger asChild>
  <motion.div
  className={cn(
-"w-12 h-12 flex items-center justify-center rounded-2xl transition-all relative group cursor-pointer",
+ "w-10 h-10 flex items-center justify-center rounded-xl transition-all relative group cursor-pointer",
  isActive
- ?"bg-black text-white shadow-lg"
- :"text-gray-400 hover:bg-gray-100 hover:text-gray-900"
+ ?"bg-black text-white shadow-md shadow-slate-900/10"
+ :"text-slate-400 hover:bg-slate-50 hover:text-slate-900"
  )}
  whileHover={{ scale: 1.05 }}
  whileTap={{ scale: 0.95 }}
@@ -47,22 +47,22 @@ const DraggableSidebarItem: React.FC<DraggableSidebarItemProps> = ({
  {isActive && (
  <motion.div
  layoutId="activeTab"
- className="absolute inset-0 bg-black rounded-2xl z-0"
+ className="absolute inset-0 bg-black rounded-xl z-0"
  transition={{ type:"spring", stiffness: 300, damping: 30 }}
  />
  )}
- <Icon size={24} className="relative z-10" />
+ <Icon size={20} className="relative z-10" />
 
  {/* Drag handle - visible on hover */}
  <motion.div
  className="absolute -left-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 cursor-grab active:cursor-grabbing transition-opacity"
  onPointerDown={(e) => dragControls.start(e)}
  >
- <GripVertical size={12} className="text-gray-400" />
+ <GripVertical size={10} className="text-slate-300" />
  </motion.div>
  </motion.div>
  </TooltipTrigger>
- <TooltipContent side="right" className="font-medium bg-black text-white border-none ml-2">
+ <TooltipContent side="right" className="font-semibold bg-slate-900 text-white border-none ml-2 px-3 py-1.5 text-xs rounded-xl shadow-md">
  {item.label}
  </TooltipContent>
  </Tooltip>
@@ -77,20 +77,20 @@ export const Sidebar: React.FC = () => {
  <motion.div
  initial={{ x: -100, opacity: 0 }}
  animate={{ x: 0, opacity: 1 }}
- className="py-6 pl-4 pr-2 flex flex-col z-50 fixed h-fit top-0 left-0 bottom-0 m-auto"
+ className="py-4 pl-4 pr-2 flex flex-col z-50 fixed h-fit top-0 left-0 bottom-0 m-auto"
  >
- <div className="bg-white/80 backdrop-blur-xl border border-white/20 shadow-floating rounded-[30px] flex flex-col items-center py-6 w-24 max-h-[90vh]">
- <div className="mb-8">
- <KANKULogo className="w-12 h-12 drop-shadow-md" />
+ <div className="bg-white/85 backdrop-blur-2xl border border-slate-100 shadow-lg rounded-[24px] flex flex-col items-center py-4 w-20 max-h-[92vh]">
+ <div className="mb-4">
+ <KANKULogo className="w-10 h-10 drop-shadow-sm" />
  </div>
 
- <nav className="w-full px-4 flex flex-col items-center flex-1 min-h-0 overflow-y-auto scrollbar-hide pb-4">
+ <nav className="w-full px-2 flex flex-col items-center flex-1 min-h-0 overflow-y-auto scrollbar-hide pb-2">
  <TooltipProvider delayDuration={0}>
  <Reorder.Group
  axis="y"
  values={orderedItems}
  onReorder={handleReorder}
- className="space-y-4 flex flex-col items-center"
+ className="space-y-2 flex flex-col items-center"
  >
  {orderedItems.map((item) => (
  <DraggableSidebarItem

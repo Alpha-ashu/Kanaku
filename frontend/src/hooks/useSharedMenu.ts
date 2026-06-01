@@ -17,6 +17,7 @@ export const useSharedMenu = () => {
 
   // Filter menu items based on RBAC and user's feature visibility preferences
   const visibleMenuItems = useMemo(() => {
+    const aiCapabilities = app?.aiCapabilities;
 
     return sidebarMenuItems.filter(item => {
       // 1. Role-based check (if item has roles defined)
@@ -28,10 +29,15 @@ export const useSharedMenu = () => {
       if (['admin', 'admin-feature-panel', 'admin-ai', 'ai-management', 'manager-advisor-verification', 'advisor-verification'].includes(item.id) && role === 'admin') return true;
       if (['advisor-verification', 'manager-advisor-verification'].includes(item.id) && role === 'manager') return true;
 
+      // Gate AI insights based on the aiAutomation system status
+      if (item.id === 'ai-insights' && aiCapabilities?.aiAutomation?.enabled === false) {
+        return false;
+      }
+
       return canAccessPage(item.id, visibleFeatures);
     });
 
-  }, [role, visibleFeatures]);
+  }, [role, visibleFeatures, app?.aiCapabilities]);
 
   // Load saved order from localStorage
   useEffect(() => {

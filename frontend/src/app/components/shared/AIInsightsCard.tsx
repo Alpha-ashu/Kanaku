@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Brain, TrendingUp, Shield, Bell, ChevronRight, Loader2, AlertTriangle, Target, Zap } from 'lucide-react';
 import { backendService } from '@/lib/backend-api';
 import { cn } from '@/lib/utils';
+import { useApp } from '@/contexts/AppContext';
 
 interface Recommendation {
  type: string;
@@ -41,24 +42,35 @@ const recommendationIcon = (type: string) => {
 };
 
 export const AIInsightsCard: React.FC<{ compact?: boolean }> = ({ compact = false }) => {
+ const { aiCapabilities } = useApp();
  const [data, setData] = useState<AIInsightsData | null>(null);
  const [loading, setLoading] = useState(true);
  const [error, setError] = useState(false);
 
+ const isAIDisabled = aiCapabilities?.aiAutomation?.enabled === false;
+
  useEffect(() => {
- const fetch = async () => {
- try {
- setLoading(true);
- const result = await backendService.get<AIInsightsData>('/ai/insights');
- setData(result);
- } catch {
- setError(true);
- } finally {
- setLoading(false);
+   if (isAIDisabled) {
+     setLoading(false);
+     return;
+   }
+   const fetch = async () => {
+     try {
+       setLoading(true);
+       const result = await backendService.get<AIInsightsData>('/ai/insights');
+       setData(result);
+     } catch {
+       setError(true);
+     } finally {
+       setLoading(false);
+     }
+   };
+   fetch();
+ }, [isAIDisabled]);
+
+ if (isAIDisabled) {
+   return null;
  }
- };
- fetch();
- }, []);
 
  if (loading) {
  return (

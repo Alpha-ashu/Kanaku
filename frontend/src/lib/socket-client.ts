@@ -96,6 +96,12 @@ interface SocketEvents {
   connect: () => void;
   disconnect: () => void;
   error: (error: any) => void;
+
+  // Admin events
+  feature_flags_updated: (data: {
+    type: 'global' | 'ai';
+    timestamp: string;
+  }) => void;
 }
 
 interface EmitEvents {
@@ -473,6 +479,11 @@ class SocketClient {
       console.log('Socket disconnected');
       this.isConnected = false;
       this.emit('disconnect', undefined);
+    });
+
+    // Admin feature flag events
+    this.socket.on('feature_flags_updated' as any, (data: any) => {
+      this.emit('feature_flags_updated', data);
     });
   }
 

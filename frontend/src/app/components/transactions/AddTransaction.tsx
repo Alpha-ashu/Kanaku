@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { useApp } from '@/contexts/AppContext';
+import { useApp, useAICapability } from '@/contexts/AppContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { db } from '@/lib/database';
 import { saveTransactionWithBackendSync } from '@/lib/auth-sync-integration';
@@ -160,6 +160,7 @@ export function AddTransaction() {
  const { accounts, friends, setCurrentPage, currency, refreshData } = useApp();
  const { user } = useAuth();
  const defaultDateKey = toLocalDateKey(new Date()) ?? new Date().toISOString().split('T')[0];
+ const isOcrEnabled = useAICapability('ocrEngine', 'transactionOCR');
 
  // State
  const [formData, setFormData] = useState(() => {
@@ -1437,34 +1438,36 @@ export function AddTransaction() {
 
  {/* No receipt attached yet */}
  {!scanDocumentId && !attachmentDocumentId && (
- <div className="grid grid-cols-2 gap-3">
- <button
- type="button"
- onClick={() => { setScannerMode('scan'); setShowScanner(true); }}
- className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-slate-900 text-white hover:bg-slate-800 active:scale-[0.97] transition-all shadow-lg shadow-slate-200"
- >
- <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center">
- <ScanLine size={18} />
- </div>
- <div className="text-center">
- <p className="text-[10px] font-black uppercase tracking-wide leading-none">Scan Receipt</p>
- <p className="text-[9px] font-semibold text-white/40 mt-0.5 leading-none">OCR auto-fill</p>
- </div>
- </button>
+ <div className={cn("grid gap-3", isOcrEnabled ? "grid-cols-2" : "grid-cols-1")}>
+   {isOcrEnabled && (
+     <button
+       type="button"
+       onClick={() => { setScannerMode('scan'); setShowScanner(true); }}
+       className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-slate-900 text-white hover:bg-slate-800 active:scale-[0.97] transition-all shadow-lg shadow-slate-200"
+     >
+       <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center">
+         <ScanLine size={18} />
+       </div>
+       <div className="text-center">
+         <p className="text-[10px] font-black uppercase tracking-wide leading-none">Scan Receipt</p>
+         <p className="text-[9px] font-semibold text-white/40 mt-0.5 leading-none">OCR auto-fill</p>
+       </div>
+     </button>
+   )}
 
- <button
- type="button"
- onClick={() => { setScannerMode('attachment'); setShowScanner(true); }}
- className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-slate-50 text-slate-900 hover:bg-slate-100 active:scale-[0.97] transition-all border border-slate-100"
- >
- <div className="w-9 h-9 rounded-xl bg-slate-200 flex items-center justify-center">
- <Paperclip size={18} className="text-slate-600" />
- </div>
- <div className="text-center">
- <p className="text-[10px] font-black uppercase tracking-wide leading-none">Add Attachment</p>
- <p className="text-[9px] font-semibold text-slate-400 mt-0.5 leading-none">No OCR</p>
- </div>
- </button>
+   <button
+     type="button"
+     onClick={() => { setScannerMode('attachment'); setShowScanner(true); }}
+     className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-slate-50 text-slate-900 hover:bg-slate-100 active:scale-[0.97] transition-all border border-slate-100"
+   >
+     <div className="w-9 h-9 rounded-xl bg-slate-200 flex items-center justify-center">
+       <Paperclip size={18} className="text-slate-600" />
+     </div>
+     <div className="text-center">
+       <p className="text-[10px] font-black uppercase tracking-wide leading-none">Add Attachment</p>
+       <p className="text-[9px] font-semibold text-slate-400 mt-0.5 leading-none">No OCR</p>
+     </div>
+   </button>
  </div>
  )}
 

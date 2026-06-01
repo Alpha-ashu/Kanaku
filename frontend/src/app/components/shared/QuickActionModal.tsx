@@ -16,6 +16,7 @@ import { Capacitor } from '@capacitor/core';
 import { cn } from '@/lib/utils';
 import { Button } from '@/app/components/ui/button';
 import { getCategoryCartoonIcon } from '@/app/components/ui/CartoonCategoryIcons';
+import { useAICapability } from '@/contexts/AppContext';
 
 interface QuickActionModalProps {
  isOpen: boolean;
@@ -40,6 +41,12 @@ export const QuickActionModal: React.FC<QuickActionModalProps> = ({
  onAction,
 }) => {
  const [selectedAction, setSelectedAction] = useState<string | null>(null);
+ const voiceEnabled = useAICapability('voiceAssistant');
+
+ const filteredActions = quickActions.filter(action => {
+   if (action.id === 'voice-entry') return voiceEnabled;
+   return true;
+ });
 
  const handleAction = async (actionId: string) => {
  if (Capacitor.isNativePlatform()) {
@@ -100,7 +107,7 @@ export const QuickActionModal: React.FC<QuickActionModalProps> = ({
  {/* 4-col 2-row grid - NO scroll, all 8 fit */}
  <div className="px-4 pb-36 overflow-visible">
  <div className="grid grid-cols-4 gap-3">
- {quickActions.map((action, i) => {
+ {filteredActions.map((action, i) => {
  const Icon = action.icon;
  const isSelected = selectedAction === action.id;
 

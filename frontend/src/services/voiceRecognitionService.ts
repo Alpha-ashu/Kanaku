@@ -1,3 +1,28 @@
+// Ambient declarations for Web Speech API (not in all TS lib sets)
+interface SpeechRecognitionResult {
+  readonly isFinal: boolean;
+  readonly length: number;
+  item(index: number): SpeechRecognitionAlternative;
+  [index: number]: SpeechRecognitionAlternative;
+}
+interface SpeechRecognitionAlternative {
+  readonly transcript: string;
+  readonly confidence: number;
+}
+interface SpeechRecognitionResultList {
+  readonly length: number;
+  item(index: number): SpeechRecognitionResult;
+  [index: number]: SpeechRecognitionResult;
+}
+interface SpeechRecognitionEvent extends Event {
+  readonly resultIndex: number;
+  readonly results: SpeechRecognitionResultList;
+}
+interface SpeechRecognitionErrorEvent extends Event {
+  readonly error: string;
+  readonly message: string;
+}
+
 export interface VoiceRecognitionResult {
   text: string;
   isFinal: boolean;
@@ -17,7 +42,8 @@ type VoiceEventCallback = {
 };
 
 export class VoiceRecognitionService {
-  private recognition: (SpeechRecognition | webkitSpeechRecognition) | null = null;
+  // Using 'any' because SpeechRecognition global type varies by browser/TS lib
+  private recognition: any | null = null;
   private isListening: boolean = false;
   private currentCallbacks: VoiceEventCallback = {};
 

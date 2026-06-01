@@ -618,6 +618,22 @@ class BackendService {
     return response.data;
   }
 
+  // ===== AI FEATURE FLAGS =====
+  async getAIFeatureFlags() {
+    try {
+      const response = await this.api.get('/admin/ai-features');
+      return response.data;
+    } catch (error) {
+      console.warn('Failed to fetch AI feature flags from backend:', error);
+      return null;
+    }
+  }
+
+  async saveAIFeatureFlags(features: any) {
+    const response = await this.api.post('/admin/ai-features/toggle', { features });
+    return response.data;
+  }
+
   // ===== FRIENDS =====
   async createFriend(friend: {
     name: string;

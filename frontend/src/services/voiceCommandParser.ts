@@ -29,7 +29,7 @@ const CATEGORY_KEYWORDS = {
   investment: ['investment', 'invest', 'gold', 'stocks', 'bitcoin', 'crypto', 'mutual', 'fund', 'share', 'property', 'real estate'],
   health: ['medical', 'doctor', 'medicine', 'hospital', 'health', 'pharmacy', 'clinic'],
   education: ['education', 'course', 'school', 'college', 'training', 'tuition', 'book'],
-  utilities: ['rent', 'house', 'apartment', 'housing'],
+  housing: ['rent', 'house', 'apartment', 'housing'],
 };
 
 const FRIEND_KEYWORDS = ['with', 'and', 'along with', 'including', 'invite'];
