@@ -1,8 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { useApp } from '@/contexts/AppContext';
-import { Search, Bell, Menu, GripVertical, Wallet, Target, Users, CalendarClock, MessageSquare, CheckCircle2, AlertCircle, LogOut } from 'lucide-react';
+import { Search, Bell, Menu, GripVertical, Wallet, Target, Users, CalendarClock, MessageSquare, CheckCircle2, AlertCircle, LogOut, Receipt } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from '@/app/components/ui/sheet';
-import { NavigationItem } from '@/app/constants/navigation';
+import { NavigationItem, headerMenuItems } from '@/app/constants/navigation';
 import { NotificationPopup } from '@/app/components/ui/NotificationPopup';
 import { useSharedMenu } from '@/hooks/useSharedMenu';
 import { useAuth } from '@/contexts/AuthContext';
@@ -88,98 +88,102 @@ export const TopBar: React.FC = () => {
  return () => window.removeEventListener('keydown', handleKeyDown);
  }, []);
 
- const searchablePages = useMemo(() => {
- const pages = [
- { id: 'dashboard', label: 'Dashboard', category: 'Navigation', icon: Wallet, description: 'Overview, net worth, and recent trends' },
- { id: 'transactions', label: 'Transactions', category: 'Navigation', icon: Target, description: 'View history and add new transactions' },
- { id: 'accounts', label: 'Accounts', category: 'Navigation', icon: Wallet, description: 'Banks, credit cards, wallets, and cash' },
- { id: 'goals', label: 'Goals', category: 'Navigation', icon: Target, description: 'Track savings targets and goals' },
- { id: 'loans', label: 'Loans & EMI', category: 'Navigation', icon: Wallet, description: 'Manage borrow, lend, and monthly EMI' },
- { id: 'investments', label: 'Investments', category: 'Navigation', icon: Target, description: 'Stock market portfolio and holdings' },
- { id: 'groups', label: 'Groups', category: 'Navigation', icon: Users, description: 'Split bills and shared expenses' },
- { id: 'user-profile', label: 'Profile & Settings', category: 'Navigation', icon: Users, description: 'Manage profile, security PIN, and avatars' },
- ];
+  const searchablePages = useMemo(() => {
+    const getPageIcon = (id: string) => {
+      return headerMenuItems.find(item => item.id === id)?.icon || Wallet;
+    };
 
- if (role === 'admin') {
- pages.push(
- { id: 'admin', label: 'Admin Console', category: 'Admin Tools', icon: Users, description: 'System monitoring & user role assignment' },
- { id: 'admin-feature-panel', label: 'Master Feature Matrix', category: 'Admin Tools', icon: Users, description: 'Manage global feature visibility and readiness' }
- );
- }
- if (role === 'admin' || role === 'manager') {
- pages.push(
- { id: 'ai-management', label: 'AI Management', category: 'Management Tools', icon: Target, description: 'Configure AI models and custom insights templates' },
- { id: 'advisor-verification', label: 'Advisor Verification', category: 'Management Tools', icon: Users, description: 'Verify and approve advisor applications' }
- );
- }
+    const pages = [
+      { id: 'dashboard', label: 'Dashboard', category: 'Navigation', icon: getPageIcon('dashboard'), description: 'Overview, net worth, and recent trends' },
+      { id: 'transactions', label: 'Transactions', category: 'Navigation', icon: getPageIcon('transactions'), description: 'View history and add new transactions' },
+      { id: 'accounts', label: 'Accounts', category: 'Navigation', icon: getPageIcon('accounts'), description: 'Banks, credit cards, wallets, and cash' },
+      { id: 'goals', label: 'Goals', category: 'Navigation', icon: getPageIcon('goals'), description: 'Track savings targets and goals' },
+      { id: 'loans', label: 'Loans & EMI', category: 'Navigation', icon: getPageIcon('loans'), description: 'Manage borrow, lend, and monthly EMI' },
+      { id: 'investments', label: 'Investments', category: 'Navigation', icon: getPageIcon('investments'), description: 'Stock market portfolio and holdings' },
+      { id: 'groups', label: 'Groups', category: 'Navigation', icon: getPageIcon('groups'), description: 'Split bills and shared expenses' },
+      { id: 'user-profile', label: 'Profile & Settings', category: 'Navigation', icon: getPageIcon('user-profile'), description: 'Manage profile, security PIN, and avatars' },
+    ];
 
- return pages;
- }, [role]);
+    if (role === 'admin') {
+      pages.push(
+        { id: 'admin', label: 'Admin Console', category: 'Admin Tools', icon: getPageIcon('admin'), description: 'System monitoring & user role assignment' },
+        { id: 'admin-feature-panel', label: 'Master Feature Matrix', category: 'Admin Tools', icon: getPageIcon('admin-feature-panel'), description: 'Manage global feature visibility and readiness' }
+      );
+    }
+    if (role === 'admin' || role === 'manager') {
+      pages.push(
+        { id: 'ai-management', label: 'AI Management', category: 'Management Tools', icon: getPageIcon('ai-management'), description: 'Configure AI models and custom insights templates' },
+        { id: 'advisor-verification', label: 'Advisor Verification', category: 'Management Tools', icon: getPageIcon('advisor-verification'), description: 'Verify and approve advisor applications' }
+      );
+    }
 
- const searchResults = useMemo(() => {
- const query = searchQuery.trim().toLowerCase();
- if (!query) return [];
+    return pages;
+  }, [role]);
 
- const matchedPages = searchablePages.filter(p => 
- p.label.toLowerCase().includes(query) || 
- p.description.toLowerCase().includes(query) || 
- p.category.toLowerCase().includes(query)
- ).map(p => ({
- id: p.id,
- type: 'page',
- title: p.label,
- subtitle: p.category,
- description: p.description,
- icon: p.icon,
- action: () => {
- setCurrentPage(p.id);
- setSearchQuery('');
- setIsFocused(false);
- setIsMobileSearchOpen(false);
- }
- }));
+  const searchResults = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return [];
 
- const matchedAccounts = (accounts ?? []).filter(a => 
- a.name.toLowerCase().includes(query) || 
- a.type.toLowerCase().includes(query) || 
- (a.subType && a.subType.toLowerCase().includes(query))
- ).slice(0, 4).map(a => ({
- id: String(a.id),
- type: 'account',
- title: a.name,
- subtitle: `Account (${a.type.toUpperCase()})`,
- description: `Current balance: ${a.currency} ${a.balance.toLocaleString()}`,
- icon: Wallet,
- action: () => {
- setCurrentPage('accounts');
- setSearchQuery('');
- setIsFocused(false);
- setIsMobileSearchOpen(false);
- }
- }));
+    const matchedPages = searchablePages.filter(p => 
+      p.label.toLowerCase().includes(query) || 
+      p.description.toLowerCase().includes(query) || 
+      p.category.toLowerCase().includes(query)
+    ).map(p => ({
+      id: p.id,
+      type: 'page',
+      title: p.label,
+      subtitle: p.category,
+      description: p.description,
+      icon: p.icon,
+      action: () => {
+        setCurrentPage(p.id);
+        setSearchQuery('');
+        setIsFocused(false);
+        setIsMobileSearchOpen(false);
+      }
+    }));
 
- const matchedTransactions = (transactions ?? []).filter(t => 
- (t.description && t.description.toLowerCase().includes(query)) || 
- (t.category && t.category.toLowerCase().includes(query)) || 
- t.type.toLowerCase().includes(query) ||
- String(t.amount).includes(query)
- ).slice(0, 6).map(t => ({
- id: String(t.id),
- type: 'transaction',
- title: t.description || t.category,
- subtitle: `Transaction (${t.category})`,
- description: `${t.type === 'income' ? '+' : '-'}${t.amount.toLocaleString()} on ${new Date(t.date).toLocaleDateString()}`,
- icon: Target,
- action: () => {
- setCurrentPage('transactions');
- setSearchQuery('');
- setIsFocused(false);
- setIsMobileSearchOpen(false);
- }
- }));
+    const matchedAccounts = (accounts ?? []).filter(a => 
+      a.name.toLowerCase().includes(query) || 
+      a.type.toLowerCase().includes(query) || 
+      (a.subType && a.subType.toLowerCase().includes(query))
+    ).slice(0, 4).map(a => ({
+      id: String(a.id),
+      type: 'account',
+      title: a.name,
+      subtitle: `Account (${a.type.toUpperCase()})`,
+      description: `Current balance: ${a.currency} ${a.balance.toLocaleString()}`,
+      icon: headerMenuItems.find(item => item.id === 'accounts')?.icon || Wallet,
+      action: () => {
+        setCurrentPage('accounts');
+        setSearchQuery('');
+        setIsFocused(false);
+        setIsMobileSearchOpen(false);
+      }
+    }));
 
- return [...matchedPages, ...matchedAccounts, ...matchedTransactions];
- }, [searchQuery, searchablePages, accounts, transactions, setCurrentPage]);
+    const matchedTransactions = (transactions ?? []).filter(t => 
+      (t.description && t.description.toLowerCase().includes(query)) || 
+      (t.category && t.category.toLowerCase().includes(query)) || 
+      t.type.toLowerCase().includes(query) ||
+      String(t.amount).includes(query)
+    ).slice(0, 6).map(t => ({
+      id: String(t.id),
+      type: 'transaction',
+      title: t.description || t.category,
+      subtitle: `Transaction (${t.category})`,
+      description: `${t.type === 'income' ? '+' : '-'}${t.amount.toLocaleString()} on ${new Date(t.date).toLocaleDateString()}`,
+      icon: headerMenuItems.find(item => item.id === 'transactions')?.icon || Receipt,
+      action: () => {
+        setCurrentPage('transactions');
+        setSearchQuery('');
+        setIsFocused(false);
+        setIsMobileSearchOpen(false);
+      }
+    }));
+
+    return [...matchedPages, ...matchedAccounts, ...matchedTransactions];
+  }, [searchQuery, searchablePages, accounts, transactions, setCurrentPage]);
 
  const notifications = useLiveQuery(
  () => db.notifications.orderBy('createdAt').reverse().toArray(),

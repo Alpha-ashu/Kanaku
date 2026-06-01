@@ -2128,3 +2128,58 @@ See `frontend/src/lib/app-integration-guide.tsx` for complete implementation exa
 | `frontend/src/services/hybridAIService.ts` | Typed map function voice processor result |
 | `frontend/src/utils/supabase/test.ts` | Annotated table map parameter with explicit type |
 
+#### 5. Distinctive Icon Assignments
+- **Lucide Icon Upgrade**: Replaced overlapping, ambiguous, or duplicate settings icons inside [navigation.ts](file:///k:/Project/kenku/Finora/frontend/src/app/constants/navigation.ts) and [BottomNav.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/core/BottomNav.tsx):
+  - **Loans**: Replaced `CreditCard` with `Landmark` (representing banking and financial liabilities).
+  - **Todo Lists**: Replaced `CheckSquare` with `ListTodo` (representing task checklists).
+  - **Book Advisor**: Replaced `BookOpen` with `Handshake` (representing consulting agreements).
+  - **Feature Panel**: Replaced duplicate `Settings` gear icon with `SlidersHorizontal` (representing dashboard switchboards).
+  - **Advisor Panel**: Replaced duplicate `Users` icon with `Briefcase` (representing a professional workspace).
+  - **Reports**: Standardized all bottom nav and sidebar reports entries to use `BarChart3` instead of `PieChart` / `BarChart3` mismatch.
+- **Removed Duplicate Admin BottomNav Entry**: Removed the duplicate `admin-feature-panel` item in the Admin BottomNav array that triggered React non-unique key warning logs.
+
+| File | Change |
+|---|---|
+| `frontend/src/app/constants/navigation.ts` | Re-assigned Loans, Todo Lists, Book Advisor, Feature Panel, and Advisor Panel icons |
+| `frontend/src/app/components/core/BottomNav.tsx` | Aligned bottom nav icons, added SliderHorizontal, FolderKanban, and BarChart3, and removed duplicate Feature Panel |
+
+---
+
+### **2026-06-01 — Phase 6: Visual Precision & Search-Menu Icon Synchronization**
+
+#### 1. Premium Visual Redefinitions
+- **Loans**: Replaced `Landmark` with `HandCoins` (hands holding coins), representing borrowing and debt liabilities more intuitively.
+- **Client Management**: Replaced `FolderKanban` with `Contact` (address card silhouette) to represent client contacts without kanban board/project management clutter.
+- **Feature Panel**: Replaced `SlidersHorizontal` with `ToggleRight` (active toggle switch), directly mapping to the purpose of toggling features.
+- **Admin Console**: Replaced `ShieldAlert` with `Shield` (plain shield) for a cleaner, non-alarming administration design.
+- **Recurring Transactions**: Replaced `RefreshCw` with `Repeat` (rectangular cycle arrows) for recurring item settings.
+
+#### 2. Search Suggestion Mappings & BottomNav Unification
+- **Dynamic Search Icons in TopBar**: Updated [TopBar.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/ui/TopBar.tsx) to resolve search suggestion page icons dynamically from `headerMenuItems` in [navigation.ts](file:///k:/Project/kenku/Finora/frontend/src/app/constants/navigation.ts). This resolves mismatched hardcoded icons (such as displaying `Users` for Admin settings or `Target` for Investments/Transactions) and ensures all search icons update automatically in response to config changes.
+- **Unified BottomNav Dashboard Icon**: Swapped `Home` for `LayoutDashboard` to match the desktop sidebar's dashboard icon, preventing UI discrepancy between desktop and mobile.
+
+#### Files Changed / Created
+
+| File | Change |
+|---|---|
+| `frontend/src/app/constants/navigation.ts` | Assigned HandCoins, Contact, ToggleRight, Shield, and Repeat icons to matching features |
+| `frontend/src/app/components/core/BottomNav.tsx` | Aligned icons with navigation updates (LayoutDashboard, ToggleRight, Contact, Shield) |
+| `frontend/src/app/components/ui/TopBar.tsx` | Dynamically resolved search suggestions and account/transaction results page icons from central config |
+
+---
+
+### **2026-06-01 — Phase 7: Serverless Environment WebSocket Optimization & Resource Leak Prevention**
+
+#### 1. Graceful WebSocket Gating on Vercel
+- **Serverless Hosting Compatibility**: Since Vercel serverless environments are stateless and ephemeral, they do not support persistent WebSocket connections. Updated [socket-client.ts](file:///k:/Project/kenku/Finora/frontend/src/lib/socket-client.ts) to detect Vercel environment hostnames (`vercel.app`).
+- **Silent Degradation**: If Vercel is detected, the client skips the `Socket.io` connection attempt entirely, log-warning once, and gracefully falling back to HTTP polling. This eliminates constant browser connection retries and prevents `wss://... net::ERR_CONNECTION_REFUSED` console warnings from cluttering the browser console.
+
+#### 2. Connection Leak and Reconnection Storm Mitigation
+- **Clean Socket Disposal**: Modified [socket-client.ts](file:///k:/Project/kenku/Finora/frontend/src/lib/socket-client.ts) to call `socket.disconnect()` on any active but disconnected socket client instance before creating a new one, eliminating socket reference leaks.
+- **Deduplicated Reconnection Threads**: Disabled Socket.io's built-in reconnection handler by setting `reconnection: false` to prevent it from running in parallel with the application's custom auth-refresh reconnect thread. Removed manual trigger callbacks from the reconnect promise catch block to avoid creating dual-stacked socket reconnection loops.
+
+#### Files Changed / Created
+
+| File | Change |
+|---|---|
+| `frontend/src/lib/socket-client.ts` | Added vercel hostname checks, socket disposal logic, disabled Vercel socket initiation, and removed dual reconnection triggers |

@@ -185,16 +185,35 @@ class SocketClient {
       return;
     }
 
+    // Clean up any existing socket/connection first to prevent memory and connection leaks
+    if (this.socket) {
+      try {
+        this.socket.disconnect();
+      } catch (err) {
+        // Ignore
+      }
+      this.socket = null;
+    }
+
     try {
       const socketUrl = this.resolveSocketUrl();
       
+      // Vercel serverless environment detection: WebSockets are not supported.
+      // Gracefully disable connection to prevent console noise, errors, and performance overhead.
+      if (socketUrl.includes('vercel.app') || window.location.hostname.endsWith('vercel.app')) {
+        console.log('[SocketClient] WebSockets are disabled in Vercel serverless environments. Falling back to HTTP polling.');
+        this.isConnected = false;
+        return;
+      }
+
       this.socket = io(socketUrl, {
         auth: {
           token,
           deviceId
         },
         transports: ['websocket', 'polling'],
-        timeout: 10000
+        timeout: 10000,
+        reconnection: false // Disable built-in reconnection to avoid conflicting with custom reconnect loop
       });
 
       this.setupEventListeners();
@@ -202,19 +221,29 @@ class SocketClient {
 
       // Wait for connection
       await new Promise<void>((resolve, reject) => {
-        this.socket!.on('connect', () => {
+        const onConnect = () => {
           console.log('Socket connected successfully');
           this.isConnected = true;
           this.reconnectAttempts = 0;
           this.reconnectDelay = 1000;
+          cleanup();
           resolve();
-        });
+        };
 
-        this.socket!.on('connect_error', (error) => {
+        const onConnectError = (error: any) => {
           console.error('Socket connection error:', error);
           this.isConnected = false;
+          cleanup();
           reject(error);
-        });
+        };
+
+        const cleanup = () => {
+          this.socket?.off('connect', onConnect);
+          this.socket?.off('connect_error', onConnectError);
+        };
+
+        this.socket!.on('connect', onConnect);
+        this.socket!.on('connect_error', onConnectError);
       });
 
     } catch (error) {
@@ -557,7 +586,7 @@ class SocketClient {
       }
     } catch (error) {
       console.error('Reconnection failed:', error);
-      this.handleReconnection();
+      // DO NOT call this.handleReconnection() here as it is already triggered by the connect_error listener in setupErrorHandlers
     }
   }
 

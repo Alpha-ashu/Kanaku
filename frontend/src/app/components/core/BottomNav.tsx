@@ -1,17 +1,17 @@
 import React from 'react';
 import {
-  Home,
+  LayoutDashboard,
   Wallet,
   Receipt,
   TrendingUp,
-  PieChart,
   Plus,
-  Users,
-  Settings,
   ShieldCheck,
   Brain,
-  ShieldAlert,
-  Target
+  Shield,
+  Target,
+  BarChart3,
+  ToggleRight,
+  Contact,
 } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -32,40 +32,39 @@ const getNavigationItems = (role: string): NavigationItem[] => {
   switch (role) {
     case 'admin':
       return [
-        { id: 'dashboard', label: 'Dashboard', icon: Home },
-        { id: 'admin-feature-panel', label: 'Feature Panel', icon: Settings },
+        { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+        { id: 'admin-feature-panel', label: 'Feature Panel', icon: ToggleRight },
         { id: 'advisor-verification', label: 'Verification', icon: ShieldCheck },
         { id: 'quick-add', label: '', icon: Plus, isAction: true },
         { id: 'ai-management', label: 'AI Manage', icon: Brain },
-        { id: 'admin-feature-panel', label: 'Feature Panel', icon: Settings },
-        { id: 'admin', label: 'Admin Console', icon: ShieldAlert },
+        { id: 'admin', label: 'Admin Console', icon: Shield },
       ];
     case 'manager':
       return [
-        { id: 'dashboard', label: 'Dashboard', icon: Home },
+        { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
         { id: 'quick-add', label: '', icon: Plus, isAction: true },
         { id: 'advisor-verification', label: 'Verification', icon: ShieldCheck },
       ];
     case 'advisor':
       return [
-        { id: 'dashboard', label: 'Home', icon: Home },
+        { id: 'dashboard', label: 'Home', icon: LayoutDashboard },
         { id: 'accounts', label: 'Accounts', icon: Wallet },
         { id: 'transactions', label: 'Activity', icon: Receipt },
         { id: 'quick-add', label: '', icon: Plus, isAction: true },
-        { id: 'client-management', label: 'Clients', icon: Users },
+        { id: 'client-management', label: 'Clients', icon: Contact },
         { id: 'investments', label: 'Invest', icon: TrendingUp },
-        { id: 'reports', label: 'Reports', icon: PieChart },
+        { id: 'reports', label: 'Reports', icon: BarChart3 },
       ];
     case 'user':
     default:
       return [
-        { id: 'dashboard', label: 'Home', icon: Home },
+        { id: 'dashboard', label: 'Home', icon: LayoutDashboard },
         { id: 'accounts', label: 'Accounts', icon: Wallet },
         { id: 'transactions', label: 'Activity', icon: Receipt },
         { id: 'quick-add', label: '', icon: Plus, isAction: true },
         { id: 'goals', label: 'Goals', icon: Target },
         { id: 'investments', label: 'Invest', icon: TrendingUp },
-        { id: 'reports', label: 'Reports', icon: PieChart },
+        { id: 'reports', label: 'Reports', icon: BarChart3 },
       ];
   }
 };
