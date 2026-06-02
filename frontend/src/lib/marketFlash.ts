@@ -58,6 +58,8 @@ const COUNTRY_FLASH_PROFILES: Record<string, CountryFlashProfile> = {
   india: {
     label: 'India',
     localAssets: [
+      { symbol: '^BSESN', label: 'SENSEX', kind: 'local' },
+      { symbol: '^NSEI', label: 'NIFTY 50', kind: 'local' },
       { symbol: 'RELIANCE.NS', label: 'Reliance', kind: 'local' },
       { symbol: 'TCS.NS', label: 'TCS', kind: 'local' },
       { symbol: 'INFY.NS', label: 'Infosys', kind: 'local' },
@@ -66,6 +68,9 @@ const COUNTRY_FLASH_PROFILES: Record<string, CountryFlashProfile> = {
     ],
     supportAssets: [
       { symbol: 'USDINR=X', label: 'USD/INR', kind: 'forex' },
+      { symbol: 'PETROL', label: 'Petrol', kind: 'commodity' },
+      { symbol: 'DIESEL', label: 'Diesel', kind: 'commodity' },
+      { symbol: 'LPG', label: 'LPG', kind: 'commodity' },
     ],
   },
   'united states': {
@@ -220,6 +225,8 @@ function dedupeBySymbol(items: FlashAsset[]) {
 
 const TROY_OUNCE_TO_GRAMS = 31.1034768;
 const GOLD_22K_PURITY_FACTOR = 22 / 24;
+const INDIA_GOLD_MARKUP_FACTOR = 1.1195; // Customs + GST + Premium (₹14,320/gm)
+const INDIA_SILVER_MARKUP_FACTOR = 1.192; // Customs + GST + Premium (₹2,80,000/kg)
 
 function formatIndianCommodityPrice(amount: number, unit: string) {
   return `INR${new Intl.NumberFormat('en-IN', {
@@ -234,11 +241,32 @@ function getCommodityDisplayOverrides(
   quotes: Record<string, StockQuote | null>,
   countryLabel: string,
 ) {
+  if (asset.symbol === 'PETROL') {
+    return {
+      displayLabel: 'Petrol',
+      displayPriceText: `INR${quote.lastPrice.toFixed(2)}/L`,
+    };
+  }
+
+  if (asset.symbol === 'DIESEL') {
+    return {
+      displayLabel: 'Diesel',
+      displayPriceText: `INR${quote.lastPrice.toFixed(2)}/L`,
+    };
+  }
+
+  if (asset.symbol === 'LPG') {
+    return {
+      displayLabel: 'LPG',
+      displayPriceText: `INR${Math.round(quote.lastPrice)}/cyl`,
+    };
+  }
+
   if (countryLabel === 'India') {
     const usdInr = getConversionRateFromQuotes('USD', 'INR', quotes);
     if (usdInr > 0) {
       if (asset.label === 'Gold') {
-        const inrPerGram22k = (quote.lastPrice * usdInr / TROY_OUNCE_TO_GRAMS) * GOLD_22K_PURITY_FACTOR;
+        const inrPerGram22k = (quote.lastPrice * usdInr / TROY_OUNCE_TO_GRAMS) * GOLD_22K_PURITY_FACTOR * INDIA_GOLD_MARKUP_FACTOR;
         return {
           displayLabel: '22k Gold',
           displayPriceText: formatIndianCommodityPrice(inrPerGram22k, 'gm'),
@@ -246,7 +274,7 @@ function getCommodityDisplayOverrides(
       }
 
       if (asset.label === 'Silver') {
-        const inrPerKg = (quote.lastPrice * usdInr / TROY_OUNCE_TO_GRAMS) * 1000;
+        const inrPerKg = (quote.lastPrice * usdInr / TROY_OUNCE_TO_GRAMS) * 1000 * INDIA_SILVER_MARKUP_FACTOR;
         return {
           displayLabel: 'Silver',
           displayPriceText: formatIndianCommodityPrice(inrPerKg, 'kg'),

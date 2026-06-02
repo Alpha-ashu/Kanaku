@@ -64,8 +64,48 @@ function currencySymbol(exchange: string): string {
   return '';
 }
 
+function getMockCommodityChart(ySymbol: string) {
+  const sym = ySymbol.toUpperCase();
+  if (sym === 'PETROL' || sym === 'DIESEL' || sym === 'LPG') {
+    let price = 102.12;
+    let name = 'Petrol Rate India';
+    if (sym === 'DIESEL') {
+      price = 95.20;
+      name = 'Diesel Rate India';
+    } else if (sym === 'LPG') {
+      price = 913.00;
+      name = 'LPG Cylinder Rate India';
+    }
+
+    const seed = new Date().getDate();
+    const fluctuationPercent = (Math.sin(seed) * 0.1) / 100;
+    const prevClose = price / (1 + fluctuationPercent);
+    const lastPrice = price;
+
+    return {
+      meta: {
+        regularMarketPrice: lastPrice,
+        chartPreviousClose: prevClose,
+        previousClose: prevClose,
+        longName: name,
+        shortName: name,
+        regularMarketOpen: prevClose,
+        regularMarketDayHigh: Math.max(lastPrice, prevClose) * 1.002,
+        regularMarketDayLow: Math.min(lastPrice, prevClose) * 0.998,
+        regularMarketVolume: 1000,
+        currency: 'INR',
+        exchangeName: 'MCX',
+      },
+      ySymbol,
+    };
+  }
+  return null;
+}
+
 /** Fetch a single chart from Yahoo Finance. Returns result.meta or null. */
 async function fetchYahooChart(ySymbol: string): Promise<{ meta: any, ySymbol: string } | null> {
+  const mock = getMockCommodityChart(ySymbol);
+  if (mock) return mock;
   try {
     const yhUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ySymbol)}?interval=1d&range=1d&_=${Date.now()}`;
     const up = await fetch(yhUrl, {
@@ -89,7 +129,7 @@ async function fetchYahooChart(ySymbol: string): Promise<{ meta: any, ySymbol: s
 export const getMarkets = (req: Request, res: Response) => {
   const market = ((req.query.market as string) || 'nse').toLowerCase() as MarketCategory;
   const symbols = MARKET_DEFAULTS[market] || MARKET_DEFAULTS.nse;
-  res.json({ success: true, market, symbols });
+  res.json({ success: true, status: 'success', market, symbols });
 };
 
 export const searchStocks = async (req: Request, res: Response, next: NextFunction) => {
@@ -144,7 +184,7 @@ export const searchStocks = async (req: Request, res: Response, next: NextFuncti
         exchange: q.exchange || '',
       }));
 
-    const responseData = { success: true, results };
+    const responseData = { success: true, status: 'success', results };
     cache.set(cacheKey, { data: responseData, expiry: now + CACHE_TTL_MS * 5 });
 
     res.json(responseData);
@@ -187,6 +227,7 @@ export const getStockQuote = async (req: Request, res: Response, next: NextFunct
 
     const responseData = {
       success: true,
+      status: 'success',
       symbol,
       exchange,
       currency: currencySymbol(exchange),
@@ -252,6 +293,7 @@ export const getBatchQuotes = async (req: Request, res: Response, next: NextFunc
 
         const responseData = {
           success: true,
+          status: 'success',
           symbol,
           exchange,
           currency: currencySymbol(exchange),
@@ -275,7 +317,7 @@ export const getBatchQuotes = async (req: Request, res: Response, next: NextFunc
       })
     );
 
-    res.json({ success: true, results });
+    res.json({ success: true, status: 'success', results });
   } catch (error) {
     next(error);
   }

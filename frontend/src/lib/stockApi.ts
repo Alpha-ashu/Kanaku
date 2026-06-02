@@ -687,7 +687,7 @@ async function fetchProxyQuote(symbol: string, market?: string) {
       }
 
       const json = await res.json();
-      if (json.status === 'success') {
+      if (json.status === 'success' || json.success === true) {
         return mapApiResponse(json, symbol);
       }
 
@@ -768,7 +768,7 @@ async function fetchProxyBatch(symbols: string[], market?: string) {
 
         for (const target of chunk) {
           const item = json.results?.[target.symbol];
-          map[target.requestSymbol] = item?.status === 'success'
+          map[target.requestSymbol] = (item?.status === 'success' || item?.success === true)
             ? mapApiResponse(item, target.requestSymbol)
             : null;
         }
@@ -948,7 +948,7 @@ async function searchProxy(query: string, market?: string) {
       }
 
       const json = await res.json();
-      if (json.status !== 'success' || !Array.isArray(json.results)) {
+      if ((json.status !== 'success' && json.success !== true) || !Array.isArray(json.results)) {
         markProxyUnavailable(proxyBase);
         continue;
       }

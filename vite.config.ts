@@ -3,6 +3,44 @@ import path from 'path'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 
+function getMockCommodityChart(ySymbol: string) {
+  const sym = ySymbol.toUpperCase();
+  if (sym === 'PETROL' || sym === 'DIESEL' || sym === 'LPG') {
+    let price = 102.12;
+    let name = 'Petrol Rate India';
+    if (sym === 'DIESEL') {
+      price = 95.20;
+      name = 'Diesel Rate India';
+    } else if (sym === 'LPG') {
+      price = 913.00;
+      name = 'LPG Cylinder Rate India';
+    }
+
+    const seed = new Date().getDate();
+    const fluctuationPercent = (Math.sin(seed) * 0.1) / 100;
+    const prevClose = price / (1 + fluctuationPercent);
+    const lastPrice = price;
+
+    return {
+      meta: {
+        regularMarketPrice: lastPrice,
+        chartPreviousClose: prevClose,
+        previousClose: prevClose,
+        longName: name,
+        shortName: name,
+        regularMarketOpen: prevClose,
+        regularMarketDayHigh: Math.max(lastPrice, prevClose) * 1.002,
+        regularMarketDayLow: Math.min(lastPrice, prevClose) * 0.998,
+        regularMarketVolume: 1000,
+        currency: 'INR',
+        exchangeName: 'MCX',
+      },
+      yahooSym: ySymbol,
+    };
+  }
+  return null;
+}
+
 // ---------------------------------------------------------------------------
 // Dev-only stock API plugin  replicates api/stocks.ts for the Vite dev server
 // so /api/v1/stocks/* works without a running backend or Vercel CLI.
@@ -26,6 +64,8 @@ function stockApiDevPlugin() {
   }
 
   async function fetchChart(yahooSym: string) {
+    const mock = getMockCommodityChart(yahooSym);
+    if (mock) return mock;
     const ypath = `/v8/finance/chart/${encodeURIComponent(yahooSym)}?interval=1d&range=1d&_=${Date.now()}`
     for (const host of ['query1.finance.yahoo.com', 'query2.finance.yahoo.com']) {
       try {
