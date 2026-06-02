@@ -375,6 +375,7 @@ export function isSubFeatureEnabled(
   if (savedSettings) {
     const mod = savedSettings[moduleKey];
     if (mod) {
+      if (typeof mod.enabled === 'boolean' && !mod.enabled) return false;
       const r = mod.readiness;
       if (r === 'deprecated') return false;
       if (r === 'unreleased' && role !== 'admin') return false;

@@ -570,6 +570,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             isVisible = (roleFeatures as unknown as Record<string, boolean>)[key] ?? isVisible;
           }
 
+          // If the feature is globally disabled, set visibility to false
+          if (value && typeof value.enabled === 'boolean') {
+            isVisible = value.enabled && isVisible;
+          }
+
           merged[key] = isVisible;
         });
 

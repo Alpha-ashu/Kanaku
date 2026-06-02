@@ -89,6 +89,9 @@ export const requireFeature = (moduleKey: string, childKey?: string) => {
 
       // 1. Check Module-Level access
       if (moduleSettings) {
+        if (typeof moduleSettings.enabled === 'boolean' && !moduleSettings.enabled) {
+          return res.status(403).json({ error: `Feature module '${moduleKey}' is currently disabled.` });
+        }
         const readiness = moduleSettings.readiness;
         if (readiness === 'deprecated') {
           return res.status(403).json({ error: `Feature module '${moduleKey}' is currently disabled.` });
