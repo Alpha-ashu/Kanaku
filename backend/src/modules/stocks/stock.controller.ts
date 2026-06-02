@@ -67,9 +67,13 @@ function currencySymbol(exchange: string): string {
 /** Fetch a single chart from Yahoo Finance. Returns result.meta or null. */
 async function fetchYahooChart(ySymbol: string): Promise<{ meta: any, ySymbol: string } | null> {
   try {
-    const yhUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ySymbol)}?interval=1d&range=1d`;
+    const yhUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ySymbol)}?interval=1d&range=1d&_=${Date.now()}`;
     const up = await fetch(yhUrl, {
-      headers: { 'User-Agent': 'Mozilla/5.0' },
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache'
+      },
       signal: AbortSignal.timeout(8000),
     });
     if (!up.ok) return null;

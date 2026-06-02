@@ -9,8 +9,8 @@ const ALLOW_DIRECT_BACKEND_FALLBACK = (import.meta.env.VITE_ALLOW_DIRECT_BACKEND
 const CACHE_KEY = 'stock_quotes_cache';
 const CACHE_TS_KEY = 'stock_quotes_cache_ts';
 const PROXY_DISABLED_STORAGE_KEY = 'stock_proxy_disabled';
-const PROXY_BACKOFF_MS = 60_000;
-const PROXY_GLOBAL_BACKOFF_MS = 45_000;
+const PROXY_BACKOFF_MS = 5_000;
+const PROXY_GLOBAL_BACKOFF_MS = 5_000;
 const PROXY_GLOBAL_BACKOFF_STORAGE_KEY = 'stock_proxy_global_backoff_until';
 const BATCH_CHUNK_SIZE = 8;
 

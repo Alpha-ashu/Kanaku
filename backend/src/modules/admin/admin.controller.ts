@@ -350,16 +350,12 @@ export const getAIFeatureFlags = async (req: AuthRequest, res: Response) => {
       return res.status(401).json({ error: 'User role not found' });
     }
 
-    const userRole = req.user.role as UserRole;
-
     const adminUser = await prisma.user.findFirst({
       where: { role: 'admin' },
     });
 
     if (!adminUser) {
-      // Return only role-accessible sub-features
-      const accessibleSubFeatures = getAccessibleSubFeatures(userRole);
-      return res.json(accessibleSubFeatures);
+      return res.json({});
     }
 
     const settings = await prisma.userSettings.findUnique({
@@ -376,24 +372,7 @@ export const getAIFeatureFlags = async (req: AuthRequest, res: Response) => {
       }
     }
 
-    // STRICT: Get role-based sub-features and apply global overrides
-    const accessibleSubFeatures = getAccessibleSubFeatures(userRole);
-
-    // Apply global overrides only to features the role has access to
-    const result: Record<string, Record<string, any>> = {};
-    Object.entries(accessibleSubFeatures).forEach(([module, features]) => {
-      result[module] = {};
-      Object.entries(features).forEach(([key, feature]) => {
-        const globalModule = globalAIFeatures[module] || {};
-        const globalFeature = globalModule[key];
-        result[module][key] = {
-          ...feature,
-          enabled: globalFeature?.enabled ?? feature.enabled,
-        };
-      });
-    });
-
-    res.json(result);
+    res.json(globalAIFeatures);
   } catch (error: any) {
     logger.error('Failed to fetch AI feature flags', { error, userId: req.userId });
     res.status(500).json({ error: 'Failed to fetch AI feature flags' });

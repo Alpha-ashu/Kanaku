@@ -26,10 +26,17 @@ function stockApiDevPlugin() {
   }
 
   async function fetchChart(yahooSym: string) {
-    const ypath = `/v8/finance/chart/${encodeURIComponent(yahooSym)}?interval=1d&range=1d`
+    const ypath = `/v8/finance/chart/${encodeURIComponent(yahooSym)}?interval=1d&range=1d&_=${Date.now()}`
     for (const host of ['query1.finance.yahoo.com', 'query2.finance.yahoo.com']) {
       try {
-        const r = await fetch(`https://${host}${ypath}`, { headers: YAHOO_HEADERS, signal: AbortSignal.timeout(8000) })
+        const r = await fetch(`https://${host}${ypath}`, {
+          headers: {
+            ...YAHOO_HEADERS,
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+          },
+          signal: AbortSignal.timeout(8000)
+        })
         if (!r.ok) continue
         const json = await r.json()
         const result = (json as any)?.chart?.result?.[0]
