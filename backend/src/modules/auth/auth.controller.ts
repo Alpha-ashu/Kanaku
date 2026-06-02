@@ -361,3 +361,26 @@ export const revokeDevice = async (req: AuthRequest, res: Response, next: NextFu
     next(error);
   }
 };
+
+//  Account Deletion 
+
+export const deleteAccount = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    if (!req.userId) throw AppError.unauthorized();
+
+    logger.info(`[AuthController] Account deletion request for userId: ${req.userId}`);
+    await authService.deleteAccount(req.userId);
+
+    res.json({
+      success: true,
+      message: 'Account deleted successfully. All your data has been permanently removed.',
+    });
+  } catch (error: any) {
+    logger.error('[AuthController] Account deletion error:', {
+      message: error?.message,
+      stack: error?.stack,
+      userId: req.userId,
+    });
+    return next(error instanceof AppError ? error : AppError.internal());
+  }
+};

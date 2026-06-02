@@ -304,8 +304,8 @@ const AppContent: React.FC = () => {
     const isAdmin = normalizedRole === 'admin';
     const isManager = normalizedRole === 'manager';
 
-    const isSystemAdminPage = ['admin', 'admin-feature-panel', 'admin-ai', 'sync-monitor'].includes(currentPage);
-    const isManagerPage = ['manager-advisor-verification', 'admin-advisor-verification'].includes(currentPage);
+    const isSystemAdminPage = ['admin', 'admin-feature-panel', 'admin-ai', 'ai-management', 'sync-monitor'].includes(currentPage);
+    const isManagerPage = ['manager-advisor-verification', 'admin-advisor-verification', 'advisor-verification'].includes(currentPage);
     const isPublicPage = ['privacy-policy', 'terms', 'diagnostics', 'auth-callback', 'settings', 'user-profile', 'notifications'].includes(currentPage);
 
     const hasAdminBypass = isAdmin && (isSystemAdminPage || isManagerPage);
@@ -586,13 +586,31 @@ const AppContent: React.FC = () => {
       'auth-callback',
     ]);
 
+    if (user && !dataReady && !bypassDataGatePages.has(currentPage)) {
+      return (
+        <div className="flex items-center justify-center h-[60vh] w-full">
+          <div className="text-center">
+            <div className="w-10 h-10 border-2 border-pink-200 border-t-pink-500 rounded-full animate-spin mx-auto mb-3" />
+            <p className="text-gray-700 font-medium">
+              {dataSyncing ? 'Syncing your data...' : 'Loading your data...'}
+            </p>
+            {dataSyncError && (
+              <p className="text-xs text-gray-500 mt-1">
+                Having trouble reaching the cloud. Using last saved data.
+              </p>
+            )}
+          </div>
+        </div>
+      );
+    }
+
     // Role-based feature gating
     const normalizedRole = role?.toLowerCase();
     const isAdmin = normalizedRole === 'admin';
     const isManager = normalizedRole === 'manager';
 
-    const isSystemAdminPage = ['admin', 'admin-feature-panel', 'admin-ai', 'sync-monitor'].includes(currentPage);
-    const isManagerPage = ['manager-advisor-verification', 'admin-advisor-verification'].includes(currentPage);
+    const isSystemAdminPage = ['admin', 'admin-feature-panel', 'admin-ai', 'ai-management', 'sync-monitor'].includes(currentPage);
+    const isManagerPage = ['manager-advisor-verification', 'admin-advisor-verification', 'advisor-verification'].includes(currentPage);
     const isPublicPage = ['privacy-policy', 'terms', 'diagnostics', 'auth-callback', 'settings', 'user-profile', 'notifications'].includes(currentPage);
 
     const hasAdminBypass = isAdmin && (isSystemAdminPage || isManagerPage);
@@ -618,24 +636,6 @@ const AppContent: React.FC = () => {
       console.warn(`[Access Denied] User role ${role} cannot access page: ${currentPage}`);
       if (!visibleFeatures.dashboard) return <Settings />;
       return <Dashboard setCurrentPage={setCurrentPage} />;
-    }
-
-    if (user && !dataReady && !bypassDataGatePages.has(currentPage)) {
-      return (
-        <div className="flex items-center justify-center h-[60vh] w-full">
-          <div className="text-center">
-            <div className="w-10 h-10 border-2 border-pink-200 border-t-pink-500 rounded-full animate-spin mx-auto mb-3" />
-            <p className="text-gray-700 font-medium">
-              {dataSyncing ? 'Syncing your data...' : 'Loading your data...'}
-            </p>
-            {dataSyncError && (
-              <p className="text-xs text-gray-500 mt-1">
-                Having trouble reaching the cloud. Using last saved data.
-              </p>
-            )}
-          </div>
-        </div>
-      );
     }
 
     switch (currentPage) {
@@ -753,7 +753,7 @@ const AppContent: React.FC = () => {
       </div>
 
       {/* Mobile Bottom Nav */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-[70] mobile-bottom-nav">
+      <div className="lg:hidden mobile-bottom-nav">
         <BottomNav onQuickAdd={() => setShowQuickAction(true)} />
       </div>
 

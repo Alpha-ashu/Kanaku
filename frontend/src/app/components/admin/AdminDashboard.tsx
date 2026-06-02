@@ -18,7 +18,7 @@ import { cn } from '@/lib/utils';
 
 export const AdminDashboard: React.FC = () => {
  const { setCurrentPage, goBack } = useApp();
- const { role } = useAuth();
+ const { role, loading: authLoading, dataReady } = useAuth();
  const { toggleFeature, resetToDefaults, getFeatureStatus } = useFeatureFlags();
  const [activeTab, setActiveTab] = useState<'overview' | 'users'>('overview');
  const [stats, setStats] = useState<SystemStatsDto | null>(null);
@@ -98,22 +98,32 @@ export const AdminDashboard: React.FC = () => {
  }
  };
 
- if (role !== 'admin') {
- return (
- <div className="w-full min-h-screen bg-white flex items-center justify-center p-4">
- <div className="text-center max-w-sm">
- <div className="w-16 h-16 bg-rose-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
- <Shield size={32} className="text-rose-500" />
- </div>
- <h2 className="text-2xl font-black text-gray-900 mb-2 tracking-tight">Access Denied</h2>
- <p className="text-gray-500 mb-6 font-medium">Only administrators can access the system feature matrix.</p>
- <button onClick={() => setCurrentPage('dashboard')} className="w-full py-3 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-all">
- Return to Dashboard
- </button>
- </div>
- </div>
- );
- }
+  if (authLoading || !dataReady) {
+    return (
+      <CenteredLayout>
+        <div className="flex items-center justify-center py-20">
+          <div className="animate-spin w-10 h-10 border-4 border-gray-200 border-t-indigo-600 rounded-full" />
+        </div>
+      </CenteredLayout>
+    );
+  }
+
+  if (role !== 'admin') {
+    return (
+      <div className="w-full min-h-screen bg-white flex items-center justify-center p-4">
+        <div className="text-center max-w-sm">
+          <div className="w-16 h-16 bg-rose-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <Shield size={32} className="text-rose-500" />
+          </div>
+          <h2 className="text-2xl font-black text-gray-900 mb-2 tracking-tight">Access Denied</h2>
+          <p className="text-gray-500 mb-6 font-medium">Only administrators can access the system feature matrix.</p>
+          <button onClick={() => setCurrentPage('dashboard')} className="w-full py-3 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-all">
+            Return to Dashboard
+          </button>
+        </div>
+      </div>
+    );
+  }
 
  const formatBytes = (bytes: number) => {
  if (bytes === 0) return '0 B';

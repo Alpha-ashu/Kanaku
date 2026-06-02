@@ -19,6 +19,12 @@ const getSupabaseClient = (key?: string) => {
   }
 };
 
+/**
+ * Returns a live Supabase admin client (service role) or null if not configured.
+ * Use this for operations that require admin access (e.g. auth.admin.deleteUser).
+ */
+export const getSupabaseAdminClient = () => getSupabaseClient();
+
 /** Lazy-loaded Supabase Service Role client */
 export const supabase = new Proxy({} as any, {
   get(target, prop) {

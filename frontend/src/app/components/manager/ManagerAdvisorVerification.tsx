@@ -38,7 +38,7 @@ type FilterTab = 'pending' | 'approved' | 'rejected' | 'all';
 
 export const ManagerAdvisorVerification: React.FC = () => {
  const { setCurrentPage } = useApp();
- const { role } = useAuth();
+ const { role, dataReady } = useAuth();
  const [applications, setApplications] = useState<AdvisorApplication[]>([]);
  const [loading, setLoading] = useState(true);
  const [activeTab, setActiveTab] = useState<FilterTab>('pending');
@@ -49,11 +49,11 @@ export const ManagerAdvisorVerification: React.FC = () => {
 
  // Role Guard: Manager only
  useEffect(() => {
- if (role !== 'manager' && role !== 'admin') {
- toast.error('Unauthorized access');
- setCurrentPage('dashboard');
- }
- }, [role, setCurrentPage]);
+   if (dataReady && role !== 'manager' && role !== 'admin') {
+     toast.error('Unauthorized access');
+     setCurrentPage('dashboard');
+   }
+ }, [dataReady, role, setCurrentPage]);
 
  const fetchApplications = useCallback(async () => {
  setLoading(true);

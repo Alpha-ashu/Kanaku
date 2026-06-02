@@ -23,33 +23,98 @@ const formatCurrency = (v: number, currency: string) =>
 // --- Sub-components ---
 
 const GoalCategoryGrid = ({ 
- selectedCategory, 
- onSelect 
+  selectedCategory, 
+  onSelect 
 }: { 
- selectedCategory: string, 
- onSelect: (cat: string) => void 
+  selectedCategory: string, 
+  onSelect: (cat: string) => void 
 }) => {
- return (
- <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-4 xl:grid-cols-5 gap-2 max-h-[160px] overflow-y-auto no-scrollbar p-1">
- {GOAL_CATEGORIES.map(cat => (
- <div 
- key={cat.key}
- onClick={() => onSelect(cat.key)}
- className={cn(
-"flex flex-col items-center gap-1.5 p-2 rounded-xl transition-all cursor-pointer group",
- selectedCategory === cat.key ?"bg-indigo-600 shadow-lg shadow-indigo-200" :"bg-slate-50 hover:bg-slate-100"
- )}
- >
- <div className={cn("w-8 h-8 flex items-center justify-center rounded-lg transition-colors text-lg", selectedCategory === cat.key ?"bg-white/20" :"bg-white group-hover:bg-slate-50")}>
- {cat.icon}
- </div>
- <span className={cn("text-[9px] font-black uppercase tracking-tight text-center leading-none", selectedCategory === cat.key ?"text-white" :"text-slate-500")}>
- {cat.label}
- </span>
- </div>
- ))}
- </div>
- );
+  const [activePage, setActivePage] = useState(0);
+  const containerRef = React.useRef<HTMLDivElement>(null);
+
+  const itemsPerPage = 8;
+  const pages = useMemo(() => {
+    const chunked: (typeof GOAL_CATEGORIES)[] = [];
+    for (let i = 0; i < GOAL_CATEGORIES.length; i += itemsPerPage) {
+      chunked.push(GOAL_CATEGORIES.slice(i, i + itemsPerPage));
+    }
+    return chunked;
+  }, []);
+
+  const handleScroll = () => {
+    if (containerRef.current) {
+      const { scrollLeft, clientWidth } = containerRef.current;
+      if (clientWidth > 0) {
+        const pageIndex = Math.round(scrollLeft / clientWidth);
+        setActivePage(pageIndex);
+      }
+    }
+  };
+
+  return (
+    <div className="w-full flex flex-col">
+      <div 
+        ref={containerRef}
+        onScroll={handleScroll}
+        className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar w-full p-1 gap-0"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+      >
+        {pages.map((pageItems, pageIdx) => (
+          <div 
+            key={pageIdx} 
+            className="w-full shrink-0 snap-align-start grid grid-cols-4 grid-rows-2 gap-2"
+          >
+            {pageItems.map(cat => (
+              <div 
+                key={cat.key}
+                onClick={() => onSelect(cat.key)}
+                className={cn(
+                  "flex flex-col items-center gap-1.5 p-2 rounded-xl transition-all cursor-pointer group",
+                  selectedCategory === cat.key ? "bg-indigo-600 shadow-lg shadow-indigo-200" : "bg-slate-50 hover:bg-slate-100"
+                )}
+              >
+                <div className={cn("w-8 h-8 flex items-center justify-center rounded-lg transition-colors text-lg", selectedCategory === cat.key ? "bg-white/20" : "bg-white group-hover:bg-slate-50")}>
+                  {cat.icon}
+                </div>
+                <span className={cn("text-[9px] font-black uppercase tracking-tight text-center leading-none truncate w-full px-0.5", selectedCategory === cat.key ? "text-white" : "text-slate-500")}>
+                  {cat.label}
+                </span>
+              </div>
+            ))}
+            {/* Pad the last page if it doesn't have 8 items */}
+            {pageItems.length < itemsPerPage && 
+              Array.from({ length: itemsPerPage - pageItems.length }).map((_, idx) => (
+                <div key={`empty-${idx}`} className="opacity-0 pointer-events-none" />
+              ))
+            }
+          </div>
+        ))}
+      </div>
+      {/* Indicator Dots */}
+      {pages.length > 1 && (
+        <div className="flex justify-center gap-1.5 mt-3">
+          {pages.map((_, idx) => (
+            <button
+              key={idx}
+              type="button"
+              onClick={() => {
+                if (containerRef.current) {
+                  const width = containerRef.current.clientWidth;
+                  containerRef.current.scrollTo({ left: idx * width, behavior: 'smooth' });
+                  setActivePage(idx);
+                }
+              }}
+              className={cn(
+                "w-1.5 h-1.5 rounded-full transition-all duration-300",
+                activePage === idx ? "bg-indigo-600 w-3.5" : "bg-slate-300 hover:bg-slate-400"
+              )}
+              aria-label={`Go to page ${idx + 1}`}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
 };
 
 export const AddGoal: React.FC = () => {

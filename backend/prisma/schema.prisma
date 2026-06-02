@@ -22,6 +22,7 @@ model Account {
   currency          String             @default("USD")
   isActive          Boolean            @default(true)
   syncStatus        String             @default("synced")
+  clientRequestId   String?            @unique
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
   deletedAt         DateTime?
@@ -30,6 +31,7 @@ model Account {
   transactions      Transaction[]
   groupExpenses     GroupExpense[]
 
+  @@unique([userId, name, type])
   @@index([isActive])
   @@index([syncStatus])
   @@index([userId])
@@ -224,6 +226,7 @@ model Goal {
   category          String?
   isGroupGoal       Boolean            @default(false)
   syncStatus        String             @default("synced")
+  clientRequestId   String?            @unique
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
   deletedAt         DateTime?
@@ -301,6 +304,7 @@ model Investment {
   purchaseDate  DateTime
   lastUpdated   DateTime
   metadata      Json?
+  clientRequestId String? @unique
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   deletedAt     DateTime?
@@ -327,6 +331,7 @@ model Loan {
   status             String        @default("active")
   contactPerson      String?
   syncStatus         String        @default("synced")
+  clientRequestId    String?       @unique
   createdAt          DateTime      @default(now())
   updatedAt          DateTime      @updatedAt
   deletedAt          DateTime?
@@ -768,7 +773,7 @@ model user_features {
 
 model profiles {
   id               String    @id @db.Uuid
-  email            String?
+  email            String?   @unique
   full_name        String?
   first_name       String?
   last_name        String?

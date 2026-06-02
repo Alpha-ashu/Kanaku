@@ -126,7 +126,7 @@ const FEATURES: FeatureControl[] = FEATURES_BASE.map(f => {
 
 export const AdminFeaturePanel: React.FC = () => {
   const { setCurrentPage, setVisibleFeatures } = useApp();
-  const { role, loading } = useAuth();
+  const { role, loading, dataReady } = useAuth();
   const [activeTab, setActiveTab] = useState<'app' | 'ai'>('app');
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedFeature, setExpandedFeature] = useState<string | null>(null);
@@ -227,7 +227,9 @@ export const AdminFeaturePanel: React.FC = () => {
             return {
               ...f,
               enabled: isEnabled,
-              roleAccess: dbFlags[f.key]?.roleAccess || FEATURE_DEFAULT_ROLE_ACCESS[f.key] || f.roleAccess,
+              roleAccess: dbFlags[f.key]?.roleAccess
+                ? { ...(FEATURE_DEFAULT_ROLE_ACCESS[f.key] || f.roleAccess), ...dbFlags[f.key].roleAccess }
+                : (FEATURE_DEFAULT_ROLE_ACCESS[f.key] || f.roleAccess),
               children: mergedChildren,
               lastUpdated: dbFlags[f.key]?.lastUpdated ? new Date(dbFlags[f.key].lastUpdated) : f.lastUpdated
             };
@@ -310,10 +312,10 @@ export const AdminFeaturePanel: React.FC = () => {
 
   // Redirect non-admins
   useEffect(() => {
-    if (!loading && role !== 'admin') {
+    if (dataReady && role !== 'admin') {
       setCurrentPage('dashboard');
     }
-  }, [loading, role, setCurrentPage]);
+  }, [dataReady, role, setCurrentPage]);
 
   const saveAndBroadcastFeatures = (updatedFeatures: FeatureControl[]) => {
     setFeatures(updatedFeatures);
@@ -423,12 +425,16 @@ export const AdminFeaturePanel: React.FC = () => {
     });
   }, [features, searchQuery]);
 
-  if (loading || role !== 'admin') {
+  if (loading || !dataReady) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30 flex items-center justify-center">
         <div className="animate-spin w-10 h-10 border-4 border-gray-200 border-t-indigo-600 rounded-full" />
       </div>
     );
+  }
+
+  if (role !== 'admin') {
+    return null;
   }
 
   return (

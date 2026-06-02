@@ -27,7 +27,7 @@ type FilterTab = 'pending' | 'approved' | 'all';
 
 export const AdminAdvisorVerification: React.FC = () => {
  const { setCurrentPage, goBack } = useApp();
- const { role } = useAuth();
+ const { role, loading: authLoading, dataReady } = useAuth();
  const [applications, setApplications] = useState<AdvisorApplication[]>([]);
  const [pending, setPending] = useState<AdvisorApplication[]>([]);
  const [loading, setLoading] = useState(true);
@@ -37,6 +37,16 @@ export const AdminAdvisorVerification: React.FC = () => {
  const [rejectReason, setRejectReason] = useState('');
 
  // Guard: admin only
+ if (authLoading || !dataReady) {
+   return (
+     <CenteredLayout>
+       <div className="flex items-center justify-center py-20">
+         <Loader2 className="animate-spin text-slate-400" size={32} />
+       </div>
+     </CenteredLayout>
+   );
+ }
+
  if (role !== 'admin') {
  return (
  <CenteredLayout>

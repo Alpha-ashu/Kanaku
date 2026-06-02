@@ -158,7 +158,7 @@ const ChartTooltip: React.FC<{
 // Main component 
 export const AdminAIDashboard: React.FC = () => {
  const { setCurrentPage } = useApp();
- const { role } = useAuth();
+ const { role, loading: authLoading, dataReady } = useAuth();
 
  const [state, setState] = useState<LoadState>('idle');
  const [error, setError] = useState<string>('');
@@ -329,23 +329,34 @@ export const AdminAIDashboard: React.FC = () => {
  return insights.filter((i) => i.insightType === insightFilter).slice(0, 15);
  }, [insights, insightFilter]);
 
- // Access guard 
- if (role !== 'admin') {
- return (
- <CenteredLayout>
- <div className="text-center py-12">
- <ShieldAlert size={40} className="mx-auto mb-3 text-red-400" />
- <h2 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h2>
- <p className="text-gray-600 mb-4">Only admins can access the AI Intelligence Dashboard.</p>
- <button
- onClick={() => setCurrentPage('dashboard')}
- className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
- >
- Go to Dashboard
- </button>
- </div>
- </CenteredLayout>
- );
+  // Access guard 
+  if (authLoading || !dataReady) {
+    return (
+      <CenteredLayout>
+        <div className="flex flex-col items-center justify-center py-16 gap-3">
+          <div className="w-10 h-10 border-2 border-gray-200 border-t-indigo-500 rounded-full animate-spin" />
+          <p className="text-sm text-gray-500">Loading AI telemetry...</p>
+        </div>
+      </CenteredLayout>
+    );
+  }
+
+  if (role !== 'admin') {
+  return (
+  <CenteredLayout>
+  <div className="text-center py-12">
+  <ShieldAlert size={40} className="mx-auto mb-3 text-red-400" />
+  <h2 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h2>
+  <p className="text-gray-600 mb-4">Only admins can access the AI Intelligence Dashboard.</p>
+  <button
+  onClick={() => setCurrentPage('dashboard')}
+  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+  >
+  Go to Dashboard
+  </button>
+  </div>
+  </CenteredLayout>
+  );
  }
 
  return (

@@ -36,7 +36,7 @@ const HOURS = Array.from({ length: 12 }, (_, i) => {
 
 export const AdvisorPanel: React.FC = () => {
  const { setCurrentPage } = useApp();
- const { role, user, loading } = useAuth();
+ const { role, user, loading, dataReady } = useAuth();
  const [availability, setAvailability] = useState<AvailabilitySlot[]>(
  DAYS.map((day) => ({
  day,
@@ -73,22 +73,22 @@ export const AdvisorPanel: React.FC = () => {
 
  // Redirect non-advisors silently to dashboard
  useEffect(() => {
- if (!loading && role !== 'advisor' && role !== 'admin') {
- setCurrentPage('dashboard');
- }
- }, [loading, role, setCurrentPage]);
+   if (dataReady && role !== 'advisor' && role !== 'admin') {
+     setCurrentPage('dashboard');
+   }
+ }, [dataReady, role, setCurrentPage]);
 
  // Show loading state while auth is loading
- if (loading) {
- return (
- <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30 p-4 sm:p-6 lg:p-8">
- <div className="max-w-5xl mx-auto">
- <div className="flex items-center justify-center py-20">
- <div className="animate-spin w-10 h-10 border-4 border-gray-200 border-t-blue-600 rounded-full"></div>
- </div>
- </div>
- </div>
- );
+ if (loading || !dataReady) {
+   return (
+     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30 p-4 sm:p-6 lg:p-8">
+       <div className="max-w-5xl mx-auto">
+         <div className="flex items-center justify-center py-20">
+           <div className="animate-spin w-10 h-10 border-4 border-gray-200 border-t-blue-600 rounded-full"></div>
+         </div>
+       </div>
+     </div>
+   );
  }
 
  // Don't render anything for non-advisors (redirect will happen via useEffect)

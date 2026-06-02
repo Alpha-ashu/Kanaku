@@ -2183,3 +2183,60 @@ See `frontend/src/lib/app-integration-guide.tsx` for complete implementation exa
 | File | Change |
 |---|---|
 | `frontend/src/lib/socket-client.ts` | Added vercel hostname checks, socket disposal logic, disabled Vercel socket initiation, and removed dual reconnection triggers |
+
+---
+
+### **2026-06-01 — Phase 8: Paginated Horizontal Scroll Category Carousels**
+
+#### 1. Horizontal Scroll Carousels
+- **Paginated Layout**: Refactored the transactions category grid (`CategoryGrid` inside [AddTransaction.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/transactions/AddTransaction.tsx)) and the goals category grid (`GoalCategoryGrid` inside [AddGoal.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/goals/AddGoal.tsx)) from vertical scrollable grids to horizontal carousels. Each page displays 8 items structured as a 4-column by 2-row grid.
+- **Smooth Swiping**: Configured snap-scrolling on the scrollable container (`overflow-x-auto snap-x snap-mandatory scrollbar-none`) and page alignment (`snap-align-start w-full shrink-0`) to create a native, premium feel.
+- **Layout Preservation**: Automatically pads incomplete pages with invisible grid cells to prevent remaining items from stretching or distorting grid dimensions.
+
+#### 2. Interactive Page Dots
+- **Dynamic Indicators**: Added active indicator dots at the bottom of both carousels that dynamically highlight the active page by tracking scroll coordinates (`scrollLeft / clientWidth`).
+- **Tap-to-Navigate**: Allowed users to click on specific dots to trigger smooth scroll animations to the corresponding page index.
+- **Reset Logic**: Automatically resets the carousel page index back to 0 when switching between income and expense categories in the transaction panel.
+
+#### Files Changed / Created
+
+| File | Change |
+|---|---|
+| `frontend/src/app/components/transactions/AddTransaction.tsx` | Refactored `CategoryGrid` to paginated horizontal scroll carousel with dots and tab reset logic |
+| `frontend/src/app/components/goals/AddGoal.tsx` | Refactored `GoalCategoryGrid` to paginated horizontal scroll carousel with dots |
+
+---
+
+## Phase 9: Account Deletion — End-to-End Backend Implementation (June 2026)
+
+### Problem
+Account deletion was explicitly blocked with a placeholder `throw new Error(...)` in `UserProfile.tsx`. No backend endpoint existed to handle the deletion, making the feature non-functional and surfacing an error to the user.
+
+### Solution
+Implemented a full, secure account deletion flow across the entire stack:
+
+#### Security Model
+- **Credential Gate (Frontend)**: User must re-authenticate via `supabase.auth.signInWithPassword` before the destructive API call. This prevents CSRF or stolen-session attacks from deleting accounts without user knowledge.
+- **JWT Gate (Backend)**: The `DELETE /api/v1/auth/account` route is protected by `authMiddleware` which validates the Supabase JWT on every request.
+- **Rate Limiting (Backend)**: A dedicated `destructiveLimiter` (3 req/min) is applied to the deletion route, separate from the general auth limiter.
+
+#### Data Deletion Cascade
+1. Delete `User` record from Prisma (cascades to all related tables: transactions, accounts, goals, etc.)
+2. Best-effort delete from Supabase Auth via `auth.admin.deleteUser(userId)` using the Service Role key
+
+#### Local State Cleanup (Frontend)
+After successful deletion, clears all relevant `localStorage` keys (`auth_token`, `user_profile`, `pin_hash`, etc.) before signing out.
+
+#### Files Changed
+
+| File | Change |
+|---|---|
+| `backend/src/db/supabase.ts` | Exported `getSupabaseAdminClient()` helper for direct (non-proxy) admin client access |
+| `backend/src/modules/auth/auth.service.ts` | Added `deleteAccount(userId)` method with Prisma + Supabase Auth cleanup |
+| `backend/src/modules/auth/auth.controller.ts` | Added `deleteAccount` controller export |
+| `backend/src/modules/auth/auth.routes.ts` | Added `DELETE /account` route with auth + destructive rate limiter |
+| `frontend/src/lib/api.ts` | Added `api.auth.deleteAccount()` client method calling `DELETE /auth/account` |
+| `frontend/src/app/components/profile/UserProfile.tsx` | Replaced placeholder error in `handleDeleteAccount` with real backend call + local cleanup + sign-out |
+| `frontend/src/app/components/goals/AddGoal.tsx` | Fixed TypeScript `never[]` type error on `chunked` array in `GoalCategoryGrid` |
+| `frontend/src/app/components/transactions/AddTransaction.tsx` | Fixed TypeScript `never[]` type error on `chunked` array in `CategoryGrid` |
+

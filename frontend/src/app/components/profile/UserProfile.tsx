@@ -606,34 +606,53 @@ export const UserProfile: React.FC = () => {
  } else { toast.error('Invalid OTP'); }
  };
 
- const handleDeleteAccount = async () => {
- if (!user) return;
- if (!deletePassword) {
- toast.error('Please enter your password to confirm deletion');
- return;
- }
+  const handleDeleteAccount = async () => {
+    if (!user) return;
+    if (!deletePassword) {
+      toast.error('Please enter your password to confirm deletion');
+      return;
+    }
 
- setIsDeleting(true);
- try {
- // 1. Re-authenticate the user with their password before sensitive action
- const { error: signInError } = await supabase.auth.signInWithPassword({
- email: user.email!,
- password: deletePassword,
- });
+    setIsDeleting(true);
+    try {
+      // 1. Re-authenticate via Supabase before the destructive action
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: user.email!,
+        password: deletePassword,
+      });
 
- if (signInError) {
- throw new Error('Invalid password. Deletion failed.');
- }
+      if (signInError) {
+        throw new Error('Incorrect password. Please try again.');
+      }
 
- throw new Error('Account deletion must be handled by a backend endpoint. Direct browser-side database deletion has been disabled.');
+      // 2. Call the backend endpoint — it deletes all Prisma data and Supabase Auth user
+      const result = await api.auth.deleteAccount();
+      if (!result.success) {
+        throw new Error(result.message || 'Account deletion failed. Please contact support.');
+      }
 
- } catch (error: any) {
- console.error('Account deletion failed:', error);
- toast.error(error.message || 'Failed to delete account. Please try again.');
- } finally {
- setIsDeleting(false);
- }
- };
+      // 3. Clear all local app state so nothing lingers after account is gone
+      const localKeys = [
+        'auth_token', 'accessToken', 'refresh_token', 'refreshToken', 'token', 'authToken', 'auth_token_v1',
+        'user_profile', 'profile_updated_at', 'profile_sync_pending',
+        'pin_hash', 'pin_salt', 'pin_created_at', 'pin_expiry',
+        'currency', 'app_settings',
+      ];
+      localKeys.forEach(k => localStorage.removeItem(k));
+
+      toast.success('Account deleted. Goodbye!');
+
+      // 4. Sign out of Supabase and redirect to the auth screen
+      await supabase.auth.signOut();
+      signOut();
+
+    } catch (error: any) {
+      console.error('Account deletion failed:', error);
+      toast.error(error.message || 'Failed to delete account. Please try again.');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
  if (visibleFeatures?.userProfile === false) {
  return (

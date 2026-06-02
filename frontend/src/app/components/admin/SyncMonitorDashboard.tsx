@@ -102,7 +102,7 @@ const LogRow: React.FC<{ log: SyncEventLog }> = ({ log }) => (
 // Main component 
 export const SyncMonitorDashboard: React.FC = () => {
  const { setCurrentPage } = useApp();
- const { user, role } = useAuth();
+ const { user, role, loading: authLoading, dataReady } = useAuth();
  const syncStats = useSyncStats();
  const [activeTab, setActiveTab] = useState<'queue' | 'logs'>('queue');
  const [isForceSyncing, setIsForceSyncing] = useState(false);
@@ -131,6 +131,16 @@ export const SyncMonitorDashboard: React.FC = () => {
  const successLogs = syncLogs.filter(l => l.eventType === 'sync_success').length;
  const failLogs = syncLogs.filter(l => l.eventType === 'sync_failure').length;
  const conflictLogs = syncLogs.filter(l => l.eventType === 'conflict').length;
+
+ if (authLoading || !dataReady) {
+   return (
+     <CenteredLayout>
+       <div className="flex items-center justify-center py-20">
+         <div className="animate-spin w-10 h-10 border-4 border-gray-200 border-t-indigo-600 rounded-full" />
+       </div>
+     </CenteredLayout>
+   );
+ }
 
  // Only admins can access this page
  if (role !== 'admin') {

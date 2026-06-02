@@ -118,40 +118,112 @@ const PremiumModeSelector = ({
 };
 
 const CategoryGrid = ({
- type,
- selectedCategory,
- onSelect,
- aiSuggested
+  type,
+  selectedCategory,
+  onSelect,
+  aiSuggested
 }: {
- type: 'expense' | 'income',
- selectedCategory: string,
- onSelect: (cat: string) => void,
- aiSuggested?: string
+  type: 'expense' | 'income',
+  selectedCategory: string,
+  onSelect: (cat: string) => void,
+  aiSuggested?: string
 }) => {
- const categories = type === 'expense' ? BUILTIN_CATEGORIES.expense : BUILTIN_CATEGORIES.income;
+  const categories = type === 'expense' ? BUILTIN_CATEGORIES.expense : BUILTIN_CATEGORIES.income;
+  const [activePage, setActivePage] = useState(0);
+  const containerRef = useRef<HTMLDivElement>(null);
 
- return (
- <div className="grid grid-cols-3 min-[400px]:grid-cols-4 sm:grid-cols-5 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 max-h-[180px] overflow-y-auto no-scrollbar p-1">
- {categories.map(cat => (
- <div
- key={cat}
- onClick={() => onSelect(cat)}
- className={cn(
-"flex flex-col items-center gap-1.5 p-2 rounded-xl transition-all cursor-pointer group",
- selectedCategory === cat ?"bg-indigo-600 shadow-lg shadow-indigo-200" :"bg-slate-50 hover:bg-slate-100",
- aiSuggested === cat && !selectedCategory &&"ring-2 ring-indigo-400 ring-offset-2 animate-pulse"
- )}
- >
- <div className={cn("w-8 h-8 flex items-center justify-center rounded-lg transition-colors", selectedCategory === cat ?"bg-white/20" :"bg-white group-hover:bg-slate-50")}>
- {getCategoryCartoonIcon(cat, 20)}
- </div>
- <span className={cn("text-[9px] font-black uppercase tracking-tight text-center leading-none", selectedCategory === cat ?"text-white" :"text-slate-500")}>
- {cat.split(' ')[0]}
- </span>
- </div>
- ))}
- </div>
- );
+  // Reset active page when tab category type changes
+  useEffect(() => {
+    setActivePage(0);
+    if (containerRef.current) {
+      containerRef.current.scrollLeft = 0;
+    }
+  }, [type]);
+
+  const itemsPerPage = 8;
+  const pages = useMemo(() => {
+    const chunked: string[][] = [];
+    for (let i = 0; i < categories.length; i += itemsPerPage) {
+      chunked.push(categories.slice(i, i + itemsPerPage));
+    }
+    return chunked;
+  }, [categories]);
+
+  const handleScroll = () => {
+    if (containerRef.current) {
+      const { scrollLeft, clientWidth } = containerRef.current;
+      if (clientWidth > 0) {
+        const pageIndex = Math.round(scrollLeft / clientWidth);
+        setActivePage(pageIndex);
+      }
+    }
+  };
+
+  return (
+    <div className="w-full flex flex-col">
+      <div 
+        ref={containerRef}
+        onScroll={handleScroll}
+        className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar w-full p-1 gap-0"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+      >
+        {pages.map((pageItems, pageIdx) => (
+          <div 
+            key={pageIdx} 
+            className="w-full shrink-0 snap-align-start grid grid-cols-4 grid-rows-2 gap-2"
+          >
+            {pageItems.map(cat => (
+              <div
+                key={cat}
+                onClick={() => onSelect(cat)}
+                className={cn(
+                  "flex flex-col items-center gap-1.5 p-2 rounded-xl transition-all cursor-pointer group",
+                  selectedCategory === cat ? "bg-indigo-600 shadow-lg shadow-indigo-200" : "bg-slate-50 hover:bg-slate-100",
+                  aiSuggested === cat && !selectedCategory && "ring-2 ring-indigo-400 ring-offset-2 animate-pulse"
+                )}
+              >
+                <div className={cn("w-8 h-8 flex items-center justify-center rounded-lg transition-colors", selectedCategory === cat ? "bg-white/20" : "bg-white group-hover:bg-slate-50")}>
+                  {getCategoryCartoonIcon(cat, 20)}
+                </div>
+                <span className={cn("text-[9px] font-black uppercase tracking-tight text-center leading-none truncate w-full px-0.5", selectedCategory === cat ? "text-white" : "text-slate-500")}>
+                  {cat.split(' ')[0]}
+                </span>
+              </div>
+            ))}
+            {/* Pad the last page if it doesn't have 8 items to preserve the grid structure and spacing */}
+            {pageItems.length < itemsPerPage && 
+              Array.from({ length: itemsPerPage - pageItems.length }).map((_, idx) => (
+                <div key={`empty-${idx}`} className="opacity-0 pointer-events-none" />
+              ))
+            }
+          </div>
+        ))}
+      </div>
+      {/* Indicator Dots */}
+      {pages.length > 1 && (
+        <div className="flex justify-center gap-1.5 mt-3">
+          {pages.map((_, idx) => (
+            <button
+              key={idx}
+              type="button"
+              onClick={() => {
+                if (containerRef.current) {
+                  const width = containerRef.current.clientWidth;
+                  containerRef.current.scrollTo({ left: idx * width, behavior: 'smooth' });
+                  setActivePage(idx);
+                }
+              }}
+              className={cn(
+                "w-1.5 h-1.5 rounded-full transition-all duration-300",
+                activePage === idx ? "bg-indigo-600 w-3.5" : "bg-slate-300 hover:bg-slate-400"
+              )}
+              aria-label={`Go to page ${idx + 1}`}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
 };
 
 // --- Main Component ---

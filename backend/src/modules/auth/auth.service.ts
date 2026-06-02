@@ -4,6 +4,7 @@ import { prisma } from '../../db/prisma';
 import { generateTokens } from '../../utils/auth';
 import { Prisma } from '../../db/prisma-client';
 import { logger } from '../../config/logger';
+import { getSupabaseAdminClient } from '../../db/supabase';
 
 export class AuthService {
   async register(input: RegisterInput & {
@@ -308,5 +309,54 @@ export class AuthService {
 
   getSendGridApiKey(): string | undefined {
     return this.getApiKey('SENDGRID_API_KEY');
+  }
+
+  async deleteAccount(userId: string): Promise<void> {
+    logger.info(`[AuthService] Deleting account for userId: ${userId}`);
+
+    // 1. Verify user exists before attempting deletion
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      // User might be Supabase-only (no Prisma record) — proceed to Supabase deletion
+      logger.warn(`[AuthService] Prisma user not found for deletion: ${userId}`);
+    }
+
+    // 2. Delete from Prisma (cascades to all related data: transactions, accounts, etc.)
+    if (user) {
+      try {
+        await prisma.user.delete({ where: { id: userId } });
+        logger.info(`[AuthService] Prisma user deleted successfully: ${userId}`);
+      } catch (prismaError: any) {
+        logger.error('[AuthService] Failed to delete user from Prisma:', {
+          userId,
+          message: prismaError.message,
+        });
+        throw new Error('Failed to delete account data. Please contact support.');
+      }
+    }
+
+    // 3. Best-effort: Delete from Supabase Auth (requires service role key)
+    try {
+      const adminClient = getSupabaseAdminClient();
+      if (adminClient) {
+        const { error } = await adminClient.auth.admin.deleteUser(userId);
+        if (error) {
+          logger.warn('[AuthService] Supabase auth user deletion returned an error (non-fatal):', {
+            userId,
+            message: error.message,
+          });
+        } else {
+          logger.info(`[AuthService] Supabase auth user deleted successfully: ${userId}`);
+        }
+      } else {
+        logger.warn('[AuthService] Supabase admin client not available — skipping Supabase auth deletion.');
+      }
+    } catch (supabaseError: any) {
+      // Non-blocking: the Prisma record is already gone so the account is effectively deleted
+      logger.warn('[AuthService] Non-blocking Supabase auth deletion failed:', {
+        userId,
+        message: supabaseError.message,
+      });
+    }
   }
 }

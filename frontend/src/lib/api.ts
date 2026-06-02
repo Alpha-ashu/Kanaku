@@ -488,6 +488,9 @@ export const api = {
 
     changePassword: (oldPassword: string, newPassword: string) =>
       apiClient.post('/auth/change-password', { oldPassword, newPassword }),
+
+    deleteAccount: () =>
+      apiClient.delete('/auth/account', { showErrorToast: true }),
   },
 
   // Accounts
