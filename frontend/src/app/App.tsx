@@ -2,6 +2,7 @@ import React, { useEffect, useState, Suspense, lazy, useRef } from 'react';
 import { AppProvider, useOptionalApp } from '@/contexts/AppContext';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { SecurityProvider, useSecurity } from '@/contexts/SecurityContext';
+import { useScrollToTopOnPageChange } from '@/hooks/useScrollToTop';
 import { Toaster } from 'sonner';
 import { initializeNotifications } from '@/lib/notifications';
 import { registerServiceWorker, setupPWAInstallPrompt, setupNetworkListener } from '@/lib/pwa';
@@ -158,6 +159,10 @@ const AppContent: React.FC = () => {
   const { currentPage, setCurrentPage, visibleFeatures, aiCapabilities } = appContext;
   const [isInitialized, setIsInitialized] = useState(false);
   const [showQuickAction, setShowQuickAction] = useState(false);
+  
+  // Auto scroll to top when page changes
+  useScrollToTopOnPageChange(currentPage);
+  
   // Landing page: shown only to confirmed unauthenticated visitors (set via effect
   // so we never show it during the async auth-loading window).
   const [showLanding, setShowLanding] = useState(true);
@@ -387,12 +392,14 @@ const AppContent: React.FC = () => {
         localStorage.setItem('quickBackPage', 'loans');
         setCurrentPage('add-transaction');
         break;
+      case 'add-account': setCurrentPage('add-account'); break;
       case 'add-goal': setCurrentPage('add-goal'); break;
       case 'transfer':
         localStorage.setItem('quickFormType', 'transfer');
         localStorage.setItem('quickBackPage', 'transactions');
         setCurrentPage('add-transaction');
         break;
+      case 'todo-lists': setCurrentPage('todo-lists'); break;
       case 'voice-entry': setCurrentPage('voice-input'); break;
       case 'calendar': setCurrentPage('calendar'); break;
     }

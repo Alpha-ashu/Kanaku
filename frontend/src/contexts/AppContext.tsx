@@ -375,8 +375,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   useEffect(() => {
     if (user?.id && dataReady) {
       applyStoredPreferences();
-      // Run deduplication pass to clean up any existing sync artifacts
-      void deduplicateLocalData();
+      // NOTE: deduplicateLocalData is now called automatically at the END of syncUserDataFromCloud
+      // and syncUserDataFromBackend, so we don't need to call it here explicitly
     }
   }, [applyStoredPreferences, dataReady, user?.id]);
 

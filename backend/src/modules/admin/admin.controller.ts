@@ -7,6 +7,11 @@ import { getCacheMetricsSnapshot, getRedisStatus, resetCacheMetrics } from '../.
 import { getSystemMetrics } from '../../utils/system';
 import { invalidateFeatureCache, invalidateAIFeatureCache } from '../../middleware/featureGate';
 import { getSocketManager } from '../../sockets';
+import { 
+  getVisibleFeaturesForRole, 
+  getAccessibleSubFeatures,
+  UserRole,
+} from '../../utils/roleBasedFeatures';
 
 // Get all users (admin only)
 export const getAllUsers = async (req: AuthRequest, res: Response) => {
@@ -213,29 +218,54 @@ export const getPlatformStats = async (req: AuthRequest, res: Response) => {
 // Feature flags management
 export const getFeatureFlags = async (req: AuthRequest, res: Response) => {
   try {
+    // Validate user has role
+    if (!req.user?.role) {
+      return res.status(401).json({ error: 'User role not found' });
+    }
+
+    const userRole = req.user.role as UserRole;
+
     // Find the first admin user in the system to load global feature flags
     const adminUser = await prisma.user.findFirst({
       where: { role: 'admin' },
     });
 
     if (!adminUser) {
-      // Fallback if no admin is seeded yet
-      return res.json({});
+      // Return only role-accessible features (no global overrides)
+      const roleBasedFeatures = getVisibleFeaturesForRole(userRole);
+      return res.json(roleBasedFeatures);
     }
 
     const settings = await prisma.userSettings.findUnique({
       where: { userId: adminUser.id },
     });
 
-    if (!settings || !settings.settings) {
-      return res.json({});
+    let globalFeatures: Record<string, boolean> = {};
+    if (settings?.settings) {
+      try {
+        const parsedSettings = JSON.parse(settings.settings);
+        globalFeatures = parsedSettings.admin_global_feature_settings || {};
+      } catch (parseErr) {
+        logger.warn('Failed to parse global feature settings', { error: parseErr });
+      }
     }
 
-    const parsedSettings = JSON.parse(settings.settings);
-    const featureFlags = parsedSettings.admin_global_feature_settings || {};
-    res.json(featureFlags);
+    // STRICT: Get role-based features and apply global overrides
+    const roleBasedFeatures = getVisibleFeaturesForRole(userRole);
+
+    // Only allow features that the role has access to
+    const filteredFeatures: Record<string, boolean> = {};
+    Object.entries(roleBasedFeatures).forEach(([key, hasAccess]) => {
+      if (hasAccess) {
+        // Role has access - check if global override exists
+        filteredFeatures[key] = globalFeatures.hasOwnProperty(key) ? globalFeatures[key] : true;
+      }
+      // If role doesn't have access, feature is not included (STRICT)
+    });
+
+    res.json(filteredFeatures);
   } catch (error: any) {
-    logger.error('Failed to fetch feature flags', { error });
+    logger.error('Failed to fetch feature flags', { error, userId: req.userId });
     res.status(500).json({ error: 'Failed to fetch feature flags' });
   }
 };
@@ -315,27 +345,57 @@ export const toggleFeatureFlag = async (req: AuthRequest, res: Response) => {
 // AI Feature flags management
 export const getAIFeatureFlags = async (req: AuthRequest, res: Response) => {
   try {
+    // Validate user has role
+    if (!req.user?.role) {
+      return res.status(401).json({ error: 'User role not found' });
+    }
+
+    const userRole = req.user.role as UserRole;
+
     const adminUser = await prisma.user.findFirst({
       where: { role: 'admin' },
     });
 
     if (!adminUser) {
-      return res.json({});
+      // Return only role-accessible sub-features
+      const accessibleSubFeatures = getAccessibleSubFeatures(userRole);
+      return res.json(accessibleSubFeatures);
     }
 
     const settings = await prisma.userSettings.findUnique({
       where: { userId: adminUser.id },
     });
 
-    if (!settings || !settings.settings) {
-      return res.json({});
+    let globalAIFeatures: Record<string, any> = {};
+    if (settings?.settings) {
+      try {
+        const parsedSettings = JSON.parse(settings.settings);
+        globalAIFeatures = parsedSettings.admin_ai_feature_settings || {};
+      } catch (parseErr) {
+        logger.warn('Failed to parse AI feature settings', { error: parseErr });
+      }
     }
 
-    const parsedSettings = JSON.parse(settings.settings);
-    const aiFeatureFlags = parsedSettings.admin_ai_feature_settings || {};
-    res.json(aiFeatureFlags);
+    // STRICT: Get role-based sub-features and apply global overrides
+    const accessibleSubFeatures = getAccessibleSubFeatures(userRole);
+
+    // Apply global overrides only to features the role has access to
+    const result: Record<string, Record<string, any>> = {};
+    Object.entries(accessibleSubFeatures).forEach(([module, features]) => {
+      result[module] = {};
+      Object.entries(features).forEach(([key, feature]) => {
+        const globalModule = globalAIFeatures[module] || {};
+        const globalFeature = globalModule[key];
+        result[module][key] = {
+          ...feature,
+          enabled: globalFeature?.enabled ?? feature.enabled,
+        };
+      });
+    });
+
+    res.json(result);
   } catch (error: any) {
-    logger.error('Failed to fetch AI feature flags', { error });
+    logger.error('Failed to fetch AI feature flags', { error, userId: req.userId });
     res.status(500).json({ error: 'Failed to fetch AI feature flags' });
   }
 };

@@ -363,6 +363,45 @@ export const MicIcon: React.FC<IconProps> = ({ size = 48, className = '' }) => (
  </svg>
 );
 
+export const WalletIcon: React.FC<IconProps> = ({ size = 48, className = '' }) => (
+ <svg width={size} height={size} viewBox="0 0 64 64" className={className}>
+ <defs>
+ <linearGradient id="walletGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+ <stop offset="0%" stopColor="#6C63FF" />
+ <stop offset="100%" stopColor="#4F46E5" />
+ </linearGradient>
+ </defs>
+ <circle cx="32" cy="32" r="30" fill="url(#walletGrad)" />
+ <g>
+ <rect x="14" y="22" width="36" height="20" rx="3" fill="white" />
+ <rect x="14" y="22" width="36" height="8" rx="3" fill="#E8E8FF" />
+ <circle cx="48" cy="36" r="3.5" fill="#6C63FF" />
+ <line x1="16" y1="32" x2="26" y2="32" stroke="#6C63FF" strokeWidth="1.5" strokeLinecap="round" />
+ <line x1="16" y1="38" x2="42" y2="38" stroke="#D0D0D0" strokeWidth="1" strokeLinecap="round" />
+ </g>
+ <circle cx="32" cy="32" r="28" fill="white" opacity="0.15" />
+ </svg>
+);
+
+export const ChecklistIcon: React.FC<IconProps> = ({ size = 48, className = '' }) => (
+ <svg width={size} height={size} viewBox="0 0 64 64" className={className}>
+ <defs>
+ <linearGradient id="checklistGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+ <stop offset="0%" stopColor="#00D084" />
+ <stop offset="100%" stopColor="#00B060" />
+ </linearGradient>
+ </defs>
+ <circle cx="32" cy="32" r="30" fill="url(#checklistGrad)" />
+ <g>
+ <rect x="16" y="18" width="28" height="28" rx="2" fill="white" />
+ <line x1="20" y1="26" x2="28" y2="34" stroke="#00D084" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+ <line x1="28" y1="34" x2="40" y2="18" stroke="#00D084" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+ <line x1="20" y1="40" x2="44" y2="40" stroke="#E0E0E0" strokeWidth="1.5" strokeLinecap="round" />
+ </g>
+ <circle cx="32" cy="32" r="28" fill="white" opacity="0.15" />
+ </svg>
+);
+
 // --- MAPPING ---
 
 export const getCategoryCartoonIcon = (categoryName: string, size: number = 32): React.ReactNode => {
@@ -414,7 +453,11 @@ export const getCategoryCartoonIcon = (categoryName: string, size: number = 32):
  
  // Utils
  'transfer': <TransferIcon size={size} />,
+ 'wallet': <WalletIcon size={size} />,
+ 'account': <WalletIcon size={size} />,
  'goal': <GoalIcon size={size} />,
+ 'checklist': <ChecklistIcon size={size} />,
+ 'todo': <ChecklistIcon size={size} />,
  'calendar': <CalendarIcon size={size} />,
  'voice': <MicIcon size={size} />,
  };

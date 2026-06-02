@@ -1180,6 +1180,13 @@ function resolveLocalId(remote: any, existingRows: any[], matcher?: (rows: any[]
   return undefined;
 }
 
+/**
+ * IDEMPOTENT merge: prevents duplicate records by checking remoteId before insert/update.
+ * Fixes race conditions and refresh duplicates by ensuring:
+ * 1. Only one record per remoteId exists
+ * 2. Records with matching remoteId are updated, not duplicated
+ * 3. New records get proper IDs to match existing local records
+ */
 async function mergeRemoteTable(table: SyncedTableName, remoteRows: any[], nextRows: any[], existingRows: any[]) {
   const remoteIds = new Set(remoteRows.map((row) => Number(row.id)).filter(Number.isFinite));
   const staleLocalIds = existingRows
@@ -1192,10 +1199,58 @@ async function mergeRemoteTable(table: SyncedTableName, remoteRows: any[], nextR
 
   const localTable: any = getLocalTable(table);
 
+  // CRITICAL FIX: Use idempotent upsert instead of bulkPut to prevent duplicates
+  // bulkPut creates new records if id is undefined, causing duplicates on refresh
   if (nextRows.length > 0) {
-    await localTable.bulkPut(nextRows);
+    // Build a map of existing records by remoteId for quick lookup
+    const existingByRemoteId = new Map<number, any>();
+    for (const row of existingRows) {
+      const rid = toNumber(row.remoteId);
+      if (rid) {
+        existingByRemoteId.set(rid, row);
+      }
+    }
+
+    // Separate into updates and inserts
+    const toUpdate: any[] = [];
+    const toInsert: any[] = [];
+
+    for (const nextRow of nextRows) {
+      const remoteId = nextRow.remoteId;
+      if (!remoteId) {
+        // No remoteId = local-only record, insert as-is
+        toInsert.push(nextRow);
+        continue;
+      }
+
+      const existing = existingByRemoteId.get(remoteId);
+      if (existing?.id) {
+        // Record with this remoteId exists - update it with the existing local ID
+        toUpdate.push({
+          ...nextRow,
+          id: existing.id,  // Preserve the local ID to avoid creating duplicates
+        });
+      } else {
+        // New remoteId - insert (bulkAdd will assign auto ID if not provided)
+        toInsert.push(nextRow);
+      }
+    }
+
+    // Execute updates first (safer than inserts when dealing with FK constraints)
+    if (toUpdate.length > 0) {
+      await localTable.bulkUpdate(toUpdate.map(row => ({
+        key: row.id,
+        changes: row,
+      })));
+    }
+
+    // Then insert new records
+    if (toInsert.length > 0) {
+      await localTable.bulkAdd(toInsert, { allKeys: true });
+    }
   }
 
+  // Delete stale records (from cloud) that are no longer in remoteIds set
   if (staleLocalIds.length > 0) {
     await localTable.bulkDelete(staleLocalIds);
   }
@@ -1227,10 +1282,56 @@ const mergeBackendTable = async (table: SyncedTableName, backendRows: any[], nex
 
   const localTable: any = getLocalTable(table);
 
+  // IDEMPOTENT merge: prevent duplicates by checking cloudId before insert/update
   if (nextRows.length > 0) {
-    await localTable.bulkPut(nextRows);
+    // Build a map of existing records by cloudId for quick lookup
+    const existingByCloudId = new Map<string, any>();
+    for (const row of existingRows) {
+      if (row.cloudId) {
+        existingByCloudId.set(String(row.cloudId), row);
+      }
+    }
+
+    // Separate into updates and inserts
+    const toUpdate: any[] = [];
+    const toInsert: any[] = [];
+
+    for (const nextRow of nextRows) {
+      const cloudId = nextRow.cloudId;
+      if (!cloudId) {
+        // No cloudId = local-only record, insert as-is
+        toInsert.push(nextRow);
+        continue;
+      }
+
+      const existing = existingByCloudId.get(String(cloudId));
+      if (existing?.id) {
+        // Record with this cloudId exists - update it with the existing local ID
+        toUpdate.push({
+          ...nextRow,
+          id: existing.id,  // Preserve the local ID to avoid duplicates
+        });
+      } else {
+        // New cloudId - insert (will assign auto ID if not provided)
+        toInsert.push(nextRow);
+      }
+    }
+
+    // Execute updates first
+    if (toUpdate.length > 0) {
+      await localTable.bulkUpdate(toUpdate.map(row => ({
+        key: row.id,
+        changes: row,
+      })));
+    }
+
+    // Then insert new records
+    if (toInsert.length > 0) {
+      await localTable.bulkAdd(toInsert, { allKeys: true });
+    }
   }
 
+  // Delete stale records
   if (staleLocalIds.length > 0) {
     await localTable.bulkDelete(staleLocalIds);
   }
@@ -1601,6 +1702,9 @@ async function syncUserDataFromBackend(
       await mergeBackendTable('group_expenses', backendGroups, mappedGroups, localGroups);
     }
   });
+
+  // CRITICAL: Deduplicate AFTER all merges to catch any stragglers from race conditions
+  await deduplicateLocalData();
 }
 
 export async function syncUserDataFromCloud(
@@ -1944,6 +2048,9 @@ export async function syncUserDataFromCloud(
         await mergeRemoteTable('investments', remoteInvestments, mappedInvestments, localInvestments);
       }
     });
+
+    // CRITICAL: Deduplicate AFTER all merges to catch any stragglers from race conditions
+    await deduplicateLocalData();
   } finally {
     syncState.syncingFromCloud = false;
   }
