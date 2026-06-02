@@ -168,6 +168,32 @@ export const invalidateAIFeatureCache = () => {
   logger.info('[FeatureGate] AI feature flags cache invalidated');
 };
 
+// Default AI feature configuration - all features enabled for all roles
+const DEFAULT_AI_FEATURES = {
+  ocrEngine: {
+    enabled: true,
+    roleAccess: { admin: true, manager: true, advisor: true, user: true },
+    capabilities: {
+      transactionOCR: { enabled: true, roleAccess: { admin: true, manager: true, advisor: true, user: true } },
+    },
+  },
+  voiceAssistant: {
+    enabled: true,
+    roleAccess: { admin: true, manager: true, advisor: true, user: true },
+    capabilities: {},
+  },
+  aiAutomation: {
+    enabled: true,
+    roleAccess: { admin: true, manager: true, advisor: true, user: true },
+    capabilities: {
+      smartCategorization: { enabled: true, roleAccess: { admin: true, manager: true, advisor: true, user: true } },
+      subscriptionDetection: { enabled: true, roleAccess: { admin: true, manager: true, advisor: true, user: true } },
+      healthScoring: { enabled: true, roleAccess: { admin: true, manager: true, advisor: true, user: true } },
+      anomalyDetection: { enabled: true, roleAccess: { admin: true, manager: true, advisor: true, user: true } },
+    },
+  },
+};
+
 const getAIGlobalFeatures = async () => {
   const now = Date.now();
   if (cachedAIFeatures && (now - cacheAITimestamp < CACHE_TTL_MS)) {
@@ -180,7 +206,10 @@ const getAIGlobalFeatures = async () => {
     });
 
     if (!adminUser) {
-      return {};
+      // No admin user found, use defaults
+      cachedAIFeatures = DEFAULT_AI_FEATURES;
+      cacheAITimestamp = now;
+      return cachedAIFeatures;
     }
 
     const settings = await prisma.userSettings.findUnique({
@@ -188,16 +217,21 @@ const getAIGlobalFeatures = async () => {
     });
 
     if (!settings || !settings.settings) {
-      return {};
+      // No settings found, use defaults
+      cachedAIFeatures = DEFAULT_AI_FEATURES;
+      cacheAITimestamp = now;
+      return cachedAIFeatures;
     }
 
     const parsedSettings = JSON.parse(settings.settings);
-    cachedAIFeatures = parsedSettings.admin_ai_feature_settings || {};
+    // Use configured settings if available, otherwise use defaults
+    cachedAIFeatures = parsedSettings.admin_ai_feature_settings || DEFAULT_AI_FEATURES;
     cacheAITimestamp = now;
     return cachedAIFeatures;
   } catch (error) {
     logger.error('[FeatureGate] Failed to fetch AI feature flags from database:', error);
-    return cachedAIFeatures || {};
+    // Return defaults on error to ensure AI features are accessible
+    return cachedAIFeatures || DEFAULT_AI_FEATURES;
   }
 };
 

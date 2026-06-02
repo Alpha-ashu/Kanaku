@@ -118,8 +118,8 @@ export const BottomNav: React.FC<BottomNavProps> = ({ onQuickAdd }) => {
       }}
     >
       <div className={cn(
-        "mb-0 bg-white/40 backdrop-blur-3xl border-0 rounded-[24px] shadow-md pointer-events-auto flex items-center justify-around h-20 ring-1 ring-black/5 relative overflow-hidden transition-all duration-300",
-        isCompact ? "w-[260px]" : "mx-6 w-full"
+        "mb-0 bg-white/95 backdrop-blur-lg border-0 rounded-[24px] shadow-lg pointer-events-auto flex items-center justify-center gap-0.5 h-16 ring-1 ring-black/10 relative overflow-hidden transition-all duration-300",
+        isCompact ? "w-[280px]" : "mx-4 w-[calc(100%-32px)]"
       )}>
         {filteredNavigationItems.map((item, index) => {
           const Icon = item.icon;
@@ -132,9 +132,10 @@ export const BottomNav: React.FC<BottomNavProps> = ({ onQuickAdd }) => {
                 key={`${item.id}-${index}`}
                 whileTap={{ scale: 0.9 }}
                 onClick={() => handleNavigation(item.id)}
-                className="flex items-center justify-center w-14 h-14 bg-black text-white rounded-full shadow-xl hover:shadow-2xl transition-all relative z-10"
+                className="flex items-center justify-center w-12 h-12 bg-black text-white rounded-full shadow-xl hover:shadow-2xl transition-all flex-shrink-0 -mx-1 z-20"
+                title="Quick Add"
               >
-                <Icon className="w-6 h-6" strokeWidth={2.5} />
+                <Icon className="w-5 h-5" strokeWidth={2.5} />
               </motion.button>
             );
           }
@@ -144,19 +145,20 @@ export const BottomNav: React.FC<BottomNavProps> = ({ onQuickAdd }) => {
               key={`${item.id}-${index}`}
               onClick={() => handleNavigation(item.id)}
               className={cn(
-                "flex flex-col items-center justify-center flex-1 h-full transition-all duration-300 relative group",
-                isActive ? "text-black" : "text-gray-400 hover:text-gray-600"
+                "flex flex-col items-center justify-center h-full flex-1 min-w-0 transition-all duration-300 relative group px-1",
+                isActive ? "text-slate-900" : "text-gray-500 hover:text-gray-700"
               )}
+              title={item.label}
             >
               {isActive && (
                 <motion.div
                   layoutId="activeTabMobile"
-                  className="absolute top-1 left-1/2 -translate-x-1/2 w-8 h-1 bg-slate-900 rounded-full shadow-[0_2px_8px_rgba(0,0,0,0.15)]"
+                  className="absolute -top-2 left-1/2 -translate-x-1/2 w-5 h-0.5 bg-slate-900 rounded-full"
                   transition={{ type: "spring", stiffness: 400, damping: 30 }}
                 />
               )}
               <Icon
-                className={cn("w-6 h-6 mb-1 transition-transform", isActive && "scale-110")}
+                className={cn("w-6 h-6 transition-all duration-300", isActive && "scale-110")}
                 strokeWidth={isActive ? 2.5 : 2}
                 fill={isActive ? "currentColor" : "none"}
               />

@@ -46,44 +46,48 @@ export const AIInsightsCard: React.FC<{ compact?: boolean }> = ({ compact = fals
  const [data, setData] = useState<AIInsightsData | null>(null);
  const [loading, setLoading] = useState(true);
  const [error, setError] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
+  const maxRetries = 1; // Only retry once
 
- const isAIDisabled = aiCapabilities?.aiAutomation?.enabled === false;
+  const isAIDisabled = aiCapabilities?.aiAutomation?.enabled === false;
 
- useEffect(() => {
-   if (isAIDisabled) {
-     setLoading(false);
-     return;
-   }
-   const fetch = async () => {
-     try {
-       setLoading(true);
-       const result = await backendService.get<AIInsightsData>('/ai/insights');
-       setData(result);
-     } catch {
-       setError(true);
-     } finally {
-       setLoading(false);
-     }
-   };
-   fetch();
- }, [isAIDisabled]);
+  useEffect(() => {
+    if (isAIDisabled) {
+      setLoading(false);
+      return;
+    }
 
- if (isAIDisabled) {
-   return null;
- }
+    const fetchInsights = async () => {
+      try {
+        setLoading(true);
+        setError(false);
+        const result = await backendService.get<AIInsightsData>('/ai/insights');
+        setData(result);
+        setRetryCount(0); // Reset retry count on success
+      } catch (err: any) {
+        console.error('[AIInsightsCard] Failed to fetch insights:', err?.status, err?.message);
+        setError(true);
+        setData(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchInsights();
 
  if (loading) {
- return (
- <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm flex items-center gap-3">
- <Loader2 size={18} className="animate-spin text-slate-400" />
- <span className="text-sm text-slate-500">Analyzing your finances...</span>
- </div>
- );
- }
+    return (
+      <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm flex items-center gap-3">
+        <Loader2 size={18} className="animate-spin text-slate-400" />
+        <span className="text-sm text-slate-500">Analyzing your finances...</span>
+      </div>
+    );
+  }
 
- if (error || !data) {
- return null; // Silent fail don't break dashboard
- }
+  // Silently fail without showing error UI
+  if (error || !data) {
+    return null;
+  }
 
  const topRecs = data.recommendations.slice(0, compact ? 2 : 4);
 

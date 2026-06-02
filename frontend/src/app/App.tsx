@@ -99,38 +99,82 @@ const PageLoader = () => (
 
 class PageErrorBoundary extends React.Component<
   { children: React.ReactNode },
-  { error: Error | null }
+  { error: Error | null; attemptCount: number }
 > {
+  private retryTimer: ReturnType<typeof setTimeout> | null = null;
+
   constructor(props: { children: React.ReactNode }) {
     super(props);
-    this.state = { error: null };
+    this.state = { error: null, attemptCount: 0 };
   }
+
   static getDerivedStateFromError(error: Error) {
-    return { error };
+    return (prevState: { error: Error | null; attemptCount: number }) => ({
+      error,
+      attemptCount: (prevState.attemptCount || 0) + 1,
+    });
   }
+
   componentDidCatch(error: Error, info: React.ErrorInfo) {
     // Log full technical details for developers  never show to users
     console.error('[PageErrorBoundary] Caught render error:', {
       message: error.message,
       stack: error.stack,
       componentStack: info.componentStack,
+      attemptCount: this.state.attemptCount,
     });
+
+    // Auto-retry on chunk load failures or module errors (common after service worker updates)
+    const isModuleError = error.message.includes('Failed to fetch dynamically imported module') ||
+                         error.message.includes('Expected a JavaScript-or-Wasm module script') ||
+                         error.message.includes('Failed to import');
+
+    if (isModuleError && this.state.attemptCount <= 2) {
+      console.warn(`[PageErrorBoundary] Auto-retrying after module load failure (attempt ${this.state.attemptCount})...`);
+      this.retryTimer = setTimeout(() => {
+        this.setState({ error: null });
+      }, 500);
+    }
   }
+
+  componentWillUnmount() {
+    if (this.retryTimer) {
+      clearTimeout(this.retryTimer);
+    }
+  }
+
   render() {
     if (this.state.error) {
+      const isModuleError = this.state.error.message.includes('Failed to fetch dynamically imported module') ||
+                           this.state.error.message.includes('Expected a JavaScript-or-Wasm module script') ||
+                           this.state.error.message.includes('Failed to import');
+
       return (
         <div className="flex flex-col items-center justify-center min-h-[60vh] px-6 text-center gap-4">
           <div className="text-4xl"></div>
-          <h2 className="text-lg font-bold text-gray-900">Something went wrong</h2>
+          <h2 className="text-lg font-bold text-gray-900">
+            {isModuleError ? 'Loading page...' : 'Something went wrong'}
+          </h2>
           <p className="text-sm text-gray-500 max-w-sm">
-            We hit an unexpected problem loading this page. Please try again.
+            {isModuleError 
+              ? 'The page is loading. Please wait a moment.'
+              : 'We hit an unexpected problem loading this page. Please try again.'}
           </p>
-          <button
-            onClick={() => this.setState({ error: null })}
-            className="px-4 py-2 bg-black text-white rounded-xl text-sm font-medium"
-          >
-            Try again
-          </button>
+          {isModuleError && this.state.attemptCount <= 2 ? (
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 border-2 border-pink-200 border-t-pink-500 rounded-full animate-spin" />
+              <span className="text-sm text-gray-600">Auto-retrying...</span>
+            </div>
+          ) : (
+            <button
+              onClick={() => {
+                this.setState({ error: null, attemptCount: 0 });
+              }}
+              className="px-4 py-2 bg-black text-white rounded-xl text-sm font-medium"
+            >
+              Try again
+            </button>
+          )}
         </div>
       );
     }
@@ -157,15 +201,6 @@ const AppContent: React.FC = () => {
   }
 
   const { currentPage, setCurrentPage, visibleFeatures, aiCapabilities } = appContext;
-
-  // Auto-scroll to top when page changes
-  useEffect(() => {
-    window.scrollTo({
-      top: 0,
-      left: 0,
-      behavior: 'auto',
-    });
-  }, [currentPage]);
   const [isInitialized, setIsInitialized] = useState(false);
   const [showQuickAction, setShowQuickAction] = useState(false);
   
@@ -600,8 +635,15 @@ const AppContent: React.FC = () => {
   const renderPage = () => {
     const bypassDataGatePages = new Set([
       'auth-callback',
+      'settings',
+      'user-profile',
+      'notifications',
+      'privacy-policy',
+      'terms',
+      'diagnostics',
     ]);
 
+    // Enhanced data guard: Show loading if user is authenticated but data isn't ready yet
     if (user && !dataReady && !bypassDataGatePages.has(currentPage)) {
       return (
         <div className="flex items-center justify-center h-[60vh] w-full">
