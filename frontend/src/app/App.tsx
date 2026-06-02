@@ -157,6 +157,15 @@ const AppContent: React.FC = () => {
   }
 
   const { currentPage, setCurrentPage, visibleFeatures, aiCapabilities } = appContext;
+
+  // Auto-scroll to top when page changes
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: 'auto',
+    });
+  }, [currentPage]);
   const [isInitialized, setIsInitialized] = useState(false);
   const [showQuickAction, setShowQuickAction] = useState(false);
   

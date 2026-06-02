@@ -29,11 +29,11 @@ interface QuickActionModalProps {
 const quickActions = [
  { id: 'add-expense', label: 'Expense', icon: 'Food & Dining', gradient: 'from-pink-500 to-rose-500', description: 'Quick expense entry', openForm: 'expense' },
  { id: 'add-income', label: 'Income', icon: 'Salary', gradient: 'from-emerald-400 to-teal-500', description: 'Record income', openForm: 'income' },
- { id: 'add-account', label: 'Account', icon: 'wallet', gradient: 'from-indigo-500 to-purple-600', description: 'New account', openForm: 'account' },
+ { id: 'add-account', label: 'Account', icon: 'Savings', gradient: 'from-indigo-500 to-purple-600', description: 'New account', openForm: 'account' },
  { id: 'transfer', label: 'Transfer', icon: 'transfer', gradient: 'from-blue-500 to-indigo-600', description: 'Transfer money', openForm: 'transfer' },
  { id: 'split-bill', label: 'Split', icon: 'Family & Kids', gradient: 'from-violet-500 to-purple-600', description: 'Group expense', openForm: 'group' },
  { id: 'add-goal', label: 'New Goal', icon: 'goal', gradient: 'from-amber-400 to-orange-500', description: 'Savings goal', openForm: 'goal' },
- { id: 'todo-lists', label: 'Todo', icon: 'checklist', gradient: 'from-green-500 to-emerald-600', description: 'Task list', openForm: 'todos' },
+ { id: 'todo-lists', label: 'Todo', icon: 'Tasks', gradient: 'from-green-500 to-emerald-600', description: 'Task list', openForm: 'todos' },
  { id: 'calendar', label: 'Calendar', icon: 'calendar', gradient: 'from-cyan-400 to-blue-500', description: 'Transaction calendar', openForm: 'calendar' },
  { id: 'voice-entry', label: 'Voice', icon: 'voice', gradient: 'from-fuchsia-500 to-pink-600', description: 'Speak to add', openForm: 'voice' },
 ];

@@ -1,0 +1,59 @@
+/* Bottom Navigation Icon Fix - Ensure icons are fully visible and not covered */
+.bottom-nav,
+[class*="BottomNav"],
+.mobile-nav {
+  /* Ensure proper height for touch targets */
+  height: 5rem; /* 80px */
+  
+  /* Icon containers */
+  & button,
+  & [role="button"],
+  & a {
+    /* Prevent icon from being cut off or covered */
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 3.5rem; /* 56px */
+    min-height: 3.5rem; /* 56px */
+    max-width: 100% !important;
+    overflow: visible !important;
+    flex-direction: column;
+  }
+  
+  /* Icon sizing */
+  & svg {
+    width: 1.5rem !important; /* 24px */
+    height: 1.5rem !important; /* 24px */
+    flex-shrink: 0;
+    object-fit: contain;
+  }
+  
+  /* Labels below icons */
+  & span {
+    margin-top: 0.25rem;
+    font-size: 0.625rem; /* 10px */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+/* Ensure safe area at bottom doesn't cover content */
+.safe-bottom {
+  padding-bottom: max(env(safe-area-inset-bottom), 0.5rem);
+}
+
+/* Mobile bottom nav shouldn't overlap content */
+.mobile-main {
+  padding-bottom: 5.5rem; /* Account for bottom nav height + safe area */
+}
+
+@media (min-width: 768px) {
+  .mobile-main {
+    padding-bottom: 0;
+  }
+  
+  .bottom-nav {
+    display: none;
+  }
+}
