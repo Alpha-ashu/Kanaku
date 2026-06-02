@@ -389,3 +389,22 @@ html {
 .live-market-flash-track:hover {
   animation-play-state: paused;
 }
+
+/* Bottom Navigation wrapper style to avoid inline CSS styles */
+.bottom-nav-container {
+  padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: transparent;
+  height: auto;
+  min-height: 80px;
+}
+
+/* Utility to hide SVG defs/gradients from rendering layout */
+.hidden-svg {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}

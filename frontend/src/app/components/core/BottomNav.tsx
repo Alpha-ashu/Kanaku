@@ -106,16 +106,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ onQuickAdd }) => {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 lg:hidden pointer-events-none safe-area-padding"
-      style={{
-        paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))',
-        display: 'flex',
-        alignItems: 'flex-end',
-        justifyContent: 'center',
-        background: 'transparent',
-        height: 'auto',
-        minHeight: '80px'
-      }}
+      className="fixed bottom-0 left-0 right-0 z-50 lg:hidden pointer-events-none safe-area-padding bottom-nav-container"
     >
       <div className={cn(
         "mb-0 bg-white/95 backdrop-blur-lg border-0 rounded-[24px] shadow-lg pointer-events-auto flex items-center justify-center gap-0.5 h-16 ring-1 ring-black/10 relative overflow-hidden transition-all duration-300",
@@ -146,21 +137,21 @@ export const BottomNav: React.FC<BottomNavProps> = ({ onQuickAdd }) => {
               onClick={() => handleNavigation(item.id)}
               className={cn(
                 "flex flex-col items-center justify-center h-full flex-1 min-w-0 transition-all duration-300 relative group px-1",
-                isActive ? "text-slate-900" : "text-gray-500 hover:text-gray-700"
+                isActive ? "text-white" : "text-gray-500 hover:text-gray-700"
               )}
               title={item.label}
             >
               {isActive && (
                 <motion.div
                   layoutId="activeTabMobile"
-                  className="absolute -top-2 left-1/2 -translate-x-1/2 w-5 h-0.5 bg-slate-900 rounded-full"
+                  className="absolute w-10 h-10 bg-slate-900 rounded-full z-0 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
                   transition={{ type: "spring", stiffness: 400, damping: 30 }}
                 />
               )}
               <Icon
-                className={cn("w-6 h-6 transition-all duration-300", isActive && "scale-110")}
+                className={cn("w-6 h-6 transition-all duration-300 z-10 relative", isActive && "scale-110")}
                 strokeWidth={isActive ? 2.5 : 2}
-                fill={isActive ? "currentColor" : "none"}
+                fill="none"
               />
             </button>
           );

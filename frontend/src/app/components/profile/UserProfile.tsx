@@ -615,13 +615,88 @@ export const UserProfile: React.FC = () => {
  setVerification({ ...verification, type: 'mobile-change', step: 'otp-sent' });
  toast.success('OTP sent to your registered email');
  };
- const handleVerifyMobileOTP = () => {
- if (verification.otp.length === 6) {
- setProfileData({ ...profileData, mobile: verification.newValue });
- setVerification({ type: null, otp: '', newValue: '', step: 'request' });
- toast.success('Mobile number updated successfully');
- } else { toast.error('Invalid OTP'); }
- };
+  const handleVerifyMobileOTP = async () => {
+    if (verification.otp.length === 6) {
+      setIsLoading(true);
+      try {
+        const nextProfileData: ProfileData = {
+          ...profileData,
+          mobile: verification.newValue,
+        };
+
+        // 1. Update local states
+        setProfileData(nextProfileData);
+        setTempData(nextProfileData);
+        setVerification({ type: null, otp: '', newValue: '', step: 'request' });
+
+        const resolvedAvatar = resolveAvatar(nextProfileData.profilePhoto, nextProfileData.avatarId);
+        const operationId = `profile_update_mobile_${Date.now()}`;
+        const updatedAt = new Date().toISOString();
+
+        // 2. Save to localStorage
+        localStorage.setItem('user_profile', JSON.stringify({
+          displayName: `${nextProfileData.firstName} ${nextProfileData.lastName}`.trim(),
+          firstName: nextProfileData.firstName,
+          lastName: nextProfileData.lastName,
+          gender: nextProfileData.gender,
+          email: nextProfileData.email,
+          mobile: nextProfileData.mobile,
+          dateOfBirth: nextProfileData.dateOfBirth,
+          jobType: nextProfileData.jobType,
+          salary: (nextProfileData.monthlyIncome || 0) * 12,
+          monthlyIncome: nextProfileData.monthlyIncome || 0,
+          country: nextProfileData.country,
+          state: nextProfileData.state,
+          city: nextProfileData.city,
+          profilePhoto: resolvedAvatar.url,
+          avatarUrl: resolvedAvatar.url,
+          avatarId: resolvedAvatar.id,
+          updatedAt,
+        }));
+        localStorage.setItem('profile_updated_at', updatedAt);
+        localStorage.setItem('profile_sync_pending', 'true');
+
+        // 3. Add to backend sync queue (non-blocking)
+        const { backendSyncService } = await import('@/lib/backend-sync-service');
+        backendSyncService.addPendingOperation(operationId);
+
+        // 4. Update via Backend API
+        if (!shouldSkipOptionalBackendRequests()) {
+          void api.auth.updateProfile({
+            firstName: nextProfileData.firstName,
+            lastName: nextProfileData.lastName,
+            gender: nextProfileData.gender,
+            country: nextProfileData.country,
+            state: nextProfileData.state,
+            city: nextProfileData.city,
+            monthlyIncome: nextProfileData.monthlyIncome,
+            dateOfBirth: nextProfileData.dateOfBirth,
+            jobType: nextProfileData.jobType,
+            mobile: nextProfileData.mobile,
+            avatarId: resolvedAvatar.id,
+            avatarUrl: resolvedAvatar.url,
+          }).then(() => {
+            backendSyncService.removePendingOperation(operationId);
+            localStorage.removeItem('profile_sync_pending');
+            console.log('... Profile mobile number synced to backend');
+          }).catch((error) => {
+            console.warn('Backend sync for mobile failed, will retry:', error);
+          });
+        } else {
+          console.info('[UserProfile] Skipping backend profile mobile sync while backend is unavailable in development mode.');
+        }
+
+        toast.success('Mobile number updated successfully');
+      } catch (err: any) {
+        console.error('Failed to update mobile number:', err);
+        toast.error(err.message || 'Failed to save mobile number. Please try again.');
+      } finally {
+        setIsLoading(false);
+      }
+    } else {
+      toast.error('Invalid OTP');
+    }
+  };
 
   const handleDeleteAccount = async () => {
     if (!user) return;

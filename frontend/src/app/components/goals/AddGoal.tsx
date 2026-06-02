@@ -4,6 +4,7 @@ import { useApp } from '@/contexts/AppContext';
 import { saveGoalWithBackendSync } from '@/lib/auth-sync-integration';
 import { GoalMember } from '@/lib/database';
 import { GOAL_CATEGORIES, getMonthlySuggestion } from '@/lib/goal-utils';
+import { getCategoryCartoonIcon } from '@/app/components/ui/CartoonCategoryIcons';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
  ArrowLeft, Target, Users, TrendingUp, Calendar, Wallet, Check, Trash2, 
@@ -75,7 +76,7 @@ const GoalCategoryGrid = ({
                 )}
               >
                 <div className={cn("w-8 h-8 flex items-center justify-center rounded-lg transition-colors text-lg", selectedCategory === cat.key ? "bg-white/20" : "bg-white group-hover:bg-slate-50")}>
-                  {cat.icon}
+                  {getCategoryCartoonIcon(cat.key, 24)}
                 </div>
                 <span className={cn("text-[9px] font-black uppercase tracking-tight text-center leading-none truncate w-full px-0.5", selectedCategory === cat.key ? "text-white" : "text-slate-500")}>
                   {cat.label}

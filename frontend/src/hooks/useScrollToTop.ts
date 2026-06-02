@@ -14,8 +14,10 @@ interface ScrollToTopOptions {
 
 export const useScrollToTop = (
   dependencies: any[] = [],
-  options: ScrollToTopOptions = { behavior: 'auto', delay: 0 }
+  options: ScrollToTopOptions = {}
 ) => {
+  const { behavior = 'auto', delay = 0 } = options;
+
   useEffect(() => {
     const scrollToTop = () => {
       // Get main scrollable container (the one with overflow-x-hidden in App.tsx)
@@ -23,22 +25,22 @@ export const useScrollToTop = (
       
       if (mainContent) {
         // Set scroll position to top
-        if (options.delay > 0) {
+        if (delay > 0) {
           setTimeout(() => {
             mainContent.scrollTop = 0;
-          }, options.delay);
+          }, delay);
         } else {
           mainContent.scrollTop = 0;
         }
       }
 
       // Also try window scroll as fallback
-      if (options.delay > 0) {
+      if (delay > 0) {
         setTimeout(() => {
-          window.scrollTo({ top: 0, left: 0, behavior: options.behavior });
-        }, options.delay);
+          window.scrollTo({ top: 0, left: 0, behavior });
+        }, delay);
       } else {
-        window.scrollTo({ top: 0, left: 0, behavior: options.behavior });
+        window.scrollTo({ top: 0, left: 0, behavior });
       }
     };
 

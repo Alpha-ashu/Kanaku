@@ -11,7 +11,7 @@ const GlossOverlay: React.FC<{ size: number }> = ({ size }) => (
 );
 
 const Gradients = () => (
- <svg style={{ position: 'absolute', width: 0, height: 0 }} aria-hidden="true">
+ <svg className="hidden-svg" aria-hidden="true">
  <defs>
  <linearGradient id="glossGradient" x1="0%" y1="0%" x2="100%" y2="100%">
  <stop offset="0%" stopColor="white" stopOpacity="0.8" />
@@ -460,6 +460,14 @@ export const getCategoryCartoonIcon = (categoryName: string, size: number = 32):
  'todo': <ChecklistIcon size={size} />,
  'calendar': <CalendarIcon size={size} />,
  'voice': <MicIcon size={size} />,
+
+ // Goal categories
+ 'emergency': <HealthIcon size={size} />,
+ 'gadget': <ElectronicsIcon size={size} />,
+ 'wedding': <GiftsIcon size={size} />,
+ 'investment': <InvestmentIcon size={size} />,
+ 'personal': <PersonalCareIcon size={size} />,
+ 'custom': <MiscIcon size={size} />,
  };
  
  // Case-insensitive lookup

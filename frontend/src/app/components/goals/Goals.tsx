@@ -3,6 +3,7 @@ import { useApp, useSubFeature } from '@/contexts/AppContext';
 import { db } from '@/lib/database';
 import { applyAccountBalanceDeltas } from '@/lib/transactionAggregation';
 import { getGoalCategoryMeta, getGoalProgress, getMilestoneLabel, getMonthlySuggestion } from '@/lib/goal-utils';
+import { getCategoryCartoonIcon } from '@/app/components/ui/CartoonCategoryIcons';
 import { Bell, Calendar, Edit2, Plus, Sparkles, Target, Trash2, TrendingUp, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { DeleteConfirmModal } from '@/app/components/shared/DeleteConfirmModal';
@@ -268,7 +269,7 @@ export const Goals: React.FC = () => {
  progress >= 50 ?"bg-blue-600 text-white" :
 "bg-amber-500 text-white"
  )}>
- <span className="text-lg sm:text-xl">{categoryMeta.icon}</span>
+ <span className="text-lg sm:text-xl">{getCategoryCartoonIcon(goal.category, 24)}</span>
  </div>
  <div>
  <p className="text-xs text-gray-500 uppercase tracking-wide">{categoryMeta.label}</p>

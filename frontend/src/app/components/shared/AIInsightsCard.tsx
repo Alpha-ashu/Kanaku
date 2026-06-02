@@ -74,8 +74,9 @@ export const AIInsightsCard: React.FC<{ compact?: boolean }> = ({ compact = fals
     };
 
     fetchInsights();
+  }, [isAIDisabled]);
 
- if (loading) {
+  if (loading) {
     return (
       <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm flex items-center gap-3">
         <Loader2 size={18} className="animate-spin text-slate-400" />
