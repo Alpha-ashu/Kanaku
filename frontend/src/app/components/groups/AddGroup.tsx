@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 
 import '@/styles/premium-transactions.css';
 import { db } from '@/lib/database';
+import { formatCurrencyAmount } from '@/lib/currencyUtils';
 
 // --- Constants ---
 const GROUP_CATEGORIES = [
@@ -47,8 +48,7 @@ export const AddGroup: React.FC = () => {
  const totalNum = formData.totalAmount;
  const perPerson = validParticipants.length > 0 ? totalNum / (validParticipants.length + 1) : totalNum;
  
- const formatCurrency = (v: number) => 
- new Intl.NumberFormat('en-US', { style: 'currency', currency, maximumFractionDigits: 2 }).format(v);
+ const formatCurrency = (v: number) => formatCurrencyAmount(v, currency);
 
  const addParticipant = () => setFormData(prev => ({ ...prev, participants: [...prev.participants, ''] }));
  

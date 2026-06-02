@@ -30,7 +30,7 @@ export const getGoals = async (req: AuthRequest, res: Response, next: NextFuncti
 export const createGoal = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const userId = getUserId(req);
-    const { name, targetAmount, targetDate, category, isGroupGoal } = req.body;
+    const { name, targetAmount, targetDate, category, isGroupGoal, clientRequestId } = req.body;
 
     if (!name || !targetAmount || !targetDate) {
       throw AppError.badRequest('Missing required fields: name, targetAmount, and targetDate are mandatory.', 'MISSING_FIELDS');
@@ -39,6 +39,17 @@ export const createGoal = async (req: AuthRequest, res: Response, next: NextFunc
     const numericTarget = Number(targetAmount);
     if (!isFinite(numericTarget) || numericTarget <= 0) {
       return res.status(400).json({ success: false, error: 'Target amount must be a positive number' });
+    }
+
+    // Idempotency check
+    if (clientRequestId && typeof clientRequestId === 'string') {
+      const existing = await prisma.goal.findFirst({
+        where: { clientRequestId, userId }
+      });
+      if (existing) {
+        logger.info(`Idempotent goal creation request: ${clientRequestId}`);
+        return res.status(200).json({ success: true, data: existing });
+      }
     }
 
     const goal = await prisma.goal.create({
@@ -50,6 +61,7 @@ export const createGoal = async (req: AuthRequest, res: Response, next: NextFunc
         category,
         isGroupGoal: isGroupGoal || false,
         currentAmount: 0,
+        clientRequestId: clientRequestId || null,
       },
     });
 

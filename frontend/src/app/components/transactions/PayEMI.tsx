@@ -7,6 +7,7 @@ import { applyAccountBalanceDeltas } from '@/lib/transactionAggregation';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { toast } from 'sonner';
 import { CreditCard, AlertCircle, DollarSign, Calendar } from 'lucide-react';
+import { formatCurrencyAmount } from '@/lib/currencyUtils';
 
 export const PayEMI: React.FC = () => {
  const { currency, setCurrentPage } = useApp();
@@ -35,12 +36,7 @@ export const PayEMI: React.FC = () => {
  );
 
  const formatCurrency = (amount: number) => {
- return new Intl.NumberFormat('en-US', {
- style: 'currency',
- currency: currency,
- minimumFractionDigits: 2,
- maximumFractionDigits: 2,
- }).format(amount);
+ return formatCurrencyAmount(amount, currency);
  };
 
  const handleSubmit = async (e: React.FormEvent) => {

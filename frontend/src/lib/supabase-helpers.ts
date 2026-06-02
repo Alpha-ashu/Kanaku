@@ -96,8 +96,21 @@ export async function signIn(email: string, password: string) {
 }
 
 export async function signOut() {
-  const { error } = await supabase.auth.signOut();
-  if (error) throw error;
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      const { error } = await supabase.auth.signOut({ scope: 'global' });
+      if (error) {
+        console.warn('Supabase global signOut failed, trying local signOut:', error);
+        await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
+      }
+    } else {
+      await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
+    }
+  } catch (e) {
+    console.warn('Supabase global signOut exception, trying local signOut:', e);
+    await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
+  }
 }
 
 export async function resetPassword(email: string) {

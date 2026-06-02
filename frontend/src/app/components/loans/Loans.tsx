@@ -11,6 +11,7 @@ import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { PageHeader } from '@/app/components/ui/PageHeader';
 import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
+import { formatCurrencyAmount } from '@/lib/currencyUtils';
 import { ReceiptScanner } from '@/app/components/transactions/ReceiptScanner';
 
 const isOpenLoan = (loan: { status?: string; outstandingBalance: number }) =>
@@ -90,10 +91,7 @@ export const Loans: React.FC = () => {
  }, [loans]);
 
  const formatCurrency = (amount: number) => {
- return new Intl.NumberFormat('en-US', {
- style: 'currency',
- currency: currency,
- }).format(amount);
+  return formatCurrencyAmount(amount, currency);
  };
 
  const formatShortDate = (value?: Date | string) => {

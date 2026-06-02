@@ -10,6 +10,7 @@ import { NavigationItem } from '@/app/constants/navigation';
 import { useSharedMenu } from '@/hooks/useSharedMenu';
 import { Reorder, useDragControls } from 'framer-motion';
 import { KANKULogo } from '@/app/components/ui/KANKULogo';
+import { formatCurrencyAmount } from '@/lib/currencyUtils';
 
 interface DraggableMobileMenuItemProps {
  item: NavigationItem;
@@ -99,11 +100,8 @@ export const Header: React.FC = () => {
  };
 
  const formatCurrency = (amount: number) => {
- return new Intl.NumberFormat('en-US', {
- style: 'currency',
- currency: currency,
- }).format(amount);
- };
+    return formatCurrencyAmount(amount, currency);
+  };
 
  const handleMenuItemClick = (itemId: string) => {
  handleNavigate(itemId);

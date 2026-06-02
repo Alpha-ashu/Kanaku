@@ -9,6 +9,7 @@ import { getGoalCategoryMeta, getGoalProgress, getMilestoneLabel, getMonthlySugg
 import { MessageSquare, Plus, Target } from 'lucide-react';
 import { toast } from 'sonner';
 import { takeVoiceDraft, VOICE_GOAL_DRAFT_KEY, type VoiceGoalDraft } from '@/lib/voiceDrafts';
+import { formatCurrencyAmount } from '@/lib/currencyUtils';
 
 const SELECTED_GOAL_ID_KEY = 'selected_goal_id';
 
@@ -66,7 +67,7 @@ export const GoalDetail: React.FC = () => {
  }, [goal?.id, goal?.name]);
 
  const formatCurrency = (value: number) =>
- new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(value);
+    formatCurrencyAmount(value, currency);
 
  const getWidthClass = (value: number) => {
  const safe = Math.max(0, Math.min(100, value));

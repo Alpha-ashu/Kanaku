@@ -165,7 +165,11 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
               if (result.success) {
                 const backup = backupPINKeys();
                 if (backup.hash && backup.salt) {
-                  pinService.saveKeyBackup(`${backup.hash}|${backup.salt}`).catch(() => { });
+                  pinService.verifySecurity().then(sec => {
+                    if (sec.success && sec.securityToken) {
+                      pinService.saveKeyBackup(`${backup.hash}|${backup.salt}`, sec.securityToken).catch(() => { });
+                    }
+                  }).catch(() => { });
                 }
               }
             })
@@ -190,7 +194,10 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
                   if (repair.success) {
                     const backup = backupPINKeys();
                     if (backup.hash && backup.salt) {
-                      pinService.saveKeyBackup(`${backup.hash}|${backup.salt}`).catch(() => { });
+                      const sec = await pinService.verifySecurity();
+                      if (sec.success && sec.securityToken) {
+                        await pinService.saveKeyBackup(`${backup.hash}|${backup.salt}`, sec.securityToken).catch(() => { });
+                      }
                     }
                   }
                 }
@@ -272,22 +279,28 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  }
  };
 
- const handleVerifyOtpAndReset = async () => {
- setIsResettingPin(true);
- setResetError('');
- try {
- const { error } = await supabase.auth.verifyOtp({
- email: user!.email,
- token: resetOtp,
- type: 'email'
- });
- if (error) throw error;
+  const handleVerifyOtpAndReset = async () => {
+    setIsResettingPin(true);
+    setResetError('');
+    try {
+      const { error } = await supabase.auth.verifyOtp({
+        email: user!.email,
+        token: resetOtp,
+        type: 'email'
+      });
+      if (error) throw error;
 
- const result = await pinService.resetCurrentUserPin();
- if (!result.success) {
- setResetError(result.message || 'Failed to reset PIN on server');
- return;
- }
+      const secResult = await pinService.verifySecurity();
+      if (!secResult.success || !secResult.securityToken) {
+        setResetError(secResult.message || 'Security verification failed');
+        return;
+      }
+
+      const result = await pinService.resetCurrentUserPin(secResult.securityToken);
+      if (!result.success) {
+        setResetError(result.message || 'Failed to reset PIN on server');
+        return;
+      }
 
  clearSecurityData();
  pinService.clearPinData();

@@ -40,6 +40,7 @@ export const createLoan = async (req: AuthRequest, res: Response, next: NextFunc
       dueDate,
       frequency,
       contactPerson,
+      clientRequestId,
     } = req.body;
 
     if (!type || !name || !principalAmount) {
@@ -49,6 +50,18 @@ export const createLoan = async (req: AuthRequest, res: Response, next: NextFunc
     const numericPrincipal = Number(principalAmount);
     if (!isFinite(numericPrincipal) || numericPrincipal <= 0) {
       throw AppError.badRequest('Principal amount must be a positive number', 'INVALID_AMOUNT');
+    }
+
+    // Idempotency check
+    if (clientRequestId && typeof clientRequestId === 'string') {
+      const existing = await prisma.loan.findFirst({
+        where: { clientRequestId, userId },
+        include: { payments: true }
+      });
+      if (existing) {
+        logger.info(`Idempotent loan creation request: ${clientRequestId}`);
+        return res.status(200).json({ success: true, data: existing });
+      }
     }
 
     const loan = await prisma.loan.create({
@@ -64,6 +77,7 @@ export const createLoan = async (req: AuthRequest, res: Response, next: NextFunc
         frequency,
         contactPerson: contactPerson ? sanitize(contactPerson) : undefined,
         status: 'active',
+        clientRequestId: clientRequestId || null,
       },
       include: { payments: true },
     });

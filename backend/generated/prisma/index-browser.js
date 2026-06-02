@@ -133,6 +133,7 @@ exports.Prisma.AccountScalarFieldEnum = {
   currency: 'currency',
   isActive: 'isActive',
   syncStatus: 'syncStatus',
+  clientRequestId: 'clientRequestId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   deletedAt: 'deletedAt'
@@ -267,6 +268,7 @@ exports.Prisma.GoalScalarFieldEnum = {
   category: 'category',
   isGroupGoal: 'isGroupGoal',
   syncStatus: 'syncStatus',
+  clientRequestId: 'clientRequestId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   deletedAt: 'deletedAt'
@@ -320,6 +322,7 @@ exports.Prisma.InvestmentScalarFieldEnum = {
   purchaseDate: 'purchaseDate',
   lastUpdated: 'lastUpdated',
   metadata: 'metadata',
+  clientRequestId: 'clientRequestId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   deletedAt: 'deletedAt'
@@ -340,6 +343,7 @@ exports.Prisma.LoanScalarFieldEnum = {
   status: 'status',
   contactPerson: 'contactPerson',
   syncStatus: 'syncStatus',
+  clientRequestId: 'clientRequestId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   deletedAt: 'deletedAt'

@@ -13,12 +13,13 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { takeVoiceDraft, VOICE_GOAL_DRAFT_KEY, type VoiceGoalDraft } from '@/lib/voiceDrafts';
 import { SearchableDropdown } from '@/app/components/ui/SearchableDropdown';
+import { formatCurrencyAmount } from '@/lib/currencyUtils';
 
 import '@/styles/premium-transactions.css';
 
 // --- Helpers ---
 const formatCurrency = (v: number, currency: string) =>
- new Intl.NumberFormat('en-US', { style: 'currency', currency, maximumFractionDigits: 0 }).format(v);
+  formatCurrencyAmount(v, currency, { maximumFractionDigits: 0 });
 
 // --- Sub-components ---
 

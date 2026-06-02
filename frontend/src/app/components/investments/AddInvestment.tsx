@@ -15,7 +15,7 @@ import {
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { searchStocks, fetchStockQuote, StockQuote, StockSearchResult, displaySymbol } from '@/lib/stockApi';
-import { formatNativeMoney, getCurrencySymbol, normalizeCurrencyCode } from '@/lib/currencyUtils';
+import { formatCurrencyAmount, formatNativeMoney, getCurrencySymbol, normalizeCurrencyCode } from '@/lib/currencyUtils';
 import { fetchCurrencyConversionRate } from '@/lib/investmentUtils';
 import { inferInvestmentTypeFromText } from '@/lib/voiceExpenseParser';
 import { takeVoiceDraft, VOICE_INVESTMENT_DRAFT_KEY, type VoiceInvestmentDraft } from '@/lib/voiceDrafts';
@@ -810,7 +810,7 @@ export const AddInvestment: React.FC = () => {
               options={activeAccounts.map(a => ({
                 value: String(a.id),
                 label: a.name,
-                description: `${currency} ${a.balance.toLocaleString()}`,
+                description: formatCurrencyAmount(a.balance, currency),
                 icon: <div className="w-7 h-7 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 font-black text-[8px]">{(a.type || 'BK').substring(0, 2).toUpperCase()}</div>
               }))}
               value={String(formData.fundingAccountId)}
@@ -874,9 +874,12 @@ export const AddInvestment: React.FC = () => {
               <div className="text-right">
                 <p className="text-[8px] font-black text-slate-300 uppercase tracking-widest">Subtotal</p>
                 <p className="text-xl font-black text-slate-900">
-                  {assetCurrency} {isPhysicalMetal
-                    ? formData.purchasePrice.toLocaleString()
-                    : (formData.quantity * formData.purchasePrice).toLocaleString()}
+                  {formatNativeMoney(
+                    isPhysicalMetal
+                      ? formData.purchasePrice
+                      : formData.quantity * formData.purchasePrice,
+                    assetCurrencyCode
+                  )}
                 </p>
               </div>
             </div>
@@ -886,7 +889,7 @@ export const AddInvestment: React.FC = () => {
                 <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center shrink-0"><BarChart3 size={16} className="text-white" /></div>
                 <div className="flex-1">
                   <p className="text-[8px] font-black text-indigo-600 uppercase tracking-widest">Live Market Pulse</p>
-                  <p className="text-[10px] font-bold text-slate-700">Trading at <span className="text-indigo-600">{assetCurrency} {livePrice.toLocaleString()}</span></p>
+                  <p className="text-[10px] font-bold text-slate-700">Trading at <span className="text-indigo-600">{formatNativeMoney(livePrice, assetCurrencyCode)}</span></p>
                 </div>
               </div>
             )}
@@ -922,7 +925,12 @@ export const AddInvestment: React.FC = () => {
             <div className="text-right">
               <p className="text-[8px] font-black text-white/60 uppercase">Total Capital</p>
               <p className="text-lg font-black tracking-tighter">
-                {currency} {(formData.purchasePrice + formData.purchaseFees).toLocaleString()}
+                {formatCurrencyAmount(
+                  (isPhysicalMetal
+                    ? formData.purchasePrice
+                    : formData.quantity * formData.purchasePrice) + formData.purchaseFees,
+                  currency
+                )}
               </p>
             </div>
           </div>

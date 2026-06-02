@@ -31,7 +31,6 @@ model Account {
   transactions      Transaction[]
   groupExpenses     GroupExpense[]
 
-  @@unique([userId, name, type])
   @@index([isActive])
   @@index([syncStatus])
   @@index([userId])

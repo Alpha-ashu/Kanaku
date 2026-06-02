@@ -31,18 +31,19 @@ const buildProfilePayload = (
   authUser?: AuthRequest['user'],
   userRecord?: Record<string, any> | null,
   profileRecord?: Record<string, any> | null,
+  settingsRecord?: Record<string, any> | null,
 ) => {
   const fallbackName = authUser?.name || '';
   const fallbackNameParts = fallbackName.trim().split(/\s+/).filter(Boolean);
 
   const firstName =
-    userRecord?.firstName ||
     profileRecord?.first_name ||
+    userRecord?.firstName ||
     fallbackNameParts[0] ||
     '';
   const lastName =
-    userRecord?.lastName ||
     profileRecord?.last_name ||
+    userRecord?.lastName ||
     fallbackNameParts.slice(1).join(' ') ||
     '';
   const monthlyIncome = profileRecord?.monthly_income != null
@@ -53,16 +54,16 @@ const buildProfilePayload = (
     id: userId,
     email: userRecord?.email || profileRecord?.email || authUser?.email || '',
     name:
-      userRecord?.name ||
       profileRecord?.full_name ||
+      userRecord?.name ||
       `${firstName} ${lastName}`.trim() ||
       fallbackName,
     firstName,
     lastName,
-    gender: userRecord?.gender || profileRecord?.gender || '',
-    country: userRecord?.country || profileRecord?.country || '',
-    state: userRecord?.state || profileRecord?.state || '',
-    city: userRecord?.city || profileRecord?.city || '',
+    gender: profileRecord?.gender || userRecord?.gender || '',
+    country: profileRecord?.country || userRecord?.country || '',
+    state: profileRecord?.state || userRecord?.state || '',
+    city: profileRecord?.city || userRecord?.city || '',
     salary:
       userRecord?.salary != null
         ? toNumber(userRecord.salary, 0)
@@ -70,14 +71,16 @@ const buildProfilePayload = (
           ? toNumber(profileRecord.annual_income, monthlyIncome * 12)
           : monthlyIncome * 12),
     monthlyIncome,
-    dateOfBirth: toIsoDateOnly(userRecord?.dateOfBirth || profileRecord?.date_of_birth),
-    jobType: userRecord?.jobType || profileRecord?.job_type || '',
+    dateOfBirth: toIsoDateOnly(profileRecord?.date_of_birth || userRecord?.dateOfBirth),
+    jobType: profileRecord?.job_type || userRecord?.jobType || '',
     role: userRecord?.role || authUser?.role || 'user',
     isApproved: userRecord?.isApproved ?? authUser?.isApproved ?? false,
     mobile: profileRecord?.phone || '',
     phone: profileRecord?.phone || '',
-    avatarId: userRecord?.avatarId || profileRecord?.avatar_id || null,
+    avatarId: profileRecord?.avatar_id || userRecord?.avatarId || null,
     avatarUrl: profileRecord?.avatar_url || null,
+    currency: settingsRecord?.currency || 'USD',
+    language: settingsRecord?.language || 'en',
   };
 };
 
@@ -203,6 +206,7 @@ export const getProfile = async (req: AuthRequest, res: Response, next: NextFunc
     }
     let userResult: PromiseSettledResult<unknown> = { status: 'fulfilled', value: null };
     let profileResult: PromiseSettledResult<unknown> = { status: 'fulfilled', value: null };
+    let settingsResult: PromiseSettledResult<unknown> = { status: 'fulfilled', value: null };
 
     const withTimeout = async <T>(promise: Promise<T>, ms: number, label: string): Promise<T> => {
       return await Promise.race([
@@ -240,12 +244,26 @@ export const getProfile = async (req: AuthRequest, res: Response, next: NextFunc
       });
     }
 
+    try {
+      const settings = await withTimeout(prisma.userSettings.findUnique({
+        where: { userId: req.userId },
+      }), 1500, 'UserSettings lookup');
+      settingsResult = { status: 'fulfilled', value: settings };
+    } catch (err: any) {
+      settingsResult = { status: 'rejected', reason: err };
+      logger.warn('Get profile settings lookup failed.', {
+        message: err?.message,
+        userId: req.userId,
+      });
+    }
+
     const userRecord = userResult.status === 'fulfilled' ? (userResult.value as Record<string, any>) : null;
     const profileRecord = profileResult.status === 'fulfilled' ? (profileResult.value as Record<string, any>) : null;
+    const settingsRecord = settingsResult.status === 'fulfilled' ? (settingsResult.value as Record<string, any>) : null;
 
     res.json({
       success: true,
-      data: buildProfilePayload(req.userId, req.user, userRecord, profileRecord),
+      data: buildProfilePayload(req.userId, req.user, userRecord, profileRecord, settingsRecord),
     });
   } catch (error: any) {
     // BUG FIX #3: Even if everything fails, return 200 with auth snapshot instead of 500
@@ -255,7 +273,7 @@ export const getProfile = async (req: AuthRequest, res: Response, next: NextFunc
     });
     res.json({
       success: true,
-      data: buildProfilePayload(req.userId || '', req.user, null, null),
+      data: buildProfilePayload(req.userId || '', req.user, null, null, null),
     });
   }
 };
@@ -274,23 +292,20 @@ export const updateProfile = async (req: AuthRequest, res: Response, next: NextF
     );
     const user = await authService.updateProfile(req.userId, sanitizedData, req.user?.email);
 
+    // Fetch fresh profile data and settings to return consistent payload
+    const [profile, settings] = await Promise.all([
+      prisma.profiles.findUnique({
+        where: { id: req.userId },
+      }),
+      prisma.userSettings.findUnique({
+        where: { userId: req.userId },
+      }),
+    ]);
+
     res.json({
       success: true,
       message: 'Profile updated successfully',
-      data: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        gender: user.gender,
-        country: user.country,
-        state: user.state,
-        city: user.city,
-        salary: user.salary,
-        dateOfBirth: user.dateOfBirth,
-        jobType: user.jobType,
-      }
+      data: buildProfilePayload(req.userId, req.user, user, profile, settings),
     });
   } catch (error: any) {
     logger.error('Update profile error:', {

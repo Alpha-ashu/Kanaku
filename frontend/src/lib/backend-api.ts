@@ -33,6 +33,17 @@ function shouldUseLocalFallback(error: unknown) {
   return status == null || status >= 500;
 }
 
+const generateUUID = (): string => {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+};
+
 function normalizeInvestmentDates<T extends Record<string, any>>(investment: T): T {
   const normalized: Record<string, any> = { ...investment };
 
@@ -236,6 +247,7 @@ class BackendService {
         updatedAt: investment.updatedAt.toISOString(),
         deletedAt: investment.deletedAt ? investment.deletedAt.toISOString() : undefined,
         closedAt: investment.closedAt ? investment.closedAt.toISOString() : undefined,
+        clientRequestId: generateUUID(),
       });
 
       const responsePayload = normalizeInvestmentDates(response.data?.data ?? response.data);
@@ -471,7 +483,10 @@ class BackendService {
     balance?: number;
     currency?: string;
   }) {
-    const response = await this.api.post('/accounts', account);
+    const response = await this.api.post('/accounts', {
+      ...account,
+      clientRequestId: generateUUID(),
+    });
     return response.data;
   }
 
@@ -509,6 +524,7 @@ class BackendService {
     const response = await this.api.post('/goals', {
       ...goal,
       targetDate: goal.targetDate.toISOString(),
+      clientRequestId: generateUUID(),
     });
     return response.data;
   }
@@ -555,6 +571,7 @@ class BackendService {
     const response = await this.api.post('/loans', {
       ...loan,
       dueDate: loan.dueDate?.toISOString(),
+      clientRequestId: generateUUID(),
     });
     return response.data;
   }

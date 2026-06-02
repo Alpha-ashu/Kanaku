@@ -13,6 +13,7 @@ import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { VOICE_GOAL_DRAFT_KEY, takeVoiceDraft, type VoiceGoalDraft } from '@/lib/voiceDrafts';
+import { formatCurrencyAmount } from '@/lib/currencyUtils';
 
 export const Goals: React.FC = () => {
  const { goals, accounts, currency, setCurrentPage } = useApp();
@@ -49,10 +50,7 @@ export const Goals: React.FC = () => {
  }, [goals.length, setCurrentPage]);
 
  const formatCurrency = (amount: number) => {
- return new Intl.NumberFormat('en-US', {
- style: 'currency',
- currency: currency,
- }).format(amount);
+ return formatCurrencyAmount(amount, currency);
  };
 
  const getDaysRemaining = (targetDate: Date) => {

@@ -56,17 +56,28 @@ export const UserProfile: React.FC = () => {
  toast.info('Signing out...');
 
  try {
- // Step 1: Sign out from Supabase (with timeout)
- const signOutPromise = supabase.auth.signOut({ scope: 'global' });
- const timeoutPromise = new Promise((_, reject) =>
- setTimeout(() => reject(new Error('Sign out timeout')), 5000)
- );
+  // Step 1: Sign out from Supabase (with timeout)
+  const signOutPromise = (async () => {
+    try {
+      const { error } = await supabase.auth.signOut({ scope: 'global' });
+      if (error) {
+        console.warn('Supabase global signOut failed, trying local signOut:', error);
+        await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
+      }
+    } catch (e) {
+      console.warn('Supabase global signOut exception, trying local signOut:', e);
+      await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
+    }
+  })();
+  const timeoutPromise = new Promise((_, reject) =>
+  setTimeout(() => reject(new Error('Sign out timeout')), 5000)
+  );
 
- try {
- await Promise.race([signOutPromise, timeoutPromise]);
- } catch (e) {
- console.warn('Supabase signOut timed out or failed (non-blocking):', e);
- }
+  try {
+  await Promise.race([signOutPromise, timeoutPromise]);
+  } catch (e) {
+  console.warn('Supabase signOut timed out or failed (non-blocking):', e);
+  }
 
  // Step 2: Clear permissions
  try {
@@ -536,27 +547,33 @@ export const UserProfile: React.FC = () => {
  const [showNewPin, setShowNewPin] = useState(false);
  const [isPinLoading, setIsPinLoading] = useState(false);
 
- const handleSetNewPin = async () => {
- if (currentPin.length !== 6) { toast.error('Current PIN must be 6 digits'); return; }
- if (newPin.length !== 6) { toast.error('New PIN must be 6 digits'); return; }
- if (newPin !== confirmNewPin) { toast.error('PINs do not match'); setConfirmNewPin(''); return; }
+  const handleSetNewPin = async () => {
+    if (currentPin.length !== 6) { toast.error('Current PIN must be 6 digits'); return; }
+    if (newPin.length !== 6) { toast.error('New PIN must be 6 digits'); return; }
+    if (newPin !== confirmNewPin) { toast.error('PINs do not match'); setConfirmNewPin(''); return; }
 
- setIsPinLoading(true);
- try {
- const result = await pinService.updatePin(currentPin, newPin);
- if (!result.success) {
- toast.error(result.message || 'Failed to update PIN');
- return;
- }
+    setIsPinLoading(true);
+    try {
+      const secResult = await pinService.verifySecurity();
+      if (!secResult.success || !secResult.securityToken) {
+        toast.error(secResult.message || 'Security verification failed');
+        return;
+      }
 
- storeMasterKey(newPin);
- const pinBackup = backupPINKeys();
- if (pinBackup.hash && pinBackup.salt) {
- const backupResult = await pinService.saveKeyBackup(`${pinBackup.hash}|${pinBackup.salt}`);
- if (!backupResult.success) {
- console.warn('PIN key backup refresh failed after PIN change:', backupResult.message);
- }
- }
+      const result = await pinService.updatePin(currentPin, newPin, secResult.securityToken);
+      if (!result.success) {
+        toast.error(result.message || 'Failed to update PIN');
+        return;
+      }
+
+      storeMasterKey(newPin);
+      const pinBackup = backupPINKeys();
+      if (pinBackup.hash && pinBackup.salt) {
+        const backupResult = await pinService.saveKeyBackup(`${pinBackup.hash}|${pinBackup.salt}`, secResult.securityToken);
+        if (!backupResult.success) {
+          console.warn('PIN key backup refresh failed after PIN change:', backupResult.message);
+        }
+      }
 
  localStorage.setItem('pin_created_at', new Date().toISOString());
  if (result.expiresAt) {

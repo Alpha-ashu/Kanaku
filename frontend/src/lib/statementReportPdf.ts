@@ -14,6 +14,8 @@ interface StatementReportInput {
   investments: Investment[];
 }
 
+import { getCurrencySymbol } from '@/lib/currencyUtils';
+
 const PAGE = {
   width: 595,
   height: 842,
@@ -23,10 +25,7 @@ const PAGE = {
 };
 
 const pickCurrencySymbol = (currencyCode: string) => {
-  if (currencyCode === 'INR') return 'Rs';
-  if (currencyCode === 'USD') return '$';
-  if (currencyCode === 'EUR') return 'EUR';
-  return currencyCode;
+  return getCurrencySymbol(currencyCode);
 };
 
 const numberFormatter = new Intl.NumberFormat('en-US', {

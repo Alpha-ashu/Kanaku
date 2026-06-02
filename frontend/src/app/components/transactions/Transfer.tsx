@@ -13,6 +13,7 @@ import {
 import type { Account } from '@/lib/database';
 import { cn } from '@/lib/utils';
 import { SearchableDropdown } from '@/app/components/ui/SearchableDropdown';
+import { formatCurrencyAmount } from '@/lib/currencyUtils';
 
 import '@/styles/premium-transactions.css';
 
@@ -43,8 +44,7 @@ export const Transfer: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
  const toAcc = activeAccounts.find((a) => a.id === formData.toAccountId);
  const amountNum = formData.amount;
 
- const formatCurrency = (v: number) =>
- new Intl.NumberFormat('en-US', { style: 'currency', currency, maximumFractionDigits: 2 }).format(v);
+ const formatCurrency = (v: number) => formatCurrencyAmount(v, currency);
 
  const handleSubmit = async () => {
  if (!formData.fromAccountId) { toast.error('Select a source account'); return; }

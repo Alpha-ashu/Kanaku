@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { PageHeader } from '@/app/components/ui/PageHeader';
 import { Button } from '@/app/components/ui/button';
 import { TimeFilter, TimeFilterPeriod, filterByTimePeriod } from '@/app/components/ui/TimeFilter';
+import { formatCurrencyAmount } from '@/lib/currencyUtils';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MONTHS = [
@@ -137,24 +138,20 @@ export const Calendar: React.FC = () => {
  setSelectedDate(today);
  };
 
- const formatCurrency = (amount: number) => {
- return new Intl.NumberFormat('en-US', {
- style: 'currency',
- currency: currency,
- minimumFractionDigits: 0,
- maximumFractionDigits: 0,
- }).format(Math.abs(amount));
- };
+  const formatCurrency = (amount: number) => {
+    return formatCurrencyAmount(Math.abs(amount), currency, {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    });
+  };
 
- const formatSignedCurrency = (amount: number) => {
- return new Intl.NumberFormat('en-US', {
- style: 'currency',
- currency: currency,
- minimumFractionDigits: 0,
- maximumFractionDigits: 0,
- signDisplay: 'always',
- }).format(amount);
- };
+  const formatSignedCurrency = (amount: number) => {
+    return formatCurrencyAmount(amount, currency, {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+      signDisplay: 'always' as any,
+    });
+  };
 
  const getDateKey = (date: Date) => {
  return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;

@@ -6,6 +6,7 @@ import { db } from '@/lib/database';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { toast } from 'sonner';
 import { ChevronLeft, Calculator } from 'lucide-react';
+import { formatCurrencyAmount } from '@/lib/currencyUtils';
 
 const TAX_BRACKETS = {
  'US': {
@@ -127,12 +128,9 @@ export const TaxCalculator: React.FC<{ onBack?: () => void }> = ({ onBack }) => 
  }
  };
 
- const formatCurrency = (amount: number) => {
- return new Intl.NumberFormat('en-US', {
- style: 'currency',
- currency: currency,
- }).format(amount);
- };
+  const formatCurrency = (amount: number) => {
+    return formatCurrencyAmount(amount, currency);
+  };
 
  return (
  <div className="w-full min-h-screen overflow-x-hidden bg-white">

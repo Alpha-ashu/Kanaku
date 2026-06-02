@@ -147,7 +147,15 @@ export const PINSetup: React.FC<PINSetupProps> = ({
  pinService.markPinVerifiedLocally();
  }
 
- const backupResult = await pinService.saveKeyBackup(`${backup.hash}|${backup.salt}`);
+ let securityToken: string | undefined;
+ if (result.success) {
+   const secResult = await pinService.verifySecurity();
+   if (secResult.success) {
+     securityToken = secResult.securityToken;
+   }
+ }
+
+ const backupResult = await pinService.saveKeyBackup(`${backup.hash}|${backup.salt}`, securityToken);
  if (!backupResult.success && !isPinServiceUnavailable(backupResult) && !isPinMissing(backupResult)) {
  console.warn('PIN key backup refresh failed during setup:', backupResult.message);
  }

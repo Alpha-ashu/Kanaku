@@ -55,6 +55,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const navigate = useNavigate();
 
   const historyStackRef = useRef<string[]>([]);
+  const isFirstSettingsMountRef = useRef(true);
 
   const currentPage = location.pathname.length > 1
     ? location.pathname.substring(1).split('?')[0].split('#')[0]
@@ -481,6 +482,30 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       }),
     ));
   }, [language, shouldPersistUserSettings]);
+
+  useEffect(() => {
+    if (isFirstSettingsMountRef.current) {
+      isFirstSettingsMountRef.current = false;
+      return;
+    }
+
+    if (user?.id) {
+      const syncSettingsToBackend = async () => {
+        try {
+          const { apiClient } = await import('@/lib/api');
+          await apiClient.put('/settings', {
+            currency,
+            language,
+          }, {
+            showErrorToast: false,
+          });
+        } catch (err) {
+          console.warn('[AppContext] Failed to sync settings to backend:', err);
+        }
+      };
+      void syncSettingsToBackend();
+    }
+  }, [currency, language, user?.id]);
 
   // Debounce ref to prevent computeVisibleFeatures firing multiple times per tick
   const computeScheduledRef = useRef(false);

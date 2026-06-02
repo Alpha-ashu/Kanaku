@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 
 import { toast } from 'sonner';
+import { formatCurrencyAmount } from '@/lib/currencyUtils';
 import {
  EXPENSE_CATEGORIES,
  INCOME_CATEGORIES,
@@ -68,7 +69,7 @@ const createEmptyParticipant = (seed: Partial<GroupParticipantDraft> = {}): Grou
 });
 
 const formatAccountBalance = (v: number, currency: string) =>
- new Intl.NumberFormat('en-US', { style: 'currency', currency, maximumFractionDigits: 2 }).format(v);
+  formatCurrencyAmount(v, currency);
 
 // --- Sub-components ---
 

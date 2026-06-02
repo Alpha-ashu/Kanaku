@@ -25,6 +25,7 @@ import { downloadFile, shareFile } from '@/lib/download';
 import { formatLocalDate, parseDateInputValue, toLocalDateKey } from '@/lib/dateUtils';
 import { buildStatementReportInput, buildStatementReportPdf } from '@/lib/statementReportPdf';
 import { AIInsightsCard } from '@/app/components/shared/AIInsightsCard';
+import { formatCurrencyAmount } from '@/lib/currencyUtils';
 
 const chartColors = ['#2563EB', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#22C55E', '#0EA5E9', '#F97316'];
 
@@ -127,10 +128,7 @@ export const Reports: React.FC = () => {
  };
 
  const formatCurrency = (amount: number) => {
- return new Intl.NumberFormat('en-US', {
- style: 'currency',
- currency,
- }).format(amount || 0);
+   return formatCurrencyAmount(amount, currency);
  };
 
  const dateRange = useMemo(() => {

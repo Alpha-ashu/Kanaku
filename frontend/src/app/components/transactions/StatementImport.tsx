@@ -12,6 +12,8 @@ import { financialDataCaptureService } from '@/services/financialDataCaptureServ
 import { Button } from '@/app/components/ui/button';
 import { Card } from '@/app/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
+import { useApp } from '@/contexts/AppContext';
+import { formatCurrencyAmount } from '@/lib/currencyUtils';
 
 interface StatementImportProps {
  accountId: number;
@@ -29,6 +31,7 @@ export const StatementImport: React.FC<StatementImportProps> = ({
  onCancel
 }) => {
  const { user } = useAuth();
+ const { currency } = useApp();
  const [file, setFile] = useState<File | null>(null);
  const [importState, setImportState] = useState<'idle' | 'uploading' | 'processing' | 'preview' | 'importing' | 'success' | 'error'>('idle');
  const [importResult, setImportResult] = useState<ImportResult | null>(null);
@@ -201,13 +204,10 @@ export const StatementImport: React.FC<StatementImportProps> = ({
  return <FileText size={24} />;
  };
 
- const formatCurrency = (amount: number) => {
- if (isNaN(amount)) return 'INR0.00';
- return new Intl.NumberFormat('en-IN', {
- style: 'currency',
- currency: 'INR'
- }).format(Math.abs(amount));
- };
+  const formatCurrency = (amount: number) => {
+    if (isNaN(amount)) return '0.00';
+    return formatCurrencyAmount(Math.abs(amount), currency);
+  };
 
  const formatDate = (date: Date) => {
  if (!date || isNaN(date.getTime())) {

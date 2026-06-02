@@ -2240,3 +2240,74 @@ After successful deletion, clears all relevant `localStorage` keys (`auth_token`
 | `frontend/src/app/components/goals/AddGoal.tsx` | Fixed TypeScript `never[]` type error on `chunked` array in `GoalCategoryGrid` |
 | `frontend/src/app/components/transactions/AddTransaction.tsx` | Fixed TypeScript `never[]` type error on `chunked` array in `CategoryGrid` |
 
+---
+
+## Phase 10: Database Clean-Up & Anti-Duplication (June 2026)
+
+### Problem
+Users experienced data duplication due to double-writes to both the `User` and `profiles` tables. Additionally, network retries created duplicate records for Accounts, Goals, Loans, and Investments because there were no idempotency guards or unique constraints in the database.
+
+### Solution
+Implemented a comprehensive database deduplication and idempotency system across the entire stack:
+
+#### Schema Changes & Database Constraints
+- **Prisma Schema (`schema.prisma`)**: Added `clientRequestId String? @unique` to `Account`, `Goal`, `Loan`, and `Investment` models. Added `@unique` to `email` in `profiles`. Removed `@@unique([userId, name, type])` from `schema.prisma` to allow partial unique index.
+- **Partial Unique Index**: Executed direct SQL migration to create a partial unique index:
+  `CREATE UNIQUE INDEX "Account_userId_name_type_key" ON "Account"("userId", "name", "type") WHERE "deletedAt" IS NULL;`
+  This prevents duplicate active accounts with the same name and type per user, while ignoring soft-deleted accounts.
+- **Cleaned Existing Duplicates**: Cleaned duplicate active accounts from the database before applying the unique index.
+
+#### Backend Controller Idempotency Guards
+- **Account, Goal, Loan, Investment Controllers**: Added idempotency guards in `create` endpoints that return the existing entity if the client retries with the same `clientRequestId` (200 OK), bypassing duplication checks.
+- **Account Controller**: Added active duplicate name protection checking for conflicting active accounts.
+
+#### Single Source of Truth
+- **Auth Service (`auth.service.ts`)**: Refactored `updateProfile` to upsert to the `profiles` table as the single canonical source of truth for profile fields. Excluded duplicate profile fields (`firstName`, `lastName`, `gender`, `country`, `state`, `city`) from `User` writes.
+- **Auth Controller (`auth.controller.ts`)**: Updated `buildProfilePayload` to read profile fields from `profiles` first, with `User` as a fallback. Updated `updateProfile` return data to use the canonical payload structure.
+
+#### Frontend Integration
+- **API Helpers (`backend-api.ts`)**: Added a fallback UUID v4 generator. Configured `createAccount`, `createGoal`, `createLoan`, and `createInvestment` to automatically generate and send a `clientRequestId` header/body field, securing them against retry duplications.
+
+#### Files Changed
+
+| File | Change |
+|---|---|
+| `backend/prisma/schema.prisma` | Added `clientRequestId` and unique constraints |
+| `backend/src/modules/accounts/account.controller.ts` | Added idempotency check and duplicate active account name protection |
+| `backend/src/modules/goals/goal.controller.ts` | Added idempotency check on create |
+| `backend/src/modules/investments/investment.controller.ts` | Added idempotency check on create |
+| `backend/src/modules/loans/loan.controller.ts` | Added idempotency check on create |
+| `backend/src/modules/auth/auth.service.ts` | Refactored `updateProfile` to write profile fields to `profiles` table only |
+| `backend/src/modules/auth/auth.controller.ts` | Preferred `profiles` table values in `buildProfilePayload` and consistent `updateProfile` payload |
+| `frontend/src/lib/backend-api.ts` | Added generateUUID helper and sent `clientRequestId` on creation endpoints |
+
+---
+
+## Phase 11: Security Token, Graceful Logout & Context Resilience (June 2026)
+
+### Problem
+1. **POST /key-backup 403**: Sensitive key-backup and PIN endpoints were failing because the `securityGate` middleware requires an `x-security-token` which the browser-side was not retrieving or passing.
+2. **Supabase global logout 403**: When a session was already expired or invalid, signing out globally through Supabase returned a `403 Forbidden` error, logging network errors and potentially breaking or bypassing local storage and IndexedDB clearing.
+3. **useAuth context HMR crash**: Vite hot module replacement (HMR) transiently resets context providers, causing `useAuth` and `useSecurity` to throw `context is undefined` and crash the browser during code updates.
+
+### Solution
+1. **Security Token Integration**:
+   - Updated `UserProfile.tsx` (in `handleSetNewPin`), `PINSetup.tsx` (in `handleSubmit`), and `PINAuth.tsx` (in PIN creation, verification repair, and `handleVerifyOtpAndReset`) to fetch the token using `await pinService.verifySecurity()` and pass it to key backup/PIN sensitive methods.
+2. **Graceful Logout**:
+   - Wrapped global signOut calls in try-catch blocks and added local fallback signouts.
+   - Guaranteed local IndexedDB and presentation state clearing inside the `finally` block of `signOut` in `AuthContext.tsx` and all signOut handlers across `UserProfile.tsx`, `Settings.tsx`, `auth-helpers.ts`, and `supabase-helpers.ts`.
+3. **Context Resilience**:
+   - Fixed `useAuth` (`AuthContext.tsx`) and `useSecurity` (`SecurityContext.tsx`) to return fallback mock contexts in development instead of hard-throwing when the context is transiently undefined during Vite HMR updates.
+
+#### Files Changed
+
+| File | Change |
+|---|---|
+| `frontend/src/app/components/profile/UserProfile.tsx` | Added security token retrieval before PIN updates/backups, wrapped global signOut in try-catch and local fallback |
+| `frontend/src/app/components/auth/PINSetup.tsx` | Fetched security token and passed to `saveKeyBackup` |
+| `frontend/src/app/components/auth/PINAuth.tsx` | Fetched security token and passed to `saveKeyBackup` and `resetCurrentUserPin` |
+| `frontend/src/contexts/AuthContext.tsx` | Wrapped global signOut in try-catch and local fallback, guaranteed local DB/state cleanup in finally block, made `useAuth` HMR-resilient |
+| `frontend/src/contexts/SecurityContext.tsx` | Made `useSecurity` HMR-resilient |
+| `frontend/src/lib/auth-helpers.ts` | Wrapped global signOut in try-catch and local fallback in `unifiedSignOut` and `legacySignOut` |
+| `frontend/src/lib/supabase-helpers.ts` | Wrapped global signOut in try-catch and local fallback in `signOut` |
+| `frontend/src/app/components/profile/Settings.tsx` | Wrapped global signOut in try-catch and local fallback |

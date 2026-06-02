@@ -29,6 +29,7 @@ import { cn } from "@/lib/utils";
 import { PageHeader } from "@/app/components/ui/PageHeader";
 import { StatementImport } from "@/app/components/transactions/StatementImport";
 import { formatLocalDate } from "@/lib/dateUtils";
+import { formatCurrencyAmount } from "@/lib/currencyUtils";
 import { CardNetworkLogo, getBankCardLogo } from "@/app/components/ui/AccountLogos";
 import { CenteredLayout } from "@/app/components/shared/CenteredLayout";
 import { queueRecordUpsertSync } from "@/lib/auth-sync-integration";
@@ -273,13 +274,9 @@ export const Accounts: React.FC = () => {
     };
 
 
-    const currencyFormatter = useMemo(() => (
-        new Intl.NumberFormat("en-US", { style: "currency", currency })
-    ), [currency]);
-
     const formatCurrency = useCallback(
-        (amount: number) => currencyFormatter.format(amount),
-        [currencyFormatter]
+        (amount: number) => formatCurrencyAmount(amount, currency),
+        [currency]
     );
 
     const handleDeleteAccount = (id: number, name: string) => {

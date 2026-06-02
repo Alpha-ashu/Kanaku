@@ -4324,6 +4324,7 @@ export namespace Prisma {
     currency: string | null
     isActive: boolean | null
     syncStatus: string | null
+    clientRequestId: string | null
     createdAt: Date | null
     updatedAt: Date | null
     deletedAt: Date | null
@@ -4341,6 +4342,7 @@ export namespace Prisma {
     currency: string | null
     isActive: boolean | null
     syncStatus: string | null
+    clientRequestId: string | null
     createdAt: Date | null
     updatedAt: Date | null
     deletedAt: Date | null
@@ -4358,6 +4360,7 @@ export namespace Prisma {
     currency: number
     isActive: number
     syncStatus: number
+    clientRequestId: number
     createdAt: number
     updatedAt: number
     deletedAt: number
@@ -4385,6 +4388,7 @@ export namespace Prisma {
     currency?: true
     isActive?: true
     syncStatus?: true
+    clientRequestId?: true
     createdAt?: true
     updatedAt?: true
     deletedAt?: true
@@ -4402,6 +4406,7 @@ export namespace Prisma {
     currency?: true
     isActive?: true
     syncStatus?: true
+    clientRequestId?: true
     createdAt?: true
     updatedAt?: true
     deletedAt?: true
@@ -4419,6 +4424,7 @@ export namespace Prisma {
     currency?: true
     isActive?: true
     syncStatus?: true
+    clientRequestId?: true
     createdAt?: true
     updatedAt?: true
     deletedAt?: true
@@ -4523,6 +4529,7 @@ export namespace Prisma {
     currency: string
     isActive: boolean
     syncStatus: string
+    clientRequestId: string | null
     createdAt: Date
     updatedAt: Date
     deletedAt: Date | null
@@ -4559,6 +4566,7 @@ export namespace Prisma {
     currency?: boolean
     isActive?: boolean
     syncStatus?: boolean
+    clientRequestId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     deletedAt?: boolean
@@ -4581,6 +4589,7 @@ export namespace Prisma {
     currency?: boolean
     isActive?: boolean
     syncStatus?: boolean
+    clientRequestId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     deletedAt?: boolean
@@ -4599,6 +4608,7 @@ export namespace Prisma {
     currency?: boolean
     isActive?: boolean
     syncStatus?: boolean
+    clientRequestId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     deletedAt?: boolean
@@ -4617,12 +4627,13 @@ export namespace Prisma {
     currency?: boolean
     isActive?: boolean
     syncStatus?: boolean
+    clientRequestId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     deletedAt?: boolean
   }
 
-  export type AccountOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "deviceId" | "name" | "type" | "provider" | "country" | "balance" | "currency" | "isActive" | "syncStatus" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["account"]>
+  export type AccountOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "deviceId" | "name" | "type" | "provider" | "country" | "balance" | "currency" | "isActive" | "syncStatus" | "clientRequestId" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["account"]>
   export type AccountInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     goalContributions?: boolean | Account$goalContributionsArgs<ExtArgs>
@@ -4657,6 +4668,7 @@ export namespace Prisma {
       currency: string
       isActive: boolean
       syncStatus: string
+      clientRequestId: string | null
       createdAt: Date
       updatedAt: Date
       deletedAt: Date | null
@@ -5098,6 +5110,7 @@ export namespace Prisma {
     readonly currency: FieldRef<"Account", 'String'>
     readonly isActive: FieldRef<"Account", 'Boolean'>
     readonly syncStatus: FieldRef<"Account", 'String'>
+    readonly clientRequestId: FieldRef<"Account", 'String'>
     readonly createdAt: FieldRef<"Account", 'DateTime'>
     readonly updatedAt: FieldRef<"Account", 'DateTime'>
     readonly deletedAt: FieldRef<"Account", 'DateTime'>
@@ -15018,6 +15031,7 @@ export namespace Prisma {
     category: string | null
     isGroupGoal: boolean | null
     syncStatus: string | null
+    clientRequestId: string | null
     createdAt: Date | null
     updatedAt: Date | null
     deletedAt: Date | null
@@ -15035,6 +15049,7 @@ export namespace Prisma {
     category: string | null
     isGroupGoal: boolean | null
     syncStatus: string | null
+    clientRequestId: string | null
     createdAt: Date | null
     updatedAt: Date | null
     deletedAt: Date | null
@@ -15052,6 +15067,7 @@ export namespace Prisma {
     category: number
     isGroupGoal: number
     syncStatus: number
+    clientRequestId: number
     createdAt: number
     updatedAt: number
     deletedAt: number
@@ -15081,6 +15097,7 @@ export namespace Prisma {
     category?: true
     isGroupGoal?: true
     syncStatus?: true
+    clientRequestId?: true
     createdAt?: true
     updatedAt?: true
     deletedAt?: true
@@ -15098,6 +15115,7 @@ export namespace Prisma {
     category?: true
     isGroupGoal?: true
     syncStatus?: true
+    clientRequestId?: true
     createdAt?: true
     updatedAt?: true
     deletedAt?: true
@@ -15115,6 +15133,7 @@ export namespace Prisma {
     category?: true
     isGroupGoal?: true
     syncStatus?: true
+    clientRequestId?: true
     createdAt?: true
     updatedAt?: true
     deletedAt?: true
@@ -15219,6 +15238,7 @@ export namespace Prisma {
     category: string | null
     isGroupGoal: boolean
     syncStatus: string
+    clientRequestId: string | null
     createdAt: Date
     updatedAt: Date
     deletedAt: Date | null
@@ -15255,6 +15275,7 @@ export namespace Prisma {
     category?: boolean
     isGroupGoal?: boolean
     syncStatus?: boolean
+    clientRequestId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     deletedAt?: boolean
@@ -15275,6 +15296,7 @@ export namespace Prisma {
     category?: boolean
     isGroupGoal?: boolean
     syncStatus?: boolean
+    clientRequestId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     deletedAt?: boolean
@@ -15293,6 +15315,7 @@ export namespace Prisma {
     category?: boolean
     isGroupGoal?: boolean
     syncStatus?: boolean
+    clientRequestId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     deletedAt?: boolean
@@ -15311,12 +15334,13 @@ export namespace Prisma {
     category?: boolean
     isGroupGoal?: boolean
     syncStatus?: boolean
+    clientRequestId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     deletedAt?: boolean
   }
 
-  export type GoalOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "deviceId" | "name" | "description" | "targetAmount" | "currentAmount" | "targetDate" | "category" | "isGroupGoal" | "syncStatus" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["goal"]>
+  export type GoalOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "deviceId" | "name" | "description" | "targetAmount" | "currentAmount" | "targetDate" | "category" | "isGroupGoal" | "syncStatus" | "clientRequestId" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["goal"]>
   export type GoalInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     goalContributions?: boolean | Goal$goalContributionsArgs<ExtArgs>
@@ -15347,6 +15371,7 @@ export namespace Prisma {
       category: string | null
       isGroupGoal: boolean
       syncStatus: string
+      clientRequestId: string | null
       createdAt: Date
       updatedAt: Date
       deletedAt: Date | null
@@ -15786,6 +15811,7 @@ export namespace Prisma {
     readonly category: FieldRef<"Goal", 'String'>
     readonly isGroupGoal: FieldRef<"Goal", 'Boolean'>
     readonly syncStatus: FieldRef<"Goal", 'String'>
+    readonly clientRequestId: FieldRef<"Goal", 'String'>
     readonly createdAt: FieldRef<"Goal", 'DateTime'>
     readonly updatedAt: FieldRef<"Goal", 'DateTime'>
     readonly deletedAt: FieldRef<"Goal", 'DateTime'>
@@ -18720,6 +18746,7 @@ export namespace Prisma {
     profitLoss: Decimal | null
     purchaseDate: Date | null
     lastUpdated: Date | null
+    clientRequestId: string | null
     createdAt: Date | null
     updatedAt: Date | null
     deletedAt: Date | null
@@ -18738,6 +18765,7 @@ export namespace Prisma {
     profitLoss: Decimal | null
     purchaseDate: Date | null
     lastUpdated: Date | null
+    clientRequestId: string | null
     createdAt: Date | null
     updatedAt: Date | null
     deletedAt: Date | null
@@ -18757,6 +18785,7 @@ export namespace Prisma {
     purchaseDate: number
     lastUpdated: number
     metadata: number
+    clientRequestId: number
     createdAt: number
     updatedAt: number
     deletedAt: number
@@ -18795,6 +18824,7 @@ export namespace Prisma {
     profitLoss?: true
     purchaseDate?: true
     lastUpdated?: true
+    clientRequestId?: true
     createdAt?: true
     updatedAt?: true
     deletedAt?: true
@@ -18813,6 +18843,7 @@ export namespace Prisma {
     profitLoss?: true
     purchaseDate?: true
     lastUpdated?: true
+    clientRequestId?: true
     createdAt?: true
     updatedAt?: true
     deletedAt?: true
@@ -18832,6 +18863,7 @@ export namespace Prisma {
     purchaseDate?: true
     lastUpdated?: true
     metadata?: true
+    clientRequestId?: true
     createdAt?: true
     updatedAt?: true
     deletedAt?: true
@@ -18938,6 +18970,7 @@ export namespace Prisma {
     purchaseDate: Date
     lastUpdated: Date
     metadata: JsonValue | null
+    clientRequestId: string | null
     createdAt: Date
     updatedAt: Date
     deletedAt: Date | null
@@ -18976,6 +19009,7 @@ export namespace Prisma {
     purchaseDate?: boolean
     lastUpdated?: boolean
     metadata?: boolean
+    clientRequestId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     deletedAt?: boolean
@@ -18996,6 +19030,7 @@ export namespace Prisma {
     purchaseDate?: boolean
     lastUpdated?: boolean
     metadata?: boolean
+    clientRequestId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     deletedAt?: boolean
@@ -19016,6 +19051,7 @@ export namespace Prisma {
     purchaseDate?: boolean
     lastUpdated?: boolean
     metadata?: boolean
+    clientRequestId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     deletedAt?: boolean
@@ -19036,12 +19072,13 @@ export namespace Prisma {
     purchaseDate?: boolean
     lastUpdated?: boolean
     metadata?: boolean
+    clientRequestId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     deletedAt?: boolean
   }
 
-  export type InvestmentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "assetType" | "assetName" | "quantity" | "buyPrice" | "currentPrice" | "totalInvested" | "currentValue" | "profitLoss" | "purchaseDate" | "lastUpdated" | "metadata" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["investment"]>
+  export type InvestmentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "assetType" | "assetName" | "quantity" | "buyPrice" | "currentPrice" | "totalInvested" | "currentValue" | "profitLoss" | "purchaseDate" | "lastUpdated" | "metadata" | "clientRequestId" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["investment"]>
   export type InvestmentInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
   }
@@ -19071,6 +19108,7 @@ export namespace Prisma {
       purchaseDate: Date
       lastUpdated: Date
       metadata: Prisma.JsonValue | null
+      clientRequestId: string | null
       createdAt: Date
       updatedAt: Date
       deletedAt: Date | null
@@ -19511,6 +19549,7 @@ export namespace Prisma {
     readonly purchaseDate: FieldRef<"Investment", 'DateTime'>
     readonly lastUpdated: FieldRef<"Investment", 'DateTime'>
     readonly metadata: FieldRef<"Investment", 'Json'>
+    readonly clientRequestId: FieldRef<"Investment", 'String'>
     readonly createdAt: FieldRef<"Investment", 'DateTime'>
     readonly updatedAt: FieldRef<"Investment", 'DateTime'>
     readonly deletedAt: FieldRef<"Investment", 'DateTime'>
@@ -19969,6 +20008,7 @@ export namespace Prisma {
     status: string | null
     contactPerson: string | null
     syncStatus: string | null
+    clientRequestId: string | null
     createdAt: Date | null
     updatedAt: Date | null
     deletedAt: Date | null
@@ -19989,6 +20029,7 @@ export namespace Prisma {
     status: string | null
     contactPerson: string | null
     syncStatus: string | null
+    clientRequestId: string | null
     createdAt: Date | null
     updatedAt: Date | null
     deletedAt: Date | null
@@ -20009,6 +20050,7 @@ export namespace Prisma {
     status: number
     contactPerson: number
     syncStatus: number
+    clientRequestId: number
     createdAt: number
     updatedAt: number
     deletedAt: number
@@ -20045,6 +20087,7 @@ export namespace Prisma {
     status?: true
     contactPerson?: true
     syncStatus?: true
+    clientRequestId?: true
     createdAt?: true
     updatedAt?: true
     deletedAt?: true
@@ -20065,6 +20108,7 @@ export namespace Prisma {
     status?: true
     contactPerson?: true
     syncStatus?: true
+    clientRequestId?: true
     createdAt?: true
     updatedAt?: true
     deletedAt?: true
@@ -20085,6 +20129,7 @@ export namespace Prisma {
     status?: true
     contactPerson?: true
     syncStatus?: true
+    clientRequestId?: true
     createdAt?: true
     updatedAt?: true
     deletedAt?: true
@@ -20192,6 +20237,7 @@ export namespace Prisma {
     status: string
     contactPerson: string | null
     syncStatus: string
+    clientRequestId: string | null
     createdAt: Date
     updatedAt: Date
     deletedAt: Date | null
@@ -20231,6 +20277,7 @@ export namespace Prisma {
     status?: boolean
     contactPerson?: boolean
     syncStatus?: boolean
+    clientRequestId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     deletedAt?: boolean
@@ -20254,6 +20301,7 @@ export namespace Prisma {
     status?: boolean
     contactPerson?: boolean
     syncStatus?: boolean
+    clientRequestId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     deletedAt?: boolean
@@ -20275,6 +20323,7 @@ export namespace Prisma {
     status?: boolean
     contactPerson?: boolean
     syncStatus?: boolean
+    clientRequestId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     deletedAt?: boolean
@@ -20296,12 +20345,13 @@ export namespace Prisma {
     status?: boolean
     contactPerson?: boolean
     syncStatus?: boolean
+    clientRequestId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     deletedAt?: boolean
   }
 
-  export type LoanOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "deviceId" | "type" | "name" | "principalAmount" | "outstandingBalance" | "interestRate" | "emiAmount" | "dueDate" | "frequency" | "status" | "contactPerson" | "syncStatus" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["loan"]>
+  export type LoanOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "deviceId" | "type" | "name" | "principalAmount" | "outstandingBalance" | "interestRate" | "emiAmount" | "dueDate" | "frequency" | "status" | "contactPerson" | "syncStatus" | "clientRequestId" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["loan"]>
   export type LoanInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     payments?: boolean | Loan$paymentsArgs<ExtArgs>
@@ -20335,6 +20385,7 @@ export namespace Prisma {
       status: string
       contactPerson: string | null
       syncStatus: string
+      clientRequestId: string | null
       createdAt: Date
       updatedAt: Date
       deletedAt: Date | null
@@ -20777,6 +20828,7 @@ export namespace Prisma {
     readonly status: FieldRef<"Loan", 'String'>
     readonly contactPerson: FieldRef<"Loan", 'String'>
     readonly syncStatus: FieldRef<"Loan", 'String'>
+    readonly clientRequestId: FieldRef<"Loan", 'String'>
     readonly createdAt: FieldRef<"Loan", 'DateTime'>
     readonly updatedAt: FieldRef<"Loan", 'DateTime'>
     readonly deletedAt: FieldRef<"Loan", 'DateTime'>
@@ -45172,6 +45224,7 @@ export namespace Prisma {
     currency: 'currency',
     isActive: 'isActive',
     syncStatus: 'syncStatus',
+    clientRequestId: 'clientRequestId',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
     deletedAt: 'deletedAt'
@@ -45333,6 +45386,7 @@ export namespace Prisma {
     category: 'category',
     isGroupGoal: 'isGroupGoal',
     syncStatus: 'syncStatus',
+    clientRequestId: 'clientRequestId',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
     deletedAt: 'deletedAt'
@@ -45395,6 +45449,7 @@ export namespace Prisma {
     purchaseDate: 'purchaseDate',
     lastUpdated: 'lastUpdated',
     metadata: 'metadata',
+    clientRequestId: 'clientRequestId',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
     deletedAt: 'deletedAt'
@@ -45418,6 +45473,7 @@ export namespace Prisma {
     status: 'status',
     contactPerson: 'contactPerson',
     syncStatus: 'syncStatus',
+    clientRequestId: 'clientRequestId',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
     deletedAt: 'deletedAt'
@@ -45951,6 +46007,7 @@ export namespace Prisma {
     currency?: StringFilter<"Account"> | string
     isActive?: BoolFilter<"Account"> | boolean
     syncStatus?: StringFilter<"Account"> | string
+    clientRequestId?: StringNullableFilter<"Account"> | string | null
     createdAt?: DateTimeFilter<"Account"> | Date | string
     updatedAt?: DateTimeFilter<"Account"> | Date | string
     deletedAt?: DateTimeNullableFilter<"Account"> | Date | string | null
@@ -45972,6 +46029,7 @@ export namespace Prisma {
     currency?: SortOrder
     isActive?: SortOrder
     syncStatus?: SortOrder
+    clientRequestId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     deletedAt?: SortOrderInput | SortOrder
@@ -45983,6 +46041,7 @@ export namespace Prisma {
 
   export type AccountWhereUniqueInput = Prisma.AtLeast<{
     id?: string
+    clientRequestId?: string
     AND?: AccountWhereInput | AccountWhereInput[]
     OR?: AccountWhereInput[]
     NOT?: AccountWhereInput | AccountWhereInput[]
@@ -46003,7 +46062,7 @@ export namespace Prisma {
     goalContributions?: GoalContributionListRelationFilter
     transactions?: TransactionListRelationFilter
     groupExpenses?: GroupExpenseListRelationFilter
-  }, "id">
+  }, "id" | "clientRequestId">
 
   export type AccountOrderByWithAggregationInput = {
     id?: SortOrder
@@ -46017,6 +46076,7 @@ export namespace Prisma {
     currency?: SortOrder
     isActive?: SortOrder
     syncStatus?: SortOrder
+    clientRequestId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     deletedAt?: SortOrderInput | SortOrder
@@ -46042,6 +46102,7 @@ export namespace Prisma {
     currency?: StringWithAggregatesFilter<"Account"> | string
     isActive?: BoolWithAggregatesFilter<"Account"> | boolean
     syncStatus?: StringWithAggregatesFilter<"Account"> | string
+    clientRequestId?: StringNullableWithAggregatesFilter<"Account"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Account"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Account"> | Date | string
     deletedAt?: DateTimeNullableWithAggregatesFilter<"Account"> | Date | string | null
@@ -46798,6 +46859,7 @@ export namespace Prisma {
     category?: StringNullableFilter<"Goal"> | string | null
     isGroupGoal?: BoolFilter<"Goal"> | boolean
     syncStatus?: StringFilter<"Goal"> | string
+    clientRequestId?: StringNullableFilter<"Goal"> | string | null
     createdAt?: DateTimeFilter<"Goal"> | Date | string
     updatedAt?: DateTimeFilter<"Goal"> | Date | string
     deletedAt?: DateTimeNullableFilter<"Goal"> | Date | string | null
@@ -46817,6 +46879,7 @@ export namespace Prisma {
     category?: SortOrderInput | SortOrder
     isGroupGoal?: SortOrder
     syncStatus?: SortOrder
+    clientRequestId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     deletedAt?: SortOrderInput | SortOrder
@@ -46826,6 +46889,7 @@ export namespace Prisma {
 
   export type GoalWhereUniqueInput = Prisma.AtLeast<{
     id?: string
+    clientRequestId?: string
     AND?: GoalWhereInput | GoalWhereInput[]
     OR?: GoalWhereInput[]
     NOT?: GoalWhereInput | GoalWhereInput[]
@@ -46844,7 +46908,7 @@ export namespace Prisma {
     deletedAt?: DateTimeNullableFilter<"Goal"> | Date | string | null
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     goalContributions?: GoalContributionListRelationFilter
-  }, "id">
+  }, "id" | "clientRequestId">
 
   export type GoalOrderByWithAggregationInput = {
     id?: SortOrder
@@ -46858,6 +46922,7 @@ export namespace Prisma {
     category?: SortOrderInput | SortOrder
     isGroupGoal?: SortOrder
     syncStatus?: SortOrder
+    clientRequestId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     deletedAt?: SortOrderInput | SortOrder
@@ -46883,6 +46948,7 @@ export namespace Prisma {
     category?: StringNullableWithAggregatesFilter<"Goal"> | string | null
     isGroupGoal?: BoolWithAggregatesFilter<"Goal"> | boolean
     syncStatus?: StringWithAggregatesFilter<"Goal"> | string
+    clientRequestId?: StringNullableWithAggregatesFilter<"Goal"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Goal"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Goal"> | Date | string
     deletedAt?: DateTimeNullableWithAggregatesFilter<"Goal"> | Date | string | null
@@ -47115,6 +47181,7 @@ export namespace Prisma {
     purchaseDate?: DateTimeFilter<"Investment"> | Date | string
     lastUpdated?: DateTimeFilter<"Investment"> | Date | string
     metadata?: JsonNullableFilter<"Investment">
+    clientRequestId?: StringNullableFilter<"Investment"> | string | null
     createdAt?: DateTimeFilter<"Investment"> | Date | string
     updatedAt?: DateTimeFilter<"Investment"> | Date | string
     deletedAt?: DateTimeNullableFilter<"Investment"> | Date | string | null
@@ -47135,6 +47202,7 @@ export namespace Prisma {
     purchaseDate?: SortOrder
     lastUpdated?: SortOrder
     metadata?: SortOrderInput | SortOrder
+    clientRequestId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     deletedAt?: SortOrderInput | SortOrder
@@ -47143,6 +47211,7 @@ export namespace Prisma {
 
   export type InvestmentWhereUniqueInput = Prisma.AtLeast<{
     id?: string
+    clientRequestId?: string
     AND?: InvestmentWhereInput | InvestmentWhereInput[]
     OR?: InvestmentWhereInput[]
     NOT?: InvestmentWhereInput | InvestmentWhereInput[]
@@ -47162,7 +47231,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Investment"> | Date | string
     deletedAt?: DateTimeNullableFilter<"Investment"> | Date | string | null
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
-  }, "id">
+  }, "id" | "clientRequestId">
 
   export type InvestmentOrderByWithAggregationInput = {
     id?: SortOrder
@@ -47178,6 +47247,7 @@ export namespace Prisma {
     purchaseDate?: SortOrder
     lastUpdated?: SortOrder
     metadata?: SortOrderInput | SortOrder
+    clientRequestId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     deletedAt?: SortOrderInput | SortOrder
@@ -47205,6 +47275,7 @@ export namespace Prisma {
     purchaseDate?: DateTimeWithAggregatesFilter<"Investment"> | Date | string
     lastUpdated?: DateTimeWithAggregatesFilter<"Investment"> | Date | string
     metadata?: JsonNullableWithAggregatesFilter<"Investment">
+    clientRequestId?: StringNullableWithAggregatesFilter<"Investment"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Investment"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Investment"> | Date | string
     deletedAt?: DateTimeNullableWithAggregatesFilter<"Investment"> | Date | string | null
@@ -47228,6 +47299,7 @@ export namespace Prisma {
     status?: StringFilter<"Loan"> | string
     contactPerson?: StringNullableFilter<"Loan"> | string | null
     syncStatus?: StringFilter<"Loan"> | string
+    clientRequestId?: StringNullableFilter<"Loan"> | string | null
     createdAt?: DateTimeFilter<"Loan"> | Date | string
     updatedAt?: DateTimeFilter<"Loan"> | Date | string
     deletedAt?: DateTimeNullableFilter<"Loan"> | Date | string | null
@@ -47250,6 +47322,7 @@ export namespace Prisma {
     status?: SortOrder
     contactPerson?: SortOrderInput | SortOrder
     syncStatus?: SortOrder
+    clientRequestId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     deletedAt?: SortOrderInput | SortOrder
@@ -47259,6 +47332,7 @@ export namespace Prisma {
 
   export type LoanWhereUniqueInput = Prisma.AtLeast<{
     id?: string
+    clientRequestId?: string
     AND?: LoanWhereInput | LoanWhereInput[]
     OR?: LoanWhereInput[]
     NOT?: LoanWhereInput | LoanWhereInput[]
@@ -47280,7 +47354,7 @@ export namespace Prisma {
     deletedAt?: DateTimeNullableFilter<"Loan"> | Date | string | null
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     payments?: LoanPaymentListRelationFilter
-  }, "id">
+  }, "id" | "clientRequestId">
 
   export type LoanOrderByWithAggregationInput = {
     id?: SortOrder
@@ -47297,6 +47371,7 @@ export namespace Prisma {
     status?: SortOrder
     contactPerson?: SortOrderInput | SortOrder
     syncStatus?: SortOrder
+    clientRequestId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     deletedAt?: SortOrderInput | SortOrder
@@ -47325,6 +47400,7 @@ export namespace Prisma {
     status?: StringWithAggregatesFilter<"Loan"> | string
     contactPerson?: StringNullableWithAggregatesFilter<"Loan"> | string | null
     syncStatus?: StringWithAggregatesFilter<"Loan"> | string
+    clientRequestId?: StringNullableWithAggregatesFilter<"Loan"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Loan"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Loan"> | Date | string
     deletedAt?: DateTimeNullableWithAggregatesFilter<"Loan"> | Date | string | null
@@ -49176,10 +49252,10 @@ export namespace Prisma {
 
   export type profilesWhereUniqueInput = Prisma.AtLeast<{
     id?: string
+    email?: string
     AND?: profilesWhereInput | profilesWhereInput[]
     OR?: profilesWhereInput[]
     NOT?: profilesWhereInput | profilesWhereInput[]
-    email?: StringNullableFilter<"profiles"> | string | null
     full_name?: StringNullableFilter<"profiles"> | string | null
     first_name?: StringNullableFilter<"profiles"> | string | null
     last_name?: StringNullableFilter<"profiles"> | string | null
@@ -49197,7 +49273,7 @@ export namespace Prisma {
     visible_features?: JsonNullableFilter<"profiles">
     created_at?: DateTimeNullableFilter<"profiles"> | Date | string | null
     updated_at?: DateTimeNullableFilter<"profiles"> | Date | string | null
-  }, "id">
+  }, "id" | "email">
 
   export type profilesOrderByWithAggregationInput = {
     id?: SortOrder
@@ -49262,6 +49338,7 @@ export namespace Prisma {
     currency?: string
     isActive?: boolean
     syncStatus?: string
+    clientRequestId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -49283,6 +49360,7 @@ export namespace Prisma {
     currency?: string
     isActive?: boolean
     syncStatus?: string
+    clientRequestId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -49302,6 +49380,7 @@ export namespace Prisma {
     currency?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     syncStatus?: StringFieldUpdateOperationsInput | string
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -49323,6 +49402,7 @@ export namespace Prisma {
     currency?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     syncStatus?: StringFieldUpdateOperationsInput | string
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -49343,6 +49423,7 @@ export namespace Prisma {
     currency?: string
     isActive?: boolean
     syncStatus?: string
+    clientRequestId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -49359,6 +49440,7 @@ export namespace Prisma {
     currency?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     syncStatus?: StringFieldUpdateOperationsInput | string
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -49376,6 +49458,7 @@ export namespace Prisma {
     currency?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     syncStatus?: StringFieldUpdateOperationsInput | string
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -50211,6 +50294,7 @@ export namespace Prisma {
     category?: string | null
     isGroupGoal?: boolean
     syncStatus?: string
+    clientRequestId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -50230,6 +50314,7 @@ export namespace Prisma {
     category?: string | null
     isGroupGoal?: boolean
     syncStatus?: string
+    clientRequestId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -50247,6 +50332,7 @@ export namespace Prisma {
     category?: NullableStringFieldUpdateOperationsInput | string | null
     isGroupGoal?: BoolFieldUpdateOperationsInput | boolean
     syncStatus?: StringFieldUpdateOperationsInput | string
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -50266,6 +50352,7 @@ export namespace Prisma {
     category?: NullableStringFieldUpdateOperationsInput | string | null
     isGroupGoal?: BoolFieldUpdateOperationsInput | boolean
     syncStatus?: StringFieldUpdateOperationsInput | string
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -50284,6 +50371,7 @@ export namespace Prisma {
     category?: string | null
     isGroupGoal?: boolean
     syncStatus?: string
+    clientRequestId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -50300,6 +50388,7 @@ export namespace Prisma {
     category?: NullableStringFieldUpdateOperationsInput | string | null
     isGroupGoal?: BoolFieldUpdateOperationsInput | boolean
     syncStatus?: StringFieldUpdateOperationsInput | string
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -50317,6 +50406,7 @@ export namespace Prisma {
     category?: NullableStringFieldUpdateOperationsInput | string | null
     isGroupGoal?: BoolFieldUpdateOperationsInput | boolean
     syncStatus?: StringFieldUpdateOperationsInput | string
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -50569,6 +50659,7 @@ export namespace Prisma {
     purchaseDate: Date | string
     lastUpdated: Date | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    clientRequestId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -50589,6 +50680,7 @@ export namespace Prisma {
     purchaseDate: Date | string
     lastUpdated: Date | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    clientRequestId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -50607,6 +50699,7 @@ export namespace Prisma {
     purchaseDate?: DateTimeFieldUpdateOperationsInput | Date | string
     lastUpdated?: DateTimeFieldUpdateOperationsInput | Date | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -50627,6 +50720,7 @@ export namespace Prisma {
     purchaseDate?: DateTimeFieldUpdateOperationsInput | Date | string
     lastUpdated?: DateTimeFieldUpdateOperationsInput | Date | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -50646,6 +50740,7 @@ export namespace Prisma {
     purchaseDate: Date | string
     lastUpdated: Date | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    clientRequestId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -50664,6 +50759,7 @@ export namespace Prisma {
     purchaseDate?: DateTimeFieldUpdateOperationsInput | Date | string
     lastUpdated?: DateTimeFieldUpdateOperationsInput | Date | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -50683,6 +50779,7 @@ export namespace Prisma {
     purchaseDate?: DateTimeFieldUpdateOperationsInput | Date | string
     lastUpdated?: DateTimeFieldUpdateOperationsInput | Date | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -50702,6 +50799,7 @@ export namespace Prisma {
     status?: string
     contactPerson?: string | null
     syncStatus?: string
+    clientRequestId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -50724,6 +50822,7 @@ export namespace Prisma {
     status?: string
     contactPerson?: string | null
     syncStatus?: string
+    clientRequestId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -50744,6 +50843,7 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     contactPerson?: NullableStringFieldUpdateOperationsInput | string | null
     syncStatus?: StringFieldUpdateOperationsInput | string
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -50766,6 +50866,7 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     contactPerson?: NullableStringFieldUpdateOperationsInput | string | null
     syncStatus?: StringFieldUpdateOperationsInput | string
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -50787,6 +50888,7 @@ export namespace Prisma {
     status?: string
     contactPerson?: string | null
     syncStatus?: string
+    clientRequestId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -50806,6 +50908,7 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     contactPerson?: NullableStringFieldUpdateOperationsInput | string | null
     syncStatus?: StringFieldUpdateOperationsInput | string
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -50826,6 +50929,7 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     contactPerson?: NullableStringFieldUpdateOperationsInput | string | null
     syncStatus?: StringFieldUpdateOperationsInput | string
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -53171,6 +53275,7 @@ export namespace Prisma {
     currency?: SortOrder
     isActive?: SortOrder
     syncStatus?: SortOrder
+    clientRequestId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     deletedAt?: SortOrder
@@ -53192,6 +53297,7 @@ export namespace Prisma {
     currency?: SortOrder
     isActive?: SortOrder
     syncStatus?: SortOrder
+    clientRequestId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     deletedAt?: SortOrder
@@ -53209,6 +53315,7 @@ export namespace Prisma {
     currency?: SortOrder
     isActive?: SortOrder
     syncStatus?: SortOrder
+    clientRequestId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     deletedAt?: SortOrder
@@ -53845,6 +53952,7 @@ export namespace Prisma {
     category?: SortOrder
     isGroupGoal?: SortOrder
     syncStatus?: SortOrder
+    clientRequestId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     deletedAt?: SortOrder
@@ -53867,6 +53975,7 @@ export namespace Prisma {
     category?: SortOrder
     isGroupGoal?: SortOrder
     syncStatus?: SortOrder
+    clientRequestId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     deletedAt?: SortOrder
@@ -53884,6 +53993,7 @@ export namespace Prisma {
     category?: SortOrder
     isGroupGoal?: SortOrder
     syncStatus?: SortOrder
+    clientRequestId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     deletedAt?: SortOrder
@@ -54044,6 +54154,7 @@ export namespace Prisma {
     purchaseDate?: SortOrder
     lastUpdated?: SortOrder
     metadata?: SortOrder
+    clientRequestId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     deletedAt?: SortOrder
@@ -54071,6 +54182,7 @@ export namespace Prisma {
     profitLoss?: SortOrder
     purchaseDate?: SortOrder
     lastUpdated?: SortOrder
+    clientRequestId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     deletedAt?: SortOrder
@@ -54089,6 +54201,7 @@ export namespace Prisma {
     profitLoss?: SortOrder
     purchaseDate?: SortOrder
     lastUpdated?: SortOrder
+    clientRequestId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     deletedAt?: SortOrder
@@ -54139,6 +54252,7 @@ export namespace Prisma {
     status?: SortOrder
     contactPerson?: SortOrder
     syncStatus?: SortOrder
+    clientRequestId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     deletedAt?: SortOrder
@@ -54166,6 +54280,7 @@ export namespace Prisma {
     status?: SortOrder
     contactPerson?: SortOrder
     syncStatus?: SortOrder
+    clientRequestId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     deletedAt?: SortOrder
@@ -54186,6 +54301,7 @@ export namespace Prisma {
     status?: SortOrder
     contactPerson?: SortOrder
     syncStatus?: SortOrder
+    clientRequestId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     deletedAt?: SortOrder
@@ -61381,6 +61497,7 @@ export namespace Prisma {
     currency?: string
     isActive?: boolean
     syncStatus?: string
+    clientRequestId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -61401,6 +61518,7 @@ export namespace Prisma {
     currency?: string
     isActive?: boolean
     syncStatus?: string
+    clientRequestId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -61424,6 +61542,7 @@ export namespace Prisma {
     category?: string | null
     isGroupGoal?: boolean
     syncStatus?: string
+    clientRequestId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -61442,6 +61561,7 @@ export namespace Prisma {
     category?: string | null
     isGroupGoal?: boolean
     syncStatus?: string
+    clientRequestId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -61579,6 +61699,7 @@ export namespace Prisma {
     currency?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     syncStatus?: StringFieldUpdateOperationsInput | string
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -61599,6 +61720,7 @@ export namespace Prisma {
     currency?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     syncStatus?: StringFieldUpdateOperationsInput | string
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -61628,6 +61750,7 @@ export namespace Prisma {
     category?: NullableStringFieldUpdateOperationsInput | string | null
     isGroupGoal?: BoolFieldUpdateOperationsInput | boolean
     syncStatus?: StringFieldUpdateOperationsInput | string
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -61646,6 +61769,7 @@ export namespace Prisma {
     category?: NullableStringFieldUpdateOperationsInput | string | null
     isGroupGoal?: BoolFieldUpdateOperationsInput | boolean
     syncStatus?: StringFieldUpdateOperationsInput | string
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -62484,6 +62608,7 @@ export namespace Prisma {
     status?: string
     contactPerson?: string | null
     syncStatus?: string
+    clientRequestId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -62505,6 +62630,7 @@ export namespace Prisma {
     status?: string
     contactPerson?: string | null
     syncStatus?: string
+    clientRequestId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -62540,6 +62666,7 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     contactPerson?: NullableStringFieldUpdateOperationsInput | string | null
     syncStatus?: StringFieldUpdateOperationsInput | string
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -62561,6 +62688,7 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     contactPerson?: NullableStringFieldUpdateOperationsInput | string | null
     syncStatus?: StringFieldUpdateOperationsInput | string
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -63741,6 +63869,7 @@ export namespace Prisma {
     currency?: string
     isActive?: boolean
     syncStatus?: string
+    clientRequestId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -63761,6 +63890,7 @@ export namespace Prisma {
     currency?: string
     isActive?: boolean
     syncStatus?: string
+    clientRequestId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -63959,6 +64089,7 @@ export namespace Prisma {
     currency?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     syncStatus?: StringFieldUpdateOperationsInput | string
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -63979,6 +64110,7 @@ export namespace Prisma {
     currency?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     syncStatus?: StringFieldUpdateOperationsInput | string
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -64173,6 +64305,7 @@ export namespace Prisma {
     currency?: string
     isActive?: boolean
     syncStatus?: string
+    clientRequestId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -64192,6 +64325,7 @@ export namespace Prisma {
     currency?: string
     isActive?: boolean
     syncStatus?: string
+    clientRequestId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -64611,6 +64745,7 @@ export namespace Prisma {
     category?: string | null
     isGroupGoal?: boolean
     syncStatus?: string
+    clientRequestId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -64628,6 +64763,7 @@ export namespace Prisma {
     category?: string | null
     isGroupGoal?: boolean
     syncStatus?: string
+    clientRequestId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -64741,6 +64877,7 @@ export namespace Prisma {
     purchaseDate: Date | string
     lastUpdated: Date | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    clientRequestId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -64759,6 +64896,7 @@ export namespace Prisma {
     purchaseDate: Date | string
     lastUpdated: Date | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    clientRequestId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -64788,6 +64926,7 @@ export namespace Prisma {
     status?: string
     contactPerson?: string | null
     syncStatus?: string
+    clientRequestId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -64808,6 +64947,7 @@ export namespace Prisma {
     status?: string
     contactPerson?: string | null
     syncStatus?: string
+    clientRequestId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -65287,6 +65427,7 @@ export namespace Prisma {
     currency?: StringFilter<"Account"> | string
     isActive?: BoolFilter<"Account"> | boolean
     syncStatus?: StringFilter<"Account"> | string
+    clientRequestId?: StringNullableFilter<"Account"> | string | null
     createdAt?: DateTimeFilter<"Account"> | Date | string
     updatedAt?: DateTimeFilter<"Account"> | Date | string
     deletedAt?: DateTimeNullableFilter<"Account"> | Date | string | null
@@ -65613,6 +65754,7 @@ export namespace Prisma {
     category?: StringNullableFilter<"Goal"> | string | null
     isGroupGoal?: BoolFilter<"Goal"> | boolean
     syncStatus?: StringFilter<"Goal"> | string
+    clientRequestId?: StringNullableFilter<"Goal"> | string | null
     createdAt?: DateTimeFilter<"Goal"> | Date | string
     updatedAt?: DateTimeFilter<"Goal"> | Date | string
     deletedAt?: DateTimeNullableFilter<"Goal"> | Date | string | null
@@ -65706,6 +65848,7 @@ export namespace Prisma {
     purchaseDate?: DateTimeFilter<"Investment"> | Date | string
     lastUpdated?: DateTimeFilter<"Investment"> | Date | string
     metadata?: JsonNullableFilter<"Investment">
+    clientRequestId?: StringNullableFilter<"Investment"> | string | null
     createdAt?: DateTimeFilter<"Investment"> | Date | string
     updatedAt?: DateTimeFilter<"Investment"> | Date | string
     deletedAt?: DateTimeNullableFilter<"Investment"> | Date | string | null
@@ -65745,6 +65888,7 @@ export namespace Prisma {
     status?: StringFilter<"Loan"> | string
     contactPerson?: StringNullableFilter<"Loan"> | string | null
     syncStatus?: StringFilter<"Loan"> | string
+    clientRequestId?: StringNullableFilter<"Loan"> | string | null
     createdAt?: DateTimeFilter<"Loan"> | Date | string
     updatedAt?: DateTimeFilter<"Loan"> | Date | string
     deletedAt?: DateTimeNullableFilter<"Loan"> | Date | string | null
@@ -67005,6 +67149,7 @@ export namespace Prisma {
     currency?: string
     isActive?: boolean
     syncStatus?: string
+    clientRequestId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -67025,6 +67170,7 @@ export namespace Prisma {
     currency?: string
     isActive?: boolean
     syncStatus?: string
+    clientRequestId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -67218,6 +67364,7 @@ export namespace Prisma {
     currency?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     syncStatus?: StringFieldUpdateOperationsInput | string
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -67238,6 +67385,7 @@ export namespace Prisma {
     currency?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     syncStatus?: StringFieldUpdateOperationsInput | string
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -67929,6 +68077,7 @@ export namespace Prisma {
     currency?: string
     isActive?: boolean
     syncStatus?: string
+    clientRequestId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -68084,6 +68233,7 @@ export namespace Prisma {
     category?: string | null
     isGroupGoal?: boolean
     syncStatus?: string
+    clientRequestId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -68134,6 +68284,7 @@ export namespace Prisma {
     purchaseDate: Date | string
     lastUpdated: Date | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    clientRequestId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -68153,6 +68304,7 @@ export namespace Prisma {
     status?: string
     contactPerson?: string | null
     syncStatus?: string
+    clientRequestId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -68310,6 +68462,7 @@ export namespace Prisma {
     currency?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     syncStatus?: StringFieldUpdateOperationsInput | string
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -68329,6 +68482,7 @@ export namespace Prisma {
     currency?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     syncStatus?: StringFieldUpdateOperationsInput | string
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -68348,6 +68502,7 @@ export namespace Prisma {
     currency?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     syncStatus?: StringFieldUpdateOperationsInput | string
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -68793,6 +68948,7 @@ export namespace Prisma {
     category?: NullableStringFieldUpdateOperationsInput | string | null
     isGroupGoal?: BoolFieldUpdateOperationsInput | boolean
     syncStatus?: StringFieldUpdateOperationsInput | string
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -68810,6 +68966,7 @@ export namespace Prisma {
     category?: NullableStringFieldUpdateOperationsInput | string | null
     isGroupGoal?: BoolFieldUpdateOperationsInput | boolean
     syncStatus?: StringFieldUpdateOperationsInput | string
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -68827,6 +68984,7 @@ export namespace Prisma {
     category?: NullableStringFieldUpdateOperationsInput | string | null
     isGroupGoal?: BoolFieldUpdateOperationsInput | boolean
     syncStatus?: StringFieldUpdateOperationsInput | string
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -68941,6 +69099,7 @@ export namespace Prisma {
     purchaseDate?: DateTimeFieldUpdateOperationsInput | Date | string
     lastUpdated?: DateTimeFieldUpdateOperationsInput | Date | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -68959,6 +69118,7 @@ export namespace Prisma {
     purchaseDate?: DateTimeFieldUpdateOperationsInput | Date | string
     lastUpdated?: DateTimeFieldUpdateOperationsInput | Date | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -68977,6 +69137,7 @@ export namespace Prisma {
     purchaseDate?: DateTimeFieldUpdateOperationsInput | Date | string
     lastUpdated?: DateTimeFieldUpdateOperationsInput | Date | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -68996,6 +69157,7 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     contactPerson?: NullableStringFieldUpdateOperationsInput | string | null
     syncStatus?: StringFieldUpdateOperationsInput | string
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -69016,6 +69178,7 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     contactPerson?: NullableStringFieldUpdateOperationsInput | string | null
     syncStatus?: StringFieldUpdateOperationsInput | string
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -69036,6 +69199,7 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     contactPerson?: NullableStringFieldUpdateOperationsInput | string | null
     syncStatus?: StringFieldUpdateOperationsInput | string
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null

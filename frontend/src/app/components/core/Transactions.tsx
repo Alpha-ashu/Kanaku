@@ -18,6 +18,7 @@ import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
 import { TimeFilter, TimeFilterPeriod, filterByTimePeriod, getPeriodLabel } from '@/app/components/ui/TimeFilter';
 import { formatLocalDate, parseDateInputValue, toLocalDateKey } from '@/lib/dateUtils';
 import type { TaxComponent } from '@/types/receipt.types';
+import { formatCurrencyAmount } from '@/lib/currencyUtils';
 import { DocumentManagementService } from '@/services/documentManagementService';
 
 const CATEGORIES = {
@@ -168,11 +169,7 @@ export const Transactions: React.FC = () => {
  };
  }, [timeFilteredTransactions]);
 
- const currencyFormatter = useMemo(() => (
- new Intl.NumberFormat('en-US', { style: 'currency', currency })
- ), [currency]);
-
- const formatCurrency = (amount: number) => currencyFormatter.format(amount);
+ const formatCurrency = (amount: number) => formatCurrencyAmount(amount, currency);
 
  const accountById = useMemo(() => {
  const map = new Map<number, (typeof accounts)[number]>();

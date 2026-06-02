@@ -50,6 +50,7 @@ type LocalProfile = {
   state?: string;
   city?: string;
   language?: string;
+  currency?: string;
   createdAt?: string;
   updatedAt?: string;
   role?: string;
@@ -73,6 +74,8 @@ type RemoteProfileSnapshot = {
   updatedAt: string | null;
   role: string;
   hasRealProfile: boolean;
+  currency: string;
+  language: string;
 };
 
 const PROFILE_SYNC_COOLDOWN_MS = 60_000;
@@ -167,6 +170,8 @@ const normalizeRemoteProfile = (profile: any): RemoteProfileSnapshot => {
   const city = String(profile?.city ?? '').trim();
   const updatedAt = profile?.updated_at ?? profile?.updatedAt ?? null;
   const role = String(profile?.role ?? '').trim().toLowerCase();
+  const currency = String(profile?.currency ?? 'USD').trim();
+  const language = String(profile?.language ?? 'en').trim();
 
   return {
     displayName,
@@ -185,6 +190,8 @@ const normalizeRemoteProfile = (profile: any): RemoteProfileSnapshot => {
     city,
     updatedAt,
     role,
+    currency,
+    language,
     hasRealProfile: Boolean(
       displayName ||
       firstName ||
@@ -448,7 +455,34 @@ const syncProfileFromBackend = async (user: User) => {
         state: remoteProfile.state || localProfile?.state || '',
         city: remoteProfile.city || localProfile?.city || '',
         role: remoteProfile.role || localProfile?.role || 'user',
+        currency: remoteProfile.currency,
+        language: remoteProfile.language,
         updatedAt,
+      }));
+
+      if (remoteProfile.currency) {
+        localStorage.setItem('currency', remoteProfile.currency);
+      }
+      if (remoteProfile.language) {
+        localStorage.setItem('language', remoteProfile.language);
+      }
+      const existingSettingsRaw = localStorage.getItem('user_settings');
+      let existingSettings = {};
+      try {
+        existingSettings = existingSettingsRaw ? JSON.parse(existingSettingsRaw) : {};
+      } catch {}
+      localStorage.setItem('user_settings', JSON.stringify({
+        ...existingSettings,
+        currency: remoteProfile.currency,
+        defaultCurrency: remoteProfile.currency,
+        language: remoteProfile.language,
+      }));
+
+      window.dispatchEvent(new CustomEvent('APP_SETTINGS_UPDATED', {
+        detail: {
+          currency: remoteProfile.currency,
+          language: remoteProfile.language,
+        }
       }));
     };
 
@@ -825,8 +859,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const signOut = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
+      const { data: { session: activeSession } } = await supabase.auth.getSession();
+      if (activeSession) {
+        const { error } = await supabase.auth.signOut({ scope: 'global' });
+        if (error) {
+          console.warn('Supabase global signOut failed, trying local signOut:', error);
+          await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
+        }
+      } else {
+        await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
+      }
     } catch (error) {
       console.error('Error signing out from Supabase, clearing local auth state anyway:', error);
       try {
@@ -835,6 +877,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         console.error('Local-only sign out fallback also failed:', localSignOutError);
       }
     } finally {
+      // Guarantee local DB and presentation clearing to ensure complete isolation
+      await handleBackendLogout();
+      await clearLocalUserData();
+      clearLocalAuthPresentationState(true); // Preserve PIN keys
+
       socketClient.disconnect();
       setUser(null);
       setSession(null);
@@ -886,6 +933,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
+    if (import.meta.env.DEV) {
+      console.warn('useAuth context is undefined (often transient during HMR). Returning temporary fallback context.');
+      return {
+        user: null,
+        session: null,
+        loading: true,
+        role: 'user' as any,
+        dataReady: false,
+        dataSyncing: false,
+        dataSyncError: null,
+        triggerDataSync: async () => {},
+        signOut: async () => {},
+      };
+    }
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;

@@ -30,7 +30,7 @@ export const getAccounts = async (req: AuthRequest, res: Response, next: NextFun
 export const createAccount = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const userId = getUserId(req);
-    const { name, type, provider, country, balance, currency } = req.body;
+    const { name, type, provider, country, balance, currency, clientRequestId } = req.body;
 
     if (!name || !type) {
       throw AppError.badRequest('Missing required fields: name and type are mandatory.', 'MISSING_FIELDS');
@@ -40,16 +40,43 @@ export const createAccount = async (req: AuthRequest, res: Response, next: NextF
       throw AppError.badRequest('Account balance cannot be negative', 'INVALID_BALANCE');
     }
 
+    // Idempotency check
+    if (clientRequestId && typeof clientRequestId === 'string') {
+      const existing = await prisma.account.findFirst({
+        where: { clientRequestId, userId }
+      });
+      if (existing) {
+        logger.info(`Idempotent account creation request: ${clientRequestId}`);
+        return res.status(200).json({ success: true, data: existing });
+      }
+    }
+
+    // Name + Type uniqueness check (active accounts only)
+    const sanitizedName = sanitize(name);
+    const existingByName = await prisma.account.findFirst({
+      where: {
+        userId,
+        name: sanitizedName,
+        type,
+        deletedAt: null
+      }
+    });
+
+    if (existingByName) {
+      throw AppError.conflict(`You already have a "${name}" ${type} account.`, 'DUPLICATE_ACCOUNT');
+    }
+
     const account = await prisma.account.create({
       data: {
         userId,
-        name: sanitize(name),
+        name: sanitizedName,
         type,
         provider: provider ? sanitize(provider) : null,
         country: country ? sanitize(country) : null,
         balance: balance || 0,
         currency: currency || 'USD',
         isActive: true,
+        clientRequestId: clientRequestId || null,
       },
     });
 

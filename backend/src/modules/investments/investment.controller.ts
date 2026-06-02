@@ -44,7 +44,18 @@ export const createInvestment = async (req: AuthRequest, res: Response, next: Ne
       purchaseDate: string;
       lastUpdated?: string;
       metadata?: any;
+      clientRequestId?: string;
     };
+
+    // Idempotency check
+    if (body.clientRequestId && typeof body.clientRequestId === 'string') {
+      const existing = await prisma.investment.findFirst({
+        where: { clientRequestId: body.clientRequestId, userId }
+      });
+      if (existing) {
+        return res.status(200).json({ success: true, data: existing });
+      }
+    }
 
     const totalInvested = body.totalInvested ?? body.quantity * body.buyPrice;
     const currentValue = body.currentValue ?? body.quantity * body.currentPrice;
@@ -64,6 +75,7 @@ export const createInvestment = async (req: AuthRequest, res: Response, next: Ne
         purchaseDate: toDate(body.purchaseDate),
         lastUpdated: toDate(body.lastUpdated),
         metadata: body.metadata !== undefined ? body.metadata : undefined,
+        clientRequestId: body.clientRequestId || null,
       },
     });
 

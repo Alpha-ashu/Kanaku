@@ -11,6 +11,7 @@ import { DeleteConfirmModal } from '@/app/components/shared/DeleteConfirmModal';
 import { PageHeader } from '@/app/components/ui/PageHeader';
 import { readVoiceDraft, VOICE_GROUP_DRAFT_KEY, type VoiceGroupDraft } from '@/lib/voiceDrafts';
 import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
+import { formatCurrencyAmount } from '@/lib/currencyUtils';
 import { cn } from '@/lib/utils';
 
 const avatarToneClasses = [
@@ -79,11 +80,7 @@ export const Groups: React.FC = () => {
  );
 
  const formatCurrency = (amount: number) =>
- new Intl.NumberFormat('en-US', {
- style: 'currency',
- currency,
- maximumFractionDigits: 2,
- }).format(amount);
+    formatCurrencyAmount(amount, currency);
 
  const openGroupExpenseForm = () => {
  localStorage.setItem('quickFormType', 'expense');

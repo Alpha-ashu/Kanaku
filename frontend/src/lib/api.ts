@@ -282,8 +282,8 @@ class HTTPClient {
             if (response.status === 401) {
               TokenManager.clearTokens();
               try {
-                // Force sign out to clear stale local storage sessions
-                await supabase.auth.signOut();
+                // Force local sign out to clear stale local storage sessions without triggering a 403 network call
+                await supabase.auth.signOut({ scope: 'local' });
               } catch (e) {
                 // Ignore sign out errors
               }

@@ -23,8 +23,22 @@ export async function unifiedSignOut(_navigate?: (path: string) => void): Promis
     // Step 1: Clear backend tokens and local cache
     await handleLogout();
 
-    // Step 2: Sign out from Supabase (invalidates server-side session globally)
-    await supabase.auth.signOut({ scope: 'global' });
+    // Step 2: Sign out from Supabase (invalidates server-side session globally if active)
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        const { error } = await supabase.auth.signOut({ scope: 'global' });
+        if (error) {
+          console.warn('Supabase global signOut failed, trying local signOut:', error);
+          await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
+        }
+      } else {
+        await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
+      }
+    } catch (e) {
+      console.warn('Supabase global signOut exception, trying local signOut:', e);
+      await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
+    }
 
     // Step 3: Clear permissions
     permissionService.clearPermissions();
@@ -66,8 +80,21 @@ export async function legacySignOut(): Promise<void> {
 
     const pinBackup = backupPINKeys();
 
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        const { error } = await supabase.auth.signOut({ scope: 'global' });
+        if (error) {
+          console.warn('Supabase global signOut failed, trying local signOut:', error);
+          await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
+        }
+      } else {
+        await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
+      }
+    } catch (e) {
+      console.warn('Supabase global signOut exception, trying local signOut:', e);
+      await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
+    }
 
     permissionService.clearPermissions();
 

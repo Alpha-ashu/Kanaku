@@ -115,6 +115,18 @@ export const SecurityProvider: React.FC<{ children: ReactNode }> = ({ children }
 export const useSecurity = () => {
   const context = useContext(SecurityContext);
   if (context === undefined) {
+    if (import.meta.env.DEV) {
+      console.warn('useSecurity context is undefined (often transient during HMR). Returning temporary fallback context.');
+      return {
+        isAuthenticated: false,
+        encryptionKey: null,
+        setAuthenticated: () => {},
+        logout: () => {},
+        isNativePlatform: false,
+        lockTimeout: 0,
+        setLockTimeout: () => {},
+      };
+    }
     throw new Error('useSecurity must be used within a SecurityProvider');
   }
   return context;

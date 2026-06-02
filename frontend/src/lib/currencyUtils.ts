@@ -1,9 +1,9 @@
 const CURRENCY_SYMBOLS: Record<string, string> = {
   USD: '$',
-  INR: 'INR',
-  EUR: 'EUR',
-  GBP: 'GBP',
-  JPY: '',
+  INR: '₹',
+  EUR: '€',
+  GBP: '£',
+  JPY: '¥',
   AUD: 'A$',
   CAD: 'C$',
   SGD: 'S$',
@@ -12,14 +12,14 @@ const CURRENCY_SYMBOLS: Record<string, string> = {
 
 const SYMBOL_TO_CODE: Record<string, string> = {
   '$': 'USD',
-  'INR': 'INR',
-  'EUR': 'EUR',
-  'GBP': 'GBP',
-  '': 'JPY',
+  '₹': 'INR',
+  '€': 'EUR',
+  '£': 'GBP',
+  '¥': 'JPY',
   'A$': 'AUD',
   'C$': 'CAD',
   'S$': 'SGD',
-  CHF: 'CHF',
+  'CHF': 'CHF',
 };
 
 type QuoteLike = {

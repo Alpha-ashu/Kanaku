@@ -3,7 +3,7 @@ import { db } from '@/lib/database';
 import { 
  Download, Upload, Trash2, Database, Globe, 
  Bell, ExternalLink, FileText,
- Smartphone, RefreshCw
+ Smartphone, RefreshCw, Coins
 } from 'lucide-react';
 import { Settings as SettingsIcon } from 'lucide-react';
 import { toast } from 'sonner';
@@ -116,17 +116,28 @@ export const Settings: React.FC = () => {
  toast.info('Signing out...');
 
  try {
- // Step 1: Sign out from Supabase (with timeout)
- const signOutPromise = supabase.auth.signOut({ scope: 'global' });
- const timeoutPromise = new Promise((_, reject) =>
- setTimeout(() => reject(new Error('Sign out timeout')), 5000)
- );
+  // Step 1: Sign out from Supabase (with timeout)
+  const signOutPromise = (async () => {
+    try {
+      const { error } = await supabase.auth.signOut({ scope: 'global' });
+      if (error) {
+        console.warn('Supabase global signOut failed, trying local signOut:', error);
+        await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
+      }
+    } catch (e) {
+      console.warn('Supabase global signOut exception, trying local signOut:', e);
+      await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
+    }
+  })();
+  const timeoutPromise = new Promise((_, reject) =>
+  setTimeout(() => reject(new Error('Sign out timeout')), 5000)
+  );
 
- try {
- await Promise.race([signOutPromise, timeoutPromise]);
- } catch (e) {
- console.warn('Supabase signOut timed out or failed (non-blocking):', e);
- }
+  try {
+  await Promise.race([signOutPromise, timeoutPromise]);
+  } catch (e) {
+  console.warn('Supabase signOut timed out or failed (non-blocking):', e);
+  }
 
  // Step 2: Clear permissions
  try {
@@ -434,6 +445,32 @@ export const Settings: React.FC = () => {
  <option value="zh">中文 (Chinese)</option>
  <option value="hi">हिंदी (Hindi)</option>
  <option value="ar">العربية (Arabic)</option>
+ </select>
+ </div>
+ </div>
+ <div className="p-6">
+ <div className="flex items-center justify-between">
+ <div className="flex items-center gap-3">
+ <div className="w-10 h-10 bg-emerald-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+ <Coins className="text-emerald-600" size={20} />
+ </div>
+ <h4 className="font-medium text-gray-900">Currency</h4>
+ </div>
+ <select
+ value={currency}
+ onChange={(e) => { setCurrency(e.target.value); toast.success(`Currency changed to ${e.target.value}`); }}
+ className="px-3 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black/10"
+ aria-label="Select currency"
+ >
+ <option value="USD">USD ($)</option>
+ <option value="INR">INR (₹)</option>
+ <option value="EUR">EUR (€)</option>
+ <option value="GBP">GBP (£)</option>
+ <option value="JPY">JPY (¥)</option>
+ <option value="AUD">AUD (A$)</option>
+ <option value="CAD">CAD (C$)</option>
+ <option value="SGD">SGD (S$)</option>
+ <option value="CHF">CHF (CHF)</option>
  </select>
  </div>
  </div>
