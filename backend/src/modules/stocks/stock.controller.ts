@@ -7,7 +7,7 @@ const cache = new Map<string, { data: any; expiry: number }>();
 const CACHE_TTL_MS = 60 * 1000; // 1 minute cache for faster updates
 
 //  Market category definitions 
-type MarketCategory = 'nse' | 'bse' | 'us' | 'forex' | 'crypto';
+type MarketCategory = 'nse' | 'bse' | 'us' | 'forex' | 'crypto' | 'commodities';
 
 const MARKET_DEFAULTS: Record<MarketCategory, string[]> = {
   nse: ['RELIANCE', 'TCS', 'INFY', 'HDFCBANK', 'ICICIBANK', 'WIPRO', 'SBIN', 'BAJFINANCE', 'AXISBANK', 'MARUTI'],
@@ -15,6 +15,7 @@ const MARKET_DEFAULTS: Record<MarketCategory, string[]> = {
   us: ['AAPL', 'TSLA', 'MSFT', 'NVDA', 'GOOGL', 'AMZN', 'META', 'NFLX'],
   forex: ['INR=X', 'EURUSD=X', 'GBPUSD=X', 'USDJPY=X'],
   crypto: ['BTC-USD', 'ETH-USD', 'SOL-USD', 'BNB-USD', 'XRP-USD', 'ADA-USD'],
+  commodities: ['GC=F', 'SI=F', 'CL=F', 'NG=F', 'HG=F', 'PETROL', 'DIESEL', 'LPG'],
 };
 
 /** Map a symbol to the correct Yahoo Finance symbol */
@@ -172,6 +173,7 @@ export const searchStocks = async (req: Request, res: Response, next: NextFuncti
           case 'us': return ex === 'NMS' || ex === 'NYQ' || ex === 'NYS' || ex === 'NAS' || ex === 'NASDAQ' || ex === 'NYSE';
           case 'forex': return ex === 'CCY' || sym.includes('=X');
           case 'crypto': return ex === 'CCC' || sym.includes('-USD');
+          case 'commodities': return ex === 'CMX' || ex === 'NYM' || sym.endsWith('=F') || sym === 'PETROL' || sym === 'DIESEL' || sym === 'LPG';
           default: return true;
         }
       })

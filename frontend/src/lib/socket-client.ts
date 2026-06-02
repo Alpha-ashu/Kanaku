@@ -102,6 +102,11 @@ interface SocketEvents {
     type: 'global' | 'ai';
     timestamp: string;
   }) => void;
+
+  friend_accepted: (data: any) => void;
+  group_expense_updated: (data: any) => void;
+  todo_updated: (data: any) => void;
+  notification: (data: any) => void;
 }
 
 interface EmitEvents {
@@ -513,6 +518,22 @@ class SocketClient {
     // Admin feature flag events
     this.socket.on('feature_flags_updated' as any, (data: any) => {
       this.emit('feature_flags_updated', data);
+    });
+
+    this.socket.on('friend_accepted' as any, (data: any) => {
+      this.emit('friend_accepted', data);
+    });
+
+    this.socket.on('group_expense_updated' as any, (data: any) => {
+      this.emit('group_expense_updated', data);
+    });
+
+    this.socket.on('todo_updated' as any, (data: any) => {
+      this.emit('todo_updated', data);
+    });
+
+    this.socket.on('notification' as any, (data: any) => {
+      this.emit('notification', data);
     });
   }
 

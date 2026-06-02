@@ -531,6 +531,7 @@ export const UserProfile: React.FC = () => {
  }
 
  toast.success('Profile updated successfully!');
+ window.dispatchEvent(new Event('PROFILE_UPDATED'));
  } catch (error: any) {
  console.error('Failed to save profile:', error);
  toast.error(error.message || 'Failed to save profile. Please try again.');
@@ -608,6 +609,7 @@ export const UserProfile: React.FC = () => {
  setProfileData({ ...profileData, email: verification.newValue });
  setVerification({ type: null, otp: '', newValue: '', step: 'request' });
  toast.success('Email updated successfully');
+ window.dispatchEvent(new Event('PROFILE_UPDATED'));
  } else { toast.error('Invalid OTP'); }
  };
  const handleChangeMobile = () => {
@@ -687,6 +689,7 @@ export const UserProfile: React.FC = () => {
         }
 
         toast.success('Mobile number updated successfully');
+        window.dispatchEvent(new Event('PROFILE_UPDATED'));
       } catch (err: any) {
         console.error('Failed to update mobile number:', err);
         toast.error(err.message || 'Failed to save mobile number. Please try again.');

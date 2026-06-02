@@ -469,14 +469,9 @@ const AppContent: React.FC = () => {
 
   const hasProfileData = localStorage.getItem('user_profile') || localStorage.getItem('user_settings');
 
-  // A truly new user = account < 15 minutes old AND no local/server flag anywhere.
-  // Existing users logging in on a fresh device have an older created_at, so they always
-  // bypass onboarding even when localStorage is empty.
-  const accountAgeMs = user?.created_at
-    ? Date.now() - new Date(user.created_at).getTime()
-    : Infinity;
-  const isVeryNewAccount = accountAgeMs < 15 * 60 * 1000; // < 15 min
-  const isNewUser = !hasCompletedOnboarding && isVeryNewAccount;
+  // A user is new if they haven't completed onboarding.
+  // Enforce onboarding completion (removed 15-minute bypass).
+  const isNewUser = !hasCompletedOnboarding;
 
   if (!user) {
     if (showLanding) {
@@ -601,13 +596,16 @@ const AppContent: React.FC = () => {
   }
 
   // Gate 1.5: PIN setup for new users (after onboarding completes)
+  // Positioned before the !isAuthenticated check to avoid locking out new users
   const needsPinSetup = localStorage.getItem('pin_setup_required') === 'true';
-  if (needsPinSetup && isAuthenticated) {
-    localStorage.removeItem('pin_setup_required');
+  if (needsPinSetup) {
     return (
       <Suspense fallback={<PageLoader />}>
         <PINSetup
-          onComplete={() => setAuthenticated('')}
+          onComplete={(pin) => {
+            localStorage.removeItem('pin_setup_required');
+            setAuthenticated(pin);
+          }}
           existingPinRequired={false}
         />
       </Suspense>

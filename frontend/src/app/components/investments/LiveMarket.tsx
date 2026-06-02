@@ -16,7 +16,7 @@ const AUTO_REFRESH_MS = 8_000;
 const PAGE_SIZE = 15;
 const PENDING_INVESTMENT_DRAFT_KEY = 'pendingInvestmentDraft';
 
-const MARKET_TABS: MarketCategory[] = ['all', 'nse', 'bse', 'us', 'forex', 'crypto'];
+const MARKET_TABS: MarketCategory[] = ['all', 'nse', 'bse', 'us', 'forex', 'crypto', 'commodity'];
 
 /* Helpers */
 const fmt = (n: number) =>
@@ -283,6 +283,7 @@ export const LiveMarket: React.FC = () => {
  if (symbol.endsWith('.US')) return 'us';
  if (symbol.endsWith('=X')) return 'forex';
  if (symbol.endsWith('-USD')) return 'crypto';
+ if (symbol.endsWith('=F') || symbol === 'PETROL' || symbol === 'DIESEL' || symbol === 'LPG') return 'commodity';
  return undefined;
  }, [activeMarket]);
 

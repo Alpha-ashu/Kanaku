@@ -110,19 +110,22 @@ export function NotificationProvider({
     setError(null);
 
     try {
-      const response = await api.get<{
-        success: boolean;
-        data: Notification[];
-        count: number;
-      }>('/notifications');
-
-      if (response.data.success) {
-        setNotifications(response.data.data);
-
-        // Calculate unread count
-        const unread = response.data.data.filter((n) => !n.isRead).length;
-        setUnreadCount(unread);
+      const response = await api.get<any>('/notifications');
+      let data: Notification[] = [];
+      
+      if (Array.isArray(response.data)) {
+        data = response.data;
+      } else if (response.data && response.data.success && Array.isArray(response.data.data)) {
+        data = response.data.data;
+      } else if (response.data && Array.isArray(response.data.data)) {
+        data = response.data.data;
       }
+
+      setNotifications(data);
+
+      // Calculate unread count
+      const unread = data.filter((n) => !n.isRead).length;
+      setUnreadCount(unread);
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err));
       setError(error);
@@ -217,18 +220,17 @@ export function NotificationProvider({
    */
   const getUnreadCount = useCallback(async (): Promise<number> => {
     try {
-      const response = await api.get<{
-        success: boolean;
-        data: { unreadCount: number };
-      }>('/notifications/unread/count');
+      const response = await api.get<any>('/notifications/unread/count');
+      let count = 0;
 
-      if (response.data.success) {
-        const count = response.data.data.unreadCount;
-        setUnreadCount(count);
-        return count;
+      if (response.data && typeof response.data.unreadCount === 'number') {
+        count = response.data.unreadCount;
+      } else if (response.data && response.data.success && response.data.data && typeof response.data.data.unreadCount === 'number') {
+        count = response.data.data.unreadCount;
       }
 
-      return 0;
+      setUnreadCount(count);
+      return count;
     } catch (err) {
       console.error('Failed to get unread count:', err);
       return 0;

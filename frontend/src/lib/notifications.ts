@@ -23,7 +23,7 @@ type BackendNotificationRow = {
   created_at: string;
 };
 
-const SYNCABLE_NOTIFICATION_TYPES = new Set<Notification['type']>(['emi', 'loan', 'goal', 'group']);
+const SYNCABLE_NOTIFICATION_TYPES = new Set<Notification['type']>(['emi', 'loan', 'goal', 'group', 'friend_request', 'friend_accepted', 'todo_shared']);
 
 /** Maps each notification type to the toggle key used in notificationSettings (localStorage). */
 const NOTIF_TYPE_TO_SETTING_KEY: Partial<Record<Notification['type'], string>> = {
@@ -34,6 +34,9 @@ const NOTIF_TYPE_TO_SETTING_KEY: Partial<Record<Notification['type'], string>> =
   booking: 'transactionAlerts',
   message: 'transactionAlerts',
   session: 'appUpdates',
+  friend_request: 'friendUpdates',
+  friend_accepted: 'friendUpdates',
+  todo_shared: 'todoUpdates',
 };
 
 function isNotificationEnabled(type: Notification['type']): boolean {
@@ -56,6 +59,9 @@ const SUPPORTED_NOTIFICATION_TYPES = new Set<Notification['type']>([
   'booking',
   'message',
   'session',
+  'friend_request',
+  'friend_accepted',
+  'todo_shared',
 ]);
 const LEGACY_MOCK_NOTIFICATION_TITLES = new Set([
   'Transaction Recorded',

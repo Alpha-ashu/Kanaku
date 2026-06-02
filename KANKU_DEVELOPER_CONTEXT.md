@@ -2311,3 +2311,129 @@ Implemented a comprehensive database deduplication and idempotency system across
 | `frontend/src/lib/auth-helpers.ts` | Wrapped global signOut in try-catch and local fallback in `unifiedSignOut` and `legacySignOut` |
 | `frontend/src/lib/supabase-helpers.ts` | Wrapped global signOut in try-catch and local fallback in `signOut` |
 | `frontend/src/app/components/profile/Settings.tsx` | Wrapped global signOut in try-catch and local fallback |
+
+---
+
+## Phase 12: Release Stabilization & Production Readiness (June 2026)
+
+### Overview
+
+This phase focused on fixing existing functionality, synchronization, security, performance, and data integrity issues before launching new AI features. No UI redesigns, theme changes, or business workflow modifications were made.
+
+---
+
+### 1. Onboarding & PIN Setup Gates
+
+**Problem**: App.tsx was showing PIN setup to users who hadn't completed onboarding, and re-triggering onboarding for users who had already finished.
+
+**Solution**:
+- Added explicit checks in App.tsx for onboardingComplete flag before showing PIN setup screens.
+- Ensured PIN setup only renders after onboarding is fully confirmed.
+
+---
+
+### 2. Friend Management — Deduplication, Notifications & Sync
+
+**Problem**: Duplicate friend records and requests were being created. Friend notifications were not sent. Acceptance sync was broken.
+
+**Solution** (riend.controller.ts, ackend-api.ts, AddFriends.tsx):
+- **Deduplication**: Added prisma.friendship.findFirst checks before creating any friendship record or friend request; returns 200 with existing record on retry.
+- **Mutual Record Creation**: On acceptance, both A?B and B?A Friendship records are created atomically so each user sees the other in their friends list.
+- **Socket Notifications**: Backend now emits riend_accepted and 
+otification socket events to both parties on acceptance, and 
+otification on new friend request.
+- **Frontend Sync**: AddFriends.tsx triggers syncUserDataFromCloud(['friends']) after backend call.
+
+---
+
+### 3. Group Expense Synchronization
+
+**Problem**: Group expenses weren't syncing correctly. Added friends were not receiving updates. Member mapping was broken.
+
+**Solution** (group.controller.ts):
+- Fixed member ID mapping to use cloudId (UUID) rather than local Dexie integer IDs.
+- Backend now emits group_expense_updated socket events to all members on create/update/delete.
+- AppContext.tsx listens for group_expense_updated and calls syncUserDataFromCloud(['group_expenses', 'accounts', 'transactions']).
+
+---
+
+### 4. Shared ToDo Lists — Backend REST Endpoints
+
+**Problem**: No REST API existed for shared to-do lists, items, or share management.
+
+**Solution** (	odo.controller.ts, 	odo.routes.ts):
+- Implemented full CRUD for 	odo_lists, 	odo_items, and 	odo_list_shares using raw PostgreSQL queries (prisma.\) against the public schema.
+- Share endpoint (POST /todos/lists/:listId/share) accepts sharedWithEmail and permission ('view'|'edit'), looks up user by email, upserts the share record, and creates a 
+otification of type 	odo_shared.
+- All mutating endpoints emit 	odo_updated socket events to list owners and all share recipients.
+- Routes registered at /api/v1/todos/lists, /api/v1/todos/items, /api/v1/todos/shares.
+
+---
+
+### 5. ToDo Lists Frontend Sync
+
+**Problem**: Frontend components wrote directly to Dexie without backend sync. Shared lists were invisible to collaborators.
+
+**Solution**:
+- uth-sync-integration.ts already had saveToDoListWithBackendSync, updateToDoListWithBackendSync, deleteToDoListWithBackendSync, saveToDoItemWithBackendSync, updateToDoItemWithBackendSync, deleteToDoItemWithBackendSync, saveToDoListShareWithBackendSync, updateToDoListShareWithBackendSync, deleteToDoListShareWithBackendSync.
+- AppContext.tsx socket listener for 	odo_updated triggers syncUserDataFromCloud(['to_do_lists', 'to_do_items', 'to_do_list_shares']).
+- ToDoLists.tsx, ToDoListDetail.tsx, ToDoListShare.tsx already consume these sync functions.
+
+---
+
+### 6. Profile Updates — Real-time Avatar & Navigation Refresh
+
+**Problem**: TopBar avatar and navigation didn't update after the user saved profile changes.
+
+**Solution**:
+- UserProfile.tsx dispatches window.dispatchEvent(new Event('PROFILE_UPDATED')) after every successful profile save (name/photo, email, mobile).
+- TopBar.tsx listens for PROFILE_UPDATED via profileVersion state increment, triggering a re-render that re-reads localStorage('user_profile') for the new avatar/name.
+- LiveMarketTicker.tsx also listens for PROFILE_UPDATED to immediately pick up the user's new country for market data.
+
+---
+
+### 7. Notification System — Social & ToDo Types
+
+**Problem**: Backend-generated notifications for friend requests, friend acceptance, and todo sharing were not appearing in the notification bell or notification page. They were being deleted as "legacy" records.
+
+**Solution**:
+- Extended Notification.type union in database.ts to include 'friend_request' | 'friend_accepted' | 'todo_shared'.
+- Updated SUPPORTED_NOTIFICATION_TYPES and SYNCABLE_NOTIFICATION_TYPES in 
+otifications.ts to include new types.
+- Added NOTIF_TYPE_TO_SETTING_KEY mappings for riendUpdates and 	odoUpdates.
+- Added PRESENTATION entries (icon, color) in Notifications.tsx for the new types (UserPlus for friend_request, Users for friend_accepted, ListTodo for todo_shared).
+- Updated supportedNotifications filter in both Notifications.tsx and TopBar.tsx to include new types.
+- Added presentNotification cases for new types in TopBar.tsx popup.
+- Added socketClient.on('notification', ...) listener in AppContext.tsx that maps the backend socket payload to the Dexie Notification schema and upserts it, ensuring notifications appear in real-time.
+
+---
+
+### 8. Live Market & Commodities — Country Awareness
+
+**Problem**: The market ticker did not react when users updated their country in the profile settings.
+
+**Solution**:
+- LiveMarketTicker.tsx already reads country from user_profile localStorage and falls back to inferCountryFromCurrency(currency).
+- Added PROFILE_UPDATED event listener alongside storage and ocus so the ticker immediately reflects the new country on profile save without requiring a page reload.
+- marketFlash.ts already has full country profiles for India, US, UK, Canada, Australia, Germany, Singapore with local stocks, support assets (petrol, diesel, LPG for India), and commodity price localization (Gold in INR/gm, Silver in INR/kg).
+
+---
+
+### Key Files Changed in Phase 12
+
+| File | Change |
+|---|---|
+| rontend/src/app/App.tsx | Onboarding gate fix |
+| ackend/src/modules/friends/friend.controller.ts | Deduplication, mutual records, socket notifications |
+| rontend/src/lib/backend-api.ts | Friend sync helpers |
+| rontend/src/app/components/friends/AddFriends.tsx | Post-add sync trigger |
+| ackend/src/modules/groups/group.controller.ts | Group expense member mapping, socket events |
+| ackend/src/modules/todos/todo.controller.ts | Full CRUD for shared todo lists, items, shares |
+| ackend/src/modules/todos/todo.routes.ts | REST endpoints for todos |
+| rontend/src/lib/database.ts | Extended Notification type union |
+| rontend/src/lib/notifications.ts | SUPPORTED_NOTIFICATION_TYPES, NOTIF_TYPE_TO_SETTING_KEY updated |
+| rontend/src/app/components/profile/Notifications.tsx | PRESENTATION for new types, updated filter |
+| rontend/src/app/components/ui/TopBar.tsx | Updated supportedNotifications filter and presentNotification switch |
+| rontend/src/contexts/AppContext.tsx | Socket listeners for friend_accepted, group_expense_updated, todo_updated, notification |
+| rontend/src/app/components/investments/LiveMarketTicker.tsx | Added PROFILE_UPDATED listener for country sync |
+

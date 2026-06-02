@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useApp } from '@/contexts/AppContext';
-import { Search, Bell, Menu, GripVertical, Wallet, Target, Users, CalendarClock, MessageSquare, CheckCircle2, AlertCircle, LogOut, Receipt } from 'lucide-react';
+import { Search, Bell, Menu, GripVertical, Wallet, Target, Users, CalendarClock, MessageSquare, CheckCircle2, AlertCircle, LogOut, Receipt, UserPlus, ListTodo } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from '@/app/components/ui/sheet';
 import { NavigationItem, headerMenuItems } from '@/app/constants/navigation';
 import { NotificationPopup } from '@/app/components/ui/NotificationPopup';
@@ -61,16 +61,33 @@ const DraggablePageMenuItem: React.FC<DraggablePageMenuItemProps> = ({
 };
 
 export const TopBar: React.FC = () => {
- const { setCurrentPage, visibleFeatures, accounts, transactions } = useApp();
- const { orderedItems, handleReorder, handleNavigate, currentPage } = useSharedMenu();
- const { role, user, signOut } = useAuth();
- const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
- const [notificationPopupOpen, setNotificationPopupOpen] = useState(false);
- const [searchQuery, setSearchQuery] = useState('');
- const [isFocused, setIsFocused] = useState(false);
- const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+  const { setCurrentPage, visibleFeatures, accounts, transactions } = useApp();
+  const { orderedItems, handleReorder, handleNavigate, currentPage } = useSharedMenu();
+  const { role, user, signOut } = useAuth();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [notificationPopupOpen, setNotificationPopupOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
+  const [isFocused, setIsFocused] = useState(false);
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+  const [profileVersion, setProfileVersion] = useState(0);
 
- const searchInputRef = React.useRef<HTMLInputElement>(null);
+  const searchInputRef = React.useRef<HTMLInputElement>(null);
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 200);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  React.useEffect(() => {
+    const handleProfileUpdate = () => {
+      setProfileVersion(prev => prev + 1);
+    };
+    window.addEventListener('PROFILE_UPDATED', handleProfileUpdate);
+    return () => window.removeEventListener('PROFILE_UPDATED', handleProfileUpdate);
+  }, []);
 
  React.useEffect(() => {
  const handleKeyDown = (e: KeyboardEvent) => {
@@ -121,7 +138,7 @@ export const TopBar: React.FC = () => {
   }, [role]);
 
   const searchResults = useMemo(() => {
-    const query = searchQuery.trim().toLowerCase();
+    const query = debouncedSearchQuery.trim().toLowerCase();
     if (!query) return [];
 
     const matchedPages = searchablePages.filter(p => 
@@ -183,7 +200,7 @@ export const TopBar: React.FC = () => {
     }));
 
     return [...matchedPages, ...matchedAccounts, ...matchedTransactions];
-  }, [searchQuery, searchablePages, accounts, transactions, setCurrentPage]);
+  }, [debouncedSearchQuery, searchablePages, accounts, transactions, setCurrentPage]);
 
  const notifications = useLiveQuery(
  () => db.notifications.orderBy('createdAt').reverse().toArray(),
@@ -199,6 +216,9 @@ export const TopBar: React.FC = () => {
  || notification.type === 'booking'
  || notification.type === 'message'
  || notification.type === 'session'
+ || notification.type === 'friend_request'
+ || notification.type === 'friend_accepted'
+ || notification.type === 'todo_shared'
  )),
  [notifications],
  );
@@ -245,6 +265,24 @@ export const TopBar: React.FC = () => {
  icon: <CheckCircle2 size={18} className="text-green-600" />,
  color: 'text-green-600',
  bgColor: 'bg-green-50',
+ };
+ case 'friend_request':
+ return {
+ icon: <UserPlus size={18} className="text-indigo-600" />,
+ color: 'text-indigo-600',
+ bgColor: 'bg-indigo-50',
+ };
+ case 'friend_accepted':
+ return {
+ icon: <Users size={18} className="text-teal-600" />,
+ color: 'text-teal-600',
+ bgColor: 'bg-teal-50',
+ };
+ case 'todo_shared':
+ return {
+ icon: <ListTodo size={18} className="text-purple-600" />,
+ color: 'text-purple-600',
+ bgColor: 'bg-purple-50',
  };
  default:
  return {
@@ -336,7 +374,7 @@ export const TopBar: React.FC = () => {
  </SheetTrigger>
 
   {/* Logo & Name */}
-  <div className="flex items-center gap-2 sm:gap-3 mr-2 sm:mr-4 shrink-0">
+  <div className="flex items-center gap-2 sm:gap-3 mr-2 sm:mr-4 shrink-0 lg:hidden">
     <KANKULogo className="w-7 h-7 sm:w-8 sm:h-8" />
     <span className="text-sm sm:text-xl font-bold font-display text-gray-900 tracking-tight">KANKU</span>
   </div>

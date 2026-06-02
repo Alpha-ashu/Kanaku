@@ -9,103 +9,109 @@ import { Plus, Trash2, Share2, Archive, CheckCircle2, ListTodo } from 'lucide-re
 import { toast } from 'sonner';
 import { DeleteConfirmModal } from '@/app/components/shared/DeleteConfirmModal';
 import type { ToDoList } from '@/lib/database';
+import {
+  saveToDoListWithBackendSync,
+  deleteToDoListWithBackendSync,
+  updateToDoListWithBackendSync
+} from '@/lib/auth-sync-integration';
 
 export const ToDoLists: React.FC = () => {
- const { setCurrentPage } = useApp();
- const { user } = useAuth();
- const [showCreateModal, setShowCreateModal] = useState(false);
- const [newListName, setNewListName] = useState('');
- const [newListDescription, setNewListDescription] = useState('');
- const [deleteModalOpen, setDeleteModalOpen] = useState(false);
- const [listToDelete, setListToDelete] = useState<{ id: number; name: string } | null>(null);
- const [isDeleting, setIsDeleting] = useState(false);
+  const { setCurrentPage } = useApp();
+  const { user } = useAuth();
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [newListName, setNewListName] = useState('');
+  const [newListDescription, setNewListDescription] = useState('');
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [listToDelete, setListToDelete] = useState<{ id: number; name: string } | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
- // Use actual user ID - if not authenticated, show empty state
- const currentUserId = user?.id ?? null;
+  // Use actual user ID - if not authenticated, show empty state
+  const currentUserId = user?.id ?? null;
 
- const toDoLists = useLiveQuery<ToDoList[]>(
- () => {
- if (!currentUserId) return Promise.resolve([]);
- return db.toDoLists.filter(list => list.ownerId === currentUserId).toArray();
- },
- [currentUserId]
- ) || [];
+  const toDoLists = useLiveQuery<ToDoList[]>(
+    () => {
+      if (!currentUserId) return Promise.resolve([]);
+      return db.toDoLists.filter(list => list.ownerId === currentUserId).toArray();
+    },
+    [currentUserId]
+  ) || [];
 
- const handleCreateList = async () => {
- if (!newListName.trim()) {
- toast.error('List name is required');
- return;
- }
+  const handleCreateList = async () => {
+    if (!newListName.trim()) {
+      toast.error('List name is required');
+      return;
+    }
 
- try {
- const listId = await db.toDoLists.add({
- name: newListName,
- description: newListDescription || undefined,
- ownerId: currentUserId || 'local',
- createdAt: new Date(),
- archived: false,
- });
+    try {
+      const savedList = await saveToDoListWithBackendSync({
+        name: newListName,
+        description: newListDescription || undefined,
+        ownerId: currentUserId || 'local',
+        createdAt: new Date(),
+        archived: false,
+      });
 
- toast.success('To-Do List created successfully');
- setNewListName('');
- setNewListDescription('');
- setShowCreateModal(false);
+      const listId = savedList.id;
 
- // Navigate to the newly created list
- localStorage.setItem('viewingToDoListId', listId.toString());
- setCurrentPage('todo-list-detail');
- } catch (error) {
- console.error('Failed to create list:', error);
- toast.error('Failed to create list');
- }
- };
+      toast.success('To-Do List created successfully');
+      setNewListName('');
+      setNewListDescription('');
+      setShowCreateModal(false);
 
- const handleDeleteList = (listId: number, listName: string) => {
- setListToDelete({ id: listId, name: listName });
- setDeleteModalOpen(true);
- };
+      if (listId) {
+        // Navigate to the newly created list
+        localStorage.setItem('viewingToDoListId', listId.toString());
+        setCurrentPage('todo-list-detail');
+      }
+    } catch (error) {
+      console.error('Failed to create list:', error);
+      toast.error('Failed to create list');
+    }
+  };
 
- const confirmDeleteList = async () => {
- if (!listToDelete) return;
- setIsDeleting(true);
- try {
- await db.toDoLists.delete(listToDelete.id);
- // Also delete items and shares
- await db.toDoItems.where('listId').equals(listToDelete.id).delete();
- await db.toDoListShares.where('listId').equals(listToDelete.id).delete();
- toast.success('List deleted successfully');
- setDeleteModalOpen(false);
- setListToDelete(null);
- } catch (error) {
- console.error('Failed to delete list:', error);
- toast.error('Failed to delete list');
- } finally {
- setIsDeleting(false);
- }
- };
+  const handleDeleteList = (listId: number, listName: string) => {
+    setListToDelete({ id: listId, name: listName });
+    setDeleteModalOpen(true);
+  };
 
- const handleOpenList = (listId: number) => {
- localStorage.setItem('viewingToDoListId', listId.toString());
- setCurrentPage('todo-list-detail');
- };
+  const confirmDeleteList = async () => {
+    if (!listToDelete) return;
+    setIsDeleting(true);
+    try {
+      await deleteToDoListWithBackendSync(listToDelete.id);
+      toast.success('List deleted successfully');
+      setDeleteModalOpen(false);
+      setListToDelete(null);
+    } catch (error) {
+      console.error('Failed to delete list:', error);
+      toast.error('Failed to delete list');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
- const handleShareList = (listId: number) => {
- localStorage.setItem('sharingToDoListId', listId.toString());
- setCurrentPage('todo-list-share');
- };
+  const handleOpenList = (listId: number) => {
+    localStorage.setItem('viewingToDoListId', listId.toString());
+    setCurrentPage('todo-list-detail');
+  };
 
- const handleArchiveList = async (listId: number) => {
- try {
- const list = await db.toDoLists.get(listId);
- if (list) {
- await db.toDoLists.update(listId, { archived: !list.archived });
- toast.success(list.archived ? 'List unarchived' : 'List archived');
- }
- } catch (error) {
- console.error('Failed to archive list:', error);
- toast.error('Failed to update list');
- }
- };
+  const handleShareList = (listId: number) => {
+    localStorage.setItem('sharingToDoListId', listId.toString());
+    setCurrentPage('todo-list-share');
+  };
+
+  const handleArchiveList = async (listId: number) => {
+    try {
+      const list = await db.toDoLists.get(listId);
+      if (list) {
+        await updateToDoListWithBackendSync(listId, { archived: !list.archived });
+        toast.success(list.archived ? 'List unarchived' : 'List archived');
+      }
+    } catch (error) {
+      console.error('Failed to archive list:', error);
+      toast.error('Failed to update list');
+    }
+  };
 
  return (
  <CenteredLayout>

@@ -689,9 +689,13 @@ class BackendService {
         updatedAt: friend.updatedAt.toISOString(),
       });
 
-      const localId = await RealtimeDataManager.addFriend(localFriend);
-
       const responsePayload = response.data?.data ?? response.data;
+      const localId = await RealtimeDataManager.addFriend({
+        ...localFriend,
+        cloudId: responsePayload.id,
+        syncStatus: 'synced',
+      });
+
       return {
         ...responsePayload,
         localId,

@@ -7,102 +7,107 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { Plus, Trash2, CheckCircle, Circle, ListTodo } from 'lucide-react';
 import { toast } from 'sonner';
 import type { ToDoItem } from '@/lib/database';
+import {
+  saveToDoItemWithBackendSync,
+  updateToDoItemWithBackendSync,
+  deleteToDoItemWithBackendSync
+} from '@/lib/auth-sync-integration';
 
 export const ToDoListDetail: React.FC = () => {
- const { user } = useAuth();
- const [listId, setListId] = useState<number | null>(null);
- const [toDoList, setToDoList] = useState<any>(null);
- const [newItemTitle, setNewItemTitle] = useState('');
- const [newItemDescription, setNewItemDescription] = useState('');
- const [newItemPriority, setNewItemPriority] = useState<'low' | 'medium' | 'high'>('medium');
- const [newItemDueDate, setNewItemDueDate] = useState('');
+  const { user } = useAuth();
+  const [listId, setListId] = useState<number | null>(null);
+  const [toDoList, setToDoList] = useState<any>(null);
+  const [newItemTitle, setNewItemTitle] = useState('');
+  const [newItemDescription, setNewItemDescription] = useState('');
+  const [newItemPriority, setNewItemPriority] = useState<'low' | 'medium' | 'high'>('medium');
+  const [newItemDueDate, setNewItemDueDate] = useState('');
 
- // Use actual user ID or fallback for demo data
- const currentUserId = user?.id ?? null;
+  // Use actual user ID or fallback for demo data
+  const currentUserId = user?.id ?? null;
 
- // Get list ID from localStorage
- useEffect(() => {
- const id = localStorage.getItem('viewingToDoListId');
- if (id) {
- setListId(parseInt(id));
- }
- // Cleanup on unmount
- return () => {
- localStorage.removeItem('viewingToDoListId');
- };
- }, []);
+  // Get list ID from localStorage
+  useEffect(() => {
+    const id = localStorage.getItem('viewingToDoListId');
+    if (id) {
+      setListId(parseInt(id));
+    }
+    // Cleanup on unmount
+    return () => {
+      localStorage.removeItem('viewingToDoListId');
+    };
+  }, []);
 
- const items: any[] = (useLiveQuery(
- () => (listId ? (db.toDoItems.where('listId').equals(listId).toArray() as any) : Promise.resolve([])),
- [listId]
- ) || []);
+  const items: any[] = (useLiveQuery(
+    () => (listId ? (db.toDoItems.where('listId').equals(listId).toArray() as any) : Promise.resolve([])),
+    [listId]
+  ) || []);
 
- // Fetch list details
- useEffect(() => {
- if (listId) {
- db.toDoLists.get(listId).then((list) => {
- if (list) {
- setToDoList(list);
- }
- });
- }
- }, [listId]);
+  // Fetch list details
+  useEffect(() => {
+    if (listId) {
+      db.toDoLists.get(listId).then((list) => {
+        if (list) {
+          setToDoList(list);
+        }
+      });
+    }
+  }, [listId]);
 
- const handleAddItem = async () => {
- if (!newItemTitle.trim()) {
- toast.error('Task title is required');
- return;
- }
+  const handleAddItem = async () => {
+    if (!newItemTitle.trim()) {
+      toast.error('Task title is required');
+      return;
+    }
 
- if (!listId) {
- toast.error('No list selected');
- return;
- }
+    if (!listId) {
+      toast.error('No list selected');
+      return;
+    }
 
- try {
- await db.toDoItems.add({
- listId,
- title: newItemTitle,
- description: newItemDescription || undefined,
- completed: false,
- priority: newItemPriority,
- dueDate: newItemDueDate ? new Date(newItemDueDate) : undefined,
- createdBy: currentUserId || 'local',
- createdAt: new Date(),
- });
+    try {
+      await saveToDoItemWithBackendSync({
+        listId,
+        title: newItemTitle,
+        description: newItemDescription || undefined,
+        completed: false,
+        priority: newItemPriority,
+        dueDate: newItemDueDate ? new Date(newItemDueDate) : undefined,
+        createdBy: currentUserId || 'local',
+        createdAt: new Date(),
+      });
 
- toast.success('Task added');
- setNewItemTitle('');
- setNewItemDescription('');
- setNewItemPriority('medium');
- setNewItemDueDate('');
- } catch (error) {
- console.error('Failed to add item:', error);
- toast.error('Failed to add task');
- }
- };
+      toast.success('Task added');
+      setNewItemTitle('');
+      setNewItemDescription('');
+      setNewItemPriority('medium');
+      setNewItemDueDate('');
+    } catch (error) {
+      console.error('Failed to add item:', error);
+      toast.error('Failed to add task');
+    }
+  };
 
- const handleToggleItem = async (item: ToDoItem) => {
- try {
- await db.toDoItems.update(item.id!, {
- completed: !item.completed,
- completedAt: !item.completed ? new Date() : undefined,
- });
- } catch (error) {
- console.error('Failed to update item:', error);
- toast.error('Failed to update task');
- }
- };
+  const handleToggleItem = async (item: ToDoItem) => {
+    try {
+      await updateToDoItemWithBackendSync(item.id!, {
+        completed: !item.completed,
+        completedAt: !item.completed ? new Date() : undefined,
+      });
+    } catch (error) {
+      console.error('Failed to update item:', error);
+      toast.error('Failed to update task');
+    }
+  };
 
- const handleDeleteItem = async (itemId: number) => {
- try {
- await db.toDoItems.delete(itemId);
- toast.success('Task deleted');
- } catch (error) {
- console.error('Failed to delete item:', error);
- toast.error('Failed to delete task');
- }
- };
+  const handleDeleteItem = async (itemId: number) => {
+    try {
+      await deleteToDoItemWithBackendSync(itemId);
+      toast.success('Task deleted');
+    } catch (error) {
+      console.error('Failed to delete item:', error);
+      toast.error('Failed to delete task');
+    }
+  };
 
  const completedCount = items.filter((i) => i.completed).length;
  const priorityColors = {

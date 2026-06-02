@@ -31,7 +31,7 @@ if (typeof window !== 'undefined') {
   }
 }
 
-export type MarketCategory = 'all' | 'nse' | 'bse' | 'us' | 'forex' | 'crypto';
+export type MarketCategory = 'all' | 'nse' | 'bse' | 'us' | 'forex' | 'crypto' | 'commodity';
 
 type ProviderMarket = Exclude<MarketCategory, 'all'>;
 
@@ -71,6 +71,7 @@ export const MARKET_LABELS: Record<MarketCategory, string> = {
   us: 'US',
   forex: 'Forex',
   crypto: 'Crypto',
+  commodity: 'Commodities',
 };
 
 export const DEFAULT_WATCHLISTS: Record<ProviderMarket, string[]> = {
@@ -118,6 +119,9 @@ export const DEFAULT_WATCHLISTS: Record<ProviderMarket, string[]> = {
     'RNDR-USD', 'GRT-USD', 'ALGO-USD', 'HBAR-USD', 'VET-USD', 'XTZ-USD', 'EOS-USD', 'NEO-USD',
     'KAS-USD', 'TIA-USD', 'JUP-USD', 'WIF-USD', 'BONK-USD', 'FET-USD', 'RUNE-USD', 'IMX-USD',
     'FLOW-USD', 'SAND-USD', 'MANA-USD', 'THETA-USD', 'EGLD-USD', 'QNT-USD', 'KAVA-USD', 'ZEC-USD',
+  ],
+  commodity: [
+    'GC=F', 'SI=F', 'CL=F', 'NG=F', 'C=F', 'S=F', 'W=F', 'CC=F', 'KC=F', 'SB=F',
   ],
 };
 
@@ -452,7 +456,7 @@ function normalizeAppSymbol(symbol: string, exchange?: string, instrumentType?: 
 function resolveBackendTarget(symbol: string, market?: string): BackendTarget {
   const normalized = symbol.trim().toUpperCase();
 
-  if (normalized.endsWith('.NS') || normalized.endsWith('.BO') || normalized.endsWith('-USD') || normalized.endsWith('=X') || normalized.startsWith('^')) {
+  if (normalized.endsWith('.NS') || normalized.endsWith('.BO') || normalized.endsWith('-USD') || normalized.endsWith('=X') || normalized.endsWith('=F') || normalized.startsWith('^')) {
     return { symbol: normalized };
   }
 
@@ -507,6 +511,10 @@ function resolveTwelveDataTarget(symbol: string, market?: string): TwelveDataTar
   if (market === 'forex') {
     const pair = normalized.length === 3 ? `USD/${normalized}` : `${normalized.slice(0, 3)}/${normalized.slice(3, 6)}`;
     return { requestSymbol: normalized, symbol: pair, market: 'forex' };
+  }
+
+  if (market === 'commodity') {
+    return { requestSymbol: normalized, symbol: normalized, market: 'commodity' };
   }
 
   return { requestSymbol: normalized, symbol: normalized.replace(/\.US$/, ''), market: 'us' };
@@ -908,11 +916,19 @@ function shouldKeepSearchResult(result: any, market?: string) {
     return isCryptoInstrument(exchange, instrumentType, micCode, symbol);
   }
 
+  if (market === 'commodity') {
+    return symbol.endsWith('=F') || symbol === 'PETROL' || symbol === 'DIESEL' || symbol === 'LPG';
+  }
+
   return isNseExchange(exchange) ||
     isBseExchange(exchange) ||
     isUsExchange(exchange) ||
     isForexInstrument(exchange, instrumentType, micCode, symbol) ||
-    isCryptoInstrument(exchange, instrumentType, micCode, symbol);
+    isCryptoInstrument(exchange, instrumentType, micCode, symbol) ||
+    symbol.endsWith('=F') ||
+    symbol === 'PETROL' ||
+    symbol === 'DIESEL' ||
+    symbol === 'LPG';
 }
 
 function dedupeSearchResults(results: StockSearchResult[]) {

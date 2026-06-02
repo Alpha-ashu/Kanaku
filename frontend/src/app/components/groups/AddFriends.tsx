@@ -35,23 +35,37 @@ export const AddFriends: React.FC = () => {
 
  const removeFromQueue = (i: number) => setQueue(queue.filter((_, idx) => idx !== i));
 
- const handleSaveAll = async () => {
- if (queue.length === 0) { toast.error('Add at least one friend'); return; }
- setIsSubmitting(true);
- try {
- for (const friend of queue) {
- const now = new Date();
- await db.friends.add({ name: friend.name, email: friend.email || undefined, phone: friend.phone || undefined, relationship: friend.relationship, createdAt: now, updatedAt: now } as any);
- try { await backendService.createFriend({ name: friend.name, email: friend.email || undefined, phone: friend.phone || undefined, createdAt: now, updatedAt: now }); } catch {}
- }
- toast.success(`${queue.length} friends added!`);
- setQueue([]);
- refreshData();
- setCurrentPage('friends');
- } catch (error) {
- toast.error('Failed to save friends');
- } finally { setIsSubmitting(false); }
- };
+  const handleSaveAll = async () => {
+    if (queue.length === 0) { toast.error('Add at least one friend'); return; }
+    setIsSubmitting(true);
+    let successCount = 0;
+    try {
+      for (const friend of queue) {
+        const now = new Date();
+        try {
+          await backendService.createFriend({
+            name: friend.name,
+            email: friend.email || undefined,
+            phone: friend.phone || undefined,
+            createdAt: now,
+            updatedAt: now,
+          });
+          successCount++;
+        } catch (err: any) {
+          const errMsg = err?.response?.data?.error || err?.message || 'Failed to save';
+          toast.error(`Error adding ${friend.name}: ${errMsg}`);
+        }
+      }
+      if (successCount > 0) {
+        toast.success(`${successCount} friends added!`);
+      }
+      setQueue([]);
+      refreshData();
+      setCurrentPage('friends');
+    } catch (error) {
+      toast.error('Failed to save friends');
+    } finally { setIsSubmitting(false); }
+  };
 
  return (
  <div className="flex flex-col min-h-screen bg-white">

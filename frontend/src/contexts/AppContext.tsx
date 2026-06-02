@@ -702,6 +702,67 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     return unsubscribe;
   }, [user?.id, fetchGlobalFlags]);
 
+  // Real-time data sync via WebSocket.
+  // Listening for friend requests, group expenses, and todos changes.
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const unsubFriend = socketClient.on('friend_accepted', () => {
+      console.log('[AppContext] friend_accepted received via WebSocket — syncing friends');
+      void syncUserDataFromCloud(user.id, ['friends']);
+    });
+
+    const unsubGroup = socketClient.on('group_expense_updated', () => {
+      console.log('[AppContext] group_expense_updated received via WebSocket — syncing group expenses');
+      void syncUserDataFromCloud(user.id, ['group_expenses', 'accounts', 'transactions']);
+    });
+
+    const unsubTodo = socketClient.on('todo_updated', () => {
+      console.log('[AppContext] todo_updated received via WebSocket — syncing todos');
+      void syncUserDataFromCloud(user.id, ['to_do_lists', 'to_do_items', 'to_do_list_shares']);
+    });
+
+    // Listen for real-time notification events from the backend (friend requests, todo shares, etc.)
+    const unsubNotification = socketClient.on('notification', (payload: any) => {
+      console.log('[AppContext] notification received via WebSocket', payload);
+      if (!payload) return;
+      try {
+        // Map the backend notification shape to the Dexie Notification schema
+        const notifType = (payload.type ?? 'group') as any;
+        const notification = {
+          type: notifType,
+          title: payload.title ?? 'Notification',
+          message: payload.message ?? '',
+          isRead: payload.isRead ?? false,
+          createdAt: payload.createdAt ? new Date(payload.createdAt) : new Date(),
+          userId: payload.userId ?? user.id,
+          remoteId: payload.id ? String(payload.id) : undefined,
+          deepLink: payload.deepLink ?? undefined,
+          category: payload.category ?? undefined,
+          source: 'supabase' as const,
+        };
+        void db.notifications
+          .filter((n) => n.remoteId === notification.remoteId)
+          .first()
+          .then((existing) => {
+            if (existing?.id) {
+              return db.notifications.put({ ...notification, id: existing.id });
+            }
+            return db.notifications.add(notification);
+          });
+      } catch (err) {
+        console.warn('[AppContext] Failed to save socket notification to Dexie', err);
+      }
+    });
+
+    return () => {
+      unsubFriend();
+      unsubGroup();
+      unsubTodo();
+      unsubNotification();
+    };
+  }, [user?.id]);
+
   // Listen for real-time feature flag changes from admin panel (same-tab + cross-tab)
   useEffect(() => {
     let broadcastChannel: BroadcastChannel | null = null;

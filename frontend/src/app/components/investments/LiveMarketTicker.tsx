@@ -83,10 +83,12 @@ export const LiveMarketTicker: React.FC = () => {
  syncCountry();
  window.addEventListener('storage', syncCountry);
  window.addEventListener('focus', syncCountry);
+ window.addEventListener('PROFILE_UPDATED', syncCountry);
 
  return () => {
  window.removeEventListener('storage', syncCountry);
  window.removeEventListener('focus', syncCountry);
+ window.removeEventListener('PROFILE_UPDATED', syncCountry);
  };
  }, [currency]);
 

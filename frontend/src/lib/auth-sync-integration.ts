@@ -29,7 +29,10 @@ type SyncedTableName =
   | 'loans'
   | 'goals'
   | 'group_expenses'
-  | 'investments';
+  | 'investments'
+  | 'to_do_lists'
+  | 'to_do_items'
+  | 'to_do_list_shares';
 
 const REMOTE_TABLE_NAMES: Record<SyncedTableName, string> = {
   accounts: 'accounts',
@@ -39,6 +42,9 @@ const REMOTE_TABLE_NAMES: Record<SyncedTableName, string> = {
   goals: 'goals',
   group_expenses: 'group_expenses_sync',
   investments: 'investments',
+  to_do_lists: 'todo_lists',
+  to_do_items: 'todo_items',
+  to_do_list_shares: 'todo_list_shares',
 };
 
 type SyncOperation = 'upsert' | 'delete';
@@ -64,6 +70,9 @@ const CORE_SYNC_TABLES: SyncedTableName[] = [
   'goals',
   'group_expenses',
   'investments',
+  'to_do_lists',
+  'to_do_items',
+  'to_do_list_shares',
 ];
 
 const TABLE_PRIORITY: Record<SyncedTableName, number> = {
@@ -74,18 +83,27 @@ const TABLE_PRIORITY: Record<SyncedTableName, number> = {
   transactions: 5,
   group_expenses: 6,
   investments: 7,
+  to_do_lists: 8,
+  to_do_items: 9,
+  to_do_list_shares: 10,
 };
 
 const DEFAULT_DELETED_AT_SUPPORT: Partial<Record<SyncedTableName, boolean>> = {
   // Legacy schema does not include deleted_at for these tables.
   friends: false,
   group_expenses: false,
+  to_do_lists: false,
+  to_do_items: false,
+  to_do_list_shares: false,
 };
 
 const DEFAULT_UPDATED_AT_SUPPORT: Partial<Record<SyncedTableName, boolean>> = {
   // Legacy schema does not include updated_at for these tables.
   friends: false,
   group_expenses: false,
+  to_do_lists: false,
+  to_do_items: false,
+  to_do_list_shares: false,
 };
 
 const deletedAtSupport = new Map<SyncedTableName, boolean>();
@@ -121,6 +139,14 @@ const expandTablesForSync = (tables: SyncedTableName[]) => {
     expanded.add('transactions');
   }
 
+  if (expanded.has('to_do_items')) {
+    expanded.add('to_do_lists');
+  }
+
+  if (expanded.has('to_do_list_shares')) {
+    expanded.add('to_do_lists');
+  }
+
   return [...expanded];
 };
 
@@ -153,6 +179,12 @@ const getLocalTable = (table: SyncedTableName) => {
       return db.groupExpenses;
     case 'investments':
       return db.investments;
+    case 'to_do_lists':
+      return db.toDoLists;
+    case 'to_do_items':
+      return db.toDoItems;
+    case 'to_do_list_shares':
+      return db.toDoListShares;
   }
 };
 
@@ -780,6 +812,53 @@ async function mapLocalRecordToRemote(table: SyncedTableName, record: any, userI
 
       return attachRemoteTimestamps('investments', base, record);
     }
+
+    case 'to_do_lists': {
+      const base = {
+        user_id: userId,
+        local_id: record.id,
+        name: record.name,
+        description: record.description ?? null,
+        archived: record.archived ?? false,
+      };
+      return attachRemoteTimestamps('to_do_lists', base, record);
+    }
+
+    case 'to_do_items': {
+      const remoteList = await db.toDoLists.get(record.listId);
+      const remoteListId = remoteList?.cloudId ? toNumber(remoteList.cloudId) : null;
+      if (!remoteListId) return null;
+
+      const base = {
+        user_id: userId,
+        local_id: record.id,
+        list_id: remoteListId,
+        title: record.title,
+        description: record.description ?? null,
+        completed: record.completed ?? false,
+        priority: record.priority ?? 'medium',
+        due_date: toIsoString(record.dueDate),
+        completed_at: toIsoString(record.completedAt),
+        created_by: record.createdBy || userId,
+      };
+      return attachRemoteTimestamps('to_do_items', base, record);
+    }
+
+    case 'to_do_list_shares': {
+      const remoteList = await db.toDoLists.get(record.listId);
+      const remoteListId = remoteList?.cloudId ? toNumber(remoteList.cloudId) : null;
+      if (!remoteListId) return null;
+
+      const base = {
+        local_id: record.id,
+        list_id: remoteListId,
+        shared_with_user_id: record.sharedWithUserId,
+        permission: record.permission ?? 'view',
+        shared_at: toIsoString(record.sharedAt),
+        shared_by: record.sharedBy || userId,
+      };
+      return attachRemoteTimestamps('to_do_list_shares', base, record);
+    }
   }
 }
 
@@ -1372,6 +1451,9 @@ async function syncUserDataFromBackend(
     backendGoals,
     backendInvestments,
     backendGroups,
+    backendTodoLists,
+    backendTodoItems,
+    backendTodoShares,
     localAccounts,
     localFriends,
     localTransactions,
@@ -1379,6 +1461,9 @@ async function syncUserDataFromBackend(
     localGoals,
     localInvestments,
     localGroups,
+    localTodoLists,
+    localTodoItems,
+    localTodoShares,
   ] = await Promise.all([
     shouldFetch('accounts') ? fetchBackendRows('/accounts') : Promise.resolve([]),
     shouldFetch('friends') ? fetchBackendRows('/friends') : Promise.resolve([]),
@@ -1387,6 +1472,9 @@ async function syncUserDataFromBackend(
     shouldFetch('goals') ? fetchBackendRows('/goals') : Promise.resolve([]),
     shouldFetch('investments') ? fetchBackendRows('/investments') : Promise.resolve([]),
     shouldFetch('group_expenses') ? fetchBackendRows('/groups') : Promise.resolve([]),
+    shouldFetch('to_do_lists') ? fetchBackendRows('/todos/lists') : Promise.resolve([]),
+    shouldFetch('to_do_items') ? fetchBackendRows('/todos/items') : Promise.resolve([]),
+    shouldFetch('to_do_list_shares') ? fetchBackendRows('/todos/shares') : Promise.resolve([]),
     shouldFetch('accounts') ? db.accounts.toArray() : Promise.resolve([]),
     shouldFetch('friends') ? db.friends.toArray() : Promise.resolve([]),
     shouldFetch('transactions') ? db.transactions.toArray() : Promise.resolve([]),
@@ -1394,11 +1482,15 @@ async function syncUserDataFromBackend(
     shouldFetch('goals') ? db.goals.toArray() : Promise.resolve([]),
     shouldFetch('investments') ? db.investments.toArray() : Promise.resolve([]),
     shouldFetch('group_expenses') ? db.groupExpenses.toArray() : Promise.resolve([]),
+    shouldFetch('to_do_lists') ? db.toDoLists.toArray() : Promise.resolve([]),
+    shouldFetch('to_do_items') ? db.toDoItems.toArray() : Promise.resolve([]),
+    shouldFetch('to_do_list_shares') ? db.toDoListShares.toArray() : Promise.resolve([]),
   ]);
 
   const accountCloudToLocal = new Map<string, number>();
   const friendCloudToLocal = new Map<string, number>();
   const groupCloudToLocal = new Map<string, number>();
+  const listCloudToLocal = new Map<string, number>();
 
   const mappedAccounts = backendAccounts.map((account: any) => {
     const cloudId = String(account.id);
@@ -1679,6 +1771,89 @@ async function syncUserDataFromBackend(
     version: loan.version ?? undefined,
   }));
 
+  const mappedTodoLists = backendTodoLists.map((list: any) => {
+    const cloudId = String(list.id);
+    const localId = resolveLocalBackendId(cloudId, localTodoLists, () =>
+      localTodoLists.find((row) =>
+        !row.cloudId &&
+        normalizeText(row.name) === normalizeText(list.name) &&
+        row.ownerId === list.userId
+      )
+    );
+
+    const next = {
+      id: localId,
+      cloudId,
+      name: list.name,
+      description: list.description ?? undefined,
+      ownerId: list.userId,
+      createdAt: toDate(list.createdAt) ?? new Date(),
+      updatedAt: toDate(list.updatedAt),
+      archived: list.archived ?? false,
+      syncStatus: 'synced' as const,
+    };
+
+    if (next.id) {
+      listCloudToLocal.set(cloudId, next.id);
+    }
+
+    return next;
+  });
+
+  mappedTodoLists.forEach((list) => {
+    if (list.id && list.cloudId) {
+      listCloudToLocal.set(list.cloudId, list.id);
+    }
+  });
+
+  const mappedTodoItems = backendTodoItems.map((item: any) => {
+    const localListId = listCloudToLocal.get(String(item.listId));
+    const cloudId = String(item.id);
+    const localId = resolveLocalBackendId(cloudId, localTodoItems, () =>
+      localTodoItems.find((row) =>
+        !row.cloudId &&
+        row.listId === localListId &&
+        normalizeText(row.title) === normalizeText(item.title)
+      )
+    );
+
+    return {
+      id: localId,
+      cloudId,
+      listId: localListId ?? 0,
+      title: item.title,
+      description: item.description ?? undefined,
+      completed: item.completed ?? false,
+      priority: item.priority ?? 'medium',
+      dueDate: toDate(item.dueDate),
+      createdBy: item.createdBy,
+      createdAt: toDate(item.createdAt) ?? new Date(),
+      updatedAt: toDate(item.updatedAt),
+      completedAt: toDate(item.completedAt),
+      syncStatus: 'synced' as const,
+    };
+  });
+
+  const mappedTodoShares = backendTodoShares.map((share: any) => {
+    const localListId = listCloudToLocal.get(String(share.listId));
+    const cloudId = String(share.id);
+    const localId = localTodoShares.find((row) =>
+      row.listId === localListId &&
+      row.sharedWithUserId === share.sharedWithUserId
+    )?.id;
+
+    return {
+      id: localId,
+      cloudId,
+      listId: localListId ?? 0,
+      sharedWithUserId: share.sharedWithUserId,
+      permission: share.permission,
+      sharedAt: toDate(share.sharedAt) ?? new Date(),
+      sharedBy: share.sharedBy,
+      syncStatus: 'synced' as const,
+    };
+  });
+
   await runWithCloudSyncSuppressed(async () => {
     if (mergeTargets.has('accounts')) {
       await mergeBackendTable('accounts', backendAccounts, mappedAccounts, localAccounts);
@@ -1700,6 +1875,47 @@ async function syncUserDataFromBackend(
     }
     if (mergeTargets.has('group_expenses')) {
       await mergeBackendTable('group_expenses', backendGroups, mappedGroups, localGroups);
+    }
+
+    if (mergeTargets.has('to_do_lists')) {
+      await mergeBackendTable('to_do_lists', backendTodoLists, mappedTodoLists, localTodoLists);
+      
+      const dbLists = await db.toDoLists.toArray();
+      for (const list of dbLists) {
+        if (list.id && list.cloudId) {
+          listCloudToLocal.set(list.cloudId, list.id);
+        }
+      }
+
+      const finalTodoItems = mappedTodoItems.map(item => {
+        const resolvedListId = listCloudToLocal.get(String(backendTodoItems.find((bi: any) => String(bi.id) === item.cloudId)?.listId));
+        return {
+          ...item,
+          listId: resolvedListId ?? item.listId,
+        };
+      }).filter(item => item.listId > 0);
+
+      const finalTodoShares = mappedTodoShares.map(share => {
+        const resolvedListId = listCloudToLocal.get(String(backendTodoShares.find((bs: any) => String(bs.id) === share.cloudId)?.listId));
+        return {
+          ...share,
+          listId: resolvedListId ?? share.listId,
+        };
+      }).filter(share => share.listId > 0);
+
+      if (mergeTargets.has('to_do_items')) {
+        await mergeBackendTable('to_do_items', backendTodoItems, finalTodoItems, localTodoItems);
+      }
+      if (mergeTargets.has('to_do_list_shares')) {
+        await mergeBackendTable('to_do_list_shares', backendTodoShares, finalTodoShares, localTodoShares);
+      }
+    } else {
+      if (mergeTargets.has('to_do_items')) {
+        await mergeBackendTable('to_do_items', backendTodoItems, mappedTodoItems.filter(item => item.listId > 0), localTodoItems);
+      }
+      if (mergeTargets.has('to_do_list_shares')) {
+        await mergeBackendTable('to_do_list_shares', backendTodoShares, mappedTodoShares.filter(share => share.listId > 0), localTodoShares);
+      }
     }
   });
 
@@ -2591,6 +2807,447 @@ export async function checkBackendConnectivity(): Promise<boolean> {
     return !!session;
   } catch {
     return false;
+  }
+}
+
+export async function saveToDoListWithBackendSync(list: any) {
+  initializeBackendSync();
+
+  if (isBackendFirstSyncMode()) {
+    try {
+      const response = await apiClient.post<any>('/todos/lists', {
+        name: list.name,
+        description: list.description ?? undefined,
+      }, {
+        showErrorToast: false,
+      });
+
+      const remote = response.data?.data || response.data;
+      const dbList = {
+        ...list,
+        cloudId: String(remote?.id),
+        createdAt: toDate(remote?.createdAt) ?? list.createdAt ?? new Date(),
+        updatedAt: toDate(remote?.updatedAt) ?? new Date(),
+        syncStatus: 'synced' as const,
+      };
+
+      const savedId = await db.toDoLists.add(dbList);
+      return { ...dbList, id: savedId };
+    } catch (backendError: any) {
+      const isUnavailable =
+        backendError?.status === 503 ||
+        backendError?.status === 0 ||
+        backendError?.code === 'DATABASE_UNAVAILABLE' ||
+        backendError?.code === 'NETWORK_ERROR' ||
+        backendError?.code === 'TIMEOUT_ERROR' ||
+        backendError?.name === 'AbortError';
+
+      if (!isUnavailable) throw backendError;
+
+      console.warn('[saveToDoListWithBackendSync] Backend unavailable, saving locally.');
+      markOptionalBackendUnavailable();
+
+      const now = new Date();
+      const dbList = {
+        ...list,
+        cloudId: undefined,
+        syncStatus: 'pending' as const,
+        createdAt: list.createdAt ?? now,
+        updatedAt: now,
+      };
+
+      const savedId = await db.toDoLists.add(dbList);
+      queueRecordUpsertSync('to_do_lists', savedId);
+      return { ...dbList, id: savedId };
+    }
+  }
+
+  const now = new Date();
+  const dbList = {
+    ...list,
+    createdAt: list.createdAt ?? now,
+    updatedAt: now,
+  };
+  const savedId = await db.toDoLists.add(dbList);
+  queueRecordUpsertSync('to_do_lists', savedId);
+  return { ...dbList, id: savedId };
+}
+
+export async function updateToDoListWithBackendSync(listId: number, updates: any) {
+  initializeBackendSync();
+
+  const existing = await db.toDoLists.get(listId);
+  if (!existing) {
+    throw new Error('ToDo list not found');
+  }
+
+  if (isBackendFirstSyncMode()) {
+    let nextUpdates = {
+      ...updates,
+      updatedAt: new Date(),
+      syncStatus: 'synced' as const,
+    };
+
+    if (existing.cloudId) {
+      try {
+        const response = await apiClient.put<any>(`/todos/lists/${existing.cloudId}`, {
+          name: updates.name,
+          description: updates.description,
+          archived: updates.archived,
+        }, {
+          showErrorToast: false,
+        });
+
+        const remote = response.data?.data || response.data;
+        nextUpdates = {
+          ...nextUpdates,
+          cloudId: remote?.id ? String(remote.id) : existing.cloudId,
+          updatedAt: toDate(remote?.updatedAt) ?? new Date(),
+        };
+      } catch (backendError: any) {
+        const isUnavailable =
+          backendError?.status === 503 ||
+          backendError?.status === 0 ||
+          backendError?.code === 'DATABASE_UNAVAILABLE' ||
+          backendError?.code === 'NETWORK_ERROR' ||
+          backendError?.code === 'TIMEOUT_ERROR';
+
+        if (!isUnavailable) throw backendError;
+
+        console.warn('[updateToDoListWithBackendSync] Backend unavailable, queuing for sync.');
+        markOptionalBackendUnavailable();
+        nextUpdates = { ...nextUpdates, syncStatus: 'pending' as const };
+        queueRecordUpsertSync('to_do_lists', listId);
+      }
+    }
+
+    await db.toDoLists.update(listId, nextUpdates);
+    return;
+  }
+
+  await db.toDoLists.update(listId, {
+    ...updates,
+    updatedAt: new Date(),
+  });
+  queueRecordUpsertSync('to_do_lists', listId);
+}
+
+export async function deleteToDoListWithBackendSync(listId: number) {
+  initializeBackendSync();
+
+  const existing = await db.toDoLists.get(listId);
+  if (!existing) return;
+
+  if (isBackendFirstSyncMode() && existing.cloudId) {
+    try {
+      await apiClient.delete(`/todos/lists/${existing.cloudId}`, {
+        showErrorToast: false,
+      });
+    } catch (backendError: any) {
+      console.warn('[deleteToDoListWithBackendSync] Backend unavailable/error:', backendError);
+    }
+  }
+
+  await db.toDoLists.delete(listId);
+  await db.toDoItems.where('listId').equals(listId).delete();
+  await db.toDoListShares.where('listId').equals(listId).delete();
+  
+  if (existing.cloudId) {
+    queueRecordDeleteSync('to_do_lists', listId, toNumber(existing.cloudId));
+  }
+}
+
+export async function saveToDoItemWithBackendSync(item: any) {
+  initializeBackendSync();
+
+  const list = await db.toDoLists.get(item.listId);
+  if (!list) {
+    throw new Error('ToDo list not found');
+  }
+
+  if (isBackendFirstSyncMode() && list.cloudId) {
+    try {
+      const response = await apiClient.post<any>('/todos/items', {
+        listId: list.cloudId,
+        title: item.title,
+        description: item.description ?? undefined,
+        priority: item.priority ?? 'medium',
+        dueDate: item.dueDate ? toIsoString(item.dueDate) : undefined,
+      }, {
+        showErrorToast: false,
+      });
+
+      const remote = response.data?.data || response.data;
+      const dbItem = {
+        ...item,
+        cloudId: String(remote?.id),
+        createdAt: toDate(remote?.createdAt) ?? item.createdAt ?? new Date(),
+        updatedAt: toDate(remote?.updatedAt) ?? new Date(),
+        syncStatus: 'synced' as const,
+      };
+
+      const savedId = await db.toDoItems.add(dbItem);
+      return { ...dbItem, id: savedId };
+    } catch (backendError: any) {
+      const isUnavailable =
+        backendError?.status === 503 ||
+        backendError?.status === 0 ||
+        backendError?.code === 'DATABASE_UNAVAILABLE' ||
+        backendError?.code === 'NETWORK_ERROR' ||
+        backendError?.code === 'TIMEOUT_ERROR';
+
+      if (!isUnavailable) throw backendError;
+
+      console.warn('[saveToDoItemWithBackendSync] Backend unavailable, saving locally.');
+      markOptionalBackendUnavailable();
+
+      const now = new Date();
+      const dbItem = {
+        ...item,
+        cloudId: undefined,
+        syncStatus: 'pending' as const,
+        createdAt: item.createdAt ?? now,
+        updatedAt: now,
+      };
+
+      const savedId = await db.toDoItems.add(dbItem);
+      queueRecordUpsertSync('to_do_items', savedId);
+      return { ...dbItem, id: savedId };
+    }
+  }
+
+  const now = new Date();
+  const dbItem = {
+    ...item,
+    createdAt: item.createdAt ?? now,
+    updatedAt: now,
+  };
+  const savedId = await db.toDoItems.add(dbItem);
+  queueRecordUpsertSync('to_do_items', savedId);
+  return { ...dbItem, id: savedId };
+}
+
+export async function updateToDoItemWithBackendSync(itemId: number, updates: any) {
+  initializeBackendSync();
+
+  const existing = await db.toDoItems.get(itemId);
+  if (!existing) {
+    throw new Error('ToDo item not found');
+  }
+
+  if (isBackendFirstSyncMode()) {
+    let nextUpdates = {
+      ...updates,
+      updatedAt: new Date(),
+      syncStatus: 'synced' as const,
+    };
+
+    if (existing.cloudId) {
+      try {
+        const response = await apiClient.put<any>(`/todos/items/${existing.cloudId}`, {
+          title: updates.title,
+          description: updates.description,
+          completed: updates.completed,
+          priority: updates.priority,
+          dueDate: updates.dueDate ? toIsoString(updates.dueDate) : undefined,
+        }, {
+          showErrorToast: false,
+        });
+
+        const remote = response.data?.data || response.data;
+        nextUpdates = {
+          ...nextUpdates,
+          cloudId: remote?.id ? String(remote.id) : existing.cloudId,
+          updatedAt: toDate(remote?.updatedAt) ?? new Date(),
+          completedAt: toDate(remote?.completedAt) ?? (updates.completed ? new Date() : undefined),
+        };
+      } catch (backendError: any) {
+        const isUnavailable =
+          backendError?.status === 503 ||
+          backendError?.status === 0 ||
+          backendError?.code === 'DATABASE_UNAVAILABLE' ||
+          backendError?.code === 'NETWORK_ERROR' ||
+          backendError?.code === 'TIMEOUT_ERROR';
+
+        if (!isUnavailable) throw backendError;
+
+        console.warn('[updateToDoItemWithBackendSync] Backend unavailable, queuing for sync.');
+        markOptionalBackendUnavailable();
+        nextUpdates = { ...nextUpdates, syncStatus: 'pending' as const };
+        queueRecordUpsertSync('to_do_items', itemId);
+      }
+    }
+
+    await db.toDoItems.update(itemId, nextUpdates);
+    return;
+  }
+
+  await db.toDoItems.update(itemId, {
+    ...updates,
+    updatedAt: new Date(),
+  });
+  queueRecordUpsertSync('to_do_items', itemId);
+}
+
+export async function deleteToDoItemWithBackendSync(itemId: number) {
+  initializeBackendSync();
+
+  const existing = await db.toDoItems.get(itemId);
+  if (!existing) return;
+
+  if (isBackendFirstSyncMode() && existing.cloudId) {
+    try {
+      await apiClient.delete(`/todos/items/${existing.cloudId}`, {
+        showErrorToast: false,
+      });
+    } catch (backendError: any) {
+      console.warn('[deleteToDoItemWithBackendSync] Backend unavailable/error:', backendError);
+    }
+  }
+
+  await db.toDoItems.delete(itemId);
+  if (existing.cloudId) {
+    queueRecordDeleteSync('to_do_items', itemId, toNumber(existing.cloudId));
+  }
+}
+
+export async function saveToDoListShareWithBackendSync(listId: number, sharedWithEmail: string, permission: 'view' | 'edit') {
+  initializeBackendSync();
+
+  const list = await db.toDoLists.get(listId);
+  if (!list) {
+    throw new Error('ToDo list not found');
+  }
+
+  if (isBackendFirstSyncMode() && list.cloudId) {
+    try {
+      const response = await apiClient.post<any>(`/todos/lists/${list.cloudId}/share`, {
+        sharedWithEmail,
+        permission,
+      }, {
+        showErrorToast: false,
+      });
+
+      const remote = response.data?.data || response.data;
+      const dbShare = {
+        listId,
+        sharedWithUserId: remote?.sharedWithUserId,
+        permission: remote?.permission || permission,
+        sharedAt: toDate(remote?.sharedAt) ?? new Date(),
+        sharedBy: remote?.sharedBy || '',
+        cloudId: String(remote?.id),
+        syncStatus: 'synced' as const,
+      };
+
+      const savedId = await db.toDoListShares.add(dbShare);
+      return { ...dbShare, id: savedId };
+    } catch (backendError: any) {
+      const isUnavailable =
+        backendError?.status === 503 ||
+        backendError?.status === 0 ||
+        backendError?.code === 'DATABASE_UNAVAILABLE' ||
+        backendError?.code === 'NETWORK_ERROR' ||
+        backendError?.code === 'TIMEOUT_ERROR';
+
+      if (!isUnavailable) throw backendError;
+
+      console.warn('[saveToDoListShareWithBackendSync] Backend unavailable, saving locally.');
+      markOptionalBackendUnavailable();
+
+      const dbShare = {
+        listId,
+        sharedWithUserId: sharedWithEmail,
+        permission,
+        sharedAt: new Date(),
+        sharedBy: 'local',
+        cloudId: undefined,
+        syncStatus: 'pending' as const,
+      };
+
+      const savedId = await db.toDoListShares.add(dbShare);
+      queueRecordUpsertSync('to_do_list_shares', savedId);
+      return { ...dbShare, id: savedId };
+    }
+  }
+
+  const dbShare = {
+    listId,
+    sharedWithUserId: sharedWithEmail,
+    permission,
+    sharedAt: new Date(),
+    sharedBy: 'local',
+  };
+  const savedId = await db.toDoListShares.add(dbShare);
+  queueRecordUpsertSync('to_do_list_shares', savedId);
+  return { ...dbShare, id: savedId };
+}
+
+export async function updateToDoListShareWithBackendSync(shareId: number, permission: 'view' | 'edit') {
+  initializeBackendSync();
+
+  const existing = await db.toDoListShares.get(shareId);
+  if (!existing) {
+    throw new Error('Share not found');
+  }
+
+  if (isBackendFirstSyncMode() && existing.cloudId) {
+    try {
+      const response = await apiClient.put<any>(`/todos/shares/${existing.cloudId}`, {
+        permission,
+      }, {
+        showErrorToast: false,
+      });
+
+      const remote = response.data?.data || response.data;
+      await db.toDoListShares.update(shareId, {
+        permission: remote?.permission || permission,
+        syncStatus: 'synced' as const,
+      });
+      return;
+    } catch (backendError: any) {
+      const isUnavailable =
+        backendError?.status === 503 ||
+        backendError?.status === 0 ||
+        backendError?.code === 'DATABASE_UNAVAILABLE' ||
+        backendError?.code === 'NETWORK_ERROR' ||
+        backendError?.code === 'TIMEOUT_ERROR';
+
+      if (!isUnavailable) throw backendError;
+
+      console.warn('[updateToDoListShareWithBackendSync] Backend unavailable.');
+      markOptionalBackendUnavailable();
+      await db.toDoListShares.update(shareId, {
+        permission,
+        syncStatus: 'pending' as const,
+      });
+      queueRecordUpsertSync('to_do_list_shares', shareId);
+      return;
+    }
+  }
+
+  await db.toDoListShares.update(shareId, { permission });
+  queueRecordUpsertSync('to_do_list_shares', shareId);
+}
+
+export async function deleteToDoListShareWithBackendSync(shareId: number) {
+  initializeBackendSync();
+
+  const existing = await db.toDoListShares.get(shareId);
+  if (!existing) return;
+
+  if (isBackendFirstSyncMode() && existing.cloudId) {
+    try {
+      await apiClient.delete(`/todos/shares/${existing.cloudId}`, {
+        showErrorToast: false,
+      });
+    } catch (backendError: any) {
+      console.warn('[deleteToDoListShareWithBackendSync] Backend unavailable/error:', backendError);
+    }
+  }
+
+  await db.toDoListShares.delete(shareId);
+  if (existing.cloudId) {
+    queueRecordDeleteSync('to_do_list_shares', shareId, toNumber(existing.cloudId));
   }
 }
 

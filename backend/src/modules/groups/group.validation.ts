@@ -23,7 +23,7 @@ export const groupCreateSchema = z.object({
   totalAmount: z.number().nonnegative(),
   paidBy: z.union([z.string(), z.number()]).optional(),
   date: z.string().datetime().or(z.string().min(1)),
-  members: z.array(groupMemberSchema),
+  members: z.array(z.union([z.string(), groupMemberSchema])),
   items: z.array(groupItemSchema).optional(),
   description: z.string().optional(),
   category: z.string().optional(),

@@ -11,6 +11,8 @@ import {
  MessageSquare,
  CalendarClock,
  Trash2,
+ UserPlus,
+ ListTodo,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useApp } from '@/contexts/AppContext';
@@ -71,6 +73,24 @@ const PRESENTATION: Record<Notification['type'], {
  bgColor: 'bg-green-50 border-green-200',
  softBg: 'bg-green-100',
  },
+ friend_request: {
+ icon: <UserPlus className="w-5 h-5" />,
+ color: 'text-indigo-600',
+ bgColor: 'bg-indigo-50 border-indigo-200',
+ softBg: 'bg-indigo-100',
+ },
+ friend_accepted: {
+ icon: <Users className="w-5 h-5" />,
+ color: 'text-teal-600',
+ bgColor: 'bg-teal-50 border-teal-200',
+ softBg: 'bg-teal-100',
+ },
+ todo_shared: {
+ icon: <ListTodo className="w-5 h-5" />,
+ color: 'text-purple-600',
+ bgColor: 'bg-purple-50 border-purple-200',
+ softBg: 'bg-purple-100',
+ },
 };
 
 const getTimeAgo = (date: Date) => {
@@ -99,6 +119,9 @@ export const Notifications: React.FC = () => {
  || notification.type === 'booking'
  || notification.type === 'message'
  || notification.type === 'session'
+ || notification.type === 'friend_request'
+ || notification.type === 'friend_accepted'
+ || notification.type === 'todo_shared'
  )),
  [notifications],
  );

@@ -279,7 +279,7 @@ export interface Investment {
 
 export interface Notification {
   id?: number;
-  type: 'emi' | 'loan' | 'goal' | 'group' | 'booking' | 'message' | 'session';
+  type: 'emi' | 'loan' | 'goal' | 'group' | 'booking' | 'message' | 'session' | 'friend_request' | 'friend_accepted' | 'todo_shared';
   title: string;
   message: string;
   dueDate?: Date;
@@ -518,11 +518,13 @@ export interface ToDoItem {
 
 export interface ToDoListShare {
   id?: number;
+  cloudId?: string;
   listId: number;
   sharedWithUserId: string;
   permission: 'view' | 'edit';
   sharedAt: Date;
   sharedBy: string;
+  syncStatus?: SyncStatus;
 }
 
 export interface AdvisorAssignment {
@@ -577,7 +579,7 @@ export interface BookingRequest {
 
 export interface Notification {
   id?: number;
-  type: 'emi' | 'loan' | 'goal' | 'group' | 'booking' | 'message' | 'session';
+  type: 'emi' | 'loan' | 'goal' | 'group' | 'booking' | 'message' | 'session' | 'friend_request' | 'friend_accepted' | 'todo_shared';
   title: string;
   message: string;
   dueDate?: Date;
