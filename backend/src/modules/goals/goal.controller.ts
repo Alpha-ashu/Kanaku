@@ -41,6 +41,18 @@ export const createGoal = async (req: AuthRequest, res: Response, next: NextFunc
       return res.status(400).json({ success: false, error: 'Target amount must be a positive number' });
     }
 
+    // Validate uniqueness of goal name for this user (not deleted)
+    const existingName = await prisma.goal.findFirst({
+      where: { 
+        userId, 
+        name: sanitize(name),
+        deletedAt: null
+      }
+    });
+    if (existingName) {
+      throw AppError.badRequest('A goal with this name already exists.', 'DUPLICATE_GOAL_NAME');
+    }
+
     // Idempotency check
     if (clientRequestId && typeof clientRequestId === 'string') {
       const existing = await prisma.goal.findFirst({
@@ -133,6 +145,19 @@ export const updateGoal = async (req: AuthRequest, res: Response, next: NextFunc
         } else {
           updates[field] = body[field];
         }
+      }
+    }
+    if (updates.name && updates.name.toLowerCase() !== goal.name.toLowerCase()) {
+      const existingName = await prisma.goal.findFirst({
+        where: {
+          userId,
+          name: updates.name,
+          deletedAt: null,
+          NOT: { id }
+        }
+      });
+      if (existingName) {
+        throw AppError.badRequest('A goal with this name already exists.', 'DUPLICATE_GOAL_NAME');
       }
     }
     if (updates.targetDate) updates.targetDate = new Date(updates.targetDate);

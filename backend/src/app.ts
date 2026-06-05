@@ -122,13 +122,32 @@ app.use('/api/v1/sync', authenticatedRateLimit({
 }));
 
 // Health check
-app.get('/health', (req, res) => {
+app.get('/health', async (req, res) => {
+  let dbStatus = 'unknown';
+  let dbError: any = null;
+
+  try {
+    const { prisma } = require('./db/prisma');
+    await prisma.$queryRaw`SELECT 1`;
+    dbStatus = 'connected';
+  } catch (err: any) {
+    dbStatus = 'error';
+    dbError = {
+      message: err.message,
+      code: err.code,
+    };
+  }
+
   res.json({
     status: 'ok',
     timestamp: new Date().toISOString(),
     services: {
       redis: getRedisStatus(),
       circuitBreakers: getCircuitBreakerStatus(),
+      database: {
+        status: dbStatus,
+        error: dbError,
+      }
     },
   });
 });

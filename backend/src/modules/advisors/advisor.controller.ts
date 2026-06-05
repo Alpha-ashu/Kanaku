@@ -215,7 +215,7 @@ export const getSessions = async (req: AuthRequest, res: Response) => {
       where: { advisorId },
       include: {
         client: {
-          select: { id: true, name: true, email: true },
+          select: { id: true, name: true, email: true, salary: true },
         },
         chatMessages: true,
         payment: true,
@@ -223,8 +223,33 @@ export const getSessions = async (req: AuthRequest, res: Response) => {
       orderBy: { startTime: 'desc' },
     });
 
-    res.json(sessions);
+    const clientIds = sessions.map(s => s.client?.id).filter(Boolean);
+    const clientProfiles = await prisma.profiles.findMany({
+      where: { id: { in: clientIds } },
+      select: { id: true, phone: true }
+    });
+
+    const phoneMap = new Map<string, string | null>();
+    clientProfiles.forEach(p => {
+      phoneMap.set(p.id, p.phone);
+    });
+
+    const enrichedSessions = sessions.map(session => {
+      if (session.client) {
+        return {
+          ...session,
+          client: {
+            ...session.client,
+            phone: phoneMap.get(session.client.id) || null
+          }
+        };
+      }
+      return session;
+    });
+
+    res.json(enrichedSessions);
   } catch (error: any) {
+    logger.error('Failed to fetch sessions', { error });
     res.status(500).json({ error: 'Failed to fetch sessions' });
   }
 };

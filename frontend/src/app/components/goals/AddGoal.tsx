@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useApp } from '@/contexts/AppContext';
+import { db } from '@/lib/database';
 import { saveGoalWithBackendSync } from '@/lib/auth-sync-integration';
 import { GoalMember } from '@/lib/database';
 import { GOAL_CATEGORIES, getMonthlySuggestion } from '@/lib/goal-utils';
@@ -170,6 +171,19 @@ export const AddGoal: React.FC = () => {
 
  setIsSubmitting(true);
  try {
+   const existingGoal = await db.goals
+     .filter(g => 
+       g.name.toLowerCase() === formData.name.trim().toLowerCase() &&
+       !g.deletedAt
+     )
+     .first();
+
+   if (existingGoal) {
+     toast.error('A goal with the same name already exists.');
+     setIsSubmitting(false);
+     return;
+   }
+
  await saveGoalWithBackendSync({
  name: formData.name,
  category: formData.category,

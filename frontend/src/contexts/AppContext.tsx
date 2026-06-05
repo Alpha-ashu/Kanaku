@@ -598,6 +598,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   // Exposed as a stable callback so it can be triggered both by the polling
   // interval below and by the real-time WebSocket subscriber.
   const fetchGlobalFlags = useCallback(async () => {
+    if (typeof document !== 'undefined' && document.hidden) {
+      return;
+    }
     try {
       const { backendService } = await import('@/lib/backend-api');
 
@@ -678,13 +681,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   useEffect(() => {
     if (!user?.id) return;
 
-    // Fetch immediately on mount/auth
-    void fetchGlobalFlags();
-
-    // Keep polling as a fallback for missed socket events (e.g. reconnect gaps)
-    const interval = setInterval(fetchGlobalFlags, 30000);
-
-    return () => clearInterval(interval);
+    // Fetch immediately on mount/auth if active
+    if (typeof document !== 'undefined' && !document.hidden) {
+      void fetchGlobalFlags();
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id, fetchGlobalFlags]);
 

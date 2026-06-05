@@ -12,6 +12,12 @@ import {
   getAccessibleSubFeatures,
   UserRole,
 } from '../../utils/roleBasedFeatures';
+import {
+  transformFeaturesToRoleCentric,
+  reconstructFeatures,
+  transformAIFeaturesToRoleCentric,
+  reconstructAIFeatures,
+} from '../../utils/featureHelpers';
 
 // Get all users (admin only)
 export const getAllUsers = async (req: AuthRequest, res: Response) => {
@@ -215,7 +221,6 @@ export const getPlatformStats = async (req: AuthRequest, res: Response) => {
   }
 };
 
-// Feature flags management
 export const getFeatureFlags = async (req: AuthRequest, res: Response) => {
   try {
     // Validate user has role
@@ -231,16 +236,15 @@ export const getFeatureFlags = async (req: AuthRequest, res: Response) => {
     });
 
     if (!adminUser) {
-      // Return only role-accessible features (no global overrides)
-      const roleBasedFeatures = getVisibleFeaturesForRole(userRole);
-      return res.json(roleBasedFeatures);
+      const reconstructed = reconstructFeatures({}, userRole === 'admin' ? undefined : userRole);
+      return res.json(reconstructed);
     }
 
     const settings = await prisma.userSettings.findUnique({
       where: { userId: adminUser.id },
     });
 
-    let globalFeatures: Record<string, boolean> = {};
+    let globalFeatures: Record<string, any> = {};
     if (settings?.settings) {
       try {
         const parsedSettings = JSON.parse(settings.settings);
@@ -250,20 +254,8 @@ export const getFeatureFlags = async (req: AuthRequest, res: Response) => {
       }
     }
 
-    // STRICT: Get role-based features and apply global overrides
-    const roleBasedFeatures = getVisibleFeaturesForRole(userRole);
-
-    // Only allow features that the role has access to
-    const filteredFeatures: Record<string, boolean> = {};
-    Object.entries(roleBasedFeatures).forEach(([key, hasAccess]) => {
-      if (hasAccess) {
-        // Role has access - check if global override exists
-        filteredFeatures[key] = globalFeatures.hasOwnProperty(key) ? globalFeatures[key] : true;
-      }
-      // If role doesn't have access, feature is not included (STRICT)
-    });
-
-    res.json(filteredFeatures);
+    const reconstructed = reconstructFeatures(globalFeatures, userRole === 'admin' ? undefined : userRole);
+    res.json(reconstructed);
   } catch (error: any) {
     logger.error('Failed to fetch feature flags', { error, userId: req.userId });
     res.status(500).json({ error: 'Failed to fetch feature flags' });
@@ -301,7 +293,8 @@ export const toggleFeatureFlag = async (req: AuthRequest, res: Response) => {
     }
 
     // Save under the key 'admin_global_feature_settings'
-    currentSettings.admin_global_feature_settings = features;
+    const roleCentricFeatures = transformFeaturesToRoleCentric(features);
+    currentSettings.admin_global_feature_settings = roleCentricFeatures;
 
     if (!settings) {
       settings = await prisma.userSettings.create({
@@ -332,9 +325,10 @@ export const toggleFeatureFlag = async (req: AuthRequest, res: Response) => {
       // Socket not initialized (e.g. during tests) — non-blocking
     }
 
+    const reconstructed = reconstructFeatures(roleCentricFeatures);
     res.json({
       message: 'Global feature flags saved successfully',
-      features,
+      features: reconstructed,
     });
   } catch (error: any) {
     logger.error('Failed to toggle feature flag', { error });
@@ -350,12 +344,15 @@ export const getAIFeatureFlags = async (req: AuthRequest, res: Response) => {
       return res.status(401).json({ error: 'User role not found' });
     }
 
+    const userRole = req.user.role as UserRole;
+
     const adminUser = await prisma.user.findFirst({
       where: { role: 'admin' },
     });
 
     if (!adminUser) {
-      return res.json({});
+      const reconstructed = reconstructAIFeatures({}, userRole === 'admin' ? undefined : userRole);
+      return res.json(reconstructed);
     }
 
     const settings = await prisma.userSettings.findUnique({
@@ -372,7 +369,8 @@ export const getAIFeatureFlags = async (req: AuthRequest, res: Response) => {
       }
     }
 
-    res.json(globalAIFeatures);
+    const reconstructed = reconstructAIFeatures(globalAIFeatures, userRole === 'admin' ? undefined : userRole);
+    res.json(reconstructed);
   } catch (error: any) {
     logger.error('Failed to fetch AI feature flags', { error, userId: req.userId });
     res.status(500).json({ error: 'Failed to fetch AI feature flags' });
@@ -409,7 +407,8 @@ export const toggleAIFeatureFlags = async (req: AuthRequest, res: Response) => {
       }
     }
 
-    currentSettings.admin_ai_feature_settings = features;
+    const roleCentricAIFeatures = transformAIFeaturesToRoleCentric(features);
+    currentSettings.admin_ai_feature_settings = roleCentricAIFeatures;
 
     if (!settings) {
       settings = await prisma.userSettings.create({
@@ -440,9 +439,10 @@ export const toggleAIFeatureFlags = async (req: AuthRequest, res: Response) => {
       // Socket not initialized (e.g. during tests) — non-blocking
     }
 
+    const reconstructed = reconstructAIFeatures(roleCentricAIFeatures);
     res.json({
       message: 'Global AI feature flags saved successfully',
-      features,
+      features: reconstructed,
     });
   } catch (error: any) {
     logger.error('Failed to toggle AI feature flags', { error });

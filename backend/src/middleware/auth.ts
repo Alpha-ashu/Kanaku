@@ -5,6 +5,26 @@ import { createClient } from '@supabase/supabase-js';
 import { audit } from '../utils/auditLogger';
 import { prisma } from '../db/prisma';
 
+const ensureUserInDb = async (userId: string, userClaims: any) => {
+  try {
+    await prisma.user.upsert({
+      where: { id: userId },
+      update: {},
+      create: {
+        id: userId,
+        email: userClaims.email || `user-${userId.substring(0, 8)}@placeholder.KANKU.app`,
+        name: userClaims.name || userClaims.email?.split('@')[0] || 'User',
+        password: 'supabase-managed-account',
+        role: userClaims.role || 'user',
+        isApproved: userClaims.isApproved ?? false,
+      }
+    });
+    logger.info(`[Auth] Ensured user ${userId} exists in database`);
+  } catch (err) {
+    logger.error(`[Auth] Failed to ensure user ${userId} exists in database:`, err);
+  }
+};
+
 export interface AuthRequest extends Request {
   userId?: string;
   user?: {
@@ -144,6 +164,10 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
           name: authSnapshot?.name || (typeof decoded.name === 'string' ? decoded.name : undefined),
         };
 
+        if (!authSnapshot) {
+          await ensureUserInDb(userId, req.user);
+        }
+
         return next();
       } catch (err) {
         // Fall back to Supabase
@@ -170,6 +194,9 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
             isApproved: authSnapshot?.isApproved ?? false,
             name: authSnapshot?.name || supabaseDecoded.user_metadata?.full_name,
           };
+          if (!authSnapshot) {
+            await ensureUserInDb(userId, req.user);
+          }
           return next();
         }
       } catch (err) {
@@ -196,6 +223,9 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
             isApproved: authSnapshot?.isApproved ?? false,
             name: authSnapshot?.name || user.user_metadata?.full_name,
           };
+          if (!authSnapshot) {
+            await ensureUserInDb(user.id, req.user);
+          }
           return next();
         } else if (error) {
           logger.warn(`Supabase Auth rejection: ${error.message}`);
@@ -221,6 +251,7 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
             isApproved: false,
             name: unverified.user_metadata?.full_name,
           };
+          await ensureUserInDb(userId, req.user);
           return next();
         }
       } catch {

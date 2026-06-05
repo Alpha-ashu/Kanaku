@@ -2,6 +2,7 @@ import { Response, NextFunction } from 'express';
 import { prisma } from '../db/prisma';
 import { logger } from '../config/logger';
 import { AuthRequest } from './auth';
+import { reconstructFeatures, reconstructAIFeatures } from '../utils/featureHelpers';
 
 // 30-second in-memory cache for global feature settings
 let cachedFeatures: any = null;
@@ -69,7 +70,8 @@ const getGlobalFeatures = async () => {
     }
 
     const parsedSettings = JSON.parse(settings.settings);
-    cachedFeatures = parsedSettings.admin_global_feature_settings || {};
+    const roleCentric = parsedSettings.admin_global_feature_settings || {};
+    cachedFeatures = reconstructFeatures(roleCentric);
     cacheTimestamp = now;
     return cachedFeatures;
   } catch (error) {
@@ -228,7 +230,8 @@ const getAIGlobalFeatures = async () => {
 
     const parsedSettings = JSON.parse(settings.settings);
     // Use configured settings if available, otherwise use defaults
-    cachedAIFeatures = parsedSettings.admin_ai_feature_settings || DEFAULT_AI_FEATURES;
+    const roleCentric = parsedSettings.admin_ai_feature_settings || {};
+    cachedAIFeatures = reconstructAIFeatures(roleCentric);
     cacheAITimestamp = now;
     return cachedAIFeatures;
   } catch (error) {

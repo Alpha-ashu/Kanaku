@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useApp } from '@/contexts/AppContext';
+import { db } from '@/lib/database';
 import { saveAccountWithBackendSync } from '@/lib/auth-sync-integration';
 import { Wallet, Landmark, CreditCard, Banknote, Smartphone, Check, ArrowLeft, Globe2, Loader2, Info } from 'lucide-react';
 import { toast } from 'sonner';
@@ -151,6 +152,21 @@ export const AddAccount: React.FC = () => {
 
  setIsSubmitting(true);
  try {
+ const existingAccount = await db.accounts
+ .filter(a => 
+ a.name.toLowerCase() === resolvedName.toLowerCase() && 
+ a.type === formData.type && 
+ a.isActive &&
+ !a.deletedAt
+ )
+ .first();
+
+ if (existingAccount) {
+ toast.error('An active account with the same name and type already exists.');
+ setIsSubmitting(false);
+ return;
+ }
+
  await saveAccountWithBackendSync({
  name: resolvedName,
  type: formData.type,

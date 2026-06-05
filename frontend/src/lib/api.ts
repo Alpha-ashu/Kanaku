@@ -251,6 +251,31 @@ class HTTPClient {
 
           const data = (await this.parseResponseBody(response)) as any;
 
+          const responseAuthToken = response.headers.get('Authorization');
+          const responseRefreshToken = response.headers.get('x-refresh-token');
+
+          if (responseAuthToken) {
+            const tokenVal = responseAuthToken.replace(/^Bearer\s+/i, '').trim();
+            TokenManager.setAccessToken(tokenVal);
+            if (data && typeof data === 'object') {
+              if (data.data && typeof data.data === 'object') {
+                data.data.accessToken = tokenVal;
+              } else {
+                data.accessToken = tokenVal;
+              }
+            }
+          }
+          if (responseRefreshToken) {
+            TokenManager.setRefreshToken(responseRefreshToken);
+            if (data && typeof data === 'object') {
+              if (data.data && typeof data.data === 'object') {
+                data.data.refreshToken = responseRefreshToken;
+              } else {
+                data.refreshToken = responseRefreshToken;
+              }
+            }
+          }
+
           if (!response.ok) {
             if (response.status >= 500 || response.status === 429) {
               markOptionalBackendUnavailable(apiBase);
@@ -478,7 +503,11 @@ export const api = {
       }),
 
     refreshToken: (refreshToken: string) =>
-      apiClient.post('/auth/refresh', { refreshToken }),
+      apiClient.post('/auth/refresh', undefined, {
+        headers: {
+          'x-refresh-token': refreshToken,
+        },
+      }),
 
     verifyEmail: (token: string) =>
       apiClient.post('/auth/verify-email', { token }),

@@ -108,10 +108,15 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
 
     const tokens = await authService.register(sanitizedInput);
 
+    res.setHeader('Authorization', `Bearer ${tokens.accessToken}`);
+    res.setHeader('x-refresh-token', tokens.refreshToken);
+
     res.status(201).json({
       success: true,
       message: 'Registration successful',
-      data: tokens,
+      data: {
+        user: tokens.user,
+      },
     });
   } catch (error: any) {
     // Map known service errors to AppError before passing to next()
@@ -165,11 +170,14 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
       deviceCheck = await checkDeviceTrust(tokens.user.id, deviceId);
     }
 
+    res.setHeader('Authorization', `Bearer ${tokens.accessToken}`);
+    res.setHeader('x-refresh-token', tokens.refreshToken);
+
     res.json({
       success: true,
       message: 'Login successful',
       data: {
-        ...tokens,
+        user: tokens.user,
         device: deviceCheck ? {
           isKnown: deviceCheck.isKnown,
           isTrusted: deviceCheck.isTrusted,

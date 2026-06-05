@@ -29,9 +29,22 @@ export const ToDoLists: React.FC = () => {
   const currentUserId = user?.id ?? null;
 
   const toDoLists = useLiveQuery<ToDoList[]>(
-    () => {
-      if (!currentUserId) return Promise.resolve([]);
-      return db.toDoLists.filter(list => list.ownerId === currentUserId).toArray();
+    async () => {
+      if (!currentUserId) return [];
+      const owned = await db.toDoLists.filter(list => list.ownerId === currentUserId).toArray();
+      const shares = await db.toDoListShares.where('sharedWithUserId').equals(currentUserId).toArray();
+      const sharedListIds = shares.map(share => share.listId);
+      const shared = sharedListIds.length > 0
+        ? await db.toDoLists.filter(list => sharedListIds.includes(list.id!)).toArray()
+        : [];
+      const combined = [...owned, ...shared];
+      const uniqueMap = new Map<number, ToDoList>();
+      combined.forEach(list => {
+        if (list.id !== undefined) {
+          uniqueMap.set(list.id, list);
+        }
+      });
+      return Array.from(uniqueMap.values());
     },
     [currentUserId]
   ) || [];

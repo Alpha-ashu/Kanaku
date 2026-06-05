@@ -34,7 +34,10 @@ const expectedTables = [
   'group_expenses_sync',
 ];
 
-const client = new Client({ connectionString });
+const client = new Client({
+  connectionString,
+  ssl: connectionString.includes('supabase.co') || connectionString.includes('neon.tech') || connectionString.includes('pooler.supabase.com') ? { rejectUnauthorized: false } : undefined
+});
 
 async function main() {
   await client.connect();

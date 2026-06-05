@@ -105,7 +105,7 @@ export const AddGroup: React.FC = () => {
  next[emptyIdx] = name;
  setFormData(prev => ({ ...prev, participants: next }));
  } else {
- setFormData(prev => ({ ...prev, participants: [...prev.participants, name] }));
+ setFormData(prev => ({ ...prev, participants: [...formData.participants, name] }));
  }
  setNewPersonInput('');
  setShowNewPersonInput(false);
@@ -118,6 +118,21 @@ export const AddGroup: React.FC = () => {
  
  setIsSubmitting(true);
  try {
+ const targetDateStr = new Date(formData.date).toDateString();
+ const existingGroup = await db.groupExpenses
+  .filter(g => 
+   g.name.toLowerCase() === formData.name.trim().toLowerCase() &&
+   new Date(g.date).toDateString() === targetDateStr &&
+   !g.deletedAt
+  )
+  .first();
+
+ if (existingGroup) {
+  toast.error('A group expense with the same name and date already exists.');
+  setIsSubmitting(false);
+  return;
+ }
+
  // Auto-save all new participant names as Friends in the DB
  await Promise.all(validParticipants.map(name => saveNewFriend(name)));
 

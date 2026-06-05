@@ -40,9 +40,9 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onBack, onGetStarted, onNa
  ];
 
  const milestones = [
- { year:"2024", event:"KANKUwas born from a simple idea: make personal finance intuitive." },
- { year:"2025", event:"Launched AI-powered insights and investment tracking." },
- { year:"2026", event:"Reached 50,000 active users and added group expense splitting." }
+  { year: "November 2025", event: "KANKU was founded by Shaik Ashraf K to build a secure, local-first finance manager." },
+  { year: "Early 2026", event: "Launched advanced AI-powered transaction analysis, offline-first sync engine, and receipt OCR." },
+  { year: "Mid 2026", event: "Grown to support cooperative advisor-client planning sessions, live commodity tracking, and group expenses." }
  ];
 
  return (
@@ -73,14 +73,14 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onBack, onGetStarted, onNa
  democratize financial freedom.
  </span>
  </motion.h1>
- <motion.p
- initial={{ opacity: 0, y: 20 }}
- animate={{ opacity: 1, y: 0 }}
- transition={{ delay: 0.1 }}
- className="text-lg lg:text-xl text-gray-500 leading-relaxed max-w-2xl mx-auto"
- >
- KANKUstarted in 2024 with a simple goal: to replace complex spreadsheets and clunky bank apps with a beautiful, AI-powered tool that anyone can use to master their wealth.
- </motion.p>
+    <motion.p
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.1 }}
+      className="text-lg lg:text-xl text-gray-500 leading-relaxed max-w-2xl mx-auto"
+    >
+      KANKU was founded in November 2025 by Shaik Ashraf K (Founder & CEO) with a mission to solve the fragmentation and security concerns inherent in personal finance management. Frustrated by complex spreadsheets, clunky banking software, and the fear of cloud data leakage, Shaik envisioned an intelligent, local-first finance companion that puts the user completely in control of their wealth.
+    </motion.p>
  </div>
  </section>
 
@@ -151,12 +151,14 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onBack, onGetStarted, onNa
  </div>
  </section>
 
- {/* Footer Minimal */}
- <footer className="py-10 border-t border-gray-100 text-center">
- <p className="text-xs text-gray-400"> {new Date().getFullYear()} KANKU. All rights reserved.</p>
- </footer>
+  {/* Footer Minimal */}
+  <footer className="py-12 border-t border-gray-100 text-center bg-gray-50/50">
+    <div className="max-w-4xl mx-auto px-6 text-sm text-gray-400 space-y-2">
+      <p className="font-semibold text-gray-600">Project Created By: Shaik Ashraf K</p>
+      <p>Initial Project Creation: November 2025 | Organization: Kanku</p>
+      <p className="text-xs text-gray-400">© {new Date().getFullYear()} Kanku. All rights reserved by Kanku.</p>
+    </div>
+  </footer>
  </div>
  );
 };
-
-

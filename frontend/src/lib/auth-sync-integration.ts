@@ -2429,6 +2429,8 @@ export async function handleLogout() {
 export async function saveTransactionWithBackendSync(transaction: any) {
   initializeBackendSync();
 
+  const activeDedupHash = transaction.dedupHash || crypto.randomUUID();
+
   if (isBackendFirstSyncMode()) {
     const sourceAccount = await db.accounts.get(Number(transaction.accountId));
 
@@ -2457,6 +2459,7 @@ export async function saveTransactionWithBackendSync(transaction: any) {
             tags: Array.isArray(transaction.tags) ? transaction.tags : [],
             transferToAccountId: transferTargetAccount?.cloudId,
             transferType: transaction.transferType,
+            dedupHash: activeDedupHash,
           }, {
             showErrorToast: false,
           });
@@ -2466,6 +2469,7 @@ export async function saveTransactionWithBackendSync(transaction: any) {
           const dbTransaction = {
             ...transaction,
             cloudId: remote?.id,
+            dedupHash: activeDedupHash,
             createdAt: toDate(remote?.createdAt) ?? transaction.createdAt ?? now,
             updatedAt: toDate(remote?.updatedAt) ?? now,
             syncStatus: 'synced' as const,
@@ -2496,6 +2500,7 @@ export async function saveTransactionWithBackendSync(transaction: any) {
   const now = new Date();
   const dbTransaction = {
     ...transaction,
+    dedupHash: activeDedupHash,
     syncStatus: 'pending' as const,
     createdAt: transaction.createdAt ?? now,
     updatedAt: now,
@@ -2613,6 +2618,8 @@ export async function saveTransactionAndUpdateAccountWithBackendSync(
 export async function saveAccountWithBackendSync(account: any) {
   initializeBackendSync();
 
+  const activeClientRequestId = account.clientRequestId || crypto.randomUUID();
+
   if (isBackendFirstSyncMode()) {
     try {
       const response = await apiClient.post('/accounts', {
@@ -2622,6 +2629,7 @@ export async function saveAccountWithBackendSync(account: any) {
         country: account.country ?? undefined,
         balance: Number(account.balance ?? 0),
         currency: account.currency,
+        clientRequestId: activeClientRequestId,
       }, {
         showErrorToast: false,
       });
@@ -2630,6 +2638,7 @@ export async function saveAccountWithBackendSync(account: any) {
       const dbAccount = {
         ...account,
         cloudId: remote?.id,
+        clientRequestId: activeClientRequestId,
         balance: Number(remote?.balance ?? account.balance ?? 0),
         isActive: remote?.isActive ?? account.isActive ?? true,
         createdAt: toDate(remote?.createdAt) ?? account.createdAt ?? new Date(),
@@ -2662,11 +2671,13 @@ export async function saveAccountWithBackendSync(account: any) {
       const now = new Date();
       const dbAccount = {
         ...account,
+        clientRequestId: activeClientRequestId,
         cloudId: undefined,
         syncStatus: 'pending' as const,
         createdAt: account.createdAt ?? now,
         updatedAt: now,
       };
+
 
       const savedId = await db.accounts.add(dbAccount);
       queueRecordUpsertSync('accounts', savedId, toNumber(account?.remoteId));
@@ -2762,6 +2773,8 @@ export async function updateAccountWithBackendSync(accountId: number, updates: a
 export async function saveGoalWithBackendSync(goal: any) {
   initializeBackendSync();
 
+  const activeClientRequestId = goal.clientRequestId || crypto.randomUUID();
+
   if (isBackendFirstSyncMode()) {
     const response = await apiClient.post('/goals', {
       name: goal.name,
@@ -2769,6 +2782,7 @@ export async function saveGoalWithBackendSync(goal: any) {
       targetDate: toIsoString(goal.targetDate) ?? new Date().toISOString(),
       category: goal.category,
       isGroupGoal: goal.isGroupGoal ?? false,
+      clientRequestId: activeClientRequestId,
     }, {
       showErrorToast: false,
     });
@@ -2777,6 +2791,7 @@ export async function saveGoalWithBackendSync(goal: any) {
     const dbGoal = {
       ...goal,
       cloudId: remote?.id,
+      clientRequestId: activeClientRequestId,
       currentAmount: Number(remote?.currentAmount ?? goal.currentAmount ?? 0),
       createdAt: toDate(remote?.createdAt) ?? goal.createdAt ?? new Date(),
       updatedAt: toDate(remote?.updatedAt) ?? new Date(),
@@ -2791,6 +2806,7 @@ export async function saveGoalWithBackendSync(goal: any) {
   const now = new Date();
   const dbGoal = {
     ...goal,
+    clientRequestId: activeClientRequestId,
     createdAt: goal.createdAt ?? now,
     updatedAt: now,
   };

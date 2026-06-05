@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PageHeader } from '@/app/components/ui/PageHeader';
 import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
 import { Card } from '@/app/components/ui/card';
 import { Users, Search, FolderKanban, ShieldCheck, Mail, Phone, ArrowUpRight, TrendingUp } from 'lucide-react';
 import { toast } from 'sonner';
+import { backendService } from '@/lib/backend-api';
 
 interface Client {
- id: number;
+ id: string | number;
  name: string;
  email: string;
  phone: string;
@@ -17,12 +18,87 @@ interface Client {
 }
 
 export const ClientManagementPage: React.FC = () => {
- const [clients, setClients] = useState<Client[]>([
- { id: 1, name: 'Rahul Sharma', email: 'rahul.sharma@example.com', phone: '+91 98765 43210', portfolioValue: 4550000, assignedRisk: 'Moderate', joinedDate: '2025-10-12', status: 'active' },
- { id: 2, name: 'Priya Nair', email: 'priya.nair@example.com', phone: '+91 98123 45678', portfolioValue: 7200000, assignedRisk: 'Aggressive', joinedDate: '2026-01-15', status: 'active' },
- { id: 3, name: 'Amit Patel', email: 'amit.patel@example.com', phone: '+91 97654 32109', portfolioValue: 2800000, assignedRisk: 'Conservative', joinedDate: '2026-03-02', status: 'active' },
- { id: 4, name: 'Shreya Iyer', email: 'shreya.iyer@example.com', phone: '+91 99112 23344', portfolioValue: 1200000, assignedRisk: 'Moderate', joinedDate: '2026-05-10', status: 'pending' }
- ]);
+ const [clients, setClients] = useState<Client[]>([]);
+ const [isLoading, setIsLoading] = useState(true);
+
+ useEffect(() => {
+   const fetchClients = async () => {
+     try {
+       setIsLoading(true);
+       const response = await backendService.api.get('/advisors/me/sessions');
+       const sessions = Array.isArray(response.data) ? response.data : [];
+       
+       const clientMap = new Map<string, {
+         id: string;
+         name: string;
+         email: string;
+         phone: string;
+         portfolioValue: number;
+         assignedRisk: 'Conservative' | 'Moderate' | 'Aggressive';
+         earliestSessionTime: Date;
+         status: 'active' | 'pending';
+       }>();
+
+       for (const session of sessions) {
+         const clientObj = session.client;
+         if (!clientObj) continue;
+
+         const clientId = clientObj.id;
+         const sessionTime = new Date(session.startTime);
+         const isSessionActive = session.status === 'scheduled' || session.status === 'completed';
+
+         const existing = clientMap.get(clientId);
+         if (existing) {
+           if (sessionTime < existing.earliestSessionTime) {
+             existing.earliestSessionTime = sessionTime;
+           }
+           if (isSessionActive) {
+             existing.status = 'active';
+           }
+         } else {
+           const salaryVal = Number(clientObj.salary) || 0;
+           let risk: 'Conservative' | 'Moderate' | 'Aggressive' = 'Moderate';
+           if (salaryVal > 7000000) {
+             risk = 'Aggressive';
+           } else if (salaryVal < 3000000) {
+             risk = 'Conservative';
+           }
+
+           clientMap.set(clientId, {
+             id: clientId,
+             name: clientObj.name || 'Anonymous Client',
+             email: clientObj.email || '',
+             phone: clientObj.phone || 'N/A',
+             portfolioValue: salaryVal,
+             assignedRisk: risk,
+             earliestSessionTime: sessionTime,
+             status: isSessionActive ? 'active' : 'pending'
+           });
+         }
+       }
+
+       const mappedClients: Client[] = Array.from(clientMap.values()).map(c => ({
+         id: c.id,
+         name: c.name,
+         email: c.email,
+         phone: c.phone,
+         portfolioValue: c.portfolioValue,
+         assignedRisk: c.assignedRisk,
+         joinedDate: c.earliestSessionTime.toISOString().split('T')[0],
+         status: c.status
+       }));
+
+       setClients(mappedClients);
+     } catch (error) {
+       console.error('Failed to load clients:', error);
+       toast.error('Failed to load clients');
+     } finally {
+       setIsLoading(false);
+     }
+   };
+
+   fetchClients();
+ }, []);
 
  const [searchQuery, setSearchQuery] = useState('');
 
@@ -31,9 +107,9 @@ export const ClientManagementPage: React.FC = () => {
  c.email.toLowerCase().includes(searchQuery.toLowerCase())
  );
 
- const handleApproveClient = (id: number, name: string) => {
- setClients(clients.map(c => c.id === id ? { ...c, status: 'active' } : c));
- toast.success(`Client"${name}" has been approved and verified!`);
+ const handleApproveClient = (id: string | number, name: string) => {
+ setClients(clients.map(c => c.id === id ? { ...c, status: 'active' } as Client : c));
+ toast.success(`Client "${name}" has been approved and verified!`);
  };
 
  const handleAuditPortfolio = (name: string) => {
@@ -43,6 +119,17 @@ export const ClientManagementPage: React.FC = () => {
  const totalAssetsUnderManagement = clients
  .filter(c => c.status === 'active')
  .reduce((sum, c) => sum + c.portfolioValue, 0);
+
+ if (isLoading) {
+    return (
+      <CenteredLayout>
+        <div className="flex flex-col items-center justify-center min-h-[400px]">
+          <div className="w-10 h-10 border-4 border-teal-600 border-t-transparent rounded-full animate-spin mb-4" />
+          <p className="text-slate-400 font-semibold text-xs uppercase tracking-widest">Loading Clients...</p>
+        </div>
+      </CenteredLayout>
+    );
+  }
 
  return (
  <CenteredLayout>

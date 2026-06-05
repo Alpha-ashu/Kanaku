@@ -439,15 +439,33 @@ export function AddTransaction() {
  return () => clearTimeout(timer);
  }, [formData.description, formData.merchant, isExpense, manualExpenseCategory]);
 
- const handleSubmit = async () => {
- if (!selectedAccount) { toast.error('Select an account'); return; }
- if (!formData.amount || formData.amount <= 0) { toast.error('Enter amount'); return; }
+  const handleSubmit = async () => {
+    if (!selectedAccount) { toast.error('Select an account'); return; }
+    if (!formData.amount || formData.amount <= 0) { toast.error('Enter amount'); return; }
 
- setIsSubmitting(true);
- try {
- const now = new Date();
- const transactionDate = parseDateInputValue(formData.date) || new Date();
- let result: any;
+    setIsSubmitting(true);
+    try {
+      const tenSecondsAgo = new Date(Date.now() - 10000);
+      const duplicates = await db.transactions
+        .filter(t => 
+          t.accountId === formData.accountId &&
+          t.type === formData.type &&
+          t.amount === formData.amount &&
+          t.description === formData.description &&
+          !!t.createdAt && new Date(t.createdAt).getTime() > tenSecondsAgo.getTime() &&
+          !t.deletedAt
+        )
+        .toArray();
+
+      if (duplicates.length > 0) {
+        toast.error('This transaction was recently saved. Duplicate prevented.');
+        setIsSubmitting(false);
+        return;
+      }
+
+      const now = new Date();
+      const transactionDate = parseDateInputValue(formData.date) || new Date();
+      let result: any;
 
  if (isTransfer || formData.type === 'withdrawal') {
  const isWithdrawal = formData.type === 'withdrawal';

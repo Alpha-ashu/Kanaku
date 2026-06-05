@@ -80,9 +80,15 @@ export const createFriend = async (req: AuthRequest, res: Response, next: NextFu
     });
 
     let isMutual = false;
-    let targetFriendRecordId = null;
+    let targetFriendRecordId: string | null = null;
 
     if (targetUser) {
+      const currentProfile = await prisma.profiles.findUnique({
+        where: { id: userId },
+        select: { phone: true }
+      });
+      const userPhone = currentProfile?.phone || null;
+
       // Check if target user has already added current user
       const targetFriend = await prisma.friend.findFirst({
         where: {
@@ -90,7 +96,7 @@ export const createFriend = async (req: AuthRequest, res: Response, next: NextFu
           deletedAt: null,
           OR: [
             currentUser.email ? { email: currentUser.email } : null,
-            currentUser.phone ? { phone: currentUser.phone } : null,
+            userPhone ? { phone: userPhone } : null,
           ].filter(Boolean) as any,
         },
       });

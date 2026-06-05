@@ -112,9 +112,28 @@ export const createGroup = async (req: AuthRequest, res: Response) => {
     const userId = getUserId(req);
     const body = req.body;
 
-    const currentUser = await prisma.user.findUnique({ where: { id: userId } });
-    if (!currentUser) {
-      return res.status(404).json({ success: false, error: 'User not found' });
+    const targetDate = new Date(body.date);
+    const startOfDay = new Date(targetDate);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(targetDate);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const duplicate = await prisma.groupExpense.findFirst({
+      where: {
+        userId,
+        name: body.name,
+        date: {
+          gte: startOfDay,
+          lte: endOfDay
+        },
+        deletedAt: null
+      }
+    });
+
+    if (duplicate) {
+      logger.info(`Duplicate group expense creation prevented: "${body.name}" on ${targetDate.toDateString()}`);
+      const data = await buildGroupResponse(duplicate, userId);
+      return res.status(200).json({ success: true, data });
     }
 
     const group = await prisma.groupExpense.create({
@@ -135,6 +154,8 @@ export const createGroup = async (req: AuthRequest, res: Response) => {
         syncStatus: 'synced'
       }
     });
+
+    const currentUser = await prisma.user.findUnique({ where: { id: userId } });
 
     // Parse and normalize members
     const rawMembers = body.members || [];
@@ -162,7 +183,7 @@ export const createGroup = async (req: AuthRequest, res: Response) => {
         where: { userId, name: { equals: m.name, mode: 'insensitive' }, deletedAt: null }
       });
 
-      let targetUser = null;
+      let targetUser: any = null;
       if (friend && (friend.email || friend.phone)) {
         targetUser = await prisma.user.findFirst({
           where: {
@@ -192,7 +213,7 @@ export const createGroup = async (req: AuthRequest, res: Response) => {
             userId: targetUser.id,
             sourceUserId: userId,
             title: 'New Group Expense',
-            message: `${currentUser.name} added you to a split expense "${group.name}".`,
+            message: `${currentUser?.name || 'Someone'} added you to a split expense "${group.name}".`,
             type: 'group_expense',
             priority: 'high',
             channels: '["app"]',
@@ -299,7 +320,7 @@ export const updateGroup = async (req: AuthRequest, res: Response) => {
             where: { userId, name: { equals: m.name, mode: 'insensitive' }, deletedAt: null }
           });
 
-          let targetUser = null;
+          let targetUser: any = null;
           if (friend && (friend.email || friend.phone)) {
             targetUser = await prisma.user.findFirst({
               where: {
