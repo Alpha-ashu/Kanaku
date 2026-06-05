@@ -62,15 +62,15 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  }
  }
 
- if (mounted) {
- const serverHasNoPin = isPinMissing(status);
- // Show create flow if:
- // 1. Server explicitly says no PIN, OR
- // 2. No local PIN (new user on fresh device or server error)
- const shouldCreate = serverHasNoPin || !hasLocalPin;
- setIsCreating(shouldCreate);
- setIsLoading(false);
- }
+  if (mounted) {
+    const serverHasNoPin = isPinMissing(status);
+    // Show create flow ONLY if the server explicitly has no PIN configured.
+    // If the server has a PIN, we show the enter/verify screen so the user can
+    // type it in to verify and restore the local encryption keys.
+    const shouldCreate = serverHasNoPin;
+    setIsCreating(shouldCreate);
+    setIsLoading(false);
+  }
  } catch {
  // Network/server error -> if no local PIN, assume new user and show create flow
  if (mounted) {

@@ -2212,6 +2212,9 @@ otifications.ts to include new types.
 | ackend/src/modules/groups/group.controller.ts | Group expense member mapping, socket events |
 | ackend/src/modules/todos/todo.controller.ts | Full CRUD for shared todo lists, items, shares |
 | ackend/src/modules/todos/todo.routes.ts | REST endpoints for todos |
+|  ackend/src/modules/groups/group.controller.ts | Group expense member mapping, socket events |
+|  ackend/src/modules/todos/todo.controller.ts | Full CRUD for shared todo lists, items, shares |
+|  ackend/src/modules/todos/todo.routes.ts | REST endpoints for todos |
 | rontend/src/lib/database.ts | Extended Notification type union |
 | rontend/src/lib/notifications.ts | SUPPORTED_NOTIFICATION_TYPES, NOTIF_TYPE_TO_SETTING_KEY updated |
 | rontend/src/app/components/profile/Notifications.tsx | PRESENTATION for new types, updated filter |
@@ -2219,3 +2222,109 @@ otifications.ts to include new types.
 | rontend/src/contexts/AppContext.tsx | Socket listeners for friend_accepted, group_expense_updated, todo_updated, notification |
 | rontend/src/app/components/investments/LiveMarketTicker.tsx | Added PROFILE_UPDATED listener for country sync |
 
+---
+
+## Phase 13 — Auth Session Recovery, Profile Sync Fixes & TypeScript Hardening
+
+### Summary
+
+This phase fixed a cluster of critical login-flow bugs reported across multiple sessions:
+1. **User name reverting to "User" after login** — backend's default `name: 'User'` was being treated as a "real" profile, overwriting local data that correctly had the user's actual name.
+2. **React Hook order violation in `AppContent`** — hooks were called after a conditional early return, causing the "Rendered more hooks than previous render" error in production.
+3. **TypeScript errors** — `TS2339` on `LocalProfile` (missing `email`) and `TS7006` on catch callbacks in `AuthFlow.tsx`.
+
+---
+
+### 1. Profile Sync `hasRealProfile` Logic Fix (Root Cause of "User" Name Bug)
+
+**Problem**: When backend's `GET /api/v1/auth/profile` returned a user whose `User.name` field was `'User'` (the generic registration default), `normalizeRemoteProfile` set `displayName = 'User'`. Previously, `hasRealProfile` included a `displayName` check, so a profile with only `displayName = 'User'` (and empty `firstName`/`lastName`) was flagged as a real profile. `writeLocalFromRemote()` would then fire, overwriting the correct local profile data with `'User'` as the display name.
+
+**File**: `frontend/src/contexts/AuthContext.tsx`
+
+**Solution**: Removed `displayName` from the `hasRealProfile` boolean check. A profile is now only considered "real" if it has at least one of: `firstName`, `lastName`, `phone`, `gender`, `dateOfBirth`, `jobType`, a non-zero income, or location/avatar data. Single-word generic names are no longer sufficient to mark a profile as real.
+
+```typescript
+// Before (BROKEN):
+hasRealProfile: Boolean(
+  displayName ||  // 'User' was truthy!
+  firstName || ...
+)
+
+// After (FIXED):
+hasRealProfile: Boolean(
+  // firstName or lastName are the most reliable indicators of a real profile
+  firstName ||
+  lastName ||
+  phone || ...
+  (monthlyIncome && monthlyIncome > 0) ||  // Also tightened income checks
+  ...
+)
+```
+
+**Rule Going Forward**: `hasRealProfile` determines whether backend profile data should override local profile data. Never include `displayName` alone in this check — it is too unreliable as a signal.
+
+---
+
+### 2. `LocalProfile` Type — Added `email` Field
+
+**Problem**: `TS2339` errors in `AuthContext.tsx` at the custom JWT fallback session recovery paths (lines 684, 779) where `localProfile?.email` was accessed but `email` was not defined on the `LocalProfile` type.
+
+**File**: `frontend/src/contexts/AuthContext.tsx`
+
+**Solution**: Added `email?: string` to the `LocalProfile` type. The email is stored in the local profile when the user logs in via `AuthFlow.tsx` and is needed to reconstruct the `User` object in the custom JWT fallback path.
+
+---
+
+### 3. `AuthFlow.tsx` — Typed `catch` Parameters
+
+**Problem**: `TS7006` errors — two `.catch((err) => ...)` callbacks on `supabase.auth.setSession(...)` had implicit `any` type for the `err` parameter, which is a TypeScript strict mode violation.
+
+**File**: `frontend/src/app/components/auth/AuthFlow.tsx`
+
+**Solution**: Changed both `.catch((err) =>` to `.catch((err: unknown) =>` (lines 155, 221).
+
+---
+
+### 4. React Hook Order Fix in `AppContent`
+
+**Problem**: The `AppContent` component in `App.tsx` had its `useState`, `useRef`, and `useScrollToTopOnPageChange` hooks declared *after* a conditional early return (`if (!appContext) return ...`). React requires all hooks to be called unconditionally and in the same order every render. This caused intermittent "Previous render had X hooks, next render had Y hooks" warnings in development and potential production instability.
+
+**File**: `frontend/src/app/App.tsx`
+
+**Solution**: Moved all hook declarations to appear before the `if (!appContext)` early return. `currentPage` is now derived conditionally using `appContext?.currentPage ?? 'dashboard'` so the `useScrollToTopOnPageChange(currentPage)` hook can be called unconditionally.
+
+```typescript
+// Before (BROKEN — hooks after early return):
+const AppContent = () => {
+  const appContext = useOptionalApp();
+  if (!appContext) return <Spinner />; // ← early return
+  const { currentPage } = appContext;
+  const [isInitialized, setIsInitialized] = useState(false); // ← hook AFTER return!
+  ...
+};
+
+// After (FIXED — all hooks before early return):
+const AppContent = () => {
+  const appContext = useOptionalApp();
+  const currentPage = appContext?.currentPage ?? 'dashboard'; // safe default
+  const [isInitialized, setIsInitialized] = useState(false); // ← hook BEFORE return
+  useScrollToTopOnPageChange(currentPage);
+  ...
+  if (!appContext) return <Spinner />; // ← early return now comes AFTER hooks
+  const { setCurrentPage, visibleFeatures } = appContext;
+  ...
+};
+```
+
+---
+
+### Key Files Changed in Phase 13
+
+| File | Change |
+|---|---|
+| `frontend/src/contexts/AuthContext.tsx` | Added `email?` to `LocalProfile`; fixed `hasRealProfile` to exclude `displayName` |
+| `frontend/src/app/components/auth/AuthFlow.tsx` | Typed `err` as `unknown` in two `.catch()` callbacks |
+| `frontend/src/app/App.tsx` | Moved all hooks before early return in `AppContent` to comply with React Rules of Hooks |
+
+### TypeScript Status After Phase 13
+- `npx tsc --noEmit` **passes with zero errors**.

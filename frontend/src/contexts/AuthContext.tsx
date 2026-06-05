@@ -34,6 +34,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 type LocalProfile = {
+  email?: string;
   displayName?: string;
   firstName?: string;
   lastName?: string;
@@ -193,15 +194,15 @@ const normalizeRemoteProfile = (profile: any): RemoteProfileSnapshot => {
     currency,
     language,
     hasRealProfile: Boolean(
-      displayName ||
+      // firstName or lastName are the most reliable indicators of a real profile
       firstName ||
       lastName ||
       phone ||
       gender ||
       dateOfBirth ||
       jobType ||
-      monthlyIncome ||
-      annualIncome ||
+      (monthlyIncome && monthlyIncome > 0) ||
+      (annualIncome && annualIncome > 0) ||
       avatarUrl ||
       avatarId ||
       country ||
@@ -340,6 +341,7 @@ const clearLocalAuthPresentationState = (preservePinKeys = false) => {
     'user_name',
     'pin_created_at',
     'pin_expiry',
+    'KANKU_last_full_sync_at',
   ].forEach((key) => localStorage.removeItem(key));
 
   if (!preservePinKeys) {
@@ -582,7 +584,7 @@ const syncProfileFromBackend = async (user: User) => {
 };
 
 /** Sync user data from Supabase into local Dexie DB on login */
-const syncFromSupabase = async (user: User) => {
+const syncFromSupabase = async (user: User, force = false) => {
   try {
     if (shouldSkipOptionalBackendRequests()) {
       await syncProfileFromBackend(user);
@@ -595,7 +597,7 @@ const syncFromSupabase = async (user: User) => {
     for (let attempt = 0; attempt < timeouts.length; attempt += 1) {
       try {
         await fetchWithTimeout(Promise.all([
-          syncUserDataFromCloud(user.id),
+          syncUserDataFromCloud(user.id, undefined, force),
           syncProfileFromBackend(user),
         ]), timeouts[attempt]);
         return;
@@ -924,7 +926,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                     setDataReady(true);
                   }
 
-                  await syncFromSupabase(nextUser);
+                  await syncFromSupabase(nextUser, true);
                   if (activeSyncUserId.current === nextUser.id && isMounted) {
                     setDataReady(true);
                   }
@@ -1037,7 +1039,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       const permissions = await permissionService.fetchUserPermissions(targetUserId, resolveUserRole(user));
       setRole(permissions.role);
-      await syncFromSupabase(user);
+      await syncFromSupabase(user, true);
       if (activeSyncUserId.current === targetUserId) {
         setDataReady(true);
       }

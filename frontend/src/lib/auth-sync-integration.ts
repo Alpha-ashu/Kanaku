@@ -1455,13 +1455,14 @@ async function shouldSkipFullSync(requestedTables: SyncedTableName[]): Promise<b
 
 async function syncUserDataFromBackend(
   requestedTables: SyncedTableName[] = CORE_SYNC_TABLES,
+  force = false
 ) {
   initializeBackendSync();
 
   // Clean up any local duplicates before merging backend data
   await deduplicateLocalData();
 
-  const skipFull = await shouldSkipFullSync(requestedTables);
+  const skipFull = !force && await shouldSkipFullSync(requestedTables);
   if (skipFull) {
     console.info('[Sync] Skipping full backend pull; last sync was <5m ago and local data exists.');
     return;
@@ -1958,10 +1959,11 @@ async function syncUserDataFromBackend(
 
 export async function syncUserDataFromCloud(
   userId: string,
-  requestedTables: SyncedTableName[] = CORE_SYNC_TABLES
+  requestedTables: SyncedTableName[] = CORE_SYNC_TABLES,
+  force = false
 ) {
   if (isBackendFirstSyncMode()) {
-    await syncUserDataFromBackend(requestedTables);
+    await syncUserDataFromBackend(requestedTables, force);
     return;
   }
 
@@ -1970,7 +1972,7 @@ export async function syncUserDataFromCloud(
   if (syncState.syncingFromCloud) return;
   if (shouldSkipDirectSupabaseRequests()) return;
 
-  const skipFull = await shouldSkipFullSync(requestedTables);
+  const skipFull = !force && await shouldSkipFullSync(requestedTables);
   if (skipFull) {
     console.info('[Sync] Skipping full cloud pull; last sync was <5m ago and local data exists.');
     try {

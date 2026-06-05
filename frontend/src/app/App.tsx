@@ -189,6 +189,22 @@ const AppContent: React.FC = () => {
   const { user, role, loading: authLoading, dataReady, dataSyncing, dataSyncError, triggerDataSync } = useAuth();
   const { isAuthenticated, setAuthenticated } = useSecurity();
 
+  // All hooks must be called before any conditional early returns (React Rules of Hooks)
+  const currentPage = appContext?.currentPage ?? 'dashboard';
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [showQuickAction, setShowQuickAction] = useState(false);
+
+  // Auto scroll to top when page changes
+  useScrollToTopOnPageChange(currentPage);
+
+  // Landing page: shown only to confirmed unauthenticated visitors (set via effect
+  // so we never show it during the async auth-loading window)
+  const [showLanding, setShowLanding] = useState(true);
+  const [publicPage, setPublicPage] = useState<PublicPage>('landing');
+  const [authInitialStep, setAuthInitialStep] = useState<'welcome' | 'signin' | 'signup'>('welcome');
+  const [criticalPagesPrefetched, setCriticalPagesPrefetched] = useState(false);
+  const hasModuleReloaded = useRef(false);
+
   if (!appContext) {
     return (
       <div className="flex items-center justify-center h-screen bg-gradient-to-br from-pink-500 to-rose-600">
@@ -200,20 +216,8 @@ const AppContent: React.FC = () => {
     );
   }
 
-  const { currentPage, setCurrentPage, visibleFeatures, aiCapabilities } = appContext;
-  const [isInitialized, setIsInitialized] = useState(false);
-  const [showQuickAction, setShowQuickAction] = useState(false);
-  
-  // Auto scroll to top when page changes
-  useScrollToTopOnPageChange(currentPage);
-  
-  // Landing page: shown only to confirmed unauthenticated visitors (set via effect
-  // so we never show it during the async auth-loading window).
-  const [showLanding, setShowLanding] = useState(true);
-  const [publicPage, setPublicPage] = useState<PublicPage>('landing');
-  const [authInitialStep, setAuthInitialStep] = useState<'welcome' | 'signin' | 'signup'>('welcome');
-  const [criticalPagesPrefetched, setCriticalPagesPrefetched] = useState(false);
-  const hasModuleReloaded = useRef(false);
+  const { setCurrentPage, visibleFeatures, aiCapabilities } = appContext;
+
 
   // Show landing page only once we KNOW the user is not signed in
   useEffect(() => {

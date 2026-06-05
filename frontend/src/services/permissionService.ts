@@ -72,6 +72,23 @@ const normalizeUserRole = (value: unknown): UserRole => {
   return 'user';
 };
 
+const getCustomJwtRoleAndEmail = (): { role: UserRole | null; email: string | null } => {
+  try {
+    const token = TokenManager.getAccessToken();
+    if (!token) return { role: null, email: null };
+    const parts = token.split('.');
+    if (parts.length !== 3) return { role: null, email: null };
+    const payload = parts[1];
+    const decoded = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
+    return {
+      role: normalizeUserRole(decoded?.role),
+      email: decoded?.email || null,
+    };
+  } catch {
+    return { role: null, email: null };
+  }
+};
+
 const resolveEffectiveRole = (role: UserRole, isApproved?: boolean): UserRole => {
   if (role === 'advisor' && isApproved === false) {
     return 'user';
@@ -220,6 +237,16 @@ class PermissionService {
         const emailRole = getRoleFromEmail(session?.user?.email);
         if (emailRole) {
           safeFallback = emailRole;
+        } else {
+          const customJwt = getCustomJwtRoleAndEmail();
+          if (customJwt.role) {
+            safeFallback = customJwt.role;
+          } else if (customJwt.email) {
+            const emailRoleCustom = getRoleFromEmail(customJwt.email);
+            if (emailRoleCustom) {
+              safeFallback = emailRoleCustom;
+            }
+          }
         }
       } catch (err) {
         console.warn('Failed to fetch session for email fallback role:', err);
@@ -274,6 +301,16 @@ class PermissionService {
         const emailRole = getRoleFromEmail(session?.user?.email);
         if (emailRole) {
           resolvedFallback = emailRole;
+        } else {
+          const customJwt = getCustomJwtRoleAndEmail();
+          if (customJwt.role) {
+            resolvedFallback = customJwt.role;
+          } else if (customJwt.email) {
+            const emailRoleCustom = getRoleFromEmail(customJwt.email);
+            if (emailRoleCustom) {
+              resolvedFallback = emailRoleCustom;
+            }
+          }
         }
       } catch (err) {
         // ignore

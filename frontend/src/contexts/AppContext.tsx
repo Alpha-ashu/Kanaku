@@ -390,7 +390,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       void backendSyncService.syncWithBackend().then((success) => {
         if (success) {
           // Only refresh local data if backend sync was successful
-          void syncUserDataFromCloud(user.id);
+          void syncUserDataFromCloud(user.id, undefined, true);
         }
       });
     }

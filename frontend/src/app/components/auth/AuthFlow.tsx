@@ -152,7 +152,7 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
         await supabase.auth.setSession({
           access_token: accessToken,
           refresh_token: refreshToken,
-        }).catch((err) => {
+        }).catch((err: unknown) => {
           console.warn('Supabase setSession failed:', err);
         });
       }
