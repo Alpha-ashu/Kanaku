@@ -563,10 +563,28 @@ class PermissionService {
   /**
    * Refresh permissions from backend
    */
-  async refreshPermissions(): Promise<void> {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user?.id) {
-      await this.fetchUserPermissions(user.id);
+  async refreshPermissions(userId?: string): Promise<void> {
+    let targetUserId = userId;
+    if (!targetUserId) {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        targetUserId = user?.id;
+      } catch {}
+    }
+    if (!targetUserId) {
+      const token = await getAuthToken();
+      if (token) {
+        try {
+          const parts = token.split('.');
+          if (parts.length === 3) {
+            const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+            targetUserId = payload.userId;
+          }
+        } catch {}
+      }
+    }
+    if (targetUserId) {
+      await this.fetchUserPermissions(targetUserId);
     }
   }
 }

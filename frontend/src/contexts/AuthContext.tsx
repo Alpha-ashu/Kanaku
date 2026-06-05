@@ -5,7 +5,7 @@ import { UserRole } from '@/lib/featureFlags';
 import { permissionService } from '@/services/permissionService';
 import { db } from '@/lib/database';
 import { resolveAvatarSelection } from '@/lib/avatar-gallery';
-import { api } from '@/lib/api';
+import { api, TokenManager } from '@/lib/api';
 import { clearSecurityData } from '@/lib/encryption';
 import {
   handleLogout as handleBackendLogout,
@@ -209,6 +209,19 @@ const normalizeRemoteProfile = (profile: any): RemoteProfileSnapshot => {
       city
     ),
   };
+};
+
+const decodeJwt = (token: string): any => {
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return null;
+    const payload = parts[1];
+    const decoded = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
+    return JSON.parse(decoded);
+  } catch (err) {
+    console.error('Failed to decode JWT:', err);
+    return null;
+  }
 };
 
 const getRoleFromEmail = (email?: string | null): UserRole | null => {
@@ -655,18 +668,53 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (!isMounted) return;
-        setSession(session);
-        setUser(session?.user ?? null);
-        const provisionalRole = resolveUserRole(session?.user ?? null);
+
+        let activeSession = session;
+        let nextUser = session?.user ?? null;
+
+        if (!nextUser) {
+          const customToken = TokenManager.getAccessToken();
+          if (customToken) {
+            const decoded = decodeJwt(customToken);
+            if (decoded && decoded.userId) {
+              const localProfile = readLocalProfile();
+              nextUser = {
+                id: decoded.userId,
+                email: decoded.email || localProfile?.email || '',
+                user_metadata: {
+                  role: decoded.role || localProfile?.role || 'user',
+                  full_name: localProfile?.displayName || '',
+                  firstName: localProfile?.firstName || '',
+                  lastName: localProfile?.lastName || '',
+                },
+                app_metadata: {},
+                aud: 'authenticated',
+                created_at: new Date().toISOString(),
+              } as User;
+
+              activeSession = {
+                access_token: customToken,
+                refresh_token: TokenManager.getRefreshToken() || '',
+                expires_in: 3600,
+                token_type: 'bearer',
+                user: nextUser,
+              } as Session;
+            }
+          }
+        }
+
+        setSession(activeSession);
+        setUser(nextUser);
+        const provisionalRole = resolveUserRole(nextUser);
         setRole(provisionalRole);
-        if (session?.user?.id) {
-          activeSyncUserId.current = session.user.id;
+        if (nextUser?.id) {
+          activeSyncUserId.current = nextUser.id;
           setDataSyncing(true);
           setDataSyncError(null);
           void (async () => {
             try {
-              const permissions = await permissionService.fetchUserPermissions(session.user.id, provisionalRole);
-              if (activeSyncUserId.current === session.user.id) {
+              const permissions = await permissionService.fetchUserPermissions(nextUser.id, provisionalRole);
+              if (activeSyncUserId.current === nextUser.id) {
                 setRole(permissions.role);
               }
 
@@ -674,28 +722,30 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
               // to avoid showing a blocking sync screen for a clean, smooth, and immediate load.
               const localAccountsCount = await db.accounts.count().catch(() => 0);
               const hasLocalData = localAccountsCount > 0;
-              if (hasLocalData && activeSyncUserId.current === session.user.id) {
+              if (hasLocalData && activeSyncUserId.current === nextUser.id) {
                 setDataReady(true);
               }
 
-              await syncFromSupabase(session.user);
-              if (activeSyncUserId.current === session.user.id) {
+              await syncFromSupabase(nextUser);
+              if (activeSyncUserId.current === nextUser.id) {
                 setDataReady(true);
               }
             } catch (err) {
-              if (activeSyncUserId.current === session.user.id) {
+              if (activeSyncUserId.current === nextUser.id) {
                 setDataSyncError(formatSupabaseError(err));
                 setDataReady(true);
               }
             } finally {
-              if (activeSyncUserId.current === session.user.id) {
+              if (activeSyncUserId.current === nextUser.id) {
                 setDataSyncing(false);
               }
             }
           })();
         }
-        supabase.auth.startAutoRefresh();
-        console.info(' Supabase reachable - auto-refresh resumed.');
+        if (session) {
+          supabase.auth.startAutoRefresh();
+          console.info(' Supabase reachable - auto-refresh resumed.');
+        }
       } catch {
         console.warn('Supabase still unreachable after coming online - keeping auto-refresh paused.');
       }
@@ -711,8 +761,67 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event: any, session: any) => {
         if (!isMounted) return;
-        setSession(session);
-        const nextUser = session?.user ?? null;
+
+        let activeSession = session;
+        let nextUser = session?.user ?? null;
+
+        // Custom JWT fallback session recovery:
+        if (!nextUser) {
+          const customToken = TokenManager.getAccessToken();
+          if (customToken) {
+            try {
+              const decoded = decodeJwt(customToken);
+              if (decoded && decoded.userId) {
+                const localProfile = readLocalProfile();
+                nextUser = {
+                  id: decoded.userId,
+                  email: decoded.email || localProfile?.email || '',
+                  user_metadata: {
+                    role: decoded.role || localProfile?.role || 'user',
+                    full_name: localProfile?.displayName || '',
+                    firstName: localProfile?.firstName || '',
+                    lastName: localProfile?.lastName || '',
+                  },
+                  app_metadata: {},
+                  aud: 'authenticated',
+                  created_at: new Date().toISOString(),
+                } as User;
+
+                activeSession = {
+                  access_token: customToken,
+                  refresh_token: TokenManager.getRefreshToken() || '',
+                  expires_in: 3600,
+                  token_type: 'bearer',
+                  user: nextUser,
+                } as Session;
+
+                // Validate the token against the backend in background
+                void (async () => {
+                  try {
+                    const profileResponse = await api.auth.getProfile();
+                    if (!profileResponse.success) {
+                      console.warn('Backend custom JWT profile verification failed:', profileResponse.message);
+                    }
+                  } catch (err: any) {
+                    if (err?.status === 401) {
+                      console.warn('Custom token is unauthorized, performing clean signout.');
+                      TokenManager.clearTokens();
+                      if (isMounted) {
+                        setUser(null);
+                        setSession(null);
+                        setRole('user');
+                      }
+                    }
+                  }
+                })();
+              }
+            } catch (err) {
+              console.warn('Error during custom JWT session recovery:', err);
+            }
+          }
+        }
+
+        setSession(activeSession);
         setUser(nextUser);
         const provisionalRole = resolveUserRole(nextUser);
         setRole(provisionalRole);
@@ -723,12 +832,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         // active services. All data is already in Dexie; socket reconnects
         // if needed via the connectingPromise guard.
         if (event === 'TOKEN_REFRESHED') {
-          if (session?.access_token) {
-            backendService.setToken(session.access_token);
+          if (activeSession?.access_token) {
+            backendService.setToken(activeSession.access_token);
             const deviceId = localStorage.getItem('device_id') || '';
             if (deviceId) {
               // Re-auth the existing socket with the new token (non-blocking)
-              socketClient.connect(session.access_token, deviceId).catch(() => {});
+              socketClient.connect(activeSession.access_token, deviceId).catch(() => {});
             }
           }
           if (isMounted) setLoading(false);
@@ -737,8 +846,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         // ────────────────────────────────────────────────────────────────────────
 
         // PERSISTENCE FIX: Sync token to backend service for authenticated requests
-        if (session?.access_token) {
-          backendService.setToken(session.access_token);
+        if (activeSession?.access_token) {
+          backendService.setToken(activeSession.access_token);
 
           // Connect WebSocket so this client receives real-time broadcasts (e.g. feature flag updates)
           const deviceId = localStorage.getItem('device_id') || (() => {
@@ -746,13 +855,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             localStorage.setItem('device_id', id);
             return id;
           })();
-          socketClient.connect(session.access_token, deviceId).catch((err) => {
+          socketClient.connect(activeSession.access_token, deviceId).catch((err) => {
             // Non-blocking — app works fine without the socket
             console.warn('[AuthContext] Socket connection failed (non-blocking):', err);
           });
         } else if (event === 'SIGNED_OUT') {
           backendService.clearToken();
           socketClient.disconnect();
+          TokenManager.clearTokens();
         }
 
         try {
@@ -898,6 +1008,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     } finally {
       // Guarantee local DB and presentation clearing to ensure complete isolation
       await handleBackendLogout();
+      TokenManager.clearTokens();
       await clearLocalUserData();
       clearLocalAuthPresentationState(true); // Preserve PIN keys
 

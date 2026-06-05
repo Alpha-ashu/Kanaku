@@ -110,9 +110,12 @@ export const TokenManager = {
   },
 
   setAccessToken: (token: string): void => {
-    // Store only in memory — Supabase session is the localStorage source of truth.
-    // Writing to localStorage here would create redundant copies of the JWT.
     _memoryAccessToken = token;
+    if (token) {
+      localStorage.setItem('auth_token', token);
+    } else {
+      localStorage.removeItem('auth_token');
+    }
   },
 
   getRefreshToken: (): string | null => {
@@ -123,6 +126,11 @@ export const TokenManager = {
 
   setRefreshToken: (token: string): void => {
     _memoryRefreshToken = token;
+    if (token) {
+      localStorage.setItem('refresh_token', token);
+    } else {
+      localStorage.removeItem('refresh_token');
+    }
   },
 
   clearTokens: (): void => {
