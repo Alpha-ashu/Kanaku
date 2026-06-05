@@ -109,7 +109,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ onQuickAdd }) => {
       className="fixed bottom-0 left-0 right-0 z-50 lg:hidden pointer-events-none safe-area-padding bottom-nav-container"
     >
       <div className={cn(
-        "mb-0 bg-white/95 backdrop-blur-lg border-0 rounded-[24px] shadow-lg pointer-events-auto flex items-center justify-center gap-0.5 h-16 ring-1 ring-black/10 relative overflow-hidden transition-all duration-300",
+        "mb-0 bg-white/95 backdrop-blur-lg border-0 rounded-[24px] shadow-lg pointer-events-auto flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-4 h-16 ring-1 ring-black/10 relative overflow-hidden transition-all duration-300",
         isCompact ? "w-[280px]" : "mx-4 w-[calc(100%-32px)]"
       )}>
         {filteredNavigationItems.map((item, index) => {
@@ -123,7 +123,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ onQuickAdd }) => {
                 key={`${item.id}-${index}`}
                 whileTap={{ scale: 0.9 }}
                 onClick={() => handleNavigation(item.id)}
-                className="flex items-center justify-center w-12 h-12 bg-black text-white rounded-full shadow-xl hover:shadow-2xl transition-all flex-shrink-0 -mx-1 z-20"
+                className="flex items-center justify-center w-12 h-12 bg-black text-white rounded-full shadow-xl hover:shadow-2xl transition-all flex-shrink-0 mx-0 z-20"
                 title="Quick Add"
               >
                 <Icon className="w-5 h-5" strokeWidth={2.5} />
