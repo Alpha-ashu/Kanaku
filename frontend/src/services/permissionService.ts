@@ -15,7 +15,8 @@ import supabase from '@/utils/supabase/client';
 const API_BASE = getConfiguredApiBase();
 // Inner timeout MUST be shorter than the AuthContext outer race (5000ms) so the
 // service can fall back gracefully to a cached role instead of hard-rejecting.
-const PROFILE_LOOKUP_TIMEOUT_MS = 3500;
+// 4s is enough for local backends; Vercel cold-starts are handled separately.
+const PROFILE_LOOKUP_TIMEOUT_MS = 4000;
 const ROLE_CACHE_KEY = 'auth_role_cache';
 
 const getRoleFromEmail = (email?: string | null): UserRole | null => {
@@ -240,6 +241,15 @@ class PermissionService {
   }
 
   private async refreshRoleInBackground(userId: string, fallback: UserRole): Promise<void> {
+    const snapshot = this.roleSnapshots.get(userId);
+    if (snapshot?.fetchedAt) {
+      const lastFetch = new Date(snapshot.fetchedAt).getTime();
+      // 5-minute cooldown (300,000 ms) to avoid excessive backend profile endpoint lookup hammering
+      if (!isNaN(lastFetch) && (Date.now() - lastFetch < 5 * 60 * 1000)) {
+        return;
+      }
+    }
+
     try {
       const freshRole = await this.fetchRoleFromNetwork(userId, fallback);
       // If the backend says the role changed, update permissions state
@@ -285,7 +295,10 @@ class PermissionService {
       const profileResponse = await Promise.race([
         api.auth.getProfile(),
         new Promise<never>((_, reject) => {
-          window.setTimeout(() => reject(new Error('Profile lookup timed out')), 8000); // 8 seconds to allow Vercel cold-start
+          window.setTimeout(
+            () => reject(new Error('Profile lookup timed out')),
+            PROFILE_LOOKUP_TIMEOUT_MS,
+          );
         }),
       ]);
 
@@ -528,6 +541,23 @@ class PermissionService {
     // Clear localStorage cache so next user gets a fresh role fetch
     try { localStorage.removeItem(ROLE_CACHE_KEY); } catch { /* ignore */ }
     this.notifyListeners();
+  }
+
+  /**
+   * Reset the fetchedAt timestamp of a cached role snapshot, forcing the
+   * 5-minute cooldown to be bypassed on the next background refresh.
+   * Useful when the profile cache is deliberately invalidated (e.g. after
+   * profile updates or in test environments) so the next permission fetch
+   * triggers a real network request.
+   */
+  invalidateRoleCacheTimestamp(userId: string): void {
+    const snapshot = this.roleSnapshots.get(userId);
+    if (snapshot) {
+      this.roleSnapshots.set(userId, {
+        ...snapshot,
+        fetchedAt: new Date(0).toISOString(), // epoch → cooldown guard treats it as stale
+      });
+    }
   }
 
   /**

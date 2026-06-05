@@ -23,7 +23,9 @@ describe('permissionService', () => {
     getSession.mockReset();
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
-    localStorage.clear();
+    if (typeof localStorage !== 'undefined') {
+      localStorage.clear();
+    }
     api.clearCache();
   });
 
@@ -144,7 +146,11 @@ describe('permissionService', () => {
     vi.stubGlobal('fetch', fetchMock);
 
     const initialPermissions = await permissionService.fetchUserPermissions('user-1', 'user');
+    // Simulate the profile cache expiring AND the role snapshot becoming stale.
+    // Without resetting the snapshot timestamp the 5-minute cooldown would suppress
+    // the background re-fetch, making fetchMock never reach its 2nd call.
     api.clearCache();
+    permissionService.invalidateRoleCacheTimestamp('user-1');
     const retryPermissions = await permissionService.fetchUserPermissions('user-1', 'user');
     await new Promise((resolve) => setTimeout(resolve, 0));
 

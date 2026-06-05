@@ -679,14 +679,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   // Sync global feature flags from the backend on mount and every 30 s as a fallback.
   // Real-time updates come from the WebSocket subscriber below.
   useEffect(() => {
-    if (!user?.id) return;
+    if (!user?.id || !dataReady) return;
 
     // Fetch immediately on mount/auth if active
     if (typeof document !== 'undefined' && !document.hidden) {
       void fetchGlobalFlags();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id, fetchGlobalFlags]);
+  }, [user?.id, dataReady, fetchGlobalFlags]);
 
   // Real-time feature flag sync via WebSocket.
   // When the admin saves flags the backend broadcasts 'feature_flags_updated'

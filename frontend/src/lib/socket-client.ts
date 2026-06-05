@@ -160,6 +160,7 @@ class SocketClient {
   private reconnectAttempts = 0;
   private maxReconnectAttempts = 5;
   private reconnectDelay = 1000; // Start with 1 second
+  private connectingPromise: Promise<void> | null = null; // guard against concurrent connect() calls
 
   private listeners: Map<string, Function[]> = new Map();
 
@@ -190,6 +191,20 @@ class SocketClient {
       return;
     }
 
+    // If a connection attempt is already in-flight, wait for it rather than
+    // creating a second socket that would immediately close the first one mid-handshake.
+    if (this.connectingPromise) {
+      return this.connectingPromise;
+    }
+
+    this.connectingPromise = this._doConnect(token, deviceId).finally(() => {
+      this.connectingPromise = null;
+    });
+
+    return this.connectingPromise;
+  }
+
+  private async _doConnect(token: string, deviceId: string): Promise<void> {
     // Clean up any existing socket/connection first to prevent memory and connection leaks
     if (this.socket) {
       try {
@@ -236,7 +251,6 @@ class SocketClient {
         };
 
         const onConnectError = (error: any) => {
-          console.error('Socket connection error:', error);
           this.isConnected = false;
           cleanup();
           reject(error);
@@ -252,7 +266,7 @@ class SocketClient {
       });
 
     } catch (error) {
-      console.error('Failed to connect socket:', error);
+      // Non-fatal — the app works without the socket; caller logs the warning
       throw error;
     }
   }

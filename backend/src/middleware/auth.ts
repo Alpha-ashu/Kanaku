@@ -82,9 +82,25 @@ const normalizeAppRole = (value: unknown): string => {
   return 'user';
 };
 
+// In-memory cache for auth snapshots: avoids a DB query on every single API request.
+// 60s TTL is short enough to pick up role changes without hammering the DB.
+// Invalidated on profile/role updates via invalidateUserSnapshotCache().
+const userSnapshotCache = new Map<string, { snapshot: UserAuthSnapshot | null; expiresAt: number }>();
+const SNAPSHOT_CACHE_TTL_MS = 60_000;
+
+export const invalidateUserSnapshotCache = (userId: string) => {
+  userSnapshotCache.delete(userId);
+};
+
 const getUserAuthSnapshot = async (userId: string): Promise<UserAuthSnapshot | null> => {
   if (process.env.NODE_ENV === 'test' || AUTH_STATUS_LOOKUP_TIMEOUT_MS <= 0) {
     return null;
+  }
+
+  // Fast path: return cached snapshot if still fresh
+  const cached = userSnapshotCache.get(userId);
+  if (cached && cached.expiresAt > Date.now()) {
+    return cached.snapshot;
   }
 
   try {
@@ -109,10 +125,14 @@ const getUserAuthSnapshot = async (userId: string): Promise<UserAuthSnapshot | n
         userId,
         timeoutMs: AUTH_STATUS_LOOKUP_TIMEOUT_MS,
       });
+      // Cache null so the next request within TTL doesn't retry the timed-out DB call
+      userSnapshotCache.set(userId, { snapshot: null, expiresAt: Date.now() + SNAPSHOT_CACHE_TTL_MS });
       return null;
     }
 
-    return result ?? null;
+    const snapshot = result ?? null;
+    userSnapshotCache.set(userId, { snapshot, expiresAt: Date.now() + SNAPSHOT_CACHE_TTL_MS });
+    return snapshot;
   } catch (error) {
     logger.warn('Auth user lookup failed after JWT verification, continuing with token claims.', {
       userId,

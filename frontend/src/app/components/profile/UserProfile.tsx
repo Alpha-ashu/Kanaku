@@ -710,13 +710,13 @@ export const UserProfile: React.FC = () => {
 
     setIsDeleting(true);
     try {
-      // 1. Re-authenticate via Supabase before the destructive action
-      const { error: signInError } = await supabase.auth.signInWithPassword({
+      // 1. Re-authenticate via backend login endpoint before the destructive action
+      const loginRes = await api.auth.login({
         email: user.email!,
         password: deletePassword,
       });
 
-      if (signInError) {
+      if (!loginRes.success) {
         throw new Error('Incorrect password. Please try again.');
       }
 
@@ -737,8 +737,7 @@ export const UserProfile: React.FC = () => {
 
       toast.success('Account deleted. Goodbye!');
 
-      // 4. Sign out of Supabase and redirect to the auth screen
-      await supabase.auth.signOut();
+      // 4. Sign out and redirect to the auth screen
       signOut();
 
     } catch (error: any) {
@@ -1549,15 +1548,15 @@ export const UserProfile: React.FC = () => {
 
  <div className="space-y-4">
  {pinChangeStep === 'idle' ? (
- <div className="flex items-center justify-between p-4 bg-white rounded-xl border border-gray-200">
- <div>
+ <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-white rounded-xl border border-gray-200">
+ <div className="flex-1 min-w-0">
  <p className="font-semibold text-gray-900">Change Secure PIN</p>
  <p className="text-sm text-gray-500 mt-0.5">Use your current PIN to update your 6-digit access PIN</p>
  </div>
  <Button
  onClick={() => setPinChangeStep('set-new-pin')}
  disabled={isPinLoading}
- className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-6"
+ className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-6 shrink-0 whitespace-nowrap"
  >
  {isPinLoading ? 'Updating...' : 'Change PIN'}
  </Button>

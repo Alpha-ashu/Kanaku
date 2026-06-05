@@ -1,344 +1,374 @@
-import React, { useState, useEffect } from 'react';
-import { Lock, Eye, EyeOff, Shield, Check, ArrowLeft } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Eye, EyeOff, ShieldCheck, ChevronLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { backupPINKeys, isPINSet, restorePINKeys, storeMasterKey, verifyPIN } from '@/lib/encryption';
 import { isPinMissing, isPinServiceUnavailable, pinService } from '@/services/pinService';
+import { KANKULogo } from '@/app/components/ui/KANKULogo';
 
 interface PINSetupProps {
- onComplete: (pin: string) => void;
- onBack?: () => void;
- isExistingUser?: boolean;
- existingPinRequired?: boolean;
+  onComplete: (pin: string) => void;
+  onBack?: () => void;
+  isExistingUser?: boolean;
+  existingPinRequired?: boolean;
 }
 
 export const PINSetup: React.FC<PINSetupProps> = ({
- onComplete,
- onBack,
- existingPinRequired = false,
+  onComplete,
+  onBack,
+  existingPinRequired = false,
 }) => {
- const [step, setStep] = useState<'create' | 'confirm' | 'enter'>('create');
- const [pin, setPin] = useState('');
- const [confirmPin, setConfirmPin] = useState('');
- const [showPin, setShowPin] = useState(false);
- const [isLoading, setIsLoading] = useState(false);
- const [error, setError] = useState<string | null>(null);
- const [pinStrength, setPinStrength] = useState<'weak' | 'medium' | 'strong'>('weak');
+  const [step, setStep] = useState<'create' | 'confirm' | 'enter'>('create');
+  const [pin, setPin] = useState('');
+  const [confirmPin, setConfirmPin] = useState('');
+  const [showPin, setShowPin] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
- useEffect(() => {
- // Check if user already has a PIN (existing user on new device)
- if (existingPinRequired) {
- setStep('enter');
- }
- }, [existingPinRequired]);
+  const hiddenInputRef = useRef<HTMLInputElement>(null);
 
- // Check PIN strength
- useEffect(() => {
- if (pin.length === 6) {
- // Check for common patterns
- const isSequential = /012|123|234|345|456|567|678|789/.test(pin) || /987|876|765|654|543|432|321|210/.test(pin);
- const isRepeating = /(.)\1{2,}/.test(pin); // 3 or more repeating like 111, 222
- const isPattern = /^(121212|101010|010101|212121|112233|223344)$/.test(pin);
- const hasUniqueDigits = new Set(pin.split('')).size >= 4;
+  useEffect(() => {
+    if (existingPinRequired) {
+      setStep('enter');
+    }
+  }, [existingPinRequired]);
 
- if (isSequential || isRepeating || isPattern) {
- setPinStrength('weak');
- } else if (hasUniqueDigits) {
- setPinStrength('strong');
- } else {
- setPinStrength('medium');
- }
- }
- }, [pin]);
+  // Keep hidden input focused
+  useEffect(() => {
+    hiddenInputRef.current?.focus();
+  }, [step]);
 
- const handlePinInput = (value: string) => {
- if (value.length <= 6 && /^\d*$/.test(value)) {
- if (step === 'create') {
- setPin(value);
- setError(null);
- } else if (step === 'confirm') {
- setConfirmPin(value);
- setError(null);
- } else {
- setPin(value);
- setError(null);
- }
- }
- };
+  const currentPinVal = step === 'confirm' ? confirmPin : pin;
 
- const handleContinue = () => {
- if (step === 'create') {
- if (pin.length !== 6) {
- setError('PIN must be 6 digits');
- return;
- }
- if (pinStrength === 'weak') {
- setError('PIN is too weak. Avoid sequential (123), repeating (111), or common patterns.');
- return;
- }
- setStep('confirm');
- setConfirmPin('');
- } else if (step === 'confirm') {
- if (confirmPin.length !== 6) {
- setError('Please enter 6 digits');
- return;
- }
- if (pin !== confirmPin) {
- setError('PINs do not match');
- setConfirmPin('');
- return;
- }
- handleSubmit();
- }
- };
+  const appendDigit = (d: string) => {
+    if (isLoading) return;
+    setError(null);
+    if (currentPinVal.length < 6) {
+      const newVal = currentPinVal + d;
+      if (step === 'confirm') {
+        setConfirmPin(newVal);
+      } else {
+        setPin(newVal);
+      }
+    }
+  };
 
- const handleSubmit = async () => {
- setIsLoading(true);
- try {
- const candidatePin = step === 'enter' ? pin : confirmPin;
- const result = step === 'enter'
- ? await pinService.verifyPin({ pin: candidatePin })
- : await pinService.createPin(candidatePin);
+  const deleteDigit = () => {
+    if (isLoading) return;
+    setError(null);
+    if (currentPinVal.length > 0) {
+      const newVal = currentPinVal.slice(0, -1);
+      if (step === 'confirm') {
+        setConfirmPin(newVal);
+      } else {
+        setPin(newVal);
+      }
+    }
+  };
 
- // SECURITY FIX (Bug #2): Server failures (500 errors) on PIN verification MUST be treated as Access Denied.
- // When verifying an existing PIN, any server error blocks access - no local fallback allowed.
- if (step === 'enter' && !result.success) {
- if (isPinServiceUnavailable(result)) {
- // Server error (500) on PIN verification = Access Denied
- setError('PIN verification service unavailable. Access denied for security.');
- return;
- }
- // Other verification failures (wrong PIN, etc.)
- setError(result.message || 'PIN verification failed. Please try again.');
- return;
- }
+  const handleHiddenKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Backspace') {
+      e.preventDefault();
+      deleteDigit();
+    } else if (/^\d$/.test(e.key)) {
+      e.preventDefault();
+      appendDigit(e.key);
+    }
+  };
 
- // For PIN creation, server errors can fall back to local-only mode
- if (!result.success && step !== 'enter' && !isPinServiceUnavailable(result)) {
- setError(result.message || 'PIN request failed. Please try again.');
- return;
- }
+  const validateAndProceed = (enteredPin: string) => {
+    if (step === 'create') {
+      const isSequential = /012|123|234|345|456|567|678|789/.test(enteredPin) || /987|876|765|654|543|432|321|210/.test(enteredPin);
+      const isRepeating = /(.)\1{2,}/.test(enteredPin);
+      const isPattern = /^(121212|101010|010101|212121|112233|223344)$/.test(enteredPin);
+      
+      if (isSequential || isRepeating || isPattern) {
+        setError('PIN is too weak. Avoid sequential, repeating, or common patterns.');
+        setPin('');
+        return;
+      }
+      setStep('confirm');
+      setConfirmPin('');
+    } else if (step === 'confirm') {
+      if (pin !== enteredPin) {
+        setError('PINs do not match. Try again.');
+        setConfirmPin('');
+        setPin('');
+        setStep('create');
+        return;
+      }
+      handleSubmit(enteredPin);
+    } else {
+      handleSubmit(enteredPin);
+    }
+  };
 
- if (step === 'enter' && !isPINSet()) {
- const keyBackupResult = await pinService.getKeyBackup();
- if (keyBackupResult.success && keyBackupResult.backup) {
- const [hash, salt] = keyBackupResult.backup.split('|');
- if (hash && salt) {
- restorePINKeys({ hash, salt });
- }
- }
- }
+  useEffect(() => {
+    if (currentPinVal.length === 6) {
+      const t = setTimeout(() => {
+        validateAndProceed(currentPinVal);
+      }, 150);
+      return () => clearTimeout(t);
+    }
+  }, [pin, confirmPin, step]);
 
- const localResult = await verifyPIN(candidatePin);
- if (!localResult.isValid) {
- await storeMasterKey(candidatePin);
- }
+  const handleSubmit = async (candidatePin: string) => {
+    setIsLoading(true);
+    try {
+      const result = step === 'enter'
+        ? await pinService.verifyPin({ pin: candidatePin })
+        : await pinService.createPin(candidatePin);
 
- // Only allow local fallback for PIN creation (not verification)
- if (!result.success && step !== 'enter') {
- const expiresAt = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString();
- pinService.markPinCreatedLocally(expiresAt);
- pinService.markPendingServerSync();
- }
+      if (step === 'enter' && !result.success) {
+        if (isPinServiceUnavailable(result)) {
+          setError('PIN verification service unavailable. Access denied for security.');
+          setIsLoading(false);
+          return;
+        }
+        setError(result.message || 'PIN verification failed. Please try again.');
+        setIsLoading(false);
+        return;
+      }
 
- const backup = backupPINKeys();
- if (backup.hash && backup.salt) {
- // SECURITY: Never mark PIN as verified locally when server verification failed
- if (result.success && step === 'enter' && localResult.isValid) {
- pinService.markPinVerifiedLocally();
- }
+      if (!result.success && step !== 'enter' && !isPinServiceUnavailable(result)) {
+        setError(result.message || 'PIN request failed. Please try again.');
+        setIsLoading(false);
+        return;
+      }
 
- let securityToken: string | undefined;
- if (result.success) {
-   const secResult = await pinService.verifySecurity();
-   if (secResult.success) {
-     securityToken = secResult.securityToken;
-   }
- }
+      if (step === 'enter' && !isPINSet()) {
+        const keyBackupResult = await pinService.getKeyBackup();
+        if (keyBackupResult.success && keyBackupResult.backup) {
+          const [hash, salt] = keyBackupResult.backup.split('|');
+          if (hash && salt) {
+            restorePINKeys({ hash, salt });
+          }
+        }
+      }
 
- const backupResult = await pinService.saveKeyBackup(`${backup.hash}|${backup.salt}`, securityToken);
- if (!backupResult.success && !isPinServiceUnavailable(backupResult) && !isPinMissing(backupResult)) {
- console.warn('PIN key backup refresh failed during setup:', backupResult.message);
- }
- }
+      const localResult = await verifyPIN(candidatePin);
+      if (!localResult.isValid) {
+        await storeMasterKey(candidatePin);
+      }
 
- // Store PIN metadata
- localStorage.setItem('pin_created_at', new Date().toISOString());
- localStorage.setItem('pin_expiry', new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString()); // 90 days
+      if (!result.success && step !== 'enter') {
+        const expiresAt = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString();
+        pinService.markPinCreatedLocally(expiresAt);
+        pinService.markPendingServerSync();
+      }
 
- toast.success(
- step === 'enter'
- ? 'PIN verified successfully!'
- : result.success
- ? 'PIN created successfully!'
- : 'PIN created on this device. Server sync is pending.',
- );
- onComplete(candidatePin);
- } catch (err) {
- setError('Failed to save PIN. Please try again.');
- } finally {
- setIsLoading(false);
- }
- };
+      const backup = backupPINKeys();
+      if (backup.hash && backup.salt) {
+        if (result.success && step === 'enter' && localResult.isValid) {
+          pinService.markPinVerifiedLocally();
+        }
 
- const handleEnterPin = async () => {
- if (pin.length !== 6) {
- setError('Please enter 6 digits');
- return;
- }
- handleSubmit();
- };
+        let securityToken: string | undefined;
+        if (result.success) {
+          const secResult = await pinService.verifySecurity();
+          if (secResult.success) {
+            securityToken = secResult.securityToken;
+          }
+        }
 
- const renderPinDots = (value: string) => (
- <div className="flex justify-center gap-3 mb-6">
- {[...Array(6)].map((_, i) => (
- <div
- key={i}
- className={`w-3.5 h-3.5 rounded-full transition-all duration-300 ${value.length > i
- ? 'bg-gray-900 scale-110'
- : 'bg-gray-200'
- }`}
- />
- ))}
- </div>
- );
+        const backupResult = await pinService.saveKeyBackup(`${backup.hash}|${backup.salt}`, securityToken);
+        if (!backupResult.success && !isPinServiceUnavailable(backupResult) && !isPinMissing(backupResult)) {
+          console.warn('PIN key backup refresh failed during setup:', backupResult.message);
+        }
+      }
 
- const getStrengthColor = () => {
- switch (pinStrength) {
- case 'weak': return 'text-red-500';
- case 'medium': return 'text-amber-500';
- case 'strong': return 'text-emerald-500';
- default: return 'text-gray-400';
- }
- };
+      localStorage.setItem('pin_created_at', new Date().toISOString());
+      localStorage.setItem('pin_expiry', new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString());
 
- return (
- <div className="min-h-screen bg-white flex items-center justify-center p-4">
- <div className="bg-white rounded-[32px] border border-gray-100 shadow-[0_8px_40px_-12px_rgba(0,0,0,0.05)] w-full max-w-md">
- {/* Header */}
- <div className="p-8 pb-6 text-center relative">
- {onBack && (
- <button
- type="button"
- onClick={onBack}
- className="absolute left-6 top-6 w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
- aria-label="Go back"
- title="Go back"
- >
- <ArrowLeft className="w-5 h-5" />
- </button>
- )}
- <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-900 rounded-[20px] mb-6 shadow-sm">
- <Lock className="w-8 h-8 text-white" />
- </div>
- <h1 className="text-2xl font-bold text-gray-900 mb-2 tracking-tight">
- {step === 'create' && 'Create Security PIN'}
- {step === 'confirm' && 'Confirm Your PIN'}
- {step === 'enter' && 'Enter Your PIN'}
- </h1>
- <p className="text-sm text-gray-500 font-medium">
- {step === 'create' && 'Set a 6-digit PIN to secure your app'}
- {step === 'confirm' && 'Re-enter your PIN to confirm'}
- {step === 'enter' && 'Please enter your 6 digit pin'}
- </p>
- </div>
+      toast.success(
+        step === 'enter'
+          ? 'PIN verified successfully!'
+          : result.success
+          ? 'PIN created successfully!'
+          : 'PIN created on this device. Server sync is pending.'
+      );
+      onComplete(candidatePin);
+    } catch (err) {
+      setError('Failed to save PIN. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
- {/* PIN Input */}
- <div className="px-8 pb-8">
- <input
- type="text"
- name="username"
- value=""
- readOnly
- autoComplete="username"
- tabIndex={-1}
- className="sr-only"
- aria-hidden="true"
- />
- {error && (
- <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-2xl">
- <p className="text-sm font-medium text-red-600 text-center">{error}</p>
- </div>
- )}
+  const currentStepLabel = step === 'confirm' 
+    ? 'Confirm your PIN' 
+    : step === 'enter' 
+    ? 'Enter your PIN' 
+    : 'Create your PIN';
 
- <div className="relative mb-6">
- <input
- type={showPin ? 'text' : 'password'}
- value={step === 'confirm' ? confirmPin : pin}
- onChange={(e) => handlePinInput(e.target.value)}
- className="w-full px-4 py-4 text-center text-3xl font-mono tracking-[0.5em] border-2 border-gray-100 bg-white rounded-2xl focus:ring-2 focus:ring-gray-900 focus:border-gray-900 focus:bg-white transition-all outline-none"
- placeholder="------"
- maxLength={6}
- inputMode="numeric"
- pattern="[0-9]*"
- autoFocus
- aria-label="PIN input"
- autoComplete={step === 'enter' ? 'current-password' : 'new-password'}
- />
- <button
- type="button"
- onClick={() => setShowPin(!showPin)}
- className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
- aria-label={showPin ? 'Hide PIN' : 'Show PIN'}
- >
- {showPin ? <EyeOff size={20} /> : <Eye size={20} />}
- </button>
- </div>
+  const currentStepSub = step === 'confirm'
+    ? 'Re-enter the same PIN to confirm'
+    : step === 'enter'
+    ? 'Please enter your 6 digit PIN'
+    : 'Choose a 6-digit PIN to secure your account';
 
- {renderPinDots(step === 'confirm' ? confirmPin : pin)}
+  return (
+    <div 
+      className="fixed inset-0 z-50 overflow-y-auto bg-white flex items-center justify-center p-4"
+      onClick={() => hiddenInputRef.current?.focus()}
+    >
+      <form
+        style={{ position: 'absolute', opacity: 0, pointerEvents: 'none', width: 0, height: 0, overflow: 'hidden' }}
+        autoComplete="off"
+        onSubmit={e => e.preventDefault()}
+      >
+        <input
+          ref={hiddenInputRef}
+          type="password"
+          name="pin"
+          inputMode="numeric"
+          autoComplete="new-password"
+          value={currentPinVal}
+          onChange={() => {}}
+          onKeyDown={handleHiddenKeyDown}
+          tabIndex={0}
+        />
+      </form>
 
- {/* PIN Strength Indicator (only for create step) */}
- {step === 'create' && pin.length === 6 && (
- <div className="text-center mb-6">
- <span className={`text-sm font-bold tracking-wide uppercase ${getStrengthColor()}`}>
- PIN Strength: {pinStrength}
- </span>
- </div>
- )}
+      <div className="w-full max-w-md p-6 md:p-8 flex flex-col">
+        {/* Header */}
+        <div className="pt-4 pb-6 flex flex-col items-center px-6">
+          <div className="mb-4">
+            <KANKULogo className="w-12 h-12" />
+          </div>
+          <h1 className="text-3xl font-black text-gray-900 tracking-tighter mb-1">KANKU</h1>
+          <p className="text-sm text-gray-500 font-medium text-center max-w-[240px] leading-tight">
+            {currentStepSub}
+          </p>
+        </div>
 
- {/* Progress Steps */}
- {step !== 'enter' && (
- <div className="flex justify-center gap-2 mb-8">
- <div className={`w-2.5 h-2.5 rounded-full transition-colors ${step === 'create' ? 'bg-gray-900' : 'bg-emerald-500'}`} />
- <div className={`w-2.5 h-2.5 rounded-full transition-colors ${step === 'confirm' ? 'bg-gray-900' : 'bg-gray-200'}`} />
- </div>
- )}
+        {/* Card Content */}
+        <div className="px-8 flex flex-col gap-6">
+          <div className="flex flex-col items-center text-center">
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-1">
+              {step !== 'enter' ? `Step ${step === 'create' ? '1' : '2'} of 2` : 'Secure Unlock'}
+            </p>
+            <h2 className="text-2xl font-black text-gray-900 tracking-tight">{currentStepLabel}</h2>
+            {step === 'confirm' && (
+              <button
+                type="button"
+                onClick={() => { setStep('create'); setPin(''); setConfirmPin(''); setError(null); }}
+                className="flex items-center gap-1 text-gray-500 hover:text-gray-900 text-sm font-medium transition-colors mt-2"
+              >
+                <ChevronLeft size={16} /> Back
+              </button>
+            )}
+          </div>
 
- <button
- onClick={step === 'enter' ? handleEnterPin : handleContinue}
- disabled={isLoading || (step === 'confirm' ? confirmPin.length !== 6 : pin.length !== 6)}
- className="w-full h-14 bg-gray-900 text-white rounded-2xl font-bold hover:bg-gray-800 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed transition-all active:scale-[0.98] flex items-center justify-center"
- >
- {isLoading ? (
- <span className="flex items-center gap-2">
- <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
- Processing...
- </span>
- ) : step === 'enter' ? (
- 'Verify PIN'
- ) : step === 'create' ? (
- 'Continue'
- ) : (
- 'Create PIN'
- )}
- </button>
+          {/* PIN digit boxes */}
+          <div className="flex justify-center gap-3 cursor-pointer" onClick={() => hiddenInputRef.current?.focus()}>
+            {Array.from({ length: 6 }, (_, i) => {
+              const isActive = i === currentPinVal.length;
+              const isFilled = i < currentPinVal.length;
+              const revealed = showPin && isFilled ? currentPinVal[i] : undefined;
 
- {/* Info Box */}
- <div className="mt-8 p-5 bg-white rounded-2xl border border-gray-100">
- <div className="flex items-start gap-3">
- <Shield className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
- <div className="text-sm text-gray-600">
- <p className="font-bold text-gray-900 mb-1.5">Your PIN is secure</p>
- <ul className="text-xs space-y-1.5">
- <li>- Financial data stays encrypted on this device</li>
- <li>- Used for app unlock and sensitive actions</li>
- <li>- Valid for 90 days, same across all devices</li>
- <li>- Server stores PIN verification data only</li>
- </ul>
- </div>
- </div>
- </div>
- </div>
- </div>
- </div>
- );
+              return (
+                <div
+                  key={i}
+                  className={`w-11 h-11 md:w-14 md:h-14 rounded-2xl border-2 flex items-center justify-center text-xl font-black transition-all ${
+                    isActive
+                      ? 'border-gray-900 bg-white ring-4 ring-gray-100'
+                      : isFilled
+                      ? 'border-gray-900 bg-gray-900 text-white'
+                      : 'border-gray-200 bg-white/50 text-transparent'
+                  } ${error && pin.length === 6 ? 'border-red-400 bg-red-50 text-red-600' : ''}`}
+                >
+                  {revealed !== undefined ? revealed : isFilled ? '●' : ''}
+                  {isActive && <div className="w-[2.5px] h-5 bg-gray-900 animate-[blink_1s_infinite]" />}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Show/hide toggle + error */}
+          <div className="flex flex-col items-center">
+            <button
+              type="button"
+              onClick={() => setShowPin(r => !r)}
+              className="flex items-center gap-1.5 text-gray-400 hover:text-gray-900 text-[10px] font-bold transition-colors"
+            >
+              {showPin ? <EyeOff size={14} /> : <Eye size={14} />}
+              {showPin ? 'HIDE PIN' : 'SHOW PIN'}
+            </button>
+            <div className="h-6 mt-1 flex items-center justify-center">
+              {error && (
+                <p className="text-red-500 text-[10px] font-bold text-center">
+                  {error}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Number pad */}
+          <div className="grid grid-cols-3 gap-3">
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => (
+              <button
+                key={n}
+                type="button"
+                onClick={() => appendDigit(String(n))}
+                disabled={isLoading}
+                className="h-14 rounded-2xl bg-white hover:bg-gray-100 active:bg-gray-200 active:scale-95 transition-all text-xl font-semibold text-gray-900 flex items-center justify-center disabled:opacity-50 disabled:pointer-events-none"
+              >
+                {n}
+              </button>
+            ))}
+            {onBack ? (
+              <button
+                type="button"
+                onClick={onBack}
+                disabled={isLoading}
+                className="h-14 rounded-2xl bg-transparent hover:bg-gray-50 active:bg-gray-100 transition-all text-gray-500 hover:text-gray-900 flex items-center justify-center disabled:opacity-50 disabled:pointer-events-none"
+              >
+                <ChevronLeft size={20} />
+              </button>
+            ) : (
+              <div />
+            )}
+            <button
+              type="button"
+              onClick={() => appendDigit('0')}
+              disabled={isLoading}
+              className="h-14 rounded-2xl bg-white hover:bg-gray-100 active:bg-gray-200 active:scale-95 transition-all text-xl font-semibold text-gray-900 flex items-center justify-center disabled:opacity-50 disabled:pointer-events-none"
+            >
+              0
+            </button>
+            <button
+              type="button"
+              onClick={deleteDigit}
+              disabled={isLoading}
+              className="h-14 rounded-2xl bg-transparent hover:bg-gray-50 active:bg-gray-100 transition-all text-gray-500 hover:text-gray-900 flex items-center justify-center disabled:opacity-50 disabled:pointer-events-none animate-none"
+            >
+              {isLoading ? (
+                <div className="w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+              ) : (
+                '⌫'
+              )}
+            </button>
+          </div>
+
+          {/* Security banner */}
+          <div className="bg-gray-100/50 border border-gray-100 rounded-[28px] p-5 flex flex-col items-center text-center gap-2 mt-2 mb-4">
+            <ShieldCheck className="text-emerald-500" size={20} />
+            <div>
+              <p className="text-gray-900 text-[11px] font-black uppercase tracking-wider mb-1">Secure Encryption</p>
+              <p className="text-gray-500 text-[10px] leading-relaxed max-w-[220px]">
+                Your financial data stays encrypted on this device. Only PIN verification metadata is stored securely.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <style>{`
+        @keyframes blink {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0; }
+        }
+      `}</style>
+    </div>
+  );
 };

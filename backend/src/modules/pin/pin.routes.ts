@@ -35,6 +35,10 @@ router.post('/create', async (req: AuthRequest, res: Response, next: NextFunctio
       isApproved: req.user?.isApproved,
     });
 
+    if (!result.success) {
+      throw AppError.badRequest(result.message, 'INVALID_PIN');
+    }
+
     res.json(result);
   } catch (error) {
     next(error);
@@ -88,6 +92,9 @@ router.post('/update', securityGate, async (req: AuthRequest, res: Response, nex
     }
 
     const result = await pinService.updatePin({ userId, currentPin, newPin });
+    if (!result.success) {
+      throw AppError.badRequest(result.message, 'INVALID_PIN');
+    }
     res.json(result);
   } catch (error) {
     next(error);
@@ -118,6 +125,9 @@ router.get('/key-backup', async (req: AuthRequest, res: Response, next: NextFunc
   try {
     const userId = requireUserId(req);
     const result = await pinService.getPinKeyBackup(userId);
+    if (!result.success) {
+      return res.status(404).json(result);
+    }
     res.json(result);
   } catch (error) {
     next(error);

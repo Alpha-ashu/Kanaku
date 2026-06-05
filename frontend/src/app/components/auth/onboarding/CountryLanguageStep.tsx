@@ -105,45 +105,77 @@ export const CountryLanguageStep: React.FC<CountryLanguageStepProps> = ({
  return () => document.removeEventListener('mousedown', handler);
  }, []);
 
- const handleLocationInput = (val: string) => {
- setLocationInput(val);
- setSelectedLocation(null);
- if (val.trim().length < 2) {
- setSuggestions([]);
- setShowDropdown(false);
- return;
- }
- const q = val.toLowerCase();
- const filtered = LOCATION_SUGGESTIONS.filter(
- l =>
- l.city.toLowerCase().includes(q) ||
- l.state.toLowerCase().includes(q) ||
- l.country.toLowerCase().includes(q)
- ).slice(0, 6);
- setSuggestions(filtered);
- setShowDropdown(filtered.length > 0);
- };
+  const handleLocationInput = (val: string) => {
+    setLocationInput(val);
+    setSelectedLocation(null);
+    if (val.trim().length < 2) {
+      setSuggestions([]);
+      setShowDropdown(false);
+      return;
+    }
+    const q = val.toLowerCase();
+    const filtered = LOCATION_SUGGESTIONS.filter(
+      l =>
+        l.city.toLowerCase().includes(q) ||
+        l.state.toLowerCase().includes(q) ||
+        l.country.toLowerCase().includes(q)
+    ).slice(0, 5);
 
- const handleSelectLocation = (loc: typeof LOCATION_SUGGESTIONS[0]) => {
- setSelectedLocation(loc);
- setLocationInput(`${loc.city}, ${loc.state}, ${loc.country}`);
- setSuggestions([]);
- setShowDropdown(false);
- onUpdate({ city: loc.city, state: loc.state, country: loc.country });
- setErrors(prev => ({ ...prev, location: '' }));
- };
+    // Parse the input to offer a smart custom suggestion
+    const parts = val.split(',').map(p => p.trim());
+    const city = parts[0] || val;
+    const state = parts[1] || '';
+    const country = parts[2] || 'India'; // Default to India
 
- const validateForm = () => {
- const newErrors: Record<string, string> = {};
- if (!selectedLocation && !data.country) {
- newErrors.location = 'Please select your location from the suggestions';
- }
- if (!data.language) {
- newErrors.language = 'Please select a preferred language';
- }
- setErrors(newErrors);
- return Object.keys(newErrors).length === 0;
- };
+    const customSuggestion = {
+      city,
+      state: state || 'Custom Location',
+      country,
+      flag: '📍',
+      isCustom: true
+    };
+
+    setSuggestions([...filtered, customSuggestion]);
+    setShowDropdown(true);
+  };
+
+  const handleSelectLocation = (loc: typeof LOCATION_SUGGESTIONS[0] & { isCustom?: boolean }) => {
+    setSelectedLocation(loc);
+    const displayVal = loc.isCustom
+      ? `${loc.city}${loc.state && loc.state !== 'Custom Location' ? ', ' + loc.state : ''}, ${loc.country}`
+      : `${loc.city}, ${loc.state}, ${loc.country}`;
+    setLocationInput(displayVal);
+    setSuggestions([]);
+    setShowDropdown(false);
+    onUpdate({ 
+      city: loc.city, 
+      state: loc.state === 'Custom Location' ? '' : loc.state, 
+      country: loc.country 
+    });
+    setErrors(prev => ({ ...prev, location: '' }));
+  };
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+    if (!selectedLocation && locationInput.trim()) {
+      const parts = locationInput.split(',').map(p => p.trim());
+      const city = parts[0] || '';
+      const state = parts[1] || '';
+      const country = parts[2] || 'India'; // Default to India
+      
+      const parsedLoc = { city, state, country, flag: '📍' };
+      setSelectedLocation(parsedLoc);
+      onUpdate({ city, state, country });
+    } else if (!locationInput.trim()) {
+      newErrors.location = 'Please enter your location';
+    }
+
+    if (!data.language) {
+      newErrors.language = 'Please select a preferred language';
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
  const handleSubmit = (e: React.FormEvent) => {
  e.preventDefault();

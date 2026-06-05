@@ -717,6 +717,25 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         const provisionalRole = resolveUserRole(nextUser);
         setRole(provisionalRole);
 
+        // ── TOKEN_REFRESHED early-return ────────────────────────────────────────
+        // Supabase fires this every ~1 hour and on tab-focus restore.
+        // We must NOT re-run the full data sync — only rotate the token on
+        // active services. All data is already in Dexie; socket reconnects
+        // if needed via the connectingPromise guard.
+        if (event === 'TOKEN_REFRESHED') {
+          if (session?.access_token) {
+            backendService.setToken(session.access_token);
+            const deviceId = localStorage.getItem('device_id') || '';
+            if (deviceId) {
+              // Re-auth the existing socket with the new token (non-blocking)
+              socketClient.connect(session.access_token, deviceId).catch(() => {});
+            }
+          }
+          if (isMounted) setLoading(false);
+          return; // ← skip ALL data sync, permission refetch, and re-renders
+        }
+        // ────────────────────────────────────────────────────────────────────────
+
         // PERSISTENCE FIX: Sync token to backend service for authenticated requests
         if (session?.access_token) {
           backendService.setToken(session.access_token);

@@ -36,11 +36,13 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       ...helmet.contentSecurityPolicy.getDefaultDirectives(),
-      "img-src": ["'self'", "data:", "https://*.supabase.co"],
+      "style-src": ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      "font-src": ["'self'", "data:", "https://fonts.gstatic.com"],
+      "img-src": ["'self'", "data:", "https://*.supabase.co", "https://api.dicebear.com"],
       "connect-src": ["'self'", "https://*.supabase.co"],
     },
   },
-  crossOriginResourcePolicy: { policy: "cross-origin" },
+  crossOriginResourcePolicy: { policy: "same-origin" },
 }));
 
 app.use(cors({

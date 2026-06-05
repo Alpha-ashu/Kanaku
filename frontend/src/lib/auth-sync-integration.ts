@@ -1430,6 +1430,29 @@ async function fetchBackendRows(path: string) {
   }
 }
 
+const LAST_FULL_SYNC_KEY = 'KANKU_last_full_sync_at';
+const FULL_SYNC_COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes
+
+async function shouldSkipFullSync(requestedTables: SyncedTableName[]): Promise<boolean> {
+  const isFullSync = requestedTables.length >= CORE_SYNC_TABLES.length;
+  if (!isFullSync) return false;
+
+  const lastSyncStr = localStorage.getItem(LAST_FULL_SYNC_KEY);
+  if (!lastSyncStr) return false;
+
+  const lastSync = Number(lastSyncStr);
+  if (isNaN(lastSync) || Date.now() - lastSync < 0 || Date.now() - lastSync >= FULL_SYNC_COOLDOWN_MS) {
+    return false;
+  }
+
+  try {
+    const localAccountsCount = await db.accounts.count();
+    return localAccountsCount > 0;
+  } catch {
+    return false;
+  }
+}
+
 async function syncUserDataFromBackend(
   requestedTables: SyncedTableName[] = CORE_SYNC_TABLES,
 ) {
@@ -1437,6 +1460,12 @@ async function syncUserDataFromBackend(
 
   // Clean up any local duplicates before merging backend data
   await deduplicateLocalData();
+
+  const skipFull = await shouldSkipFullSync(requestedTables);
+  if (skipFull) {
+    console.info('[Sync] Skipping full backend pull; last sync was <5m ago and local data exists.');
+    return;
+  }
 
   const targetTables = requestedTables.length > 0 ? requestedTables : CORE_SYNC_TABLES;
   const expandedTables = expandTablesForSync(targetTables);
@@ -1921,6 +1950,10 @@ async function syncUserDataFromBackend(
 
   // CRITICAL: Deduplicate AFTER all merges to catch any stragglers from race conditions
   await deduplicateLocalData();
+
+  if (requestedTables.length >= CORE_SYNC_TABLES.length) {
+    localStorage.setItem(LAST_FULL_SYNC_KEY, Date.now().toString());
+  }
 }
 
 export async function syncUserDataFromCloud(
@@ -1936,6 +1969,19 @@ export async function syncUserDataFromCloud(
 
   if (syncState.syncingFromCloud) return;
   if (shouldSkipDirectSupabaseRequests()) return;
+
+  const skipFull = await shouldSkipFullSync(requestedTables);
+  if (skipFull) {
+    console.info('[Sync] Skipping full cloud pull; last sync was <5m ago and local data exists.');
+    try {
+      await deduplicateLocalData();
+      await processPendingSyncQueue();
+    } catch (err) {
+      console.warn('[Sync] Queue processing on skipped sync failed:', err);
+    }
+    return;
+  }
+
   syncState.syncingFromCloud = true;
 
   try {
@@ -2267,6 +2313,10 @@ export async function syncUserDataFromCloud(
 
     // CRITICAL: Deduplicate AFTER all merges to catch any stragglers from race conditions
     await deduplicateLocalData();
+
+    if (requestedTables.length >= CORE_SYNC_TABLES.length) {
+      localStorage.setItem(LAST_FULL_SYNC_KEY, Date.now().toString());
+    }
   } finally {
     syncState.syncingFromCloud = false;
   }

@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Search, Building2, CheckCircle2, SkipForward, ChevronRight } from 'lucide-react';
+import { Search, Building2, CheckCircle2, SkipForward, ChevronRight, X } from 'lucide-react';
 import { BankLogo } from '@/app/components/ui/BankLogo';
 
 interface BankAccountStepProps {
@@ -112,15 +112,28 @@ export const BankAccountStep: React.FC<BankAccountStepProps> = ({
 
  {/* Selected bank pill */}
  {selectedBank && (
- <div className="mt-2 flex items-center gap-2.5 bg-blue-50 border border-blue-200 rounded-xl px-3 py-2.5">
- <BankLogo bank={selectedBank} size="sm" />
- <div className="min-w-0 flex-1">
- <p className="text-sm font-semibold text-blue-900 truncate">{selectedBank.name}</p>
- <p className="text-xs text-blue-600">{selectedBank.type}</p>
- </div>
- <CheckCircle2 size={18} className="text-blue-500 flex-shrink-0" />
- </div>
- )}
+  <div className="mt-2 flex items-center gap-2.5 bg-blue-50 border border-blue-200 rounded-xl px-3 py-2.5">
+  <BankLogo bank={selectedBank} size="sm" />
+  <div className="min-w-0 flex-1">
+  <p className="text-sm font-semibold text-blue-900 truncate">{selectedBank.name}</p>
+  <p className="text-xs text-blue-600">{selectedBank.type}</p>
+  </div>
+  <div className="flex items-center gap-2">
+    <CheckCircle2 size={18} className="text-blue-500 flex-shrink-0" />
+    <button
+      type="button"
+      onClick={() => {
+        onUpdate({ bankName: '' });
+        setSearchQuery('');
+      }}
+      className="p-1 rounded-full hover:bg-blue-100 text-blue-500 hover:text-blue-700 transition-colors"
+      title="Clear selection"
+    >
+      <X size={16} className="flex-shrink-0" />
+    </button>
+  </div>
+  </div>
+  )}
 
  {/* Bank cards grid */}
  {showBankList && filteredBanks.length > 0 && (
@@ -190,7 +203,9 @@ export const BankAccountStep: React.FC<BankAccountStepProps> = ({
  id="currentBalance"
  value={data.currentBalance}
  onChange={e => { onUpdate({ currentBalance: e.target.value }); setErrors(prev => ({ ...prev, currentBalance: '' })); }}
- className={`w-full pl-8 pr-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+ className={`w-full ${
+    (data.country === 'India' || data.country === 'United Kingdom' || !data.country) ? 'pl-14' : 'pl-8'
+  } pr-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 ${
  errors.currentBalance ? 'border-red-400 bg-red-50' : 'border-gray-300'
  }`}
  placeholder="0"

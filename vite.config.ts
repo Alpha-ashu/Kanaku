@@ -313,6 +313,15 @@ export default defineConfig(({ mode }) => {
           changeOrigin: true,
           secure: false,
         },
+        // Proxy Socket.IO WebSocket connections through the Vite dev server.
+        // Without this, socket.io-client tries to connect to localhost:3000 directly
+        // and the browser blocks or drops the connection because it's cross-origin.
+        '/socket.io': {
+          target: apiProxyTarget,
+          changeOrigin: true,
+          secure: false,
+          ws: true, // Enable WebSocket proxying
+        },
       },
     },
   }

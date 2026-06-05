@@ -1,1 +1,1 @@
-C:/Program Files/PostgreSQL/13/bin/postgres.exe "-D" "k:/Project/Finora/backend/.pg-testdata" "-p" "5434"
+C:/Program Files/PostgreSQL/13/bin/postgres.exe "-D" "k:\Project\kenku\Finora\backend\.pg-testdata" "-p" "5434"

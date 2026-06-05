@@ -146,7 +146,7 @@ export const closeRedis = async () => {
 
 export const cacheGetJson = async <T>(key: string): Promise<T | null> => {
   const redis = getRedisClient();
-  if (!redis || status === 'disabled') return null;
+  if (!redis || status !== 'connected') return null;
 
   try {
     const raw = await redis.get(key);
@@ -159,7 +159,7 @@ export const cacheGetJson = async <T>(key: string): Promise<T | null> => {
 
 export const cacheSetJson = async (key: string, value: unknown, ttlSeconds: number) => {
   const redis = getRedisClient();
-  if (!redis || status === 'disabled') return;
+  if (!redis || status !== 'connected') return;
 
   try {
     await redis.set(key, JSON.stringify(value), 'EX', ttlSeconds);
@@ -170,7 +170,7 @@ export const cacheSetJson = async (key: string, value: unknown, ttlSeconds: numb
 
 export const cacheDeleteByPrefix = async (prefix: string) => {
   const redis = getRedisClient();
-  if (!redis || status === 'disabled') return;
+  if (!redis || status !== 'connected') return;
 
   try {
     const stream = redis.scanStream({ match: `${prefix}*`, count: 100 });

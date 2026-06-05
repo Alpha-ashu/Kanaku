@@ -21,6 +21,14 @@ describe('pinService', () => {
   beforeEach(() => {
     getSession.mockReset();
     vi.unstubAllGlobals();
+    const store = new Map<string, string>();
+    const mockLocalStorage = {
+      getItem: (key: string) => store.get(key) ?? null,
+      setItem: (key: string, value: string) => { store.set(key, String(value)); },
+      removeItem: (key: string) => { store.delete(key); },
+      clear: () => { store.clear(); },
+    };
+    vi.stubGlobal('localStorage', mockLocalStorage);
     localStorage.clear();
     pinService.clearPinData();
     clearOptionalBackendUnavailable();

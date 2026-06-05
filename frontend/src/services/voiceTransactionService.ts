@@ -1,4 +1,6 @@
 import type { ParsedTransaction, ParsedGroupExpense } from '@/services/voiceCommandParser';
+import { TokenManager } from '@/lib/api';
+import supabase from '@/utils/supabase/client';
 
 interface Friend {
   id: string;
@@ -25,6 +27,19 @@ interface Transaction {
 }
 
 export class VoiceTransactionService {
+  private async getAuthToken(): Promise<string | null> {
+    let token = TokenManager.getAccessToken();
+    if (!token) {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        token = session?.access_token || null;
+      } catch {
+        // ignore
+      }
+    }
+    return token;
+  }
+
   /**
    * Create transactions from parsed voice commands
    */
@@ -34,6 +49,7 @@ export class VoiceTransactionService {
     userId?: string,
   ): Promise<any[]> {
     const results: any[] = [];
+    const token = await this.getAuthToken();
 
     for (const tx of transactions) {
       try {
@@ -41,6 +57,7 @@ export class VoiceTransactionService {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
           },
           body: JSON.stringify({
             description: tx.description,
@@ -87,12 +104,15 @@ export class VoiceTransactionService {
       friends,
     };
 
+    const token = await this.getAuthToken();
+
     try {
       // Create group expense
       const response = await fetch('/api/v1/group-expenses', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({
           ...groupExpense,
@@ -114,6 +134,7 @@ export class VoiceTransactionService {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
+              ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
             },
             body: JSON.stringify({
               description: `${expense.description} - Split with ${friend.name}`,
@@ -143,11 +164,14 @@ export class VoiceTransactionService {
    */
   private async ensureFriendsExist(friendNames: string[]): Promise<Friend[]> {
     const friends: Friend[] = [];
+    const token = await this.getAuthToken();
 
     for (const name of friendNames) {
       try {
         // Try to get existing friend
-        const searchResponse = await fetch(`/api/v1/friends/search?name=${encodeURIComponent(name)}`);
+        const searchResponse = await fetch(`/api/v1/friends/search?name=${encodeURIComponent(name)}`, {
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+        });
 
         if (searchResponse.ok) {
           const searchResults = await searchResponse.json();
@@ -162,6 +186,7 @@ export class VoiceTransactionService {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
           },
           body: JSON.stringify({
             name: name.trim(),
@@ -198,7 +223,10 @@ export class VoiceTransactionService {
    */
   async getRecentFriends(limit: number = 5): Promise<Friend[]> {
     try {
-      const response = await fetch(`/api/v1/friends/recent?limit=${limit}`);
+      const token = await this.getAuthToken();
+      const response = await fetch(`/api/v1/friends/recent?limit=${limit}`, {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+      });
       if (response.ok) {
         return await response.json();
       }

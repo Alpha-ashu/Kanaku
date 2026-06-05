@@ -77,8 +77,48 @@ const getSeed = (value: string) => {
 };
 
 const buildOptions = (): AvatarOption[] => {
-  // We are now only using the high-quality curated set to avoid problematic local assets
-  return [...CURATED_AVATARS];
+  const options = [...CURATED_AVATARS];
+
+  try {
+    const localAvatarModules = import.meta.glob<string>('../assets/avatars/*.png', {
+      eager: true,
+      import: 'default',
+    });
+
+    const localOptions: AvatarOption[] = Object.entries(localAvatarModules).map(([filePath, url]) => {
+      const filename = filePath.split('/').pop()?.replace('.png', '') || 'avatar';
+      
+      const label = filename
+        .replace(/_/g, ' ')
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+
+      let gender: AvatarGender = 'neutral';
+      if (filename.toLowerCase().includes('user')) {
+        gender = 'neutral';
+      }
+
+      return {
+        id: `local-${filename.toLowerCase().replace(/[^a-z0-9]/g, '-')}`,
+        url,
+        gender,
+        style: 'casual' as AvatarStyle,
+        skinTone: 'tan' as AvatarSkinTone,
+        label,
+      };
+    });
+
+    localOptions.sort((a, b) => {
+      return a.label.localeCompare(b.label, undefined, { numeric: true, sensitivity: 'base' });
+    });
+
+    options.push(...localOptions);
+  } catch (error) {
+    console.error('Failed to load local avatars:', error);
+  }
+
+  return options;
 };
 
 const FALLBACK_AVATAR: AvatarOption = {

@@ -3,6 +3,7 @@
  * Covers: Injection, XSS, CSRF, Auth Bypass, IDOR, Rate Limiting, Headers
  */
 import request from 'supertest';
+import jwt from 'jsonwebtoken';
 import { app } from '../../src/app';
 
 const API = '/api/v1';
@@ -10,6 +11,17 @@ const API = '/api/v1';
 const getAuthHeaders = (token = 'mock-access-token') => ({
   Authorization: `Bearer ${token}`,
 });
+
+const getSignedAuthHeaders = (userId = 'security-test-user', role = 'user') => {
+  const secret = process.env.JWT_SECRET || 'test-jwt-secret';
+  if (!process.env.JWT_SECRET) {
+    process.env.JWT_SECRET = secret;
+  }
+  const token = jwt.sign({ userId, id: userId, email: 'security@test.com', role }, secret, { expiresIn: '15m' });
+  return {
+    Authorization: `Bearer ${token}`,
+  };
+};
 
 describe('SECURITY TESTS', () => {
   //  SQL Injection 
@@ -256,6 +268,28 @@ describe('SECURITY TESTS', () => {
         .get(`${API}/accounts/../../admin/users`)
         .set(getAuthHeaders());
       expect([401, 403, 404]).toContain(res.status);
+    });
+  });
+
+  //  PIN Security & Policies 
+  describe('PIN Security & Policies', () => {
+    it('should reject weak PINs with HTTP 400', async () => {
+      const weakPins = ['123456', '111111', '121212', '987654', '223344'];
+      for (const pin of weakPins) {
+        const res = await request(app)
+          .post(`${API}/pin/create`)
+          .set(getSignedAuthHeaders())
+          .send({ pin });
+        expect(res.status).toBe(400);
+        expect(res.body.code).toBe('INVALID_PIN');
+      }
+    });
+
+    it('should return 404 when no PIN key backup is found', async () => {
+      const res = await request(app)
+        .get(`${API}/pin/key-backup`)
+        .set(getSignedAuthHeaders());
+      expect(res.status).toBe(404);
     });
   });
 });

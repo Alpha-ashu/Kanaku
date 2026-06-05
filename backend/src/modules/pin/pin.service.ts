@@ -92,6 +92,14 @@ class PinService {
         };
       }
 
+      // Check if PIN is weak
+      if (this.isWeakPin(pin)) {
+        return {
+          success: false,
+          message: 'PIN is too weak. Avoid sequential, repeating, or common patterns.',
+        };
+      }
+
       // Check if PIN already exists
       const existingPin = await prisma.userPin.findUnique({
         where: { userId },
@@ -268,6 +276,14 @@ class PinService {
         };
       }
 
+      // Check if new PIN is weak
+      if (this.isWeakPin(newPin)) {
+        return {
+          success: false,
+          message: 'New PIN is too weak. Avoid sequential, repeating, or common patterns.',
+        };
+      }
+
       // Verify current PIN first
       const verifyResult = await this.verifyPin({ userId, pin: currentPin });
       if (!verifyResult.success) {
@@ -374,6 +390,20 @@ class PinService {
    */
   private validatePinFormat(pin: string): boolean {
     return /^\d{6}$/.test(pin);
+  }
+
+  /**
+   * Check if PIN is weak (sequential, repeating, or common patterns)
+   */
+  public isWeakPin(pin: string): boolean {
+    // Sequential ascending/descending
+    const isSequential = /012|123|234|345|456|567|678|789/.test(pin) || /987|876|765|654|543|432|321|210/.test(pin);
+    // Repeating characters (e.g. 111111, 222222)
+    const isRepeating = /(.)\1{2,}/.test(pin);
+    // Common patterns
+    const isPattern = /^(121212|101010|010101|212121|112233|223344)$/.test(pin);
+    
+    return isSequential || isRepeating || isPattern;
   }
 
   /**

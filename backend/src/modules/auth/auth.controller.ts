@@ -1,7 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import { AuthService } from './auth.service';
 import { RegisterInput, LoginInput } from './auth.types';
-import { AuthRequest } from '../../middleware/auth';
+import { AuthRequest, invalidateUserSnapshotCache } from '../../middleware/auth';
+import { cacheGetJson, cacheSetJson, cacheDeleteByPrefix } from '../../cache/redis';
 import { sanitize } from '../../utils/sanitize';
 import { logger } from '../../config/logger';
 import { generateOtp, verifyOtp } from './otp.service';
@@ -50,7 +51,17 @@ const buildProfilePayload = (
     ? toNumber(profileRecord.monthly_income, 0)
     : (userRecord?.salary != null ? Math.round(toNumber(userRecord.salary, 0) / 12) : 0);
 
-  return {
+  const salary =
+    userRecord?.salary != null
+      ? toNumber(userRecord.salary, 0)
+      : (profileRecord?.annual_income != null
+        ? toNumber(profileRecord.annual_income, monthlyIncome * 12)
+        : monthlyIncome * 12);
+  const dateOfBirth = toIsoDateOnly(profileRecord?.date_of_birth || userRecord?.dateOfBirth);
+  const jobType = profileRecord?.job_type || userRecord?.jobType || '';
+  const role = userRecord?.role || authUser?.role || 'user';
+
+  const payload: Record<string, any> = {
     id: userId,
     email: userRecord?.email || profileRecord?.email || authUser?.email || '',
     name:
@@ -64,16 +75,6 @@ const buildProfilePayload = (
     country: profileRecord?.country || userRecord?.country || '',
     state: profileRecord?.state || userRecord?.state || '',
     city: profileRecord?.city || userRecord?.city || '',
-    salary:
-      userRecord?.salary != null
-        ? toNumber(userRecord.salary, 0)
-        : (profileRecord?.annual_income != null
-          ? toNumber(profileRecord.annual_income, monthlyIncome * 12)
-          : monthlyIncome * 12),
-    monthlyIncome,
-    dateOfBirth: toIsoDateOnly(profileRecord?.date_of_birth || userRecord?.dateOfBirth),
-    jobType: profileRecord?.job_type || userRecord?.jobType || '',
-    role: userRecord?.role || authUser?.role || 'user',
     isApproved: userRecord?.isApproved ?? authUser?.isApproved ?? false,
     mobile: profileRecord?.phone || '',
     phone: profileRecord?.phone || '',
@@ -82,6 +83,24 @@ const buildProfilePayload = (
     currency: settingsRecord?.currency || 'USD',
     language: settingsRecord?.language || 'en',
   };
+
+  if (salary !== 0) {
+    payload.salary = salary;
+  }
+  if (monthlyIncome !== 0) {
+    payload.monthlyIncome = monthlyIncome;
+  }
+  if (dateOfBirth !== '') {
+    payload.dateOfBirth = dateOfBirth;
+  }
+  if (jobType !== '') {
+    payload.jobType = jobType;
+  }
+  if (role !== 'user') {
+    payload.role = role;
+  }
+
+  return payload;
 };
 
 export const register = async (req: Request, res: Response, next: NextFunction) => {
@@ -212,9 +231,15 @@ export const getProfile = async (req: AuthRequest, res: Response, next: NextFunc
     if (!req.userId) {
       return next(AppError.unauthorized());
     }
-    let userResult: PromiseSettledResult<unknown> = { status: 'fulfilled', value: null };
-    let profileResult: PromiseSettledResult<unknown> = { status: 'fulfilled', value: null };
-    let settingsResult: PromiseSettledResult<unknown> = { status: 'fulfilled', value: null };
+
+    const profileCacheKey = `profile:${req.userId}`;
+    const cachedProfile = await cacheGetJson<any>(profileCacheKey);
+    if (cachedProfile) {
+      return res.json({
+        success: true,
+        data: cachedProfile,
+      });
+    }
 
     const withTimeout = async <T>(promise: Promise<T>, ms: number, label: string): Promise<T> => {
       return await Promise.race([
@@ -225,11 +250,18 @@ export const getProfile = async (req: AuthRequest, res: Response, next: NextFunc
       ]);
     };
 
-    try {
-      const user = await withTimeout(authService.getUser(req.userId), 1500, 'User profile lookup');
-      userResult = { status: 'fulfilled', value: user };
-    } catch (err: any) {
-      userResult = { status: 'rejected', reason: err };
+    const [userRes, profileRes, settingsRes] = await Promise.allSettled([
+      withTimeout(authService.getUser(req.userId), 1500, 'User profile lookup'),
+      withTimeout(prisma.profiles.findUnique({ where: { id: req.userId } }), 1500, 'Profiles lookup'),
+      withTimeout(prisma.userSettings.findUnique({ where: { userId: req.userId } }), 1500, 'UserSettings lookup')
+    ]);
+
+    const userResult = userRes;
+    const profileResult = profileRes;
+    const settingsResult = settingsRes;
+
+    if (userRes.status === 'rejected') {
+      const err = userRes.reason;
       if (err?.message !== 'User not found') {
         logger.warn('Get profile user lookup failed, falling back to auth snapshot.', {
           message: err?.message,
@@ -238,13 +270,8 @@ export const getProfile = async (req: AuthRequest, res: Response, next: NextFunc
       }
     }
 
-    try {
-      const profile = await withTimeout(prisma.profiles.findUnique({
-        where: { id: req.userId },
-      }), 1500, 'Profiles lookup');
-      profileResult = { status: 'fulfilled', value: profile };
-    } catch (err: any) {
-      profileResult = { status: 'rejected', reason: err };
+    if (profileRes.status === 'rejected') {
+      const err = profileRes.reason;
       logger.warn('Get profile profiles lookup failed, falling back to auth snapshot.', {
         message: err?.message,
         userId: req.userId,
@@ -252,13 +279,8 @@ export const getProfile = async (req: AuthRequest, res: Response, next: NextFunc
       });
     }
 
-    try {
-      const settings = await withTimeout(prisma.userSettings.findUnique({
-        where: { userId: req.userId },
-      }), 1500, 'UserSettings lookup');
-      settingsResult = { status: 'fulfilled', value: settings };
-    } catch (err: any) {
-      settingsResult = { status: 'rejected', reason: err };
+    if (settingsRes.status === 'rejected') {
+      const err = settingsRes.reason;
       logger.warn('Get profile settings lookup failed.', {
         message: err?.message,
         userId: req.userId,
@@ -269,9 +291,12 @@ export const getProfile = async (req: AuthRequest, res: Response, next: NextFunc
     const profileRecord = profileResult.status === 'fulfilled' ? (profileResult.value as Record<string, any>) : null;
     const settingsRecord = settingsResult.status === 'fulfilled' ? (settingsResult.value as Record<string, any>) : null;
 
+    const payload = buildProfilePayload(req.userId, req.user, userRecord, profileRecord, settingsRecord);
+    await cacheSetJson(profileCacheKey, payload, 30); // Cache for 30 seconds
+
     res.json({
       success: true,
-      data: buildProfilePayload(req.userId, req.user, userRecord, profileRecord, settingsRecord),
+      data: payload,
     });
   } catch (error: any) {
     // BUG FIX #3: Even if everything fails, return 200 with auth snapshot instead of 500
@@ -309,6 +334,11 @@ export const updateProfile = async (req: AuthRequest, res: Response, next: NextF
         where: { userId: req.userId },
       }),
     ]);
+
+    // Invalidate Redis profile cache and memory user snapshot cache
+    const profileCacheKey = `profile:${req.userId}`;
+    await cacheDeleteByPrefix(profileCacheKey);
+    invalidateUserSnapshotCache(req.userId);
 
     res.json({
       success: true,

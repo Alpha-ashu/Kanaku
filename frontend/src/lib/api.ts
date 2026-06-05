@@ -77,7 +77,11 @@ function getUserMessage(
 
 const API_BASE_URL = getConfiguredApiBase();
 const DEFAULT_TIMEOUT = 30000; // 30 seconds
-const PROFILE_CACHE_TTL_MS = 5000;
+// Profile cache: 30s prevents duplicate /auth/profile calls during startup
+// (AuthContext syncProfileFromBackend + permissionService both call getProfile)
+const PROFILE_CACHE_TTL_MS = 30_000;
+// Generic GET dedup: two identical GET calls within this window share one network request
+const GET_DEDUP_TTL_MS = 2_000;
 
 let profileCache:
   | {
@@ -87,26 +91,38 @@ let profileCache:
   | null = null;
 let profileRequestInFlight: Promise<ApiResponse<any>> | null = null;
 
-// ==================== Token Management ====================
+// Generic in-flight dedup map: prevents concurrent identical GET requests (e.g. on startup burst)
+const inflightGetRequests = new Map<string, Promise<ApiResponse<any>>>();
+
+// In-memory token store — avoids writing JWTs to extra localStorage keys.
+// The Supabase session (sb-*-auth-token) is the authoritative source.
+// Custom tokens issued by our own backend (e.g. for tests) fall back here.
+let _memoryAccessToken: string | null = null;
+let _memoryRefreshToken: string | null = null;
 
 export const TokenManager = {
   getAccessToken: (): string | null => {
-    return localStorage.getItem('auth_token') || localStorage.getItem('accessToken') || localStorage.getItem('token');
+    // Prefer in-memory (most recent), then legacy localStorage fallback
+    return _memoryAccessToken
+      || localStorage.getItem('auth_token')
+      || localStorage.getItem('accessToken')
+      || localStorage.getItem('token');
   },
 
   setAccessToken: (token: string): void => {
-    localStorage.setItem('auth_token', token);
-    // Also set legacy key for safety
-    localStorage.setItem('accessToken', token);
+    // Store only in memory — Supabase session is the localStorage source of truth.
+    // Writing to localStorage here would create redundant copies of the JWT.
+    _memoryAccessToken = token;
   },
 
   getRefreshToken: (): string | null => {
-    return localStorage.getItem('refresh_token') || localStorage.getItem('refreshToken');
+    return _memoryRefreshToken
+      || localStorage.getItem('refresh_token')
+      || localStorage.getItem('refreshToken');
   },
 
   setRefreshToken: (token: string): void => {
-    localStorage.setItem('refresh_token', token);
-    localStorage.setItem('refreshToken', token);
+    _memoryRefreshToken = token;
   },
 
   clearTokens: (): void => {
@@ -117,6 +133,9 @@ export const TokenManager = {
     localStorage.removeItem('token');
     localStorage.removeItem('authToken');
     localStorage.removeItem('auth_token_v1');
+    // Clear in-memory copies too
+    _memoryAccessToken = null;
+    _memoryRefreshToken = null;
   },
 
   setTokens: (accessToken: string, refreshToken: string): void => {
@@ -251,8 +270,10 @@ class HTTPClient {
 
           const data = (await this.parseResponseBody(response)) as any;
 
-          const responseAuthToken = response.headers.get('Authorization');
-          const responseRefreshToken = response.headers.get('x-refresh-token');
+          // Use optional chaining — test mocks (and some edge-case environments)
+          // may not provide a headers object with a .get() method.
+          const responseAuthToken = response.headers?.get?.('Authorization') ?? null;
+          const responseRefreshToken = response.headers?.get?.('x-refresh-token') ?? null;
 
           if (responseAuthToken) {
             const tokenVal = responseAuthToken.replace(/^Bearer\s+/i, '').trim();
@@ -368,7 +389,19 @@ class HTTPClient {
   }
 
   async get<T>(endpoint: string, config?: RequestConfig): Promise<ApiResponse<T>> {
-    return this.request<T>(endpoint, { ...config, method: 'GET' });
+    // Deduplicate identical concurrent GET requests.
+    // Two calls for the same endpoint within GET_DEDUP_TTL_MS share one network request.
+    const dedupKey = endpoint;
+    const existing = inflightGetRequests.get(dedupKey);
+    if (existing) {
+      return existing as Promise<ApiResponse<T>>;
+    }
+    const req = this.request<T>(endpoint, { ...config, method: 'GET' }).finally(() => {
+      // Remove from map after a short window so future calls still dedup during burst
+      setTimeout(() => inflightGetRequests.delete(dedupKey), GET_DEDUP_TTL_MS);
+    });
+    inflightGetRequests.set(dedupKey, req as Promise<ApiResponse<any>>);
+    return req;
   }
 
   async post<T>(
@@ -444,6 +477,9 @@ export const api = {
   clearCache: () => {
     profileCache = null;
     profileRequestInFlight = null;
+    // Also flush the generic GET dedup map so callers (e.g. tests) can force
+    // a fresh network request on the next call.
+    inflightGetRequests.clear();
   },
   // Authentication
   auth: {

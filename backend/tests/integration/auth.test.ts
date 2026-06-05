@@ -42,8 +42,8 @@ describe('AUTH MODULE', () => {
       expect([201, 500]).toContain(res.status);
       if (res.status === 201) {
         expect(res.body.success).toBe(true);
-        expect(res.body.data).toHaveProperty('accessToken');
-        expect(res.body.data).toHaveProperty('refreshToken');
+        expect(res.headers).toHaveProperty('authorization');
+        expect(res.headers).toHaveProperty('x-refresh-token');
       }
     });
 
@@ -145,7 +145,7 @@ describe('AUTH MODULE', () => {
       expect([200, 401, 500]).toContain(res.status);
       if (res.status === 200) {
         expect(res.body.success).toBe(true);
-        expect(res.body.data).toHaveProperty('accessToken');
+        expect(res.headers).toHaveProperty('authorization');
       }
     });
 

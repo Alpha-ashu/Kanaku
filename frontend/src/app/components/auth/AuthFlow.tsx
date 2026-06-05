@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 import { PrivacyPolicy } from '@/app/components/marketing/PrivacyPolicy';
 import { Terms } from '@/app/components/marketing/Terms';
 import { saveAccountWithBackendSync } from '@/lib/auth-sync-integration';
-import { api } from '@/lib/api';
+import { api, TokenManager } from '@/lib/api';
 import { PublicNavbar } from '@/app/components/ui/PublicNavbar';
 import { enableGuestMode, isGuestMode, disableGuestMode, migrateGuestDataToUser, migrateGuestLocalStorage } from '@/lib/guestMode';
 import { pinService, isPinMissing } from '@/services/pinService';
@@ -130,142 +130,143 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
  };
 
 
- const handleSignIn = async (credentials: { email: string; password: string }) => {
- setIsLoading(true);
- try {
- const { data, error } = await supabase.auth.signInWithPassword({
- email: credentials.email,
- password: credentials.password,
- });
+  const handleSignIn = async (credentials: { email: string; password: string }) => {
+    setIsLoading(true);
+    try {
+      const response = await api.auth.login({
+        email: credentials.email,
+        password: credentials.password,
+      });
 
- if (error) throw error;
+      if (!response.success) {
+        throw new Error(response.message || 'Login failed');
+      }
 
- setEmail(credentials.email);
- setIsNewUser(false);
+      const resData = response.data as any;
+      const user = resData.user;
+      const accessToken = resData.accessToken;
+      const refreshToken = resData.refreshToken;
 
- // Migrate guest data before navigating away 
- if (data.user) {
- await runGuestMigrationIfNeeded(data.user.id);
- }
+      if (accessToken && refreshToken) {
+        TokenManager.setTokens(accessToken, refreshToken);
+        await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken,
+        }).catch((err) => {
+          console.warn('Supabase setSession failed:', err);
+        });
+      }
 
- // Returning user: We don't do PIN setup in AuthFlow anymore for returning users.
- // We let PINAuth component handle it directly on the main app screen.
- localStorage.removeItem('auth_flow_step');
- localStorage.removeItem('pending_auth_email');
+      setEmail(credentials.email);
+      setIsNewUser(false);
 
- // Mark onboarding completed for existing users so they bypass NewUserOnboarding
- if (data.user) {
- // If they had an account, assume they onboarded in the past
- localStorage.setItem('onboarding_completed', 'true');
- }
+      if (user) {
+        await runGuestMigrationIfNeeded(user.id);
+      }
 
- window.location.reload();
- return;
- } catch (error: any) {
- internalLog.error('handleSignIn', error);
- const isNetworkError =
- error?.name === 'AuthRetryableFetchError' ||
- error?.message?.includes('aborted') ||
- error?.message?.includes('fetch');
- const isInvalidCredentials =
- error?.message?.toLowerCase().includes('invalid login credentials') ||
- error?.status === 400;
- let userMessage = 'Sign in failed. Please try again.';
- if (isNetworkError) userMessage = 'Unable to connect. Please check your internet connection and try again.';
- else if (isInvalidCredentials) userMessage = 'Incorrect email or password. Please check your details and try again.';
- toast.error(userMessage);
- } finally {
- setIsLoading(false);
- }
- };
+      localStorage.removeItem('auth_flow_step');
+      localStorage.removeItem('pending_auth_email');
 
- const handleSignUp = async (data: { firstName: string; lastName: string; email: string; mobile: string; password: string }) => {
- setIsLoading(true);
- try {
- const { data: authData, error } = await supabase.auth.signUp({
- email: data.email,
- password: data.password,
- options: {
- data: {
- first_name: data.firstName,
- last_name: data.lastName,
- phone: data.mobile,
- role: 'customer',
- },
- },
- });
+      if (user) {
+        localStorage.setItem('onboarding_completed', 'true');
+      }
 
- // SMTP misconfigured - account IS created but email failed. Non-fatal.
- const smtpFailed = error?.message?.toLowerCase().includes('sending confirmation email');
- // 500 server errors during signup - Supabase DB trigger ran but email hook failed
- const serverError = error?.status === 500 || error?.message?.toLowerCase().includes('internal server error');
- if (error && !smtpFailed && !serverError) throw error;
+      window.location.reload();
+      return;
+    } catch (error: any) {
+      internalLog.error('handleSignIn', error);
+      const isNetworkError =
+        error?.name === 'AuthRetryableFetchError' ||
+        error?.message?.includes('aborted') ||
+        error?.message?.includes('fetch');
+      const isInvalidCredentials =
+        error?.message?.toLowerCase().includes('invalid login credentials') ||
+        error?.status === 400 ||
+        error?.code === 'INVALID_CREDENTIALS';
+      let userMessage = 'Sign in failed. Please try again.';
+      if (isNetworkError) userMessage = 'Unable to connect. Please check your internet connection and try again.';
+      else if (isInvalidCredentials) userMessage = 'Incorrect email or password. Please check your details and try again.';
+      toast.error(userMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
- setEmail(data.email);
- setUserProfile({
- firstName: data.firstName,
- lastName: data.lastName,
- email: data.email,
- mobile: data.mobile,
- dateOfBirth: '',
- jobType: '',
- jobIndustry: '',
- monthlyIncome: '',
- });
- setIsNewUser(true);
+  const handleSignUp = async (data: { firstName: string; lastName: string; email: string; mobile: string; password: string }) => {
+    setIsLoading(true);
+    try {
+      const response = await api.auth.register({
+        name: `${data.firstName} ${data.lastName}`.trim(),
+        email: data.email,
+        password: data.password,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        mobile: data.mobile,
+      } as any);
 
- // Auto-detect: if Supabase"Confirm email" is OFF, the user is already confirmed
- // immediately after signUp (email_confirmed_at is set). Skip OTP in that case.
- const alreadyConfirmed = !!authData?.user?.email_confirmed_at;
+      if (!response.success) {
+        throw new Error(response.message || 'Registration failed');
+      }
 
- if (alreadyConfirmed) {
- // Email confirmation disabled in Supabase - go to NewUserOnboarding in App.tsx
- localStorage.removeItem('auth_flow_step');
- localStorage.removeItem('pending_auth_email');
- window.location.reload();
- toast.success('Account created! Let\'s set up your profile.');
- } else if (serverError) {
- // Supabase returned 500 - account may have been created but email sending failed
- // Route to OTP screen; resend button will recover via signInWithOtp
- setStep('otp-verify');
- saveFlowState('otp-verify');
- toast.warning('Account created, but our email server had an issue. Use \"Resend Code\" below to get your verification email.');
- } else if (smtpFailed) {
- // Account created but email not sent - go to OTP screen with warning
- setStep('otp-verify');
- saveFlowState('otp-verify');
- toast.warning('Account created! Email delivery failed - fix SMTP in Supabase dashboard, then click Resend Code.');
- } else {
- // Normal flow - email sent, user must verify
- setStep('otp-verify');
- saveFlowState('otp-verify');
- toast.success('Verification code sent to your email!');
- }
- } catch (error: any) {
- const isNetworkError = error?.name === 'AuthRetryableFetchError' || error?.message?.includes('aborted');
- const isServerError = error?.status === 500 || error?.message?.toLowerCase().includes('internal server error');
- const isSmtpError = error?.message?.toLowerCase().includes('sending confirmation email') || error?.message?.toLowerCase().includes('smtp');
- const isDuplicateUser =
- error?.code === 'user_already_exists' ||
- error?.status === 422 ||
- error?.message?.toLowerCase().includes('already registered');
+      const resData = response.data as any;
+      const user = resData.user;
+      const accessToken = resData.accessToken;
+      const refreshToken = resData.refreshToken;
 
- let errMsg = error.message || 'Failed to create account';
- if (isNetworkError) {
- errMsg = 'Cannot connect to server. Please try again later.';
- } else if (isDuplicateUser) {
- errMsg = 'This email is already registered. Sign in instead or use a different email.';
- } else if (isServerError) {
- errMsg = 'Signup is temporarily unavailable (server error). Please try again in a moment or contact support if this persists.';
- } else if (isSmtpError) {
- errMsg ="We couldn't send a verification email. Please try again later.";
- }
+      if (accessToken && refreshToken) {
+        TokenManager.setTokens(accessToken, refreshToken);
+        await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken,
+        }).catch((err) => {
+          console.warn('Supabase setSession failed:', err);
+        });
+      }
 
- toast.error(errMsg);
- } finally {
- setIsLoading(false);
- }
- };
+      setEmail(data.email);
+      setUserProfile({
+        firstName: data.firstName,
+        lastName: data.lastName,
+        email: data.email,
+        mobile: data.mobile,
+        dateOfBirth: '',
+        jobType: '',
+        jobIndustry: '',
+        monthlyIncome: '',
+      });
+      setIsNewUser(true);
+
+      if (user) {
+        await runGuestMigrationIfNeeded(user.id);
+      }
+
+      localStorage.removeItem('auth_flow_step');
+      localStorage.removeItem('pending_auth_email');
+      window.location.reload();
+      toast.success("Account created! Let's set up your profile.");
+    } catch (error: any) {
+      const isNetworkError = error?.name === 'AuthRetryableFetchError' || error?.message?.includes('aborted');
+      const isServerError = error?.status === 500 || error?.message?.toLowerCase().includes('internal server error');
+      const isDuplicateUser =
+        error?.code === 'user_already_exists' ||
+        error?.status === 422 ||
+        error?.code === 'EMAIL_EXISTS' ||
+        error?.message?.toLowerCase().includes('already registered');
+
+      let errMsg = error.message || 'Failed to create account';
+      if (isNetworkError) {
+        errMsg = 'Cannot connect to server. Please try again later.';
+      } else if (isDuplicateUser) {
+        errMsg = 'This email is already registered. Sign in instead or use a different email.';
+      } else if (isServerError) {
+        errMsg = 'Signup is temporarily unavailable (server error). Please try again in a moment.';
+      }
+
+      toast.error(errMsg);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
  const handleOTPVerified = async () => {
  if (isNewUser) {
