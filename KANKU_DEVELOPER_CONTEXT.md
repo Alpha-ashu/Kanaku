@@ -117,6 +117,36 @@ For new feature development and refactoring, the backend must use a decoupled **
 
 ##  Change Log & Evolution
 
+### **2026-06-06 — UI Alignment, Navigation Spacing & Password Migration Fallback**
+
+#### 1. Security & PIN Card Alignment (`UserProfile.tsx`)
+
+**Problem**: The "Change Secure PIN" card had an unprofessional layout on smaller screens. The "Change PIN" button text wrapped awkwardly (`Change` stacked on top of `PIN`) and overlapped the description text.
+
+**Fix**:
+- Updated the parent container in [UserProfile.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/profile/UserProfile.tsx) to be responsive: `flex flex-col sm:flex-row sm:items-center justify-between gap-4`.
+- Added `flex-1 min-w-0` to the description container to let it flex and wrap text properly without overlapping.
+- Added `shrink-0 whitespace-nowrap` to the button to prevent label wrapping.
+
+#### 2. Bottom Navigation Bar Spacing (`BottomNav.tsx`)
+
+**Problem**: The floating bottom navigation bar felt cramped, and the end icons (Dashboard and Reports) were too close to the rounded corners of the container. Additionally, the central Quick Add button had negative horizontal margins (`-mx-1`) that pulled adjacent icons too close.
+
+**Fix**:
+- Modified [BottomNav.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/core/BottomNav.tsx) to increase item spacing to `gap-1 sm:gap-2` and added horizontal padding (`px-3 sm:px-4`) to keep the end icons clear of the rounded corners.
+- Removed the `-mx-1` negative margin on the central Quick Add button, allowing the flex gaps to lay out naturally.
+
+#### 3. Self-Healing Password Migration Fallback (`auth.service.ts`)
+
+**Problem**: The auth redesign routed authentication through the backend using local bcrypt checks (`bcrypt.compare`). However, existing seeded users (like `user@kanku.com`) had `"supabase-managed-account"` or null in their database `password` field, locking them out with `401 Unauthorized` errors.
+
+**Fix**:
+- Implemented a self-healing fallback path in [auth.service.ts](file:///k:/Project/kenku/Finora/backend/src/modules/auth/auth.service.ts#L227-L256).
+- If a user's database password is empty or matches `"supabase-managed-account"`, the backend attempts to authenticate their credentials against Supabase Auth.
+- On successful validation, the password is encrypted locally using `bcrypt` and saved to the PostgreSQL `User` table, migrating the account seamlessly.
+
+---
+
 ### **2026-06-01 — Date & Month Timeline Selector Redesign & Realignment**
 
 #### 1. Transactions Month Selector Redesign (`Transactions.tsx`)

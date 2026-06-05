@@ -227,7 +227,36 @@ export class AuthService {
       throw new Error('Invalid credentials');
     }
 
-    const isPasswordValid = await bcrypt.compare(input.password, user.password);
+    let isPasswordValid = false;
+
+    if (!user.password || user.password === 'supabase-managed-account') {
+      logger.info(`[AuthService] User ${input.email} has a Supabase-managed or unmigrated account. Authenticating via Supabase...`);
+      const supabaseAdmin = getSupabaseAdminClient();
+      if (supabaseAdmin) {
+        const { data, error } = await supabaseAdmin.auth.signInWithPassword({
+          email: input.email,
+          password: input.password
+        });
+        
+        if (!error && data.user) {
+          isPasswordValid = true;
+          // Migrating password hash to local DB for future logins
+          try {
+            const hashedPassword = await bcrypt.hash(input.password, 10);
+            await prisma.user.update({
+              where: { id: user.id },
+              data: { password: hashedPassword }
+            });
+            logger.info(`[AuthService] Migrated password hash for user ${input.email} to local DB.`);
+          } catch (migrateErr: any) {
+            logger.warn(`[AuthService] Password migration failed for user ${input.email}:`, migrateErr);
+          }
+        }
+      }
+    } else {
+      isPasswordValid = await bcrypt.compare(input.password, user.password);
+    }
+
     if (!isPasswordValid) {
       throw new Error('Invalid credentials');
     }
