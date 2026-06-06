@@ -117,7 +117,7 @@ For new feature development and refactoring, the backend must use a decoupled **
 
 ##  Change Log & Evolution
 
-### **2026-06-06 — UI Alignment, Navigation Spacing & Password Migration Fallback**
+### **2026-06-06 — UI Spacing, Auth Fallbacks, Profile Data Alignment & Route Sync Optimizations**
 
 #### 1. Security & PIN Card Alignment (`UserProfile.tsx`)
 
@@ -144,6 +144,36 @@ For new feature development and refactoring, the backend must use a decoupled **
 - Implemented a self-healing fallback path in [auth.service.ts](file:///k:/Project/kenku/Finora/backend/src/modules/auth/auth.service.ts#L227-L256).
 - If a user's database password is empty or matches `"supabase-managed-account"`, the backend attempts to authenticate their credentials against Supabase Auth.
 - On successful validation, the password is encrypted locally using `bcrypt` and saved to the PostgreSQL `User` table, migrating the account seamlessly.
+
+#### 4. Backend Profile Data Alignment (`auth.controller.ts`)
+
+**Problem**: The User Profile API did not return crucial fields like `mobileNumber`, `dateOfBirth`, `jobType`, `monthlyIncome`, `pinEnabled`, and `isApproved`, causing missing fields in the UI. Standard clean loops automatically stripped default falsy values (like `monthlyIncome = 0` or `pinEnabled = false`) from the JSON payload response.
+
+**Fix**:
+- Modified `buildProfilePayload` in [auth.controller.ts](file:///k:/Project/kenku/Finora/backend/src/modules/auth/auth.controller.ts) to accept the PIN record, fetch the user's PIN status via `prisma.userPin.findUnique`, and map all requested profile details directly.
+- Established an `allowedNullKeys` Set protecting standard keys from being pruned in the key deletion loop, returning them cleanly as `false`, `0`, `""`, or `null`.
+
+#### 5. Frontend Route-Based Sync & Startup Performance (`AuthContext.tsx`)
+
+**Problem**: Immediately upon login or startup, the application synchronously requested all database tables (goals, transactions, challenges, settings, friends, accounts, loans, investments, etc.) even when only loading the Profile view, wasting bandwidth and slowing down initial page loads.
+
+**Fix**:
+- Modified `syncFromSupabase` in [AuthContext.tsx](file:///k:/Project/kenku/Finora/frontend/src/contexts/AuthContext.tsx) to check if `requestedTables` is empty/undefined and return early after fetching ONLY the profile:
+  ```typescript
+  if (!requestedTables || requestedTables.length === 0) {
+    await syncProfileFromBackend(user);
+    return;
+  }
+  ```
+- This deferred syncing for transactions, goals, investments, and friends until their respective components/pages are actually loaded, reducing boot queries to 3-5 calls.
+
+#### 6. Profile Loading UX Skeleton Loader (`UserProfile.tsx`)
+
+**Problem**: While loading profile details from local storage or backend APIs, the user profile page flickered and displayed incorrect defaults ("Not specified", "0", blank fields).
+
+**Fix**:
+- Implemented a responsive, pulse-animated `<ProfileSkeleton />` component in [UserProfile.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/profile/UserProfile.tsx) matching the two-column grid design.
+- Added a conditional rendering gate on `isLoading` to render the skeleton while fetching, ensuring smooth transitions without placeholder flicker.
 
 ---
 
