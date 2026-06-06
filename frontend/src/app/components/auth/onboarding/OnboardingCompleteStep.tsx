@@ -120,47 +120,42 @@ export const OnboardingCompleteStep: React.FC<OnboardingCompleteStepProps> = ({
 
 
  try {
- // Step 1: Save profile through backend API only
- setProgress(15);
- try {
- const { data: { user } } = await supabase.auth.getUser();
- if (user) {
- try {
- await api.auth.updateProfile({
- firstName,
- lastName,
- gender: data.gender,
- country: data.country,
- state: data.state,
- city: data.city,
- monthlyIncome: monthlyBudget,
- dateOfBirth: data.dateOfBirth,
- jobType: data.jobType,
- avatarId: resolvedAvatar.id
- });
- } catch (apiErr) {
- console.warn('Backend API sync failed:', apiErr);
- }
+  // Step 1: Save profile through backend API only
+  setProgress(15);
+  try {
+  await api.auth.updateProfile({
+  firstName,
+  lastName,
+  gender: data.gender,
+  country: data.country,
+  state: data.state,
+  city: data.city,
+  monthlyIncome: monthlyBudget,
+  dateOfBirth: data.dateOfBirth,
+  jobType: data.jobType,
+  avatarId: resolvedAvatar.id,
+  avatarUrl: resolvedAvatar.url
+  });
+  } catch (apiErr) {
+  console.warn('Backend API sync failed:', apiErr);
+  }
 
- try {
- await apiClient.put('/settings', {
- currency: userSettings.currency,
- language: userSettings.language,
- timezone: userSettings.timezone,
- settings: toSettingsPayload(userSettings),
- }, {
- showErrorToast: false,
- });
- } catch (settingsErr) {
- console.warn('Backend settings sync failed:', settingsErr);
- }
+  try {
+  await apiClient.put('/settings', {
+  currency: userSettings.currency,
+  language: userSettings.language,
+  timezone: userSettings.timezone,
+  settings: toSettingsPayload(userSettings),
+  }, {
+  showErrorToast: false,
+  });
+  } catch (settingsErr) {
+  console.warn('Backend settings sync failed:', settingsErr);
+  }
 
- localStorage.removeItem('profile_sync_pending');
- }
- } catch (supabaseError) {
- console.warn('Profile sync skipped (non-blocking):', supabaseError);
- }
- // Step 2: Create initial account in local DB (backend sync is best-effort)
+  localStorage.removeItem('profile_sync_pending');
+
+  // Step 2: Create initial account in local DB (backend sync is best-effort)
  setProgress(35);
  const accountData = {
  name: data.bankName

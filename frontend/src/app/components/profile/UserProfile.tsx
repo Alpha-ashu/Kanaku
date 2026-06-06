@@ -451,14 +451,14 @@ export const UserProfile: React.FC = () => {
  gender: (data.gender || '').toLowerCase() as any,
  dateOfBirth: dateOfBirthVal,
  monthlyIncome: monthlyIncomeVal,
- jobType: (data.jobType || data.job_type || '').toLowerCase() as any,
+ jobType: normalizeJobType(data.jobType || data.job_type || ''),
  country: data.country || '',
  state: data.state || '',
  city: data.city || '',
- profilePhoto: resolveAvatarSelection({
- avatarUrl: data.profilePhoto || data.avatar_url,
- avatarId: data.avatarId || data.avatar_id
- }).url,
+    profilePhoto: resolveAvatarSelection({
+      avatarUrl: data.profilePhoto || data.avatarUrl || data.avatar_url,
+      avatarId: data.avatarId || data.avatar_id
+    }).url,
  avatarId: data.avatarId || data.avatar_id,
  };
 

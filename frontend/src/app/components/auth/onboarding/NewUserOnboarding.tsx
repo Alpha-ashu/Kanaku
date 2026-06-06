@@ -4,6 +4,8 @@ import { BankAccountStep } from './BankAccountStep';
 import { CountryLanguageStep } from './CountryLanguageStep';
 import { OnboardingCompleteStep } from './OnboardingCompleteStep';
 import supabase from '@/utils/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { api } from '@/lib/api';
 
 interface OnboardingData {
  displayName: string;
@@ -42,20 +44,58 @@ export const NewUserOnboarding: React.FC = () => {
  avatarId: '',
  });
 
+ const { user } = useAuth();
+
  React.useEffect(() => {
-    supabase.auth.getUser().then((res: any) => {
-      const user = res.data?.user;
-      if (user) {
-        const metaName = user.user_metadata?.first_name
-          ? `${user.user_metadata.first_name} ${user.user_metadata.last_name || ''}`.trim()
-          : user.user_metadata?.full_name || '';
-        if (metaName) {
-          setOnboardingData(prev => ({ ...prev, displayName: metaName, accountHolderName: metaName }));
-        }
-      }
-      setIsInitializing(false);
-    });
-  }, []);
+   const initProfile = async () => {
+     let metaName = '';
+
+     // 1. Try local profile cache first
+     try {
+       const localProfileStr = localStorage.getItem('user_profile');
+       if (localProfileStr) {
+         const localProfile = JSON.parse(localProfileStr);
+         metaName = localProfile.displayName || localProfile.fullName || 
+           `${localProfile.firstName || ''} ${localProfile.lastName || ''}`.trim();
+       }
+     } catch (e) {
+       console.warn('Failed to parse local profile:', e);
+     }
+
+     // 2. Try useAuth context user metadata
+     if (!metaName && user) {
+       metaName = user.user_metadata?.full_name || 
+         user.user_metadata?.displayName ||
+         (user.user_metadata?.first_name 
+           ? `${user.user_metadata.first_name} ${user.user_metadata.last_name || ''}`.trim()
+           : `${user.user_metadata?.firstName || ''} ${user.user_metadata?.lastName || ''}`.trim());
+     }
+
+     // 3. Try backend API profile as the authoritative source
+     if (!metaName) {
+       try {
+         const profileRes = await api.auth.getProfile();
+         if (profileRes.success && profileRes.data) {
+           const p = profileRes.data;
+           metaName = p.fullName || p.name || `${p.firstName || ''} ${p.lastName || ''}`.trim();
+         }
+       } catch (e) {
+         console.warn('Failed to fetch profile during onboarding init:', e);
+       }
+     }
+
+     if (metaName) {
+       setOnboardingData(prev => ({
+         ...prev,
+         displayName: metaName,
+         accountHolderName: metaName
+       }));
+     }
+     setIsInitializing(false);
+   };
+
+   initProfile();
+ }, [user]);
 
  const updateOnboardingData = (data: Partial<OnboardingData>) => {
  setOnboardingData(prev => ({ ...prev, ...data }));

@@ -49,6 +49,18 @@ export const BankAccountStep: React.FC<BankAccountStepProps> = ({
  [data.bankName, allBanks]
  );
 
+ const currencyPrefix = useMemo(() => {
+    const country = (data.country || '').trim();
+    if (country === 'India') return 'INR';
+    if (country === 'United States' || country === 'US' || country === 'USA') return '$';
+    if (country === 'United Kingdom' || country === 'UK') return 'GBP';
+    if (country === 'Canada') return 'CAD';
+    if (country === 'Australia') return 'AUD';
+    if (country === 'United Arab Emirates' || country === 'UAE') return 'AED';
+    if (country === 'Singapore') return 'SGD';
+    return 'INR'; // default fallback
+  }, [data.country]);
+
  const handleSelectBank = (bank: BankInfo) => {
  onUpdate({ bankName: bank.name });
  setSearchQuery(bank.name);
@@ -196,7 +208,7 @@ export const BankAccountStep: React.FC<BankAccountStepProps> = ({
  </label>
  <div className="relative">
  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 font-medium text-sm">
- {data.country === 'India' ? 'INR' : data.country === 'United States' ? '$' : data.country === 'United Kingdom' ? 'GBP' : 'INR'}
+ {currencyPrefix}
  </span>
  <input
  type="number"
@@ -204,7 +216,7 @@ export const BankAccountStep: React.FC<BankAccountStepProps> = ({
  value={data.currentBalance}
  onChange={e => { onUpdate({ currentBalance: e.target.value }); setErrors(prev => ({ ...prev, currentBalance: '' })); }}
  className={`w-full ${
-    (data.country === 'India' || data.country === 'United Kingdom' || !data.country) ? 'pl-14' : 'pl-8'
+    currencyPrefix.length > 1 ? 'pl-14' : 'pl-8'
   } pr-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 ${
  errors.currentBalance ? 'border-red-400 bg-red-50' : 'border-gray-300'
  }`}

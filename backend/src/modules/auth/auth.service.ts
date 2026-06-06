@@ -111,22 +111,50 @@ export class AuthService {
   }
 
   async updateProfile(userId: string, data: any, email?: string): Promise<any> {
-    const {
-      firstName,
-      lastName,
-      gender,
-      country,
-      state,
-      city,
-      monthlyIncome,
-      dateOfBirth,
-      jobType,
-      phone,
-      mobile,
-      avatarId,
-      avatarUrl,
-    } = data;
-    const resolvedPhone = phone ?? mobile ?? null;
+    logger.info(`[AuthService] Processing profile update for userId: ${userId}. Input data: ${JSON.stringify(data)}`);
+
+    // Fetch existing records for merging
+    const existingUser = await prisma.user.findUnique({ where: { id: userId } });
+    const existingProfile = await prisma.profiles.findUnique({ where: { id: userId } });
+
+    // Perform a field-by-field merge of incoming data with existing DB state
+    const merged = {
+      firstName: data.firstName !== undefined ? data.firstName : (existingUser?.firstName ?? existingProfile?.first_name ?? null),
+      lastName: data.lastName !== undefined ? data.lastName : (existingUser?.lastName ?? existingProfile?.last_name ?? null),
+      gender: data.gender !== undefined ? data.gender : (existingUser?.gender ?? existingProfile?.gender ?? null),
+      country: data.country !== undefined ? data.country : (existingUser?.country ?? existingProfile?.country ?? null),
+      state: data.state !== undefined ? data.state : (existingUser?.state ?? existingProfile?.state ?? null),
+      city: data.city !== undefined ? data.city : (existingUser?.city ?? existingProfile?.city ?? null),
+      avatarId: data.avatarId !== undefined ? data.avatarId : (existingUser?.avatarId ?? existingProfile?.avatar_id ?? null),
+      avatarUrl: data.avatarUrl !== undefined ? data.avatarUrl : (existingProfile?.avatar_url ?? null),
+      jobType: data.jobType !== undefined ? data.jobType : (existingUser?.jobType ?? existingProfile?.job_type ?? null),
+    };
+
+    // Standardize phone - if phone or mobile is provided in request, use it. Otherwise fall back to DB.
+    let resolvedPhone: string | null = null;
+    if (data.phone !== undefined || data.mobile !== undefined) {
+      resolvedPhone = data.phone ?? data.mobile ?? null;
+    } else {
+      resolvedPhone = existingProfile?.phone ?? null;
+    }
+
+    // Standardize monthlyIncome - fall back to DB if omitted (undefined)
+    let monthlyIncomeVal = data.monthlyIncome;
+    if (monthlyIncomeVal === undefined) {
+      if (existingProfile?.monthly_income !== null && existingProfile?.monthly_income !== undefined) {
+        monthlyIncomeVal = Number(existingProfile.monthly_income);
+      } else if (existingUser?.salary !== null && existingUser?.salary !== undefined) {
+        monthlyIncomeVal = Number(existingUser.salary) / 12;
+      } else {
+        monthlyIncomeVal = null;
+      }
+    }
+
+    // Standardize dateOfBirth - fall back to DB if omitted (undefined)
+    let dobVal = data.dateOfBirth;
+    if (dobVal === undefined) {
+      dobVal = existingUser?.dateOfBirth ?? existingProfile?.date_of_birth ?? null;
+    }
 
     // Validate email if provided in data
     const activeEmail = email || data.email;
@@ -160,14 +188,12 @@ export class AuthService {
       }
     }
 
-    logger.info(`[AuthService] Processing profile update for userId: ${userId}. Input data: ${JSON.stringify(data)}`);
-
     // Standardize income - handle potential float/string/null
     let decimalMonthlyIncome: Prisma.Decimal | null = null;
     let decimalAnnualIncome: Prisma.Decimal | null = null;
     try {
-      if (monthlyIncome !== undefined && monthlyIncome !== null) {
-        const incomeNum = Number(monthlyIncome);
+      if (monthlyIncomeVal !== undefined && monthlyIncomeVal !== null) {
+        const incomeNum = Number(monthlyIncomeVal);
         if (!isNaN(incomeNum)) {
           decimalMonthlyIncome = new Prisma.Decimal(incomeNum);
           decimalAnnualIncome = new Prisma.Decimal(incomeNum * 12);
@@ -178,10 +204,10 @@ export class AuthService {
     }
 
     // Standardize DOB
-    let dob: Date | undefined;
-    if (dateOfBirth) {
+    let dob: Date | null = null;
+    if (dobVal) {
       try {
-        const parsedDate = new Date(dateOfBirth);
+        const parsedDate = new Date(dobVal);
         if (!isNaN(parsedDate.getTime())) {
           dob = parsedDate;
         }
@@ -196,39 +222,39 @@ export class AuthService {
 
       // Safety: Ensure email is never empty if we are creating a new record
       // In a hybrid system, we prefer the email from the JWT/Session
-      const activeEmail = email || data.email || `user-${userId.substring(0, 8)}@placeholder.KANKU.app`;
+      const finalActiveEmail = email || data.email || existingUser?.email || `user-${userId.substring(0, 8)}@placeholder.KANKU.app`;
 
       const user = await prisma.user.upsert({
         where: { id: userId },
         update: {
-          name: `${firstName || ''} ${lastName || ''}`.trim() || 'User',
-          firstName: firstName || undefined,
-          lastName: lastName || undefined,
-          gender: gender || undefined,
-          country: country || undefined,
-          state: state || undefined,
-          city: city || undefined,
-          salary: monthlyIncome ? Number(monthlyIncome) * 12 : undefined,
+          name: `${merged.firstName || ''} ${merged.lastName || ''}`.trim() || 'User',
+          firstName: merged.firstName,
+          lastName: merged.lastName,
+          gender: merged.gender,
+          country: merged.country,
+          state: merged.state,
+          city: merged.city,
+          salary: monthlyIncomeVal ? Number(monthlyIncomeVal) * 12 : null,
           dateOfBirth: dob,
-          jobType,
-          avatarId: avatarId || undefined,
+          jobType: merged.jobType,
+          avatarId: merged.avatarId,
           updatedAt: new Date(),
         } as any,
         create: {
           id: userId,
-          email: activeEmail,
-          name: `${firstName || ''} ${lastName || ''}`.trim() || 'User',
+          email: finalActiveEmail,
+          name: `${merged.firstName || ''} ${merged.lastName || ''}`.trim() || 'User',
           password: 'supabase-managed-account',
-          firstName: firstName || null,
-          lastName: lastName || null,
-          gender: gender || null,
-          country: country || null,
-          state: state || null,
-          city: city || null,
-          salary: monthlyIncome ? Number(monthlyIncome) * 12 : 0,
+          firstName: merged.firstName,
+          lastName: merged.lastName,
+          gender: merged.gender,
+          country: merged.country,
+          state: merged.state,
+          city: merged.city,
+          salary: monthlyIncomeVal ? Number(monthlyIncomeVal) * 12 : 0,
           dateOfBirth: dob,
-          jobType,
-          avatarId: avatarId || null,
+          jobType: merged.jobType,
+          avatarId: merged.avatarId,
           updatedAt: new Date(),
           createdAt: new Date(),
         } as any
@@ -246,11 +272,11 @@ export class AuthService {
             country, state, city, phone, avatar_url, avatar_id, monthly_income, annual_income, 
             date_of_birth, job_type, updated_at
           ) VALUES (
-            ${userId}::uuid, ${email || null}, ${firstName || null}, ${lastName || null}, 
-            ${(`${firstName || ''} ${lastName || ''}`.trim() || null)}, ${gender || null},
-            ${country || null}, ${state || null}, ${city || null}, ${resolvedPhone}, ${avatarUrl || null}, ${avatarId || null},
+            ${userId}::uuid, ${finalActiveEmail || null}, ${merged.firstName || null}, ${merged.lastName || null}, 
+            ${(`${merged.firstName || ''} ${merged.lastName || ''}`.trim() || null)}, ${merged.gender || null},
+            ${merged.country || null}, ${merged.state || null}, ${merged.city || null}, ${resolvedPhone}, ${merged.avatarUrl || null}, ${merged.avatarId || null},
             ${decimalMonthlyIncome}, ${decimalAnnualIncome}, 
-            ${dob || null}, ${jobType || null}, NOW()
+            ${dob || null}, ${merged.jobType || null}, NOW()
           )
           ON CONFLICT (id) DO UPDATE SET
             first_name = EXCLUDED.first_name,
