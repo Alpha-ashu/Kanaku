@@ -332,6 +332,13 @@ const AppContent: React.FC = () => {
     return () => { cleanupNetwork(); };
   }, [user, authLoading, criticalPagesPrefetched]);
 
+  // Trigger data sync after PIN verification
+  useEffect(() => {
+    if (user && isAuthenticated && !dataReady && !dataSyncing) {
+      void triggerDataSync();
+    }
+  }, [user, isAuthenticated, dataReady, dataSyncing, triggerDataSync]);
+
   // Ensure we land on dashboard after login when the URL is a stale auth path
   // ALSO: Guard against disabled features
   useEffect(() => {
@@ -572,7 +579,38 @@ const AppContent: React.FC = () => {
     );
   }
 
-  // Gate 1: Onboarding (BEFORE PIN)
+  // Gate 1: Onboarding
+  if (user && !hasCompletedOnboarding && isNewUser) {
+    return (
+      <Suspense fallback={<PageLoader />}>
+        <NewUserOnboarding />
+      </Suspense>
+    );
+  }
+
+  // Gate 1.5: PIN setup for new users (after onboarding completes)
+  // Positioned before the !isAuthenticated check to avoid locking out new users
+  const needsPinSetup = localStorage.getItem('pin_setup_required') === 'true';
+  if (user && needsPinSetup) {
+    return (
+      <Suspense fallback={<PageLoader />}>
+        <PINSetup
+          onComplete={(pin) => {
+            localStorage.removeItem('pin_setup_required');
+            setAuthenticated(pin);
+          }}
+          existingPinRequired={false}
+        />
+      </Suspense>
+    );
+  }
+
+  // Gate 2: PIN authentication
+  if (user && !isAuthenticated) {
+    return <PINAuth onAuthenticated={setAuthenticated} />;
+  }
+
+  // Gate 3: Data Ready (heavy sync & permissions) - only after PIN is verified!
   if (user && !dataReady) {
     return (
       <div className="flex items-center justify-center h-screen bg-gradient-to-br from-pink-500 to-rose-600">
@@ -589,36 +627,6 @@ const AppContent: React.FC = () => {
         </div>
       </div>
     );
-  }
-
-  if (!hasCompletedOnboarding && isNewUser) {
-    return (
-      <Suspense fallback={<PageLoader />}>
-        <NewUserOnboarding />
-      </Suspense>
-    );
-  }
-
-  // Gate 1.5: PIN setup for new users (after onboarding completes)
-  // Positioned before the !isAuthenticated check to avoid locking out new users
-  const needsPinSetup = localStorage.getItem('pin_setup_required') === 'true';
-  if (needsPinSetup) {
-    return (
-      <Suspense fallback={<PageLoader />}>
-        <PINSetup
-          onComplete={(pin) => {
-            localStorage.removeItem('pin_setup_required');
-            setAuthenticated(pin);
-          }}
-          existingPinRequired={false}
-        />
-      </Suspense>
-    );
-  }
-
-  // Gate 2: PIN authentication
-  if (!isAuthenticated) {
-    return <PINAuth onAuthenticated={setAuthenticated} />;
   }
 
 

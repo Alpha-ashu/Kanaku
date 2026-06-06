@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { db, Account, Transaction, Loan, Goal, Investment, GroupExpense, Friend } from '@/lib/database';
 import { isBoilerplateDescription } from '@/services/smartExpenseImportService';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSecurity } from '@/contexts/SecurityContext';
 import { getVisibleFeaturesForRole, mergeVisibleFeatures, normalizeFeatures, FeatureVisibility, computeSubFeatureMap, AIModuleKey, computeAICapabilityMap } from '@/lib/featureFlags';
 import { type SyncStats, useSyncStats, offlineSyncEngine } from '@/lib/offline-sync-engine';
 import { deduplicateLocalData, saveAccountWithBackendSync, syncUserDataFromCloud, updateAccountWithBackendSync } from '@/lib/auth-sync-integration';
@@ -136,6 +137,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   });
   const { role, user, dataReady } = useAuth();
+  const { isAuthenticated } = useSecurity();
   const attemptedBalanceRepairKeyRef = useRef<string | null>(null);
   const syncStats = useSyncStats();
 
@@ -705,7 +707,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   // Real-time data sync via WebSocket.
   // Listening for friend requests, group expenses, and todos changes.
   useEffect(() => {
-    if (!user?.id) return;
+    if (!user?.id || !isAuthenticated) return;
 
     const unsubFriend = socketClient.on('friend_accepted', () => {
       console.log('[AppContext] friend_accepted received via WebSocket — syncing friends');
@@ -761,7 +763,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       unsubTodo();
       unsubNotification();
     };
-  }, [user?.id]);
+  }, [user?.id, isAuthenticated]);
 
   // Listen for real-time feature flag changes from admin panel (same-tab + cross-tab)
   useEffect(() => {

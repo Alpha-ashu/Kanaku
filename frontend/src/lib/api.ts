@@ -83,13 +83,20 @@ const PROFILE_CACHE_TTL_MS = 30_000;
 // Generic GET dedup: two identical GET calls within this window share one network request
 const GET_DEDUP_TTL_MS = 2_000;
 
-let profileCache:
+let profilePrivateCache:
   | {
     expiresAt: number;
     response: ApiResponse<any>;
   }
   | null = null;
-let profileRequestInFlight: Promise<ApiResponse<any>> | null = null;
+let profilePublicCache:
+  | {
+    expiresAt: number;
+    response: ApiResponse<any>;
+  }
+  | null = null;
+let profilePrivateRequestInFlight: Promise<ApiResponse<any>> | null = null;
+let profilePublicRequestInFlight: Promise<ApiResponse<any>> | null = null;
 
 // Generic in-flight dedup map: prevents concurrent identical GET requests (e.g. on startup burst)
 const inflightGetRequests = new Map<string, Promise<ApiResponse<any>>>();
@@ -483,8 +490,10 @@ export const apiClient = new HTTPClient();
 
 export const api = {
   clearCache: () => {
-    profileCache = null;
-    profileRequestInFlight = null;
+    profilePrivateCache = null;
+    profilePublicCache = null;
+    profilePrivateRequestInFlight = null;
+    profilePublicRequestInFlight = null;
     // Also flush the generic GET dedup map so callers (e.g. tests) can force
     // a fresh network request on the next call.
     inflightGetRequests.clear();
@@ -521,19 +530,40 @@ export const api = {
       const force = options?.force === true;
       const includePrivate = options?.includePrivate === true;
 
-      if (!force && !includePrivate && profileCache && profileCache.expiresAt > Date.now()) {
-        return profileCache.response;
+      // Check if we have a valid cached private profile (which satisfies both private and public requests)
+      if (!force && profilePrivateCache && profilePrivateCache.expiresAt > Date.now()) {
+        return profilePrivateCache.response;
       }
 
-      if (!force && !includePrivate && profileRequestInFlight) {
-        return profileRequestInFlight;
+      // Check if we have a valid cached public profile (satisfies only public requests)
+      if (!force && !includePrivate && profilePublicCache && profilePublicCache.expiresAt > Date.now()) {
+        return profilePublicCache.response;
+      }
+
+      // Check for in-flight requests to deduplicate concurrent requests
+      if (!force) {
+        if (includePrivate && profilePrivateRequestInFlight) {
+          return profilePrivateRequestInFlight;
+        }
+        if (!includePrivate && profilePublicRequestInFlight) {
+          return profilePublicRequestInFlight;
+        }
+        // If a private request is in-flight, a public request can also wait for it
+        if (!includePrivate && profilePrivateRequestInFlight) {
+          return profilePrivateRequestInFlight;
+        }
       }
 
       const suffix = includePrivate ? '?includePrivate=true' : '';
       const request = apiClient.get('/auth/profile' + suffix)
         .then((response) => {
-          if (!includePrivate) {
-            profileCache = {
+          if (includePrivate) {
+            profilePrivateCache = {
+              expiresAt: Date.now() + PROFILE_CACHE_TTL_MS,
+              response,
+            };
+          } else {
+            profilePublicCache = {
               expiresAt: Date.now() + PROFILE_CACHE_TTL_MS,
               response,
             };
@@ -541,14 +571,19 @@ export const api = {
           return response;
         })
         .finally(() => {
-          if (!includePrivate) {
-            profileRequestInFlight = null;
+          if (includePrivate) {
+            profilePrivateRequestInFlight = null;
+          } else {
+            profilePublicRequestInFlight = null;
           }
         });
 
-      if (!includePrivate) {
-        profileRequestInFlight = request;
+      if (includePrivate) {
+        profilePrivateRequestInFlight = request;
+      } else {
+        profilePublicRequestInFlight = request;
       }
+
       return request;
     },
 
@@ -557,8 +592,10 @@ export const api = {
         showSuccessToast: true,
         successMessage: 'Profile updated successfully',
       }).then((response) => {
-        profileCache = null;
-        profileRequestInFlight = null;
+        profilePrivateCache = null;
+        profilePublicCache = null;
+        profilePrivateRequestInFlight = null;
+        profilePublicRequestInFlight = null;
         return response;
       }),
 

@@ -149,12 +149,6 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
 
       if (accessToken && refreshToken) {
         TokenManager.setTokens(accessToken, refreshToken);
-        await supabase.auth.setSession({
-          access_token: accessToken,
-          refresh_token: refreshToken,
-        }).catch((err: unknown) => {
-          console.warn('Supabase setSession failed:', err);
-        });
       }
 
       setEmail(credentials.email);
@@ -215,12 +209,6 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
 
       if (accessToken && refreshToken) {
         TokenManager.setTokens(accessToken, refreshToken);
-        await supabase.auth.setSession({
-          access_token: accessToken,
-          refresh_token: refreshToken,
-        }).catch((err: any) => {
-          console.warn('Supabase setSession failed:', err);
-        });
       }
 
       setEmail(data.email);

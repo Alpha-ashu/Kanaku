@@ -797,20 +797,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                   user: nextUser,
                 } as Session;
 
-                // Sync custom token to Supabase client so direct queries/sync functions can resolve session correctly
-                void supabase.auth.setSession({
-                  access_token: customToken,
-                  refresh_token: TokenManager.getRefreshToken() || '',
-                }).catch((err: any) => {
-                  console.warn('Sync custom token to Supabase failed:', err);
-                });
 
-                // Return early inside INITIAL_SESSION handler block after calling setSession.
-                // The setSession() call will immediately trigger a clean SIGNED_IN event which
-                // will perform the actual sync and loading state changes.
-                if (event === 'INITIAL_SESSION') {
-                  return;
-                }
 
                 // Validate the token against the backend in background
                 void (async () => {
@@ -903,7 +890,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             if (isFreshLogin || isAppLoad) {
               activeSyncUserId.current = nextUser.id;
               setDataReady(false);
-              setDataSyncing(true);
+              setDataSyncing(false);
               setDataSyncError(null);
 
               const lastUserId = localStorage.getItem('auth_last_user_id');
@@ -923,44 +910,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 setRole(provisionalRole);
                 setLoading(false);
               }
-
-              // Run permissions fetch and heavy cloud sync in the background
-              void (async () => {
-                try {
-                  const permissions = await permissionService.fetchUserPermissions(nextUser.id, provisionalRole);
-                  if (activeSyncUserId.current === nextUser.id && isMounted) {
-                    setRole(permissions.role);
-                  }
-                } catch (permError) {
-                  console.warn('Background permission fetch failed/timed out, using provisional role:', permError);
-                }
-
-                try {
-                  // If we already have local accounts stored in offline Dexie database, set dataReady immediately
-                  // to avoid showing a blocking sync screen for a clean, smooth, and immediate load.
-                  const localAccountsCount = await db.accounts.count().catch(() => 0);
-                  const hasLocalData = localAccountsCount > 0;
-                  if (hasLocalData && activeSyncUserId.current === nextUser.id && isMounted) {
-                    setDataReady(true);
-                  }
-
-                  await syncFromSupabase(nextUser, true);
-                  if (activeSyncUserId.current === nextUser.id && isMounted) {
-                    setDataReady(true);
-                  }
-                } catch (syncError) {
-                  console.warn('Background sync failed (non-blocking):', syncError);
-                  if (activeSyncUserId.current === nextUser.id && isMounted) {
-                    setDataSyncError(formatSupabaseError(syncError));
-                    setDataReady(true);
-                  }
-                } finally {
-                  if (activeSyncUserId.current === nextUser.id && isMounted) {
-                    setDataSyncing(false);
-                  }
-                  initialSyncDone = true;
-                }
-              })();
+              initialSyncDone = true;
             } else {
               if (isMounted) setLoading(false);
             }
