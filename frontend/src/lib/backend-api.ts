@@ -286,6 +286,30 @@ class BackendService {
       baseURL: API_BASE_URL,
     });
 
+    // Deduplicate identical concurrent GET requests
+    const originalRequest = this.api.request.bind(this.api);
+    const inflightRequests = new Map<string, Promise<any>>();
+
+    this.api.request = (config: any) => {
+      const method = (config.method || 'get').toLowerCase();
+      if (method === 'get') {
+        const key = JSON.stringify({ url: config.url, params: config.params });
+        if (inflightRequests.has(key)) {
+          console.info(`[BackendService] Deduplicating concurrent GET request: ${config.url}`);
+          return inflightRequests.get(key)!;
+        }
+
+        const promise = originalRequest(config).finally(() => {
+          inflightRequests.delete(key);
+        });
+
+        inflightRequests.set(key, promise);
+        return promise;
+      }
+
+      return originalRequest(config);
+    };
+
     // Add token to every request
     this.api.interceptors.request.use((config) => {
       let token = this.token;

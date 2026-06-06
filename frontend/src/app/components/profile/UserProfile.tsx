@@ -547,6 +547,7 @@ export const UserProfile: React.FC = () => {
  const [confirmNewPin, setConfirmNewPin] = useState('');
  const [showNewPin, setShowNewPin] = useState(false);
  const [isPinLoading, setIsPinLoading] = useState(false);
+ const isPinWeak = newPin.length === 6 && pinService.isWeakPin(newPin);
 
   const handleSetNewPin = async () => {
     if (currentPin.length !== 6) { toast.error('Current PIN must be 6 digits'); return; }
@@ -934,7 +935,7 @@ export const UserProfile: React.FC = () => {
  animate={{ opacity: 1, y: 0 }}
  transition={{ delay: 0.1 }}
  >
- <Card className="overflow-hidden relative bg-white border border-gray-200 rounded-2xl p-6 lg:p-8 shadow-sm">
+ <Card variant="flat" className="overflow-hidden relative shadow-[0px_1px_2px_rgba(0,0,0,0.04),_0px_4px_12px_rgba(0,0,0,0.06)] bg-white border border-gray-200 rounded-2xl p-6 lg:p-8">
  {/* Header row */}
  <div className="flex items-center justify-between mb-5">
  <h3 className="text-lg font-bold text-gray-900">Basic Information</h3>
@@ -1135,7 +1136,7 @@ export const UserProfile: React.FC = () => {
  animate={{ opacity: 1, y: 0 }}
  transition={{ delay: 0.15 }}
  >
- <Card className="overflow-hidden relative bg-white border border-gray-200 rounded-2xl p-6 lg:p-8 shadow-sm">
+ <Card variant="flat" className="overflow-hidden relative shadow-[0px_1px_2px_rgba(0,0,0,0.04),_0px_4px_12px_rgba(0,0,0,0.06)] bg-white border border-gray-200 rounded-2xl p-6 lg:p-8">
  {/* Header row */}
  <div className="flex items-center justify-between mb-5">
  <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
@@ -1301,7 +1302,7 @@ export const UserProfile: React.FC = () => {
  animate={{ opacity: 1, y: 0 }}
  transition={{ delay: 0.2 }}
  >
- <Card className="bg-white border border-gray-200 rounded-2xl p-6 lg:p-8">
+ <Card variant="flat" className="overflow-hidden relative shadow-[0px_1px_2px_rgba(0,0,0,0.04),_0px_4px_12px_rgba(0,0,0,0.06)] bg-white border border-gray-200 rounded-2xl p-6 lg:p-8">
  <h3 className="text-lg font-bold text-gray-900 mb-5 flex items-center gap-2">
  <Lock size={20} className="text-orange-600" />
  Secure Information
@@ -1541,7 +1542,7 @@ export const UserProfile: React.FC = () => {
  animate={{ opacity: 1, y: 0 }}
  transition={{ delay: 0.35 }}
  >
- <Card className="bg-white border border-gray-200 rounded-2xl p-6 lg:p-8">
+ <Card variant="flat" className="overflow-hidden relative shadow-[0px_1px_2px_rgba(0,0,0,0.04),_0px_4px_12px_rgba(0,0,0,0.06)] bg-white border border-gray-200 rounded-2xl p-6 lg:p-8">
  <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
  <KeyRound size={20} className="text-blue-600" />
  Security &amp; PIN
@@ -1563,57 +1564,79 @@ export const UserProfile: React.FC = () => {
  </Button>
  </div>
  ) : (
- <div className="p-4 bg-green-50 rounded-xl border border-green-100 space-y-4">
- <div className="flex items-center justify-between">
- <p className="font-semibold text-green-900">Set New PIN</p>
- <button onClick={resetPinFlow} className="text-xs text-green-600 hover:underline">Cancel</button>
- </div>
+ <form
+  onSubmit={(e) => {
+    e.preventDefault();
+    if (!isPinLoading && currentPin.length === 6 && newPin.length === 6 && newPin === confirmNewPin && !isPinWeak) {
+      handleSetNewPin();
+    }
+  }}
+  className="p-4 bg-green-50 rounded-xl border border-green-100 space-y-4"
+  >
+  <div className="flex items-center justify-between">
+  <p className="font-semibold text-green-900">Set New PIN</p>
+  <button type="button" onClick={resetPinFlow} className="text-xs text-green-600 hover:underline">Cancel</button>
+  </div>
 
- <div className="space-y-3">
- <div className="relative">
- <input
- type={showNewPin ? 'text' : 'password'}
- placeholder="Enter current 6-digit PIN"
- value={currentPin}
- onChange={(e) => setCurrentPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
- className="w-full px-4 py-2.5 rounded-xl border border-green-200 focus:border-green-500 focus:ring-2 focus:ring-green-100 outline-none text-center font-mono text-lg tracking-widest"
- />
- </div>
+  <div className="space-y-3">
+  <div className="relative">
+  <input
+  type={showNewPin ? 'text' : 'password'}
+  placeholder="Enter current 6-digit PIN"
+  value={currentPin}
+  onChange={(e) => setCurrentPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
+  autoComplete="new-password"
+  className="w-full px-4 py-2.5 rounded-xl border border-green-200 focus:border-green-500 focus:ring-2 focus:ring-green-100 outline-none text-center font-mono text-lg tracking-widest"
+  />
+  </div>
 
- <div className="relative">
- <input
- type={showNewPin ? 'text' : 'password'}
- placeholder="Enter new 6-digit PIN"
- value={newPin}
- onChange={(e) => setNewPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
- className="w-full px-4 py-2.5 rounded-xl border border-green-200 focus:border-green-500 focus:ring-2 focus:ring-green-100 outline-none text-center font-mono text-lg tracking-widest"
- />
- <button
- type="button"
- onClick={() => setShowNewPin(!showNewPin)}
- className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
- >
- {showNewPin ? <EyeOff size={18} /> : <Eye size={18} />}
- </button>
- </div>
+  <div className="relative">
+  <input
+  type={showNewPin ? 'text' : 'password'}
+  placeholder="Enter new 6-digit PIN"
+  value={newPin}
+  onChange={(e) => setNewPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
+  autoComplete="new-password"
+  className={`w-full px-4 py-2.5 rounded-xl border outline-none text-center font-mono text-lg tracking-widest transition-all ${
+    isPinWeak
+      ? 'border-red-300 focus:border-red-500 focus:ring-2 focus:ring-red-100 bg-red-50/30'
+      : 'border-green-200 focus:border-green-500 focus:ring-2 focus:ring-green-100 bg-white'
+  }`}
+  />
+  <button
+  type="button"
+  onClick={() => setShowNewPin(!showNewPin)}
+  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+  >
+  {showNewPin ? <EyeOff size={18} /> : <Eye size={18} />}
+  </button>
+  </div>
 
- <input
- type={showNewPin ? 'text' : 'password'}
- placeholder="Confirm new PIN"
- value={confirmNewPin}
- onChange={(e) => setConfirmNewPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
- className="w-full px-4 py-2.5 rounded-xl border border-green-200 focus:border-green-500 focus:ring-2 focus:ring-green-100 outline-none text-center font-mono text-lg tracking-widest"
- />
+  {isPinWeak && (
+  <p className="text-xs text-red-600 font-semibold flex items-center justify-center gap-1.5 animate-in fade-in slide-in-from-top-1 duration-200">
+  <ShieldAlert size={14} className="shrink-0" />
+  PIN is too weak. Avoid sequential or repeating patterns.
+  </p>
+  )}
 
- <Button
- onClick={handleSetNewPin}
- className="w-full bg-green-600 hover:bg-green-700 text-white rounded-xl py-3 mt-2"
- disabled={isPinLoading || currentPin.length !== 6 || newPin.length !== 6 || newPin !== confirmNewPin}
- >
- {isPinLoading ? 'Updating Secure PIN...' : 'Update Secure PIN'}
- </Button>
- </div>
- </div>
+  <input
+  type={showNewPin ? 'text' : 'password'}
+  placeholder="Confirm new PIN"
+  value={confirmNewPin}
+  onChange={(e) => setConfirmNewPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
+  autoComplete="new-password"
+  className="w-full px-4 py-2.5 rounded-xl border border-green-200 focus:border-green-500 focus:ring-2 focus:ring-green-100 outline-none text-center font-mono text-lg tracking-widest"
+  />
+
+  <Button
+  type="submit"
+  className="w-full bg-green-600 hover:bg-green-700 text-white rounded-xl py-3 mt-2"
+  disabled={isPinLoading || currentPin.length !== 6 || newPin.length !== 6 || newPin !== confirmNewPin || isPinWeak}
+  >
+  {isPinLoading ? 'Updating Secure PIN...' : 'Update Secure PIN'}
+  </Button>
+  </div>
+  </form>
  )}
  </div>
  </Card>
