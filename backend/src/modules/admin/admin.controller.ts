@@ -6,6 +6,7 @@ import { logger } from '../../config/logger';
 import { getCacheMetricsSnapshot, getRedisStatus, resetCacheMetrics } from '../../cache/redis';
 import { getSystemMetrics } from '../../utils/system';
 import { invalidateFeatureCache, invalidateAIFeatureCache } from '../../middleware/featureGate';
+import { getSupabaseAdminClient } from '../../db/supabase';
 import { getSocketManager } from '../../sockets';
 import { 
   getVisibleFeaturesForRole, 
@@ -44,12 +45,27 @@ export const getAllUsers = async (req: AuthRequest, res: Response) => {
         name: true,
         role: true,
         isApproved: true,
+        status: true,
         createdAt: true,
       },
       orderBy: { createdAt: 'desc' },
     });
 
-    res.json(users);
+    // Enrich with phone from profiles table
+    const userIds = users.map(u => u.id);
+    let phoneMap: Map<string, string | null> = new Map();
+    try {
+      const profiles = await prisma.profiles.findMany({
+        where: { id: { in: userIds } },
+        select: { id: true, phone: true },
+      });
+      profiles.forEach(p => phoneMap.set(p.id, p.phone ?? null));
+    } catch (profileErr) {
+      logger.warn('[AdminController] Could not fetch profiles for phone enrichment', { error: profileErr });
+    }
+
+    const enriched = users.map(u => ({ ...u, phone: phoneMap.get(u.id) ?? null }));
+    res.json(enriched);
   } catch (error: any) {
     res.status(500).json({ error: 'Failed to fetch users' });
   }
@@ -593,6 +609,100 @@ export const getUserActivity = async (req: AuthRequest, res: Response) => {
     });
   } catch (error: any) {
     res.status(500).json({ error: 'Failed to fetch activity log' });
+  }
+};
+
+// Delete user (admin only) — cascade-deletes all user data and Supabase Auth record
+export const deleteUser = async (req: AuthRequest, res: Response) => {
+  try {
+    const { userId } = req.params;
+    const adminId = req.userId;
+
+    if (!userId) {
+      return res.status(400).json({ error: 'userId is required' });
+    }
+
+    if (userId === adminId) {
+      return res.status(400).json({ error: 'Administrators cannot delete their own account via the admin panel' });
+    }
+
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Cascade-delete from Prisma (all related data via onDelete: Cascade)
+    await prisma.user.delete({ where: { id: userId } });
+    logger.info(`[AdminController] Prisma user deleted by admin ${adminId}: ${userId}`);
+
+    // Best-effort Supabase Auth deletion
+    try {
+      const adminClient = getSupabaseAdminClient();
+      if (adminClient) {
+        const { error } = await adminClient.auth.admin.deleteUser(userId);
+        if (error) {
+          logger.warn('[AdminController] Supabase auth deletion returned an error (non-fatal):', { userId, message: error.message });
+        } else {
+          logger.info(`[AdminController] Supabase auth user deleted: ${userId}`);
+        }
+      }
+    } catch (supabaseErr: any) {
+      logger.warn('[AdminController] Non-blocking Supabase auth deletion failed:', { userId, message: supabaseErr.message });
+    }
+
+    res.json({ message: `User ${user.email} deleted successfully`, userId });
+  } catch (error: any) {
+    logger.error('[AdminController] Failed to delete user', { error });
+    res.status(500).json({ error: 'Failed to delete user' });
+  }
+};
+
+// Get user storage statistics (admin only)
+export const getUserStorageStats = async (req: AuthRequest, res: Response) => {
+  try {
+    const { userId } = req.params;
+
+    if (!userId) {
+      return res.status(400).json({ error: 'userId is required' });
+    }
+
+    const [transactions, accounts, goals, investments, loans, todos, notifications, devices, aiScans, friends] = await Promise.all([
+      prisma.transaction.count({ where: { userId } }),
+      prisma.account.count({ where: { userId } }),
+      prisma.goal.count({ where: { userId } }),
+      prisma.investment.count({ where: { userId } }),
+      prisma.loan.count({ where: { userId } }),
+      prisma.todo.count({ where: { userId } }),
+      prisma.notification.count({ where: { userId } }),
+      prisma.device.count({ where: { userId } }),
+      prisma.aiScan.count({ where: { userId } }),
+      prisma.friend.count({ where: { userId } }),
+    ]);
+
+    const totalRecords = transactions + accounts + goals + investments + loans + todos + notifications + devices + aiScans + friends;
+    // Rough approximation: ~512 bytes average per record
+    const estimatedBytes = totalRecords * 512;
+
+    res.json({
+      userId,
+      stats: {
+        transactions,
+        accounts,
+        goals,
+        investments,
+        loans,
+        todos,
+        notifications,
+        devices,
+        aiScans,
+        friends,
+      },
+      totalRecords,
+      estimatedBytes,
+    });
+  } catch (error: any) {
+    logger.error('[AdminController] Failed to get user storage stats', { error });
+    res.status(500).json({ error: 'Failed to get user storage statistics' });
   }
 };
 

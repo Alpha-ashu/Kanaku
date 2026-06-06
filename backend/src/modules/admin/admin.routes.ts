@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import { authMiddleware } from '../../middleware/auth';
 import { requireRole } from '../../middleware/rbac';
-import { validateQuery } from '../../middleware/validate';
 import * as AdminController from './admin.controller';
 import { adminCacheMetricsQuerySchema } from './admin.validation';
 import {
@@ -16,7 +15,7 @@ import {
 	getAdminAIConfig,
 	updateAdminAIConfig,
 } from '../ai/ai.controller';
-import { validateBody, validateParams } from '../../middleware/validate';
+import { validateBody, validateParams, validateQuery } from '../../middleware/validate';
 import { aiLimitQuerySchema, aiRunBodySchema, aiUserParamsSchema } from '../ai/ai.validation';
 
 const router = Router();
@@ -39,6 +38,8 @@ router.post('/users/:advisorId/reject', AdminController.rejectAdvisor);
 router.get('/users/activity', AdminController.getUserActivity);
 router.post('/users/:userId/status', AdminController.toggleUserStatus);
 router.post('/users/:userId/role', AdminController.updateUserRole);
+router.delete('/users/:userId', AdminController.deleteUser);
+router.get('/users/:userId/storage', AdminController.getUserStorageStats);
 
 // Statistics
 router.get('/stats', AdminController.getPlatformStats);

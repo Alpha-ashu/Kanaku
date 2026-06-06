@@ -170,6 +170,13 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
       ));
     }
 
+    if (error?.message === 'Phone number already in use') {
+      return next(AppError.conflict(
+        'This phone number is already registered to another account. Please use a different phone number.',
+        'PHONE_EXISTS',
+      ));
+    }
+
     if (isDatabaseUnavailableError(error)) {
       return next(new AppError(503, 'DATABASE_UNAVAILABLE', 'Our servers are temporarily unavailable. Please try again in a moment.', false));
     }
@@ -480,6 +487,18 @@ export const updateProfile = async (req: AuthRequest, res: Response, next: NextF
       stack: error.stack,
       userId: req.userId
     });
+    if (error.message === 'Phone number already in use') {
+      return next(AppError.conflict(
+        'This phone number is already registered to another account. Please use a different phone number.',
+        'PHONE_EXISTS'
+      ));
+    }
+    if (error.message === 'Email already in use') {
+      return next(AppError.conflict(
+        'An account with this email already exists. Please use a different email.',
+        'EMAIL_EXISTS'
+      ));
+    }
     return next(error);
   }
 };

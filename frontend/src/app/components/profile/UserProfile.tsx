@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useApp } from '@/contexts/AppContext';
 import { PageHeader } from '@/app/components/ui/PageHeader';
 import { Button } from '@/app/components/ui/button';
 import { Card } from '@/app/components/ui/card';
-import { Lock, Eye, EyeOff, Mail, Phone, User, Calendar, Briefcase, LogOut, ShieldAlert, Trash2, X, KeyRound, Check, MapPin, DollarSign } from 'lucide-react';
+import { Lock, Eye, EyeOff, Mail, Phone, User, Calendar, Briefcase, LogOut, ShieldAlert, Trash2, X, KeyRound, Check, MapPin, DollarSign, Save, RotateCcw } from 'lucide-react';
 import { toast } from 'sonner';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import supabase from '@/utils/supabase/client';
 import { db } from '@/lib/database';
 import { permissionService } from '@/services/permissionService';
@@ -374,6 +374,31 @@ export const UserProfile: React.FC = () => {
  const [isAutofetching, setIsAutofetching] = useState(false);
  const [citySuggestions, setCitySuggestions] = useState<any[]>([]);
  const [isSearchingCity, setIsSearchingCity] = useState(false);
+
+ // Dirty state tracking: detect unsaved changes
+ const isInEditMode = isEditingBasic || isEditingLocation;
+ const hasDirtyChanges = isInEditMode && (
+ tempData.firstName !== profileData.firstName ||
+ tempData.lastName !== profileData.lastName ||
+ tempData.gender !== profileData.gender ||
+ tempData.dateOfBirth !== profileData.dateOfBirth ||
+ tempData.jobType !== profileData.jobType ||
+ tempData.monthlyIncome !== profileData.monthlyIncome ||
+ tempData.country !== profileData.country ||
+ tempData.state !== profileData.state ||
+ tempData.city !== profileData.city ||
+ tempData.avatarId !== profileData.avatarId
+ );
+ const showFloatingBar = isInEditMode || hasDirtyChanges;
+
+ const handleDiscard = () => {
+ setTempData(profileData);
+ setIsEditingBasic(false);
+ setIsEditingLocation(false);
+ setShowAvatarGallery(false);
+ setCitySuggestions([]);
+ };
+
 
  const handleCitySearch = async (query: string) => {
  setTempData(prev => ({ ...prev, city: query }));
@@ -773,6 +798,7 @@ export const UserProfile: React.FC = () => {
  }
 
  return (
+ <>
  <div className="w-full min-h-screen bg-white pb-32 lg:pb-8">
  <div className="max-w-7xl mx-auto">
  {/* Header */}
@@ -1121,9 +1147,10 @@ export const UserProfile: React.FC = () => {
 
  <button
  onClick={handleSaveProfile}
- className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold transition-colors"
+ disabled={isLoading}
+ className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white py-3 rounded-xl font-semibold transition-colors"
  >
- Save Changes
+ {isLoading ? 'Saving...' : 'Save Changes'}
  </button>
  </div>
  )}
@@ -1282,9 +1309,10 @@ export const UserProfile: React.FC = () => {
 
  <button
  onClick={handleSaveProfile}
- className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3.5 rounded-xl font-bold shadow-lg shadow-blue-100 transition-all active:scale-[0.98]"
+ disabled={isLoading}
+ className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white py-3.5 rounded-xl font-bold shadow-lg shadow-blue-100 transition-all active:scale-[0.98]"
  >
- Save Location & Currency
+ {isLoading ? 'Saving...' : 'Save Location & Currency'}
  </button>
  </div>
  )}
@@ -1765,8 +1793,89 @@ export const UserProfile: React.FC = () => {
  </motion.div>
  </div>
  )}
- </div>
+ </div>{/* end outer pb-32 div */}
+
+ {/* ━━━ Floating Save & Discard Action Bar ━━━
+     Appears above bottom nav when in edit mode or when there are unsaved changes.
+     Glass-morphism style, always visible while scrolling, keyboard-aware.
+ */}
+ <AnimatePresence>
+  {showFloatingBar && (
+   <motion.div
+    key="floating-save-bar"
+    initial={{ opacity: 0, y: 24, scale: 0.96 }}
+    animate={{ opacity: 1, y: 0, scale: 1 }}
+    exit={{ opacity: 0, y: 24, scale: 0.96 }}
+    transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+    className="fixed bottom-[calc(72px+env(safe-area-inset-bottom,0px)+16px)] left-0 right-0 z-50 flex justify-center px-4 pointer-events-none"
+   >
+    <div
+     className="pointer-events-auto w-full max-w-sm flex items-center gap-3 px-4 py-3 rounded-[20px] shadow-2xl"
+     style={{
+      background: 'rgba(255, 255, 255, 0.88)',
+      backdropFilter: 'blur(20px)',
+      WebkitBackdropFilter: 'blur(20px)',
+      border: '1px solid rgba(255,255,255,0.6)',
+      boxShadow: '0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06)',
+     }}
+    >
+     {/* Unsaved changes indicator */}
+     <div className="flex-1 flex items-center gap-2 min-w-0">
+      {hasDirtyChanges && (
+       <motion.div
+        initial={{ scale: 0.6, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        className="flex items-center gap-1.5 flex-shrink-0"
+       >
+        <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse flex-shrink-0" />
+        <span className="text-[10px] font-black text-amber-600 uppercase tracking-widest whitespace-nowrap">Unsaved Changes</span>
+       </motion.div>
+      )}
+      {!hasDirtyChanges && (
+       <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Editing Profile</span>
+      )}
+     </div>
+
+     {/* Discard Button */}
+     <button
+      id="floating-discard-btn"
+      onClick={handleDiscard}
+      disabled={isLoading}
+      className="flex items-center gap-1.5 px-4 py-2.5 rounded-[14px] text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 active:scale-95 transition-all disabled:opacity-50 flex-shrink-0"
+     >
+      <RotateCcw size={12} />
+      Discard
+     </button>
+
+     {/* Save Button */}
+     <button
+      id="floating-save-btn"
+      onClick={handleSaveProfile}
+      disabled={isLoading}
+      className="flex items-center gap-1.5 px-5 py-2.5 rounded-[14px] text-xs font-bold text-white active:scale-95 transition-all disabled:opacity-60 flex-shrink-0"
+      style={{
+       background: isLoading
+        ? 'rgba(59, 130, 246, 0.6)'
+        : 'linear-gradient(135deg, #3b82f6 0%, #4f46e5 100%)',
+       boxShadow: '0 4px 12px rgba(79, 70, 229, 0.35)',
+      }}
+     >
+      {isLoading ? (
+       <div className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+      ) : (
+       <Save size={12} />
+      )}
+      {isLoading ? 'Saving...' : 'Save Changes'}
+     </button>
+    </div>
+   </motion.div>
+  )}
+ </AnimatePresence>
+
+ </>
  );
 };
+
+
 
 

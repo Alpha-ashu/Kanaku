@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { adminConsoleService, SystemStatsDto, AdminUserDto, UserActivityDto } from '@/services/adminConsoleService';
+import { adminConsoleService, SystemStatsDto, AdminUserDto, UserActivityDto, UserStorageStatsDto } from '@/services/adminConsoleService';
 import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
 import { useApp } from '@/contexts/AppContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -8,7 +8,8 @@ import { FeatureKey } from '@/lib/featureFlags';
 import {
  ChevronLeft, RotateCcw, Shield, Activity, Brain, LayoutDashboard, Wallet, Receipt,
  CreditCard, Target, Users, TrendingUp, BarChart3, Calendar, CheckSquare, Calculator,
- UserCog, Bell, User, Settings as SettingsIcon, ToggleLeft, ShieldCheck
+ UserCog, Bell, User, Settings as SettingsIcon, ToggleLeft, ShieldCheck,
+ Trash2, Ban, CheckCircle2, Database, CreditCard as CardIcon, Smartphone, Bot, UserCheck, FileText, PiggyBank, TrendingDown, ShoppingBag, AlertTriangle
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -25,7 +26,11 @@ export const AdminDashboard: React.FC = () => {
  const [users, setUsers] = useState<AdminUserDto[]>([]);
  const [selectedUser, setSelectedUser] = useState<AdminUserDto | null>(null);
  const [userActivity, setUserActivity] = useState<UserActivityDto | null>(null);
+ const [userStorageStats, setUserStorageStats] = useState<UserStorageStatsDto | null>(null);
+ const [storageLoading, setStorageLoading] = useState(false);
  const [loading, setLoading] = useState(true);
+ const [deleteConfirm, setDeleteConfirm] = useState<{ open: boolean; user: AdminUserDto | null }>({ open: false, user: null });
+ const [deleteLoading, setDeleteLoading] = useState(false);
 
  const fetchData = async () => {
  try {
@@ -50,14 +55,25 @@ export const AdminDashboard: React.FC = () => {
  }, [role]);
 
  const fetchUserActivity = async (user: AdminUserDto) => {
- try {
- setSelectedUser(user);
- setUserActivity(null);
- const activity = await adminConsoleService.getActivity(user.id);
- if (activity) setUserActivity(activity);
- } catch (err) {
- toast.error('Failed to load user activity');
- }
+  try {
+  setSelectedUser(user);
+  setUserActivity(null);
+  setUserStorageStats(null);
+  const activity = await adminConsoleService.getActivity(user.id);
+  if (activity) setUserActivity(activity);
+  // Fetch storage stats concurrently
+  setStorageLoading(true);
+  try {
+    const storage = await adminConsoleService.getUserStorageStats(user.id);
+    setUserStorageStats(storage);
+  } catch {
+    // non-blocking
+  } finally {
+    setStorageLoading(false);
+  }
+  } catch (err) {
+  toast.error('Failed to load user activity');
+  }
  };
 
  const handleToggleStatus = async (user: AdminUserDto) => {
@@ -92,10 +108,26 @@ export const AdminDashboard: React.FC = () => {
  };
 
  const handleReset = () => {
- if (confirm('Reset all feature flags to defaults? This cannot be undone.')) {
- resetToDefaults();
- toast.success('Feature flags reset to defaults');
- }
+  if (confirm('Reset all feature flags to defaults? This cannot be undone.')) {
+  resetToDefaults();
+  toast.success('Feature flags reset to defaults');
+  }
+ };
+
+ const handleDeleteUser = async (user: AdminUserDto) => {
+  setDeleteLoading(true);
+  try {
+    await adminConsoleService.deleteUser(user.id);
+    toast.success(`User ${user.name} deleted permanently`);
+    setDeleteConfirm({ open: false, user: null });
+    setSelectedUser(null);
+    setUserStorageStats(null);
+    fetchData();
+  } catch (err: any) {
+    toast.error(err?.message || 'Failed to delete user');
+  } finally {
+    setDeleteLoading(false);
+  }
  };
 
   if (authLoading || !dataReady) {
@@ -134,6 +166,7 @@ export const AdminDashboard: React.FC = () => {
  };
 
  return (
+ <>
  <CenteredLayout>
  <div className="space-y-6">
  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -203,8 +236,8 @@ export const AdminDashboard: React.FC = () => {
  </div>
 
  {/* Server Metrics */}
- <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
- <div className="lg:col-span-2 bg-white border border-slate-100 rounded-[32px] p-8 shadow-sm">
+ <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+ <div className="xl:col-span-2 bg-white border border-slate-100 rounded-[32px] p-6 lg:p-8 shadow-sm">
  <div className="flex items-center justify-between mb-8">
  <h3 className="text-lg font-black text-slate-900 tracking-tight">Server Infrastructure</h3>
  <div className="flex items-center gap-2 text-xs font-bold text-slate-400">
@@ -278,9 +311,9 @@ export const AdminDashboard: React.FC = () => {
 
 
  {activeTab === 'users' && (
- <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+ <div className="grid grid-cols-1 md:grid-cols-[minmax(240px,300px)_1fr] gap-4 lg:gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
  {/* User List */}
- <div className="lg:col-span-1 bg-white border border-slate-100 rounded-[32px] overflow-hidden shadow-sm flex flex-col h-[600px]">
+ <div className="md:col-span-1 bg-white border border-slate-100 rounded-[32px] overflow-hidden shadow-sm flex flex-col" style={{ minHeight: '360px', maxHeight: '70vh' }}>
  <div className="p-6 border-b border-slate-50">
  <h3 className="text-lg font-black text-slate-900 tracking-tight">Active Users</h3>
  <p className="text-xs text-slate-400 font-medium mt-1">Select a user to view detailed activity</p>
@@ -307,24 +340,41 @@ export const AdminDashboard: React.FC = () => {
  </button>
  ))}
  </div>
- </div>
-
- {/* Activity Detail */}
- <div className="lg:col-span-2 bg-white border border-slate-100 rounded-[32px] p-8 shadow-sm flex flex-col h-[600px]">
+ </div> {/* Activity Detail */}
+ <div className="bg-white border border-slate-100 rounded-[32px] shadow-sm flex flex-col" style={{ minHeight: '480px' }}>
  {!selectedUser ? (
- <div className="flex-1 flex flex-col items-center justify-center text-center opacity-40">
+ <div className="flex-1 flex flex-col items-center justify-center text-center opacity-40 p-8">
  <User size={64} className="mb-4" />
  <p className="font-bold text-slate-900">No User Selected</p>
- <p className="text-sm text-slate-500">Choose a user from the list to see their logs</p>
+ <p className="text-sm text-slate-500">Choose a user from the list to view details</p>
  </div>
  ) : (
  <div className="flex flex-col h-full">
- <div className="flex items-start justify-between mb-8">
- <div>
- <h3 className="text-xl font-black text-slate-900 tracking-tight">{selectedUser.name}</h3>
- <p className="text-sm text-slate-400 font-medium">{selectedUser.email}</p>
+ {/* User Header */}
+ <div className="p-6 lg:p-8 border-b border-slate-100">
+ <div className="flex items-start justify-between gap-4">
+ <div className="flex items-center gap-4">
+ <div className={cn(
+ "w-14 h-14 rounded-2xl flex items-center justify-center text-white text-xl font-black flex-shrink-0",
+ selectedUser.role === 'admin' ? 'bg-gradient-to-br from-violet-500 to-purple-600' :
+ selectedUser.role === 'manager' ? 'bg-gradient-to-br from-indigo-500 to-blue-600' :
+ selectedUser.role === 'advisor' ? 'bg-gradient-to-br from-emerald-500 to-teal-600' :
+ 'bg-gradient-to-br from-slate-400 to-slate-500'
+ )}>
+ {selectedUser.name.charAt(0).toUpperCase()}
  </div>
- <div className="flex items-center gap-2">
+ <div className="min-w-0">
+ <h3 className="text-xl font-black text-slate-900 tracking-tight truncate">{selectedUser.name}</h3>
+ <p className="text-sm text-slate-400 font-medium truncate">{selectedUser.email}</p>
+ {selectedUser.phone && (
+ <p className="text-xs text-slate-400 font-medium mt-0.5">{selectedUser.phone}</p>
+ )}
+ <p className="text-[10px] text-slate-300 font-medium mt-1 uppercase tracking-widest">
+ Joined {new Date(selectedUser.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+ </p>
+ </div>
+ </div>
+ <div className="flex items-center gap-2 flex-shrink-0 flex-wrap justify-end">
  <select
  value={selectedUser.role}
  onChange={(e) => handleRoleChange(selectedUser, e.target.value as any)}
@@ -338,23 +388,107 @@ export const AdminDashboard: React.FC = () => {
  <button
  onClick={() => handleToggleStatus(selectedUser)}
  className={cn(
-"px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all",
+ "px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-1.5",
  selectedUser.status === 'blocked'
- ?"bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
- :"bg-rose-50 text-rose-600 hover:bg-rose-100"
+ ? "bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
+ : "bg-amber-50 text-amber-600 hover:bg-amber-100"
  )}
  >
+ {selectedUser.status === 'blocked' ? <CheckCircle2 size={12} /> : <Ban size={12} />}
  {selectedUser.status === 'blocked' ? 'Unblock' : 'Block'}
+ </button>
+ <button
+ onClick={() => setDeleteConfirm({ open: true, user: selectedUser })}
+ className="px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest bg-rose-50 text-rose-600 hover:bg-rose-100 transition-all flex items-center gap-1.5"
+ >
+ <Trash2 size={12} />
+ Delete
  </button>
  </div>
  </div>
+ {/* Status Badge */}
+ <div className="mt-4 flex items-center gap-2">
+ <span className={cn(
+ "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest",
+ selectedUser.status === 'blocked'
+ ? "bg-rose-50 text-rose-600"
+ : selectedUser.isApproved
+ ? "bg-emerald-50 text-emerald-600"
+ : "bg-amber-50 text-amber-600"
+ )}>
+ <span className={cn("w-1.5 h-1.5 rounded-full animate-pulse",
+ selectedUser.status === 'blocked' ? 'bg-rose-500' : selectedUser.isApproved ? 'bg-emerald-500' : 'bg-amber-500'
+ )} />
+ {selectedUser.status === 'blocked' ? 'Blocked' : selectedUser.isApproved ? 'Active' : 'Pending Approval'}
+ </span>
+ <span className="inline-flex items-center px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-slate-50 text-slate-500">
+ {selectedUser.role}
+ </span>
+ </div>
+ </div>
 
- <div className="flex-1 overflow-y-auto space-y-6">
- {/* Activity Tabs inside details? No, just list everything */}
- <div className="space-y-4">
- <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest">Recent Activity Log</h4>
+ {/* Storage Monitor */}
+ <div className="px-6 lg:px-8 py-5 border-b border-slate-100">
+ <div className="flex items-center justify-between mb-4">
+ <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+ <Database size={12} /> Data Storage Footprint
+ </h4>
+ {userStorageStats && (
+ <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+ {userStorageStats.totalRecords} records · ~{userStorageStats.estimatedBytes < 1024 * 1024
+ ? `${Math.round(userStorageStats.estimatedBytes / 1024)} KB`
+ : `${(userStorageStats.estimatedBytes / (1024 * 1024)).toFixed(1)} MB`
+ }
+ </span>
+ )}
+ </div>
+ {storageLoading ? (
+ <div className="flex items-center gap-3 py-2">
+ <div className="animate-spin w-4 h-4 border-2 border-slate-200 border-t-slate-500 rounded-full" />
+ <span className="text-xs text-slate-400">Loading storage data...</span>
+ </div>
+ ) : userStorageStats ? (
+ <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+ {([
+ { key: 'transactions', label: 'Transactions', icon: Receipt, color: 'indigo' },
+ { key: 'accounts', label: 'Accounts', icon: Wallet, color: 'blue' },
+ { key: 'goals', label: 'Goals', icon: Target, color: 'emerald' },
+ { key: 'investments', label: 'Investments', icon: TrendingUp, color: 'violet' },
+ { key: 'loans', label: 'Loans', icon: CreditCard, color: 'amber' },
+ { key: 'todos', label: 'Todos', icon: CheckSquare, color: 'cyan' },
+ { key: 'friends', label: 'Friends', icon: Users, color: 'pink' },
+ { key: 'devices', label: 'Devices', icon: Smartphone, color: 'slate' },
+ { key: 'aiScans', label: 'AI Scans', icon: Bot, color: 'purple' },
+ { key: 'notifications', label: 'Notifications', icon: Bell, color: 'orange' },
+ ] as const).map(({ key, label, icon: Icon, color }) => {
+ const count = userStorageStats.stats[key as keyof typeof userStorageStats.stats];
+ const pct = userStorageStats.totalRecords > 0 ? Math.round((count / userStorageStats.totalRecords) * 100) : 0;
+ return (
+ <div key={key} className="bg-slate-50 rounded-2xl p-3">
+ <div className={cn("w-7 h-7 rounded-xl flex items-center justify-center mb-2",
+ `bg-${color}-100 text-${color}-600`
+ )}>
+ <Icon size={14} />
+ </div>
+ <p className="text-lg font-black text-slate-900 leading-none">{count}</p>
+ <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wide mt-1">{label}</p>
+ <div className="mt-2 h-1 bg-slate-200 rounded-full overflow-hidden">
+ <div className={cn(`h-full rounded-full bg-${color}-400`)} style={{ width: `${pct}%` }} />
+ </div>
+ </div>
+ );
+ })}
+ </div>
+ ) : (
+ <p className="text-xs text-slate-400 py-2">No storage data available</p>
+ )}
+ </div>
+
+ {/* Activity Log */}
+ <div className="flex-1 overflow-y-auto px-6 lg:px-8 py-5">
+ <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Recent Activity Log</h4>
  {!userActivity ? (
- <div className="py-20 flex items-center justify-center">
+ <div className="py-12 flex items-center justify-center">
  <div className="animate-spin w-8 h-8 border-4 border-slate-100 border-t-slate-900 rounded-full" />
  </div>
  ) : (
@@ -367,9 +501,9 @@ export const AdminDashboard: React.FC = () => {
  <div key={i} className="flex gap-4 p-4 bg-slate-50 rounded-2xl">
  <div className="pt-1">
  <div className={cn("w-2 h-2 rounded-full",
- log.type === 'AI_SCAN' ?"bg-cyan-500" :
- log.type === 'SYNC' ?"bg-indigo-500" :
-"bg-emerald-500"
+ log.type === 'AI_SCAN' ? "bg-cyan-500" :
+ log.type === 'SYNC' ? "bg-indigo-500" :
+ "bg-emerald-500"
  )} />
  </div>
  <div className="flex-1 min-w-0">
@@ -388,7 +522,6 @@ export const AdminDashboard: React.FC = () => {
  )}
  </div>
  </div>
- </div>
  )}
  </div>
  </div>
@@ -396,6 +529,48 @@ export const AdminDashboard: React.FC = () => {
 
  </div>
  </CenteredLayout>
- );
-};
 
+ {/* Delete Confirmation Modal */}
+ {deleteConfirm.open && deleteConfirm.user && (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+      <div className="bg-white rounded-[28px] p-8 shadow-2xl max-w-sm w-full animate-in fade-in zoom-in-95 duration-200">
+        <div className="w-14 h-14 bg-rose-100 rounded-2xl flex items-center justify-center mx-auto mb-5">
+          <AlertTriangle size={24} className="text-rose-600" />
+        </div>
+        <h3 className="text-xl font-black text-slate-900 text-center tracking-tight mb-2">Delete User?</h3>
+        <p className="text-sm text-slate-500 text-center mb-1">
+          You are about to permanently delete:
+        </p>
+        <p className="text-sm font-bold text-slate-900 text-center mb-4 break-all">{deleteConfirm.user.name}</p>
+        <div className="bg-rose-50 border border-rose-100 rounded-2xl p-4 mb-6">
+          <p className="text-xs text-rose-700 font-medium leading-relaxed">
+            This will permanently delete all of this user's data including transactions, accounts, goals, investments, loans, and todos. This action cannot be undone.
+          </p>
+        </div>
+        <div className="flex gap-3">
+          <button
+            onClick={() => setDeleteConfirm({ open: false, user: null })}
+            disabled={deleteLoading}
+            className="flex-1 px-4 py-3 rounded-xl text-sm font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition-all disabled:opacity-50"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={() => handleDeleteUser(deleteConfirm.user!)}
+            disabled={deleteLoading}
+            className="flex-1 px-4 py-3 rounded-xl text-sm font-bold bg-rose-600 text-white hover:bg-rose-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+          >
+            {deleteLoading ? (
+              <div className="animate-spin w-4 h-4 border-2 border-white/40 border-t-white rounded-full" />
+            ) : (
+              <Trash2 size={14} />
+            )}
+            {deleteLoading ? 'Deleting...' : 'Delete Permanently'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )}
+  </>
+  );
+};

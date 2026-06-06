@@ -13,6 +13,8 @@ export class AuthService {
     salary?: number;
     dateOfBirth?: Date;
     jobType?: string;
+    phone?: string;
+    mobile?: string;
   }): Promise<AuthTokens> {
 
     try {
@@ -21,9 +23,19 @@ export class AuthService {
         where: { email: input.email },
       });
 
-
       if (existingUser) {
         throw new Error('Email already registered');
+      }
+
+      const resolvedPhone = input.phone ?? input.mobile ?? null;
+      if (resolvedPhone) {
+        // Check if phone number is already registered by another user
+        const existingPhoneProfile = await prisma.profiles.findFirst({
+          where: { phone: resolvedPhone }
+        });
+        if (existingPhoneProfile) {
+          throw new Error('Phone number already in use');
+        }
       }
 
       // Hash password
@@ -50,6 +62,26 @@ export class AuthService {
           jobType: input.jobType,
         },
       });
+
+      // Sync user to public.profiles table
+      try {
+        const nameParts = input.name.trim().split(/\s+/).filter(Boolean);
+        const firstName = input.firstName || nameParts[0] || '';
+        const lastName = input.lastName || nameParts.slice(1).join(' ') || '';
+        await prisma.$executeRaw`
+          INSERT INTO public.profiles (
+            id, email, first_name, last_name, full_name, phone, created_at, updated_at
+          ) VALUES (
+            ${user.id}::uuid, ${user.email}, ${firstName || null}, ${lastName || null}, 
+            ${user.name}, ${resolvedPhone}, NOW(), NOW()
+          ) ON CONFLICT (id) DO NOTHING;
+        `;
+        logger.info(`[AuthService] Initial profile synced for registered user: ${user.id}`);
+      } catch (syncError: any) {
+        logger.warn('[AuthService] Non-blocking initial profile sync failed', {
+          message: syncError.message,
+        });
+      }
 
       const tokens = generateTokens(user);
       return tokens;
@@ -91,6 +123,37 @@ export class AuthService {
       avatarUrl,
     } = data;
     const resolvedPhone = phone ?? mobile ?? null;
+
+    // Validate email if provided in data
+    const activeEmail = email || data.email;
+    if (activeEmail) {
+      const existingEmailUser = await prisma.user.findFirst({
+        where: {
+          email: activeEmail,
+          NOT: {
+            id: userId
+          }
+        }
+      });
+      if (existingEmailUser) {
+        throw new Error('Email already in use');
+      }
+    }
+
+    // Validate phone uniqueness
+    if (resolvedPhone) {
+      const existingPhoneProfile = await prisma.profiles.findFirst({
+        where: {
+          phone: resolvedPhone,
+          NOT: {
+            id: userId
+          }
+        }
+      });
+      if (existingPhoneProfile) {
+        throw new Error('Phone number already in use');
+      }
+    }
 
     logger.info(`[AuthService] Processing profile update for userId: ${userId}`);
 

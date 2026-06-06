@@ -22,6 +22,8 @@ export interface RegisterInput {
   name: string;
   password: string;
   role?: 'user' | 'advisor'; // Default is 'user'
+  phone?: string;
+  mobile?: string;
 }
 
 export interface LoginInput {
