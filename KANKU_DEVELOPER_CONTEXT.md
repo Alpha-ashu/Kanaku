@@ -2357,7 +2357,7 @@ The following is the current status of the 19 reported security, performance, an
 | **BUG-16** | `/api/v1/pin/key-backup` returns failure state silently | 🟢 Low | **Fixed** | Surfaced failure states and added toast messages to client recovery. |
 | **BUG-17** | Avatar fetched from external CDN without integrity check | 🟢 Low | **Open** | Local caching or proxying of avatars is in the backlog. |
 | **BUG-18** | `x-xss-protection: 0` set on all responses | 🟢 Low | **Fixed** | Enforced X-XSS-Protection: 1; mode=block header. |
-| **BUG-19** | Password sent directly to auth endpoint | 🔴 Critical | **Open** | OTP or challenge-response login flow is under discussion. |
+| **BUG-19** | Password sent directly to auth endpoint | 🔴 Critical | **Fixed** | Implemented a secure two-phase challenge-response login flow to prevent plaintext password transmission. |
 
 ### Proposed PIN Hashing & Validation (BUG-05 & BUG-06)
 
