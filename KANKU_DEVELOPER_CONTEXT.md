@@ -2339,24 +2339,24 @@ The following is the current status of the 19 reported security, performance, an
 
 | ID | Title | Severity | Status | Mitigation / Resolution Detail |
 |----|-------|----------|--------|-------------------------------|
-| **BUG-01** | Plaintext password transmitted in login request body | 🔴 Critical | **Open** | Password-based login flows sent over HTTPS. Rotate credential immediately. |
-| **BUG-02** | Supabase API key exposed in client requests | 🔴 Critical | **Open (By Design)** | Supabase anon key is client-facing. Database is protected via RLS. |
+| **BUG-01** | Plaintext password transmitted in login request body | 🔴 Critical | **Fixed** | Refactored login and registration flows to use secure backend-proxied API calls. |
+| **BUG-02** | Supabase API key exposed in client requests | 🔴 Critical | **Fixed** | Eliminated direct client-facing Supabase credentials transmissions. |
 | **BUG-03** | No Authorization header on any API call | 🔴 Critical | **Fixed** | Access tokens are now persisted in local storage and attached to the `Authorization: Bearer <token>` header for all backend requests. |
 | **BUG-04** | Regular user accesses `/api/v1/admin/*` endpoints without restriction | 🔴 Critical | **Fixed** | Implemented backend `requireRole` middleware checks (case-insensitive) and frontend route guards. |
-| **BUG-05** | PIN sent as plaintext in request body | 🔴 Critical | **In Progress** | Hashing PIN using SHA-256 client-side before sending. |
-| **BUG-06** | Weak PIN accepted (no complexity enforcement) | 🟠 High | **In Progress** | Adding complexity rules on both client-side PIN setup views and backend service checks. |
+| **BUG-05** | PIN sent as plaintext in request body | 🔴 Critical | **Fixed** | Secured via SHA-256 client-side hashing before network transmission. |
+| **BUG-06** | Weak PIN accepted (no complexity enforcement) | 🟠 High | **Fixed** | Implemented complexity validation (non-sequential/non-repeating/pattern checks) on client and backend. |
 | **BUG-07** | User ID and internal UUIDs exposed in API responses | 🟠 High | **Mitigated** | User settings and profiles are isolated via database security policies (RLS). |
 | **BUG-08** | Aggressive polling of admin endpoints (every ~30s) | 🟠 High | **Fixed** | Removed polling for non-admins and cached features on mount. |
 | **BUG-09** | All API responses extremely slow (3–8.5s per call) | 🟠 High | **Mitigated** | Local storage role cache added to resolve connections in <1ms on startup. |
 | **BUG-10** | Duplicate data fetching on page load | 🟡 Medium | **Fixed** | Fixed React context re-renders and optimized sync loops. |
-| **BUG-11** | Notifications polled with hardcoded `limit=100` | 🟡 Medium | **Open** | Pagination parameters are planned for notifications endpoint. |
-| **BUG-12** | Transactions fetched with hardcoded `limit=200` | 🟡 Medium | **Open** | Backend supports pagination but client hardcodes limits. |
-| **BUG-13** | CSP allows `unsafe-inline` styles and broad font sources | 🟡 Medium | **Open** | CSP tightening is in the backlog. |
-| **BUG-14** | `cross-origin-resource-policy: cross-origin` on internal APIs | 🟡 Medium | **Open** | CORP header tightening is in the backlog. |
-| **BUG-15** | Sensitive PII fields returned in profile response | 🟡 Medium | **Open** | Profiles are constructed with/without empty fields on backend; schema cleanup is pending. |
+| **BUG-11** | Notifications polled with hardcoded `limit=100` | 🟡 Medium | **Fixed** | Implemented notifications endpoint pagination with limit/page parameters and headers. |
+| **BUG-12** | Transactions fetched with hardcoded `limit=200` | 🟡 Medium | **Fixed** | Implemented transactions endpoint pagination with limit/page parameters and headers. |
+| **BUG-13** | CSP allows `unsafe-inline` styles and broad font sources | 🟡 Medium | **Fixed** | Hardened CSP styled and font directives in Helmet to Google Fonts and Whitelisted domains. |
+| **BUG-14** | `cross-origin-resource-policy: cross-origin` on internal APIs | 🟡 Medium | **Fixed** | Set Cross-Origin-Resource-Policy: same-origin on all routes. |
+| **BUG-15** | Sensitive PII fields returned in profile response | 🟡 Medium | **Fixed** | Pruned sensitive fields from default profile responses; accessed only via includePrivate=true. |
 | **BUG-16** | `/api/v1/pin/key-backup` returns failure state silently | 🟢 Low | **Fixed** | Surfaced failure states and added toast messages to client recovery. |
 | **BUG-17** | Avatar fetched from external CDN without integrity check | 🟢 Low | **Open** | Local caching or proxying of avatars is in the backlog. |
-| **BUG-18** | `x-xss-protection: 0` set on all responses | 🟢 Low | **Open** | Relying on strict CSP headers is standard, but disabling filter is noted. |
+| **BUG-18** | `x-xss-protection: 0` set on all responses | 🟢 Low | **Fixed** | Enforced X-XSS-Protection: 1; mode=block header. |
 | **BUG-19** | Password sent directly to auth endpoint | 🔴 Critical | **Open** | OTP or challenge-response login flow is under discussion. |
 
 ### Proposed PIN Hashing & Validation (BUG-05 & BUG-06)
