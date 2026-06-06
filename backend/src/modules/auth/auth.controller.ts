@@ -1,8 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
+import { randomUUID } from 'crypto';
 import { AuthService } from './auth.service';
 import { RegisterInput, LoginInput } from './auth.types';
 import { AuthRequest, invalidateUserSnapshotCache } from '../../middleware/auth';
-import { cacheGetJson, cacheSetJson, cacheDeleteByPrefix } from '../../cache/redis';
+import { cacheGetJson, cacheSetJson, cacheDeleteByPrefix, getRedisClient, getRedisStatus } from '../../cache/redis';
 import { sanitize } from '../../utils/sanitize';
 import { logger } from '../../config/logger';
 import { generateOtp, verifyOtp } from './otp.service';
@@ -10,8 +11,10 @@ import { checkDeviceTrust, trustDevice, revokeDeviceTrust, listUserDevices } fro
 import { prisma } from '../../db/prisma';
 import { isDatabaseUnavailableError } from '../../utils/databaseAvailability';
 import { AppError } from '../../utils/AppError';
+import { generateTokens } from '../../utils/auth';
 
 const authService = new AuthService();
+const challengeMemoryCache = new Map<string, { payload: any; expiresAt: number }>();
 
 // Strict email regex: local@domain.tld, no SQL/XSS chars
 const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -175,28 +178,134 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
   }
 };
 
+export const loginChallenge = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      throw AppError.badRequest('Please enter your email and password.', 'MISSING_FIELDS');
+    }
+
+    if (!EMAIL_REGEX.test(email)) {
+      throw AppError.badRequest('Please enter a valid email address.', 'INVALID_EMAIL');
+    }
+
+    const isPasswordValid = await authService.verifyPasswordOnly(email.toLowerCase().trim(), password);
+    if (!isPasswordValid) {
+      throw AppError.unauthorized('Incorrect email or password. Please check your credentials and try again.', 'INVALID_CREDENTIALS');
+    }
+
+    const challengeCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const challengeId = 'ch_' + randomUUID();
+    const redisKey = `login-challenge:${email.toLowerCase().trim()}`;
+
+    const redisActive = getRedisStatus() === 'connected';
+    const redisClient = getRedisClient();
+
+    if (redisActive && redisClient) {
+      await redisClient.set(redisKey, JSON.stringify({ email: email.toLowerCase().trim(), code: challengeCode }), 'EX', 60);
+    } else {
+      challengeMemoryCache.set(redisKey, {
+        payload: { email: email.toLowerCase().trim(), code: challengeCode },
+        expiresAt: Date.now() + 60000,
+      });
+    }
+
+    res.json({
+      success: true,
+      data: {
+        challengeId,
+        code: challengeCode,
+      },
+    });
+  } catch (error: any) {
+    if (error instanceof AppError) {
+      return next(error);
+    }
+
+    logger.error('Login challenge error', { message: error?.message, stack: error?.stack });
+
+    if (error?.message === 'Invalid credentials') {
+      return next(AppError.unauthorized(
+        'Incorrect email or password. Please check your credentials and try again.',
+        'INVALID_CREDENTIALS',
+      ));
+    }
+
+    if (isDatabaseUnavailableError(error)) {
+      return next(new AppError(503, 'DATABASE_UNAVAILABLE', 'Our servers are temporarily unavailable. Please try again in a moment.', false));
+    }
+
+    next(AppError.unauthorized('Incorrect email or password. Please check your credentials and try again.', 'LOGIN_FAILED'));
+  }
+};
+
 export const login = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const input: LoginInput = req.body;
+    const input: LoginInput & { challengeCode?: string } = req.body;
 
-    if (!input.email || !input.password) {
-      throw AppError.badRequest('Please enter your email and password.', 'MISSING_FIELDS');
+    if (!input.email) {
+      throw AppError.badRequest('Please enter your email.', 'MISSING_FIELDS');
     }
 
     if (!EMAIL_REGEX.test(input.email)) {
       throw AppError.badRequest('Please enter a valid email address.', 'INVALID_EMAIL');
     }
 
-    const tokens = await authService.login({
-      email: input.email.toLowerCase().trim(),
-      password: input.password,
-    });
+    let userRecord;
+    let tokens;
+
+    if (input.challengeCode) {
+      const redisKey = `login-challenge:${input.email.toLowerCase().trim()}`;
+      let challenge: any = null;
+
+      const redisActive = getRedisStatus() === 'connected';
+      const redisClient = getRedisClient();
+
+      if (redisActive && redisClient) {
+        const raw = await redisClient.get(redisKey);
+        if (raw) {
+          challenge = JSON.parse(raw);
+          await redisClient.del(redisKey);
+        }
+      } else {
+        const cached = challengeMemoryCache.get(redisKey);
+        if (cached && cached.expiresAt > Date.now()) {
+          challenge = cached.payload;
+        }
+        challengeMemoryCache.delete(redisKey);
+      }
+
+      if (!challenge || challenge.code !== input.challengeCode) {
+        throw AppError.unauthorized('Invalid or expired login challenge code. Please try again.', 'CHALLENGE_INVALID');
+      }
+
+      userRecord = await prisma.user.findUnique({
+        where: { email: input.email.toLowerCase().trim() },
+      });
+
+      if (!userRecord) {
+        throw AppError.unauthorized('Invalid credentials');
+      }
+
+      tokens = generateTokens(userRecord);
+    } else {
+      if (!input.password) {
+        throw AppError.badRequest('Please enter your password.', 'MISSING_FIELDS');
+      }
+      tokens = await authService.login({
+        email: input.email.toLowerCase().trim(),
+        password: input.password,
+      });
+      userRecord = tokens.user;
+    }
 
     // Check device trust if deviceId provided
     const deviceId = req.body.deviceId as string | undefined;
     let deviceCheck: Awaited<ReturnType<typeof checkDeviceTrust>> | null = null;
-    if (deviceId && tokens.user?.id) {
-      deviceCheck = await checkDeviceTrust(tokens.user.id, deviceId);
+    const userId = input.challengeCode ? userRecord.id : tokens.user?.id;
+    if (deviceId && userId) {
+      deviceCheck = await checkDeviceTrust(userId, deviceId);
     }
 
     res.setHeader('Authorization', `Bearer ${tokens.accessToken}`);
@@ -206,7 +315,13 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
       success: true,
       message: 'Login successful',
       data: {
-        user: tokens.user,
+        user: input.challengeCode ? {
+          id: userRecord.id,
+          email: userRecord.email,
+          name: userRecord.name,
+          role: userRecord.role,
+          isApproved: userRecord.isApproved,
+        } : tokens.user,
         device: deviceCheck ? {
           isKnown: deviceCheck.isKnown,
           isTrusted: deviceCheck.isTrusted,

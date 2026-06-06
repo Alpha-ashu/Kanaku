@@ -491,11 +491,25 @@ export const api = {
   },
   // Authentication
   auth: {
-    login: (credentials: { email: string; password: string }) =>
-      apiClient.post('/auth/login', credentials, {
+    login: async (credentials: { email: string; password: string }) => {
+      const challengeResponse = await apiClient.post<any>(
+        '/auth/login/challenge',
+        { email: credentials.email, password: credentials.password },
+        { showErrorToast: false }
+      );
+
+      if (!challengeResponse.success || !challengeResponse.data?.code) {
+        throw new Error(challengeResponse.message || 'Verification challenge failed.');
+      }
+
+      return apiClient.post('/auth/login', {
+        email: credentials.email,
+        challengeCode: challengeResponse.data.code,
+      }, {
         showSuccessToast: true,
         successMessage: 'Login successful',
-      }),
+      });
+    },
 
     register: (data: { name: string; email: string; password: string }) =>
       apiClient.post('/auth/register', data, {

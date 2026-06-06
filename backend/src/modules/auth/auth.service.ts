@@ -266,6 +266,48 @@ export class AuthService {
     return generateTokens(user);
   }
 
+  async verifyPasswordOnly(email: string, passwordStr: string): Promise<boolean> {
+    const user = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      return false;
+    }
+
+    let isPasswordValid = false;
+
+    if (!user.password || user.password === 'supabase-managed-account') {
+      logger.info(`[AuthService] User ${email} has a Supabase-managed or unmigrated account. Authenticating via Supabase...`);
+      const supabaseAdmin = getSupabaseAdminClient();
+      if (supabaseAdmin) {
+        const { data, error } = await supabaseAdmin.auth.signInWithPassword({
+          email,
+          password: passwordStr
+        });
+        
+        if (!error && data.user) {
+          isPasswordValid = true;
+          // Migrating password hash to local DB for future logins
+          try {
+            const hashedPassword = await bcrypt.hash(passwordStr, 10);
+            await prisma.user.update({
+              where: { id: user.id },
+              data: { password: hashedPassword }
+            });
+            logger.info(`[AuthService] Migrated password hash for user ${email} to local DB.`);
+          } catch (migrateErr: any) {
+            logger.warn(`[AuthService] Password migration failed for user ${email}:`, migrateErr);
+          }
+        }
+      }
+    } else {
+      isPasswordValid = await bcrypt.compare(passwordStr, user.password);
+    }
+
+    return isPasswordValid;
+  }
+
   async getUser(userId: string): Promise<User> {
     const user = await prisma.user.findUnique({
       where: { id: userId },

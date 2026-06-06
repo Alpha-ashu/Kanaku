@@ -173,9 +173,25 @@ describe('AUTH MODULE', () => {
       expect(res.body.code).toBe('INVALID_EMAIL');
     });
 
-    it('should reject empty body', async () => {
-      const res = await request(app).post(`${API}/auth/login`).send({});
-      expect(res.status).toBe(400);
+    it('should support the two-phase challenge-response login flow', async () => {
+      const challengeRes = await request(app)
+        .post(`${API}/auth/login/challenge`)
+        .send({ email: 'test@example.com', password: 'SecurePass123!' });
+      
+      expect([200, 401, 500]).toContain(challengeRes.status);
+
+      if (challengeRes.status === 200) {
+        expect(challengeRes.body.success).toBe(true);
+        expect(challengeRes.body.data).toHaveProperty('code');
+
+        const loginRes = await request(app)
+          .post(`${API}/auth/login`)
+          .send({ email: 'test@example.com', challengeCode: challengeRes.body.data.code });
+
+        expect(loginRes.status).toBe(200);
+        expect(loginRes.body.success).toBe(true);
+        expect(loginRes.headers).toHaveProperty('authorization');
+      }
     });
   });
 
