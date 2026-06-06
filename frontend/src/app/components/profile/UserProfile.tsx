@@ -277,7 +277,7 @@ export const UserProfile: React.FC = () => {
  if (!shouldSkipOptionalBackendRequests()) {
  try {
  console.log('[UserProfile] Fetching from backend API...');
- const backendRes = await api.auth.getProfile({ force: true, includePrivate: true });
+ const backendRes = await api.auth.getProfile({ includePrivate: true });
  if (backendRes.success && backendRes.data) {
  finalData = backendRes.data;
  console.log('[UserProfile] Received data from backend:', finalData);

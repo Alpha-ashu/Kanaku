@@ -22,7 +22,7 @@ const DIRECT_CLOUD_SYNC_ENABLED =
 
 const isBackendFirstSyncMode = () => !DIRECT_CLOUD_SYNC_ENABLED;
 
-type SyncedTableName =
+export type SyncedTableName =
   | 'accounts'
   | 'friends'
   | 'transactions'
@@ -1454,23 +1454,45 @@ async function shouldSkipFullSync(requestedTables: SyncedTableName[]): Promise<b
 }
 
 async function syncUserDataFromBackend(
-  requestedTables: SyncedTableName[] = CORE_SYNC_TABLES,
+  requestedTables?: SyncedTableName[],
   force = false
 ) {
   initializeBackendSync();
 
+  const tablesToSync = requestedTables === undefined ? CORE_SYNC_TABLES : requestedTables;
+
   // Clean up any local duplicates before merging backend data
   await deduplicateLocalData();
 
-  const skipFull = !force && await shouldSkipFullSync(requestedTables);
+  const skipFull = !force && await shouldSkipFullSync(tablesToSync);
   if (skipFull) {
     console.info('[Sync] Skipping full backend pull; last sync was <5m ago and local data exists.');
     return;
   }
 
-  const targetTables = requestedTables.length > 0 ? requestedTables : CORE_SYNC_TABLES;
-  const expandedTables = expandTablesForSync(targetTables);
-  const mergeTargets = new Set<SyncedTableName>(targetTables);
+  // Filter out tables that were synced recently during non-forced syncs
+  const targetTables = tablesToSync;
+  let finalTablesToSync = targetTables;
+  if (!force) {
+    const cooldownMs = 5 * 60 * 1000; // 5 minutes
+    finalTablesToSync = targetTables.filter(table => {
+      const lastSyncStr = localStorage.getItem(`KANKU_last_sync_at_${table}`);
+      if (!lastSyncStr) return true;
+      const lastSync = Number(lastSyncStr);
+      if (isNaN(lastSync) || Date.now() - lastSync < 0 || Date.now() - lastSync >= cooldownMs) {
+        return true;
+      }
+      return false;
+    });
+  }
+
+  if (finalTablesToSync.length === 0) {
+    console.info('[Sync] Skipping backend sync; all requested tables synced <5m ago.');
+    return;
+  }
+
+  const expandedTables = expandTablesForSync(finalTablesToSync);
+  const mergeTargets = new Set<SyncedTableName>(finalTablesToSync);
   const shouldFetch = (table: SyncedTableName) => expandedTables.includes(table);
 
   const [
@@ -1952,14 +1974,19 @@ async function syncUserDataFromBackend(
   // CRITICAL: Deduplicate AFTER all merges to catch any stragglers from race conditions
   await deduplicateLocalData();
 
-  if (requestedTables.length >= CORE_SYNC_TABLES.length) {
-    localStorage.setItem(LAST_FULL_SYNC_KEY, Date.now().toString());
+  const now = Date.now().toString();
+  finalTablesToSync.forEach(table => {
+    localStorage.setItem(`KANKU_last_sync_at_${table}`, now);
+  });
+
+  if (tablesToSync.length >= CORE_SYNC_TABLES.length) {
+    localStorage.setItem(LAST_FULL_SYNC_KEY, now);
   }
 }
 
 export async function syncUserDataFromCloud(
   userId: string,
-  requestedTables: SyncedTableName[] = CORE_SYNC_TABLES,
+  requestedTables?: SyncedTableName[],
   force = false
 ) {
   if (isBackendFirstSyncMode()) {
@@ -1969,12 +1996,40 @@ export async function syncUserDataFromCloud(
 
   if (!DIRECT_CLOUD_SYNC_ENABLED) return;
 
+  const tablesToSync = requestedTables === undefined ? CORE_SYNC_TABLES : requestedTables;
+
   if (syncState.syncingFromCloud) return;
   if (shouldSkipDirectSupabaseRequests()) return;
 
-  const skipFull = !force && await shouldSkipFullSync(requestedTables);
+  const skipFull = !force && await shouldSkipFullSync(tablesToSync);
   if (skipFull) {
     console.info('[Sync] Skipping full cloud pull; last sync was <5m ago and local data exists.');
+    try {
+      await deduplicateLocalData();
+      await processPendingSyncQueue();
+    } catch (err) {
+      console.warn('[Sync] Queue processing on skipped sync failed:', err);
+    }
+    return;
+  }
+
+  const targetTables = filterAvailableSupabaseTables(tablesToSync) as SyncedTableName[];
+  let finalTablesToSync = targetTables;
+  if (!force) {
+    const cooldownMs = 5 * 60 * 1000; // 5 minutes
+    finalTablesToSync = targetTables.filter(table => {
+      const lastSyncStr = localStorage.getItem(`KANKU_last_sync_at_${table}`);
+      if (!lastSyncStr) return true;
+      const lastSync = Number(lastSyncStr);
+      if (isNaN(lastSync) || Date.now() - lastSync < 0 || Date.now() - lastSync >= cooldownMs) {
+        return true;
+      }
+      return false;
+    });
+  }
+
+  if (finalTablesToSync.length === 0) {
+    console.info('[Sync] Skipping cloud sync; all requested tables synced <5m ago.');
     try {
       await deduplicateLocalData();
       await processPendingSyncQueue();
@@ -1992,16 +2047,9 @@ export async function syncUserDataFromCloud(
     await deduplicateLocalData();
     await processPendingSyncQueue();
 
-    const targetTables = filterAvailableSupabaseTables(
-      requestedTables.length > 0 ? requestedTables : CORE_SYNC_TABLES
-    ) as SyncedTableName[];
-
-    if (targetTables.length === 0) {
-      return;
-    }
-
-    const expandedTables = filterAvailableSupabaseTables(expandTablesForSync(targetTables)) as SyncedTableName[];
-    const mergeTargets = new Set<SyncedTableName>(targetTables);
+    const currentSyncTables = finalTablesToSync;
+    const expandedTables = filterAvailableSupabaseTables(expandTablesForSync(currentSyncTables)) as SyncedTableName[];
+    const mergeTargets = new Set<SyncedTableName>(currentSyncTables);
     const shouldFetch = (table: SyncedTableName) => expandedTables.includes(table);
 
     const [
@@ -2316,8 +2364,13 @@ export async function syncUserDataFromCloud(
     // CRITICAL: Deduplicate AFTER all merges to catch any stragglers from race conditions
     await deduplicateLocalData();
 
-    if (requestedTables.length >= CORE_SYNC_TABLES.length) {
-      localStorage.setItem(LAST_FULL_SYNC_KEY, Date.now().toString());
+    const now = Date.now().toString();
+    currentSyncTables.forEach(table => {
+      localStorage.setItem(`KANKU_last_sync_at_${table}`, now);
+    });
+
+    if (tablesToSync.length >= CORE_SYNC_TABLES.length) {
+      localStorage.setItem(LAST_FULL_SYNC_KEY, now);
     }
   } finally {
     syncState.syncingFromCloud = false;

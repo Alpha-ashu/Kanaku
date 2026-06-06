@@ -10,6 +10,7 @@ import { HealthChecker } from '@/lib/health';
 import { toast } from 'sonner';
 import { initializeSmsTransactionDetection } from '@/services/smsTransactionDetectionService';
 import { canAccessPage } from '@/lib/featureFlags';
+import { syncUserDataFromCloud, SyncedTableName } from '@/lib/auth-sync-integration';
 
 
 //  Shell components (always visible - eager load) 
@@ -182,6 +183,40 @@ class PageErrorBoundary extends React.Component<
   }
 }
 
+const PAGE_REQUIRED_TABLES: Record<string, SyncedTableName[]> = {
+  dashboard: ['accounts', 'transactions', 'goals'],
+  accounts: ['accounts'],
+  'add-account': ['accounts'],
+  'edit-account': ['accounts'],
+  transactions: ['transactions', 'accounts'],
+  'add-transaction': ['transactions', 'accounts'],
+  transfer: ['transactions', 'accounts'],
+  'pay-emi': ['transactions', 'accounts', 'loans'],
+  'recurring-transactions': ['transactions', 'accounts'],
+  'tax-calculator': ['transactions', 'accounts'],
+  loans: ['loans', 'accounts', 'friends'],
+  'add-loan': ['loans', 'accounts', 'friends'],
+  goals: ['goals'],
+  'goal-detail': ['goals'],
+  'add-goal': ['goals'],
+  groups: ['group_expenses', 'friends', 'accounts'],
+  'add-group': ['group_expenses', 'friends', 'accounts'],
+  'add-friends': ['friends'],
+  investments: ['investments', 'accounts'],
+  'add-investment': ['investments', 'accounts'],
+  'add-gold': ['investments', 'accounts'],
+  'edit-investment': ['investments', 'accounts'],
+  'todo-lists': ['to_do_lists', 'to_do_items', 'to_do_list_shares'],
+  'todo-list-detail': ['to_do_lists', 'to_do_items', 'to_do_list_shares'],
+  'todo-list-share': ['to_do_lists', 'to_do_items', 'to_do_list_shares'],
+  reports: ['transactions', 'accounts'],
+  'export-reports': ['transactions', 'accounts'],
+  'data-export': ['transactions', 'accounts'],
+  calendar: ['transactions', 'accounts'],
+  'ai-insights': ['transactions', 'accounts', 'goals', 'investments'],
+  'budget-alerts': ['accounts', 'transactions'],
+};
+
 type PublicPage = 'landing' | 'about' | 'pricing' | 'contact' | 'privacy' | 'terms';
 
 const AppContent: React.FC = () => {
@@ -335,9 +370,20 @@ const AppContent: React.FC = () => {
   // Trigger data sync after PIN verification
   useEffect(() => {
     if (user && isAuthenticated && !dataReady && !dataSyncing) {
-      void triggerDataSync();
+      const requiredTables = PAGE_REQUIRED_TABLES[currentPage] || [];
+      void triggerDataSync(requiredTables);
     }
-  }, [user, isAuthenticated, dataReady, dataSyncing, triggerDataSync]);
+  }, [user, isAuthenticated, dataReady, dataSyncing, triggerDataSync, currentPage]);
+
+  // Handle background sync when page changes
+  useEffect(() => {
+    if (user && isAuthenticated && dataReady && currentPage) {
+      const requiredTables = PAGE_REQUIRED_TABLES[currentPage] || [];
+      if (requiredTables.length > 0) {
+        void syncUserDataFromCloud(user.id, requiredTables);
+      }
+    }
+  }, [currentPage, user, isAuthenticated, dataReady]);
 
   // Ensure we land on dashboard after login when the URL is a stale auth path
   // ALSO: Guard against disabled features

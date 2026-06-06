@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
 import { useApp } from '@/contexts/AppContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -36,7 +36,11 @@ export const AdminAdvisorVerification: React.FC = () => {
  const [rejectModal, setRejectModal] = useState<{ id: string; name: string } | null>(null);
  const [rejectReason, setRejectReason] = useState('');
 
+ const isFetching = useRef(false);
+
  const fetchApplications = useCallback(async () => {
+   if (isFetching.current) return;
+   isFetching.current = true;
    setLoading(true);
    try {
      const data = await backendService.api.get('/advisors/admin/applications');
@@ -47,6 +51,7 @@ export const AdminAdvisorVerification: React.FC = () => {
      toast.error('Failed to load advisor applications');
    } finally {
      setLoading(false);
+     isFetching.current = false;
    }
  }, []);
 

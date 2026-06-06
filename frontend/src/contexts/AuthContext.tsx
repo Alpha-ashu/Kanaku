@@ -13,6 +13,7 @@ import {
   runWithCloudSyncSuppressed,
   subscribeToUserCloudSync,
   syncUserDataFromCloud,
+  SyncedTableName,
 } from '@/lib/auth-sync-integration';
 import { backendService } from '@/lib/backend-api';
 import { shouldSkipOptionalBackendRequests } from '@/lib/apiBase';
@@ -27,7 +28,7 @@ interface AuthContextType {
   dataReady: boolean;
   dataSyncing: boolean;
   dataSyncError: string | null;
-  triggerDataSync: () => Promise<void>;
+  triggerDataSync: (requestedTables?: SyncedTableName[]) => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -584,7 +585,7 @@ const syncProfileFromBackend = async (user: User) => {
 };
 
 /** Sync user data from Supabase into local Dexie DB on login */
-const syncFromSupabase = async (user: User, force = false) => {
+const syncFromSupabase = async (user: User, force = false, requestedTables?: SyncedTableName[]) => {
   try {
     if (shouldSkipOptionalBackendRequests()) {
       await syncProfileFromBackend(user);
@@ -597,7 +598,7 @@ const syncFromSupabase = async (user: User, force = false) => {
     for (let attempt = 0; attempt < timeouts.length; attempt += 1) {
       try {
         await fetchWithTimeout(Promise.all([
-          syncUserDataFromCloud(user.id, undefined, force),
+          syncUserDataFromCloud(user.id, requestedTables, force),
           syncProfileFromBackend(user),
         ]), timeouts[attempt]);
         return;
@@ -994,7 +995,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  const triggerDataSync = async () => {
+  const triggerDataSync = async (requestedTables?: SyncedTableName[]) => {
     if (!user?.id || dataSyncing) {
       return;
     }
@@ -1007,7 +1008,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       const permissions = await permissionService.fetchUserPermissions(targetUserId, resolveUserRole(user));
       setRole(permissions.role);
-      await syncFromSupabase(user, true);
+      await syncFromSupabase(user, true, requestedTables);
       if (activeSyncUserId.current === targetUserId) {
         setDataReady(true);
       }
@@ -1043,7 +1044,7 @@ export const useAuth = () => {
         dataReady: false,
         dataSyncing: false,
         dataSyncError: null,
-        triggerDataSync: async () => {},
+        triggerDataSync: async (requestedTables?: SyncedTableName[]) => {},
         signOut: async () => {},
       };
     }

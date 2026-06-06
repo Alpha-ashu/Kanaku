@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, useCallback } from 'react';
+import React, { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
 import { useApp } from '@/contexts/AppContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -186,31 +186,37 @@ export const AdminAIDashboard: React.FC = () => {
  const [newKeywordCategory, setNewKeywordCategory] = useState('Food & Dining');
  const [keywordSearch, setKeywordSearch] = useState('');
 
+ const isFetching = useRef(false);
+
  const loadDashboard = useCallback(async () => {
- setState('loading');
- setError('');
- try {
- const [overviewData, usersData, insightsData, patternsData, accuracyData, configData] = await Promise.all([
- adminAIService.getOverview(),
- adminAIService.getUsers(40),
- adminAIService.getInsights(60),
- adminAIService.getPatterns(),
- adminAIService.getAccuracy(),
- adminAIService.getAIConfig().catch(() => null),
- ]);
- setOverview(overviewData ?? null);
- setUsers(usersData ?? []);
- setInsights(insightsData ?? []);
- setPatterns(patternsData ?? null);
- setAccuracy(accuracyData ?? null);
- if (configData && configData.success) {
-   setAiConfig(configData.data);
- }
- setState('ready');
- } catch (e) {
- setState('error');
- setError(e instanceof Error ? e.message : 'Failed to load AI dashboard');
- }
+   if (isFetching.current) return;
+   isFetching.current = true;
+   setState('loading');
+   setError('');
+   try {
+     const [overviewData, usersData, insightsData, patternsData, accuracyData, configData] = await Promise.all([
+       adminAIService.getOverview(),
+       adminAIService.getUsers(40),
+       adminAIService.getInsights(60),
+       adminAIService.getPatterns(),
+       adminAIService.getAccuracy(),
+       adminAIService.getAIConfig().catch(() => null),
+     ]);
+     setOverview(overviewData ?? null);
+     setUsers(usersData ?? []);
+     setInsights(insightsData ?? []);
+     setPatterns(patternsData ?? null);
+     setAccuracy(accuracyData ?? null);
+     if (configData && configData.success) {
+       setAiConfig(configData.data);
+     }
+     setState('ready');
+   } catch (e) {
+     setState('error');
+     setError(e instanceof Error ? e.message : 'Failed to load AI dashboard');
+   } finally {
+     isFetching.current = false;
+   }
  }, []);
 
   useEffect(() => {

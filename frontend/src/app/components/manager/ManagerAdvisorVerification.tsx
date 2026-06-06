@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
 import { useApp } from '@/contexts/AppContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -55,41 +55,46 @@ export const ManagerAdvisorVerification: React.FC = () => {
    }
  }, [dataReady, role, setCurrentPage]);
 
+ const isFetching = useRef(false);
+
  const fetchApplications = useCallback(async () => {
- setLoading(true);
- try {
- // Reusing the admin endpoint but logic will be tailored for Manager workflow
- const data = await backendService.api.get('/advisors/admin/applications');
- const result = data.data;
- 
- // Enhance data with mock KYC flags for the UI demonstration
- const enhancedPending = (result.pending || []).map((app: any) => ({
- ...app,
- status: 'pending',
- qualification: 'Certified Financial Planner (CFP)',
- experience: '8+ Years',
- metadata: {
- panNumber: 'ABCDE1234F',
- aadhaarLast4: '8892',
- hasCertifications: true,
- hasSelfieVerified: true,
- hasComplianceSigned: true
- }
- }));
+   if (isFetching.current) return;
+   isFetching.current = true;
+   setLoading(true);
+   try {
+     // Reusing the admin endpoint but logic will be tailored for Manager workflow
+     const data = await backendService.api.get('/advisors/admin/applications');
+     const result = data.data;
+     
+     // Enhance data with mock KYC flags for the UI demonstration
+     const enhancedPending = (result.pending || []).map((app: any) => ({
+       ...app,
+       status: 'pending',
+       qualification: 'Certified Financial Planner (CFP)',
+       experience: '8+ Years',
+       metadata: {
+         panNumber: 'ABCDE1234F',
+         aadhaarLast4: '8892',
+         hasCertifications: true,
+         hasSelfieVerified: true,
+         hasComplianceSigned: true
+       }
+     }));
 
- const enhancedAll = (result.all || []).map((app: any) => ({
- ...app,
- status: app.isApproved ? 'approved' : 'pending',
- qualification: 'MBA Finance',
- experience: '5 Years'
- }));
+     const enhancedAll = (result.all || []).map((app: any) => ({
+       ...app,
+       status: app.isApproved ? 'approved' : 'pending',
+       qualification: 'MBA Finance',
+       experience: '5 Years'
+     }));
 
- setApplications([...enhancedPending, ...enhancedAll]);
- } catch (err: any) {
- toast.error('Failed to load verification queue');
- } finally {
- setLoading(false);
- }
+     setApplications([...enhancedPending, ...enhancedAll]);
+   } catch (err: any) {
+     toast.error('Failed to load verification queue');
+   } finally {
+     setLoading(false);
+     isFetching.current = false;
+   }
  }, []);
 
  useEffect(() => { fetchApplications(); }, [fetchApplications]);
