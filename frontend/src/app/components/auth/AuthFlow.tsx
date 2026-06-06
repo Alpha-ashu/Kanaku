@@ -611,7 +611,7 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
  firstName: (formData.get('firstName') as string) || userProfile?.firstName || '',
  lastName: (formData.get('lastName') as string) || userProfile?.lastName || '',
  email: email,
- mobile: '',
+ mobile: userProfile?.mobile || '',
  dateOfBirth: formData.get('dob') as string,
  jobType: formData.get('jobType') as string,
  jobIndustry: formData.get('jobIndustry') as string,

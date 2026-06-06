@@ -56,6 +56,9 @@ router.post('/verify', async (req: AuthRequest, res: Response, next: NextFunctio
     if (!pin) throw AppError.badRequest('PIN is required', 'PIN_REQUIRED');
 
     const result = await pinService.verifyPin({ userId, pin, deviceId });
+    if (!result.success) {
+      return res.status(401).json(result);
+    }
     res.json(result);
   } catch (error) {
     next(error);

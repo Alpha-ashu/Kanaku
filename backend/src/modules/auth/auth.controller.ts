@@ -162,18 +162,22 @@ const buildProfilePayload = (
 };
 
 export const register = async (req: Request, res: Response, next: NextFunction) => {
+  logger.info(`[AuthController] Register request received for email: ${req.body?.email}`);
   try {
     const input: RegisterInput = req.body;
 
     if (!input.email || !input.name || !input.password) {
+      logger.warn(`[AuthController] Registration failed: missing fields for email: ${input?.email}`);
       throw AppError.badRequest('Please fill in all required fields: email, name, and password.', 'MISSING_FIELDS');
     }
 
     if (!EMAIL_REGEX.test(input.email)) {
+      logger.warn(`[AuthController] Registration failed: invalid email format: ${input.email}`);
       throw AppError.badRequest('Please enter a valid email address.', 'INVALID_EMAIL');
     }
 
     if (input.password.length < 8) {
+      logger.warn(`[AuthController] Registration failed: password too short for email: ${input.email}`);
       throw AppError.badRequest('Your password must be at least 8 characters long.', 'PASSWORD_TOO_SHORT');
     }
 
@@ -184,6 +188,7 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
     };
 
     const tokens = await authService.register(sanitizedInput);
+    logger.info(`[AuthController] User registered successfully in service: ${tokens.user?.id}`);
 
     res.setHeader('Authorization', `Bearer ${tokens.accessToken}`);
     res.setHeader('x-refresh-token', tokens.refreshToken);
@@ -196,6 +201,7 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
       },
     });
   } catch (error: any) {
+    logger.error(`[AuthController] Registration error for email ${req.body?.email}:`, { message: error?.message, stack: error?.stack });
     // Map known service errors to AppError before passing to next()
     if (
       error instanceof AppError
@@ -404,8 +410,10 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
 };
 
 export const getProfile = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  logger.info(`[AuthController] Get Profile requested for userId: ${req.userId}`);
   try {
     if (!req.userId) {
+      logger.warn('[AuthController] Get Profile failed: Unauthorized (no userId in request)');
       return next(AppError.unauthorized());
     }
 
@@ -413,6 +421,7 @@ export const getProfile = async (req: AuthRequest, res: Response, next: NextFunc
     const profileCacheKey = includePrivate ? `profile:private:${req.userId}` : `profile:${req.userId}`;
     const cachedProfile = await cacheGetJson<any>(profileCacheKey);
     if (cachedProfile) {
+      logger.info(`[AuthController] Profile cache hit for key: ${profileCacheKey}`);
       return res.json({
         success: true,
         data: cachedProfile,
@@ -428,6 +437,7 @@ export const getProfile = async (req: AuthRequest, res: Response, next: NextFunc
       ]);
     };
 
+    logger.info(`[AuthController] Profile cache miss. Triggering database lookups for userId: ${req.userId}`);
     const [userRes, profileRes, settingsRes, pinRes] = await Promise.allSettled([
       withTimeout(authService.getUser(req.userId), 1500, 'User profile lookup'),
       withTimeout(prisma.profiles.findUnique({ where: { id: req.userId } }), 1500, 'Profiles lookup'),
@@ -439,6 +449,8 @@ export const getProfile = async (req: AuthRequest, res: Response, next: NextFunc
     const profileResult = profileRes;
     const settingsResult = settingsRes;
     const pinResult = pinRes;
+
+    logger.info(`[AuthController] Database lookup settled for userId: ${req.userId}. User: ${userRes.status}, Profiles: ${profileRes.status}, Settings: ${settingsRes.status}, PIN: ${pinRes.status}`);
 
     if (userRes.status === 'rejected') {
       const err = userRes.reason;
@@ -502,8 +514,10 @@ export const getProfile = async (req: AuthRequest, res: Response, next: NextFunc
 };
 
 export const updateProfile = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  logger.info(`[AuthController] Update profile request received for userId: ${req.userId}`);
   try {
     if (!req.userId) {
+      logger.warn('[AuthController] Update profile failed: Unauthorized (no userId in request)');
       return next(AppError.unauthorized());
     }
 
@@ -513,7 +527,9 @@ export const updateProfile = async (req: AuthRequest, res: Response, next: NextF
         typeof value === 'string' ? sanitize(value) : value,
       ]),
     );
+    logger.info(`[AuthController] Sanitized data for userId: ${req.userId}: ${JSON.stringify(sanitizedData)}`);
     const user = await authService.updateProfile(req.userId, sanitizedData, req.user?.email);
+    logger.info(`[AuthController] Profile updated in service for userId: ${req.userId}`);
 
     // Fetch fresh profile data, settings, and PIN to return consistent payload
     const [profile, settings, pin] = await Promise.all([
@@ -527,11 +543,13 @@ export const updateProfile = async (req: AuthRequest, res: Response, next: NextF
         where: { userId: req.userId },
       }),
     ]);
+    logger.info(`[AuthController] Fresh lookup for payload compilation settled for userId: ${req.userId}. Profiles exists: ${!!profile}, Settings exists: ${!!settings}, PIN exists: ${!!pin}`);
 
     // Invalidate Redis profile cache and memory user snapshot cache
     await cacheDeleteByPrefix(`profile:${req.userId}`);
     await cacheDeleteByPrefix(`profile:private:${req.userId}`);
     invalidateUserSnapshotCache(req.userId);
+    logger.info(`[AuthController] Cleared profile caches for userId: ${req.userId}`);
 
     const includePrivate = req.query.includePrivate === 'true' || req.query.includePrivate === '1' || true;
 

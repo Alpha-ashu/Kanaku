@@ -291,5 +291,53 @@ describe('SECURITY TESTS', () => {
         .set(getSignedAuthHeaders());
       expect(res.status).toBe(404);
     });
+
+    it('should return 200 for correct PIN verification and 401 for incorrect PIN verification', async () => {
+      const userId = 'pin-test-user-123';
+      const email = 'pin-test@security.com';
+      const secret = process.env.JWT_SECRET || 'test-jwt-secret';
+      if (!process.env.JWT_SECRET) {
+        process.env.JWT_SECRET = secret;
+      }
+      const token = jwt.sign({ userId, id: userId, email, role: 'user' }, secret, { expiresIn: '15m' });
+      const headers = { Authorization: `Bearer ${token}` };
+
+      const { prisma } = require('../../src/db/prisma');
+      await prisma.userPin.deleteMany({ where: { userId } }).catch(() => {});
+      await prisma.user.deleteMany({ where: { id: userId } }).catch(() => {});
+
+      const pin = '135790';
+      const crypto = require('crypto');
+      const hashedPin = crypto.createHash('sha256').update(pin).digest('hex');
+
+      // Create PIN
+      const createRes = await request(app)
+        .post(`${API}/pin/create`)
+        .set(headers)
+        .send({ pin: hashedPin });
+      expect(createRes.status).toBe(200);
+
+      // Verify correct PIN -> should return 200
+      const verifyCorrectRes = await request(app)
+        .post(`${API}/pin/verify`)
+        .set(headers)
+        .send({ pin: hashedPin });
+      expect(verifyCorrectRes.status).toBe(200);
+      expect(verifyCorrectRes.body.success).toBe(true);
+
+      // Verify wrong PIN -> should return 401
+      const wrongPin = '097531';
+      const hashedWrongPin = crypto.createHash('sha256').update(wrongPin).digest('hex');
+      const verifyWrongRes = await request(app)
+        .post(`${API}/pin/verify`)
+        .set(headers)
+        .send({ pin: hashedWrongPin });
+      expect(verifyWrongRes.status).toBe(401);
+      expect(verifyWrongRes.body.success).toBe(false);
+
+      // Clean up
+      await prisma.userPin.deleteMany({ where: { userId } }).catch(() => {});
+      await prisma.user.deleteMany({ where: { id: userId } }).catch(() => {});
+    });
   });
 });

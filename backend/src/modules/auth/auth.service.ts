@@ -16,7 +16,7 @@ export class AuthService {
     phone?: string;
     mobile?: string;
   }): Promise<AuthTokens> {
-
+    logger.info(`[AuthService] Starting registration process in service for email: ${input.email}`);
     try {
       // Check if user already exists
       const existingUser = await prisma.user.findUnique({
@@ -24,6 +24,7 @@ export class AuthService {
       });
 
       if (existingUser) {
+        logger.warn(`[AuthService] Registration failed: Email ${input.email} is already registered`);
         throw new Error('Email already registered');
       }
 
@@ -34,6 +35,7 @@ export class AuthService {
           where: { phone: resolvedPhone }
         });
         if (existingPhoneProfile) {
+          logger.warn(`[AuthService] Registration failed: Phone ${resolvedPhone} already in use`);
           throw new Error('Phone number already in use');
         }
       }
@@ -46,7 +48,7 @@ export class AuthService {
       const role = input.role === 'advisor' ? 'advisor' : 'user';
       const isApproved = role === 'user'; // Advisors require explicit admin approval
 
-
+      logger.info(`[AuthService] Creating user record in database for email: ${input.email}, role: ${role}`);
       // Create user with profile information
       const user = await prisma.user.create({
         data: {
@@ -62,12 +64,14 @@ export class AuthService {
           jobType: input.jobType,
         },
       });
+      logger.info(`[AuthService] User record created successfully with ID: ${user.id}`);
 
       // Sync user to public.profiles table
       try {
         const nameParts = input.name.trim().split(/\s+/).filter(Boolean);
         const firstName = input.firstName || nameParts[0] || '';
         const lastName = input.lastName || nameParts.slice(1).join(' ') || '';
+        logger.info(`[AuthService] Syncing registered user ${user.id} to public.profiles table`);
         await prisma.$executeRaw`
           INSERT INTO public.profiles (
             id, email, first_name, last_name, full_name, phone, created_at, updated_at
@@ -151,11 +155,12 @@ export class AuthService {
         }
       });
       if (existingPhoneProfile) {
+        logger.warn(`[AuthService] Profile update failed: Phone number ${resolvedPhone} is already in use by another user`);
         throw new Error('Phone number already in use');
       }
     }
 
-    logger.info(`[AuthService] Processing profile update for userId: ${userId}`);
+    logger.info(`[AuthService] Processing profile update for userId: ${userId}. Input data: ${JSON.stringify(data)}`);
 
     // Standardize income - handle potential float/string/null
     let decimalMonthlyIncome: Prisma.Decimal | null = null;

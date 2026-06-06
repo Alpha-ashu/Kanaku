@@ -194,58 +194,53 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
         await finalizeAuth(key, 'PIN created! Welcome to KANKU');
 
       } else {
-        // Verify existing PIN (local-first) 
         // Guest mode: verify locally only, no server call.
-        const localResult = await verifyPIN(pin);
-
-        if (localResult.isValid && localResult.key) {
-          // Local PIN correct - in non-guest mode also sync to server background
-          if (!isGuestMode()) {
-            pinService.verifyPin({ pin })
-              .then(async serverResult => {
-                if (!serverResult.success && isPinMissing(serverResult)) {
-                  const repair = await pinService.createPin(pin);
-                  if (repair.success) {
-                    const backup = backupPINKeys();
-                    if (backup.hash && backup.salt) {
-                      const sec = await pinService.verifySecurity();
-                      if (sec.success && sec.securityToken) {
-                        await pinService.saveKeyBackup(`${backup.hash}|${backup.salt}`, sec.securityToken).catch(() => { });
-                      }
-                    }
-                  }
-                }
-              })
-              .catch(() => { });
-          }
-
-          await finalizeAuth(localResult.key, 'Welcome back!');
-          return;
-        }
-
-        // Local hash missing or mismatched - fall back to server 
-        // (e.g. user cleared storage, or PIN was set on another device)
-        const serverResult = await pinService.verifyPin({ pin });
-
-        if (!serverResult.success) {
-          if (isPinServiceUnavailable(serverResult)) {
-            // Server down AND local failed no way to verify
-            triggerShake('Unable to verify PIN right now. Please try again.');
+        if (isGuestMode()) {
+          const localResult = await verifyPIN(pin);
+          if (localResult.isValid && localResult.key) {
+            await finalizeAuth(localResult.key, 'Welcome back!');
           } else {
             triggerShake('Incorrect PIN. Please try again.');
+            setIsSubmitting(false);
           }
-          setIsSubmitting(false);
           return;
         }
 
-        // Server verified restore local keys from backup so future locks work
-        const kbr = await pinService.getKeyBackup();
-        if (kbr.success && kbr.backup) {
-          const [hash, salt] = kbr.backup.split('|');
-          if (hash && salt) restorePINKeys({ hash, salt });
+        // Non-guest mode: Must call server-side verification first to prevent PIN bypasses.
+        const serverResult = await pinService.verifyPin({ pin });
+
+        if (serverResult.success) {
+          // Server verified the PIN successfully!
+          let localResult = await verifyPIN(pin);
+          if (!localResult.isValid || !localResult.key) {
+            // Local keys are missing/mismatched (e.g., storage cleared) -> restore from server backup
+            const kbr = await pinService.getKeyBackup();
+            if (kbr.success && kbr.backup) {
+              const [hash, salt] = kbr.backup.split('|');
+              if (hash && salt) restorePINKeys({ hash, salt });
+            }
+            localResult = await verifyPIN(pin);
+          }
+
+          // If we still don't have local keys, re-derive them using the validated PIN
+          const key = localResult.key || await storeMasterKey(pin);
+          await finalizeAuth(key, 'Welcome back!');
+        } else {
+          // Server verification failed
+          if (isPinServiceUnavailable(serverResult)) {
+            // Server is unreachable -> fall back to checking local hash to support offline access
+            const localResult = await verifyPIN(pin);
+            if (localResult.isValid && localResult.key) {
+              await finalizeAuth(localResult.key, 'Welcome back! (Offline Mode)');
+              return;
+            }
+            triggerShake('Unable to verify PIN right now. Please try again.');
+          } else {
+            // Server explicitly rejected the PIN (incorrect PIN, locked, or expired)
+            triggerShake(serverResult.message || 'Incorrect PIN. Please try again.');
+          }
+          setIsSubmitting(false);
         }
-        const key = await storeMasterKey(pin); // re-derive and store locally
-        await finalizeAuth(key, 'Welcome back!');
       }
     } catch {
       triggerShake('Something went wrong. Please try again.');

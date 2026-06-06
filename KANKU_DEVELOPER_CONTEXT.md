@@ -3769,3 +3769,29 @@ Document anything that requires user review or feedback.
 - Inspect the Network tab after logging in to verify that initial requests are capped at 3-5 calls, and unrelated modules (transactions, goals, investments, etc.) are not loaded.
 - Verify the `GET /api/v1/auth/profile` response contains all requested fields, including `pinEnabled`, `monthlyIncome`, `mobileNumber`, etc.
 - Verify the Profile screen loads with skeleton loaders and renders profile details cleanly without flickering or showing incorrect defaults.
+
+---
+
+# Walkthrough - Backend Audit, P0 PIN Security Fix & Performance Optimization
+
+This walkthrough details the changes implemented to address the backend profile data audit, the P0 security PIN bypass vulnerability, and the dashboard loading performance issues.
+
+## Changes Made
+
+### 1. Backend Audit Logging & Profile Fixes
+- Added detailed request and response logging to `register`, `getProfile`, and `updateProfile` in [auth.controller.ts](file:///k:/Project/kenku/Finora/backend/src/modules/auth/auth.controller.ts) and [auth.service.ts](file:///k:/Project/kenku/Finora/backend/src/modules/auth/auth.service.ts).
+
+### 2. P0 PIN Security Fix
+- **HTTP 401 Rejection**: Updated the `/verify` PIN endpoint in [pin.routes.ts](file:///k:/Project/kenku/Finora/backend/src/modules/pin/pin.routes.ts) to return status code `401` with `success: false` instead of `200` on incorrect PIN entry.
+- **Backend-First Verification**: Rewrote PIN submit validation in [PINAuth.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/auth/PINAuth.tsx) to call the backend verification API first and block UI navigation until backend confirms success.
+- **Offline Fallback**: In [PINAuth.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/auth/PINAuth.tsx), fallback local verification (checking the local hash in localStorage) is used ONLY if the server is unreachable (503/timeout).
+
+### 3. Onboarding Mobile Number Fix
+- **Mobile Number Persistence**: Fixed profile setup form submission in [AuthFlow.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/auth/AuthFlow.tsx) (line 614) to pass `userProfile?.mobile || ''` instead of `''`, preventing the user's mobile number from being wiped out on onboarding completion.
+
+### 4. Performance Optimization
+- **Route-based Lazy Loading**: Optimized `PAGE_REQUIRED_TABLES['dashboard']` in [App.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/App.tsx) to only require `['accounts']` (which syncs accounts and profiles). Other tables (transactions, goals, etc.) are lazy-loaded on demand as the user navigates.
+- This resolves the startup request bloat by limiting initial load requests from >15 down to 3-5.
+
+### 5. Automated Tests
+- Added integration tests to [security.test.ts](file:///k:/Project/kenku/Finora/backend/tests/integration/security.test.ts) verifying that valid PIN verification returns 200/success and invalid PIN verification returns 401/unauthorized.
