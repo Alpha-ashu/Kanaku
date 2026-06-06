@@ -50,7 +50,7 @@ describe('permissionService', () => {
 
     const permissions = await permissionService.fetchUserPermissions('user-1', 'user');
 
-    expect(fetch).toHaveBeenCalledWith('/api/v1/auth/profile', expect.objectContaining({
+    expect(fetch).toHaveBeenCalledWith('/api/v1/auth/profile?includePrivate=true', expect.objectContaining({
       method: 'GET',
       headers: expect.objectContaining({
         Authorization: 'Bearer session-token',

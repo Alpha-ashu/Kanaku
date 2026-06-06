@@ -9,7 +9,7 @@ import {
   getConfiguredApiBase,
   shouldSkipOptionalBackendRequests,
 } from '@/lib/apiBase';
-import { TokenManager } from '@/lib/api';
+import { TokenManager, api } from '@/lib/api';
 import supabase from '@/utils/supabase/client';
 
 const API_BASE = getConfiguredApiBase();
@@ -328,9 +328,8 @@ class PermissionService {
         return cachedRole ?? resolvedFallback;
       }
 
-      const { api } = await import('@/lib/api');
       const profileResponse = await Promise.race([
-        api.auth.getProfile(),
+        api.auth.getProfile({ includePrivate: true }),
         new Promise<never>((_, reject) => {
           window.setTimeout(
             () => reject(new Error('Profile lookup timed out')),

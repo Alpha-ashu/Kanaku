@@ -396,7 +396,7 @@ const syncProfileFromBackend = async (user: User) => {
     // SECURITY FIX (Bug #1): Route through backend API instead of direct Supabase call
     let profile: any = null;
     try {
-      const response = await api.auth.getProfile();
+      const response = await api.auth.getProfile({ includePrivate: true });
       profile = response.success ? response.data : null;
     } catch (err) {
       console.warn('Failed to fetch profile from backend:', err);

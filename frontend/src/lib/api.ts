@@ -503,30 +503,38 @@ export const api = {
         successMessage: 'Registration successful',
       }),
 
-    getProfile: async (options?: { force?: boolean }) => {
+    getProfile: async (options?: { force?: boolean; includePrivate?: boolean }) => {
       const force = options?.force === true;
+      const includePrivate = options?.includePrivate === true;
 
-      if (!force && profileCache && profileCache.expiresAt > Date.now()) {
+      if (!force && !includePrivate && profileCache && profileCache.expiresAt > Date.now()) {
         return profileCache.response;
       }
 
-      if (!force && profileRequestInFlight) {
+      if (!force && !includePrivate && profileRequestInFlight) {
         return profileRequestInFlight;
       }
 
-      const request = apiClient.get('/auth/profile')
+      const suffix = includePrivate ? '?includePrivate=true' : '';
+      const request = apiClient.get('/auth/profile' + suffix)
         .then((response) => {
-          profileCache = {
-            expiresAt: Date.now() + PROFILE_CACHE_TTL_MS,
-            response,
-          };
+          if (!includePrivate) {
+            profileCache = {
+              expiresAt: Date.now() + PROFILE_CACHE_TTL_MS,
+              response,
+            };
+          }
           return response;
         })
         .finally(() => {
-          profileRequestInFlight = null;
+          if (!includePrivate) {
+            profileRequestInFlight = null;
+          }
         });
 
-      profileRequestInFlight = request;
+      if (!includePrivate) {
+        profileRequestInFlight = request;
+      }
       return request;
     },
 

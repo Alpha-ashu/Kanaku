@@ -35,15 +35,21 @@ app.disable('x-powered-by');
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
-      ...helmet.contentSecurityPolicy.getDefaultDirectives(),
-      "style-src": ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-      "font-src": ["'self'", "data:", "https://fonts.gstatic.com"],
-      "img-src": ["'self'", "data:", "https://*.supabase.co", "https://api.dicebear.com"],
-      "connect-src": ["'self'", "https://*.supabase.co"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "data:", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:", "https://*.supabase.co", "https://api.dicebear.com"],
+      connectSrc: ["'self'", "https://*.supabase.co"],
     },
   },
   crossOriginResourcePolicy: { policy: "same-origin" },
 }));
+
+// Ensure same-origin policies and legacy XSS filter protection are set explicitly
+app.use((req, res, next) => {
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Cross-Origin-Resource-Policy', 'same-origin');
+  next();
+});
 
 app.use(cors({
   origin(origin, callback) {

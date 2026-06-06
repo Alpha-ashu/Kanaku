@@ -219,7 +219,7 @@ describe('AUTH MODULE', () => {
       const token = getSignedAuthToken();
 
       const res = await request(app)
-        .get(`${API}/auth/profile`)
+        .get(`${API}/auth/profile?includePrivate=true`)
         .set('Authorization', `Bearer ${token}`);
 
       expect(res.status).toBe(200);

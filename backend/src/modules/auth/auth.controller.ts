@@ -33,6 +33,7 @@ const buildProfilePayload = (
   userRecord?: Record<string, any> | null,
   profileRecord?: Record<string, any> | null,
   settingsRecord?: Record<string, any> | null,
+  includePrivate = false,
 ) => {
   const fallbackName = authUser?.name || '';
   const fallbackNameParts = fallbackName.trim().split(/\s+/).filter(Boolean);
@@ -75,7 +76,6 @@ const buildProfilePayload = (
     country: profileRecord?.country || userRecord?.country || '',
     state: profileRecord?.state || userRecord?.state || '',
     city: profileRecord?.city || userRecord?.city || '',
-    isApproved: userRecord?.isApproved ?? authUser?.isApproved ?? false,
     mobile: profileRecord?.phone || '',
     phone: profileRecord?.phone || '',
     avatarId: profileRecord?.avatar_id || userRecord?.avatarId || null,
@@ -84,20 +84,30 @@ const buildProfilePayload = (
     language: settingsRecord?.language || 'en',
   };
 
-  if (salary !== 0) {
-    payload.salary = salary;
+  if (includePrivate) {
+    if (salary !== 0) {
+      payload.salary = salary;
+    }
+    if (monthlyIncome !== 0) {
+      payload.monthlyIncome = monthlyIncome;
+    }
+    if (dateOfBirth !== '') {
+      payload.dateOfBirth = dateOfBirth;
+    }
+    if (jobType !== '') {
+      payload.jobType = jobType;
+    }
+    if (role !== 'user') {
+      payload.role = role;
+    }
+    payload.isApproved = userRecord?.isApproved ?? authUser?.isApproved ?? false;
   }
-  if (monthlyIncome !== 0) {
-    payload.monthlyIncome = monthlyIncome;
-  }
-  if (dateOfBirth !== '') {
-    payload.dateOfBirth = dateOfBirth;
-  }
-  if (jobType !== '') {
-    payload.jobType = jobType;
-  }
-  if (role !== 'user') {
-    payload.role = role;
+
+  // Remove empty fields from profile payload to prevent empty schemas exposure (BUG-15)
+  for (const key of Object.keys(payload)) {
+    if (payload[key] === '' || payload[key] === null || payload[key] === undefined) {
+      delete payload[key];
+    }
   }
 
   return payload;
@@ -232,7 +242,8 @@ export const getProfile = async (req: AuthRequest, res: Response, next: NextFunc
       return next(AppError.unauthorized());
     }
 
-    const profileCacheKey = `profile:${req.userId}`;
+    const includePrivate = req.query.includePrivate === 'true' || req.query.includePrivate === '1';
+    const profileCacheKey = includePrivate ? `profile:private:${req.userId}` : `profile:${req.userId}`;
     const cachedProfile = await cacheGetJson<any>(profileCacheKey);
     if (cachedProfile) {
       return res.json({
@@ -291,7 +302,7 @@ export const getProfile = async (req: AuthRequest, res: Response, next: NextFunc
     const profileRecord = profileResult.status === 'fulfilled' ? (profileResult.value as Record<string, any>) : null;
     const settingsRecord = settingsResult.status === 'fulfilled' ? (settingsResult.value as Record<string, any>) : null;
 
-    const payload = buildProfilePayload(req.userId, req.user, userRecord, profileRecord, settingsRecord);
+    const payload = buildProfilePayload(req.userId, req.user, userRecord, profileRecord, settingsRecord, includePrivate);
     await cacheSetJson(profileCacheKey, payload, 30); // Cache for 30 seconds
 
     res.json({
@@ -304,9 +315,10 @@ export const getProfile = async (req: AuthRequest, res: Response, next: NextFunc
       message: error?.message || 'Unknown error',
       userId: req.userId
     });
+    const includePrivate = req.query.includePrivate === 'true' || req.query.includePrivate === '1';
     res.json({
       success: true,
-      data: buildProfilePayload(req.userId || '', req.user, null, null, null),
+      data: buildProfilePayload(req.userId || '', req.user, null, null, null, includePrivate),
     });
   }
 };
@@ -336,14 +348,16 @@ export const updateProfile = async (req: AuthRequest, res: Response, next: NextF
     ]);
 
     // Invalidate Redis profile cache and memory user snapshot cache
-    const profileCacheKey = `profile:${req.userId}`;
-    await cacheDeleteByPrefix(profileCacheKey);
+    await cacheDeleteByPrefix(`profile:${req.userId}`);
+    await cacheDeleteByPrefix(`profile:private:${req.userId}`);
     invalidateUserSnapshotCache(req.userId);
+
+    const includePrivate = req.query.includePrivate === 'true' || req.query.includePrivate === '1' || true;
 
     res.json({
       success: true,
       message: 'Profile updated successfully',
-      data: buildProfilePayload(req.userId, req.user, user, profile, settings),
+      data: buildProfilePayload(req.userId, req.user, user, profile, settings, includePrivate),
     });
   } catch (error: any) {
     logger.error('Update profile error:', {

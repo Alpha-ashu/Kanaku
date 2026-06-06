@@ -8,7 +8,7 @@ import { isDatabaseUnavailableError } from '../../utils/databaseAvailability';
 export const getNotifications = async (req: AuthRequest, res: Response) => {
   try {
     const userId = getUserId(req);
-    const { unread, limit = 20 } = req.query;
+    const { unread, limit = 20, page = 1 } = req.query;
 
     let where: any = { userId };
 
@@ -16,12 +16,23 @@ export const getNotifications = async (req: AuthRequest, res: Response) => {
       where.isRead = false;
     }
 
-    const notifications = await prisma.notification.findMany({
-      where,
-      orderBy: { createdAt: 'desc' },
-      take: parseInt(limit as string),
-    });
+    const parsedLimit = Math.min(100, Math.max(1, parseInt(limit as string) || 20));
+    const parsedPage = Math.max(1, parseInt(page as string) || 1);
+    const skip = (parsedPage - 1) * parsedLimit;
 
+    const [notifications, totalCount] = await Promise.all([
+      prisma.notification.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        take: parsedLimit,
+        skip,
+      }),
+      prisma.notification.count({ where }),
+    ]);
+
+    res.setHeader('X-Total-Count', totalCount.toString());
+    res.setHeader('X-Page', parsedPage.toString());
+    res.setHeader('X-Limit', parsedLimit.toString());
     res.json(notifications);
   } catch (error: any) {
     if (isDatabaseUnavailableError(error)) {

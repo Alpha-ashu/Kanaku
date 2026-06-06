@@ -54,12 +54,20 @@ export class TransactionRepository {
     };
   }
 
-  async findMany(userId: string, whereClause: any) {
+  async findMany(userId: string, whereClause: any, limit?: number, skip?: number) {
     const txs = await prisma.transaction.findMany({
       where: { userId, deletedAt: null, ...whereClause },
       orderBy: { date: 'desc' },
+      ...(limit !== undefined ? { take: limit } : {}),
+      ...(skip !== undefined ? { skip } : {}),
     });
     return txs.map(t => this.normalizeTransaction(t));
+  }
+
+  async count(userId: string, whereClause: any): Promise<number> {
+    return prisma.transaction.count({
+      where: { userId, deletedAt: null, ...whereClause },
+    });
   }
 
   async findFirst(whereClause: any) {

@@ -15,7 +15,10 @@ const handleTransactionDatabaseError = (error: unknown, next: NextFunction) => {
 export const getTransactions = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const userId = getUserId(req);
-    const transactions = await transactionService.fetchTransactions(userId, req.query);
+    const { transactions, totalCount, page, limit } = await transactionService.fetchTransactions(userId, req.query);
+    res.setHeader('X-Total-Count', totalCount.toString());
+    res.setHeader('X-Page', page.toString());
+    res.setHeader('X-Limit', limit.toString());
     res.json({ success: true, data: transactions });
   } catch (error) {
     handleTransactionDatabaseError(error, next);

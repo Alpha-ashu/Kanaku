@@ -39,7 +39,29 @@ export class TransactionService {
       if (query.startDate) whereClause.date.gte = new Date(query.startDate);
       if (query.endDate) whereClause.date.lte = new Date(query.endDate);
     }
-    return transactionRepository.findMany(userId, whereClause);
+
+    const { limit, page } = query;
+    let parsedLimit: number | undefined;
+    let parsedPage: number | undefined;
+    let skip: number | undefined;
+
+    if (limit !== undefined || page !== undefined) {
+      parsedLimit = Math.min(100, Math.max(1, parseInt(limit as string) || 20));
+      parsedPage = Math.max(1, parseInt(page as string) || 1);
+      skip = (parsedPage - 1) * parsedLimit;
+    }
+
+    const [transactions, totalCount] = await Promise.all([
+      transactionRepository.findMany(userId, whereClause, parsedLimit, skip),
+      transactionRepository.count(userId, whereClause),
+    ]);
+
+    return {
+      transactions,
+      totalCount,
+      page: parsedPage || 1,
+      limit: parsedLimit || totalCount,
+    };
   }
 
   async fetchTransactionById(id: string, userId: string) {
