@@ -140,6 +140,12 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
     try {
       if (isCreating) {
         if (createStage === 'enter') {
+          // Check if PIN is weak
+          if (pinService.isWeakPin(pin)) {
+            triggerShake('PIN is too weak. Avoid sequential, repeating, or common patterns.');
+            setIsSubmitting(false);
+            return;
+          }
           // Move to confirm stage
           setFirstPin(pin);
           setPin('');

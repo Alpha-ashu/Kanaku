@@ -8,6 +8,7 @@ import {
 } from '@/lib/apiBase';
 import { TokenManager } from '@/lib/api';
 import supabase from '@/utils/supabase/client';
+import CryptoJS from 'crypto-js';
 
 export interface PinStatus {
   success: boolean;
@@ -325,7 +326,8 @@ class PinService {
    */
   async createPin(pin: string): Promise<PinStatus> {
     clearCachedPinStatus();
-    const result = await this.post('create', { pin });
+    const hashedPin = CryptoJS.SHA256(pin).toString();
+    const result = await this.post('create', { pin: hashedPin });
     this.persistPinState(result, true);
     return result;
   }
@@ -335,7 +337,8 @@ class PinService {
    */
   async verifyPin(request: PinVerifyRequest): Promise<PinStatus> {
     clearCachedPinStatus();
-    const result = await this.post('verify', request);
+    const hashedPin = CryptoJS.SHA256(request.pin).toString();
+    const result = await this.post('verify', { ...request, pin: hashedPin });
 
     if (result.success) {
       this.persistPinState(result, true);
@@ -353,7 +356,9 @@ class PinService {
    */
   async updatePin(currentPin: string, newPin: string, securityToken?: string): Promise<PinStatus> {
     clearCachedPinStatus();
-    const result = await this.post('update', { currentPin, newPin }, securityToken);
+    const hashedCurrent = CryptoJS.SHA256(currentPin).toString();
+    const hashedNew = CryptoJS.SHA256(newPin).toString();
+    const result = await this.post('update', { currentPin: hashedCurrent, newPin: hashedNew }, securityToken);
     if (result.success) {
       this.persistPinState(result, true);
       this.clearPinVerification();
@@ -467,6 +472,20 @@ class PinService {
    */
   validatePinFormat(pin: string): boolean {
     return /^\d{6}$/.test(pin);
+  }
+
+  /**
+   * Check if PIN is weak (sequential, repeating, or common patterns)
+   */
+  isWeakPin(pin: string): boolean {
+    // Sequential ascending/descending
+    const isSequential = /012|123|234|345|456|567|678|789/.test(pin) || /987|876|765|654|543|432|321|210/.test(pin);
+    // Repeating characters (e.g. 111111, 222222)
+    const isRepeating = /(.)\1{2,}/.test(pin);
+    // Common patterns
+    const isPattern = /^(121212|101010|010101|212121|112233|223344)$/.test(pin);
+    
+    return isSequential || isRepeating || isPattern;
   }
 
   /**

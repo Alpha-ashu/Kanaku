@@ -88,12 +88,25 @@ class PinService {
       if (!this.validatePinFormat(pin)) {
         return {
           success: false,
-          message: 'PIN must be exactly 6 digits',
+          message: 'PIN must be exactly 6 digits or a valid SHA-256 hash',
         };
       }
 
+      // Recover plaintext PIN if SHA-256 was sent
+      let plaintextPin = pin;
+      if (/^[a-fA-F0-9]{64}$/.test(pin)) {
+        const recovered = await this.recoverPlaintextPin(pin);
+        if (!recovered) {
+          return {
+            success: false,
+            message: 'Invalid PIN hash signature',
+          };
+        }
+        plaintextPin = recovered;
+      }
+
       // Check if PIN is weak
-      if (this.isWeakPin(pin)) {
+      if (this.isWeakPin(plaintextPin)) {
         return {
           success: false,
           message: 'PIN is too weak. Avoid sequential, repeating, or common patterns.',
@@ -196,7 +209,20 @@ class PinService {
       }
 
       // Verify the PIN
-      const isPinValid = await bcrypt.compare(pin, userPin.pinHash);
+      let isPinValid = await bcrypt.compare(pin, userPin.pinHash);
+      let isLegacy = false;
+
+      // Fallback: If verification fails and received pin is a SHA-256 hash,
+      // try to recover plaintext PIN and verify against legacy plaintext bcrypt hash.
+      if (!isPinValid && /^[a-fA-F0-9]{64}$/.test(pin)) {
+        const plaintext = await this.recoverPlaintextPin(pin);
+        if (plaintext) {
+          isPinValid = await bcrypt.compare(plaintext, userPin.pinHash);
+          if (isPinValid) {
+            isLegacy = true;
+          }
+        }
+      }
 
       if (!isPinValid) {
         // Increment failed attempts
@@ -228,13 +254,25 @@ class PinService {
         };
       }
 
-      // PIN is correct - reset failed attempts and update last activity
+      // PIN is correct - reset failed attempts, update last activity and auto-upgrade legacy format
+      const updatePayload: any = {
+        failedAttempts: 0,
+        lockedUntil: null,
+      };
+
+      if (isLegacy) {
+        try {
+          const newPinHash = await bcrypt.hash(pin, 12);
+          updatePayload.pinHash = newPinHash;
+          logger.info(`[PinService] Automatically upgraded legacy plaintext PIN hash for user ${userId} to secure SHA-256 format.`);
+        } catch (err) {
+          logger.error('[PinService] Failed to upgrade legacy PIN hash:', err);
+        }
+      }
+
       await prisma.userPin.update({
         where: { userId },
-        data: {
-          failedAttempts: 0,
-          lockedUntil: null,
-        },
+        data: updatePayload,
       });
 
       // Update device last seen if provided
@@ -272,19 +310,32 @@ class PinService {
       if (!this.validatePinFormat(newPin)) {
         return {
           success: false,
-          message: 'New PIN must be exactly 6 digits',
+          message: 'New PIN must be exactly 6 digits or a valid SHA-256 hash',
         };
       }
 
+      // Recover plaintext new PIN if SHA-256 was sent
+      let plaintextNewPin = newPin;
+      if (/^[a-fA-F0-9]{64}$/.test(newPin)) {
+        const recovered = await this.recoverPlaintextPin(newPin);
+        if (!recovered) {
+          return {
+            success: false,
+            message: 'Invalid new PIN hash signature',
+          };
+        }
+        plaintextNewPin = recovered;
+      }
+
       // Check if new PIN is weak
-      if (this.isWeakPin(newPin)) {
+      if (this.isWeakPin(plaintextNewPin)) {
         return {
           success: false,
           message: 'New PIN is too weak. Avoid sequential, repeating, or common patterns.',
         };
       }
 
-      // Verify current PIN first
+      // Verify current PIN first (this handles legacy format comparison and auto-upgrade)
       const verifyResult = await this.verifyPin({ userId, pin: currentPin });
       if (!verifyResult.success) {
         return {
@@ -386,10 +437,89 @@ class PinService {
   }
 
   /**
-   * Validate PIN format (6 digits)
+   * Validate PIN format (6 digits or 64 hex characters SHA-256 hash)
    */
   private validatePinFormat(pin: string): boolean {
-    return /^\d{6}$/.test(pin);
+    return /^\d{6}$/.test(pin) || /^[a-fA-F0-9]{64}$/.test(pin);
+  }
+
+  /**
+   * Recovers original 6-digit PIN from its SHA-256 hash using a background worker thread.
+   * This prevents blocking the main Express event loop for CPU-intensive hashing.
+   */
+  private recoverPlaintextPin(sha256Hash: string): Promise<string | null> {
+    const workerCode = `
+      const { parentPort, workerData } = require('worker_threads');
+      const crypto = require('crypto');
+      
+      const { targetHex } = workerData;
+      const target = Buffer.from(targetHex, 'hex');
+      const buf = Buffer.alloc(6);
+      
+      let found = false;
+      for (let a = 48; a < 58; a++) {
+        buf[0] = a;
+        for (let b = 48; b < 58; b++) {
+          buf[1] = b;
+          for (let c = 48; c < 58; c++) {
+            buf[2] = c;
+            for (let d = 48; d < 58; d++) {
+              buf[3] = d;
+              for (let e = 48; e < 58; e++) {
+                buf[4] = e;
+                for (let f = 48; f < 58; f++) {
+                  buf[5] = f;
+                  const hash = crypto.createHash('sha256').update(buf).digest();
+                  if (hash.equals(target)) {
+                    parentPort.postMessage({ success: true, pin: buf.toString('ascii') });
+                    found = true;
+                    break;
+                  }
+                }
+                if (found) break;
+              }
+              if (found) break;
+            }
+            if (found) break;
+          }
+          if (found) break;
+        }
+        if (found) break;
+      }
+      if (!found) {
+        parentPort.postMessage({ success: false });
+      }
+    `;
+
+    return new Promise((resolve) => {
+      try {
+        const { Worker } = require('worker_threads');
+        const worker = new Worker(workerCode, {
+          eval: true,
+          workerData: { targetHex: sha256Hash }
+        });
+        worker.on('message', (msg: any) => {
+          if (msg.success) {
+            resolve(msg.pin);
+          } else {
+            resolve(null);
+          }
+        });
+        worker.on('error', (err: any) => {
+          logger.error('[PinService] Worker error:', err);
+          resolve(null);
+        });
+        worker.on('exit', (code: number) => {
+          if (code !== 0) {
+            logger.warn('[PinService] Worker exited with code ' + code);
+          }
+          resolve(null);
+        });
+      } catch (err) {
+        logger.error('[PinService] Worker initialization failed:', err);
+        resolve(null);
+      }
+    });
   }
 
   /**

@@ -551,6 +551,7 @@ export const UserProfile: React.FC = () => {
   const handleSetNewPin = async () => {
     if (currentPin.length !== 6) { toast.error('Current PIN must be 6 digits'); return; }
     if (newPin.length !== 6) { toast.error('New PIN must be 6 digits'); return; }
+    if (pinService.isWeakPin(newPin)) { toast.error('New PIN is too weak. Avoid sequential, repeating, or common patterns.'); return; }
     if (newPin !== confirmNewPin) { toast.error('PINs do not match'); setConfirmNewPin(''); return; }
 
     setIsPinLoading(true);

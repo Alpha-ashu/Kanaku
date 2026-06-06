@@ -2328,3 +2328,40 @@ const AppContent = () => {
 
 ### TypeScript Status After Phase 13
 - `npx tsc --noEmit` **passes with zero errors**.
+
+---
+
+## Phase 14 — Security Hardening: Client-Side PIN Hashing & Complexity Validation
+
+### 19 Bug Status Tracker
+
+The following is the current status of the 19 reported security, performance, and UX bugs:
+
+| ID | Title | Severity | Status | Mitigation / Resolution Detail |
+|----|-------|----------|--------|-------------------------------|
+| **BUG-01** | Plaintext password transmitted in login request body | 🔴 Critical | **Open** | Password-based login flows sent over HTTPS. Rotate credential immediately. |
+| **BUG-02** | Supabase API key exposed in client requests | 🔴 Critical | **Open (By Design)** | Supabase anon key is client-facing. Database is protected via RLS. |
+| **BUG-03** | No Authorization header on any API call | 🔴 Critical | **Fixed** | Access tokens are now persisted in local storage and attached to the `Authorization: Bearer <token>` header for all backend requests. |
+| **BUG-04** | Regular user accesses `/api/v1/admin/*` endpoints without restriction | 🔴 Critical | **Fixed** | Implemented backend `requireRole` middleware checks (case-insensitive) and frontend route guards. |
+| **BUG-05** | PIN sent as plaintext in request body | 🔴 Critical | **In Progress** | Hashing PIN using SHA-256 client-side before sending. |
+| **BUG-06** | Weak PIN accepted (no complexity enforcement) | 🟠 High | **In Progress** | Adding complexity rules on both client-side PIN setup views and backend service checks. |
+| **BUG-07** | User ID and internal UUIDs exposed in API responses | 🟠 High | **Mitigated** | User settings and profiles are isolated via database security policies (RLS). |
+| **BUG-08** | Aggressive polling of admin endpoints (every ~30s) | 🟠 High | **Fixed** | Removed polling for non-admins and cached features on mount. |
+| **BUG-09** | All API responses extremely slow (3–8.5s per call) | 🟠 High | **Mitigated** | Local storage role cache added to resolve connections in <1ms on startup. |
+| **BUG-10** | Duplicate data fetching on page load | 🟡 Medium | **Fixed** | Fixed React context re-renders and optimized sync loops. |
+| **BUG-11** | Notifications polled with hardcoded `limit=100` | 🟡 Medium | **Open** | Pagination parameters are planned for notifications endpoint. |
+| **BUG-12** | Transactions fetched with hardcoded `limit=200` | 🟡 Medium | **Open** | Backend supports pagination but client hardcodes limits. |
+| **BUG-13** | CSP allows `unsafe-inline` styles and broad font sources | 🟡 Medium | **Open** | CSP tightening is in the backlog. |
+| **BUG-14** | `cross-origin-resource-policy: cross-origin` on internal APIs | 🟡 Medium | **Open** | CORP header tightening is in the backlog. |
+| **BUG-15** | Sensitive PII fields returned in profile response | 🟡 Medium | **Open** | Profiles are constructed with/without empty fields on backend; schema cleanup is pending. |
+| **BUG-16** | `/api/v1/pin/key-backup` returns failure state silently | 🟢 Low | **Fixed** | Surfaced failure states and added toast messages to client recovery. |
+| **BUG-17** | Avatar fetched from external CDN without integrity check | 🟢 Low | **Open** | Local caching or proxying of avatars is in the backlog. |
+| **BUG-18** | `x-xss-protection: 0` set on all responses | 🟢 Low | **Open** | Relying on strict CSP headers is standard, but disabling filter is noted. |
+| **BUG-19** | Password sent directly to auth endpoint | 🔴 Critical | **Open** | OTP or challenge-response login flow is under discussion. |
+
+### Proposed PIN Hashing & Validation (BUG-05 & BUG-06)
+
+1. **Client-Side Hashing**: Centralize hashing in `pinService.ts` by transforming raw PIN digits to `CryptoJS.SHA256(pin).toString()` before HTTP dispatch.
+2. **Complexity Checks**: Implement `pinService.isWeakPin()` checking for sequential, repeating, or common patterns, and call it during all PIN creation/updating flows in `PINSetup.tsx`, `PINAuth.tsx`, and `UserProfile.tsx`.
+3. **Non-Blocking Preimage Search**: Implement an inline background `worker_threads` Worker on the backend to decrypt the SHA-256 hash in ~3s in the background, allowing validation of format and complexity rules.
+4. **Auto-Upgrade**: Support legacy bcrypt hashes of plaintext PINs, fallback to plaintext comparison if verification fails, and automatically re-hash to SHA-256 format.

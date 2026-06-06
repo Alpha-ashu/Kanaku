@@ -77,11 +77,7 @@ export const PINSetup: React.FC<PINSetupProps> = ({
 
   const validateAndProceed = (enteredPin: string) => {
     if (step === 'create') {
-      const isSequential = /012|123|234|345|456|567|678|789/.test(enteredPin) || /987|876|765|654|543|432|321|210/.test(enteredPin);
-      const isRepeating = /(.)\1{2,}/.test(enteredPin);
-      const isPattern = /^(121212|101010|010101|212121|112233|223344)$/.test(enteredPin);
-      
-      if (isSequential || isRepeating || isPattern) {
+      if (pinService.isWeakPin(enteredPin)) {
         setError('PIN is too weak. Avoid sequential, repeating, or common patterns.');
         setPin('');
         return;
