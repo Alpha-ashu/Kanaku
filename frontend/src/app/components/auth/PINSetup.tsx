@@ -65,13 +65,14 @@ export const PINSetup: React.FC<PINSetupProps> = ({
     }
   };
 
-  const handleHiddenKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Backspace') {
-      e.preventDefault();
-      deleteDigit();
-    } else if (/^\d$/.test(e.key)) {
-      e.preventDefault();
-      appendDigit(e.key);
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (isLoading) return;
+    setError(null);
+    const val = e.target.value.replace(/\D/g, '').slice(0, 6);
+    if (step === 'confirm') {
+      setConfirmPin(val);
+    } else {
+      setPin(val);
     }
   };
 
@@ -219,8 +220,7 @@ export const PINSetup: React.FC<PINSetupProps> = ({
           inputMode="numeric"
           autoComplete="new-password"
           value={currentPinVal}
-          onChange={() => {}}
-          onKeyDown={handleHiddenKeyDown}
+          onChange={handleInputChange}
           tabIndex={0}
         />
       </form>
@@ -300,7 +300,7 @@ export const PINSetup: React.FC<PINSetupProps> = ({
           </div>
 
           {/* Number pad */}
-          <div className="grid grid-cols-3 gap-3">
+          <div className="hidden md:grid grid-cols-3 gap-3">
             {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => (
               <button
                 key={n}

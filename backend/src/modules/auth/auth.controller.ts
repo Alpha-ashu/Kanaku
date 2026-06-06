@@ -65,6 +65,22 @@ const buildProfilePayload = (
   const jobType = profileRecord?.job_type || userRecord?.jobType || '';
   const role = userRecord?.role || authUser?.role || 'user';
 
+  const countryVal = (profileRecord?.country || userRecord?.country || '').trim();
+  let defaultCurrency = 'USD';
+  if (countryVal === 'India') {
+    defaultCurrency = 'INR';
+  } else if (countryVal === 'United Kingdom' || countryVal === 'UK') {
+    defaultCurrency = 'GBP';
+  } else if (countryVal === 'Canada') {
+    defaultCurrency = 'CAD';
+  } else if (countryVal === 'Australia') {
+    defaultCurrency = 'AUD';
+  } else if (countryVal === 'United Arab Emirates' || countryVal === 'UAE') {
+    defaultCurrency = 'AED';
+  } else if (countryVal === 'Singapore') {
+    defaultCurrency = 'SGD';
+  }
+
   const payload: Record<string, any> = {
     id: userId,
     email: userRecord?.email || profileRecord?.email || authUser?.email || '',
@@ -76,15 +92,16 @@ const buildProfilePayload = (
     firstName,
     lastName,
     gender: profileRecord?.gender || userRecord?.gender || '',
-    country: profileRecord?.country || userRecord?.country || '',
+    country: countryVal,
     state: profileRecord?.state || userRecord?.state || '',
     city: profileRecord?.city || userRecord?.city || '',
     mobile: profileRecord?.phone || '',
     phone: profileRecord?.phone || '',
     avatarId: profileRecord?.avatar_id || userRecord?.avatarId || null,
     avatarUrl: profileRecord?.avatar_url || null,
-    currency: settingsRecord?.currency || 'USD',
+    currency: settingsRecord?.currency || defaultCurrency,
     language: settingsRecord?.language || 'en',
+    updatedAt: profileRecord?.updated_at || userRecord?.updatedAt || null,
   };
 
   if (includePrivate) {

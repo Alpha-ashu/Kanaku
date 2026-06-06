@@ -102,7 +102,7 @@ export const NewUserOnboarding: React.FC = () => {
  <OnboardingCompleteStep
  data={onboardingData}
  onComplete={() => {
- window.location.reload();
+   // Handled reactively via ONBOARDING_COMPLETED event in App.tsx
  }}
  onBack={prevStep}
  />

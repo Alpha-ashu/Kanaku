@@ -3514,3 +3514,137 @@ Single Network Promise: By overriding this.api.request inside BackendService, th
 All modifications have been documented in the 
 walkthrough.md
  file, and both frontend type-checking (npm run type-check) and unit tests (npm run test:unit) compile and pass successfully with zero errors.
+ # Implementation Plan - Registration & User Profile Flow Critical Bugs Fix
+
+This plan details the changes required to resolve the 5 critical bugs in onboarding, registration, profile synchronization, and PIN setup.
+
+---
+
+## Proposed Changes
+
+### 1. PIN Keypad & Input Handling (Mobile Visibility & Soft Lock)
+
+We will hide the custom virtual keypad on mobile devices and enable native mobile keyboard inputs to function without getting ignored/locked out.
+
+#### [MODIFY] [PINSetup.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/auth/PINSetup.tsx)
+- Hide the custom keypad grid container on mobile screens using Tailwind responsive utilities (`hidden md:grid` instead of `grid`).
+- Add a proper `onChange` handler to the hidden input to capture digit entries and backspaces reactively on mobile virtual keyboards:
+  ```typescript
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (isLoading) return;
+    setError(null);
+    const val = e.target.value.replace(/\D/g, '').slice(0, 6);
+    if (step === 'confirm') {
+      setConfirmPin(val);
+    } else {
+      setPin(val);
+    }
+  };
+  ```
+- Simplify `onKeyDown` to only let specific key operations propagate, preventing double handling.
+
+#### [MODIFY] [PINAuth.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/auth/PINAuth.tsx)
+- Add a proper `onChange` handler to the hidden input to capture digit entries reactively on mobile virtual keyboards:
+  ```typescript
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (isSubmitting) return;
+    setErrorMsg('');
+    const val = e.target.value.replace(/\D/g, '').slice(0, 6);
+    setPin(val);
+  };
+  ```
+- Simplify `onKeyDown` to only handle the `Enter` submit key interceptor.
+
+---
+
+### 2. Profile Data Alignment & Country-to-Currency Persistence
+
+We will resolve the casing mismatch between the frontend payload (snake_case) and the backend controller destructuring (camelCase) to prevent data overwrite with `null` values. We will also introduce country-to-currency mapping on the backend, and return the `updatedAt` timestamp from the server.
+
+#### [MODIFY] [AuthContext.tsx](file:///k:/Project/kenku/Finora/frontend/src/contexts/AuthContext.tsx)
+- Modify `profilePayload` inside `syncProfileFromBackend` to construct the payload using **camelCase** keys to match what the backend `AuthService.updateProfile` destructures:
+  ```typescript
+  const profilePayload = {
+    firstName: firstName || null,
+    lastName: lastName || null,
+    phone: localProfile?.mobile || localProfile?.phone || null,
+    mobile: localProfile?.mobile || localProfile?.phone || null,
+    gender: localProfile?.gender || null,
+    country: localProfile?.country || null,
+    state: localProfile?.state || null,
+    city: localProfile?.city || null,
+    dateOfBirth: localProfile?.dateOfBirth || null,
+    jobType: localProfile?.jobType || null,
+    monthlyIncome: monthlyIncome ?? null,
+    annualIncome: annualIncome ?? null,
+    avatarUrl: resolvedAvatar.url,
+    avatarId: resolvedAvatar.id || null,
+  };
+  ```
+
+#### [MODIFY] [auth.controller.ts](file:///k:/Project/kenku/Finora/backend/src/modules/auth/auth.controller.ts)
+- In `buildProfilePayload`, add `updatedAt: profileRecord?.updated_at || userRecord?.updatedAt || null` to the returned payload to ensure the frontend correctly reads remote update timestamps.
+- Add a country-to-currency fallback mapper in `buildProfilePayload` so that countries like India default to `INR` instead of `USD` when explicit user settings are not yet found:
+  ```typescript
+  const country = profileRecord?.country || userRecord?.country || '';
+  const resolvedCountry = country.trim();
+  let defaultCurrency = 'USD';
+  if (resolvedCountry === 'India') {
+    defaultCurrency = 'INR';
+  } else if (resolvedCountry === 'United Kingdom' || resolvedCountry === 'UK') {
+    defaultCurrency = 'GBP';
+  } else if (resolvedCountry === 'Canada') {
+    defaultCurrency = 'CAD';
+  } else if (resolvedCountry === 'Australia') {
+    defaultCurrency = 'AUD';
+  } else if (resolvedCountry === 'United Arab Emirates' || resolvedCountry === 'UAE') {
+    defaultCurrency = 'AED';
+  } else if (resolvedCountry === 'Singapore') {
+    defaultCurrency = 'SGD';
+  }
+  
+  // Set default currency if settingsRecord?.currency is absent
+  payload.currency = settingsRecord?.currency || defaultCurrency;
+  ```
+
+---
+
+### 3. Session Reloads Optimization (SPA Reactive Transitions)
+
+We will replace hard window reloads with custom event dispatching and listeners to transition auth and onboarding states reactively.
+
+#### [MODIFY] [AuthContext.tsx](file:///k:/Project/kenku/Finora/frontend/src/contexts/AuthContext.tsx)
+- Register a listener for a new custom event `'KANKU_AUTH_CHANGE'`. When fired, trigger custom token recovery in-memory to update `user`, `session`, `role`, and background syncs without reloading the page.
+
+#### [MODIFY] [AuthFlow.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/auth/AuthFlow.tsx)
+- Replace all instances of `window.location.reload()` with `window.dispatchEvent(new CustomEvent('KANKU_AUTH_CHANGE'))` in:
+  - `handleSignIn` (login success)
+  - `handleSignUp` (registration success)
+  - `handleOTPVerified` / `handleOTPSkip` (OTP success/skip path)
+- In `renderComplete`, update the "Go to Dashboard" button to set `onboarding_completed` in localStorage and dispatch the `'KANKU_AUTH_CHANGE'` event.
+
+#### [MODIFY] [NewUserOnboarding.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/auth/onboarding/NewUserOnboarding.tsx)
+- Update the completion transition in step 4 to remove `window.location.reload()`.
+
+#### [MODIFY] [App.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/App.tsx)
+- In `AppContent`, introduce a state variable `onboardingCompleted` initialized using local storage and user metadata.
+- Listen for the `'ONBOARDING_COMPLETED'` event and set `onboardingCompleted` to `true`, transitioning the view gate smoothly to the PIN setup step without any full page reload.
+
+---
+
+## Verification Plan
+
+### Automated Tests
+- We will build the backend project and run its test suite to ensure compilation and existing integrations are unaffected:
+  - Backend Build: `npm run build` in `backend/`
+  - Backend Tests: `npm run test` in `backend/`
+
+### Manual Verification
+- We will perform a complete onboarding and data persistence verification flow:
+  1. Create a new account.
+  2. Complete the profile setup (verify Country = India defaults currency to INR).
+  3. Verify PIN setup keypad is hidden on mobile viewports, and native input handles digit entry and backspace correctly.
+  4. Perform initial login.
+  5. Refresh the browser and verify that no fields are lost (Avatar, DOB, Phone, Currency, Country).
+  6. Logout and login again to verify absolute consistency.
+  7. Verify that no automatic page refreshes occur post-login or post-onboarding.

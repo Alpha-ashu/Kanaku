@@ -240,6 +240,28 @@ const AppContent: React.FC = () => {
   const [criticalPagesPrefetched, setCriticalPagesPrefetched] = useState(false);
   const hasModuleReloaded = useRef(false);
 
+  const [onboardingCompleted, setOnboardingCompleted] = useState(() => {
+    return localStorage.getItem('onboarding_completed') === 'true' ||
+           user?.user_metadata?.onboarding_completed === true;
+  });
+
+  useEffect(() => {
+    setOnboardingCompleted(
+      localStorage.getItem('onboarding_completed') === 'true' ||
+      user?.user_metadata?.onboarding_completed === true
+    );
+  }, [user]);
+
+  useEffect(() => {
+    const handleOnboardingCompleted = () => {
+      setOnboardingCompleted(true);
+    };
+    window.addEventListener('ONBOARDING_COMPLETED', handleOnboardingCompleted);
+    return () => {
+      window.removeEventListener('ONBOARDING_COMPLETED', handleOnboardingCompleted);
+    };
+  }, []);
+
   if (!appContext) {
     return (
       <div className="flex items-center justify-center h-screen bg-gradient-to-br from-pink-500 to-rose-600">
@@ -518,17 +540,11 @@ const AppContent: React.FC = () => {
     );
   }
 
-  // Completed flag: check localStorage AND Supabase user_metadata (set by OnboardingCompleteStep)
-  // so existing users on a new device don't lose their onboarding_completed state.
-  const hasCompletedOnboarding =
-    localStorage.getItem('onboarding_completed') === 'true' ||
-    user?.user_metadata?.onboarding_completed === true;
-
   const hasProfileData = localStorage.getItem('user_profile') || localStorage.getItem('user_settings');
 
   // A user is new if they haven't completed onboarding.
   // Enforce onboarding completion (removed 15-minute bypass).
-  const isNewUser = !hasCompletedOnboarding;
+  const isNewUser = !onboardingCompleted;
 
   if (!user) {
     if (showLanding) {
@@ -626,7 +642,7 @@ const AppContent: React.FC = () => {
   }
 
   // Gate 1: Onboarding
-  if (user && !hasCompletedOnboarding && isNewUser) {
+  if (user && !onboardingCompleted && isNewUser) {
     return (
       <Suspense fallback={<PageLoader />}>
         <NewUserOnboarding />

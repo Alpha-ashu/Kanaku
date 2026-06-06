@@ -535,19 +535,20 @@ const syncProfileFromBackend = async (user: User) => {
     });
 
     const profilePayload = {
-      full_name: displayName || null,
-      first_name: firstName || null,
-      last_name: lastName || null,
-      phone: localProfile?.mobile || null,
+      firstName: firstName || null,
+      lastName: lastName || null,
+      phone: localProfile?.mobile || localProfile?.phone || null,
+      mobile: localProfile?.mobile || localProfile?.phone || null,
       gender: localProfile?.gender || null,
       country: localProfile?.country || null,
       state: localProfile?.state || null,
       city: localProfile?.city || null,
-      date_of_birth: localProfile?.dateOfBirth || null,
-      job_type: localProfile?.jobType || null,
-      monthly_income: monthlyIncome ?? null,
-      annual_income: annualIncome ?? null,
-      avatar_url: resolvedAvatar.url,
+      dateOfBirth: localProfile?.dateOfBirth || null,
+      jobType: localProfile?.jobType || null,
+      monthlyIncome: monthlyIncome ?? null,
+      annualIncome: annualIncome ?? null,
+      avatarUrl: resolvedAvatar.url,
+      avatarId: resolvedAvatar.id || null,
     };
 
     const payloadKey = JSON.stringify(profilePayload);
@@ -754,8 +755,97 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
     };
 
+    const handleCustomAuthChange = async () => {
+      const customToken = TokenManager.getAccessToken();
+      if (customToken) {
+        try {
+          const decoded = decodeJwt(customToken);
+          if (decoded && decoded.userId) {
+            const localProfile = readLocalProfile();
+            const nextUser = {
+              id: decoded.userId,
+              email: decoded.email || localProfile?.email || '',
+              user_metadata: {
+                role: decoded.role || localProfile?.role || 'user',
+                full_name: localProfile?.displayName || '',
+                firstName: localProfile?.firstName || '',
+                lastName: localProfile?.lastName || '',
+              },
+              app_metadata: {},
+              aud: 'authenticated',
+              created_at: new Date().toISOString(),
+            } as User;
+
+            const activeSession = {
+              access_token: customToken,
+              refresh_token: TokenManager.getRefreshToken() || '',
+              expires_in: 3600,
+              token_type: 'bearer',
+              user: nextUser,
+            } as Session;
+
+            if (isMounted) {
+              setSession(activeSession);
+              setUser(nextUser);
+              const provisionalRole = resolveUserRole(nextUser);
+              setRole(provisionalRole);
+              
+              backendService.setToken(customToken);
+              const deviceId = localStorage.getItem('device_id') || '';
+              if (deviceId) {
+                socketClient.connect(customToken, deviceId).catch(() => {});
+              }
+              
+              activeSyncUserId.current = nextUser.id;
+              setDataReady(false);
+              setDataSyncing(true);
+              setDataSyncError(null);
+              
+              void (async () => {
+                try {
+                  const permissions = await permissionService.fetchUserPermissions(nextUser.id, provisionalRole);
+                  if (activeSyncUserId.current === nextUser.id) {
+                    setRole(permissions.role);
+                  }
+                  const localAccountsCount = await db.accounts.count().catch(() => 0);
+                  if (localAccountsCount > 0 && activeSyncUserId.current === nextUser.id) {
+                    setDataReady(true);
+                  }
+                  await syncFromSupabase(nextUser);
+                  if (activeSyncUserId.current === nextUser.id) {
+                    setDataReady(true);
+                  }
+                } catch (err) {
+                  if (activeSyncUserId.current === nextUser.id) {
+                    setDataSyncError(formatSupabaseError(err));
+                    setDataReady(true);
+                  }
+                } finally {
+                  if (activeSyncUserId.current === nextUser.id) {
+                    setDataSyncing(false);
+                  }
+                }
+              })();
+            }
+          }
+        } catch (err) {
+          console.warn('Error during custom auth change handler:', err);
+        }
+      } else {
+        if (isMounted) {
+          setUser(null);
+          setSession(null);
+          setRole('user');
+          setDataReady(false);
+          setDataSyncing(false);
+          setDataSyncError(null);
+        }
+      }
+    };
+
     window.addEventListener('offline', handleOffline);
     window.addEventListener('online', handleOnline);
+    window.addEventListener('KANKU_AUTH_CHANGE', handleCustomAuthChange);
 
     let initialSyncDone = false;
 
@@ -954,6 +1044,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       supabase.auth.stopAutoRefresh();
       window.removeEventListener('offline', handleOffline);
       window.removeEventListener('online', handleOnline);
+      window.removeEventListener('KANKU_AUTH_CHANGE', handleCustomAuthChange);
     };
   }, []);
 

@@ -11,7 +11,9 @@ const getSignedAuthHeaders = (userId = '00000000-0000-0000-0000-000000000001', r
   if (!process.env.JWT_SECRET) {
     process.env.JWT_SECRET = secret;
   }
-  const token = jwt.sign({ userId, id: userId, email: `${role}@test.com`, role, isApproved: true }, secret, { expiresIn: '15m' });
+  // Generate unique email per user ID to avoid database email uniqueness conflicts during request validation
+  const email = `${role}_${userId.slice(0, 8)}@test.com`;
+  const token = jwt.sign({ userId, id: userId, email, role, isApproved: true }, secret, { expiresIn: '15m' });
   return {
     Authorization: `Bearer ${token}`,
   };

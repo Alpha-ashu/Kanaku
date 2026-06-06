@@ -165,7 +165,7 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
         localStorage.setItem('onboarding_completed', 'true');
       }
 
-      window.location.reload();
+      window.dispatchEvent(new CustomEvent('KANKU_AUTH_CHANGE'));
       return;
     } catch (error: any) {
       internalLog.error('handleSignIn', error);
@@ -230,7 +230,7 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
 
       localStorage.removeItem('auth_flow_step');
       localStorage.removeItem('pending_auth_email');
-      window.location.reload();
+      window.dispatchEvent(new CustomEvent('KANKU_AUTH_CHANGE'));
       toast.success("Account created! Let's set up your profile.");
     } catch (error: any) {
       const isNetworkError = error?.name === 'AuthRetryableFetchError' || error?.message?.includes('aborted');
@@ -256,34 +256,34 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
     }
   };
 
- const handleOTPVerified = async () => {
- if (isNewUser) {
- // New users skip AuthFlow onboarding and go to NewUserOnboarding in App.tsx
- localStorage.removeItem('auth_flow_step');
- localStorage.removeItem('pending_auth_email');
- window.location.reload();
- } else {
- // Check if user already has PIN server-side before routing to pin-setup
- try {
- const status = await pinService.getStatus();
- const hasServerPin = status.success && !isPinMissing(status);
- const hasLocalPin = pinService.hasPin();
+  const handleOTPVerified = async () => {
+    if (isNewUser) {
+      // New users skip AuthFlow onboarding and go to NewUserOnboarding in App.tsx
+      localStorage.removeItem('auth_flow_step');
+      localStorage.removeItem('pending_auth_email');
+      window.dispatchEvent(new CustomEvent('KANKU_AUTH_CHANGE'));
+    } else {
+      // Check if user already has PIN server-side before routing to pin-setup
+      try {
+        const status = await pinService.getStatus();
+        const hasServerPin = status.success && !isPinMissing(status);
+        const hasLocalPin = pinService.hasPin();
 
- if (hasServerPin || hasLocalPin) {
- // User already has PIN, skip to complete
- localStorage.setItem('onboarding_completed', 'true');
- localStorage.removeItem('auth_flow_step');
- localStorage.removeItem('pending_auth_email');
- window.location.reload();
- return;
- }
- } catch {
- // If check fails, proceed to pin-setup to be safe
- }
- setStep('pin-setup');
- saveFlowState('pin-setup');
- }
- };
+        if (hasServerPin || hasLocalPin) {
+          // User already has PIN, skip to complete
+          localStorage.setItem('onboarding_completed', 'true');
+          localStorage.removeItem('auth_flow_step');
+          localStorage.removeItem('pending_auth_email');
+          window.dispatchEvent(new CustomEvent('KANKU_AUTH_CHANGE'));
+          return;
+        }
+      } catch {
+        // If check fails, proceed to pin-setup to be safe
+      }
+      setStep('pin-setup');
+      saveFlowState('pin-setup');
+    }
+  };
 
  const handleOTPSkip = async () => {
  // Limited mode - still allow entry
@@ -302,7 +302,7 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
  localStorage.setItem('onboarding_completed', 'true');
  localStorage.removeItem('auth_flow_step');
  localStorage.removeItem('pending_auth_email');
- window.location.reload();
+ window.dispatchEvent(new CustomEvent('KANKU_AUTH_CHANGE'));
  return;
  }
  } catch {
@@ -331,15 +331,15 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
  if (user) {
  const monthlyIncome = parseFloat(userProfile?.monthlyIncome || '0');
  const fullName = `${userProfile?.firstName ?? ''} ${userProfile?.lastName ?? ''}`.trim();
- const profilePayload = {
- full_name: fullName || null,
- first_name: userProfile?.firstName || null,
- last_name: userProfile?.lastName || null,
- phone: userProfile?.mobile || null,
- date_of_birth: userProfile?.dateOfBirth || null,
- job_type: userProfile?.jobType || null,
- monthly_income: Number.isFinite(monthlyIncome) ? monthlyIncome : null,
- };
+  const profilePayload = {
+    firstName: userProfile?.firstName || null,
+    lastName: userProfile?.lastName || null,
+    phone: userProfile?.mobile || null,
+    mobile: userProfile?.mobile || null,
+    dateOfBirth: userProfile?.dateOfBirth || null,
+    jobType: userProfile?.jobType || null,
+    monthlyIncome: Number.isFinite(monthlyIncome) ? monthlyIncome : null,
+  };
 
  localStorage.setItem('user_profile', JSON.stringify({
  displayName: fullName,
@@ -842,7 +842,10 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
  Your account has been set up successfully. Start tracking your finances now!
  </p>
  <button
- onClick={() => window.location.reload()}
+ onClick={() => {
+ localStorage.setItem('onboarding_completed', 'true');
+ window.dispatchEvent(new CustomEvent('KANKU_AUTH_CHANGE'));
+ }}
  className="py-3 px-8 bg-white text-blue-600 rounded-xl font-semibold text-lg hover:bg-blue-50 transition-colors"
  >
  Go to Dashboard

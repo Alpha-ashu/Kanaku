@@ -105,23 +105,31 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  }, [onAuthenticated]);
 
  // PIN input handler (hidden input + numpad both write here) 
- const appendDigit = (d: string) => {
- if (isSubmitting) return;
- setErrorMsg('');
- setPin(prev => prev.length < 6 ? prev + d : prev);
- };
+  const appendDigit = (d: string) => {
+    if (isSubmitting) return;
+    setErrorMsg('');
+    setPin(prev => prev.length < 6 ? prev + d : prev);
+  };
 
- const deleteDigit = () => {
- if (isSubmitting) return;
- setErrorMsg('');
- setPin(prev => prev.slice(0, -1));
- };
+  const deleteDigit = () => {
+    if (isSubmitting) return;
+    setErrorMsg('');
+    setPin(prev => prev.slice(0, -1));
+  };
 
- const handleHiddenKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
- if (e.key === 'Backspace') { e.preventDefault(); deleteDigit(); }
- else if (/^\d$/.test(e.key)) { e.preventDefault(); appendDigit(e.key); }
- else if (e.key === 'Enter' && pin.length === 6) { e.preventDefault(); handleSubmit(); }
- };
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (isSubmitting) return;
+    setErrorMsg('');
+    const val = e.target.value.replace(/\D/g, '').slice(0, 6);
+    setPin(val);
+  };
+
+  const handleHiddenKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && pin.length === 6) {
+      e.preventDefault();
+      handleSubmit();
+    }
+  };
 
  // Auto-submit when 6 digits entered
  useEffect(() => {
@@ -376,7 +384,7 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  inputMode="numeric"
  autoComplete="current-password"
  value={pin}
- onChange={() => { }}
+ onChange={handleInputChange}
  onKeyDown={handleHiddenKeyDown}
  tabIndex={0}
  />
@@ -497,7 +505,11 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  disabled={isSubmitting}
  className="h-14 rounded-2xl bg-transparent hover:bg-gray-50 active:bg-gray-100 transition-all text-gray-500 hover:text-gray-900 flex items-center justify-center disabled:opacity-50 disabled:pointer-events-none"
  >
- {isSubmitting ? <div className="w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" /> : ''}
+ {isSubmitting ? (
+   <div className="w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+ ) : (
+   '⌫'
+ )}
  </button>
  </div>
 
