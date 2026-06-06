@@ -797,6 +797,21 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                   user: nextUser,
                 } as Session;
 
+                // Sync custom token to Supabase client so direct queries/sync functions can resolve session correctly
+                void supabase.auth.setSession({
+                  access_token: customToken,
+                  refresh_token: TokenManager.getRefreshToken() || '',
+                }).catch((err: any) => {
+                  console.warn('Sync custom token to Supabase failed:', err);
+                });
+
+                // Return early inside INITIAL_SESSION handler block after calling setSession.
+                // The setSession() call will immediately trigger a clean SIGNED_IN event which
+                // will perform the actual sync and loading state changes.
+                if (event === 'INITIAL_SESSION') {
+                  return;
+                }
+
                 // Validate the token against the backend in background
                 void (async () => {
                   try {
@@ -862,9 +877,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             console.warn('[AuthContext] Socket connection failed (non-blocking):', err);
           });
         } else if (event === 'SIGNED_OUT') {
-          backendService.clearToken();
-          socketClient.disconnect();
-          TokenManager.clearTokens();
+          const customToken = TokenManager.getAccessToken();
+          if (!customToken) {
+            backendService.clearToken();
+            socketClient.disconnect();
+            TokenManager.clearTokens();
+          }
         }
 
         try {

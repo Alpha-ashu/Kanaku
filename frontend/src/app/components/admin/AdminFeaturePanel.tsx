@@ -126,7 +126,7 @@ const FEATURES: FeatureControl[] = FEATURES_BASE.map(f => {
 
 export const AdminFeaturePanel: React.FC = () => {
   const { setCurrentPage, setVisibleFeatures } = useApp();
-  const { role, loading, dataReady } = useAuth();
+  const { role, loading, dataReady, user } = useAuth();
   const [activeTab, setActiveTab] = useState<'app' | 'ai'>('app');
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedFeature, setExpandedFeature] = useState<string | null>(null);
@@ -196,6 +196,8 @@ export const AdminFeaturePanel: React.FC = () => {
 
   // Load flags from DB on mount
   useEffect(() => {
+    if (loading || !user) return;
+
     const loadFromDb = async () => {
       try {
         const dbFlags = await backendService.getGlobalFeatureFlags();
@@ -242,7 +244,7 @@ export const AdminFeaturePanel: React.FC = () => {
       }
     };
     void loadFromDb();
-  }, [applyFeatureVisibility]);
+  }, [applyFeatureVisibility, user, loading]);
 
   // Sync listener
   useEffect(() => {

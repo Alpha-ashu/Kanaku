@@ -3,6 +3,7 @@ import { Brain, TrendingUp, Shield, Bell, ChevronRight, Loader2, AlertTriangle, 
 import { backendService } from '@/lib/backend-api';
 import { cn } from '@/lib/utils';
 import { useApp } from '@/contexts/AppContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Recommendation {
  type: string;
@@ -43,6 +44,7 @@ const recommendationIcon = (type: string) => {
 
 export const AIInsightsCard: React.FC<{ compact?: boolean }> = ({ compact = false }) => {
  const { aiCapabilities } = useApp();
+ const { user, loading: authLoading } = useAuth();
  const [data, setData] = useState<AIInsightsData | null>(null);
  const [loading, setLoading] = useState(true);
  const [error, setError] = useState(false);
@@ -53,6 +55,15 @@ export const AIInsightsCard: React.FC<{ compact?: boolean }> = ({ compact = fals
 
   useEffect(() => {
     if (isAIDisabled) {
+      setLoading(false);
+      return;
+    }
+
+    if (authLoading) {
+      return;
+    }
+
+    if (!user) {
       setLoading(false);
       return;
     }
@@ -74,7 +85,7 @@ export const AIInsightsCard: React.FC<{ compact?: boolean }> = ({ compact = fals
     };
 
     fetchInsights();
-  }, [isAIDisabled]);
+  }, [isAIDisabled, user, authLoading]);
 
   if (loading) {
     return (

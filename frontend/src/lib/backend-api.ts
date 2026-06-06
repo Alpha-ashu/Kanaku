@@ -4,6 +4,8 @@ import RealtimeDataManager from './realtimeData';
 import { db } from './database';
 import { createNotificationRecord } from './notifications';
 import { categorizeText as localCategorizeText } from './smartCategorization';
+import { TokenManager } from './api';
+import supabase from '@/utils/supabase/client';
 
 const API_BASE_URL = (import.meta.env.VITE_API_URL || '/api/v1').replace(/\/+$/, '');
 const SHOULD_SKIP_OPTIONAL_BACKEND_REQUESTS = import.meta.env.DEV && !import.meta.env.VITE_API_URL;
@@ -289,6 +291,10 @@ class BackendService {
       let token = this.token;
 
       if (!token) {
+        token = TokenManager.getAccessToken();
+      }
+
+      if (!token) {
         // Dynamic fallback: Try to resolve the token directly from the Supabase session stored in localStorage
         try {
           const sbKey = Object.keys(localStorage).find(
@@ -341,6 +347,20 @@ class BackendService {
         };
 
         if (status === 401) {
+          TokenManager.clearTokens();
+          try {
+            // Force local sign out to clear stale local storage sessions without triggering a 403 network call
+            void supabase.auth.signOut({ scope: 'local' }).catch(() => {});
+          } catch (e) {
+            // Ignore sign out errors
+          }
+          // Wait a tiny bit for local storage to actually clear before redirecting
+          setTimeout(() => {
+            if (window.location.pathname !== '/login') {
+              window.location.href = '/login';
+            }
+          }, 100);
+
           return Promise.reject(wrapWithStatus('Your session has expired. Please sign in again.'));
         }
 

@@ -213,7 +213,10 @@ export const AdminAIDashboard: React.FC = () => {
  }
  }, []);
 
- useEffect(() => { void loadDashboard(); }, [loadDashboard]);
+  useEffect(() => {
+    if (authLoading || !dataReady || role !== 'admin') return;
+    void loadDashboard();
+  }, [loadDashboard, authLoading, dataReady, role]);
 
  const handleRefresh = async () => {
  setRefreshing(true);

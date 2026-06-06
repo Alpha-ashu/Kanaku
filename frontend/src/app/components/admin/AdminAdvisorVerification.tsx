@@ -36,6 +36,25 @@ export const AdminAdvisorVerification: React.FC = () => {
  const [rejectModal, setRejectModal] = useState<{ id: string; name: string } | null>(null);
  const [rejectReason, setRejectReason] = useState('');
 
+ const fetchApplications = useCallback(async () => {
+   setLoading(true);
+   try {
+     const data = await backendService.api.get('/advisors/admin/applications');
+     const result = data.data;
+     setPending(result.pending || []);
+     setApplications(result.all || []);
+   } catch (err: any) {
+     toast.error('Failed to load advisor applications');
+   } finally {
+     setLoading(false);
+   }
+ }, []);
+
+ useEffect(() => {
+   if (authLoading || !dataReady || role !== 'admin') return;
+   fetchApplications();
+ }, [fetchApplications, authLoading, dataReady, role]);
+
  // Guard: admin only
  if (authLoading || !dataReady) {
    return (
@@ -48,48 +67,32 @@ export const AdminAdvisorVerification: React.FC = () => {
  }
 
  if (role !== 'admin') {
- return (
- <CenteredLayout>
- <div className="text-center py-16">
- <Shield size={48} className="mx-auto text-red-400 mb-4" />
- <h2 className="text-2xl font-bold text-gray-900">Access Denied</h2>
- <p className="text-gray-500 mt-2">Only admins can access advisor verification.</p>
- <button onClick={() => setCurrentPage('dashboard')} className="mt-6 px-6 py-2 bg-blue-600 text-white rounded-xl font-medium">
- Go to Dashboard
- </button>
- </div>
- </CenteredLayout>
- );
+   return (
+     <CenteredLayout>
+       <div className="text-center py-16">
+         <Shield size={48} className="mx-auto text-red-400 mb-4" />
+         <h2 className="text-2xl font-bold text-gray-900">Access Denied</h2>
+         <p className="text-gray-500 mt-2">Only admins can access advisor verification.</p>
+         <button onClick={() => setCurrentPage('dashboard')} className="mt-6 px-6 py-2 bg-blue-600 text-white rounded-xl font-medium">
+           Go to Dashboard
+         </button>
+       </div>
+     </CenteredLayout>
+   );
  }
 
- const fetchApplications = useCallback(async () => {
- setLoading(true);
- try {
- const data = await backendService.api.get('/advisors/admin/applications');
- const result = data.data;
- setPending(result.pending || []);
- setApplications(result.all || []);
- } catch (err: any) {
- toast.error('Failed to load advisor applications');
- } finally {
- setLoading(false);
- }
- }, []);
-
- useEffect(() => { fetchApplications(); }, [fetchApplications]);
-
- const handleApprove = async (id: string, name: string) => {
- setProcessingId(id);
- try {
- await backendService.api.put(`/advisors/admin/${id}/approve`);
- toast.success(`${name} has been approved as an advisor!`);
- fetchApplications();
- } catch {
- toast.error('Failed to approve advisor');
- } finally {
- setProcessingId(null);
- }
- };
+  const handleApprove = async (id: string, name: string) => {
+    setProcessingId(id);
+    try {
+      await backendService.api.put(`/advisors/admin/${id}/approve`);
+      toast.success(`${name} has been approved as an advisor!`);
+      fetchApplications();
+    } catch {
+      toast.error('Failed to approve advisor');
+    } finally {
+      setProcessingId(null);
+    }
+  };
 
  const handleReject = async () => {
  if (!rejectModal) return;

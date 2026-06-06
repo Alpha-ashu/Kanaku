@@ -16,6 +16,7 @@
 import { db, SyncQueueItem, SyncEventLog } from './database';
 import supabase from '@/utils/supabase/client';
 import { useState, useEffect, useCallback } from 'react';
+import { TokenManager } from './api';
 
 // NOTE: Offline-first sync expects Supabase tables to include `local_id` columns.
 // Our current schema does not include those fields, so running this engine
@@ -526,8 +527,32 @@ class OfflineSyncEngine {
     if (!OFFLINE_SYNC_ENABLED) return;
     if (this.isSyncing || !this.isOnline) return;
 
-    const { data: { user } } = await supabase.auth.getUser().catch(() => ({ data: { user: null } }));
-    if (!user) return;
+    let userId: string | null = null;
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        userId = user.id;
+      }
+    } catch {
+      // ignore
+    }
+
+    if (!userId) {
+      const customToken = TokenManager.getAccessToken();
+      if (customToken) {
+        try {
+          const parts = customToken.split('.');
+          if (parts.length === 3) {
+            const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+            userId = payload.userId || payload.sub;
+          }
+        } catch {
+          // ignore
+        }
+      }
+    }
+
+    if (!userId) return;
 
     this.isSyncing = true;
     this.notify();
@@ -536,20 +561,20 @@ class OfflineSyncEngine {
 
     try {
       // 1. Push local changes
-      const pushed = await this.processPushQueue(user.id);
+      const pushed = await this.processPushQueue(userId);
 
       // 2. Pull cloud changes
-      const pulled = await this.pullFromCloud(user.id);
+      const pulled = await this.pullFromCloud(userId);
 
       this.lastSyncedAt = new Date();
       this.lastError    = undefined;
       localStorage.setItem('last_sync_at', this.lastSyncedAt.toISOString());
 
-      await this.updatePendingCount(user.id);
-      await this.logEvent(user.id, 'sync_success', undefined, pushed + pulled, undefined, Date.now() - startTime);
+      await this.updatePendingCount(userId);
+      await this.logEvent(userId, 'sync_success', undefined, pushed + pulled, undefined, Date.now() - startTime);
     } catch (err: any) {
       this.lastError = err?.message ?? 'Unknown sync error';
-      await this.logEvent(user.id, 'sync_failure', undefined, 0, this.lastError);
+      await this.logEvent(userId, 'sync_failure', undefined, 0, this.lastError);
     } finally {
       this.isSyncing = false;
       this.notify();

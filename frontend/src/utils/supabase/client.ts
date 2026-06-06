@@ -63,8 +63,13 @@ const supabase = (!supabaseUrl || !supabaseKey)
 	: createClient(supabaseUrl, supabaseKey, {
 		auth: {
 			autoRefreshToken: false,
-			persistSession: true,
+			persistSession: false,
 			detectSessionInUrl: true,
+			storage: {
+				getItem: () => null,
+				setItem: () => {},
+				removeItem: () => {},
+			},
 		},
 	});
 

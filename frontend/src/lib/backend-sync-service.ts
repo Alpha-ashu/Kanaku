@@ -12,6 +12,7 @@ import { db } from './database';
 import { buildApiUrl, getConfiguredApiBase, shouldSkipOptionalBackendRequests } from './apiBase';
 import supabase from '@/utils/supabase/client';
 import { toast } from 'sonner';
+import { TokenManager } from './api';
 
 export interface BackendSyncStatus {
   isOnline: boolean;
@@ -95,15 +96,38 @@ class BackendSyncService {
 
     try {
       // Get user authentication
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      if (authError || !user) {
+      let accessToken = TokenManager.getAccessToken();
+      let userObj: any = null;
+
+      if (accessToken) {
+        try {
+          const parts = accessToken.split('.');
+          if (parts.length === 3) {
+            const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+            userObj = { id: payload.userId || payload.sub, email: payload.email };
+          }
+        } catch (e) {
+          // ignore
+        }
+      }
+
+      if (!userObj) {
+        try {
+          const { data: { user }, error: authError } = await supabase.auth.getUser();
+          if (user && !authError) {
+            userObj = user;
+            const session = await supabase.auth.getSession();
+            accessToken = session.data.session?.access_token || null;
+          }
+        } catch (e) {
+          // ignore
+        }
+      }
+
+      if (!userObj || !accessToken) {
         console.warn(' Backend sync failed: User not authenticated');
         return false;
       }
-
-      // Call backend API for sync instead of direct Supabase operations
-      const session = await supabase.auth.getSession();
-      const accessToken = session.data.session?.access_token;
 
       const response = await fetch(buildApiUrl(this.apiBase, '/sync/pull'), {
         method: 'POST',
