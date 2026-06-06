@@ -3795,3 +3795,9 @@ This walkthrough details the changes implemented to address the backend profile 
 
 ### 5. Automated Tests
 - Added integration tests to [security.test.ts](file:///k:/Project/kenku/Finora/backend/tests/integration/security.test.ts) verifying that valid PIN verification returns 200/success and invalid PIN verification returns 401/unauthorized.
+
+### 6. Date Selection UI & UX Improvement
+- **Styled Wrapper Picker**: Replaced the native date inputs in the User Profile page, signup profile setup step, and onboarding step pages with a styled clickable container.
+- **Easy Selector Trigger**: The wrapper container uses the classes `w-full px-4 py-3 border border-gray-300 rounded-xl focus-within:ring-2 focus-within:ring-blue-500 text-sm text-left flex items-center justify-between bg-white min-h-[46px] cursor-pointer` and positions an invisible absolute input element with `opacity-0 cursor-pointer z-20` on top of it.
+- **showPicker Support**: Added click handlers to call `showPicker()` on the inputs so that clicking anywhere on the field opens the native date picker popup immediately.
+- **Date Formatting**: Renders a clean formatted date representation (e.g., `15-May-1988`) inside the container when a date is selected, matching standard form entry layouts across pages.

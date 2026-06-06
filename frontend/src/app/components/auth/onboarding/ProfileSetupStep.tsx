@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Check } from 'lucide-react';
+import { Check, Calendar } from 'lucide-react';
 import { AVATAR_OPTIONS, getAvatarById, resolveAvatarSelection } from '@/lib/avatar-gallery';
 
 interface ProfileSetupStepProps {
@@ -187,15 +187,41 @@ export const ProfileSetupStep: React.FC<ProfileSetupStepProps> = ({
             <label htmlFor="dateOfBirth" className="block text-sm font-medium text-gray-700 mb-1">
               Date of Birth
             </label>
-            <input
-              type="date"
-              id="dateOfBirth"
-              value={data.dateOfBirth}
-              onChange={(e) => onUpdate({ dateOfBirth: e.target.value })}
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+            <div 
+              className="relative group w-full" 
+              onClick={(e) => {
+                const input = e.currentTarget.querySelector('input');
+                if (input) (input as any).showPicker?.();
+              }}
+            >
+              <div className={`w-full px-4 py-3 border rounded-xl focus-within:ring-2 focus-within:ring-blue-500 text-sm text-left flex items-center justify-between bg-white min-h-[46px] cursor-pointer ${
                 errors.dateOfBirth ? 'border-red-500' : 'border-gray-300'
-              }`}
-            />
+              }`}>
+                <span className={data.dateOfBirth ? "text-gray-900" : "text-gray-400"}>
+                  {(() => {
+                    if (!data.dateOfBirth) return 'Select Date';
+                    try {
+                      const date = new Date(data.dateOfBirth);
+                      if (isNaN(date.getTime())) return data.dateOfBirth;
+                      const day = String(date.getDate()).padStart(2, '0');
+                      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                      return `${day}-${months[date.getMonth()]}-${date.getFullYear()}`;
+                    } catch (err) {
+                      return data.dateOfBirth;
+                    }
+                  })()}
+                </span>
+                <Calendar size={14} className="text-gray-400" />
+              </div>
+              <input
+                type="date"
+                id="dateOfBirth"
+                value={data.dateOfBirth}
+                onChange={(e) => onUpdate({ dateOfBirth: e.target.value })}
+                className="absolute inset-0 opacity-0 cursor-pointer z-20"
+                max={new Date().toISOString().split('T')[0]}
+              />
+            </div>
             {errors.dateOfBirth && (
               <p className="mt-1 text-sm text-red-600">{errors.dateOfBirth}</p>
             )}

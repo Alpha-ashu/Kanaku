@@ -349,7 +349,7 @@ export const AddGoal: React.FC = () => {
  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Target Date</label>
  <div className="relative">
  <Calendar className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
- <input type="date" value={formData.deadline} onChange={e => setFormData(prev => ({ ...prev, deadline: e.target.value }))} className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-xs" />
+ <input type="date" value={formData.deadline} onChange={e => setFormData(prev => ({ ...prev, deadline: e.target.value }))} onClick={(e) => (e.target as HTMLInputElement).showPicker?.()} className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-xs" />
  </div>
  </div>
  </div>

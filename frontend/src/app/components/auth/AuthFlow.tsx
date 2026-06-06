@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Shield, TrendingUp, Sparkles, ArrowRight, AlertTriangle } from 'lucide-react';
+import { Shield, TrendingUp, Sparkles, ArrowRight, AlertTriangle, Calendar } from 'lucide-react';
 import { KANKULogo } from '@/app/components/ui/KANKULogo';
 import { motion } from 'framer-motion';
 import { SignInForm } from './SignInForm';
@@ -80,6 +80,13 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
  const [salaryAccount, setSalaryAccount] = useState<SalaryAccount | null>(null);
  const [isLoading, setIsLoading] = useState(false);
  const [showGuestCaution, setShowGuestCaution] = useState(false);
+ const [psDob, setPsDob] = useState('');
+
+ useEffect(() => {
+   if (userProfile?.dateOfBirth) {
+     setPsDob(userProfile.dateOfBirth);
+   }
+ }, [userProfile]);
 
  // Check if user is already partially through the flow
  useEffect(() => {
@@ -644,16 +651,44 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
  </div>
  </div>
 
- <div>
- <label htmlFor="ps-dob" className="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
- <input
- type="date"
- id="ps-dob"
- name="dob"
- className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
- required
- />
- </div>
+  <div>
+    <label htmlFor="ps-dob" className="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
+    <div 
+      className="relative group w-full" 
+      onClick={(e) => {
+        const input = e.currentTarget.querySelector('input');
+        if (input) (input as any).showPicker?.();
+      }}
+    >
+      <div className="w-full px-4 py-3 border border-gray-300 rounded-xl focus-within:ring-2 focus-within:ring-blue-500 text-sm text-left flex items-center justify-between bg-white min-h-[46px] cursor-pointer">
+        <span className={psDob ? "text-gray-900" : "text-gray-400"}>
+          {(() => {
+            if (!psDob) return 'Select Date';
+            try {
+              const date = new Date(psDob);
+              if (isNaN(date.getTime())) return psDob;
+              const day = String(date.getDate()).padStart(2, '0');
+              const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+              return `${day}-${months[date.getMonth()]}-${date.getFullYear()}`;
+            } catch (err) {
+              return psDob;
+            }
+          })()}
+        </span>
+        <Calendar size={14} className="text-gray-400" />
+      </div>
+      <input
+        type="date"
+        id="ps-dob"
+        name="dob"
+        value={psDob}
+        onChange={(e) => setPsDob(e.target.value)}
+        className="absolute inset-0 opacity-0 cursor-pointer z-20"
+        required
+        max={new Date().toISOString().split('T')[0]}
+      />
+    </div>
+  </div>
 
  <div className="grid grid-cols-2 gap-4">
  <div>

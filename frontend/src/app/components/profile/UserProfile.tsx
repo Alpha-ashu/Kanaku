@@ -17,8 +17,6 @@ import { AVATAR_OPTIONS, DEFAULT_AVATAR, resolveAvatarSelection } from '@/lib/av
 import { api } from '@/lib/api';
 import { shouldSkipOptionalBackendRequests } from '@/lib/apiBase';
 import { format, parseISO } from 'date-fns';
-import { Calendar as CalendarUI } from '@/app/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/app/components/ui/popover';
 import { pinService } from '@/services/pinService';
 
 interface ProfileData {
@@ -1217,38 +1215,45 @@ export const UserProfile: React.FC = () => {
  </select>
  </div>
  <div>
- <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide flex items-center gap-1.5">
- <Calendar size={12} className="text-gray-400" /> Date of Birth
- </label>
- <Popover>
- <PopoverTrigger asChild>
- <button
- type="button"
- className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-left flex items-center justify-between bg-white"
- aria-label="Date of birth"
- id="dateOfBirth"
- >
- <span className={tempData.dateOfBirth ? 'text-gray-900' : 'text-gray-400'}>
- {tempData.dateOfBirth ? format(parseISO(tempData.dateOfBirth), 'dd-MMM-yyyy') : 'Select date'}
- </span>
- <Calendar size={14} className="text-gray-400" />
- </button>
- </PopoverTrigger>
- <PopoverContent className="w-auto p-0 bg-white" align="start">
- <CalendarUI
- mode="single"
- selected={tempData.dateOfBirth ? parseISO(tempData.dateOfBirth) : undefined}
- onSelect={(date) => {
- if (date) {
- setTempData({ ...tempData, dateOfBirth: format(date, 'yyyy-MM-dd') });
- }
- }}
- disabled={(date) => date > new Date()}
- initialFocus
- />
- </PopoverContent>
- </Popover>
- </div>
+  <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide flex items-center gap-1.5">
+  <Calendar size={12} className="text-gray-400" /> Date of Birth
+  </label>
+  <div 
+     className="relative group w-full" 
+     onClick={(e) => {
+       const input = e.currentTarget.querySelector('input');
+       if (input) (input as any).showPicker?.();
+     }}
+   >
+     <div className="w-full px-4 py-3 border border-gray-300 rounded-xl focus-within:ring-2 focus-within:ring-blue-500 text-sm text-left flex items-center justify-between bg-white min-h-[46px] cursor-pointer">
+       <span className={tempData.dateOfBirth ? "text-gray-900" : "text-gray-400"}>
+         {(() => {
+           if (!tempData.dateOfBirth) return 'Select Date';
+           try {
+             const date = new Date(tempData.dateOfBirth);
+             if (isNaN(date.getTime())) return tempData.dateOfBirth;
+             const day = String(date.getDate()).padStart(2, '0');
+             const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+             return `${day}-${months[date.getMonth()]}-${date.getFullYear()}`;
+           } catch (err) {
+             return tempData.dateOfBirth;
+           }
+         })()}
+       </span>
+       <Calendar size={14} className="text-gray-400" />
+     </div>
+     <input
+       type="date"
+       value={tempData.dateOfBirth}
+       onChange={(e) => setTempData({ ...tempData, dateOfBirth: e.target.value })}
+       className="absolute inset-0 opacity-0 cursor-pointer z-20"
+       max={new Date().toISOString().split('T')[0]}
+       aria-label="Date of birth"
+       id="dateOfBirth"
+       name="dateOfBirth"
+     />
+   </div>
+  </div>
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-stretch">
