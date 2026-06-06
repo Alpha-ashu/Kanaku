@@ -377,7 +377,7 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  type="password"
  name="pin"
  inputMode="numeric"
- autoComplete="current-password"
+ autoComplete="one-time-code"
  value={pin}
  onChange={handleInputChange}
  onKeyDown={handleHiddenKeyDown}
