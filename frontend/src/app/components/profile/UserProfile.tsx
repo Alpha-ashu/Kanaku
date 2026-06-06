@@ -4,6 +4,7 @@ import { useApp } from '@/contexts/AppContext';
 import { PageHeader } from '@/app/components/ui/PageHeader';
 import { Button } from '@/app/components/ui/button';
 import { Card } from '@/app/components/ui/card';
+import { Skeleton } from '@/app/components/ui/skeleton';
 import { Lock, Eye, EyeOff, Mail, Phone, User, Calendar, Briefcase, LogOut, ShieldAlert, Trash2, X, KeyRound, Check, MapPin, DollarSign, Save, RotateCcw } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -42,6 +43,142 @@ interface VerificationState {
  newValue: string;
  step: 'request' | 'otp-sent' | 'verified';
 }
+
+const ProfileSkeleton: React.FC = () => {
+  return (
+    <div className="w-full min-h-screen bg-white pb-32 lg:pb-8 animate-pulse">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="px-4 sm:px-6 lg:px-8 pt-6 lg:pt-10">
+          <PageHeader
+            title="User Profile"
+            subtitle="Manage your personal information"
+            icon={<User size={20} className="sm:w-6 sm:h-6" />}
+            showBack
+            backTo="dashboard"
+          />
+        </div>
+
+        {/* Content */}
+        <div className="px-4 sm:px-6 lg:px-8 mt-6 lg:mt-8">
+          <div className="lg:grid lg:grid-cols-[340px_1fr] lg:gap-8 lg:items-start space-y-6 lg:space-y-0">
+            {/* LEFT COLUMN */}
+            <div className="space-y-4">
+              {/* Avatar Section Skeleton */}
+              <div className="bg-white border border-gray-200 rounded-2xl p-6 flex flex-col items-center gap-4">
+                <Skeleton className="w-32 h-32 rounded-full" />
+                <Skeleton className="h-6 w-32 rounded-lg" />
+                <Skeleton className="h-8 w-28 rounded-full" />
+              </div>
+
+              {/* Basic Info Card Skeleton */}
+              <Card variant="flat" className="overflow-hidden relative shadow-[0px_1px_2px_rgba(0,0,0,0.04),_0px_4px_12px_rgba(0,0,0,0.06)] bg-white border border-gray-200 rounded-2xl p-6 lg:p-8">
+                <div className="flex items-center justify-between mb-5">
+                  <Skeleton className="h-6 w-36 rounded-lg" />
+                  <Skeleton className="h-8 w-14 rounded-xl" />
+                </div>
+                <div className="divide-y divide-gray-100">
+                  {[1, 2, 3, 4, 5, 6].map((i) => (
+                    <div key={i} className="flex items-center justify-between py-3.5">
+                      <Skeleton className="h-4 w-24 rounded-lg" />
+                      <Skeleton className="h-4 w-32 rounded-lg" />
+                    </div>
+                  ))}
+                </div>
+              </Card>
+
+              {/* Location Card Skeleton */}
+              <Card variant="flat" className="overflow-hidden relative shadow-[0px_1px_2px_rgba(0,0,0,0.04),_0px_4px_12px_rgba(0,0,0,0.06)] bg-white border border-gray-200 rounded-2xl p-6 lg:p-8">
+                <div className="flex items-center justify-between mb-5">
+                  <Skeleton className="h-6 w-44 rounded-lg" />
+                  <Skeleton className="h-8 w-14 rounded-xl" />
+                </div>
+                <div className="divide-y divide-gray-100">
+                  {[1, 2, 3, 4].map((i) => (
+                    <div key={i} className="flex items-center justify-between py-3.5">
+                      <Skeleton className="h-4 w-24 rounded-lg" />
+                      <Skeleton className="h-4 w-28 rounded-lg" />
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            </div>
+
+            {/* RIGHT COLUMN */}
+            <div className="space-y-6 min-w-0">
+              {/* Secure Info Card Skeleton */}
+              <Card variant="flat" className="overflow-hidden relative shadow-[0px_1px_2px_rgba(0,0,0,0.04),_0px_4px_12px_rgba(0,0,0,0.06)] bg-white border border-gray-200 rounded-2xl p-6 lg:p-8">
+                <Skeleton className="h-6 w-40 rounded-lg mb-5" />
+                <div className="mb-5 pb-5 border-b border-gray-200">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <Skeleton className="w-10 h-10 rounded-full" />
+                      <div className="space-y-1">
+                        <Skeleton className="h-4 w-28 rounded-lg" />
+                        <Skeleton className="h-3 w-40 rounded-lg" />
+                      </div>
+                    </div>
+                  </div>
+                  <Skeleton className="h-5 w-48 rounded-lg mb-3" />
+                  <Skeleton className="h-9 w-28 rounded-lg" />
+                </div>
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <Skeleton className="w-10 h-10 rounded-full" />
+                      <div className="space-y-1 flex-1">
+                        <Skeleton className="h-4 w-28 rounded-lg" />
+                        <Skeleton className="h-3 w-40 rounded-lg" />
+                      </div>
+                    </div>
+                  </div>
+                  <Skeleton className="h-5 w-36 rounded-lg mb-4" />
+                  <Skeleton className="h-9 w-28 rounded-lg" />
+                </div>
+              </Card>
+
+              {/* Security & PIN Card Skeleton */}
+              <Card variant="flat" className="overflow-hidden relative shadow-[0px_1px_2px_rgba(0,0,0,0.04),_0px_4px_12px_rgba(0,0,0,0.06)] bg-white border border-gray-200 rounded-2xl p-6 lg:p-8">
+                <Skeleton className="h-6 w-32 rounded-lg mb-4" />
+                <div className="p-4 bg-white rounded-xl border border-gray-200 flex items-center justify-between">
+                  <div className="space-y-1">
+                    <Skeleton className="h-4 w-32 rounded-lg" />
+                    <Skeleton className="h-3 w-60 rounded-lg" />
+                  </div>
+                  <Skeleton className="h-10 w-24 rounded-xl" />
+                </div>
+              </Card>
+
+              {/* Lower grid items skeleton */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-stretch">
+                <Card className="bg-white border border-gray-200 rounded-2xl p-6 h-full flex flex-col justify-between space-y-4">
+                  <div className="flex items-start gap-3">
+                    <Skeleton className="w-9 h-9 rounded-full" />
+                    <div className="space-y-1 flex-1">
+                      <Skeleton className="h-4 w-20 rounded-lg" />
+                      <Skeleton className="h-3 w-36 rounded-lg" />
+                    </div>
+                  </div>
+                  <Skeleton className="h-10 w-full rounded-xl" />
+                </Card>
+                <Card className="bg-red-50 border border-red-200 rounded-2xl p-6 h-full flex flex-col justify-between space-y-4">
+                  <div className="flex items-start gap-3">
+                    <Skeleton className="w-9 h-9 rounded-full" />
+                    <div className="space-y-1 flex-1">
+                      <Skeleton className="h-4 w-24 rounded-lg" />
+                      <Skeleton className="h-3 w-44 rounded-lg" />
+                    </div>
+                  </div>
+                  <Skeleton className="h-10 w-full rounded-xl" />
+                </Card>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export const UserProfile: React.FC = () => {
  const { user, signOut } = useAuth();
@@ -775,27 +912,31 @@ export const UserProfile: React.FC = () => {
     }
   };
 
- if (visibleFeatures?.userProfile === false) {
- return (
- <div className="w-full min-h-screen bg-white flex flex-col items-center justify-center p-4">
- <div className="text-center max-w-md bg-white/60 backdrop-blur-xl border border-gray-200/50 p-8 rounded-[30px] shadow-glass">
- <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
- <Lock size={32} />
- </div>
- <h2 className="text-2xl font-bold text-gray-900 mb-2">Feature Disabled</h2>
- <p className="text-gray-500 mb-6">
- The User Profile and account settings feature is currently disabled by the system administrator.
- </p>
- <Button 
- onClick={() => setCurrentPage('dashboard')}
- className="w-full bg-black text-white hover:bg-gray-900 rounded-full py-3 font-semibold transition-all shadow-md"
- >
- Go to Dashboard
- </Button>
- </div>
- </div>
- );
- }
+  if (visibleFeatures?.userProfile === false) {
+  return (
+  <div className="w-full min-h-screen bg-white flex flex-col items-center justify-center p-4">
+  <div className="text-center max-w-md bg-white/60 backdrop-blur-xl border border-gray-200/50 p-8 rounded-[30px] shadow-glass">
+  <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+  <Lock size={32} />
+  </div>
+  <h2 className="text-2xl font-bold text-gray-900 mb-2">Feature Disabled</h2>
+  <p className="text-gray-500 mb-6">
+  The User Profile and account settings feature is currently disabled by the system administrator.
+  </p>
+  <Button 
+  onClick={() => setCurrentPage('dashboard')}
+  className="w-full bg-black text-white hover:bg-gray-900 rounded-full py-3 font-semibold transition-all shadow-md"
+  >
+  Go to Dashboard
+  </Button>
+  </div>
+  </div>
+  );
+  }
+
+  if (isLoading) {
+    return <ProfileSkeleton />;
+  }
 
  return (
  <>

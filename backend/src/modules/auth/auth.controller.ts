@@ -37,6 +37,7 @@ const buildProfilePayload = (
   profileRecord?: Record<string, any> | null,
   settingsRecord?: Record<string, any> | null,
   includePrivate = false,
+  pinRecord?: Record<string, any> | null,
 ) => {
   const fallbackName = authUser?.name || '';
   const fallbackNameParts = fallbackName.trim().split(/\s+/).filter(Boolean);
@@ -81,52 +82,79 @@ const buildProfilePayload = (
     defaultCurrency = 'SGD';
   }
 
+  const name =
+    profileRecord?.full_name ||
+    userRecord?.name ||
+    `${firstName} ${lastName}`.trim() ||
+    fallbackName;
+
   const payload: Record<string, any> = {
     id: userId,
     email: userRecord?.email || profileRecord?.email || authUser?.email || '',
-    name:
-      profileRecord?.full_name ||
-      userRecord?.name ||
-      `${firstName} ${lastName}`.trim() ||
-      fallbackName,
+    name,
     firstName,
     lastName,
+    fullName: name,
     gender: profileRecord?.gender || userRecord?.gender || '',
     country: countryVal,
     state: profileRecord?.state || userRecord?.state || '',
     city: profileRecord?.city || userRecord?.city || '',
     mobile: profileRecord?.phone || '',
     phone: profileRecord?.phone || '',
+    mobileNumber: profileRecord?.phone || userRecord?.phone || '',
     avatarId: profileRecord?.avatar_id || userRecord?.avatarId || null,
     avatarUrl: profileRecord?.avatar_url || null,
     currency: settingsRecord?.currency || defaultCurrency,
     language: settingsRecord?.language || 'en',
     updatedAt: profileRecord?.updated_at || userRecord?.updatedAt || null,
+    dateOfBirth,
+    jobType,
+    monthlyIncome,
+    pinEnabled: pinRecord ? Boolean(pinRecord.isActive) : false,
+    isApproved: userRecord?.isApproved ?? authUser?.isApproved ?? false,
   };
 
   if (includePrivate) {
     if (salary !== 0) {
       payload.salary = salary;
     }
-    if (monthlyIncome !== 0) {
-      payload.monthlyIncome = monthlyIncome;
-    }
-    if (dateOfBirth !== '') {
-      payload.dateOfBirth = dateOfBirth;
-    }
-    if (jobType !== '') {
-      payload.jobType = jobType;
-    }
     if (role !== 'user') {
       payload.role = role;
     }
-    payload.isApproved = userRecord?.isApproved ?? authUser?.isApproved ?? false;
   }
 
-  // Remove empty fields from profile payload to prevent empty schemas exposure (BUG-15)
+  const allowedNullKeys = new Set([
+    'id',
+    'email',
+    'firstName',
+    'lastName',
+    'fullName',
+    'mobileNumber',
+    'dateOfBirth',
+    'gender',
+    'jobType',
+    'monthlyIncome',
+    'country',
+    'state',
+    'city',
+    'currency',
+    'avatarUrl',
+    'pinEnabled',
+    'isApproved',
+    'updatedAt'
+  ]);
+
+  // Remove empty fields from profile payload to prevent empty schemas exposure (BUG-15),
+  // but preserve keys that are in allowedNullKeys (returned as null, '', 0, or false).
   for (const key of Object.keys(payload)) {
     if (payload[key] === '' || payload[key] === null || payload[key] === undefined) {
-      delete payload[key];
+      if (allowedNullKeys.has(key)) {
+        if (payload[key] === undefined) {
+          payload[key] = null;
+        }
+      } else {
+        delete payload[key];
+      }
     }
   }
 
@@ -400,15 +428,17 @@ export const getProfile = async (req: AuthRequest, res: Response, next: NextFunc
       ]);
     };
 
-    const [userRes, profileRes, settingsRes] = await Promise.allSettled([
+    const [userRes, profileRes, settingsRes, pinRes] = await Promise.allSettled([
       withTimeout(authService.getUser(req.userId), 1500, 'User profile lookup'),
       withTimeout(prisma.profiles.findUnique({ where: { id: req.userId } }), 1500, 'Profiles lookup'),
-      withTimeout(prisma.userSettings.findUnique({ where: { userId: req.userId } }), 1500, 'UserSettings lookup')
+      withTimeout(prisma.userSettings.findUnique({ where: { userId: req.userId } }), 1500, 'UserSettings lookup'),
+      withTimeout(prisma.userPin.findUnique({ where: { userId: req.userId } }), 1500, 'UserPin lookup')
     ]);
 
     const userResult = userRes;
     const profileResult = profileRes;
     const settingsResult = settingsRes;
+    const pinResult = pinRes;
 
     if (userRes.status === 'rejected') {
       const err = userRes.reason;
@@ -437,11 +467,20 @@ export const getProfile = async (req: AuthRequest, res: Response, next: NextFunc
       });
     }
 
+    if (pinRes.status === 'rejected') {
+      const err = pinRes.reason;
+      logger.warn('Get profile pin lookup failed.', {
+        message: err?.message,
+        userId: req.userId,
+      });
+    }
+
     const userRecord = userResult.status === 'fulfilled' ? (userResult.value as Record<string, any>) : null;
     const profileRecord = profileResult.status === 'fulfilled' ? (profileResult.value as Record<string, any>) : null;
     const settingsRecord = settingsResult.status === 'fulfilled' ? (settingsResult.value as Record<string, any>) : null;
+    const pinRecord = pinResult.status === 'fulfilled' ? (pinResult.value as Record<string, any>) : null;
 
-    const payload = buildProfilePayload(req.userId, req.user, userRecord, profileRecord, settingsRecord, includePrivate);
+    const payload = buildProfilePayload(req.userId, req.user, userRecord, profileRecord, settingsRecord, includePrivate, pinRecord);
     await cacheSetJson(profileCacheKey, payload, 30); // Cache for 30 seconds
 
     res.json({
@@ -457,7 +496,7 @@ export const getProfile = async (req: AuthRequest, res: Response, next: NextFunc
     const includePrivate = req.query.includePrivate === 'true' || req.query.includePrivate === '1';
     res.json({
       success: true,
-      data: buildProfilePayload(req.userId || '', req.user, null, null, null, includePrivate),
+      data: buildProfilePayload(req.userId || '', req.user, null, null, null, includePrivate, null),
     });
   }
 };
@@ -476,12 +515,15 @@ export const updateProfile = async (req: AuthRequest, res: Response, next: NextF
     );
     const user = await authService.updateProfile(req.userId, sanitizedData, req.user?.email);
 
-    // Fetch fresh profile data and settings to return consistent payload
-    const [profile, settings] = await Promise.all([
+    // Fetch fresh profile data, settings, and PIN to return consistent payload
+    const [profile, settings, pin] = await Promise.all([
       prisma.profiles.findUnique({
         where: { id: req.userId },
       }),
       prisma.userSettings.findUnique({
+        where: { userId: req.userId },
+      }),
+      prisma.userPin.findUnique({
         where: { userId: req.userId },
       }),
     ]);
@@ -496,7 +538,7 @@ export const updateProfile = async (req: AuthRequest, res: Response, next: NextF
     res.json({
       success: true,
       message: 'Profile updated successfully',
-      data: buildProfilePayload(req.userId, req.user, user, profile, settings, includePrivate),
+      data: buildProfilePayload(req.userId, req.user, user, profile, settings, includePrivate, pin),
     });
   } catch (error: any) {
     logger.error('Update profile error:', {

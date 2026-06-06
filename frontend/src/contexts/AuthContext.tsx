@@ -40,6 +40,7 @@ type LocalProfile = {
   firstName?: string;
   lastName?: string;
   mobile?: string;
+  phone?: string;
   gender?: string;
   dateOfBirth?: string;
   jobType?: string;
@@ -588,6 +589,11 @@ const syncProfileFromBackend = async (user: User) => {
 /** Sync user data from Supabase into local Dexie DB on login */
 const syncFromSupabase = async (user: User, force = false, requestedTables?: SyncedTableName[]) => {
   try {
+    if (!requestedTables || requestedTables.length === 0) {
+      await syncProfileFromBackend(user);
+      return;
+    }
+
     if (shouldSkipOptionalBackendRequests()) {
       await syncProfileFromBackend(user);
       return;

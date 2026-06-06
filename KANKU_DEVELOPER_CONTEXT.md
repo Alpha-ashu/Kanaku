@@ -3684,3 +3684,58 @@ Please verify the full onboarding loop on your dev environment:
 3. Confirm custom PIN pad is hidden on mobile and soft keyboard works without lockout.
 4. Refresh browser -> verify Avatar, DOB, Phone, Currency, and Country are correctly persisted.
 5. Logout and login again to confirm complete consistency of all onboarding data.
+# Implementation Plan - Performance Optimization & Profile Data Alignment
+
+Implement performance optimization and complete profile data integration in Finora across both frontend and backend.
+
+## User Review Required
+
+Document anything that requires user review or feedback.
+> [!NOTE]
+> All changes are non-destructive and backward-compatible. This implementation will reduce initial load requests from >15 to 3-5, while ensuring the profile API and UI display complete and persistent user information.
+
+---
+
+## Proposed Changes
+
+### Backend Components
+
+#### [MODIFY] [auth.controller.ts](file:///k:/Project/kenku/Finora/backend/src/modules/auth/auth.controller.ts)
+- Modify `buildProfilePayload` signature and body to:
+  - Accept `pinRecord` as the seventh parameter.
+  - Map `fullName`, `mobileNumber`, `dateOfBirth`, `gender`, `jobType`, `monthlyIncome`, `avatarUrl`, `pinEnabled`, `isApproved`, and `updatedAt` directly into the payload.
+  - Establish an `allowedNullKeys` set of standard keys that must not be deleted from the payload by the cleanup loop (normalize any `undefined` values in this set to `null`).
+- Modify `getProfile` to query `prisma.userPin.findUnique` in parallel with other models and pass it to `buildProfilePayload`.
+- Modify `updateProfile` to query `prisma.userPin.findUnique` in parallel with other models and pass it to `buildProfilePayload`.
+
+---
+
+### Frontend Components
+
+#### [MODIFY] [AuthContext.tsx](file:///k:/Project/kenku/Finora/frontend/src/contexts/AuthContext.tsx)
+- Modify `syncFromSupabase` to return early if `requestedTables` is empty/undefined:
+  ```typescript
+  if (!requestedTables || requestedTables.length === 0) {
+    await syncProfileFromBackend(user);
+    return;
+  }
+  ```
+  This prevents unnecessary background sync pulls of goals, transactions, accounts, loans, friends, etc. upon login or initial load of the profile page.
+
+#### [MODIFY] [UserProfile.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/profile/UserProfile.tsx)
+- Define a `ProfileSkeleton` layout component that matches the two-column styling of the profile screen.
+- Render `<ProfileSkeleton />` when `isLoading === true` to avoid displaying "Not specified", "0", or empty fields before data fetches resolve.
+
+---
+
+## Verification Plan
+
+### Automated Tests
+- Run backend compilation and tests to ensure no regressions:
+  - Run `npm run build` in `backend/`
+  - Run `npm run test` in `backend/`
+
+### Manual Verification
+- Inspect the Network tab after logging in to verify that initial requests are capped at 3-5 calls, and unrelated modules (transactions, goals, investments, etc.) are not loaded.
+- Verify the `GET /api/v1/auth/profile` response contains all requested fields, including `pinEnabled`, `monthlyIncome`, `mobileNumber`, etc.
+- Verify the Profile screen loads with skeleton loaders and renders profile details cleanly without flickering or showing incorrect defaults.

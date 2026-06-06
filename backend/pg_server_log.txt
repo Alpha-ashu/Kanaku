@@ -6,3 +6,20 @@
 2026-06-06 03:12:44.437 IST [17440] LOG:  invalid record length at 0/173D0D0: wanted 24, got 0
 2026-06-06 03:12:44.438 IST [17440] LOG:  redo is not required
 2026-06-06 03:12:44.638 IST [22652] LOG:  database system is ready to accept connections
+2026-06-06 21:08:05.927 IST [28856] LOG:  starting PostgreSQL 13.23, compiled by Visual C++ build 1944, 64-bit
+2026-06-06 21:08:05.934 IST [28856] LOG:  could not bind IPv6 address "::1": Permission denied
+2026-06-06 21:08:05.934 IST [28856] HINT:  Is another postmaster already running on port 5432? If not, wait a few seconds and retry.
+2026-06-06 21:08:05.934 IST [28856] LOG:  could not bind IPv4 address "127.0.0.1": Permission denied
+2026-06-06 21:08:05.934 IST [28856] HINT:  Is another postmaster already running on port 5432? If not, wait a few seconds and retry.
+2026-06-06 21:08:05.935 IST [28856] WARNING:  could not create listen socket for "localhost"
+2026-06-06 21:08:05.935 IST [28856] FATAL:  could not create any TCP/IP sockets
+2026-06-06 21:08:05.940 IST [28856] LOG:  database system is shut down
+2026-06-06 21:08:12.755 IST [6664] LOG:  starting PostgreSQL 13.23, compiled by Visual C++ build 1944, 64-bit
+2026-06-06 21:08:12.763 IST [6664] LOG:  listening on IPv6 address "::1", port 5434
+2026-06-06 21:08:12.763 IST [6664] LOG:  listening on IPv4 address "127.0.0.1", port 5434
+2026-06-06 21:08:12.825 IST [34224] LOG:  database system was interrupted; last known up at 2026-06-06 15:54:01 IST
+2026-06-06 21:08:15.731 IST [34224] LOG:  database system was not properly shut down; automatic recovery in progress
+2026-06-06 21:08:15.736 IST [34224] LOG:  redo starts at 0/175AF30
+2026-06-06 21:08:15.736 IST [34224] LOG:  invalid record length at 0/175B018: wanted 24, got 0
+2026-06-06 21:08:15.737 IST [34224] LOG:  redo done at 0/175AFE0
+2026-06-06 21:08:15.787 IST [6664] LOG:  database system is ready to accept connections
