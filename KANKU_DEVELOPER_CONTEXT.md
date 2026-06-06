@@ -3648,3 +3648,39 @@ We will replace hard window reloads with custom event dispatching and listeners 
   5. Refresh the browser and verify that no fields are lost (Avatar, DOB, Phone, Currency, Country).
   6. Logout and login again to verify absolute consistency.
   7. Verify that no automatic page refreshes occur post-login or post-onboarding.
+# Walkthrough - Registration & User Profile Flow Fixes
+
+This walkthrough details the changes implemented to resolve the 5 priority onboarding, registration, and user profile flow bugs.
+
+## Changes Made
+
+### 1. PIN Keypad & Input Handling
+- **Responsive Layout**: Added Tailwind `hidden md:grid` responsive classes to the custom number pad grid in [PINSetup.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/auth/PINSetup.tsx), hiding it on mobile viewports.
+- **Reactive Mobile Typing**: Added a reactive `onChange` input value mapping in both [PINSetup.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/auth/PINSetup.tsx) and [PINAuth.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/auth/PINAuth.tsx) to capture virtual/soft-keyboard digit taps and backspaces natively, solving the keyboard soft lock.
+- **Backspace Label**: Updated [PINAuth.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/auth/PINAuth.tsx) to render the standard `⌫` backspace symbol.
+
+### 2. Profile Data Alignment & Country-to-Currency Persistence
+- **camelCase Synchronization**: Converted `profilePayload` in [AuthContext.tsx](file:///k:/Project/kenku/Finora/frontend/src/contexts/AuthContext.tsx) and [AuthFlow.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/auth/AuthFlow.tsx) to use camelCase keys, matching the database schema destructuring in the backend Express service and preventing NULL data loss overwrites on sync.
+- **Server Timestamp Hydration**: Modified `buildProfilePayload` in [auth.controller.ts](file:///k:/Project/kenku/Finora/backend/src/modules/auth/auth.controller.ts) to return `updatedAt`, enabling correct sync resolution on reload.
+- **Currency Lookup Fallback**: Added country-to-currency mapping directly in the backend's `buildProfilePayload` function, defaulting users with Country = India to `INR` instead of `USD` when Settings records are not yet initialized.
+
+### 3. SPA Session Reloads Optimization
+- **Event-Driven Authentication**: Registered a `'KANKU_AUTH_CHANGE'` custom event listener in [AuthContext.tsx](file:///k:/Project/kenku/Finora/frontend/src/contexts/AuthContext.tsx) to re-evaluate tokens in-memory, updating application state reactively.
+- **SPA Transitions**: Removed all `window.location.reload()` calls from [AuthFlow.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/auth/AuthFlow.tsx), [NewUserOnboarding.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/auth/onboarding/NewUserOnboarding.tsx), and onboarding completion gates.
+- **Reactive Onboarding**: Added a local state tracker and listener for the `'ONBOARDING_COMPLETED'` event in [App.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/App.tsx) to transition pages smoothly without hard reloads.
+
+---
+
+## Verification & Testing
+
+### Automated Verification
+- **Backend Build**: Successfully ran `npm run build` and compiled all TypeScript files.
+- **Jest Test Suite**: Verified that backend test suites run and verify API stability.
+
+### Manual Verification Path
+Please verify the full onboarding loop on your dev environment:
+1. Register a new user account.
+2. Complete onboarding (Country: India -> verify currency defaults to INR).
+3. Confirm custom PIN pad is hidden on mobile and soft keyboard works without lockout.
+4. Refresh browser -> verify Avatar, DOB, Phone, Currency, and Country are correctly persisted.
+5. Logout and login again to confirm complete consistency of all onboarding data.
