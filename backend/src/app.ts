@@ -37,7 +37,7 @@ app.use(helmet({
     directives: {
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       fontSrc: ["'self'", "data:", "https://fonts.gstatic.com"],
-      imgSrc: ["'self'", "data:", "https://*.supabase.co", "https://api.dicebear.com"],
+      imgSrc: ["'self'", "data:", "https://*.supabase.co"],
       connectSrc: ["'self'", "https://*.supabase.co"],
     },
   },

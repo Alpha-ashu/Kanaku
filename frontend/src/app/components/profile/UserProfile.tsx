@@ -835,7 +835,7 @@ export const UserProfile: React.FC = () => {
  alt="Avatar"
  className="w-32 h-32 rounded-full border-4 border-blue-500 object-cover shadow-xl bg-white"
  onError={(e) => {
- (e.target as HTMLImageElement).src = 'https://api.dicebear.com/7.x/avataaars/svg?seed=fallback';
+ (e.target as HTMLImageElement).src = '/api/v1/avatars/dicebear/avataaars/svg?seed=fallback';
  }}
  />
  <div className="absolute inset-0 rounded-full bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
@@ -906,7 +906,7 @@ export const UserProfile: React.FC = () => {
  alt={avatar.label} 
  className="h-full w-full object-cover"
  onError={(e) => {
- (e.target as HTMLImageElement).src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${avatar.id}`;
+ (e.target as HTMLImageElement).src = `/api/v1/avatars/dicebear/avataaars/svg?seed=${avatar.id}`;
  }}
  />
  {activeAvatar.id === avatar.id && (

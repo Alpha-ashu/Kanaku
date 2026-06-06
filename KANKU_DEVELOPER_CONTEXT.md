@@ -2355,7 +2355,7 @@ The following is the current status of the 19 reported security, performance, an
 | **BUG-14** | `cross-origin-resource-policy: cross-origin` on internal APIs | 🟡 Medium | **Fixed** | Set Cross-Origin-Resource-Policy: same-origin on all routes. |
 | **BUG-15** | Sensitive PII fields returned in profile response | 🟡 Medium | **Fixed** | Pruned sensitive fields from default profile responses; accessed only via includePrivate=true. |
 | **BUG-16** | `/api/v1/pin/key-backup` returns failure state silently | 🟢 Low | **Fixed** | Surfaced failure states and added toast messages to client recovery. |
-| **BUG-17** | Avatar fetched from external CDN without integrity check | 🟢 Low | **Open** | Local caching or proxying of avatars is in the backlog. |
+| **BUG-17** | Avatar fetched from external CDN without integrity check | 🟢 Low | **Fixed** | Implemented a secure backend proxy (`/api/v1/avatars/dicebear/...`) that fetches and sanitizes SVGs from Dicebear, stripping script and on* handlers, and serving them with strict CSP headers. |
 | **BUG-18** | `x-xss-protection: 0` set on all responses | 🟢 Low | **Fixed** | Enforced X-XSS-Protection: 1; mode=block header. |
 | **BUG-19** | Password sent directly to auth endpoint | 🔴 Critical | **Fixed** | Implemented a secure two-phase challenge-response login flow to prevent plaintext password transmission. |
 

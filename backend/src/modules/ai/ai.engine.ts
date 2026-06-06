@@ -8,6 +8,7 @@ const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000;
 
 let featureInterval: NodeJS.Timeout | null = null;
 let predictionInterval: NodeJS.Timeout | null = null;
+let startupTimeout: NodeJS.Timeout | null = null;
 
 const safeJsonParse = <T>(value: string | null | any, fallback: T): T => {
   if (!value) return fallback;
@@ -919,13 +920,42 @@ export const startAIBackgroundJobs = () => {
     return;
   }
 
-  if (featureInterval || predictionInterval) {
+  if (featureInterval || predictionInterval || startupTimeout) {
     return;
   }
 
   void ensureAITables()
     .then(async () => {
-      await runEngineCycle();
+      let needsRun = true;
+      try {
+        const sixHoursAgo = new Date(Date.now() - SIX_HOURS_MS);
+        const recentRuns = await prisma.$queryRaw<Array<{ run_type: string }>>`
+          SELECT run_type
+          FROM ai_model_runs
+          WHERE status = 'completed'
+            AND completed_at >= ${sixHoursAgo}
+        `;
+
+        const hasRecentFeature = recentRuns.some((r) => r.run_type === 'feature_engineering');
+        const hasRecentPrediction = recentRuns.some((r) => r.run_type === 'prediction_engine');
+
+        if (hasRecentFeature && hasRecentPrediction) {
+          needsRun = false;
+          logger.info('Skipping initial AI engine cycle on startup; recent runs exist within the last 6 hours');
+        }
+      } catch (error) {
+        logger.error('Failed to query recent AI model runs, defaulting to scheduling run:', error);
+      }
+
+      if (needsRun) {
+        logger.info('Scheduling initial AI engine cycle with a 15-second delay to prevent boot-time DB contention');
+        startupTimeout = setTimeout(() => {
+          startupTimeout = null;
+          void runEngineCycle().catch((error) => {
+            logger.error('Startup AI engine cycle failed', { error });
+          });
+        }, 15000);
+      }
 
       featureInterval = setInterval(() => {
         void runFeatureEngineeringForAllUsers().catch((error) => {
@@ -950,6 +980,11 @@ export const startAIBackgroundJobs = () => {
 };
 
 export const stopAIBackgroundJobs = () => {
+  if (startupTimeout) {
+    clearTimeout(startupTimeout);
+    startupTimeout = null;
+  }
+
   if (featureInterval) {
     clearInterval(featureInterval);
     featureInterval = null;

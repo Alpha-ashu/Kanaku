@@ -21,6 +21,7 @@ import { todoRoutes } from '../modules/todos/todo.routes';
 import { groupRoutes } from '../modules/groups/group.routes';
 import { dashboardRoutes } from '../modules/dashboard/dashboard.routes';
 import { categorizationRoutes, learnRouter } from '../modules/categorization/categorization.routes';
+import { avatarRoutes } from '../modules/avatars/avatar.routes';
 import voiceRoutes from '../modules/voice/voice.routes';
 import importRoutes from '../modules/import/import.routes';
 
@@ -46,6 +47,7 @@ const lazyRoute =
 
 // Authentication routes (public)
 router.use('/auth', authRoutes);
+router.use('/avatars', avatarRoutes);
 
 // Sync and PIN routes (protected)
 router.use('/sync', syncRoutes);

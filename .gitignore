@@ -51,3 +51,4 @@ android/key.properties
 secure/
 
 backend/generated/
+backend/.pg-testdata/
