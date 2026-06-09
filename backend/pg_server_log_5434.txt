@@ -1,0 +1,8 @@
+2026-06-10 02:00:57.293 IST [15328] LOG:  starting PostgreSQL 13.23, compiled by Visual C++ build 1944, 64-bit
+2026-06-10 02:00:57.299 IST [15328] LOG:  listening on IPv6 address "::1", port 5434
+2026-06-10 02:00:57.299 IST [15328] LOG:  listening on IPv4 address "127.0.0.1", port 5434
+2026-06-10 02:00:57.337 IST [39128] LOG:  database system was interrupted; last known up at 2026-06-10 01:55:37 IST
+2026-06-10 02:00:57.580 IST [39128] LOG:  database system was not properly shut down; automatic recovery in progress
+2026-06-10 02:00:57.583 IST [39128] LOG:  invalid record length at 0/1786150: wanted 24, got 0
+2026-06-10 02:00:57.583 IST [39128] LOG:  redo is not required
+2026-06-10 02:00:57.632 IST [15328] LOG:  database system is ready to accept connections

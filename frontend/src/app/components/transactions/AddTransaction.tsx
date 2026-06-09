@@ -677,14 +677,19 @@ export function AddTransaction() {
  ] as { id: TransactionType; label: string; icon: React.ReactNode }[]).map(tab => (
  <button
  key={tab.id}
- onClick={() => setFormData(prev => ({
+ onClick={() => {
+ setFormData(prev => ({
  ...prev,
  type: tab.id,
  category: tab.id === 'income' ? DEFAULT_CATEGORY.income
  : tab.id === 'transfer' ? 'Transfer'
  : DEFAULT_CATEGORY.expense,
  subcategory: tab.id === 'transfer' ? 'Transfer' : '',
- }))}
+ }));
+ if (tab.id !== 'expense') {
+ setExpenseMode('individual');
+ }
+ }}
  className={cn(
  'flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all',
  formData.type === tab.id

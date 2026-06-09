@@ -136,7 +136,9 @@ export async function getAIConfigurations(): Promise<AIConfigurations> {
 
     let parsedSettings;
     try {
-      parsedSettings = JSON.parse(settings.settings);
+      parsedSettings = typeof settings.settings === 'string'
+        ? JSON.parse(settings.settings)
+        : (settings.settings as any);
     } catch {
       return DEFAULT_AI_CONFIGS;
     }
@@ -176,7 +178,9 @@ export async function updateAIConfigurations(configs: Partial<AIConfigurations>)
   let currentSettings: Record<string, any> = {};
   if (settings && settings.settings) {
     try {
-      currentSettings = JSON.parse(settings.settings);
+      currentSettings = typeof settings.settings === 'string'
+        ? JSON.parse(settings.settings)
+        : (settings.settings as any);
     } catch {
       currentSettings = {};
     }

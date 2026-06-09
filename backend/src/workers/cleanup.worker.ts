@@ -5,11 +5,11 @@
  * Fix M-5: RefreshToken expiry cleanup + OtpCode cleanup + SyncQueue cleanup.
  */
 
-import cron from 'node-cron';
+import cron, { ScheduledTask } from 'node-cron';
 import { prisma } from '../db/prisma';
 import { logger } from '../config/logger';
 
-let cleanupJob: cron.ScheduledTask | null = null;
+let cleanupJob: ScheduledTask | null = null;
 
 /**
  * Run all cleanup tasks and return a summary report.

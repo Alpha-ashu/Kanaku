@@ -288,7 +288,9 @@ export const getFeatureFlags = async (req: AuthRequest, res: Response) => {
     let globalFeatures: Record<string, any> = {};
     if (settings?.settings) {
       try {
-        const parsedSettings = JSON.parse(settings.settings);
+        const parsedSettings = typeof settings.settings === 'string'
+          ? JSON.parse(settings.settings)
+          : (settings.settings as any);
         globalFeatures = parsedSettings.admin_global_feature_settings || {};
       } catch (parseErr) {
         logger.warn('Failed to parse global feature settings', { error: parseErr });
@@ -335,7 +337,9 @@ export const toggleFeatureFlag = async (req: AuthRequest, res: Response) => {
     let currentSettings: Record<string, any> = {};
     if (settings && settings.settings) {
       try {
-        currentSettings = JSON.parse(settings.settings);
+        currentSettings = typeof settings.settings === 'string'
+          ? JSON.parse(settings.settings)
+          : (settings.settings as any);
       } catch {
         currentSettings = {};
       }
@@ -411,7 +415,9 @@ export const getAIFeatureFlags = async (req: AuthRequest, res: Response) => {
     let globalAIFeatures: Record<string, any> = {};
     if (settings?.settings) {
       try {
-        const parsedSettings = JSON.parse(settings.settings);
+        const parsedSettings = typeof settings.settings === 'string'
+          ? JSON.parse(settings.settings)
+          : (settings.settings as any);
         globalAIFeatures = parsedSettings.admin_ai_feature_settings || {};
       } catch (parseErr) {
         logger.warn('Failed to parse AI feature settings', { error: parseErr });
@@ -450,7 +456,9 @@ export const toggleAIFeatureFlags = async (req: AuthRequest, res: Response) => {
     let currentSettings: Record<string, any> = {};
     if (settings && settings.settings) {
       try {
-        currentSettings = JSON.parse(settings.settings);
+        currentSettings = typeof settings.settings === 'string'
+          ? JSON.parse(settings.settings)
+          : (settings.settings as any);
       } catch {
         currentSettings = {};
       }

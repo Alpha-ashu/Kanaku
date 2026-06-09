@@ -58,7 +58,7 @@ export const updateSettings = async (req: AuthRequest, res: Response) => {
           language: language || userSettings.language,
           currency: currency || userSettings.currency,
           timezone: timezone || userSettings.timezone,
-          settings: settings ? (typeof settings === 'string' ? settings : JSON.stringify(settings)) : userSettings.settings,
+          settings: settings ? (typeof settings === 'string' ? settings : JSON.stringify(settings)) : (userSettings.settings as any),
           updatedAt: new Date(),
         },
       });

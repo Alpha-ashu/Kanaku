@@ -134,14 +134,14 @@ const ALL_PATHS: Record<string, object> = {
     post: {
       tags: ['PIN'], summary: 'Create PIN', description: 'Weak PINs (sequential, repeated, known) rejected with INVALID_PIN.', operationId: 'pinCreate', security: sec,
       requestBody: jbody('PIN hash', { pin: { type: 'string', description: 'SHA-256 of 6-digit PIN' } }, ['pin']),
-      responses: { ...r200('PIN created'), '400': { description: 'Weak PIN (INVALID_PIN)' }, ...errs },
+      responses: { ...r200('PIN created'), ...errs, '400': { description: 'Weak PIN (INVALID_PIN)' } },
     },
   },
   '/api/v1/pin/verify': {
     post: {
       tags: ['PIN'], summary: 'Verify PIN', operationId: 'pinVerify', security: sec,
       requestBody: jbody('PIN check', { pin: { type: 'string' }, deviceId: { type: 'string' } }, ['pin']),
-      responses: { ...r200('Correct'), '401': { description: 'Wrong PIN' }, ...errs },
+      responses: { ...r200('Correct'), ...errs, '401': { description: 'Wrong PIN' } },
     },
   },
   '/api/v1/pin/verify-security': {
@@ -154,7 +154,7 @@ const ALL_PATHS: Record<string, object> = {
     get: { tags: ['PIN'], summary: 'PIN setup status', operationId: 'pinStatus', security: sec, responses: { ...r200('Status', { success: true, isPinSet: true, lastChangedAt: '2026-01-01', expiresAt: '2026-12-31' }), ...errs } },
   },
   '/api/v1/pin/key-backup': {
-    get: { tags: ['PIN'], summary: 'Get encrypted key backup', operationId: 'pinGetBackup', security: sec, responses: { ...r200('Backup', { success: true, backup: 'encrypted-string' }), '404': { description: 'No backup' }, ...errs } },
+    get: { tags: ['PIN'], summary: 'Get encrypted key backup', operationId: 'pinGetBackup', security: sec, responses: { ...r200('Backup', { success: true, backup: 'encrypted-string' }), ...errs, '404': { description: 'No backup' } } },
     post: { tags: ['PIN'], summary: 'Save key backup (requires X-Security-Token)', operationId: 'pinSaveBackup', security: sec, requestBody: jbody('Backup', { backup: { type: 'string' } }, ['backup']), responses: { ...r200('Saved'), ...errs } },
     delete: { tags: ['PIN'], summary: 'Clear key backup', operationId: 'pinClearBackup', security: sec, responses: { ...r200('Cleared'), ...errs } },
   },
@@ -1195,151 +1195,4 @@ function mergeOperations() {
       },
     },
   });
-}
-
-export function generateOpenApiDocument(baseUrl?: string) {
-  return {
-    openapi: '3.0.3',
-    info: {
-      title: API_TITLE,
-      version: API_VERSION,
-      description: 'Tester-oriented OpenAPI document for KANKU backend feature APIs.',
-    },
-    servers: [
-      {
-        url: baseUrl || 'http://localhost:3000',
-        description: 'Local development server',
-      },
-    ],
-    tags: [
-      ...ROUTE_MOUNTS.map((mount) => ({ name: mount.tag })),
-      { name: 'System' },
-    ],
-    paths: mergeOperations(),
-    components: {
-      securitySchemes: {
-        bearerAuth: {
-          type: 'http',
-          scheme: 'bearer',
-          bearerFormat: 'JWT',
-        },
-      },
-      schemas: {
-        ErrorResponse: {
-          type: 'object',
-          properties: {
-            error: { type: 'string' },
-            message: { type: 'string' },
-            code: { type: 'string' },
-            details: { type: 'object', additionalProperties: true },
-          },
-        },
-        SuccessEnvelope: {
-          type: 'object',
-          properties: {
-            success: { type: 'boolean' },
-            message: { type: 'string' },
-            data: {
-              type: 'object',
-              additionalProperties: true,
-            },
-          },
-        },
-      },
-    },
-  };
-}
-
-export function generateApiTestingGuide(baseUrl: string) {
-  return `# KANKU API Testing Guide
-
-Base URL: \`${baseUrl}/api/v1\`
-
-Swagger UI: \`${baseUrl}/api-docs\`
-OpenAPI JSON: \`${baseUrl}/api-docs/openapi.json\`
-
-## 1. Authentication setup
-
-1. Register with \`POST /api/v1/auth/register\` or login with \`POST /api/v1/auth/login\`.
-2. Copy the returned bearer token.
-3. Use header:
-
-\`\`\`
-Authorization: Bearer <token>
-Content-Type: application/json
-\`\`\`
-
-## 2. Core feature coverage
-
-- Auth: register, login, profile get/update, OTP send/verify, device list/revoke
-- Accounts: list, create, get, update, delete
-- Transactions: list, create, get, update, delete, by-account list
-- Goals: list, create, get, update, delete
-- Loans: list, create, get, update, delete, add payment
-- Investments: list, create, update, delete
-- Friends: list, create, update, delete
-- Groups: list, create, update, delete
-- Settings: get, update
-- Notifications: list, unread count, get, mark read, mark all read, delete, clear all
-- Sync: pull, push, register device, list devices, deactivate device
-- Dashboard: summary, cashflow
-- Advisor flows: advisors list/get, bookings create/list/get/accept/reject/cancel/reschedule, sessions get/messages/start/complete/cancel
-- Admin: users, approvals, stats, feature flags, reports, AI admin endpoints
-
-## 3. Recommended method-by-method test checklist
-
-### GET
-- Verify \`200\` response shape
-- Verify auth-protected routes return \`401\` without a token
-- Verify resource-scoped routes return \`404\` for missing IDs
-- Verify filtering/query params narrow the result set correctly
-
-### POST
-- Verify valid payload returns \`200\` or \`201\`
-- Verify missing required fields return \`400\`
-- Verify duplicate or invalid business cases return the expected validation error
-- Verify created rows are visible through follow-up \`GET\`
-
-### PUT / PATCH
-- Verify only targeted fields change
-- Verify invalid IDs return \`404\` or \`403\` when ownership fails
-- Verify stale/invalid payloads return \`400\`
-
-### DELETE
-- Verify delete returns success payload
-- Verify deleted resource no longer appears in list/detail endpoints
-- Verify repeated delete calls return the expected not-found/error behavior
-
-## 4. Rate-limit cases worth testing
-
-- Auth routes: repeated login/register attempts
-- Bills routes: repeated uploads
-- Receipts routes: repeated scans
-- Sync routes: burst pull/push requests
-
-Expected failure status: \`429 Too Many Requests\`
-
-## 5. Database verification points
-
-- Accounts and transactions maintain balance consistency
-- Loan payment reduces outstanding balance
-- Booking accept creates an advisor session
-- Session messages create notification records for the opposite participant
-- Notification read/clear flows update persistence correctly
-- Sync pull returns records updated after \`lastSyncedAt\`
-
-## 6. Frontend-backend integration checks
-
-- Login -> profile fetch -> dashboard data load
-- Add account -> account list refresh
-- Add transaction -> dashboard / account balance refresh
-- Create booking -> advisor booking request visible -> accept/reject/reschedule -> notification/session side effects
-- Session chat -> message list + counterpart notification
-
-## 7. Tester notes
-
-- Prefer Swagger UI for discovery and ad hoc calls.
-- Use the OpenAPI JSON for Postman import or automated QA collections.
-- Validate both API response correctness and resulting database state for write operations.
-`;
 }

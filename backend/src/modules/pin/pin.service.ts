@@ -30,6 +30,7 @@ export interface PinResponse {
   attemptsRemaining?: number;
   lockedUntil?: string;
   backup?: string;
+  hasBackup?: boolean;
 }
 
 class PinService {
@@ -402,6 +403,7 @@ class PinService {
         message: isExpired ? 'PIN has expired' : isLocked ? 'PIN is locked' : 'PIN is active',
         expiresAt: userPin.expiresAt.toISOString(),
         lockedUntil,
+        hasBackup: Boolean(userPin.keyBackup),
       };
     } catch (error) {
       logger.error('[PinService] Get PIN status error:', error);

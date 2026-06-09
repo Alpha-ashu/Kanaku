@@ -3,7 +3,7 @@ import { prisma } from '../../db/prisma';
 import { Prisma } from '../../db/prisma-client';
 
 export type TransactionWithTags = {
-  tags?: string | null;
+  tags?: any;
   [key: string]: unknown;
 };
 

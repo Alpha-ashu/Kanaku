@@ -264,9 +264,9 @@ export class NotificationService {
       throw new Error("Notification not found");
     }
 
-    const currentStatus = JSON.parse(
-      notification.deliveryStatus
-    ) as NotificationChannel;
+    const currentStatus = (typeof notification.deliveryStatus === "string"
+      ? JSON.parse(notification.deliveryStatus)
+      : (notification.deliveryStatus || {})) as any as NotificationChannel;
     currentStatus[channel] = status;
 
     return prisma.notification.update({

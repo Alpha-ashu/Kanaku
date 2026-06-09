@@ -102,7 +102,9 @@ export function createEmailWorker() {
         });
 
         if (notification) {
-          const deliveryStatus = JSON.parse(notification.deliveryStatus);
+          const deliveryStatus = (typeof notification.deliveryStatus === 'string'
+            ? JSON.parse(notification.deliveryStatus)
+            : (notification.deliveryStatus || {})) as any;
           deliveryStatus.email = "sent";
 
           await prisma.notification.update({
@@ -127,7 +129,9 @@ export function createEmailWorker() {
           });
 
           if (notification) {
-            const deliveryStatus = JSON.parse(notification.deliveryStatus);
+            const deliveryStatus = (typeof notification.deliveryStatus === 'string'
+              ? JSON.parse(notification.deliveryStatus)
+              : (notification.deliveryStatus || {})) as any;
             deliveryStatus.email = "failed";
 
             await prisma.notification.update({

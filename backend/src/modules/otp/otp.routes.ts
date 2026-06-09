@@ -24,8 +24,8 @@ router.post('/send', authMiddleware, validateBody(sendOtpSchema), async (req: Au
   try {
     const { destination, channel, purpose } = req.body;
     const userId = req.user?.id;
-    const ipAddress = req.ip || req.socket.remoteAddress || null;
-    const userAgent = req.headers['user-agent'] || null;
+    const ipAddress = req.ip || req.socket.remoteAddress || undefined;
+    const userAgent = req.headers['user-agent'] || undefined;
 
     const result = await otpService.sendOtp(
       destination,

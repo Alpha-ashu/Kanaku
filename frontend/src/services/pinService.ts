@@ -18,6 +18,7 @@ export interface PinStatus {
   lockedUntil?: string;
   backup?: string;
   statusCode?: number;
+  hasBackup?: boolean;
 }
 
 export interface PinVerifyRequest {
@@ -32,6 +33,7 @@ const PIN_STATUS_RATE_LIMIT_BACKOFF_MS = 30_000;
 
 let cachedPinStatus: { value: PinStatus; expiresAt: number } | null = null;
 let pinStatusInFlight: Promise<PinStatus> | null = null;
+let keyBackupInFlight: Promise<PinStatus> | null = null;
 
 const clearCachedPinStatus = () => {
   cachedPinStatus = null;
@@ -422,14 +424,39 @@ class PinService {
   }
 
   async getKeyBackup(): Promise<PinStatus> {
-    return this.get('key-backup');
+    try {
+      const status = await this.getStatus();
+      if (!status.success || !status.hasBackup) {
+        return {
+          success: false,
+          message: 'No PIN key backup found',
+          statusCode: 404,
+        };
+      }
+    } catch {
+      // Degrade gracefully, fallback to GET if getStatus fails
+    }
+
+    if (keyBackupInFlight) {
+      return keyBackupInFlight;
+    }
+
+    keyBackupInFlight = this.get('key-backup');
+
+    try {
+      return await keyBackupInFlight;
+    } finally {
+      keyBackupInFlight = null;
+    }
   }
 
   async saveKeyBackup(backup: string, securityToken?: string): Promise<PinStatus> {
+    clearCachedPinStatus();
     return this.post('key-backup', { backup }, securityToken);
   }
 
   async clearKeyBackup(securityToken?: string): Promise<PinStatus> {
+    clearCachedPinStatus();
     return this.delete('key-backup', securityToken);
   }
 

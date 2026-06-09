@@ -183,6 +183,56 @@ export type user_features = $Result.DefaultSelection<Prisma.$user_featuresPayloa
  * 
  */
 export type profiles = $Result.DefaultSelection<Prisma.$profilesPayload>
+/**
+ * Model OtpRequest
+ * 
+ */
+export type OtpRequest = $Result.DefaultSelection<Prisma.$OtpRequestPayload>
+/**
+ * Model AaConsent
+ * 
+ */
+export type AaConsent = $Result.DefaultSelection<Prisma.$AaConsentPayload>
+/**
+ * Model AaConsentArtifact
+ * 
+ */
+export type AaConsentArtifact = $Result.DefaultSelection<Prisma.$AaConsentArtifactPayload>
+/**
+ * Model AaDataSession
+ * 
+ */
+export type AaDataSession = $Result.DefaultSelection<Prisma.$AaDataSessionPayload>
+/**
+ * Model AaFinancialData
+ * 
+ */
+export type AaFinancialData = $Result.DefaultSelection<Prisma.$AaFinancialDataPayload>
+/**
+ * Model AaTransaction
+ * 
+ */
+export type AaTransaction = $Result.DefaultSelection<Prisma.$AaTransactionPayload>
+/**
+ * Model RecurringTransaction
+ * 
+ */
+export type RecurringTransaction = $Result.DefaultSelection<Prisma.$RecurringTransactionPayload>
+/**
+ * Model Budget
+ * 
+ */
+export type Budget = $Result.DefaultSelection<Prisma.$BudgetPayload>
+/**
+ * Model TaxCalculation
+ * 
+ */
+export type TaxCalculation = $Result.DefaultSelection<Prisma.$TaxCalculationPayload>
+/**
+ * Model GoldAsset
+ * 
+ */
+export type GoldAsset = $Result.DefaultSelection<Prisma.$GoldAssetPayload>
 
 /**
  * ##  Prisma Client ʲˢ
@@ -641,6 +691,106 @@ export class PrismaClient<
     * ```
     */
   get profiles(): Prisma.profilesDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.otpRequest`: Exposes CRUD operations for the **OtpRequest** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more OtpRequests
+    * const otpRequests = await prisma.otpRequest.findMany()
+    * ```
+    */
+  get otpRequest(): Prisma.OtpRequestDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.aaConsent`: Exposes CRUD operations for the **AaConsent** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more AaConsents
+    * const aaConsents = await prisma.aaConsent.findMany()
+    * ```
+    */
+  get aaConsent(): Prisma.AaConsentDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.aaConsentArtifact`: Exposes CRUD operations for the **AaConsentArtifact** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more AaConsentArtifacts
+    * const aaConsentArtifacts = await prisma.aaConsentArtifact.findMany()
+    * ```
+    */
+  get aaConsentArtifact(): Prisma.AaConsentArtifactDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.aaDataSession`: Exposes CRUD operations for the **AaDataSession** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more AaDataSessions
+    * const aaDataSessions = await prisma.aaDataSession.findMany()
+    * ```
+    */
+  get aaDataSession(): Prisma.AaDataSessionDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.aaFinancialData`: Exposes CRUD operations for the **AaFinancialData** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more AaFinancialData
+    * const aaFinancialData = await prisma.aaFinancialData.findMany()
+    * ```
+    */
+  get aaFinancialData(): Prisma.AaFinancialDataDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.aaTransaction`: Exposes CRUD operations for the **AaTransaction** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more AaTransactions
+    * const aaTransactions = await prisma.aaTransaction.findMany()
+    * ```
+    */
+  get aaTransaction(): Prisma.AaTransactionDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.recurringTransaction`: Exposes CRUD operations for the **RecurringTransaction** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more RecurringTransactions
+    * const recurringTransactions = await prisma.recurringTransaction.findMany()
+    * ```
+    */
+  get recurringTransaction(): Prisma.RecurringTransactionDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.budget`: Exposes CRUD operations for the **Budget** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Budgets
+    * const budgets = await prisma.budget.findMany()
+    * ```
+    */
+  get budget(): Prisma.BudgetDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.taxCalculation`: Exposes CRUD operations for the **TaxCalculation** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more TaxCalculations
+    * const taxCalculations = await prisma.taxCalculation.findMany()
+    * ```
+    */
+  get taxCalculation(): Prisma.TaxCalculationDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.goldAsset`: Exposes CRUD operations for the **GoldAsset** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more GoldAssets
+    * const goldAssets = await prisma.goldAsset.findMany()
+    * ```
+    */
+  get goldAsset(): Prisma.GoldAssetDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -1115,7 +1265,17 @@ export namespace Prisma {
     GroupExpense: 'GroupExpense',
     GroupExpenseMember: 'GroupExpenseMember',
     user_features: 'user_features',
-    profiles: 'profiles'
+    profiles: 'profiles',
+    OtpRequest: 'OtpRequest',
+    AaConsent: 'AaConsent',
+    AaConsentArtifact: 'AaConsentArtifact',
+    AaDataSession: 'AaDataSession',
+    AaFinancialData: 'AaFinancialData',
+    AaTransaction: 'AaTransaction',
+    RecurringTransaction: 'RecurringTransaction',
+    Budget: 'Budget',
+    TaxCalculation: 'TaxCalculation',
+    GoldAsset: 'GoldAsset'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1134,7 +1294,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "account" | "advisorAvailability" | "advisorSession" | "bookingRequest" | "category" | "chatMessage" | "device" | "expenseBill" | "friend" | "goal" | "goalContribution" | "importLog" | "investment" | "loan" | "loanPayment" | "notification" | "payment" | "refreshToken" | "syncQueue" | "todo" | "transaction" | "user" | "userPin" | "userSettings" | "otpCode" | "aiScan" | "ai_events" | "ai_insights" | "ai_model_runs" | "auditLog" | "groupExpense" | "groupExpenseMember" | "user_features" | "profiles"
+      modelProps: "account" | "advisorAvailability" | "advisorSession" | "bookingRequest" | "category" | "chatMessage" | "device" | "expenseBill" | "friend" | "goal" | "goalContribution" | "importLog" | "investment" | "loan" | "loanPayment" | "notification" | "payment" | "refreshToken" | "syncQueue" | "todo" | "transaction" | "user" | "userPin" | "userSettings" | "otpCode" | "aiScan" | "ai_events" | "ai_insights" | "ai_model_runs" | "auditLog" | "groupExpense" | "groupExpenseMember" | "user_features" | "profiles" | "otpRequest" | "aaConsent" | "aaConsentArtifact" | "aaDataSession" | "aaFinancialData" | "aaTransaction" | "recurringTransaction" | "budget" | "taxCalculation" | "goldAsset"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -3654,6 +3814,746 @@ export namespace Prisma {
           }
         }
       }
+      OtpRequest: {
+        payload: Prisma.$OtpRequestPayload<ExtArgs>
+        fields: Prisma.OtpRequestFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.OtpRequestFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OtpRequestPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.OtpRequestFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OtpRequestPayload>
+          }
+          findFirst: {
+            args: Prisma.OtpRequestFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OtpRequestPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.OtpRequestFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OtpRequestPayload>
+          }
+          findMany: {
+            args: Prisma.OtpRequestFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OtpRequestPayload>[]
+          }
+          create: {
+            args: Prisma.OtpRequestCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OtpRequestPayload>
+          }
+          createMany: {
+            args: Prisma.OtpRequestCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.OtpRequestCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OtpRequestPayload>[]
+          }
+          delete: {
+            args: Prisma.OtpRequestDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OtpRequestPayload>
+          }
+          update: {
+            args: Prisma.OtpRequestUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OtpRequestPayload>
+          }
+          deleteMany: {
+            args: Prisma.OtpRequestDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.OtpRequestUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.OtpRequestUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OtpRequestPayload>[]
+          }
+          upsert: {
+            args: Prisma.OtpRequestUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OtpRequestPayload>
+          }
+          aggregate: {
+            args: Prisma.OtpRequestAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateOtpRequest>
+          }
+          groupBy: {
+            args: Prisma.OtpRequestGroupByArgs<ExtArgs>
+            result: $Utils.Optional<OtpRequestGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.OtpRequestCountArgs<ExtArgs>
+            result: $Utils.Optional<OtpRequestCountAggregateOutputType> | number
+          }
+        }
+      }
+      AaConsent: {
+        payload: Prisma.$AaConsentPayload<ExtArgs>
+        fields: Prisma.AaConsentFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.AaConsentFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AaConsentPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.AaConsentFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AaConsentPayload>
+          }
+          findFirst: {
+            args: Prisma.AaConsentFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AaConsentPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.AaConsentFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AaConsentPayload>
+          }
+          findMany: {
+            args: Prisma.AaConsentFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AaConsentPayload>[]
+          }
+          create: {
+            args: Prisma.AaConsentCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AaConsentPayload>
+          }
+          createMany: {
+            args: Prisma.AaConsentCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.AaConsentCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AaConsentPayload>[]
+          }
+          delete: {
+            args: Prisma.AaConsentDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AaConsentPayload>
+          }
+          update: {
+            args: Prisma.AaConsentUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AaConsentPayload>
+          }
+          deleteMany: {
+            args: Prisma.AaConsentDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.AaConsentUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.AaConsentUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AaConsentPayload>[]
+          }
+          upsert: {
+            args: Prisma.AaConsentUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AaConsentPayload>
+          }
+          aggregate: {
+            args: Prisma.AaConsentAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateAaConsent>
+          }
+          groupBy: {
+            args: Prisma.AaConsentGroupByArgs<ExtArgs>
+            result: $Utils.Optional<AaConsentGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.AaConsentCountArgs<ExtArgs>
+            result: $Utils.Optional<AaConsentCountAggregateOutputType> | number
+          }
+        }
+      }
+      AaConsentArtifact: {
+        payload: Prisma.$AaConsentArtifactPayload<ExtArgs>
+        fields: Prisma.AaConsentArtifactFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.AaConsentArtifactFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AaConsentArtifactPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.AaConsentArtifactFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AaConsentArtifactPayload>
+          }
+          findFirst: {
+            args: Prisma.AaConsentArtifactFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AaConsentArtifactPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.AaConsentArtifactFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AaConsentArtifactPayload>
+          }
+          findMany: {
+            args: Prisma.AaConsentArtifactFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AaConsentArtifactPayload>[]
+          }
+          create: {
+            args: Prisma.AaConsentArtifactCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AaConsentArtifactPayload>
+          }
+          createMany: {
+            args: Prisma.AaConsentArtifactCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.AaConsentArtifactCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AaConsentArtifactPayload>[]
+          }
+          delete: {
+            args: Prisma.AaConsentArtifactDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AaConsentArtifactPayload>
+          }
+          update: {
+            args: Prisma.AaConsentArtifactUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AaConsentArtifactPayload>
+          }
+          deleteMany: {
+            args: Prisma.AaConsentArtifactDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.AaConsentArtifactUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.AaConsentArtifactUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AaConsentArtifactPayload>[]
+          }
+          upsert: {
+            args: Prisma.AaConsentArtifactUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AaConsentArtifactPayload>
+          }
+          aggregate: {
+            args: Prisma.AaConsentArtifactAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateAaConsentArtifact>
+          }
+          groupBy: {
+            args: Prisma.AaConsentArtifactGroupByArgs<ExtArgs>
+            result: $Utils.Optional<AaConsentArtifactGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.AaConsentArtifactCountArgs<ExtArgs>
+            result: $Utils.Optional<AaConsentArtifactCountAggregateOutputType> | number
+          }
+        }
+      }
+      AaDataSession: {
+        payload: Prisma.$AaDataSessionPayload<ExtArgs>
+        fields: Prisma.AaDataSessionFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.AaDataSessionFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AaDataSessionPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.AaDataSessionFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AaDataSessionPayload>
+          }
+          findFirst: {
+            args: Prisma.AaDataSessionFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AaDataSessionPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.AaDataSessionFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AaDataSessionPayload>
+          }
+          findMany: {
+            args: Prisma.AaDataSessionFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AaDataSessionPayload>[]
+          }
+          create: {
+            args: Prisma.AaDataSessionCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AaDataSessionPayload>
+          }
+          createMany: {
+            args: Prisma.AaDataSessionCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.AaDataSessionCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AaDataSessionPayload>[]
+          }
+          delete: {
+            args: Prisma.AaDataSessionDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AaDataSessionPayload>
+          }
+          update: {
+            args: Prisma.AaDataSessionUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AaDataSessionPayload>
+          }
+          deleteMany: {
+            args: Prisma.AaDataSessionDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.AaDataSessionUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.AaDataSessionUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AaDataSessionPayload>[]
+          }
+          upsert: {
+            args: Prisma.AaDataSessionUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AaDataSessionPayload>
+          }
+          aggregate: {
+            args: Prisma.AaDataSessionAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateAaDataSession>
+          }
+          groupBy: {
+            args: Prisma.AaDataSessionGroupByArgs<ExtArgs>
+            result: $Utils.Optional<AaDataSessionGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.AaDataSessionCountArgs<ExtArgs>
+            result: $Utils.Optional<AaDataSessionCountAggregateOutputType> | number
+          }
+        }
+      }
+      AaFinancialData: {
+        payload: Prisma.$AaFinancialDataPayload<ExtArgs>
+        fields: Prisma.AaFinancialDataFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.AaFinancialDataFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AaFinancialDataPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.AaFinancialDataFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AaFinancialDataPayload>
+          }
+          findFirst: {
+            args: Prisma.AaFinancialDataFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AaFinancialDataPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.AaFinancialDataFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AaFinancialDataPayload>
+          }
+          findMany: {
+            args: Prisma.AaFinancialDataFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AaFinancialDataPayload>[]
+          }
+          create: {
+            args: Prisma.AaFinancialDataCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AaFinancialDataPayload>
+          }
+          createMany: {
+            args: Prisma.AaFinancialDataCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.AaFinancialDataCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AaFinancialDataPayload>[]
+          }
+          delete: {
+            args: Prisma.AaFinancialDataDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AaFinancialDataPayload>
+          }
+          update: {
+            args: Prisma.AaFinancialDataUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AaFinancialDataPayload>
+          }
+          deleteMany: {
+            args: Prisma.AaFinancialDataDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.AaFinancialDataUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.AaFinancialDataUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AaFinancialDataPayload>[]
+          }
+          upsert: {
+            args: Prisma.AaFinancialDataUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AaFinancialDataPayload>
+          }
+          aggregate: {
+            args: Prisma.AaFinancialDataAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateAaFinancialData>
+          }
+          groupBy: {
+            args: Prisma.AaFinancialDataGroupByArgs<ExtArgs>
+            result: $Utils.Optional<AaFinancialDataGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.AaFinancialDataCountArgs<ExtArgs>
+            result: $Utils.Optional<AaFinancialDataCountAggregateOutputType> | number
+          }
+        }
+      }
+      AaTransaction: {
+        payload: Prisma.$AaTransactionPayload<ExtArgs>
+        fields: Prisma.AaTransactionFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.AaTransactionFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AaTransactionPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.AaTransactionFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AaTransactionPayload>
+          }
+          findFirst: {
+            args: Prisma.AaTransactionFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AaTransactionPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.AaTransactionFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AaTransactionPayload>
+          }
+          findMany: {
+            args: Prisma.AaTransactionFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AaTransactionPayload>[]
+          }
+          create: {
+            args: Prisma.AaTransactionCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AaTransactionPayload>
+          }
+          createMany: {
+            args: Prisma.AaTransactionCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.AaTransactionCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AaTransactionPayload>[]
+          }
+          delete: {
+            args: Prisma.AaTransactionDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AaTransactionPayload>
+          }
+          update: {
+            args: Prisma.AaTransactionUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AaTransactionPayload>
+          }
+          deleteMany: {
+            args: Prisma.AaTransactionDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.AaTransactionUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.AaTransactionUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AaTransactionPayload>[]
+          }
+          upsert: {
+            args: Prisma.AaTransactionUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AaTransactionPayload>
+          }
+          aggregate: {
+            args: Prisma.AaTransactionAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateAaTransaction>
+          }
+          groupBy: {
+            args: Prisma.AaTransactionGroupByArgs<ExtArgs>
+            result: $Utils.Optional<AaTransactionGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.AaTransactionCountArgs<ExtArgs>
+            result: $Utils.Optional<AaTransactionCountAggregateOutputType> | number
+          }
+        }
+      }
+      RecurringTransaction: {
+        payload: Prisma.$RecurringTransactionPayload<ExtArgs>
+        fields: Prisma.RecurringTransactionFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.RecurringTransactionFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RecurringTransactionPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.RecurringTransactionFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RecurringTransactionPayload>
+          }
+          findFirst: {
+            args: Prisma.RecurringTransactionFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RecurringTransactionPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.RecurringTransactionFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RecurringTransactionPayload>
+          }
+          findMany: {
+            args: Prisma.RecurringTransactionFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RecurringTransactionPayload>[]
+          }
+          create: {
+            args: Prisma.RecurringTransactionCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RecurringTransactionPayload>
+          }
+          createMany: {
+            args: Prisma.RecurringTransactionCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.RecurringTransactionCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RecurringTransactionPayload>[]
+          }
+          delete: {
+            args: Prisma.RecurringTransactionDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RecurringTransactionPayload>
+          }
+          update: {
+            args: Prisma.RecurringTransactionUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RecurringTransactionPayload>
+          }
+          deleteMany: {
+            args: Prisma.RecurringTransactionDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.RecurringTransactionUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.RecurringTransactionUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RecurringTransactionPayload>[]
+          }
+          upsert: {
+            args: Prisma.RecurringTransactionUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RecurringTransactionPayload>
+          }
+          aggregate: {
+            args: Prisma.RecurringTransactionAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateRecurringTransaction>
+          }
+          groupBy: {
+            args: Prisma.RecurringTransactionGroupByArgs<ExtArgs>
+            result: $Utils.Optional<RecurringTransactionGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.RecurringTransactionCountArgs<ExtArgs>
+            result: $Utils.Optional<RecurringTransactionCountAggregateOutputType> | number
+          }
+        }
+      }
+      Budget: {
+        payload: Prisma.$BudgetPayload<ExtArgs>
+        fields: Prisma.BudgetFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.BudgetFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BudgetPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.BudgetFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BudgetPayload>
+          }
+          findFirst: {
+            args: Prisma.BudgetFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BudgetPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.BudgetFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BudgetPayload>
+          }
+          findMany: {
+            args: Prisma.BudgetFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BudgetPayload>[]
+          }
+          create: {
+            args: Prisma.BudgetCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BudgetPayload>
+          }
+          createMany: {
+            args: Prisma.BudgetCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.BudgetCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BudgetPayload>[]
+          }
+          delete: {
+            args: Prisma.BudgetDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BudgetPayload>
+          }
+          update: {
+            args: Prisma.BudgetUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BudgetPayload>
+          }
+          deleteMany: {
+            args: Prisma.BudgetDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.BudgetUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.BudgetUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BudgetPayload>[]
+          }
+          upsert: {
+            args: Prisma.BudgetUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BudgetPayload>
+          }
+          aggregate: {
+            args: Prisma.BudgetAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateBudget>
+          }
+          groupBy: {
+            args: Prisma.BudgetGroupByArgs<ExtArgs>
+            result: $Utils.Optional<BudgetGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.BudgetCountArgs<ExtArgs>
+            result: $Utils.Optional<BudgetCountAggregateOutputType> | number
+          }
+        }
+      }
+      TaxCalculation: {
+        payload: Prisma.$TaxCalculationPayload<ExtArgs>
+        fields: Prisma.TaxCalculationFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.TaxCalculationFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TaxCalculationPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.TaxCalculationFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TaxCalculationPayload>
+          }
+          findFirst: {
+            args: Prisma.TaxCalculationFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TaxCalculationPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.TaxCalculationFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TaxCalculationPayload>
+          }
+          findMany: {
+            args: Prisma.TaxCalculationFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TaxCalculationPayload>[]
+          }
+          create: {
+            args: Prisma.TaxCalculationCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TaxCalculationPayload>
+          }
+          createMany: {
+            args: Prisma.TaxCalculationCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.TaxCalculationCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TaxCalculationPayload>[]
+          }
+          delete: {
+            args: Prisma.TaxCalculationDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TaxCalculationPayload>
+          }
+          update: {
+            args: Prisma.TaxCalculationUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TaxCalculationPayload>
+          }
+          deleteMany: {
+            args: Prisma.TaxCalculationDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.TaxCalculationUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.TaxCalculationUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TaxCalculationPayload>[]
+          }
+          upsert: {
+            args: Prisma.TaxCalculationUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TaxCalculationPayload>
+          }
+          aggregate: {
+            args: Prisma.TaxCalculationAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateTaxCalculation>
+          }
+          groupBy: {
+            args: Prisma.TaxCalculationGroupByArgs<ExtArgs>
+            result: $Utils.Optional<TaxCalculationGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.TaxCalculationCountArgs<ExtArgs>
+            result: $Utils.Optional<TaxCalculationCountAggregateOutputType> | number
+          }
+        }
+      }
+      GoldAsset: {
+        payload: Prisma.$GoldAssetPayload<ExtArgs>
+        fields: Prisma.GoldAssetFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.GoldAssetFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GoldAssetPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.GoldAssetFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GoldAssetPayload>
+          }
+          findFirst: {
+            args: Prisma.GoldAssetFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GoldAssetPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.GoldAssetFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GoldAssetPayload>
+          }
+          findMany: {
+            args: Prisma.GoldAssetFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GoldAssetPayload>[]
+          }
+          create: {
+            args: Prisma.GoldAssetCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GoldAssetPayload>
+          }
+          createMany: {
+            args: Prisma.GoldAssetCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.GoldAssetCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GoldAssetPayload>[]
+          }
+          delete: {
+            args: Prisma.GoldAssetDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GoldAssetPayload>
+          }
+          update: {
+            args: Prisma.GoldAssetUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GoldAssetPayload>
+          }
+          deleteMany: {
+            args: Prisma.GoldAssetDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.GoldAssetUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.GoldAssetUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GoldAssetPayload>[]
+          }
+          upsert: {
+            args: Prisma.GoldAssetUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GoldAssetPayload>
+          }
+          aggregate: {
+            args: Prisma.GoldAssetAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateGoldAsset>
+          }
+          groupBy: {
+            args: Prisma.GoldAssetGroupByArgs<ExtArgs>
+            result: $Utils.Optional<GoldAssetGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.GoldAssetCountArgs<ExtArgs>
+            result: $Utils.Optional<GoldAssetCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -3784,6 +4684,16 @@ export namespace Prisma {
     groupExpenseMember?: GroupExpenseMemberOmit
     user_features?: user_featuresOmit
     profiles?: profilesOmit
+    otpRequest?: OtpRequestOmit
+    aaConsent?: AaConsentOmit
+    aaConsentArtifact?: AaConsentArtifactOmit
+    aaDataSession?: AaDataSessionOmit
+    aaFinancialData?: AaFinancialDataOmit
+    aaTransaction?: AaTransactionOmit
+    recurringTransaction?: RecurringTransactionOmit
+    budget?: BudgetOmit
+    taxCalculation?: TaxCalculationOmit
+    goldAsset?: GoldAssetOmit
   }
 
   /* Types for Logging */
@@ -4031,6 +4941,10 @@ export namespace Prisma {
     otpCodes: number
     aiScans: number
     groupExpenses: number
+    recurringTransactions: number
+    budgets: number
+    taxCalculations: number
+    goldAssets: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -4059,6 +4973,10 @@ export namespace Prisma {
     otpCodes?: boolean | UserCountOutputTypeCountOtpCodesArgs
     aiScans?: boolean | UserCountOutputTypeCountAiScansArgs
     groupExpenses?: boolean | UserCountOutputTypeCountGroupExpensesArgs
+    recurringTransactions?: boolean | UserCountOutputTypeCountRecurringTransactionsArgs
+    budgets?: boolean | UserCountOutputTypeCountBudgetsArgs
+    taxCalculations?: boolean | UserCountOutputTypeCountTaxCalculationsArgs
+    goldAssets?: boolean | UserCountOutputTypeCountGoldAssetsArgs
   }
 
   // Custom InputTypes
@@ -4245,6 +5163,34 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountGroupExpensesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: GroupExpenseWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountRecurringTransactionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: RecurringTransactionWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountBudgetsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: BudgetWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountTaxCalculationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TaxCalculationWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountGoldAssetsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: GoldAssetWhereInput
   }
 
 
@@ -17477,12 +18423,7 @@ export namespace Prisma {
     importedRecords: number | null
     skippedRecords: number | null
     duplicateRecords: number | null
-    createdCategories: string | null
-    createdAccounts: string | null
-    createdGoals: string | null
-    updatedGoals: string | null
     failedRecords: number | null
-    errors: string | null
     metadata: string | null
     createdAt: Date | null
   }
@@ -17497,12 +18438,7 @@ export namespace Prisma {
     importedRecords: number | null
     skippedRecords: number | null
     duplicateRecords: number | null
-    createdCategories: string | null
-    createdAccounts: string | null
-    createdGoals: string | null
-    updatedGoals: string | null
     failedRecords: number | null
-    errors: string | null
     metadata: string | null
     createdAt: Date | null
   }
@@ -17555,12 +18491,7 @@ export namespace Prisma {
     importedRecords?: true
     skippedRecords?: true
     duplicateRecords?: true
-    createdCategories?: true
-    createdAccounts?: true
-    createdGoals?: true
-    updatedGoals?: true
     failedRecords?: true
-    errors?: true
     metadata?: true
     createdAt?: true
   }
@@ -17575,12 +18506,7 @@ export namespace Prisma {
     importedRecords?: true
     skippedRecords?: true
     duplicateRecords?: true
-    createdCategories?: true
-    createdAccounts?: true
-    createdGoals?: true
-    updatedGoals?: true
     failedRecords?: true
-    errors?: true
     metadata?: true
     createdAt?: true
   }
@@ -17702,12 +18628,12 @@ export namespace Prisma {
     importedRecords: number
     skippedRecords: number
     duplicateRecords: number
-    createdCategories: string
-    createdAccounts: string
-    createdGoals: string
-    updatedGoals: string
+    createdCategories: JsonValue
+    createdAccounts: JsonValue
+    createdGoals: JsonValue
+    updatedGoals: JsonValue
     failedRecords: number
-    errors: string
+    errors: JsonValue
     metadata: string | null
     createdAt: Date
     _count: ImportLogCountAggregateOutputType | null
@@ -17840,12 +18766,12 @@ export namespace Prisma {
       importedRecords: number
       skippedRecords: number
       duplicateRecords: number
-      createdCategories: string
-      createdAccounts: string
-      createdGoals: string
-      updatedGoals: string
+      createdCategories: Prisma.JsonValue
+      createdAccounts: Prisma.JsonValue
+      createdGoals: Prisma.JsonValue
+      updatedGoals: Prisma.JsonValue
       failedRecords: number
-      errors: string
+      errors: Prisma.JsonValue
       metadata: string | null
       createdAt: Date
     }, ExtArgs["result"]["importLog"]>
@@ -18281,12 +19207,12 @@ export namespace Prisma {
     readonly importedRecords: FieldRef<"ImportLog", 'Int'>
     readonly skippedRecords: FieldRef<"ImportLog", 'Int'>
     readonly duplicateRecords: FieldRef<"ImportLog", 'Int'>
-    readonly createdCategories: FieldRef<"ImportLog", 'String'>
-    readonly createdAccounts: FieldRef<"ImportLog", 'String'>
-    readonly createdGoals: FieldRef<"ImportLog", 'String'>
-    readonly updatedGoals: FieldRef<"ImportLog", 'String'>
+    readonly createdCategories: FieldRef<"ImportLog", 'Json'>
+    readonly createdAccounts: FieldRef<"ImportLog", 'Json'>
+    readonly createdGoals: FieldRef<"ImportLog", 'Json'>
+    readonly updatedGoals: FieldRef<"ImportLog", 'Json'>
     readonly failedRecords: FieldRef<"ImportLog", 'Int'>
-    readonly errors: FieldRef<"ImportLog", 'String'>
+    readonly errors: FieldRef<"ImportLog", 'Json'>
     readonly metadata: FieldRef<"ImportLog", 'String'>
     readonly createdAt: FieldRef<"ImportLog", 'DateTime'>
   }
@@ -22421,8 +23347,6 @@ export namespace Prisma {
     category: string | null
     deepLink: string | null
     priority: string | null
-    channels: string | null
-    deliveryStatus: string | null
     encryptedPayload: string | null
     isRead: boolean | null
     createdAt: Date | null
@@ -22440,8 +23364,6 @@ export namespace Prisma {
     category: string | null
     deepLink: string | null
     priority: string | null
-    channels: string | null
-    deliveryStatus: string | null
     encryptedPayload: string | null
     isRead: boolean | null
     createdAt: Date | null
@@ -22481,8 +23403,6 @@ export namespace Prisma {
     category?: true
     deepLink?: true
     priority?: true
-    channels?: true
-    deliveryStatus?: true
     encryptedPayload?: true
     isRead?: true
     createdAt?: true
@@ -22500,8 +23420,6 @@ export namespace Prisma {
     category?: true
     deepLink?: true
     priority?: true
-    channels?: true
-    deliveryStatus?: true
     encryptedPayload?: true
     isRead?: true
     createdAt?: true
@@ -22612,9 +23530,9 @@ export namespace Prisma {
     category: string | null
     deepLink: string | null
     priority: string
-    channels: string
+    channels: JsonValue
     metadata: JsonValue | null
-    deliveryStatus: string
+    deliveryStatus: JsonValue
     encryptedPayload: string | null
     isRead: boolean
     createdAt: Date
@@ -22748,9 +23666,9 @@ export namespace Prisma {
       category: string | null
       deepLink: string | null
       priority: string
-      channels: string
+      channels: Prisma.JsonValue
       metadata: Prisma.JsonValue | null
-      deliveryStatus: string
+      deliveryStatus: Prisma.JsonValue
       encryptedPayload: string | null
       isRead: boolean
       createdAt: Date
@@ -23189,9 +24107,9 @@ export namespace Prisma {
     readonly category: FieldRef<"Notification", 'String'>
     readonly deepLink: FieldRef<"Notification", 'String'>
     readonly priority: FieldRef<"Notification", 'String'>
-    readonly channels: FieldRef<"Notification", 'String'>
+    readonly channels: FieldRef<"Notification", 'Json'>
     readonly metadata: FieldRef<"Notification", 'Json'>
-    readonly deliveryStatus: FieldRef<"Notification", 'String'>
+    readonly deliveryStatus: FieldRef<"Notification", 'Json'>
     readonly encryptedPayload: FieldRef<"Notification", 'String'>
     readonly isRead: FieldRef<"Notification", 'Boolean'>
     readonly createdAt: FieldRef<"Notification", 'DateTime'>
@@ -25901,7 +26819,6 @@ export namespace Prisma {
     operation: string | null
     action: string | null
     sourceDeviceId: string | null
-    data: string | null
     status: string | null
     errorMessage: string | null
     retryCount: number | null
@@ -25920,7 +26837,6 @@ export namespace Prisma {
     operation: string | null
     action: string | null
     sourceDeviceId: string | null
-    data: string | null
     status: string | null
     errorMessage: string | null
     retryCount: number | null
@@ -25973,7 +26889,6 @@ export namespace Prisma {
     operation?: true
     action?: true
     sourceDeviceId?: true
-    data?: true
     status?: true
     errorMessage?: true
     retryCount?: true
@@ -25992,7 +26907,6 @@ export namespace Prisma {
     operation?: true
     action?: true
     sourceDeviceId?: true
-    data?: true
     status?: true
     errorMessage?: true
     retryCount?: true
@@ -26119,7 +27033,7 @@ export namespace Prisma {
     action: string | null
     sourceDeviceId: string | null
     metadata: JsonValue | null
-    data: string | null
+    data: JsonValue | null
     status: string
     errorMessage: string | null
     retryCount: number
@@ -26243,7 +27157,7 @@ export namespace Prisma {
       action: string | null
       sourceDeviceId: string | null
       metadata: Prisma.JsonValue | null
-      data: string | null
+      data: Prisma.JsonValue | null
       status: string
       errorMessage: string | null
       retryCount: number
@@ -26683,7 +27597,7 @@ export namespace Prisma {
     readonly action: FieldRef<"SyncQueue", 'String'>
     readonly sourceDeviceId: FieldRef<"SyncQueue", 'String'>
     readonly metadata: FieldRef<"SyncQueue", 'Json'>
-    readonly data: FieldRef<"SyncQueue", 'String'>
+    readonly data: FieldRef<"SyncQueue", 'Json'>
     readonly status: FieldRef<"SyncQueue", 'String'>
     readonly errorMessage: FieldRef<"SyncQueue", 'String'>
     readonly retryCount: FieldRef<"SyncQueue", 'Int'>
@@ -28162,7 +29076,6 @@ export namespace Prisma {
     description: string | null
     merchant: string | null
     date: Date | null
-    tags: string | null
     attachment: string | null
     transferToAccountId: string | null
     transferType: string | null
@@ -28195,7 +29108,6 @@ export namespace Prisma {
     description: string | null
     merchant: string | null
     date: Date | null
-    tags: string | null
     attachment: string | null
     transferToAccountId: string | null
     transferType: string | null
@@ -28273,7 +29185,6 @@ export namespace Prisma {
     description?: true
     merchant?: true
     date?: true
-    tags?: true
     attachment?: true
     transferToAccountId?: true
     transferType?: true
@@ -28306,7 +29217,6 @@ export namespace Prisma {
     description?: true
     merchant?: true
     date?: true
-    tags?: true
     attachment?: true
     transferToAccountId?: true
     transferType?: true
@@ -28459,7 +29369,7 @@ export namespace Prisma {
     description: string | null
     merchant: string | null
     date: Date
-    tags: string | null
+    tags: JsonValue | null
     attachment: string | null
     transferToAccountId: string | null
     transferType: string | null
@@ -28676,7 +29586,7 @@ export namespace Prisma {
       description: string | null
       merchant: string | null
       date: Date
-      tags: string | null
+      tags: Prisma.JsonValue | null
       attachment: string | null
       transferToAccountId: string | null
       transferType: string | null
@@ -29132,7 +30042,7 @@ export namespace Prisma {
     readonly description: FieldRef<"Transaction", 'String'>
     readonly merchant: FieldRef<"Transaction", 'String'>
     readonly date: FieldRef<"Transaction", 'DateTime'>
-    readonly tags: FieldRef<"Transaction", 'String'>
+    readonly tags: FieldRef<"Transaction", 'Json'>
     readonly attachment: FieldRef<"Transaction", 'String'>
     readonly transferToAccountId: FieldRef<"Transaction", 'String'>
     readonly transferType: FieldRef<"Transaction", 'String'>
@@ -29937,6 +30847,10 @@ export namespace Prisma {
     otpCodes?: boolean | User$otpCodesArgs<ExtArgs>
     aiScans?: boolean | User$aiScansArgs<ExtArgs>
     groupExpenses?: boolean | User$groupExpensesArgs<ExtArgs>
+    recurringTransactions?: boolean | User$recurringTransactionsArgs<ExtArgs>
+    budgets?: boolean | User$budgetsArgs<ExtArgs>
+    taxCalculations?: boolean | User$taxCalculationsArgs<ExtArgs>
+    goldAssets?: boolean | User$goldAssetsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -30041,6 +30955,10 @@ export namespace Prisma {
     otpCodes?: boolean | User$otpCodesArgs<ExtArgs>
     aiScans?: boolean | User$aiScansArgs<ExtArgs>
     groupExpenses?: boolean | User$groupExpensesArgs<ExtArgs>
+    recurringTransactions?: boolean | User$recurringTransactionsArgs<ExtArgs>
+    budgets?: boolean | User$budgetsArgs<ExtArgs>
+    taxCalculations?: boolean | User$taxCalculationsArgs<ExtArgs>
+    goldAssets?: boolean | User$goldAssetsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -30076,6 +30994,10 @@ export namespace Prisma {
       otpCodes: Prisma.$OtpCodePayload<ExtArgs>[]
       aiScans: Prisma.$AiScanPayload<ExtArgs>[]
       groupExpenses: Prisma.$GroupExpensePayload<ExtArgs>[]
+      recurringTransactions: Prisma.$RecurringTransactionPayload<ExtArgs>[]
+      budgets: Prisma.$BudgetPayload<ExtArgs>[]
+      taxCalculations: Prisma.$TaxCalculationPayload<ExtArgs>[]
+      goldAssets: Prisma.$GoldAssetPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -30520,6 +31442,10 @@ export namespace Prisma {
     otpCodes<T extends User$otpCodesArgs<ExtArgs> = {}>(args?: Subset<T, User$otpCodesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OtpCodePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     aiScans<T extends User$aiScansArgs<ExtArgs> = {}>(args?: Subset<T, User$aiScansArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AiScanPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     groupExpenses<T extends User$groupExpensesArgs<ExtArgs> = {}>(args?: Subset<T, User$groupExpensesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GroupExpensePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    recurringTransactions<T extends User$recurringTransactionsArgs<ExtArgs> = {}>(args?: Subset<T, User$recurringTransactionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RecurringTransactionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    budgets<T extends User$budgetsArgs<ExtArgs> = {}>(args?: Subset<T, User$budgetsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BudgetPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    taxCalculations<T extends User$taxCalculationsArgs<ExtArgs> = {}>(args?: Subset<T, User$taxCalculationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TaxCalculationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    goldAssets<T extends User$goldAssetsArgs<ExtArgs> = {}>(args?: Subset<T, User$goldAssetsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GoldAssetPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -31593,6 +32519,102 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: GroupExpenseScalarFieldEnum | GroupExpenseScalarFieldEnum[]
+  }
+
+  /**
+   * User.recurringTransactions
+   */
+  export type User$recurringTransactionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RecurringTransaction
+     */
+    select?: RecurringTransactionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RecurringTransaction
+     */
+    omit?: RecurringTransactionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RecurringTransactionInclude<ExtArgs> | null
+    where?: RecurringTransactionWhereInput
+    orderBy?: RecurringTransactionOrderByWithRelationInput | RecurringTransactionOrderByWithRelationInput[]
+    cursor?: RecurringTransactionWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: RecurringTransactionScalarFieldEnum | RecurringTransactionScalarFieldEnum[]
+  }
+
+  /**
+   * User.budgets
+   */
+  export type User$budgetsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Budget
+     */
+    select?: BudgetSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Budget
+     */
+    omit?: BudgetOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BudgetInclude<ExtArgs> | null
+    where?: BudgetWhereInput
+    orderBy?: BudgetOrderByWithRelationInput | BudgetOrderByWithRelationInput[]
+    cursor?: BudgetWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: BudgetScalarFieldEnum | BudgetScalarFieldEnum[]
+  }
+
+  /**
+   * User.taxCalculations
+   */
+  export type User$taxCalculationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TaxCalculation
+     */
+    select?: TaxCalculationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TaxCalculation
+     */
+    omit?: TaxCalculationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TaxCalculationInclude<ExtArgs> | null
+    where?: TaxCalculationWhereInput
+    orderBy?: TaxCalculationOrderByWithRelationInput | TaxCalculationOrderByWithRelationInput[]
+    cursor?: TaxCalculationWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: TaxCalculationScalarFieldEnum | TaxCalculationScalarFieldEnum[]
+  }
+
+  /**
+   * User.goldAssets
+   */
+  export type User$goldAssetsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GoldAsset
+     */
+    select?: GoldAssetSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GoldAsset
+     */
+    omit?: GoldAssetOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GoldAssetInclude<ExtArgs> | null
+    where?: GoldAssetWhereInput
+    orderBy?: GoldAssetOrderByWithRelationInput | GoldAssetOrderByWithRelationInput[]
+    cursor?: GoldAssetWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: GoldAssetScalarFieldEnum | GoldAssetScalarFieldEnum[]
   }
 
   /**
@@ -32788,7 +33810,6 @@ export namespace Prisma {
     language: string | null
     currency: string | null
     timezone: string | null
-    settings: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -32800,7 +33821,6 @@ export namespace Prisma {
     language: string | null
     currency: string | null
     timezone: string | null
-    settings: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -32826,7 +33846,6 @@ export namespace Prisma {
     language?: true
     currency?: true
     timezone?: true
-    settings?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -32838,7 +33857,6 @@ export namespace Prisma {
     language?: true
     currency?: true
     timezone?: true
-    settings?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -32935,7 +33953,7 @@ export namespace Prisma {
     language: string
     currency: string
     timezone: string
-    settings: string
+    settings: JsonValue
     createdAt: Date
     updatedAt: Date
     _count: UserSettingsCountAggregateOutputType | null
@@ -33031,7 +34049,7 @@ export namespace Prisma {
       language: string
       currency: string
       timezone: string
-      settings: string
+      settings: Prisma.JsonValue
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["userSettings"]>
@@ -33464,7 +34482,7 @@ export namespace Prisma {
     readonly language: FieldRef<"UserSettings", 'String'>
     readonly currency: FieldRef<"UserSettings", 'String'>
     readonly timezone: FieldRef<"UserSettings", 'String'>
-    readonly settings: FieldRef<"UserSettings", 'String'>
+    readonly settings: FieldRef<"UserSettings", 'Json'>
     readonly createdAt: FieldRef<"UserSettings", 'DateTime'>
     readonly updatedAt: FieldRef<"UserSettings", 'DateTime'>
   }
@@ -45199,6 +46217,11483 @@ export namespace Prisma {
 
 
   /**
+   * Model OtpRequest
+   */
+
+  export type AggregateOtpRequest = {
+    _count: OtpRequestCountAggregateOutputType | null
+    _avg: OtpRequestAvgAggregateOutputType | null
+    _sum: OtpRequestSumAggregateOutputType | null
+    _min: OtpRequestMinAggregateOutputType | null
+    _max: OtpRequestMaxAggregateOutputType | null
+  }
+
+  export type OtpRequestAvgAggregateOutputType = {
+    attempts: number | null
+    maxAttempts: number | null
+  }
+
+  export type OtpRequestSumAggregateOutputType = {
+    attempts: number | null
+    maxAttempts: number | null
+  }
+
+  export type OtpRequestMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    destination: string | null
+    channel: string | null
+    purpose: string | null
+    otpHash: string | null
+    expiryTime: Date | null
+    attempts: number | null
+    maxAttempts: number | null
+    status: string | null
+    ipAddress: string | null
+    userAgent: string | null
+    createdAt: Date | null
+    verifiedAt: Date | null
+  }
+
+  export type OtpRequestMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    destination: string | null
+    channel: string | null
+    purpose: string | null
+    otpHash: string | null
+    expiryTime: Date | null
+    attempts: number | null
+    maxAttempts: number | null
+    status: string | null
+    ipAddress: string | null
+    userAgent: string | null
+    createdAt: Date | null
+    verifiedAt: Date | null
+  }
+
+  export type OtpRequestCountAggregateOutputType = {
+    id: number
+    userId: number
+    destination: number
+    channel: number
+    purpose: number
+    otpHash: number
+    expiryTime: number
+    attempts: number
+    maxAttempts: number
+    status: number
+    ipAddress: number
+    userAgent: number
+    createdAt: number
+    verifiedAt: number
+    _all: number
+  }
+
+
+  export type OtpRequestAvgAggregateInputType = {
+    attempts?: true
+    maxAttempts?: true
+  }
+
+  export type OtpRequestSumAggregateInputType = {
+    attempts?: true
+    maxAttempts?: true
+  }
+
+  export type OtpRequestMinAggregateInputType = {
+    id?: true
+    userId?: true
+    destination?: true
+    channel?: true
+    purpose?: true
+    otpHash?: true
+    expiryTime?: true
+    attempts?: true
+    maxAttempts?: true
+    status?: true
+    ipAddress?: true
+    userAgent?: true
+    createdAt?: true
+    verifiedAt?: true
+  }
+
+  export type OtpRequestMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    destination?: true
+    channel?: true
+    purpose?: true
+    otpHash?: true
+    expiryTime?: true
+    attempts?: true
+    maxAttempts?: true
+    status?: true
+    ipAddress?: true
+    userAgent?: true
+    createdAt?: true
+    verifiedAt?: true
+  }
+
+  export type OtpRequestCountAggregateInputType = {
+    id?: true
+    userId?: true
+    destination?: true
+    channel?: true
+    purpose?: true
+    otpHash?: true
+    expiryTime?: true
+    attempts?: true
+    maxAttempts?: true
+    status?: true
+    ipAddress?: true
+    userAgent?: true
+    createdAt?: true
+    verifiedAt?: true
+    _all?: true
+  }
+
+  export type OtpRequestAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which OtpRequest to aggregate.
+     */
+    where?: OtpRequestWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of OtpRequests to fetch.
+     */
+    orderBy?: OtpRequestOrderByWithRelationInput | OtpRequestOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: OtpRequestWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` OtpRequests from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` OtpRequests.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned OtpRequests
+    **/
+    _count?: true | OtpRequestCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: OtpRequestAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: OtpRequestSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: OtpRequestMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: OtpRequestMaxAggregateInputType
+  }
+
+  export type GetOtpRequestAggregateType<T extends OtpRequestAggregateArgs> = {
+        [P in keyof T & keyof AggregateOtpRequest]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateOtpRequest[P]>
+      : GetScalarType<T[P], AggregateOtpRequest[P]>
+  }
+
+
+
+
+  export type OtpRequestGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: OtpRequestWhereInput
+    orderBy?: OtpRequestOrderByWithAggregationInput | OtpRequestOrderByWithAggregationInput[]
+    by: OtpRequestScalarFieldEnum[] | OtpRequestScalarFieldEnum
+    having?: OtpRequestScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: OtpRequestCountAggregateInputType | true
+    _avg?: OtpRequestAvgAggregateInputType
+    _sum?: OtpRequestSumAggregateInputType
+    _min?: OtpRequestMinAggregateInputType
+    _max?: OtpRequestMaxAggregateInputType
+  }
+
+  export type OtpRequestGroupByOutputType = {
+    id: string
+    userId: string | null
+    destination: string
+    channel: string
+    purpose: string
+    otpHash: string
+    expiryTime: Date
+    attempts: number
+    maxAttempts: number
+    status: string
+    ipAddress: string | null
+    userAgent: string | null
+    createdAt: Date
+    verifiedAt: Date | null
+    _count: OtpRequestCountAggregateOutputType | null
+    _avg: OtpRequestAvgAggregateOutputType | null
+    _sum: OtpRequestSumAggregateOutputType | null
+    _min: OtpRequestMinAggregateOutputType | null
+    _max: OtpRequestMaxAggregateOutputType | null
+  }
+
+  type GetOtpRequestGroupByPayload<T extends OtpRequestGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<OtpRequestGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof OtpRequestGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], OtpRequestGroupByOutputType[P]>
+            : GetScalarType<T[P], OtpRequestGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type OtpRequestSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    destination?: boolean
+    channel?: boolean
+    purpose?: boolean
+    otpHash?: boolean
+    expiryTime?: boolean
+    attempts?: boolean
+    maxAttempts?: boolean
+    status?: boolean
+    ipAddress?: boolean
+    userAgent?: boolean
+    createdAt?: boolean
+    verifiedAt?: boolean
+  }, ExtArgs["result"]["otpRequest"]>
+
+  export type OtpRequestSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    destination?: boolean
+    channel?: boolean
+    purpose?: boolean
+    otpHash?: boolean
+    expiryTime?: boolean
+    attempts?: boolean
+    maxAttempts?: boolean
+    status?: boolean
+    ipAddress?: boolean
+    userAgent?: boolean
+    createdAt?: boolean
+    verifiedAt?: boolean
+  }, ExtArgs["result"]["otpRequest"]>
+
+  export type OtpRequestSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    destination?: boolean
+    channel?: boolean
+    purpose?: boolean
+    otpHash?: boolean
+    expiryTime?: boolean
+    attempts?: boolean
+    maxAttempts?: boolean
+    status?: boolean
+    ipAddress?: boolean
+    userAgent?: boolean
+    createdAt?: boolean
+    verifiedAt?: boolean
+  }, ExtArgs["result"]["otpRequest"]>
+
+  export type OtpRequestSelectScalar = {
+    id?: boolean
+    userId?: boolean
+    destination?: boolean
+    channel?: boolean
+    purpose?: boolean
+    otpHash?: boolean
+    expiryTime?: boolean
+    attempts?: boolean
+    maxAttempts?: boolean
+    status?: boolean
+    ipAddress?: boolean
+    userAgent?: boolean
+    createdAt?: boolean
+    verifiedAt?: boolean
+  }
+
+  export type OtpRequestOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "destination" | "channel" | "purpose" | "otpHash" | "expiryTime" | "attempts" | "maxAttempts" | "status" | "ipAddress" | "userAgent" | "createdAt" | "verifiedAt", ExtArgs["result"]["otpRequest"]>
+
+  export type $OtpRequestPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "OtpRequest"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userId: string | null
+      destination: string
+      channel: string
+      purpose: string
+      otpHash: string
+      expiryTime: Date
+      attempts: number
+      maxAttempts: number
+      status: string
+      ipAddress: string | null
+      userAgent: string | null
+      createdAt: Date
+      verifiedAt: Date | null
+    }, ExtArgs["result"]["otpRequest"]>
+    composites: {}
+  }
+
+  type OtpRequestGetPayload<S extends boolean | null | undefined | OtpRequestDefaultArgs> = $Result.GetResult<Prisma.$OtpRequestPayload, S>
+
+  type OtpRequestCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<OtpRequestFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: OtpRequestCountAggregateInputType | true
+    }
+
+  export interface OtpRequestDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['OtpRequest'], meta: { name: 'OtpRequest' } }
+    /**
+     * Find zero or one OtpRequest that matches the filter.
+     * @param {OtpRequestFindUniqueArgs} args - Arguments to find a OtpRequest
+     * @example
+     * // Get one OtpRequest
+     * const otpRequest = await prisma.otpRequest.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends OtpRequestFindUniqueArgs>(args: SelectSubset<T, OtpRequestFindUniqueArgs<ExtArgs>>): Prisma__OtpRequestClient<$Result.GetResult<Prisma.$OtpRequestPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one OtpRequest that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {OtpRequestFindUniqueOrThrowArgs} args - Arguments to find a OtpRequest
+     * @example
+     * // Get one OtpRequest
+     * const otpRequest = await prisma.otpRequest.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends OtpRequestFindUniqueOrThrowArgs>(args: SelectSubset<T, OtpRequestFindUniqueOrThrowArgs<ExtArgs>>): Prisma__OtpRequestClient<$Result.GetResult<Prisma.$OtpRequestPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first OtpRequest that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OtpRequestFindFirstArgs} args - Arguments to find a OtpRequest
+     * @example
+     * // Get one OtpRequest
+     * const otpRequest = await prisma.otpRequest.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends OtpRequestFindFirstArgs>(args?: SelectSubset<T, OtpRequestFindFirstArgs<ExtArgs>>): Prisma__OtpRequestClient<$Result.GetResult<Prisma.$OtpRequestPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first OtpRequest that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OtpRequestFindFirstOrThrowArgs} args - Arguments to find a OtpRequest
+     * @example
+     * // Get one OtpRequest
+     * const otpRequest = await prisma.otpRequest.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends OtpRequestFindFirstOrThrowArgs>(args?: SelectSubset<T, OtpRequestFindFirstOrThrowArgs<ExtArgs>>): Prisma__OtpRequestClient<$Result.GetResult<Prisma.$OtpRequestPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more OtpRequests that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OtpRequestFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all OtpRequests
+     * const otpRequests = await prisma.otpRequest.findMany()
+     * 
+     * // Get first 10 OtpRequests
+     * const otpRequests = await prisma.otpRequest.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const otpRequestWithIdOnly = await prisma.otpRequest.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends OtpRequestFindManyArgs>(args?: SelectSubset<T, OtpRequestFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OtpRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a OtpRequest.
+     * @param {OtpRequestCreateArgs} args - Arguments to create a OtpRequest.
+     * @example
+     * // Create one OtpRequest
+     * const OtpRequest = await prisma.otpRequest.create({
+     *   data: {
+     *     // ... data to create a OtpRequest
+     *   }
+     * })
+     * 
+     */
+    create<T extends OtpRequestCreateArgs>(args: SelectSubset<T, OtpRequestCreateArgs<ExtArgs>>): Prisma__OtpRequestClient<$Result.GetResult<Prisma.$OtpRequestPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many OtpRequests.
+     * @param {OtpRequestCreateManyArgs} args - Arguments to create many OtpRequests.
+     * @example
+     * // Create many OtpRequests
+     * const otpRequest = await prisma.otpRequest.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends OtpRequestCreateManyArgs>(args?: SelectSubset<T, OtpRequestCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many OtpRequests and returns the data saved in the database.
+     * @param {OtpRequestCreateManyAndReturnArgs} args - Arguments to create many OtpRequests.
+     * @example
+     * // Create many OtpRequests
+     * const otpRequest = await prisma.otpRequest.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many OtpRequests and only return the `id`
+     * const otpRequestWithIdOnly = await prisma.otpRequest.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends OtpRequestCreateManyAndReturnArgs>(args?: SelectSubset<T, OtpRequestCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OtpRequestPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a OtpRequest.
+     * @param {OtpRequestDeleteArgs} args - Arguments to delete one OtpRequest.
+     * @example
+     * // Delete one OtpRequest
+     * const OtpRequest = await prisma.otpRequest.delete({
+     *   where: {
+     *     // ... filter to delete one OtpRequest
+     *   }
+     * })
+     * 
+     */
+    delete<T extends OtpRequestDeleteArgs>(args: SelectSubset<T, OtpRequestDeleteArgs<ExtArgs>>): Prisma__OtpRequestClient<$Result.GetResult<Prisma.$OtpRequestPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one OtpRequest.
+     * @param {OtpRequestUpdateArgs} args - Arguments to update one OtpRequest.
+     * @example
+     * // Update one OtpRequest
+     * const otpRequest = await prisma.otpRequest.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends OtpRequestUpdateArgs>(args: SelectSubset<T, OtpRequestUpdateArgs<ExtArgs>>): Prisma__OtpRequestClient<$Result.GetResult<Prisma.$OtpRequestPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more OtpRequests.
+     * @param {OtpRequestDeleteManyArgs} args - Arguments to filter OtpRequests to delete.
+     * @example
+     * // Delete a few OtpRequests
+     * const { count } = await prisma.otpRequest.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends OtpRequestDeleteManyArgs>(args?: SelectSubset<T, OtpRequestDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more OtpRequests.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OtpRequestUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many OtpRequests
+     * const otpRequest = await prisma.otpRequest.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends OtpRequestUpdateManyArgs>(args: SelectSubset<T, OtpRequestUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more OtpRequests and returns the data updated in the database.
+     * @param {OtpRequestUpdateManyAndReturnArgs} args - Arguments to update many OtpRequests.
+     * @example
+     * // Update many OtpRequests
+     * const otpRequest = await prisma.otpRequest.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more OtpRequests and only return the `id`
+     * const otpRequestWithIdOnly = await prisma.otpRequest.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends OtpRequestUpdateManyAndReturnArgs>(args: SelectSubset<T, OtpRequestUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OtpRequestPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one OtpRequest.
+     * @param {OtpRequestUpsertArgs} args - Arguments to update or create a OtpRequest.
+     * @example
+     * // Update or create a OtpRequest
+     * const otpRequest = await prisma.otpRequest.upsert({
+     *   create: {
+     *     // ... data to create a OtpRequest
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the OtpRequest we want to update
+     *   }
+     * })
+     */
+    upsert<T extends OtpRequestUpsertArgs>(args: SelectSubset<T, OtpRequestUpsertArgs<ExtArgs>>): Prisma__OtpRequestClient<$Result.GetResult<Prisma.$OtpRequestPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of OtpRequests.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OtpRequestCountArgs} args - Arguments to filter OtpRequests to count.
+     * @example
+     * // Count the number of OtpRequests
+     * const count = await prisma.otpRequest.count({
+     *   where: {
+     *     // ... the filter for the OtpRequests we want to count
+     *   }
+     * })
+    **/
+    count<T extends OtpRequestCountArgs>(
+      args?: Subset<T, OtpRequestCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], OtpRequestCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a OtpRequest.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OtpRequestAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends OtpRequestAggregateArgs>(args: Subset<T, OtpRequestAggregateArgs>): Prisma.PrismaPromise<GetOtpRequestAggregateType<T>>
+
+    /**
+     * Group by OtpRequest.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OtpRequestGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends OtpRequestGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: OtpRequestGroupByArgs['orderBy'] }
+        : { orderBy?: OtpRequestGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, OtpRequestGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetOtpRequestGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the OtpRequest model
+   */
+  readonly fields: OtpRequestFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for OtpRequest.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__OtpRequestClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the OtpRequest model
+   */
+  interface OtpRequestFieldRefs {
+    readonly id: FieldRef<"OtpRequest", 'String'>
+    readonly userId: FieldRef<"OtpRequest", 'String'>
+    readonly destination: FieldRef<"OtpRequest", 'String'>
+    readonly channel: FieldRef<"OtpRequest", 'String'>
+    readonly purpose: FieldRef<"OtpRequest", 'String'>
+    readonly otpHash: FieldRef<"OtpRequest", 'String'>
+    readonly expiryTime: FieldRef<"OtpRequest", 'DateTime'>
+    readonly attempts: FieldRef<"OtpRequest", 'Int'>
+    readonly maxAttempts: FieldRef<"OtpRequest", 'Int'>
+    readonly status: FieldRef<"OtpRequest", 'String'>
+    readonly ipAddress: FieldRef<"OtpRequest", 'String'>
+    readonly userAgent: FieldRef<"OtpRequest", 'String'>
+    readonly createdAt: FieldRef<"OtpRequest", 'DateTime'>
+    readonly verifiedAt: FieldRef<"OtpRequest", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * OtpRequest findUnique
+   */
+  export type OtpRequestFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OtpRequest
+     */
+    select?: OtpRequestSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OtpRequest
+     */
+    omit?: OtpRequestOmit<ExtArgs> | null
+    /**
+     * Filter, which OtpRequest to fetch.
+     */
+    where: OtpRequestWhereUniqueInput
+  }
+
+  /**
+   * OtpRequest findUniqueOrThrow
+   */
+  export type OtpRequestFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OtpRequest
+     */
+    select?: OtpRequestSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OtpRequest
+     */
+    omit?: OtpRequestOmit<ExtArgs> | null
+    /**
+     * Filter, which OtpRequest to fetch.
+     */
+    where: OtpRequestWhereUniqueInput
+  }
+
+  /**
+   * OtpRequest findFirst
+   */
+  export type OtpRequestFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OtpRequest
+     */
+    select?: OtpRequestSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OtpRequest
+     */
+    omit?: OtpRequestOmit<ExtArgs> | null
+    /**
+     * Filter, which OtpRequest to fetch.
+     */
+    where?: OtpRequestWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of OtpRequests to fetch.
+     */
+    orderBy?: OtpRequestOrderByWithRelationInput | OtpRequestOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for OtpRequests.
+     */
+    cursor?: OtpRequestWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` OtpRequests from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` OtpRequests.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of OtpRequests.
+     */
+    distinct?: OtpRequestScalarFieldEnum | OtpRequestScalarFieldEnum[]
+  }
+
+  /**
+   * OtpRequest findFirstOrThrow
+   */
+  export type OtpRequestFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OtpRequest
+     */
+    select?: OtpRequestSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OtpRequest
+     */
+    omit?: OtpRequestOmit<ExtArgs> | null
+    /**
+     * Filter, which OtpRequest to fetch.
+     */
+    where?: OtpRequestWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of OtpRequests to fetch.
+     */
+    orderBy?: OtpRequestOrderByWithRelationInput | OtpRequestOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for OtpRequests.
+     */
+    cursor?: OtpRequestWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` OtpRequests from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` OtpRequests.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of OtpRequests.
+     */
+    distinct?: OtpRequestScalarFieldEnum | OtpRequestScalarFieldEnum[]
+  }
+
+  /**
+   * OtpRequest findMany
+   */
+  export type OtpRequestFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OtpRequest
+     */
+    select?: OtpRequestSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OtpRequest
+     */
+    omit?: OtpRequestOmit<ExtArgs> | null
+    /**
+     * Filter, which OtpRequests to fetch.
+     */
+    where?: OtpRequestWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of OtpRequests to fetch.
+     */
+    orderBy?: OtpRequestOrderByWithRelationInput | OtpRequestOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing OtpRequests.
+     */
+    cursor?: OtpRequestWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` OtpRequests from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` OtpRequests.
+     */
+    skip?: number
+    distinct?: OtpRequestScalarFieldEnum | OtpRequestScalarFieldEnum[]
+  }
+
+  /**
+   * OtpRequest create
+   */
+  export type OtpRequestCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OtpRequest
+     */
+    select?: OtpRequestSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OtpRequest
+     */
+    omit?: OtpRequestOmit<ExtArgs> | null
+    /**
+     * The data needed to create a OtpRequest.
+     */
+    data: XOR<OtpRequestCreateInput, OtpRequestUncheckedCreateInput>
+  }
+
+  /**
+   * OtpRequest createMany
+   */
+  export type OtpRequestCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many OtpRequests.
+     */
+    data: OtpRequestCreateManyInput | OtpRequestCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * OtpRequest createManyAndReturn
+   */
+  export type OtpRequestCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OtpRequest
+     */
+    select?: OtpRequestSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the OtpRequest
+     */
+    omit?: OtpRequestOmit<ExtArgs> | null
+    /**
+     * The data used to create many OtpRequests.
+     */
+    data: OtpRequestCreateManyInput | OtpRequestCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * OtpRequest update
+   */
+  export type OtpRequestUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OtpRequest
+     */
+    select?: OtpRequestSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OtpRequest
+     */
+    omit?: OtpRequestOmit<ExtArgs> | null
+    /**
+     * The data needed to update a OtpRequest.
+     */
+    data: XOR<OtpRequestUpdateInput, OtpRequestUncheckedUpdateInput>
+    /**
+     * Choose, which OtpRequest to update.
+     */
+    where: OtpRequestWhereUniqueInput
+  }
+
+  /**
+   * OtpRequest updateMany
+   */
+  export type OtpRequestUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update OtpRequests.
+     */
+    data: XOR<OtpRequestUpdateManyMutationInput, OtpRequestUncheckedUpdateManyInput>
+    /**
+     * Filter which OtpRequests to update
+     */
+    where?: OtpRequestWhereInput
+    /**
+     * Limit how many OtpRequests to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * OtpRequest updateManyAndReturn
+   */
+  export type OtpRequestUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OtpRequest
+     */
+    select?: OtpRequestSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the OtpRequest
+     */
+    omit?: OtpRequestOmit<ExtArgs> | null
+    /**
+     * The data used to update OtpRequests.
+     */
+    data: XOR<OtpRequestUpdateManyMutationInput, OtpRequestUncheckedUpdateManyInput>
+    /**
+     * Filter which OtpRequests to update
+     */
+    where?: OtpRequestWhereInput
+    /**
+     * Limit how many OtpRequests to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * OtpRequest upsert
+   */
+  export type OtpRequestUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OtpRequest
+     */
+    select?: OtpRequestSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OtpRequest
+     */
+    omit?: OtpRequestOmit<ExtArgs> | null
+    /**
+     * The filter to search for the OtpRequest to update in case it exists.
+     */
+    where: OtpRequestWhereUniqueInput
+    /**
+     * In case the OtpRequest found by the `where` argument doesn't exist, create a new OtpRequest with this data.
+     */
+    create: XOR<OtpRequestCreateInput, OtpRequestUncheckedCreateInput>
+    /**
+     * In case the OtpRequest was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<OtpRequestUpdateInput, OtpRequestUncheckedUpdateInput>
+  }
+
+  /**
+   * OtpRequest delete
+   */
+  export type OtpRequestDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OtpRequest
+     */
+    select?: OtpRequestSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OtpRequest
+     */
+    omit?: OtpRequestOmit<ExtArgs> | null
+    /**
+     * Filter which OtpRequest to delete.
+     */
+    where: OtpRequestWhereUniqueInput
+  }
+
+  /**
+   * OtpRequest deleteMany
+   */
+  export type OtpRequestDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which OtpRequests to delete
+     */
+    where?: OtpRequestWhereInput
+    /**
+     * Limit how many OtpRequests to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * OtpRequest without action
+   */
+  export type OtpRequestDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OtpRequest
+     */
+    select?: OtpRequestSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OtpRequest
+     */
+    omit?: OtpRequestOmit<ExtArgs> | null
+  }
+
+
+  /**
+   * Model AaConsent
+   */
+
+  export type AggregateAaConsent = {
+    _count: AaConsentCountAggregateOutputType | null
+    _min: AaConsentMinAggregateOutputType | null
+    _max: AaConsentMaxAggregateOutputType | null
+  }
+
+  export type AaConsentMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    consentHandle: string | null
+    consentId: string | null
+    vua: string | null
+    status: string | null
+    purpose: string | null
+    fiTypes: string | null
+    consentTypes: string | null
+    dataFrom: Date | null
+    dataTo: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type AaConsentMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    consentHandle: string | null
+    consentId: string | null
+    vua: string | null
+    status: string | null
+    purpose: string | null
+    fiTypes: string | null
+    consentTypes: string | null
+    dataFrom: Date | null
+    dataTo: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type AaConsentCountAggregateOutputType = {
+    id: number
+    userId: number
+    consentHandle: number
+    consentId: number
+    vua: number
+    status: number
+    purpose: number
+    fiTypes: number
+    consentTypes: number
+    dataFrom: number
+    dataTo: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type AaConsentMinAggregateInputType = {
+    id?: true
+    userId?: true
+    consentHandle?: true
+    consentId?: true
+    vua?: true
+    status?: true
+    purpose?: true
+    fiTypes?: true
+    consentTypes?: true
+    dataFrom?: true
+    dataTo?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type AaConsentMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    consentHandle?: true
+    consentId?: true
+    vua?: true
+    status?: true
+    purpose?: true
+    fiTypes?: true
+    consentTypes?: true
+    dataFrom?: true
+    dataTo?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type AaConsentCountAggregateInputType = {
+    id?: true
+    userId?: true
+    consentHandle?: true
+    consentId?: true
+    vua?: true
+    status?: true
+    purpose?: true
+    fiTypes?: true
+    consentTypes?: true
+    dataFrom?: true
+    dataTo?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type AaConsentAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AaConsent to aggregate.
+     */
+    where?: AaConsentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AaConsents to fetch.
+     */
+    orderBy?: AaConsentOrderByWithRelationInput | AaConsentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: AaConsentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AaConsents from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AaConsents.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned AaConsents
+    **/
+    _count?: true | AaConsentCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: AaConsentMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: AaConsentMaxAggregateInputType
+  }
+
+  export type GetAaConsentAggregateType<T extends AaConsentAggregateArgs> = {
+        [P in keyof T & keyof AggregateAaConsent]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateAaConsent[P]>
+      : GetScalarType<T[P], AggregateAaConsent[P]>
+  }
+
+
+
+
+  export type AaConsentGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AaConsentWhereInput
+    orderBy?: AaConsentOrderByWithAggregationInput | AaConsentOrderByWithAggregationInput[]
+    by: AaConsentScalarFieldEnum[] | AaConsentScalarFieldEnum
+    having?: AaConsentScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: AaConsentCountAggregateInputType | true
+    _min?: AaConsentMinAggregateInputType
+    _max?: AaConsentMaxAggregateInputType
+  }
+
+  export type AaConsentGroupByOutputType = {
+    id: string
+    userId: string
+    consentHandle: string | null
+    consentId: string | null
+    vua: string | null
+    status: string
+    purpose: string | null
+    fiTypes: string | null
+    consentTypes: string | null
+    dataFrom: Date | null
+    dataTo: Date | null
+    createdAt: Date
+    updatedAt: Date
+    _count: AaConsentCountAggregateOutputType | null
+    _min: AaConsentMinAggregateOutputType | null
+    _max: AaConsentMaxAggregateOutputType | null
+  }
+
+  type GetAaConsentGroupByPayload<T extends AaConsentGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<AaConsentGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof AaConsentGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], AaConsentGroupByOutputType[P]>
+            : GetScalarType<T[P], AaConsentGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type AaConsentSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    consentHandle?: boolean
+    consentId?: boolean
+    vua?: boolean
+    status?: boolean
+    purpose?: boolean
+    fiTypes?: boolean
+    consentTypes?: boolean
+    dataFrom?: boolean
+    dataTo?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["aaConsent"]>
+
+  export type AaConsentSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    consentHandle?: boolean
+    consentId?: boolean
+    vua?: boolean
+    status?: boolean
+    purpose?: boolean
+    fiTypes?: boolean
+    consentTypes?: boolean
+    dataFrom?: boolean
+    dataTo?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["aaConsent"]>
+
+  export type AaConsentSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    consentHandle?: boolean
+    consentId?: boolean
+    vua?: boolean
+    status?: boolean
+    purpose?: boolean
+    fiTypes?: boolean
+    consentTypes?: boolean
+    dataFrom?: boolean
+    dataTo?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["aaConsent"]>
+
+  export type AaConsentSelectScalar = {
+    id?: boolean
+    userId?: boolean
+    consentHandle?: boolean
+    consentId?: boolean
+    vua?: boolean
+    status?: boolean
+    purpose?: boolean
+    fiTypes?: boolean
+    consentTypes?: boolean
+    dataFrom?: boolean
+    dataTo?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type AaConsentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "consentHandle" | "consentId" | "vua" | "status" | "purpose" | "fiTypes" | "consentTypes" | "dataFrom" | "dataTo" | "createdAt" | "updatedAt", ExtArgs["result"]["aaConsent"]>
+
+  export type $AaConsentPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "AaConsent"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userId: string
+      consentHandle: string | null
+      consentId: string | null
+      vua: string | null
+      status: string
+      purpose: string | null
+      fiTypes: string | null
+      consentTypes: string | null
+      dataFrom: Date | null
+      dataTo: Date | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["aaConsent"]>
+    composites: {}
+  }
+
+  type AaConsentGetPayload<S extends boolean | null | undefined | AaConsentDefaultArgs> = $Result.GetResult<Prisma.$AaConsentPayload, S>
+
+  type AaConsentCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<AaConsentFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: AaConsentCountAggregateInputType | true
+    }
+
+  export interface AaConsentDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['AaConsent'], meta: { name: 'AaConsent' } }
+    /**
+     * Find zero or one AaConsent that matches the filter.
+     * @param {AaConsentFindUniqueArgs} args - Arguments to find a AaConsent
+     * @example
+     * // Get one AaConsent
+     * const aaConsent = await prisma.aaConsent.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends AaConsentFindUniqueArgs>(args: SelectSubset<T, AaConsentFindUniqueArgs<ExtArgs>>): Prisma__AaConsentClient<$Result.GetResult<Prisma.$AaConsentPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one AaConsent that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {AaConsentFindUniqueOrThrowArgs} args - Arguments to find a AaConsent
+     * @example
+     * // Get one AaConsent
+     * const aaConsent = await prisma.aaConsent.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends AaConsentFindUniqueOrThrowArgs>(args: SelectSubset<T, AaConsentFindUniqueOrThrowArgs<ExtArgs>>): Prisma__AaConsentClient<$Result.GetResult<Prisma.$AaConsentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AaConsent that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AaConsentFindFirstArgs} args - Arguments to find a AaConsent
+     * @example
+     * // Get one AaConsent
+     * const aaConsent = await prisma.aaConsent.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends AaConsentFindFirstArgs>(args?: SelectSubset<T, AaConsentFindFirstArgs<ExtArgs>>): Prisma__AaConsentClient<$Result.GetResult<Prisma.$AaConsentPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AaConsent that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AaConsentFindFirstOrThrowArgs} args - Arguments to find a AaConsent
+     * @example
+     * // Get one AaConsent
+     * const aaConsent = await prisma.aaConsent.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends AaConsentFindFirstOrThrowArgs>(args?: SelectSubset<T, AaConsentFindFirstOrThrowArgs<ExtArgs>>): Prisma__AaConsentClient<$Result.GetResult<Prisma.$AaConsentPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more AaConsents that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AaConsentFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all AaConsents
+     * const aaConsents = await prisma.aaConsent.findMany()
+     * 
+     * // Get first 10 AaConsents
+     * const aaConsents = await prisma.aaConsent.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const aaConsentWithIdOnly = await prisma.aaConsent.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends AaConsentFindManyArgs>(args?: SelectSubset<T, AaConsentFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AaConsentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a AaConsent.
+     * @param {AaConsentCreateArgs} args - Arguments to create a AaConsent.
+     * @example
+     * // Create one AaConsent
+     * const AaConsent = await prisma.aaConsent.create({
+     *   data: {
+     *     // ... data to create a AaConsent
+     *   }
+     * })
+     * 
+     */
+    create<T extends AaConsentCreateArgs>(args: SelectSubset<T, AaConsentCreateArgs<ExtArgs>>): Prisma__AaConsentClient<$Result.GetResult<Prisma.$AaConsentPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many AaConsents.
+     * @param {AaConsentCreateManyArgs} args - Arguments to create many AaConsents.
+     * @example
+     * // Create many AaConsents
+     * const aaConsent = await prisma.aaConsent.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends AaConsentCreateManyArgs>(args?: SelectSubset<T, AaConsentCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many AaConsents and returns the data saved in the database.
+     * @param {AaConsentCreateManyAndReturnArgs} args - Arguments to create many AaConsents.
+     * @example
+     * // Create many AaConsents
+     * const aaConsent = await prisma.aaConsent.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many AaConsents and only return the `id`
+     * const aaConsentWithIdOnly = await prisma.aaConsent.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends AaConsentCreateManyAndReturnArgs>(args?: SelectSubset<T, AaConsentCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AaConsentPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a AaConsent.
+     * @param {AaConsentDeleteArgs} args - Arguments to delete one AaConsent.
+     * @example
+     * // Delete one AaConsent
+     * const AaConsent = await prisma.aaConsent.delete({
+     *   where: {
+     *     // ... filter to delete one AaConsent
+     *   }
+     * })
+     * 
+     */
+    delete<T extends AaConsentDeleteArgs>(args: SelectSubset<T, AaConsentDeleteArgs<ExtArgs>>): Prisma__AaConsentClient<$Result.GetResult<Prisma.$AaConsentPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one AaConsent.
+     * @param {AaConsentUpdateArgs} args - Arguments to update one AaConsent.
+     * @example
+     * // Update one AaConsent
+     * const aaConsent = await prisma.aaConsent.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends AaConsentUpdateArgs>(args: SelectSubset<T, AaConsentUpdateArgs<ExtArgs>>): Prisma__AaConsentClient<$Result.GetResult<Prisma.$AaConsentPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more AaConsents.
+     * @param {AaConsentDeleteManyArgs} args - Arguments to filter AaConsents to delete.
+     * @example
+     * // Delete a few AaConsents
+     * const { count } = await prisma.aaConsent.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends AaConsentDeleteManyArgs>(args?: SelectSubset<T, AaConsentDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AaConsents.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AaConsentUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many AaConsents
+     * const aaConsent = await prisma.aaConsent.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends AaConsentUpdateManyArgs>(args: SelectSubset<T, AaConsentUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AaConsents and returns the data updated in the database.
+     * @param {AaConsentUpdateManyAndReturnArgs} args - Arguments to update many AaConsents.
+     * @example
+     * // Update many AaConsents
+     * const aaConsent = await prisma.aaConsent.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more AaConsents and only return the `id`
+     * const aaConsentWithIdOnly = await prisma.aaConsent.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends AaConsentUpdateManyAndReturnArgs>(args: SelectSubset<T, AaConsentUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AaConsentPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one AaConsent.
+     * @param {AaConsentUpsertArgs} args - Arguments to update or create a AaConsent.
+     * @example
+     * // Update or create a AaConsent
+     * const aaConsent = await prisma.aaConsent.upsert({
+     *   create: {
+     *     // ... data to create a AaConsent
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the AaConsent we want to update
+     *   }
+     * })
+     */
+    upsert<T extends AaConsentUpsertArgs>(args: SelectSubset<T, AaConsentUpsertArgs<ExtArgs>>): Prisma__AaConsentClient<$Result.GetResult<Prisma.$AaConsentPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of AaConsents.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AaConsentCountArgs} args - Arguments to filter AaConsents to count.
+     * @example
+     * // Count the number of AaConsents
+     * const count = await prisma.aaConsent.count({
+     *   where: {
+     *     // ... the filter for the AaConsents we want to count
+     *   }
+     * })
+    **/
+    count<T extends AaConsentCountArgs>(
+      args?: Subset<T, AaConsentCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], AaConsentCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a AaConsent.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AaConsentAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends AaConsentAggregateArgs>(args: Subset<T, AaConsentAggregateArgs>): Prisma.PrismaPromise<GetAaConsentAggregateType<T>>
+
+    /**
+     * Group by AaConsent.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AaConsentGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends AaConsentGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: AaConsentGroupByArgs['orderBy'] }
+        : { orderBy?: AaConsentGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, AaConsentGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetAaConsentGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the AaConsent model
+   */
+  readonly fields: AaConsentFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for AaConsent.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__AaConsentClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the AaConsent model
+   */
+  interface AaConsentFieldRefs {
+    readonly id: FieldRef<"AaConsent", 'String'>
+    readonly userId: FieldRef<"AaConsent", 'String'>
+    readonly consentHandle: FieldRef<"AaConsent", 'String'>
+    readonly consentId: FieldRef<"AaConsent", 'String'>
+    readonly vua: FieldRef<"AaConsent", 'String'>
+    readonly status: FieldRef<"AaConsent", 'String'>
+    readonly purpose: FieldRef<"AaConsent", 'String'>
+    readonly fiTypes: FieldRef<"AaConsent", 'String'>
+    readonly consentTypes: FieldRef<"AaConsent", 'String'>
+    readonly dataFrom: FieldRef<"AaConsent", 'DateTime'>
+    readonly dataTo: FieldRef<"AaConsent", 'DateTime'>
+    readonly createdAt: FieldRef<"AaConsent", 'DateTime'>
+    readonly updatedAt: FieldRef<"AaConsent", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * AaConsent findUnique
+   */
+  export type AaConsentFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AaConsent
+     */
+    select?: AaConsentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AaConsent
+     */
+    omit?: AaConsentOmit<ExtArgs> | null
+    /**
+     * Filter, which AaConsent to fetch.
+     */
+    where: AaConsentWhereUniqueInput
+  }
+
+  /**
+   * AaConsent findUniqueOrThrow
+   */
+  export type AaConsentFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AaConsent
+     */
+    select?: AaConsentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AaConsent
+     */
+    omit?: AaConsentOmit<ExtArgs> | null
+    /**
+     * Filter, which AaConsent to fetch.
+     */
+    where: AaConsentWhereUniqueInput
+  }
+
+  /**
+   * AaConsent findFirst
+   */
+  export type AaConsentFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AaConsent
+     */
+    select?: AaConsentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AaConsent
+     */
+    omit?: AaConsentOmit<ExtArgs> | null
+    /**
+     * Filter, which AaConsent to fetch.
+     */
+    where?: AaConsentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AaConsents to fetch.
+     */
+    orderBy?: AaConsentOrderByWithRelationInput | AaConsentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AaConsents.
+     */
+    cursor?: AaConsentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AaConsents from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AaConsents.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AaConsents.
+     */
+    distinct?: AaConsentScalarFieldEnum | AaConsentScalarFieldEnum[]
+  }
+
+  /**
+   * AaConsent findFirstOrThrow
+   */
+  export type AaConsentFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AaConsent
+     */
+    select?: AaConsentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AaConsent
+     */
+    omit?: AaConsentOmit<ExtArgs> | null
+    /**
+     * Filter, which AaConsent to fetch.
+     */
+    where?: AaConsentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AaConsents to fetch.
+     */
+    orderBy?: AaConsentOrderByWithRelationInput | AaConsentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AaConsents.
+     */
+    cursor?: AaConsentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AaConsents from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AaConsents.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AaConsents.
+     */
+    distinct?: AaConsentScalarFieldEnum | AaConsentScalarFieldEnum[]
+  }
+
+  /**
+   * AaConsent findMany
+   */
+  export type AaConsentFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AaConsent
+     */
+    select?: AaConsentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AaConsent
+     */
+    omit?: AaConsentOmit<ExtArgs> | null
+    /**
+     * Filter, which AaConsents to fetch.
+     */
+    where?: AaConsentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AaConsents to fetch.
+     */
+    orderBy?: AaConsentOrderByWithRelationInput | AaConsentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing AaConsents.
+     */
+    cursor?: AaConsentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AaConsents from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AaConsents.
+     */
+    skip?: number
+    distinct?: AaConsentScalarFieldEnum | AaConsentScalarFieldEnum[]
+  }
+
+  /**
+   * AaConsent create
+   */
+  export type AaConsentCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AaConsent
+     */
+    select?: AaConsentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AaConsent
+     */
+    omit?: AaConsentOmit<ExtArgs> | null
+    /**
+     * The data needed to create a AaConsent.
+     */
+    data: XOR<AaConsentCreateInput, AaConsentUncheckedCreateInput>
+  }
+
+  /**
+   * AaConsent createMany
+   */
+  export type AaConsentCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many AaConsents.
+     */
+    data: AaConsentCreateManyInput | AaConsentCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * AaConsent createManyAndReturn
+   */
+  export type AaConsentCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AaConsent
+     */
+    select?: AaConsentSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the AaConsent
+     */
+    omit?: AaConsentOmit<ExtArgs> | null
+    /**
+     * The data used to create many AaConsents.
+     */
+    data: AaConsentCreateManyInput | AaConsentCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * AaConsent update
+   */
+  export type AaConsentUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AaConsent
+     */
+    select?: AaConsentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AaConsent
+     */
+    omit?: AaConsentOmit<ExtArgs> | null
+    /**
+     * The data needed to update a AaConsent.
+     */
+    data: XOR<AaConsentUpdateInput, AaConsentUncheckedUpdateInput>
+    /**
+     * Choose, which AaConsent to update.
+     */
+    where: AaConsentWhereUniqueInput
+  }
+
+  /**
+   * AaConsent updateMany
+   */
+  export type AaConsentUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update AaConsents.
+     */
+    data: XOR<AaConsentUpdateManyMutationInput, AaConsentUncheckedUpdateManyInput>
+    /**
+     * Filter which AaConsents to update
+     */
+    where?: AaConsentWhereInput
+    /**
+     * Limit how many AaConsents to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * AaConsent updateManyAndReturn
+   */
+  export type AaConsentUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AaConsent
+     */
+    select?: AaConsentSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the AaConsent
+     */
+    omit?: AaConsentOmit<ExtArgs> | null
+    /**
+     * The data used to update AaConsents.
+     */
+    data: XOR<AaConsentUpdateManyMutationInput, AaConsentUncheckedUpdateManyInput>
+    /**
+     * Filter which AaConsents to update
+     */
+    where?: AaConsentWhereInput
+    /**
+     * Limit how many AaConsents to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * AaConsent upsert
+   */
+  export type AaConsentUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AaConsent
+     */
+    select?: AaConsentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AaConsent
+     */
+    omit?: AaConsentOmit<ExtArgs> | null
+    /**
+     * The filter to search for the AaConsent to update in case it exists.
+     */
+    where: AaConsentWhereUniqueInput
+    /**
+     * In case the AaConsent found by the `where` argument doesn't exist, create a new AaConsent with this data.
+     */
+    create: XOR<AaConsentCreateInput, AaConsentUncheckedCreateInput>
+    /**
+     * In case the AaConsent was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<AaConsentUpdateInput, AaConsentUncheckedUpdateInput>
+  }
+
+  /**
+   * AaConsent delete
+   */
+  export type AaConsentDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AaConsent
+     */
+    select?: AaConsentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AaConsent
+     */
+    omit?: AaConsentOmit<ExtArgs> | null
+    /**
+     * Filter which AaConsent to delete.
+     */
+    where: AaConsentWhereUniqueInput
+  }
+
+  /**
+   * AaConsent deleteMany
+   */
+  export type AaConsentDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AaConsents to delete
+     */
+    where?: AaConsentWhereInput
+    /**
+     * Limit how many AaConsents to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * AaConsent without action
+   */
+  export type AaConsentDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AaConsent
+     */
+    select?: AaConsentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AaConsent
+     */
+    omit?: AaConsentOmit<ExtArgs> | null
+  }
+
+
+  /**
+   * Model AaConsentArtifact
+   */
+
+  export type AggregateAaConsentArtifact = {
+    _count: AaConsentArtifactCountAggregateOutputType | null
+    _min: AaConsentArtifactMinAggregateOutputType | null
+    _max: AaConsentArtifactMaxAggregateOutputType | null
+  }
+
+  export type AaConsentArtifactMinAggregateOutputType = {
+    id: string | null
+    consentId: string | null
+    artifactJson: string | null
+    signature: string | null
+    status: string | null
+    createdAt: Date | null
+  }
+
+  export type AaConsentArtifactMaxAggregateOutputType = {
+    id: string | null
+    consentId: string | null
+    artifactJson: string | null
+    signature: string | null
+    status: string | null
+    createdAt: Date | null
+  }
+
+  export type AaConsentArtifactCountAggregateOutputType = {
+    id: number
+    consentId: number
+    artifactJson: number
+    signature: number
+    status: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type AaConsentArtifactMinAggregateInputType = {
+    id?: true
+    consentId?: true
+    artifactJson?: true
+    signature?: true
+    status?: true
+    createdAt?: true
+  }
+
+  export type AaConsentArtifactMaxAggregateInputType = {
+    id?: true
+    consentId?: true
+    artifactJson?: true
+    signature?: true
+    status?: true
+    createdAt?: true
+  }
+
+  export type AaConsentArtifactCountAggregateInputType = {
+    id?: true
+    consentId?: true
+    artifactJson?: true
+    signature?: true
+    status?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type AaConsentArtifactAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AaConsentArtifact to aggregate.
+     */
+    where?: AaConsentArtifactWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AaConsentArtifacts to fetch.
+     */
+    orderBy?: AaConsentArtifactOrderByWithRelationInput | AaConsentArtifactOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: AaConsentArtifactWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AaConsentArtifacts from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AaConsentArtifacts.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned AaConsentArtifacts
+    **/
+    _count?: true | AaConsentArtifactCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: AaConsentArtifactMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: AaConsentArtifactMaxAggregateInputType
+  }
+
+  export type GetAaConsentArtifactAggregateType<T extends AaConsentArtifactAggregateArgs> = {
+        [P in keyof T & keyof AggregateAaConsentArtifact]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateAaConsentArtifact[P]>
+      : GetScalarType<T[P], AggregateAaConsentArtifact[P]>
+  }
+
+
+
+
+  export type AaConsentArtifactGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AaConsentArtifactWhereInput
+    orderBy?: AaConsentArtifactOrderByWithAggregationInput | AaConsentArtifactOrderByWithAggregationInput[]
+    by: AaConsentArtifactScalarFieldEnum[] | AaConsentArtifactScalarFieldEnum
+    having?: AaConsentArtifactScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: AaConsentArtifactCountAggregateInputType | true
+    _min?: AaConsentArtifactMinAggregateInputType
+    _max?: AaConsentArtifactMaxAggregateInputType
+  }
+
+  export type AaConsentArtifactGroupByOutputType = {
+    id: string
+    consentId: string
+    artifactJson: string | null
+    signature: string | null
+    status: string | null
+    createdAt: Date
+    _count: AaConsentArtifactCountAggregateOutputType | null
+    _min: AaConsentArtifactMinAggregateOutputType | null
+    _max: AaConsentArtifactMaxAggregateOutputType | null
+  }
+
+  type GetAaConsentArtifactGroupByPayload<T extends AaConsentArtifactGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<AaConsentArtifactGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof AaConsentArtifactGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], AaConsentArtifactGroupByOutputType[P]>
+            : GetScalarType<T[P], AaConsentArtifactGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type AaConsentArtifactSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    consentId?: boolean
+    artifactJson?: boolean
+    signature?: boolean
+    status?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["aaConsentArtifact"]>
+
+  export type AaConsentArtifactSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    consentId?: boolean
+    artifactJson?: boolean
+    signature?: boolean
+    status?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["aaConsentArtifact"]>
+
+  export type AaConsentArtifactSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    consentId?: boolean
+    artifactJson?: boolean
+    signature?: boolean
+    status?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["aaConsentArtifact"]>
+
+  export type AaConsentArtifactSelectScalar = {
+    id?: boolean
+    consentId?: boolean
+    artifactJson?: boolean
+    signature?: boolean
+    status?: boolean
+    createdAt?: boolean
+  }
+
+  export type AaConsentArtifactOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "consentId" | "artifactJson" | "signature" | "status" | "createdAt", ExtArgs["result"]["aaConsentArtifact"]>
+
+  export type $AaConsentArtifactPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "AaConsentArtifact"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      consentId: string
+      artifactJson: string | null
+      signature: string | null
+      status: string | null
+      createdAt: Date
+    }, ExtArgs["result"]["aaConsentArtifact"]>
+    composites: {}
+  }
+
+  type AaConsentArtifactGetPayload<S extends boolean | null | undefined | AaConsentArtifactDefaultArgs> = $Result.GetResult<Prisma.$AaConsentArtifactPayload, S>
+
+  type AaConsentArtifactCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<AaConsentArtifactFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: AaConsentArtifactCountAggregateInputType | true
+    }
+
+  export interface AaConsentArtifactDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['AaConsentArtifact'], meta: { name: 'AaConsentArtifact' } }
+    /**
+     * Find zero or one AaConsentArtifact that matches the filter.
+     * @param {AaConsentArtifactFindUniqueArgs} args - Arguments to find a AaConsentArtifact
+     * @example
+     * // Get one AaConsentArtifact
+     * const aaConsentArtifact = await prisma.aaConsentArtifact.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends AaConsentArtifactFindUniqueArgs>(args: SelectSubset<T, AaConsentArtifactFindUniqueArgs<ExtArgs>>): Prisma__AaConsentArtifactClient<$Result.GetResult<Prisma.$AaConsentArtifactPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one AaConsentArtifact that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {AaConsentArtifactFindUniqueOrThrowArgs} args - Arguments to find a AaConsentArtifact
+     * @example
+     * // Get one AaConsentArtifact
+     * const aaConsentArtifact = await prisma.aaConsentArtifact.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends AaConsentArtifactFindUniqueOrThrowArgs>(args: SelectSubset<T, AaConsentArtifactFindUniqueOrThrowArgs<ExtArgs>>): Prisma__AaConsentArtifactClient<$Result.GetResult<Prisma.$AaConsentArtifactPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AaConsentArtifact that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AaConsentArtifactFindFirstArgs} args - Arguments to find a AaConsentArtifact
+     * @example
+     * // Get one AaConsentArtifact
+     * const aaConsentArtifact = await prisma.aaConsentArtifact.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends AaConsentArtifactFindFirstArgs>(args?: SelectSubset<T, AaConsentArtifactFindFirstArgs<ExtArgs>>): Prisma__AaConsentArtifactClient<$Result.GetResult<Prisma.$AaConsentArtifactPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AaConsentArtifact that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AaConsentArtifactFindFirstOrThrowArgs} args - Arguments to find a AaConsentArtifact
+     * @example
+     * // Get one AaConsentArtifact
+     * const aaConsentArtifact = await prisma.aaConsentArtifact.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends AaConsentArtifactFindFirstOrThrowArgs>(args?: SelectSubset<T, AaConsentArtifactFindFirstOrThrowArgs<ExtArgs>>): Prisma__AaConsentArtifactClient<$Result.GetResult<Prisma.$AaConsentArtifactPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more AaConsentArtifacts that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AaConsentArtifactFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all AaConsentArtifacts
+     * const aaConsentArtifacts = await prisma.aaConsentArtifact.findMany()
+     * 
+     * // Get first 10 AaConsentArtifacts
+     * const aaConsentArtifacts = await prisma.aaConsentArtifact.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const aaConsentArtifactWithIdOnly = await prisma.aaConsentArtifact.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends AaConsentArtifactFindManyArgs>(args?: SelectSubset<T, AaConsentArtifactFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AaConsentArtifactPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a AaConsentArtifact.
+     * @param {AaConsentArtifactCreateArgs} args - Arguments to create a AaConsentArtifact.
+     * @example
+     * // Create one AaConsentArtifact
+     * const AaConsentArtifact = await prisma.aaConsentArtifact.create({
+     *   data: {
+     *     // ... data to create a AaConsentArtifact
+     *   }
+     * })
+     * 
+     */
+    create<T extends AaConsentArtifactCreateArgs>(args: SelectSubset<T, AaConsentArtifactCreateArgs<ExtArgs>>): Prisma__AaConsentArtifactClient<$Result.GetResult<Prisma.$AaConsentArtifactPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many AaConsentArtifacts.
+     * @param {AaConsentArtifactCreateManyArgs} args - Arguments to create many AaConsentArtifacts.
+     * @example
+     * // Create many AaConsentArtifacts
+     * const aaConsentArtifact = await prisma.aaConsentArtifact.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends AaConsentArtifactCreateManyArgs>(args?: SelectSubset<T, AaConsentArtifactCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many AaConsentArtifacts and returns the data saved in the database.
+     * @param {AaConsentArtifactCreateManyAndReturnArgs} args - Arguments to create many AaConsentArtifacts.
+     * @example
+     * // Create many AaConsentArtifacts
+     * const aaConsentArtifact = await prisma.aaConsentArtifact.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many AaConsentArtifacts and only return the `id`
+     * const aaConsentArtifactWithIdOnly = await prisma.aaConsentArtifact.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends AaConsentArtifactCreateManyAndReturnArgs>(args?: SelectSubset<T, AaConsentArtifactCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AaConsentArtifactPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a AaConsentArtifact.
+     * @param {AaConsentArtifactDeleteArgs} args - Arguments to delete one AaConsentArtifact.
+     * @example
+     * // Delete one AaConsentArtifact
+     * const AaConsentArtifact = await prisma.aaConsentArtifact.delete({
+     *   where: {
+     *     // ... filter to delete one AaConsentArtifact
+     *   }
+     * })
+     * 
+     */
+    delete<T extends AaConsentArtifactDeleteArgs>(args: SelectSubset<T, AaConsentArtifactDeleteArgs<ExtArgs>>): Prisma__AaConsentArtifactClient<$Result.GetResult<Prisma.$AaConsentArtifactPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one AaConsentArtifact.
+     * @param {AaConsentArtifactUpdateArgs} args - Arguments to update one AaConsentArtifact.
+     * @example
+     * // Update one AaConsentArtifact
+     * const aaConsentArtifact = await prisma.aaConsentArtifact.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends AaConsentArtifactUpdateArgs>(args: SelectSubset<T, AaConsentArtifactUpdateArgs<ExtArgs>>): Prisma__AaConsentArtifactClient<$Result.GetResult<Prisma.$AaConsentArtifactPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more AaConsentArtifacts.
+     * @param {AaConsentArtifactDeleteManyArgs} args - Arguments to filter AaConsentArtifacts to delete.
+     * @example
+     * // Delete a few AaConsentArtifacts
+     * const { count } = await prisma.aaConsentArtifact.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends AaConsentArtifactDeleteManyArgs>(args?: SelectSubset<T, AaConsentArtifactDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AaConsentArtifacts.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AaConsentArtifactUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many AaConsentArtifacts
+     * const aaConsentArtifact = await prisma.aaConsentArtifact.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends AaConsentArtifactUpdateManyArgs>(args: SelectSubset<T, AaConsentArtifactUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AaConsentArtifacts and returns the data updated in the database.
+     * @param {AaConsentArtifactUpdateManyAndReturnArgs} args - Arguments to update many AaConsentArtifacts.
+     * @example
+     * // Update many AaConsentArtifacts
+     * const aaConsentArtifact = await prisma.aaConsentArtifact.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more AaConsentArtifacts and only return the `id`
+     * const aaConsentArtifactWithIdOnly = await prisma.aaConsentArtifact.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends AaConsentArtifactUpdateManyAndReturnArgs>(args: SelectSubset<T, AaConsentArtifactUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AaConsentArtifactPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one AaConsentArtifact.
+     * @param {AaConsentArtifactUpsertArgs} args - Arguments to update or create a AaConsentArtifact.
+     * @example
+     * // Update or create a AaConsentArtifact
+     * const aaConsentArtifact = await prisma.aaConsentArtifact.upsert({
+     *   create: {
+     *     // ... data to create a AaConsentArtifact
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the AaConsentArtifact we want to update
+     *   }
+     * })
+     */
+    upsert<T extends AaConsentArtifactUpsertArgs>(args: SelectSubset<T, AaConsentArtifactUpsertArgs<ExtArgs>>): Prisma__AaConsentArtifactClient<$Result.GetResult<Prisma.$AaConsentArtifactPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of AaConsentArtifacts.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AaConsentArtifactCountArgs} args - Arguments to filter AaConsentArtifacts to count.
+     * @example
+     * // Count the number of AaConsentArtifacts
+     * const count = await prisma.aaConsentArtifact.count({
+     *   where: {
+     *     // ... the filter for the AaConsentArtifacts we want to count
+     *   }
+     * })
+    **/
+    count<T extends AaConsentArtifactCountArgs>(
+      args?: Subset<T, AaConsentArtifactCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], AaConsentArtifactCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a AaConsentArtifact.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AaConsentArtifactAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends AaConsentArtifactAggregateArgs>(args: Subset<T, AaConsentArtifactAggregateArgs>): Prisma.PrismaPromise<GetAaConsentArtifactAggregateType<T>>
+
+    /**
+     * Group by AaConsentArtifact.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AaConsentArtifactGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends AaConsentArtifactGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: AaConsentArtifactGroupByArgs['orderBy'] }
+        : { orderBy?: AaConsentArtifactGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, AaConsentArtifactGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetAaConsentArtifactGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the AaConsentArtifact model
+   */
+  readonly fields: AaConsentArtifactFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for AaConsentArtifact.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__AaConsentArtifactClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the AaConsentArtifact model
+   */
+  interface AaConsentArtifactFieldRefs {
+    readonly id: FieldRef<"AaConsentArtifact", 'String'>
+    readonly consentId: FieldRef<"AaConsentArtifact", 'String'>
+    readonly artifactJson: FieldRef<"AaConsentArtifact", 'String'>
+    readonly signature: FieldRef<"AaConsentArtifact", 'String'>
+    readonly status: FieldRef<"AaConsentArtifact", 'String'>
+    readonly createdAt: FieldRef<"AaConsentArtifact", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * AaConsentArtifact findUnique
+   */
+  export type AaConsentArtifactFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AaConsentArtifact
+     */
+    select?: AaConsentArtifactSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AaConsentArtifact
+     */
+    omit?: AaConsentArtifactOmit<ExtArgs> | null
+    /**
+     * Filter, which AaConsentArtifact to fetch.
+     */
+    where: AaConsentArtifactWhereUniqueInput
+  }
+
+  /**
+   * AaConsentArtifact findUniqueOrThrow
+   */
+  export type AaConsentArtifactFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AaConsentArtifact
+     */
+    select?: AaConsentArtifactSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AaConsentArtifact
+     */
+    omit?: AaConsentArtifactOmit<ExtArgs> | null
+    /**
+     * Filter, which AaConsentArtifact to fetch.
+     */
+    where: AaConsentArtifactWhereUniqueInput
+  }
+
+  /**
+   * AaConsentArtifact findFirst
+   */
+  export type AaConsentArtifactFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AaConsentArtifact
+     */
+    select?: AaConsentArtifactSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AaConsentArtifact
+     */
+    omit?: AaConsentArtifactOmit<ExtArgs> | null
+    /**
+     * Filter, which AaConsentArtifact to fetch.
+     */
+    where?: AaConsentArtifactWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AaConsentArtifacts to fetch.
+     */
+    orderBy?: AaConsentArtifactOrderByWithRelationInput | AaConsentArtifactOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AaConsentArtifacts.
+     */
+    cursor?: AaConsentArtifactWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AaConsentArtifacts from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AaConsentArtifacts.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AaConsentArtifacts.
+     */
+    distinct?: AaConsentArtifactScalarFieldEnum | AaConsentArtifactScalarFieldEnum[]
+  }
+
+  /**
+   * AaConsentArtifact findFirstOrThrow
+   */
+  export type AaConsentArtifactFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AaConsentArtifact
+     */
+    select?: AaConsentArtifactSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AaConsentArtifact
+     */
+    omit?: AaConsentArtifactOmit<ExtArgs> | null
+    /**
+     * Filter, which AaConsentArtifact to fetch.
+     */
+    where?: AaConsentArtifactWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AaConsentArtifacts to fetch.
+     */
+    orderBy?: AaConsentArtifactOrderByWithRelationInput | AaConsentArtifactOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AaConsentArtifacts.
+     */
+    cursor?: AaConsentArtifactWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AaConsentArtifacts from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AaConsentArtifacts.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AaConsentArtifacts.
+     */
+    distinct?: AaConsentArtifactScalarFieldEnum | AaConsentArtifactScalarFieldEnum[]
+  }
+
+  /**
+   * AaConsentArtifact findMany
+   */
+  export type AaConsentArtifactFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AaConsentArtifact
+     */
+    select?: AaConsentArtifactSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AaConsentArtifact
+     */
+    omit?: AaConsentArtifactOmit<ExtArgs> | null
+    /**
+     * Filter, which AaConsentArtifacts to fetch.
+     */
+    where?: AaConsentArtifactWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AaConsentArtifacts to fetch.
+     */
+    orderBy?: AaConsentArtifactOrderByWithRelationInput | AaConsentArtifactOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing AaConsentArtifacts.
+     */
+    cursor?: AaConsentArtifactWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AaConsentArtifacts from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AaConsentArtifacts.
+     */
+    skip?: number
+    distinct?: AaConsentArtifactScalarFieldEnum | AaConsentArtifactScalarFieldEnum[]
+  }
+
+  /**
+   * AaConsentArtifact create
+   */
+  export type AaConsentArtifactCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AaConsentArtifact
+     */
+    select?: AaConsentArtifactSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AaConsentArtifact
+     */
+    omit?: AaConsentArtifactOmit<ExtArgs> | null
+    /**
+     * The data needed to create a AaConsentArtifact.
+     */
+    data: XOR<AaConsentArtifactCreateInput, AaConsentArtifactUncheckedCreateInput>
+  }
+
+  /**
+   * AaConsentArtifact createMany
+   */
+  export type AaConsentArtifactCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many AaConsentArtifacts.
+     */
+    data: AaConsentArtifactCreateManyInput | AaConsentArtifactCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * AaConsentArtifact createManyAndReturn
+   */
+  export type AaConsentArtifactCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AaConsentArtifact
+     */
+    select?: AaConsentArtifactSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the AaConsentArtifact
+     */
+    omit?: AaConsentArtifactOmit<ExtArgs> | null
+    /**
+     * The data used to create many AaConsentArtifacts.
+     */
+    data: AaConsentArtifactCreateManyInput | AaConsentArtifactCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * AaConsentArtifact update
+   */
+  export type AaConsentArtifactUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AaConsentArtifact
+     */
+    select?: AaConsentArtifactSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AaConsentArtifact
+     */
+    omit?: AaConsentArtifactOmit<ExtArgs> | null
+    /**
+     * The data needed to update a AaConsentArtifact.
+     */
+    data: XOR<AaConsentArtifactUpdateInput, AaConsentArtifactUncheckedUpdateInput>
+    /**
+     * Choose, which AaConsentArtifact to update.
+     */
+    where: AaConsentArtifactWhereUniqueInput
+  }
+
+  /**
+   * AaConsentArtifact updateMany
+   */
+  export type AaConsentArtifactUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update AaConsentArtifacts.
+     */
+    data: XOR<AaConsentArtifactUpdateManyMutationInput, AaConsentArtifactUncheckedUpdateManyInput>
+    /**
+     * Filter which AaConsentArtifacts to update
+     */
+    where?: AaConsentArtifactWhereInput
+    /**
+     * Limit how many AaConsentArtifacts to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * AaConsentArtifact updateManyAndReturn
+   */
+  export type AaConsentArtifactUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AaConsentArtifact
+     */
+    select?: AaConsentArtifactSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the AaConsentArtifact
+     */
+    omit?: AaConsentArtifactOmit<ExtArgs> | null
+    /**
+     * The data used to update AaConsentArtifacts.
+     */
+    data: XOR<AaConsentArtifactUpdateManyMutationInput, AaConsentArtifactUncheckedUpdateManyInput>
+    /**
+     * Filter which AaConsentArtifacts to update
+     */
+    where?: AaConsentArtifactWhereInput
+    /**
+     * Limit how many AaConsentArtifacts to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * AaConsentArtifact upsert
+   */
+  export type AaConsentArtifactUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AaConsentArtifact
+     */
+    select?: AaConsentArtifactSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AaConsentArtifact
+     */
+    omit?: AaConsentArtifactOmit<ExtArgs> | null
+    /**
+     * The filter to search for the AaConsentArtifact to update in case it exists.
+     */
+    where: AaConsentArtifactWhereUniqueInput
+    /**
+     * In case the AaConsentArtifact found by the `where` argument doesn't exist, create a new AaConsentArtifact with this data.
+     */
+    create: XOR<AaConsentArtifactCreateInput, AaConsentArtifactUncheckedCreateInput>
+    /**
+     * In case the AaConsentArtifact was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<AaConsentArtifactUpdateInput, AaConsentArtifactUncheckedUpdateInput>
+  }
+
+  /**
+   * AaConsentArtifact delete
+   */
+  export type AaConsentArtifactDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AaConsentArtifact
+     */
+    select?: AaConsentArtifactSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AaConsentArtifact
+     */
+    omit?: AaConsentArtifactOmit<ExtArgs> | null
+    /**
+     * Filter which AaConsentArtifact to delete.
+     */
+    where: AaConsentArtifactWhereUniqueInput
+  }
+
+  /**
+   * AaConsentArtifact deleteMany
+   */
+  export type AaConsentArtifactDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AaConsentArtifacts to delete
+     */
+    where?: AaConsentArtifactWhereInput
+    /**
+     * Limit how many AaConsentArtifacts to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * AaConsentArtifact without action
+   */
+  export type AaConsentArtifactDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AaConsentArtifact
+     */
+    select?: AaConsentArtifactSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AaConsentArtifact
+     */
+    omit?: AaConsentArtifactOmit<ExtArgs> | null
+  }
+
+
+  /**
+   * Model AaDataSession
+   */
+
+  export type AggregateAaDataSession = {
+    _count: AaDataSessionCountAggregateOutputType | null
+    _min: AaDataSessionMinAggregateOutputType | null
+    _max: AaDataSessionMaxAggregateOutputType | null
+  }
+
+  export type AaDataSessionMinAggregateOutputType = {
+    id: string | null
+    consentId: string | null
+    sessionId: string | null
+    sessionStatus: string | null
+    userId: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type AaDataSessionMaxAggregateOutputType = {
+    id: string | null
+    consentId: string | null
+    sessionId: string | null
+    sessionStatus: string | null
+    userId: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type AaDataSessionCountAggregateOutputType = {
+    id: number
+    consentId: number
+    sessionId: number
+    sessionStatus: number
+    userId: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type AaDataSessionMinAggregateInputType = {
+    id?: true
+    consentId?: true
+    sessionId?: true
+    sessionStatus?: true
+    userId?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type AaDataSessionMaxAggregateInputType = {
+    id?: true
+    consentId?: true
+    sessionId?: true
+    sessionStatus?: true
+    userId?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type AaDataSessionCountAggregateInputType = {
+    id?: true
+    consentId?: true
+    sessionId?: true
+    sessionStatus?: true
+    userId?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type AaDataSessionAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AaDataSession to aggregate.
+     */
+    where?: AaDataSessionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AaDataSessions to fetch.
+     */
+    orderBy?: AaDataSessionOrderByWithRelationInput | AaDataSessionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: AaDataSessionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AaDataSessions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AaDataSessions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned AaDataSessions
+    **/
+    _count?: true | AaDataSessionCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: AaDataSessionMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: AaDataSessionMaxAggregateInputType
+  }
+
+  export type GetAaDataSessionAggregateType<T extends AaDataSessionAggregateArgs> = {
+        [P in keyof T & keyof AggregateAaDataSession]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateAaDataSession[P]>
+      : GetScalarType<T[P], AggregateAaDataSession[P]>
+  }
+
+
+
+
+  export type AaDataSessionGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AaDataSessionWhereInput
+    orderBy?: AaDataSessionOrderByWithAggregationInput | AaDataSessionOrderByWithAggregationInput[]
+    by: AaDataSessionScalarFieldEnum[] | AaDataSessionScalarFieldEnum
+    having?: AaDataSessionScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: AaDataSessionCountAggregateInputType | true
+    _min?: AaDataSessionMinAggregateInputType
+    _max?: AaDataSessionMaxAggregateInputType
+  }
+
+  export type AaDataSessionGroupByOutputType = {
+    id: string
+    consentId: string
+    sessionId: string
+    sessionStatus: string
+    userId: string
+    createdAt: Date
+    updatedAt: Date
+    _count: AaDataSessionCountAggregateOutputType | null
+    _min: AaDataSessionMinAggregateOutputType | null
+    _max: AaDataSessionMaxAggregateOutputType | null
+  }
+
+  type GetAaDataSessionGroupByPayload<T extends AaDataSessionGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<AaDataSessionGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof AaDataSessionGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], AaDataSessionGroupByOutputType[P]>
+            : GetScalarType<T[P], AaDataSessionGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type AaDataSessionSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    consentId?: boolean
+    sessionId?: boolean
+    sessionStatus?: boolean
+    userId?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["aaDataSession"]>
+
+  export type AaDataSessionSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    consentId?: boolean
+    sessionId?: boolean
+    sessionStatus?: boolean
+    userId?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["aaDataSession"]>
+
+  export type AaDataSessionSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    consentId?: boolean
+    sessionId?: boolean
+    sessionStatus?: boolean
+    userId?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["aaDataSession"]>
+
+  export type AaDataSessionSelectScalar = {
+    id?: boolean
+    consentId?: boolean
+    sessionId?: boolean
+    sessionStatus?: boolean
+    userId?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type AaDataSessionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "consentId" | "sessionId" | "sessionStatus" | "userId" | "createdAt" | "updatedAt", ExtArgs["result"]["aaDataSession"]>
+
+  export type $AaDataSessionPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "AaDataSession"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      consentId: string
+      sessionId: string
+      sessionStatus: string
+      userId: string
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["aaDataSession"]>
+    composites: {}
+  }
+
+  type AaDataSessionGetPayload<S extends boolean | null | undefined | AaDataSessionDefaultArgs> = $Result.GetResult<Prisma.$AaDataSessionPayload, S>
+
+  type AaDataSessionCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<AaDataSessionFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: AaDataSessionCountAggregateInputType | true
+    }
+
+  export interface AaDataSessionDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['AaDataSession'], meta: { name: 'AaDataSession' } }
+    /**
+     * Find zero or one AaDataSession that matches the filter.
+     * @param {AaDataSessionFindUniqueArgs} args - Arguments to find a AaDataSession
+     * @example
+     * // Get one AaDataSession
+     * const aaDataSession = await prisma.aaDataSession.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends AaDataSessionFindUniqueArgs>(args: SelectSubset<T, AaDataSessionFindUniqueArgs<ExtArgs>>): Prisma__AaDataSessionClient<$Result.GetResult<Prisma.$AaDataSessionPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one AaDataSession that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {AaDataSessionFindUniqueOrThrowArgs} args - Arguments to find a AaDataSession
+     * @example
+     * // Get one AaDataSession
+     * const aaDataSession = await prisma.aaDataSession.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends AaDataSessionFindUniqueOrThrowArgs>(args: SelectSubset<T, AaDataSessionFindUniqueOrThrowArgs<ExtArgs>>): Prisma__AaDataSessionClient<$Result.GetResult<Prisma.$AaDataSessionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AaDataSession that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AaDataSessionFindFirstArgs} args - Arguments to find a AaDataSession
+     * @example
+     * // Get one AaDataSession
+     * const aaDataSession = await prisma.aaDataSession.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends AaDataSessionFindFirstArgs>(args?: SelectSubset<T, AaDataSessionFindFirstArgs<ExtArgs>>): Prisma__AaDataSessionClient<$Result.GetResult<Prisma.$AaDataSessionPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AaDataSession that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AaDataSessionFindFirstOrThrowArgs} args - Arguments to find a AaDataSession
+     * @example
+     * // Get one AaDataSession
+     * const aaDataSession = await prisma.aaDataSession.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends AaDataSessionFindFirstOrThrowArgs>(args?: SelectSubset<T, AaDataSessionFindFirstOrThrowArgs<ExtArgs>>): Prisma__AaDataSessionClient<$Result.GetResult<Prisma.$AaDataSessionPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more AaDataSessions that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AaDataSessionFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all AaDataSessions
+     * const aaDataSessions = await prisma.aaDataSession.findMany()
+     * 
+     * // Get first 10 AaDataSessions
+     * const aaDataSessions = await prisma.aaDataSession.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const aaDataSessionWithIdOnly = await prisma.aaDataSession.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends AaDataSessionFindManyArgs>(args?: SelectSubset<T, AaDataSessionFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AaDataSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a AaDataSession.
+     * @param {AaDataSessionCreateArgs} args - Arguments to create a AaDataSession.
+     * @example
+     * // Create one AaDataSession
+     * const AaDataSession = await prisma.aaDataSession.create({
+     *   data: {
+     *     // ... data to create a AaDataSession
+     *   }
+     * })
+     * 
+     */
+    create<T extends AaDataSessionCreateArgs>(args: SelectSubset<T, AaDataSessionCreateArgs<ExtArgs>>): Prisma__AaDataSessionClient<$Result.GetResult<Prisma.$AaDataSessionPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many AaDataSessions.
+     * @param {AaDataSessionCreateManyArgs} args - Arguments to create many AaDataSessions.
+     * @example
+     * // Create many AaDataSessions
+     * const aaDataSession = await prisma.aaDataSession.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends AaDataSessionCreateManyArgs>(args?: SelectSubset<T, AaDataSessionCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many AaDataSessions and returns the data saved in the database.
+     * @param {AaDataSessionCreateManyAndReturnArgs} args - Arguments to create many AaDataSessions.
+     * @example
+     * // Create many AaDataSessions
+     * const aaDataSession = await prisma.aaDataSession.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many AaDataSessions and only return the `id`
+     * const aaDataSessionWithIdOnly = await prisma.aaDataSession.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends AaDataSessionCreateManyAndReturnArgs>(args?: SelectSubset<T, AaDataSessionCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AaDataSessionPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a AaDataSession.
+     * @param {AaDataSessionDeleteArgs} args - Arguments to delete one AaDataSession.
+     * @example
+     * // Delete one AaDataSession
+     * const AaDataSession = await prisma.aaDataSession.delete({
+     *   where: {
+     *     // ... filter to delete one AaDataSession
+     *   }
+     * })
+     * 
+     */
+    delete<T extends AaDataSessionDeleteArgs>(args: SelectSubset<T, AaDataSessionDeleteArgs<ExtArgs>>): Prisma__AaDataSessionClient<$Result.GetResult<Prisma.$AaDataSessionPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one AaDataSession.
+     * @param {AaDataSessionUpdateArgs} args - Arguments to update one AaDataSession.
+     * @example
+     * // Update one AaDataSession
+     * const aaDataSession = await prisma.aaDataSession.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends AaDataSessionUpdateArgs>(args: SelectSubset<T, AaDataSessionUpdateArgs<ExtArgs>>): Prisma__AaDataSessionClient<$Result.GetResult<Prisma.$AaDataSessionPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more AaDataSessions.
+     * @param {AaDataSessionDeleteManyArgs} args - Arguments to filter AaDataSessions to delete.
+     * @example
+     * // Delete a few AaDataSessions
+     * const { count } = await prisma.aaDataSession.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends AaDataSessionDeleteManyArgs>(args?: SelectSubset<T, AaDataSessionDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AaDataSessions.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AaDataSessionUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many AaDataSessions
+     * const aaDataSession = await prisma.aaDataSession.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends AaDataSessionUpdateManyArgs>(args: SelectSubset<T, AaDataSessionUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AaDataSessions and returns the data updated in the database.
+     * @param {AaDataSessionUpdateManyAndReturnArgs} args - Arguments to update many AaDataSessions.
+     * @example
+     * // Update many AaDataSessions
+     * const aaDataSession = await prisma.aaDataSession.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more AaDataSessions and only return the `id`
+     * const aaDataSessionWithIdOnly = await prisma.aaDataSession.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends AaDataSessionUpdateManyAndReturnArgs>(args: SelectSubset<T, AaDataSessionUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AaDataSessionPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one AaDataSession.
+     * @param {AaDataSessionUpsertArgs} args - Arguments to update or create a AaDataSession.
+     * @example
+     * // Update or create a AaDataSession
+     * const aaDataSession = await prisma.aaDataSession.upsert({
+     *   create: {
+     *     // ... data to create a AaDataSession
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the AaDataSession we want to update
+     *   }
+     * })
+     */
+    upsert<T extends AaDataSessionUpsertArgs>(args: SelectSubset<T, AaDataSessionUpsertArgs<ExtArgs>>): Prisma__AaDataSessionClient<$Result.GetResult<Prisma.$AaDataSessionPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of AaDataSessions.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AaDataSessionCountArgs} args - Arguments to filter AaDataSessions to count.
+     * @example
+     * // Count the number of AaDataSessions
+     * const count = await prisma.aaDataSession.count({
+     *   where: {
+     *     // ... the filter for the AaDataSessions we want to count
+     *   }
+     * })
+    **/
+    count<T extends AaDataSessionCountArgs>(
+      args?: Subset<T, AaDataSessionCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], AaDataSessionCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a AaDataSession.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AaDataSessionAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends AaDataSessionAggregateArgs>(args: Subset<T, AaDataSessionAggregateArgs>): Prisma.PrismaPromise<GetAaDataSessionAggregateType<T>>
+
+    /**
+     * Group by AaDataSession.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AaDataSessionGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends AaDataSessionGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: AaDataSessionGroupByArgs['orderBy'] }
+        : { orderBy?: AaDataSessionGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, AaDataSessionGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetAaDataSessionGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the AaDataSession model
+   */
+  readonly fields: AaDataSessionFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for AaDataSession.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__AaDataSessionClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the AaDataSession model
+   */
+  interface AaDataSessionFieldRefs {
+    readonly id: FieldRef<"AaDataSession", 'String'>
+    readonly consentId: FieldRef<"AaDataSession", 'String'>
+    readonly sessionId: FieldRef<"AaDataSession", 'String'>
+    readonly sessionStatus: FieldRef<"AaDataSession", 'String'>
+    readonly userId: FieldRef<"AaDataSession", 'String'>
+    readonly createdAt: FieldRef<"AaDataSession", 'DateTime'>
+    readonly updatedAt: FieldRef<"AaDataSession", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * AaDataSession findUnique
+   */
+  export type AaDataSessionFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AaDataSession
+     */
+    select?: AaDataSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AaDataSession
+     */
+    omit?: AaDataSessionOmit<ExtArgs> | null
+    /**
+     * Filter, which AaDataSession to fetch.
+     */
+    where: AaDataSessionWhereUniqueInput
+  }
+
+  /**
+   * AaDataSession findUniqueOrThrow
+   */
+  export type AaDataSessionFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AaDataSession
+     */
+    select?: AaDataSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AaDataSession
+     */
+    omit?: AaDataSessionOmit<ExtArgs> | null
+    /**
+     * Filter, which AaDataSession to fetch.
+     */
+    where: AaDataSessionWhereUniqueInput
+  }
+
+  /**
+   * AaDataSession findFirst
+   */
+  export type AaDataSessionFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AaDataSession
+     */
+    select?: AaDataSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AaDataSession
+     */
+    omit?: AaDataSessionOmit<ExtArgs> | null
+    /**
+     * Filter, which AaDataSession to fetch.
+     */
+    where?: AaDataSessionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AaDataSessions to fetch.
+     */
+    orderBy?: AaDataSessionOrderByWithRelationInput | AaDataSessionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AaDataSessions.
+     */
+    cursor?: AaDataSessionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AaDataSessions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AaDataSessions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AaDataSessions.
+     */
+    distinct?: AaDataSessionScalarFieldEnum | AaDataSessionScalarFieldEnum[]
+  }
+
+  /**
+   * AaDataSession findFirstOrThrow
+   */
+  export type AaDataSessionFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AaDataSession
+     */
+    select?: AaDataSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AaDataSession
+     */
+    omit?: AaDataSessionOmit<ExtArgs> | null
+    /**
+     * Filter, which AaDataSession to fetch.
+     */
+    where?: AaDataSessionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AaDataSessions to fetch.
+     */
+    orderBy?: AaDataSessionOrderByWithRelationInput | AaDataSessionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AaDataSessions.
+     */
+    cursor?: AaDataSessionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AaDataSessions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AaDataSessions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AaDataSessions.
+     */
+    distinct?: AaDataSessionScalarFieldEnum | AaDataSessionScalarFieldEnum[]
+  }
+
+  /**
+   * AaDataSession findMany
+   */
+  export type AaDataSessionFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AaDataSession
+     */
+    select?: AaDataSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AaDataSession
+     */
+    omit?: AaDataSessionOmit<ExtArgs> | null
+    /**
+     * Filter, which AaDataSessions to fetch.
+     */
+    where?: AaDataSessionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AaDataSessions to fetch.
+     */
+    orderBy?: AaDataSessionOrderByWithRelationInput | AaDataSessionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing AaDataSessions.
+     */
+    cursor?: AaDataSessionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AaDataSessions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AaDataSessions.
+     */
+    skip?: number
+    distinct?: AaDataSessionScalarFieldEnum | AaDataSessionScalarFieldEnum[]
+  }
+
+  /**
+   * AaDataSession create
+   */
+  export type AaDataSessionCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AaDataSession
+     */
+    select?: AaDataSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AaDataSession
+     */
+    omit?: AaDataSessionOmit<ExtArgs> | null
+    /**
+     * The data needed to create a AaDataSession.
+     */
+    data: XOR<AaDataSessionCreateInput, AaDataSessionUncheckedCreateInput>
+  }
+
+  /**
+   * AaDataSession createMany
+   */
+  export type AaDataSessionCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many AaDataSessions.
+     */
+    data: AaDataSessionCreateManyInput | AaDataSessionCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * AaDataSession createManyAndReturn
+   */
+  export type AaDataSessionCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AaDataSession
+     */
+    select?: AaDataSessionSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the AaDataSession
+     */
+    omit?: AaDataSessionOmit<ExtArgs> | null
+    /**
+     * The data used to create many AaDataSessions.
+     */
+    data: AaDataSessionCreateManyInput | AaDataSessionCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * AaDataSession update
+   */
+  export type AaDataSessionUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AaDataSession
+     */
+    select?: AaDataSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AaDataSession
+     */
+    omit?: AaDataSessionOmit<ExtArgs> | null
+    /**
+     * The data needed to update a AaDataSession.
+     */
+    data: XOR<AaDataSessionUpdateInput, AaDataSessionUncheckedUpdateInput>
+    /**
+     * Choose, which AaDataSession to update.
+     */
+    where: AaDataSessionWhereUniqueInput
+  }
+
+  /**
+   * AaDataSession updateMany
+   */
+  export type AaDataSessionUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update AaDataSessions.
+     */
+    data: XOR<AaDataSessionUpdateManyMutationInput, AaDataSessionUncheckedUpdateManyInput>
+    /**
+     * Filter which AaDataSessions to update
+     */
+    where?: AaDataSessionWhereInput
+    /**
+     * Limit how many AaDataSessions to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * AaDataSession updateManyAndReturn
+   */
+  export type AaDataSessionUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AaDataSession
+     */
+    select?: AaDataSessionSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the AaDataSession
+     */
+    omit?: AaDataSessionOmit<ExtArgs> | null
+    /**
+     * The data used to update AaDataSessions.
+     */
+    data: XOR<AaDataSessionUpdateManyMutationInput, AaDataSessionUncheckedUpdateManyInput>
+    /**
+     * Filter which AaDataSessions to update
+     */
+    where?: AaDataSessionWhereInput
+    /**
+     * Limit how many AaDataSessions to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * AaDataSession upsert
+   */
+  export type AaDataSessionUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AaDataSession
+     */
+    select?: AaDataSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AaDataSession
+     */
+    omit?: AaDataSessionOmit<ExtArgs> | null
+    /**
+     * The filter to search for the AaDataSession to update in case it exists.
+     */
+    where: AaDataSessionWhereUniqueInput
+    /**
+     * In case the AaDataSession found by the `where` argument doesn't exist, create a new AaDataSession with this data.
+     */
+    create: XOR<AaDataSessionCreateInput, AaDataSessionUncheckedCreateInput>
+    /**
+     * In case the AaDataSession was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<AaDataSessionUpdateInput, AaDataSessionUncheckedUpdateInput>
+  }
+
+  /**
+   * AaDataSession delete
+   */
+  export type AaDataSessionDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AaDataSession
+     */
+    select?: AaDataSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AaDataSession
+     */
+    omit?: AaDataSessionOmit<ExtArgs> | null
+    /**
+     * Filter which AaDataSession to delete.
+     */
+    where: AaDataSessionWhereUniqueInput
+  }
+
+  /**
+   * AaDataSession deleteMany
+   */
+  export type AaDataSessionDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AaDataSessions to delete
+     */
+    where?: AaDataSessionWhereInput
+    /**
+     * Limit how many AaDataSessions to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * AaDataSession without action
+   */
+  export type AaDataSessionDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AaDataSession
+     */
+    select?: AaDataSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AaDataSession
+     */
+    omit?: AaDataSessionOmit<ExtArgs> | null
+  }
+
+
+  /**
+   * Model AaFinancialData
+   */
+
+  export type AggregateAaFinancialData = {
+    _count: AaFinancialDataCountAggregateOutputType | null
+    _min: AaFinancialDataMinAggregateOutputType | null
+    _max: AaFinancialDataMaxAggregateOutputType | null
+  }
+
+  export type AaFinancialDataMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    consentId: string | null
+    sessionId: string | null
+    accountType: string | null
+    maskedAccountNumber: string | null
+    dataJson: string | null
+    createdAt: Date | null
+  }
+
+  export type AaFinancialDataMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    consentId: string | null
+    sessionId: string | null
+    accountType: string | null
+    maskedAccountNumber: string | null
+    dataJson: string | null
+    createdAt: Date | null
+  }
+
+  export type AaFinancialDataCountAggregateOutputType = {
+    id: number
+    userId: number
+    consentId: number
+    sessionId: number
+    accountType: number
+    maskedAccountNumber: number
+    dataJson: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type AaFinancialDataMinAggregateInputType = {
+    id?: true
+    userId?: true
+    consentId?: true
+    sessionId?: true
+    accountType?: true
+    maskedAccountNumber?: true
+    dataJson?: true
+    createdAt?: true
+  }
+
+  export type AaFinancialDataMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    consentId?: true
+    sessionId?: true
+    accountType?: true
+    maskedAccountNumber?: true
+    dataJson?: true
+    createdAt?: true
+  }
+
+  export type AaFinancialDataCountAggregateInputType = {
+    id?: true
+    userId?: true
+    consentId?: true
+    sessionId?: true
+    accountType?: true
+    maskedAccountNumber?: true
+    dataJson?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type AaFinancialDataAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AaFinancialData to aggregate.
+     */
+    where?: AaFinancialDataWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AaFinancialData to fetch.
+     */
+    orderBy?: AaFinancialDataOrderByWithRelationInput | AaFinancialDataOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: AaFinancialDataWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AaFinancialData from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AaFinancialData.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned AaFinancialData
+    **/
+    _count?: true | AaFinancialDataCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: AaFinancialDataMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: AaFinancialDataMaxAggregateInputType
+  }
+
+  export type GetAaFinancialDataAggregateType<T extends AaFinancialDataAggregateArgs> = {
+        [P in keyof T & keyof AggregateAaFinancialData]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateAaFinancialData[P]>
+      : GetScalarType<T[P], AggregateAaFinancialData[P]>
+  }
+
+
+
+
+  export type AaFinancialDataGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AaFinancialDataWhereInput
+    orderBy?: AaFinancialDataOrderByWithAggregationInput | AaFinancialDataOrderByWithAggregationInput[]
+    by: AaFinancialDataScalarFieldEnum[] | AaFinancialDataScalarFieldEnum
+    having?: AaFinancialDataScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: AaFinancialDataCountAggregateInputType | true
+    _min?: AaFinancialDataMinAggregateInputType
+    _max?: AaFinancialDataMaxAggregateInputType
+  }
+
+  export type AaFinancialDataGroupByOutputType = {
+    id: string
+    userId: string
+    consentId: string
+    sessionId: string
+    accountType: string | null
+    maskedAccountNumber: string | null
+    dataJson: string | null
+    createdAt: Date
+    _count: AaFinancialDataCountAggregateOutputType | null
+    _min: AaFinancialDataMinAggregateOutputType | null
+    _max: AaFinancialDataMaxAggregateOutputType | null
+  }
+
+  type GetAaFinancialDataGroupByPayload<T extends AaFinancialDataGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<AaFinancialDataGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof AaFinancialDataGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], AaFinancialDataGroupByOutputType[P]>
+            : GetScalarType<T[P], AaFinancialDataGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type AaFinancialDataSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    consentId?: boolean
+    sessionId?: boolean
+    accountType?: boolean
+    maskedAccountNumber?: boolean
+    dataJson?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["aaFinancialData"]>
+
+  export type AaFinancialDataSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    consentId?: boolean
+    sessionId?: boolean
+    accountType?: boolean
+    maskedAccountNumber?: boolean
+    dataJson?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["aaFinancialData"]>
+
+  export type AaFinancialDataSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    consentId?: boolean
+    sessionId?: boolean
+    accountType?: boolean
+    maskedAccountNumber?: boolean
+    dataJson?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["aaFinancialData"]>
+
+  export type AaFinancialDataSelectScalar = {
+    id?: boolean
+    userId?: boolean
+    consentId?: boolean
+    sessionId?: boolean
+    accountType?: boolean
+    maskedAccountNumber?: boolean
+    dataJson?: boolean
+    createdAt?: boolean
+  }
+
+  export type AaFinancialDataOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "consentId" | "sessionId" | "accountType" | "maskedAccountNumber" | "dataJson" | "createdAt", ExtArgs["result"]["aaFinancialData"]>
+
+  export type $AaFinancialDataPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "AaFinancialData"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userId: string
+      consentId: string
+      sessionId: string
+      accountType: string | null
+      maskedAccountNumber: string | null
+      dataJson: string | null
+      createdAt: Date
+    }, ExtArgs["result"]["aaFinancialData"]>
+    composites: {}
+  }
+
+  type AaFinancialDataGetPayload<S extends boolean | null | undefined | AaFinancialDataDefaultArgs> = $Result.GetResult<Prisma.$AaFinancialDataPayload, S>
+
+  type AaFinancialDataCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<AaFinancialDataFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: AaFinancialDataCountAggregateInputType | true
+    }
+
+  export interface AaFinancialDataDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['AaFinancialData'], meta: { name: 'AaFinancialData' } }
+    /**
+     * Find zero or one AaFinancialData that matches the filter.
+     * @param {AaFinancialDataFindUniqueArgs} args - Arguments to find a AaFinancialData
+     * @example
+     * // Get one AaFinancialData
+     * const aaFinancialData = await prisma.aaFinancialData.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends AaFinancialDataFindUniqueArgs>(args: SelectSubset<T, AaFinancialDataFindUniqueArgs<ExtArgs>>): Prisma__AaFinancialDataClient<$Result.GetResult<Prisma.$AaFinancialDataPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one AaFinancialData that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {AaFinancialDataFindUniqueOrThrowArgs} args - Arguments to find a AaFinancialData
+     * @example
+     * // Get one AaFinancialData
+     * const aaFinancialData = await prisma.aaFinancialData.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends AaFinancialDataFindUniqueOrThrowArgs>(args: SelectSubset<T, AaFinancialDataFindUniqueOrThrowArgs<ExtArgs>>): Prisma__AaFinancialDataClient<$Result.GetResult<Prisma.$AaFinancialDataPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AaFinancialData that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AaFinancialDataFindFirstArgs} args - Arguments to find a AaFinancialData
+     * @example
+     * // Get one AaFinancialData
+     * const aaFinancialData = await prisma.aaFinancialData.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends AaFinancialDataFindFirstArgs>(args?: SelectSubset<T, AaFinancialDataFindFirstArgs<ExtArgs>>): Prisma__AaFinancialDataClient<$Result.GetResult<Prisma.$AaFinancialDataPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AaFinancialData that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AaFinancialDataFindFirstOrThrowArgs} args - Arguments to find a AaFinancialData
+     * @example
+     * // Get one AaFinancialData
+     * const aaFinancialData = await prisma.aaFinancialData.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends AaFinancialDataFindFirstOrThrowArgs>(args?: SelectSubset<T, AaFinancialDataFindFirstOrThrowArgs<ExtArgs>>): Prisma__AaFinancialDataClient<$Result.GetResult<Prisma.$AaFinancialDataPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more AaFinancialData that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AaFinancialDataFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all AaFinancialData
+     * const aaFinancialData = await prisma.aaFinancialData.findMany()
+     * 
+     * // Get first 10 AaFinancialData
+     * const aaFinancialData = await prisma.aaFinancialData.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const aaFinancialDataWithIdOnly = await prisma.aaFinancialData.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends AaFinancialDataFindManyArgs>(args?: SelectSubset<T, AaFinancialDataFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AaFinancialDataPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a AaFinancialData.
+     * @param {AaFinancialDataCreateArgs} args - Arguments to create a AaFinancialData.
+     * @example
+     * // Create one AaFinancialData
+     * const AaFinancialData = await prisma.aaFinancialData.create({
+     *   data: {
+     *     // ... data to create a AaFinancialData
+     *   }
+     * })
+     * 
+     */
+    create<T extends AaFinancialDataCreateArgs>(args: SelectSubset<T, AaFinancialDataCreateArgs<ExtArgs>>): Prisma__AaFinancialDataClient<$Result.GetResult<Prisma.$AaFinancialDataPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many AaFinancialData.
+     * @param {AaFinancialDataCreateManyArgs} args - Arguments to create many AaFinancialData.
+     * @example
+     * // Create many AaFinancialData
+     * const aaFinancialData = await prisma.aaFinancialData.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends AaFinancialDataCreateManyArgs>(args?: SelectSubset<T, AaFinancialDataCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many AaFinancialData and returns the data saved in the database.
+     * @param {AaFinancialDataCreateManyAndReturnArgs} args - Arguments to create many AaFinancialData.
+     * @example
+     * // Create many AaFinancialData
+     * const aaFinancialData = await prisma.aaFinancialData.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many AaFinancialData and only return the `id`
+     * const aaFinancialDataWithIdOnly = await prisma.aaFinancialData.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends AaFinancialDataCreateManyAndReturnArgs>(args?: SelectSubset<T, AaFinancialDataCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AaFinancialDataPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a AaFinancialData.
+     * @param {AaFinancialDataDeleteArgs} args - Arguments to delete one AaFinancialData.
+     * @example
+     * // Delete one AaFinancialData
+     * const AaFinancialData = await prisma.aaFinancialData.delete({
+     *   where: {
+     *     // ... filter to delete one AaFinancialData
+     *   }
+     * })
+     * 
+     */
+    delete<T extends AaFinancialDataDeleteArgs>(args: SelectSubset<T, AaFinancialDataDeleteArgs<ExtArgs>>): Prisma__AaFinancialDataClient<$Result.GetResult<Prisma.$AaFinancialDataPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one AaFinancialData.
+     * @param {AaFinancialDataUpdateArgs} args - Arguments to update one AaFinancialData.
+     * @example
+     * // Update one AaFinancialData
+     * const aaFinancialData = await prisma.aaFinancialData.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends AaFinancialDataUpdateArgs>(args: SelectSubset<T, AaFinancialDataUpdateArgs<ExtArgs>>): Prisma__AaFinancialDataClient<$Result.GetResult<Prisma.$AaFinancialDataPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more AaFinancialData.
+     * @param {AaFinancialDataDeleteManyArgs} args - Arguments to filter AaFinancialData to delete.
+     * @example
+     * // Delete a few AaFinancialData
+     * const { count } = await prisma.aaFinancialData.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends AaFinancialDataDeleteManyArgs>(args?: SelectSubset<T, AaFinancialDataDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AaFinancialData.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AaFinancialDataUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many AaFinancialData
+     * const aaFinancialData = await prisma.aaFinancialData.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends AaFinancialDataUpdateManyArgs>(args: SelectSubset<T, AaFinancialDataUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AaFinancialData and returns the data updated in the database.
+     * @param {AaFinancialDataUpdateManyAndReturnArgs} args - Arguments to update many AaFinancialData.
+     * @example
+     * // Update many AaFinancialData
+     * const aaFinancialData = await prisma.aaFinancialData.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more AaFinancialData and only return the `id`
+     * const aaFinancialDataWithIdOnly = await prisma.aaFinancialData.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends AaFinancialDataUpdateManyAndReturnArgs>(args: SelectSubset<T, AaFinancialDataUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AaFinancialDataPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one AaFinancialData.
+     * @param {AaFinancialDataUpsertArgs} args - Arguments to update or create a AaFinancialData.
+     * @example
+     * // Update or create a AaFinancialData
+     * const aaFinancialData = await prisma.aaFinancialData.upsert({
+     *   create: {
+     *     // ... data to create a AaFinancialData
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the AaFinancialData we want to update
+     *   }
+     * })
+     */
+    upsert<T extends AaFinancialDataUpsertArgs>(args: SelectSubset<T, AaFinancialDataUpsertArgs<ExtArgs>>): Prisma__AaFinancialDataClient<$Result.GetResult<Prisma.$AaFinancialDataPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of AaFinancialData.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AaFinancialDataCountArgs} args - Arguments to filter AaFinancialData to count.
+     * @example
+     * // Count the number of AaFinancialData
+     * const count = await prisma.aaFinancialData.count({
+     *   where: {
+     *     // ... the filter for the AaFinancialData we want to count
+     *   }
+     * })
+    **/
+    count<T extends AaFinancialDataCountArgs>(
+      args?: Subset<T, AaFinancialDataCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], AaFinancialDataCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a AaFinancialData.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AaFinancialDataAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends AaFinancialDataAggregateArgs>(args: Subset<T, AaFinancialDataAggregateArgs>): Prisma.PrismaPromise<GetAaFinancialDataAggregateType<T>>
+
+    /**
+     * Group by AaFinancialData.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AaFinancialDataGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends AaFinancialDataGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: AaFinancialDataGroupByArgs['orderBy'] }
+        : { orderBy?: AaFinancialDataGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, AaFinancialDataGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetAaFinancialDataGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the AaFinancialData model
+   */
+  readonly fields: AaFinancialDataFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for AaFinancialData.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__AaFinancialDataClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the AaFinancialData model
+   */
+  interface AaFinancialDataFieldRefs {
+    readonly id: FieldRef<"AaFinancialData", 'String'>
+    readonly userId: FieldRef<"AaFinancialData", 'String'>
+    readonly consentId: FieldRef<"AaFinancialData", 'String'>
+    readonly sessionId: FieldRef<"AaFinancialData", 'String'>
+    readonly accountType: FieldRef<"AaFinancialData", 'String'>
+    readonly maskedAccountNumber: FieldRef<"AaFinancialData", 'String'>
+    readonly dataJson: FieldRef<"AaFinancialData", 'String'>
+    readonly createdAt: FieldRef<"AaFinancialData", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * AaFinancialData findUnique
+   */
+  export type AaFinancialDataFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AaFinancialData
+     */
+    select?: AaFinancialDataSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AaFinancialData
+     */
+    omit?: AaFinancialDataOmit<ExtArgs> | null
+    /**
+     * Filter, which AaFinancialData to fetch.
+     */
+    where: AaFinancialDataWhereUniqueInput
+  }
+
+  /**
+   * AaFinancialData findUniqueOrThrow
+   */
+  export type AaFinancialDataFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AaFinancialData
+     */
+    select?: AaFinancialDataSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AaFinancialData
+     */
+    omit?: AaFinancialDataOmit<ExtArgs> | null
+    /**
+     * Filter, which AaFinancialData to fetch.
+     */
+    where: AaFinancialDataWhereUniqueInput
+  }
+
+  /**
+   * AaFinancialData findFirst
+   */
+  export type AaFinancialDataFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AaFinancialData
+     */
+    select?: AaFinancialDataSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AaFinancialData
+     */
+    omit?: AaFinancialDataOmit<ExtArgs> | null
+    /**
+     * Filter, which AaFinancialData to fetch.
+     */
+    where?: AaFinancialDataWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AaFinancialData to fetch.
+     */
+    orderBy?: AaFinancialDataOrderByWithRelationInput | AaFinancialDataOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AaFinancialData.
+     */
+    cursor?: AaFinancialDataWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AaFinancialData from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AaFinancialData.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AaFinancialData.
+     */
+    distinct?: AaFinancialDataScalarFieldEnum | AaFinancialDataScalarFieldEnum[]
+  }
+
+  /**
+   * AaFinancialData findFirstOrThrow
+   */
+  export type AaFinancialDataFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AaFinancialData
+     */
+    select?: AaFinancialDataSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AaFinancialData
+     */
+    omit?: AaFinancialDataOmit<ExtArgs> | null
+    /**
+     * Filter, which AaFinancialData to fetch.
+     */
+    where?: AaFinancialDataWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AaFinancialData to fetch.
+     */
+    orderBy?: AaFinancialDataOrderByWithRelationInput | AaFinancialDataOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AaFinancialData.
+     */
+    cursor?: AaFinancialDataWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AaFinancialData from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AaFinancialData.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AaFinancialData.
+     */
+    distinct?: AaFinancialDataScalarFieldEnum | AaFinancialDataScalarFieldEnum[]
+  }
+
+  /**
+   * AaFinancialData findMany
+   */
+  export type AaFinancialDataFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AaFinancialData
+     */
+    select?: AaFinancialDataSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AaFinancialData
+     */
+    omit?: AaFinancialDataOmit<ExtArgs> | null
+    /**
+     * Filter, which AaFinancialData to fetch.
+     */
+    where?: AaFinancialDataWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AaFinancialData to fetch.
+     */
+    orderBy?: AaFinancialDataOrderByWithRelationInput | AaFinancialDataOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing AaFinancialData.
+     */
+    cursor?: AaFinancialDataWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AaFinancialData from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AaFinancialData.
+     */
+    skip?: number
+    distinct?: AaFinancialDataScalarFieldEnum | AaFinancialDataScalarFieldEnum[]
+  }
+
+  /**
+   * AaFinancialData create
+   */
+  export type AaFinancialDataCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AaFinancialData
+     */
+    select?: AaFinancialDataSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AaFinancialData
+     */
+    omit?: AaFinancialDataOmit<ExtArgs> | null
+    /**
+     * The data needed to create a AaFinancialData.
+     */
+    data: XOR<AaFinancialDataCreateInput, AaFinancialDataUncheckedCreateInput>
+  }
+
+  /**
+   * AaFinancialData createMany
+   */
+  export type AaFinancialDataCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many AaFinancialData.
+     */
+    data: AaFinancialDataCreateManyInput | AaFinancialDataCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * AaFinancialData createManyAndReturn
+   */
+  export type AaFinancialDataCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AaFinancialData
+     */
+    select?: AaFinancialDataSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the AaFinancialData
+     */
+    omit?: AaFinancialDataOmit<ExtArgs> | null
+    /**
+     * The data used to create many AaFinancialData.
+     */
+    data: AaFinancialDataCreateManyInput | AaFinancialDataCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * AaFinancialData update
+   */
+  export type AaFinancialDataUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AaFinancialData
+     */
+    select?: AaFinancialDataSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AaFinancialData
+     */
+    omit?: AaFinancialDataOmit<ExtArgs> | null
+    /**
+     * The data needed to update a AaFinancialData.
+     */
+    data: XOR<AaFinancialDataUpdateInput, AaFinancialDataUncheckedUpdateInput>
+    /**
+     * Choose, which AaFinancialData to update.
+     */
+    where: AaFinancialDataWhereUniqueInput
+  }
+
+  /**
+   * AaFinancialData updateMany
+   */
+  export type AaFinancialDataUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update AaFinancialData.
+     */
+    data: XOR<AaFinancialDataUpdateManyMutationInput, AaFinancialDataUncheckedUpdateManyInput>
+    /**
+     * Filter which AaFinancialData to update
+     */
+    where?: AaFinancialDataWhereInput
+    /**
+     * Limit how many AaFinancialData to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * AaFinancialData updateManyAndReturn
+   */
+  export type AaFinancialDataUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AaFinancialData
+     */
+    select?: AaFinancialDataSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the AaFinancialData
+     */
+    omit?: AaFinancialDataOmit<ExtArgs> | null
+    /**
+     * The data used to update AaFinancialData.
+     */
+    data: XOR<AaFinancialDataUpdateManyMutationInput, AaFinancialDataUncheckedUpdateManyInput>
+    /**
+     * Filter which AaFinancialData to update
+     */
+    where?: AaFinancialDataWhereInput
+    /**
+     * Limit how many AaFinancialData to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * AaFinancialData upsert
+   */
+  export type AaFinancialDataUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AaFinancialData
+     */
+    select?: AaFinancialDataSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AaFinancialData
+     */
+    omit?: AaFinancialDataOmit<ExtArgs> | null
+    /**
+     * The filter to search for the AaFinancialData to update in case it exists.
+     */
+    where: AaFinancialDataWhereUniqueInput
+    /**
+     * In case the AaFinancialData found by the `where` argument doesn't exist, create a new AaFinancialData with this data.
+     */
+    create: XOR<AaFinancialDataCreateInput, AaFinancialDataUncheckedCreateInput>
+    /**
+     * In case the AaFinancialData was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<AaFinancialDataUpdateInput, AaFinancialDataUncheckedUpdateInput>
+  }
+
+  /**
+   * AaFinancialData delete
+   */
+  export type AaFinancialDataDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AaFinancialData
+     */
+    select?: AaFinancialDataSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AaFinancialData
+     */
+    omit?: AaFinancialDataOmit<ExtArgs> | null
+    /**
+     * Filter which AaFinancialData to delete.
+     */
+    where: AaFinancialDataWhereUniqueInput
+  }
+
+  /**
+   * AaFinancialData deleteMany
+   */
+  export type AaFinancialDataDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AaFinancialData to delete
+     */
+    where?: AaFinancialDataWhereInput
+    /**
+     * Limit how many AaFinancialData to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * AaFinancialData without action
+   */
+  export type AaFinancialDataDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AaFinancialData
+     */
+    select?: AaFinancialDataSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AaFinancialData
+     */
+    omit?: AaFinancialDataOmit<ExtArgs> | null
+  }
+
+
+  /**
+   * Model AaTransaction
+   */
+
+  export type AggregateAaTransaction = {
+    _count: AaTransactionCountAggregateOutputType | null
+    _avg: AaTransactionAvgAggregateOutputType | null
+    _sum: AaTransactionSumAggregateOutputType | null
+    _min: AaTransactionMinAggregateOutputType | null
+    _max: AaTransactionMaxAggregateOutputType | null
+  }
+
+  export type AaTransactionAvgAggregateOutputType = {
+    amount: Decimal | null
+  }
+
+  export type AaTransactionSumAggregateOutputType = {
+    amount: Decimal | null
+  }
+
+  export type AaTransactionMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    consentId: string | null
+    transactionDate: Date | null
+    amount: Decimal | null
+    type: string | null
+    description: string | null
+    maskedAccountNumber: string | null
+    createdAt: Date | null
+  }
+
+  export type AaTransactionMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    consentId: string | null
+    transactionDate: Date | null
+    amount: Decimal | null
+    type: string | null
+    description: string | null
+    maskedAccountNumber: string | null
+    createdAt: Date | null
+  }
+
+  export type AaTransactionCountAggregateOutputType = {
+    id: number
+    userId: number
+    consentId: number
+    transactionDate: number
+    amount: number
+    type: number
+    description: number
+    maskedAccountNumber: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type AaTransactionAvgAggregateInputType = {
+    amount?: true
+  }
+
+  export type AaTransactionSumAggregateInputType = {
+    amount?: true
+  }
+
+  export type AaTransactionMinAggregateInputType = {
+    id?: true
+    userId?: true
+    consentId?: true
+    transactionDate?: true
+    amount?: true
+    type?: true
+    description?: true
+    maskedAccountNumber?: true
+    createdAt?: true
+  }
+
+  export type AaTransactionMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    consentId?: true
+    transactionDate?: true
+    amount?: true
+    type?: true
+    description?: true
+    maskedAccountNumber?: true
+    createdAt?: true
+  }
+
+  export type AaTransactionCountAggregateInputType = {
+    id?: true
+    userId?: true
+    consentId?: true
+    transactionDate?: true
+    amount?: true
+    type?: true
+    description?: true
+    maskedAccountNumber?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type AaTransactionAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AaTransaction to aggregate.
+     */
+    where?: AaTransactionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AaTransactions to fetch.
+     */
+    orderBy?: AaTransactionOrderByWithRelationInput | AaTransactionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: AaTransactionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AaTransactions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AaTransactions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned AaTransactions
+    **/
+    _count?: true | AaTransactionCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: AaTransactionAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: AaTransactionSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: AaTransactionMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: AaTransactionMaxAggregateInputType
+  }
+
+  export type GetAaTransactionAggregateType<T extends AaTransactionAggregateArgs> = {
+        [P in keyof T & keyof AggregateAaTransaction]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateAaTransaction[P]>
+      : GetScalarType<T[P], AggregateAaTransaction[P]>
+  }
+
+
+
+
+  export type AaTransactionGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AaTransactionWhereInput
+    orderBy?: AaTransactionOrderByWithAggregationInput | AaTransactionOrderByWithAggregationInput[]
+    by: AaTransactionScalarFieldEnum[] | AaTransactionScalarFieldEnum
+    having?: AaTransactionScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: AaTransactionCountAggregateInputType | true
+    _avg?: AaTransactionAvgAggregateInputType
+    _sum?: AaTransactionSumAggregateInputType
+    _min?: AaTransactionMinAggregateInputType
+    _max?: AaTransactionMaxAggregateInputType
+  }
+
+  export type AaTransactionGroupByOutputType = {
+    id: string
+    userId: string
+    consentId: string
+    transactionDate: Date
+    amount: Decimal
+    type: string
+    description: string | null
+    maskedAccountNumber: string | null
+    createdAt: Date
+    _count: AaTransactionCountAggregateOutputType | null
+    _avg: AaTransactionAvgAggregateOutputType | null
+    _sum: AaTransactionSumAggregateOutputType | null
+    _min: AaTransactionMinAggregateOutputType | null
+    _max: AaTransactionMaxAggregateOutputType | null
+  }
+
+  type GetAaTransactionGroupByPayload<T extends AaTransactionGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<AaTransactionGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof AaTransactionGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], AaTransactionGroupByOutputType[P]>
+            : GetScalarType<T[P], AaTransactionGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type AaTransactionSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    consentId?: boolean
+    transactionDate?: boolean
+    amount?: boolean
+    type?: boolean
+    description?: boolean
+    maskedAccountNumber?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["aaTransaction"]>
+
+  export type AaTransactionSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    consentId?: boolean
+    transactionDate?: boolean
+    amount?: boolean
+    type?: boolean
+    description?: boolean
+    maskedAccountNumber?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["aaTransaction"]>
+
+  export type AaTransactionSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    consentId?: boolean
+    transactionDate?: boolean
+    amount?: boolean
+    type?: boolean
+    description?: boolean
+    maskedAccountNumber?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["aaTransaction"]>
+
+  export type AaTransactionSelectScalar = {
+    id?: boolean
+    userId?: boolean
+    consentId?: boolean
+    transactionDate?: boolean
+    amount?: boolean
+    type?: boolean
+    description?: boolean
+    maskedAccountNumber?: boolean
+    createdAt?: boolean
+  }
+
+  export type AaTransactionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "consentId" | "transactionDate" | "amount" | "type" | "description" | "maskedAccountNumber" | "createdAt", ExtArgs["result"]["aaTransaction"]>
+
+  export type $AaTransactionPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "AaTransaction"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userId: string
+      consentId: string
+      transactionDate: Date
+      amount: Prisma.Decimal
+      type: string
+      description: string | null
+      maskedAccountNumber: string | null
+      createdAt: Date
+    }, ExtArgs["result"]["aaTransaction"]>
+    composites: {}
+  }
+
+  type AaTransactionGetPayload<S extends boolean | null | undefined | AaTransactionDefaultArgs> = $Result.GetResult<Prisma.$AaTransactionPayload, S>
+
+  type AaTransactionCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<AaTransactionFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: AaTransactionCountAggregateInputType | true
+    }
+
+  export interface AaTransactionDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['AaTransaction'], meta: { name: 'AaTransaction' } }
+    /**
+     * Find zero or one AaTransaction that matches the filter.
+     * @param {AaTransactionFindUniqueArgs} args - Arguments to find a AaTransaction
+     * @example
+     * // Get one AaTransaction
+     * const aaTransaction = await prisma.aaTransaction.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends AaTransactionFindUniqueArgs>(args: SelectSubset<T, AaTransactionFindUniqueArgs<ExtArgs>>): Prisma__AaTransactionClient<$Result.GetResult<Prisma.$AaTransactionPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one AaTransaction that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {AaTransactionFindUniqueOrThrowArgs} args - Arguments to find a AaTransaction
+     * @example
+     * // Get one AaTransaction
+     * const aaTransaction = await prisma.aaTransaction.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends AaTransactionFindUniqueOrThrowArgs>(args: SelectSubset<T, AaTransactionFindUniqueOrThrowArgs<ExtArgs>>): Prisma__AaTransactionClient<$Result.GetResult<Prisma.$AaTransactionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AaTransaction that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AaTransactionFindFirstArgs} args - Arguments to find a AaTransaction
+     * @example
+     * // Get one AaTransaction
+     * const aaTransaction = await prisma.aaTransaction.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends AaTransactionFindFirstArgs>(args?: SelectSubset<T, AaTransactionFindFirstArgs<ExtArgs>>): Prisma__AaTransactionClient<$Result.GetResult<Prisma.$AaTransactionPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AaTransaction that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AaTransactionFindFirstOrThrowArgs} args - Arguments to find a AaTransaction
+     * @example
+     * // Get one AaTransaction
+     * const aaTransaction = await prisma.aaTransaction.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends AaTransactionFindFirstOrThrowArgs>(args?: SelectSubset<T, AaTransactionFindFirstOrThrowArgs<ExtArgs>>): Prisma__AaTransactionClient<$Result.GetResult<Prisma.$AaTransactionPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more AaTransactions that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AaTransactionFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all AaTransactions
+     * const aaTransactions = await prisma.aaTransaction.findMany()
+     * 
+     * // Get first 10 AaTransactions
+     * const aaTransactions = await prisma.aaTransaction.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const aaTransactionWithIdOnly = await prisma.aaTransaction.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends AaTransactionFindManyArgs>(args?: SelectSubset<T, AaTransactionFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AaTransactionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a AaTransaction.
+     * @param {AaTransactionCreateArgs} args - Arguments to create a AaTransaction.
+     * @example
+     * // Create one AaTransaction
+     * const AaTransaction = await prisma.aaTransaction.create({
+     *   data: {
+     *     // ... data to create a AaTransaction
+     *   }
+     * })
+     * 
+     */
+    create<T extends AaTransactionCreateArgs>(args: SelectSubset<T, AaTransactionCreateArgs<ExtArgs>>): Prisma__AaTransactionClient<$Result.GetResult<Prisma.$AaTransactionPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many AaTransactions.
+     * @param {AaTransactionCreateManyArgs} args - Arguments to create many AaTransactions.
+     * @example
+     * // Create many AaTransactions
+     * const aaTransaction = await prisma.aaTransaction.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends AaTransactionCreateManyArgs>(args?: SelectSubset<T, AaTransactionCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many AaTransactions and returns the data saved in the database.
+     * @param {AaTransactionCreateManyAndReturnArgs} args - Arguments to create many AaTransactions.
+     * @example
+     * // Create many AaTransactions
+     * const aaTransaction = await prisma.aaTransaction.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many AaTransactions and only return the `id`
+     * const aaTransactionWithIdOnly = await prisma.aaTransaction.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends AaTransactionCreateManyAndReturnArgs>(args?: SelectSubset<T, AaTransactionCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AaTransactionPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a AaTransaction.
+     * @param {AaTransactionDeleteArgs} args - Arguments to delete one AaTransaction.
+     * @example
+     * // Delete one AaTransaction
+     * const AaTransaction = await prisma.aaTransaction.delete({
+     *   where: {
+     *     // ... filter to delete one AaTransaction
+     *   }
+     * })
+     * 
+     */
+    delete<T extends AaTransactionDeleteArgs>(args: SelectSubset<T, AaTransactionDeleteArgs<ExtArgs>>): Prisma__AaTransactionClient<$Result.GetResult<Prisma.$AaTransactionPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one AaTransaction.
+     * @param {AaTransactionUpdateArgs} args - Arguments to update one AaTransaction.
+     * @example
+     * // Update one AaTransaction
+     * const aaTransaction = await prisma.aaTransaction.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends AaTransactionUpdateArgs>(args: SelectSubset<T, AaTransactionUpdateArgs<ExtArgs>>): Prisma__AaTransactionClient<$Result.GetResult<Prisma.$AaTransactionPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more AaTransactions.
+     * @param {AaTransactionDeleteManyArgs} args - Arguments to filter AaTransactions to delete.
+     * @example
+     * // Delete a few AaTransactions
+     * const { count } = await prisma.aaTransaction.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends AaTransactionDeleteManyArgs>(args?: SelectSubset<T, AaTransactionDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AaTransactions.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AaTransactionUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many AaTransactions
+     * const aaTransaction = await prisma.aaTransaction.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends AaTransactionUpdateManyArgs>(args: SelectSubset<T, AaTransactionUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AaTransactions and returns the data updated in the database.
+     * @param {AaTransactionUpdateManyAndReturnArgs} args - Arguments to update many AaTransactions.
+     * @example
+     * // Update many AaTransactions
+     * const aaTransaction = await prisma.aaTransaction.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more AaTransactions and only return the `id`
+     * const aaTransactionWithIdOnly = await prisma.aaTransaction.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends AaTransactionUpdateManyAndReturnArgs>(args: SelectSubset<T, AaTransactionUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AaTransactionPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one AaTransaction.
+     * @param {AaTransactionUpsertArgs} args - Arguments to update or create a AaTransaction.
+     * @example
+     * // Update or create a AaTransaction
+     * const aaTransaction = await prisma.aaTransaction.upsert({
+     *   create: {
+     *     // ... data to create a AaTransaction
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the AaTransaction we want to update
+     *   }
+     * })
+     */
+    upsert<T extends AaTransactionUpsertArgs>(args: SelectSubset<T, AaTransactionUpsertArgs<ExtArgs>>): Prisma__AaTransactionClient<$Result.GetResult<Prisma.$AaTransactionPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of AaTransactions.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AaTransactionCountArgs} args - Arguments to filter AaTransactions to count.
+     * @example
+     * // Count the number of AaTransactions
+     * const count = await prisma.aaTransaction.count({
+     *   where: {
+     *     // ... the filter for the AaTransactions we want to count
+     *   }
+     * })
+    **/
+    count<T extends AaTransactionCountArgs>(
+      args?: Subset<T, AaTransactionCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], AaTransactionCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a AaTransaction.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AaTransactionAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends AaTransactionAggregateArgs>(args: Subset<T, AaTransactionAggregateArgs>): Prisma.PrismaPromise<GetAaTransactionAggregateType<T>>
+
+    /**
+     * Group by AaTransaction.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AaTransactionGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends AaTransactionGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: AaTransactionGroupByArgs['orderBy'] }
+        : { orderBy?: AaTransactionGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, AaTransactionGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetAaTransactionGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the AaTransaction model
+   */
+  readonly fields: AaTransactionFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for AaTransaction.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__AaTransactionClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the AaTransaction model
+   */
+  interface AaTransactionFieldRefs {
+    readonly id: FieldRef<"AaTransaction", 'String'>
+    readonly userId: FieldRef<"AaTransaction", 'String'>
+    readonly consentId: FieldRef<"AaTransaction", 'String'>
+    readonly transactionDate: FieldRef<"AaTransaction", 'DateTime'>
+    readonly amount: FieldRef<"AaTransaction", 'Decimal'>
+    readonly type: FieldRef<"AaTransaction", 'String'>
+    readonly description: FieldRef<"AaTransaction", 'String'>
+    readonly maskedAccountNumber: FieldRef<"AaTransaction", 'String'>
+    readonly createdAt: FieldRef<"AaTransaction", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * AaTransaction findUnique
+   */
+  export type AaTransactionFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AaTransaction
+     */
+    select?: AaTransactionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AaTransaction
+     */
+    omit?: AaTransactionOmit<ExtArgs> | null
+    /**
+     * Filter, which AaTransaction to fetch.
+     */
+    where: AaTransactionWhereUniqueInput
+  }
+
+  /**
+   * AaTransaction findUniqueOrThrow
+   */
+  export type AaTransactionFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AaTransaction
+     */
+    select?: AaTransactionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AaTransaction
+     */
+    omit?: AaTransactionOmit<ExtArgs> | null
+    /**
+     * Filter, which AaTransaction to fetch.
+     */
+    where: AaTransactionWhereUniqueInput
+  }
+
+  /**
+   * AaTransaction findFirst
+   */
+  export type AaTransactionFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AaTransaction
+     */
+    select?: AaTransactionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AaTransaction
+     */
+    omit?: AaTransactionOmit<ExtArgs> | null
+    /**
+     * Filter, which AaTransaction to fetch.
+     */
+    where?: AaTransactionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AaTransactions to fetch.
+     */
+    orderBy?: AaTransactionOrderByWithRelationInput | AaTransactionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AaTransactions.
+     */
+    cursor?: AaTransactionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AaTransactions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AaTransactions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AaTransactions.
+     */
+    distinct?: AaTransactionScalarFieldEnum | AaTransactionScalarFieldEnum[]
+  }
+
+  /**
+   * AaTransaction findFirstOrThrow
+   */
+  export type AaTransactionFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AaTransaction
+     */
+    select?: AaTransactionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AaTransaction
+     */
+    omit?: AaTransactionOmit<ExtArgs> | null
+    /**
+     * Filter, which AaTransaction to fetch.
+     */
+    where?: AaTransactionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AaTransactions to fetch.
+     */
+    orderBy?: AaTransactionOrderByWithRelationInput | AaTransactionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AaTransactions.
+     */
+    cursor?: AaTransactionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AaTransactions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AaTransactions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AaTransactions.
+     */
+    distinct?: AaTransactionScalarFieldEnum | AaTransactionScalarFieldEnum[]
+  }
+
+  /**
+   * AaTransaction findMany
+   */
+  export type AaTransactionFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AaTransaction
+     */
+    select?: AaTransactionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AaTransaction
+     */
+    omit?: AaTransactionOmit<ExtArgs> | null
+    /**
+     * Filter, which AaTransactions to fetch.
+     */
+    where?: AaTransactionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AaTransactions to fetch.
+     */
+    orderBy?: AaTransactionOrderByWithRelationInput | AaTransactionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing AaTransactions.
+     */
+    cursor?: AaTransactionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AaTransactions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AaTransactions.
+     */
+    skip?: number
+    distinct?: AaTransactionScalarFieldEnum | AaTransactionScalarFieldEnum[]
+  }
+
+  /**
+   * AaTransaction create
+   */
+  export type AaTransactionCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AaTransaction
+     */
+    select?: AaTransactionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AaTransaction
+     */
+    omit?: AaTransactionOmit<ExtArgs> | null
+    /**
+     * The data needed to create a AaTransaction.
+     */
+    data: XOR<AaTransactionCreateInput, AaTransactionUncheckedCreateInput>
+  }
+
+  /**
+   * AaTransaction createMany
+   */
+  export type AaTransactionCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many AaTransactions.
+     */
+    data: AaTransactionCreateManyInput | AaTransactionCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * AaTransaction createManyAndReturn
+   */
+  export type AaTransactionCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AaTransaction
+     */
+    select?: AaTransactionSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the AaTransaction
+     */
+    omit?: AaTransactionOmit<ExtArgs> | null
+    /**
+     * The data used to create many AaTransactions.
+     */
+    data: AaTransactionCreateManyInput | AaTransactionCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * AaTransaction update
+   */
+  export type AaTransactionUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AaTransaction
+     */
+    select?: AaTransactionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AaTransaction
+     */
+    omit?: AaTransactionOmit<ExtArgs> | null
+    /**
+     * The data needed to update a AaTransaction.
+     */
+    data: XOR<AaTransactionUpdateInput, AaTransactionUncheckedUpdateInput>
+    /**
+     * Choose, which AaTransaction to update.
+     */
+    where: AaTransactionWhereUniqueInput
+  }
+
+  /**
+   * AaTransaction updateMany
+   */
+  export type AaTransactionUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update AaTransactions.
+     */
+    data: XOR<AaTransactionUpdateManyMutationInput, AaTransactionUncheckedUpdateManyInput>
+    /**
+     * Filter which AaTransactions to update
+     */
+    where?: AaTransactionWhereInput
+    /**
+     * Limit how many AaTransactions to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * AaTransaction updateManyAndReturn
+   */
+  export type AaTransactionUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AaTransaction
+     */
+    select?: AaTransactionSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the AaTransaction
+     */
+    omit?: AaTransactionOmit<ExtArgs> | null
+    /**
+     * The data used to update AaTransactions.
+     */
+    data: XOR<AaTransactionUpdateManyMutationInput, AaTransactionUncheckedUpdateManyInput>
+    /**
+     * Filter which AaTransactions to update
+     */
+    where?: AaTransactionWhereInput
+    /**
+     * Limit how many AaTransactions to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * AaTransaction upsert
+   */
+  export type AaTransactionUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AaTransaction
+     */
+    select?: AaTransactionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AaTransaction
+     */
+    omit?: AaTransactionOmit<ExtArgs> | null
+    /**
+     * The filter to search for the AaTransaction to update in case it exists.
+     */
+    where: AaTransactionWhereUniqueInput
+    /**
+     * In case the AaTransaction found by the `where` argument doesn't exist, create a new AaTransaction with this data.
+     */
+    create: XOR<AaTransactionCreateInput, AaTransactionUncheckedCreateInput>
+    /**
+     * In case the AaTransaction was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<AaTransactionUpdateInput, AaTransactionUncheckedUpdateInput>
+  }
+
+  /**
+   * AaTransaction delete
+   */
+  export type AaTransactionDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AaTransaction
+     */
+    select?: AaTransactionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AaTransaction
+     */
+    omit?: AaTransactionOmit<ExtArgs> | null
+    /**
+     * Filter which AaTransaction to delete.
+     */
+    where: AaTransactionWhereUniqueInput
+  }
+
+  /**
+   * AaTransaction deleteMany
+   */
+  export type AaTransactionDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AaTransactions to delete
+     */
+    where?: AaTransactionWhereInput
+    /**
+     * Limit how many AaTransactions to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * AaTransaction without action
+   */
+  export type AaTransactionDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AaTransaction
+     */
+    select?: AaTransactionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AaTransaction
+     */
+    omit?: AaTransactionOmit<ExtArgs> | null
+  }
+
+
+  /**
+   * Model RecurringTransaction
+   */
+
+  export type AggregateRecurringTransaction = {
+    _count: RecurringTransactionCountAggregateOutputType | null
+    _avg: RecurringTransactionAvgAggregateOutputType | null
+    _sum: RecurringTransactionSumAggregateOutputType | null
+    _min: RecurringTransactionMinAggregateOutputType | null
+    _max: RecurringTransactionMaxAggregateOutputType | null
+  }
+
+  export type RecurringTransactionAvgAggregateOutputType = {
+    amount: Decimal | null
+  }
+
+  export type RecurringTransactionSumAggregateOutputType = {
+    amount: Decimal | null
+  }
+
+  export type RecurringTransactionMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    title: string | null
+    amount: Decimal | null
+    category: string | null
+    subcategory: string | null
+    interval: string | null
+    nextDueDate: Date | null
+    autoProcess: boolean | null
+    status: string | null
+    accountId: string | null
+    description: string | null
+    merchant: string | null
+    lastProcessedAt: Date | null
+    clientRequestId: string | null
+    syncStatus: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    deletedAt: Date | null
+  }
+
+  export type RecurringTransactionMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    title: string | null
+    amount: Decimal | null
+    category: string | null
+    subcategory: string | null
+    interval: string | null
+    nextDueDate: Date | null
+    autoProcess: boolean | null
+    status: string | null
+    accountId: string | null
+    description: string | null
+    merchant: string | null
+    lastProcessedAt: Date | null
+    clientRequestId: string | null
+    syncStatus: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    deletedAt: Date | null
+  }
+
+  export type RecurringTransactionCountAggregateOutputType = {
+    id: number
+    userId: number
+    title: number
+    amount: number
+    category: number
+    subcategory: number
+    interval: number
+    nextDueDate: number
+    autoProcess: number
+    status: number
+    accountId: number
+    description: number
+    merchant: number
+    lastProcessedAt: number
+    clientRequestId: number
+    syncStatus: number
+    createdAt: number
+    updatedAt: number
+    deletedAt: number
+    _all: number
+  }
+
+
+  export type RecurringTransactionAvgAggregateInputType = {
+    amount?: true
+  }
+
+  export type RecurringTransactionSumAggregateInputType = {
+    amount?: true
+  }
+
+  export type RecurringTransactionMinAggregateInputType = {
+    id?: true
+    userId?: true
+    title?: true
+    amount?: true
+    category?: true
+    subcategory?: true
+    interval?: true
+    nextDueDate?: true
+    autoProcess?: true
+    status?: true
+    accountId?: true
+    description?: true
+    merchant?: true
+    lastProcessedAt?: true
+    clientRequestId?: true
+    syncStatus?: true
+    createdAt?: true
+    updatedAt?: true
+    deletedAt?: true
+  }
+
+  export type RecurringTransactionMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    title?: true
+    amount?: true
+    category?: true
+    subcategory?: true
+    interval?: true
+    nextDueDate?: true
+    autoProcess?: true
+    status?: true
+    accountId?: true
+    description?: true
+    merchant?: true
+    lastProcessedAt?: true
+    clientRequestId?: true
+    syncStatus?: true
+    createdAt?: true
+    updatedAt?: true
+    deletedAt?: true
+  }
+
+  export type RecurringTransactionCountAggregateInputType = {
+    id?: true
+    userId?: true
+    title?: true
+    amount?: true
+    category?: true
+    subcategory?: true
+    interval?: true
+    nextDueDate?: true
+    autoProcess?: true
+    status?: true
+    accountId?: true
+    description?: true
+    merchant?: true
+    lastProcessedAt?: true
+    clientRequestId?: true
+    syncStatus?: true
+    createdAt?: true
+    updatedAt?: true
+    deletedAt?: true
+    _all?: true
+  }
+
+  export type RecurringTransactionAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which RecurringTransaction to aggregate.
+     */
+    where?: RecurringTransactionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of RecurringTransactions to fetch.
+     */
+    orderBy?: RecurringTransactionOrderByWithRelationInput | RecurringTransactionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: RecurringTransactionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` RecurringTransactions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` RecurringTransactions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned RecurringTransactions
+    **/
+    _count?: true | RecurringTransactionCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: RecurringTransactionAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: RecurringTransactionSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: RecurringTransactionMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: RecurringTransactionMaxAggregateInputType
+  }
+
+  export type GetRecurringTransactionAggregateType<T extends RecurringTransactionAggregateArgs> = {
+        [P in keyof T & keyof AggregateRecurringTransaction]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateRecurringTransaction[P]>
+      : GetScalarType<T[P], AggregateRecurringTransaction[P]>
+  }
+
+
+
+
+  export type RecurringTransactionGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: RecurringTransactionWhereInput
+    orderBy?: RecurringTransactionOrderByWithAggregationInput | RecurringTransactionOrderByWithAggregationInput[]
+    by: RecurringTransactionScalarFieldEnum[] | RecurringTransactionScalarFieldEnum
+    having?: RecurringTransactionScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: RecurringTransactionCountAggregateInputType | true
+    _avg?: RecurringTransactionAvgAggregateInputType
+    _sum?: RecurringTransactionSumAggregateInputType
+    _min?: RecurringTransactionMinAggregateInputType
+    _max?: RecurringTransactionMaxAggregateInputType
+  }
+
+  export type RecurringTransactionGroupByOutputType = {
+    id: string
+    userId: string
+    title: string
+    amount: Decimal
+    category: string
+    subcategory: string | null
+    interval: string
+    nextDueDate: Date
+    autoProcess: boolean
+    status: string
+    accountId: string | null
+    description: string | null
+    merchant: string | null
+    lastProcessedAt: Date | null
+    clientRequestId: string | null
+    syncStatus: string
+    createdAt: Date
+    updatedAt: Date
+    deletedAt: Date | null
+    _count: RecurringTransactionCountAggregateOutputType | null
+    _avg: RecurringTransactionAvgAggregateOutputType | null
+    _sum: RecurringTransactionSumAggregateOutputType | null
+    _min: RecurringTransactionMinAggregateOutputType | null
+    _max: RecurringTransactionMaxAggregateOutputType | null
+  }
+
+  type GetRecurringTransactionGroupByPayload<T extends RecurringTransactionGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<RecurringTransactionGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof RecurringTransactionGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], RecurringTransactionGroupByOutputType[P]>
+            : GetScalarType<T[P], RecurringTransactionGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type RecurringTransactionSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    title?: boolean
+    amount?: boolean
+    category?: boolean
+    subcategory?: boolean
+    interval?: boolean
+    nextDueDate?: boolean
+    autoProcess?: boolean
+    status?: boolean
+    accountId?: boolean
+    description?: boolean
+    merchant?: boolean
+    lastProcessedAt?: boolean
+    clientRequestId?: boolean
+    syncStatus?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    deletedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["recurringTransaction"]>
+
+  export type RecurringTransactionSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    title?: boolean
+    amount?: boolean
+    category?: boolean
+    subcategory?: boolean
+    interval?: boolean
+    nextDueDate?: boolean
+    autoProcess?: boolean
+    status?: boolean
+    accountId?: boolean
+    description?: boolean
+    merchant?: boolean
+    lastProcessedAt?: boolean
+    clientRequestId?: boolean
+    syncStatus?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    deletedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["recurringTransaction"]>
+
+  export type RecurringTransactionSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    title?: boolean
+    amount?: boolean
+    category?: boolean
+    subcategory?: boolean
+    interval?: boolean
+    nextDueDate?: boolean
+    autoProcess?: boolean
+    status?: boolean
+    accountId?: boolean
+    description?: boolean
+    merchant?: boolean
+    lastProcessedAt?: boolean
+    clientRequestId?: boolean
+    syncStatus?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    deletedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["recurringTransaction"]>
+
+  export type RecurringTransactionSelectScalar = {
+    id?: boolean
+    userId?: boolean
+    title?: boolean
+    amount?: boolean
+    category?: boolean
+    subcategory?: boolean
+    interval?: boolean
+    nextDueDate?: boolean
+    autoProcess?: boolean
+    status?: boolean
+    accountId?: boolean
+    description?: boolean
+    merchant?: boolean
+    lastProcessedAt?: boolean
+    clientRequestId?: boolean
+    syncStatus?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    deletedAt?: boolean
+  }
+
+  export type RecurringTransactionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "title" | "amount" | "category" | "subcategory" | "interval" | "nextDueDate" | "autoProcess" | "status" | "accountId" | "description" | "merchant" | "lastProcessedAt" | "clientRequestId" | "syncStatus" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["recurringTransaction"]>
+  export type RecurringTransactionInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type RecurringTransactionIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type RecurringTransactionIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $RecurringTransactionPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "RecurringTransaction"
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userId: string
+      title: string
+      amount: Prisma.Decimal
+      category: string
+      subcategory: string | null
+      interval: string
+      nextDueDate: Date
+      autoProcess: boolean
+      status: string
+      accountId: string | null
+      description: string | null
+      merchant: string | null
+      lastProcessedAt: Date | null
+      clientRequestId: string | null
+      syncStatus: string
+      createdAt: Date
+      updatedAt: Date
+      deletedAt: Date | null
+    }, ExtArgs["result"]["recurringTransaction"]>
+    composites: {}
+  }
+
+  type RecurringTransactionGetPayload<S extends boolean | null | undefined | RecurringTransactionDefaultArgs> = $Result.GetResult<Prisma.$RecurringTransactionPayload, S>
+
+  type RecurringTransactionCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<RecurringTransactionFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: RecurringTransactionCountAggregateInputType | true
+    }
+
+  export interface RecurringTransactionDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['RecurringTransaction'], meta: { name: 'RecurringTransaction' } }
+    /**
+     * Find zero or one RecurringTransaction that matches the filter.
+     * @param {RecurringTransactionFindUniqueArgs} args - Arguments to find a RecurringTransaction
+     * @example
+     * // Get one RecurringTransaction
+     * const recurringTransaction = await prisma.recurringTransaction.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends RecurringTransactionFindUniqueArgs>(args: SelectSubset<T, RecurringTransactionFindUniqueArgs<ExtArgs>>): Prisma__RecurringTransactionClient<$Result.GetResult<Prisma.$RecurringTransactionPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one RecurringTransaction that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {RecurringTransactionFindUniqueOrThrowArgs} args - Arguments to find a RecurringTransaction
+     * @example
+     * // Get one RecurringTransaction
+     * const recurringTransaction = await prisma.recurringTransaction.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends RecurringTransactionFindUniqueOrThrowArgs>(args: SelectSubset<T, RecurringTransactionFindUniqueOrThrowArgs<ExtArgs>>): Prisma__RecurringTransactionClient<$Result.GetResult<Prisma.$RecurringTransactionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first RecurringTransaction that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RecurringTransactionFindFirstArgs} args - Arguments to find a RecurringTransaction
+     * @example
+     * // Get one RecurringTransaction
+     * const recurringTransaction = await prisma.recurringTransaction.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends RecurringTransactionFindFirstArgs>(args?: SelectSubset<T, RecurringTransactionFindFirstArgs<ExtArgs>>): Prisma__RecurringTransactionClient<$Result.GetResult<Prisma.$RecurringTransactionPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first RecurringTransaction that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RecurringTransactionFindFirstOrThrowArgs} args - Arguments to find a RecurringTransaction
+     * @example
+     * // Get one RecurringTransaction
+     * const recurringTransaction = await prisma.recurringTransaction.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends RecurringTransactionFindFirstOrThrowArgs>(args?: SelectSubset<T, RecurringTransactionFindFirstOrThrowArgs<ExtArgs>>): Prisma__RecurringTransactionClient<$Result.GetResult<Prisma.$RecurringTransactionPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more RecurringTransactions that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RecurringTransactionFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all RecurringTransactions
+     * const recurringTransactions = await prisma.recurringTransaction.findMany()
+     * 
+     * // Get first 10 RecurringTransactions
+     * const recurringTransactions = await prisma.recurringTransaction.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const recurringTransactionWithIdOnly = await prisma.recurringTransaction.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends RecurringTransactionFindManyArgs>(args?: SelectSubset<T, RecurringTransactionFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RecurringTransactionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a RecurringTransaction.
+     * @param {RecurringTransactionCreateArgs} args - Arguments to create a RecurringTransaction.
+     * @example
+     * // Create one RecurringTransaction
+     * const RecurringTransaction = await prisma.recurringTransaction.create({
+     *   data: {
+     *     // ... data to create a RecurringTransaction
+     *   }
+     * })
+     * 
+     */
+    create<T extends RecurringTransactionCreateArgs>(args: SelectSubset<T, RecurringTransactionCreateArgs<ExtArgs>>): Prisma__RecurringTransactionClient<$Result.GetResult<Prisma.$RecurringTransactionPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many RecurringTransactions.
+     * @param {RecurringTransactionCreateManyArgs} args - Arguments to create many RecurringTransactions.
+     * @example
+     * // Create many RecurringTransactions
+     * const recurringTransaction = await prisma.recurringTransaction.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends RecurringTransactionCreateManyArgs>(args?: SelectSubset<T, RecurringTransactionCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many RecurringTransactions and returns the data saved in the database.
+     * @param {RecurringTransactionCreateManyAndReturnArgs} args - Arguments to create many RecurringTransactions.
+     * @example
+     * // Create many RecurringTransactions
+     * const recurringTransaction = await prisma.recurringTransaction.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many RecurringTransactions and only return the `id`
+     * const recurringTransactionWithIdOnly = await prisma.recurringTransaction.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends RecurringTransactionCreateManyAndReturnArgs>(args?: SelectSubset<T, RecurringTransactionCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RecurringTransactionPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a RecurringTransaction.
+     * @param {RecurringTransactionDeleteArgs} args - Arguments to delete one RecurringTransaction.
+     * @example
+     * // Delete one RecurringTransaction
+     * const RecurringTransaction = await prisma.recurringTransaction.delete({
+     *   where: {
+     *     // ... filter to delete one RecurringTransaction
+     *   }
+     * })
+     * 
+     */
+    delete<T extends RecurringTransactionDeleteArgs>(args: SelectSubset<T, RecurringTransactionDeleteArgs<ExtArgs>>): Prisma__RecurringTransactionClient<$Result.GetResult<Prisma.$RecurringTransactionPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one RecurringTransaction.
+     * @param {RecurringTransactionUpdateArgs} args - Arguments to update one RecurringTransaction.
+     * @example
+     * // Update one RecurringTransaction
+     * const recurringTransaction = await prisma.recurringTransaction.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends RecurringTransactionUpdateArgs>(args: SelectSubset<T, RecurringTransactionUpdateArgs<ExtArgs>>): Prisma__RecurringTransactionClient<$Result.GetResult<Prisma.$RecurringTransactionPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more RecurringTransactions.
+     * @param {RecurringTransactionDeleteManyArgs} args - Arguments to filter RecurringTransactions to delete.
+     * @example
+     * // Delete a few RecurringTransactions
+     * const { count } = await prisma.recurringTransaction.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends RecurringTransactionDeleteManyArgs>(args?: SelectSubset<T, RecurringTransactionDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more RecurringTransactions.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RecurringTransactionUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many RecurringTransactions
+     * const recurringTransaction = await prisma.recurringTransaction.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends RecurringTransactionUpdateManyArgs>(args: SelectSubset<T, RecurringTransactionUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more RecurringTransactions and returns the data updated in the database.
+     * @param {RecurringTransactionUpdateManyAndReturnArgs} args - Arguments to update many RecurringTransactions.
+     * @example
+     * // Update many RecurringTransactions
+     * const recurringTransaction = await prisma.recurringTransaction.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more RecurringTransactions and only return the `id`
+     * const recurringTransactionWithIdOnly = await prisma.recurringTransaction.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends RecurringTransactionUpdateManyAndReturnArgs>(args: SelectSubset<T, RecurringTransactionUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RecurringTransactionPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one RecurringTransaction.
+     * @param {RecurringTransactionUpsertArgs} args - Arguments to update or create a RecurringTransaction.
+     * @example
+     * // Update or create a RecurringTransaction
+     * const recurringTransaction = await prisma.recurringTransaction.upsert({
+     *   create: {
+     *     // ... data to create a RecurringTransaction
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the RecurringTransaction we want to update
+     *   }
+     * })
+     */
+    upsert<T extends RecurringTransactionUpsertArgs>(args: SelectSubset<T, RecurringTransactionUpsertArgs<ExtArgs>>): Prisma__RecurringTransactionClient<$Result.GetResult<Prisma.$RecurringTransactionPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of RecurringTransactions.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RecurringTransactionCountArgs} args - Arguments to filter RecurringTransactions to count.
+     * @example
+     * // Count the number of RecurringTransactions
+     * const count = await prisma.recurringTransaction.count({
+     *   where: {
+     *     // ... the filter for the RecurringTransactions we want to count
+     *   }
+     * })
+    **/
+    count<T extends RecurringTransactionCountArgs>(
+      args?: Subset<T, RecurringTransactionCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], RecurringTransactionCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a RecurringTransaction.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RecurringTransactionAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends RecurringTransactionAggregateArgs>(args: Subset<T, RecurringTransactionAggregateArgs>): Prisma.PrismaPromise<GetRecurringTransactionAggregateType<T>>
+
+    /**
+     * Group by RecurringTransaction.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RecurringTransactionGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends RecurringTransactionGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: RecurringTransactionGroupByArgs['orderBy'] }
+        : { orderBy?: RecurringTransactionGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, RecurringTransactionGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetRecurringTransactionGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the RecurringTransaction model
+   */
+  readonly fields: RecurringTransactionFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for RecurringTransaction.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__RecurringTransactionClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the RecurringTransaction model
+   */
+  interface RecurringTransactionFieldRefs {
+    readonly id: FieldRef<"RecurringTransaction", 'String'>
+    readonly userId: FieldRef<"RecurringTransaction", 'String'>
+    readonly title: FieldRef<"RecurringTransaction", 'String'>
+    readonly amount: FieldRef<"RecurringTransaction", 'Decimal'>
+    readonly category: FieldRef<"RecurringTransaction", 'String'>
+    readonly subcategory: FieldRef<"RecurringTransaction", 'String'>
+    readonly interval: FieldRef<"RecurringTransaction", 'String'>
+    readonly nextDueDate: FieldRef<"RecurringTransaction", 'DateTime'>
+    readonly autoProcess: FieldRef<"RecurringTransaction", 'Boolean'>
+    readonly status: FieldRef<"RecurringTransaction", 'String'>
+    readonly accountId: FieldRef<"RecurringTransaction", 'String'>
+    readonly description: FieldRef<"RecurringTransaction", 'String'>
+    readonly merchant: FieldRef<"RecurringTransaction", 'String'>
+    readonly lastProcessedAt: FieldRef<"RecurringTransaction", 'DateTime'>
+    readonly clientRequestId: FieldRef<"RecurringTransaction", 'String'>
+    readonly syncStatus: FieldRef<"RecurringTransaction", 'String'>
+    readonly createdAt: FieldRef<"RecurringTransaction", 'DateTime'>
+    readonly updatedAt: FieldRef<"RecurringTransaction", 'DateTime'>
+    readonly deletedAt: FieldRef<"RecurringTransaction", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * RecurringTransaction findUnique
+   */
+  export type RecurringTransactionFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RecurringTransaction
+     */
+    select?: RecurringTransactionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RecurringTransaction
+     */
+    omit?: RecurringTransactionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RecurringTransactionInclude<ExtArgs> | null
+    /**
+     * Filter, which RecurringTransaction to fetch.
+     */
+    where: RecurringTransactionWhereUniqueInput
+  }
+
+  /**
+   * RecurringTransaction findUniqueOrThrow
+   */
+  export type RecurringTransactionFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RecurringTransaction
+     */
+    select?: RecurringTransactionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RecurringTransaction
+     */
+    omit?: RecurringTransactionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RecurringTransactionInclude<ExtArgs> | null
+    /**
+     * Filter, which RecurringTransaction to fetch.
+     */
+    where: RecurringTransactionWhereUniqueInput
+  }
+
+  /**
+   * RecurringTransaction findFirst
+   */
+  export type RecurringTransactionFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RecurringTransaction
+     */
+    select?: RecurringTransactionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RecurringTransaction
+     */
+    omit?: RecurringTransactionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RecurringTransactionInclude<ExtArgs> | null
+    /**
+     * Filter, which RecurringTransaction to fetch.
+     */
+    where?: RecurringTransactionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of RecurringTransactions to fetch.
+     */
+    orderBy?: RecurringTransactionOrderByWithRelationInput | RecurringTransactionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for RecurringTransactions.
+     */
+    cursor?: RecurringTransactionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` RecurringTransactions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` RecurringTransactions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of RecurringTransactions.
+     */
+    distinct?: RecurringTransactionScalarFieldEnum | RecurringTransactionScalarFieldEnum[]
+  }
+
+  /**
+   * RecurringTransaction findFirstOrThrow
+   */
+  export type RecurringTransactionFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RecurringTransaction
+     */
+    select?: RecurringTransactionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RecurringTransaction
+     */
+    omit?: RecurringTransactionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RecurringTransactionInclude<ExtArgs> | null
+    /**
+     * Filter, which RecurringTransaction to fetch.
+     */
+    where?: RecurringTransactionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of RecurringTransactions to fetch.
+     */
+    orderBy?: RecurringTransactionOrderByWithRelationInput | RecurringTransactionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for RecurringTransactions.
+     */
+    cursor?: RecurringTransactionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` RecurringTransactions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` RecurringTransactions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of RecurringTransactions.
+     */
+    distinct?: RecurringTransactionScalarFieldEnum | RecurringTransactionScalarFieldEnum[]
+  }
+
+  /**
+   * RecurringTransaction findMany
+   */
+  export type RecurringTransactionFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RecurringTransaction
+     */
+    select?: RecurringTransactionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RecurringTransaction
+     */
+    omit?: RecurringTransactionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RecurringTransactionInclude<ExtArgs> | null
+    /**
+     * Filter, which RecurringTransactions to fetch.
+     */
+    where?: RecurringTransactionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of RecurringTransactions to fetch.
+     */
+    orderBy?: RecurringTransactionOrderByWithRelationInput | RecurringTransactionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing RecurringTransactions.
+     */
+    cursor?: RecurringTransactionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` RecurringTransactions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` RecurringTransactions.
+     */
+    skip?: number
+    distinct?: RecurringTransactionScalarFieldEnum | RecurringTransactionScalarFieldEnum[]
+  }
+
+  /**
+   * RecurringTransaction create
+   */
+  export type RecurringTransactionCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RecurringTransaction
+     */
+    select?: RecurringTransactionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RecurringTransaction
+     */
+    omit?: RecurringTransactionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RecurringTransactionInclude<ExtArgs> | null
+    /**
+     * The data needed to create a RecurringTransaction.
+     */
+    data: XOR<RecurringTransactionCreateInput, RecurringTransactionUncheckedCreateInput>
+  }
+
+  /**
+   * RecurringTransaction createMany
+   */
+  export type RecurringTransactionCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many RecurringTransactions.
+     */
+    data: RecurringTransactionCreateManyInput | RecurringTransactionCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * RecurringTransaction createManyAndReturn
+   */
+  export type RecurringTransactionCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RecurringTransaction
+     */
+    select?: RecurringTransactionSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the RecurringTransaction
+     */
+    omit?: RecurringTransactionOmit<ExtArgs> | null
+    /**
+     * The data used to create many RecurringTransactions.
+     */
+    data: RecurringTransactionCreateManyInput | RecurringTransactionCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RecurringTransactionIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * RecurringTransaction update
+   */
+  export type RecurringTransactionUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RecurringTransaction
+     */
+    select?: RecurringTransactionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RecurringTransaction
+     */
+    omit?: RecurringTransactionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RecurringTransactionInclude<ExtArgs> | null
+    /**
+     * The data needed to update a RecurringTransaction.
+     */
+    data: XOR<RecurringTransactionUpdateInput, RecurringTransactionUncheckedUpdateInput>
+    /**
+     * Choose, which RecurringTransaction to update.
+     */
+    where: RecurringTransactionWhereUniqueInput
+  }
+
+  /**
+   * RecurringTransaction updateMany
+   */
+  export type RecurringTransactionUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update RecurringTransactions.
+     */
+    data: XOR<RecurringTransactionUpdateManyMutationInput, RecurringTransactionUncheckedUpdateManyInput>
+    /**
+     * Filter which RecurringTransactions to update
+     */
+    where?: RecurringTransactionWhereInput
+    /**
+     * Limit how many RecurringTransactions to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * RecurringTransaction updateManyAndReturn
+   */
+  export type RecurringTransactionUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RecurringTransaction
+     */
+    select?: RecurringTransactionSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the RecurringTransaction
+     */
+    omit?: RecurringTransactionOmit<ExtArgs> | null
+    /**
+     * The data used to update RecurringTransactions.
+     */
+    data: XOR<RecurringTransactionUpdateManyMutationInput, RecurringTransactionUncheckedUpdateManyInput>
+    /**
+     * Filter which RecurringTransactions to update
+     */
+    where?: RecurringTransactionWhereInput
+    /**
+     * Limit how many RecurringTransactions to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RecurringTransactionIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * RecurringTransaction upsert
+   */
+  export type RecurringTransactionUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RecurringTransaction
+     */
+    select?: RecurringTransactionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RecurringTransaction
+     */
+    omit?: RecurringTransactionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RecurringTransactionInclude<ExtArgs> | null
+    /**
+     * The filter to search for the RecurringTransaction to update in case it exists.
+     */
+    where: RecurringTransactionWhereUniqueInput
+    /**
+     * In case the RecurringTransaction found by the `where` argument doesn't exist, create a new RecurringTransaction with this data.
+     */
+    create: XOR<RecurringTransactionCreateInput, RecurringTransactionUncheckedCreateInput>
+    /**
+     * In case the RecurringTransaction was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<RecurringTransactionUpdateInput, RecurringTransactionUncheckedUpdateInput>
+  }
+
+  /**
+   * RecurringTransaction delete
+   */
+  export type RecurringTransactionDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RecurringTransaction
+     */
+    select?: RecurringTransactionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RecurringTransaction
+     */
+    omit?: RecurringTransactionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RecurringTransactionInclude<ExtArgs> | null
+    /**
+     * Filter which RecurringTransaction to delete.
+     */
+    where: RecurringTransactionWhereUniqueInput
+  }
+
+  /**
+   * RecurringTransaction deleteMany
+   */
+  export type RecurringTransactionDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which RecurringTransactions to delete
+     */
+    where?: RecurringTransactionWhereInput
+    /**
+     * Limit how many RecurringTransactions to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * RecurringTransaction without action
+   */
+  export type RecurringTransactionDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RecurringTransaction
+     */
+    select?: RecurringTransactionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RecurringTransaction
+     */
+    omit?: RecurringTransactionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RecurringTransactionInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model Budget
+   */
+
+  export type AggregateBudget = {
+    _count: BudgetCountAggregateOutputType | null
+    _avg: BudgetAvgAggregateOutputType | null
+    _sum: BudgetSumAggregateOutputType | null
+    _min: BudgetMinAggregateOutputType | null
+    _max: BudgetMaxAggregateOutputType | null
+  }
+
+  export type BudgetAvgAggregateOutputType = {
+    amount: Decimal | null
+    spent: Decimal | null
+    threshold: number | null
+  }
+
+  export type BudgetSumAggregateOutputType = {
+    amount: Decimal | null
+    spent: Decimal | null
+    threshold: number | null
+  }
+
+  export type BudgetMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    category: string | null
+    amount: Decimal | null
+    spent: Decimal | null
+    period: string | null
+    threshold: number | null
+    startDate: Date | null
+    endDate: Date | null
+    alertEnabled: boolean | null
+    clientRequestId: string | null
+    syncStatus: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    deletedAt: Date | null
+  }
+
+  export type BudgetMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    category: string | null
+    amount: Decimal | null
+    spent: Decimal | null
+    period: string | null
+    threshold: number | null
+    startDate: Date | null
+    endDate: Date | null
+    alertEnabled: boolean | null
+    clientRequestId: string | null
+    syncStatus: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    deletedAt: Date | null
+  }
+
+  export type BudgetCountAggregateOutputType = {
+    id: number
+    userId: number
+    category: number
+    amount: number
+    spent: number
+    period: number
+    threshold: number
+    startDate: number
+    endDate: number
+    alertEnabled: number
+    alertChannels: number
+    clientRequestId: number
+    syncStatus: number
+    createdAt: number
+    updatedAt: number
+    deletedAt: number
+    _all: number
+  }
+
+
+  export type BudgetAvgAggregateInputType = {
+    amount?: true
+    spent?: true
+    threshold?: true
+  }
+
+  export type BudgetSumAggregateInputType = {
+    amount?: true
+    spent?: true
+    threshold?: true
+  }
+
+  export type BudgetMinAggregateInputType = {
+    id?: true
+    userId?: true
+    category?: true
+    amount?: true
+    spent?: true
+    period?: true
+    threshold?: true
+    startDate?: true
+    endDate?: true
+    alertEnabled?: true
+    clientRequestId?: true
+    syncStatus?: true
+    createdAt?: true
+    updatedAt?: true
+    deletedAt?: true
+  }
+
+  export type BudgetMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    category?: true
+    amount?: true
+    spent?: true
+    period?: true
+    threshold?: true
+    startDate?: true
+    endDate?: true
+    alertEnabled?: true
+    clientRequestId?: true
+    syncStatus?: true
+    createdAt?: true
+    updatedAt?: true
+    deletedAt?: true
+  }
+
+  export type BudgetCountAggregateInputType = {
+    id?: true
+    userId?: true
+    category?: true
+    amount?: true
+    spent?: true
+    period?: true
+    threshold?: true
+    startDate?: true
+    endDate?: true
+    alertEnabled?: true
+    alertChannels?: true
+    clientRequestId?: true
+    syncStatus?: true
+    createdAt?: true
+    updatedAt?: true
+    deletedAt?: true
+    _all?: true
+  }
+
+  export type BudgetAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Budget to aggregate.
+     */
+    where?: BudgetWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Budgets to fetch.
+     */
+    orderBy?: BudgetOrderByWithRelationInput | BudgetOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: BudgetWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Budgets from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Budgets.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Budgets
+    **/
+    _count?: true | BudgetCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: BudgetAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: BudgetSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: BudgetMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: BudgetMaxAggregateInputType
+  }
+
+  export type GetBudgetAggregateType<T extends BudgetAggregateArgs> = {
+        [P in keyof T & keyof AggregateBudget]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateBudget[P]>
+      : GetScalarType<T[P], AggregateBudget[P]>
+  }
+
+
+
+
+  export type BudgetGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: BudgetWhereInput
+    orderBy?: BudgetOrderByWithAggregationInput | BudgetOrderByWithAggregationInput[]
+    by: BudgetScalarFieldEnum[] | BudgetScalarFieldEnum
+    having?: BudgetScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: BudgetCountAggregateInputType | true
+    _avg?: BudgetAvgAggregateInputType
+    _sum?: BudgetSumAggregateInputType
+    _min?: BudgetMinAggregateInputType
+    _max?: BudgetMaxAggregateInputType
+  }
+
+  export type BudgetGroupByOutputType = {
+    id: string
+    userId: string
+    category: string
+    amount: Decimal
+    spent: Decimal
+    period: string
+    threshold: number
+    startDate: Date | null
+    endDate: Date | null
+    alertEnabled: boolean
+    alertChannels: JsonValue
+    clientRequestId: string | null
+    syncStatus: string
+    createdAt: Date
+    updatedAt: Date
+    deletedAt: Date | null
+    _count: BudgetCountAggregateOutputType | null
+    _avg: BudgetAvgAggregateOutputType | null
+    _sum: BudgetSumAggregateOutputType | null
+    _min: BudgetMinAggregateOutputType | null
+    _max: BudgetMaxAggregateOutputType | null
+  }
+
+  type GetBudgetGroupByPayload<T extends BudgetGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<BudgetGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof BudgetGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], BudgetGroupByOutputType[P]>
+            : GetScalarType<T[P], BudgetGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type BudgetSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    category?: boolean
+    amount?: boolean
+    spent?: boolean
+    period?: boolean
+    threshold?: boolean
+    startDate?: boolean
+    endDate?: boolean
+    alertEnabled?: boolean
+    alertChannels?: boolean
+    clientRequestId?: boolean
+    syncStatus?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    deletedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["budget"]>
+
+  export type BudgetSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    category?: boolean
+    amount?: boolean
+    spent?: boolean
+    period?: boolean
+    threshold?: boolean
+    startDate?: boolean
+    endDate?: boolean
+    alertEnabled?: boolean
+    alertChannels?: boolean
+    clientRequestId?: boolean
+    syncStatus?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    deletedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["budget"]>
+
+  export type BudgetSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    category?: boolean
+    amount?: boolean
+    spent?: boolean
+    period?: boolean
+    threshold?: boolean
+    startDate?: boolean
+    endDate?: boolean
+    alertEnabled?: boolean
+    alertChannels?: boolean
+    clientRequestId?: boolean
+    syncStatus?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    deletedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["budget"]>
+
+  export type BudgetSelectScalar = {
+    id?: boolean
+    userId?: boolean
+    category?: boolean
+    amount?: boolean
+    spent?: boolean
+    period?: boolean
+    threshold?: boolean
+    startDate?: boolean
+    endDate?: boolean
+    alertEnabled?: boolean
+    alertChannels?: boolean
+    clientRequestId?: boolean
+    syncStatus?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    deletedAt?: boolean
+  }
+
+  export type BudgetOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "category" | "amount" | "spent" | "period" | "threshold" | "startDate" | "endDate" | "alertEnabled" | "alertChannels" | "clientRequestId" | "syncStatus" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["budget"]>
+  export type BudgetInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type BudgetIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type BudgetIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $BudgetPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Budget"
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userId: string
+      category: string
+      amount: Prisma.Decimal
+      spent: Prisma.Decimal
+      period: string
+      threshold: number
+      startDate: Date | null
+      endDate: Date | null
+      alertEnabled: boolean
+      alertChannels: Prisma.JsonValue
+      clientRequestId: string | null
+      syncStatus: string
+      createdAt: Date
+      updatedAt: Date
+      deletedAt: Date | null
+    }, ExtArgs["result"]["budget"]>
+    composites: {}
+  }
+
+  type BudgetGetPayload<S extends boolean | null | undefined | BudgetDefaultArgs> = $Result.GetResult<Prisma.$BudgetPayload, S>
+
+  type BudgetCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<BudgetFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: BudgetCountAggregateInputType | true
+    }
+
+  export interface BudgetDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Budget'], meta: { name: 'Budget' } }
+    /**
+     * Find zero or one Budget that matches the filter.
+     * @param {BudgetFindUniqueArgs} args - Arguments to find a Budget
+     * @example
+     * // Get one Budget
+     * const budget = await prisma.budget.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends BudgetFindUniqueArgs>(args: SelectSubset<T, BudgetFindUniqueArgs<ExtArgs>>): Prisma__BudgetClient<$Result.GetResult<Prisma.$BudgetPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Budget that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {BudgetFindUniqueOrThrowArgs} args - Arguments to find a Budget
+     * @example
+     * // Get one Budget
+     * const budget = await prisma.budget.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends BudgetFindUniqueOrThrowArgs>(args: SelectSubset<T, BudgetFindUniqueOrThrowArgs<ExtArgs>>): Prisma__BudgetClient<$Result.GetResult<Prisma.$BudgetPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Budget that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BudgetFindFirstArgs} args - Arguments to find a Budget
+     * @example
+     * // Get one Budget
+     * const budget = await prisma.budget.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends BudgetFindFirstArgs>(args?: SelectSubset<T, BudgetFindFirstArgs<ExtArgs>>): Prisma__BudgetClient<$Result.GetResult<Prisma.$BudgetPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Budget that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BudgetFindFirstOrThrowArgs} args - Arguments to find a Budget
+     * @example
+     * // Get one Budget
+     * const budget = await prisma.budget.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends BudgetFindFirstOrThrowArgs>(args?: SelectSubset<T, BudgetFindFirstOrThrowArgs<ExtArgs>>): Prisma__BudgetClient<$Result.GetResult<Prisma.$BudgetPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Budgets that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BudgetFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Budgets
+     * const budgets = await prisma.budget.findMany()
+     * 
+     * // Get first 10 Budgets
+     * const budgets = await prisma.budget.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const budgetWithIdOnly = await prisma.budget.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends BudgetFindManyArgs>(args?: SelectSubset<T, BudgetFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BudgetPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Budget.
+     * @param {BudgetCreateArgs} args - Arguments to create a Budget.
+     * @example
+     * // Create one Budget
+     * const Budget = await prisma.budget.create({
+     *   data: {
+     *     // ... data to create a Budget
+     *   }
+     * })
+     * 
+     */
+    create<T extends BudgetCreateArgs>(args: SelectSubset<T, BudgetCreateArgs<ExtArgs>>): Prisma__BudgetClient<$Result.GetResult<Prisma.$BudgetPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Budgets.
+     * @param {BudgetCreateManyArgs} args - Arguments to create many Budgets.
+     * @example
+     * // Create many Budgets
+     * const budget = await prisma.budget.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends BudgetCreateManyArgs>(args?: SelectSubset<T, BudgetCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many Budgets and returns the data saved in the database.
+     * @param {BudgetCreateManyAndReturnArgs} args - Arguments to create many Budgets.
+     * @example
+     * // Create many Budgets
+     * const budget = await prisma.budget.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many Budgets and only return the `id`
+     * const budgetWithIdOnly = await prisma.budget.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends BudgetCreateManyAndReturnArgs>(args?: SelectSubset<T, BudgetCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BudgetPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a Budget.
+     * @param {BudgetDeleteArgs} args - Arguments to delete one Budget.
+     * @example
+     * // Delete one Budget
+     * const Budget = await prisma.budget.delete({
+     *   where: {
+     *     // ... filter to delete one Budget
+     *   }
+     * })
+     * 
+     */
+    delete<T extends BudgetDeleteArgs>(args: SelectSubset<T, BudgetDeleteArgs<ExtArgs>>): Prisma__BudgetClient<$Result.GetResult<Prisma.$BudgetPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Budget.
+     * @param {BudgetUpdateArgs} args - Arguments to update one Budget.
+     * @example
+     * // Update one Budget
+     * const budget = await prisma.budget.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends BudgetUpdateArgs>(args: SelectSubset<T, BudgetUpdateArgs<ExtArgs>>): Prisma__BudgetClient<$Result.GetResult<Prisma.$BudgetPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Budgets.
+     * @param {BudgetDeleteManyArgs} args - Arguments to filter Budgets to delete.
+     * @example
+     * // Delete a few Budgets
+     * const { count } = await prisma.budget.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends BudgetDeleteManyArgs>(args?: SelectSubset<T, BudgetDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Budgets.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BudgetUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Budgets
+     * const budget = await prisma.budget.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends BudgetUpdateManyArgs>(args: SelectSubset<T, BudgetUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Budgets and returns the data updated in the database.
+     * @param {BudgetUpdateManyAndReturnArgs} args - Arguments to update many Budgets.
+     * @example
+     * // Update many Budgets
+     * const budget = await prisma.budget.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more Budgets and only return the `id`
+     * const budgetWithIdOnly = await prisma.budget.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends BudgetUpdateManyAndReturnArgs>(args: SelectSubset<T, BudgetUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BudgetPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one Budget.
+     * @param {BudgetUpsertArgs} args - Arguments to update or create a Budget.
+     * @example
+     * // Update or create a Budget
+     * const budget = await prisma.budget.upsert({
+     *   create: {
+     *     // ... data to create a Budget
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Budget we want to update
+     *   }
+     * })
+     */
+    upsert<T extends BudgetUpsertArgs>(args: SelectSubset<T, BudgetUpsertArgs<ExtArgs>>): Prisma__BudgetClient<$Result.GetResult<Prisma.$BudgetPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of Budgets.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BudgetCountArgs} args - Arguments to filter Budgets to count.
+     * @example
+     * // Count the number of Budgets
+     * const count = await prisma.budget.count({
+     *   where: {
+     *     // ... the filter for the Budgets we want to count
+     *   }
+     * })
+    **/
+    count<T extends BudgetCountArgs>(
+      args?: Subset<T, BudgetCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], BudgetCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Budget.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BudgetAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends BudgetAggregateArgs>(args: Subset<T, BudgetAggregateArgs>): Prisma.PrismaPromise<GetBudgetAggregateType<T>>
+
+    /**
+     * Group by Budget.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BudgetGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends BudgetGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: BudgetGroupByArgs['orderBy'] }
+        : { orderBy?: BudgetGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, BudgetGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetBudgetGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Budget model
+   */
+  readonly fields: BudgetFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Budget.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__BudgetClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Budget model
+   */
+  interface BudgetFieldRefs {
+    readonly id: FieldRef<"Budget", 'String'>
+    readonly userId: FieldRef<"Budget", 'String'>
+    readonly category: FieldRef<"Budget", 'String'>
+    readonly amount: FieldRef<"Budget", 'Decimal'>
+    readonly spent: FieldRef<"Budget", 'Decimal'>
+    readonly period: FieldRef<"Budget", 'String'>
+    readonly threshold: FieldRef<"Budget", 'Int'>
+    readonly startDate: FieldRef<"Budget", 'DateTime'>
+    readonly endDate: FieldRef<"Budget", 'DateTime'>
+    readonly alertEnabled: FieldRef<"Budget", 'Boolean'>
+    readonly alertChannels: FieldRef<"Budget", 'Json'>
+    readonly clientRequestId: FieldRef<"Budget", 'String'>
+    readonly syncStatus: FieldRef<"Budget", 'String'>
+    readonly createdAt: FieldRef<"Budget", 'DateTime'>
+    readonly updatedAt: FieldRef<"Budget", 'DateTime'>
+    readonly deletedAt: FieldRef<"Budget", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Budget findUnique
+   */
+  export type BudgetFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Budget
+     */
+    select?: BudgetSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Budget
+     */
+    omit?: BudgetOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BudgetInclude<ExtArgs> | null
+    /**
+     * Filter, which Budget to fetch.
+     */
+    where: BudgetWhereUniqueInput
+  }
+
+  /**
+   * Budget findUniqueOrThrow
+   */
+  export type BudgetFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Budget
+     */
+    select?: BudgetSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Budget
+     */
+    omit?: BudgetOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BudgetInclude<ExtArgs> | null
+    /**
+     * Filter, which Budget to fetch.
+     */
+    where: BudgetWhereUniqueInput
+  }
+
+  /**
+   * Budget findFirst
+   */
+  export type BudgetFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Budget
+     */
+    select?: BudgetSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Budget
+     */
+    omit?: BudgetOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BudgetInclude<ExtArgs> | null
+    /**
+     * Filter, which Budget to fetch.
+     */
+    where?: BudgetWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Budgets to fetch.
+     */
+    orderBy?: BudgetOrderByWithRelationInput | BudgetOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Budgets.
+     */
+    cursor?: BudgetWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Budgets from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Budgets.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Budgets.
+     */
+    distinct?: BudgetScalarFieldEnum | BudgetScalarFieldEnum[]
+  }
+
+  /**
+   * Budget findFirstOrThrow
+   */
+  export type BudgetFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Budget
+     */
+    select?: BudgetSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Budget
+     */
+    omit?: BudgetOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BudgetInclude<ExtArgs> | null
+    /**
+     * Filter, which Budget to fetch.
+     */
+    where?: BudgetWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Budgets to fetch.
+     */
+    orderBy?: BudgetOrderByWithRelationInput | BudgetOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Budgets.
+     */
+    cursor?: BudgetWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Budgets from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Budgets.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Budgets.
+     */
+    distinct?: BudgetScalarFieldEnum | BudgetScalarFieldEnum[]
+  }
+
+  /**
+   * Budget findMany
+   */
+  export type BudgetFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Budget
+     */
+    select?: BudgetSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Budget
+     */
+    omit?: BudgetOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BudgetInclude<ExtArgs> | null
+    /**
+     * Filter, which Budgets to fetch.
+     */
+    where?: BudgetWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Budgets to fetch.
+     */
+    orderBy?: BudgetOrderByWithRelationInput | BudgetOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Budgets.
+     */
+    cursor?: BudgetWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Budgets from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Budgets.
+     */
+    skip?: number
+    distinct?: BudgetScalarFieldEnum | BudgetScalarFieldEnum[]
+  }
+
+  /**
+   * Budget create
+   */
+  export type BudgetCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Budget
+     */
+    select?: BudgetSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Budget
+     */
+    omit?: BudgetOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BudgetInclude<ExtArgs> | null
+    /**
+     * The data needed to create a Budget.
+     */
+    data: XOR<BudgetCreateInput, BudgetUncheckedCreateInput>
+  }
+
+  /**
+   * Budget createMany
+   */
+  export type BudgetCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Budgets.
+     */
+    data: BudgetCreateManyInput | BudgetCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Budget createManyAndReturn
+   */
+  export type BudgetCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Budget
+     */
+    select?: BudgetSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Budget
+     */
+    omit?: BudgetOmit<ExtArgs> | null
+    /**
+     * The data used to create many Budgets.
+     */
+    data: BudgetCreateManyInput | BudgetCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BudgetIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Budget update
+   */
+  export type BudgetUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Budget
+     */
+    select?: BudgetSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Budget
+     */
+    omit?: BudgetOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BudgetInclude<ExtArgs> | null
+    /**
+     * The data needed to update a Budget.
+     */
+    data: XOR<BudgetUpdateInput, BudgetUncheckedUpdateInput>
+    /**
+     * Choose, which Budget to update.
+     */
+    where: BudgetWhereUniqueInput
+  }
+
+  /**
+   * Budget updateMany
+   */
+  export type BudgetUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Budgets.
+     */
+    data: XOR<BudgetUpdateManyMutationInput, BudgetUncheckedUpdateManyInput>
+    /**
+     * Filter which Budgets to update
+     */
+    where?: BudgetWhereInput
+    /**
+     * Limit how many Budgets to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Budget updateManyAndReturn
+   */
+  export type BudgetUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Budget
+     */
+    select?: BudgetSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Budget
+     */
+    omit?: BudgetOmit<ExtArgs> | null
+    /**
+     * The data used to update Budgets.
+     */
+    data: XOR<BudgetUpdateManyMutationInput, BudgetUncheckedUpdateManyInput>
+    /**
+     * Filter which Budgets to update
+     */
+    where?: BudgetWhereInput
+    /**
+     * Limit how many Budgets to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BudgetIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Budget upsert
+   */
+  export type BudgetUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Budget
+     */
+    select?: BudgetSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Budget
+     */
+    omit?: BudgetOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BudgetInclude<ExtArgs> | null
+    /**
+     * The filter to search for the Budget to update in case it exists.
+     */
+    where: BudgetWhereUniqueInput
+    /**
+     * In case the Budget found by the `where` argument doesn't exist, create a new Budget with this data.
+     */
+    create: XOR<BudgetCreateInput, BudgetUncheckedCreateInput>
+    /**
+     * In case the Budget was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<BudgetUpdateInput, BudgetUncheckedUpdateInput>
+  }
+
+  /**
+   * Budget delete
+   */
+  export type BudgetDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Budget
+     */
+    select?: BudgetSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Budget
+     */
+    omit?: BudgetOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BudgetInclude<ExtArgs> | null
+    /**
+     * Filter which Budget to delete.
+     */
+    where: BudgetWhereUniqueInput
+  }
+
+  /**
+   * Budget deleteMany
+   */
+  export type BudgetDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Budgets to delete
+     */
+    where?: BudgetWhereInput
+    /**
+     * Limit how many Budgets to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * Budget without action
+   */
+  export type BudgetDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Budget
+     */
+    select?: BudgetSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Budget
+     */
+    omit?: BudgetOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BudgetInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model TaxCalculation
+   */
+
+  export type AggregateTaxCalculation = {
+    _count: TaxCalculationCountAggregateOutputType | null
+    _avg: TaxCalculationAvgAggregateOutputType | null
+    _sum: TaxCalculationSumAggregateOutputType | null
+    _min: TaxCalculationMinAggregateOutputType | null
+    _max: TaxCalculationMaxAggregateOutputType | null
+  }
+
+  export type TaxCalculationAvgAggregateOutputType = {
+    year: number | null
+    totalIncome: Decimal | null
+    totalExpense: Decimal | null
+    netProfit: Decimal | null
+    taxableIncome: Decimal | null
+    estimatedTax: Decimal | null
+    taxRate: Decimal | null
+    deductions: Decimal | null
+  }
+
+  export type TaxCalculationSumAggregateOutputType = {
+    year: number | null
+    totalIncome: Decimal | null
+    totalExpense: Decimal | null
+    netProfit: Decimal | null
+    taxableIncome: Decimal | null
+    estimatedTax: Decimal | null
+    taxRate: Decimal | null
+    deductions: Decimal | null
+  }
+
+  export type TaxCalculationMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    year: number | null
+    regime: string | null
+    country: string | null
+    totalIncome: Decimal | null
+    totalExpense: Decimal | null
+    netProfit: Decimal | null
+    taxableIncome: Decimal | null
+    estimatedTax: Decimal | null
+    taxRate: Decimal | null
+    deductions: Decimal | null
+    currency: string | null
+    notes: string | null
+    clientRequestId: string | null
+    syncStatus: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    deletedAt: Date | null
+  }
+
+  export type TaxCalculationMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    year: number | null
+    regime: string | null
+    country: string | null
+    totalIncome: Decimal | null
+    totalExpense: Decimal | null
+    netProfit: Decimal | null
+    taxableIncome: Decimal | null
+    estimatedTax: Decimal | null
+    taxRate: Decimal | null
+    deductions: Decimal | null
+    currency: string | null
+    notes: string | null
+    clientRequestId: string | null
+    syncStatus: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    deletedAt: Date | null
+  }
+
+  export type TaxCalculationCountAggregateOutputType = {
+    id: number
+    userId: number
+    year: number
+    regime: number
+    country: number
+    totalIncome: number
+    totalExpense: number
+    netProfit: number
+    taxableIncome: number
+    estimatedTax: number
+    taxRate: number
+    deductions: number
+    currency: number
+    notes: number
+    metadata: number
+    clientRequestId: number
+    syncStatus: number
+    createdAt: number
+    updatedAt: number
+    deletedAt: number
+    _all: number
+  }
+
+
+  export type TaxCalculationAvgAggregateInputType = {
+    year?: true
+    totalIncome?: true
+    totalExpense?: true
+    netProfit?: true
+    taxableIncome?: true
+    estimatedTax?: true
+    taxRate?: true
+    deductions?: true
+  }
+
+  export type TaxCalculationSumAggregateInputType = {
+    year?: true
+    totalIncome?: true
+    totalExpense?: true
+    netProfit?: true
+    taxableIncome?: true
+    estimatedTax?: true
+    taxRate?: true
+    deductions?: true
+  }
+
+  export type TaxCalculationMinAggregateInputType = {
+    id?: true
+    userId?: true
+    year?: true
+    regime?: true
+    country?: true
+    totalIncome?: true
+    totalExpense?: true
+    netProfit?: true
+    taxableIncome?: true
+    estimatedTax?: true
+    taxRate?: true
+    deductions?: true
+    currency?: true
+    notes?: true
+    clientRequestId?: true
+    syncStatus?: true
+    createdAt?: true
+    updatedAt?: true
+    deletedAt?: true
+  }
+
+  export type TaxCalculationMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    year?: true
+    regime?: true
+    country?: true
+    totalIncome?: true
+    totalExpense?: true
+    netProfit?: true
+    taxableIncome?: true
+    estimatedTax?: true
+    taxRate?: true
+    deductions?: true
+    currency?: true
+    notes?: true
+    clientRequestId?: true
+    syncStatus?: true
+    createdAt?: true
+    updatedAt?: true
+    deletedAt?: true
+  }
+
+  export type TaxCalculationCountAggregateInputType = {
+    id?: true
+    userId?: true
+    year?: true
+    regime?: true
+    country?: true
+    totalIncome?: true
+    totalExpense?: true
+    netProfit?: true
+    taxableIncome?: true
+    estimatedTax?: true
+    taxRate?: true
+    deductions?: true
+    currency?: true
+    notes?: true
+    metadata?: true
+    clientRequestId?: true
+    syncStatus?: true
+    createdAt?: true
+    updatedAt?: true
+    deletedAt?: true
+    _all?: true
+  }
+
+  export type TaxCalculationAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which TaxCalculation to aggregate.
+     */
+    where?: TaxCalculationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of TaxCalculations to fetch.
+     */
+    orderBy?: TaxCalculationOrderByWithRelationInput | TaxCalculationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: TaxCalculationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` TaxCalculations from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` TaxCalculations.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned TaxCalculations
+    **/
+    _count?: true | TaxCalculationCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: TaxCalculationAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: TaxCalculationSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: TaxCalculationMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: TaxCalculationMaxAggregateInputType
+  }
+
+  export type GetTaxCalculationAggregateType<T extends TaxCalculationAggregateArgs> = {
+        [P in keyof T & keyof AggregateTaxCalculation]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateTaxCalculation[P]>
+      : GetScalarType<T[P], AggregateTaxCalculation[P]>
+  }
+
+
+
+
+  export type TaxCalculationGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TaxCalculationWhereInput
+    orderBy?: TaxCalculationOrderByWithAggregationInput | TaxCalculationOrderByWithAggregationInput[]
+    by: TaxCalculationScalarFieldEnum[] | TaxCalculationScalarFieldEnum
+    having?: TaxCalculationScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: TaxCalculationCountAggregateInputType | true
+    _avg?: TaxCalculationAvgAggregateInputType
+    _sum?: TaxCalculationSumAggregateInputType
+    _min?: TaxCalculationMinAggregateInputType
+    _max?: TaxCalculationMaxAggregateInputType
+  }
+
+  export type TaxCalculationGroupByOutputType = {
+    id: string
+    userId: string
+    year: number
+    regime: string | null
+    country: string
+    totalIncome: Decimal
+    totalExpense: Decimal
+    netProfit: Decimal
+    taxableIncome: Decimal
+    estimatedTax: Decimal
+    taxRate: Decimal
+    deductions: Decimal
+    currency: string
+    notes: string | null
+    metadata: JsonValue | null
+    clientRequestId: string | null
+    syncStatus: string
+    createdAt: Date
+    updatedAt: Date
+    deletedAt: Date | null
+    _count: TaxCalculationCountAggregateOutputType | null
+    _avg: TaxCalculationAvgAggregateOutputType | null
+    _sum: TaxCalculationSumAggregateOutputType | null
+    _min: TaxCalculationMinAggregateOutputType | null
+    _max: TaxCalculationMaxAggregateOutputType | null
+  }
+
+  type GetTaxCalculationGroupByPayload<T extends TaxCalculationGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<TaxCalculationGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof TaxCalculationGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], TaxCalculationGroupByOutputType[P]>
+            : GetScalarType<T[P], TaxCalculationGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type TaxCalculationSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    year?: boolean
+    regime?: boolean
+    country?: boolean
+    totalIncome?: boolean
+    totalExpense?: boolean
+    netProfit?: boolean
+    taxableIncome?: boolean
+    estimatedTax?: boolean
+    taxRate?: boolean
+    deductions?: boolean
+    currency?: boolean
+    notes?: boolean
+    metadata?: boolean
+    clientRequestId?: boolean
+    syncStatus?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    deletedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["taxCalculation"]>
+
+  export type TaxCalculationSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    year?: boolean
+    regime?: boolean
+    country?: boolean
+    totalIncome?: boolean
+    totalExpense?: boolean
+    netProfit?: boolean
+    taxableIncome?: boolean
+    estimatedTax?: boolean
+    taxRate?: boolean
+    deductions?: boolean
+    currency?: boolean
+    notes?: boolean
+    metadata?: boolean
+    clientRequestId?: boolean
+    syncStatus?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    deletedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["taxCalculation"]>
+
+  export type TaxCalculationSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    year?: boolean
+    regime?: boolean
+    country?: boolean
+    totalIncome?: boolean
+    totalExpense?: boolean
+    netProfit?: boolean
+    taxableIncome?: boolean
+    estimatedTax?: boolean
+    taxRate?: boolean
+    deductions?: boolean
+    currency?: boolean
+    notes?: boolean
+    metadata?: boolean
+    clientRequestId?: boolean
+    syncStatus?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    deletedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["taxCalculation"]>
+
+  export type TaxCalculationSelectScalar = {
+    id?: boolean
+    userId?: boolean
+    year?: boolean
+    regime?: boolean
+    country?: boolean
+    totalIncome?: boolean
+    totalExpense?: boolean
+    netProfit?: boolean
+    taxableIncome?: boolean
+    estimatedTax?: boolean
+    taxRate?: boolean
+    deductions?: boolean
+    currency?: boolean
+    notes?: boolean
+    metadata?: boolean
+    clientRequestId?: boolean
+    syncStatus?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    deletedAt?: boolean
+  }
+
+  export type TaxCalculationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "year" | "regime" | "country" | "totalIncome" | "totalExpense" | "netProfit" | "taxableIncome" | "estimatedTax" | "taxRate" | "deductions" | "currency" | "notes" | "metadata" | "clientRequestId" | "syncStatus" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["taxCalculation"]>
+  export type TaxCalculationInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type TaxCalculationIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type TaxCalculationIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $TaxCalculationPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "TaxCalculation"
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userId: string
+      year: number
+      regime: string | null
+      country: string
+      totalIncome: Prisma.Decimal
+      totalExpense: Prisma.Decimal
+      netProfit: Prisma.Decimal
+      taxableIncome: Prisma.Decimal
+      estimatedTax: Prisma.Decimal
+      taxRate: Prisma.Decimal
+      deductions: Prisma.Decimal
+      currency: string
+      notes: string | null
+      metadata: Prisma.JsonValue | null
+      clientRequestId: string | null
+      syncStatus: string
+      createdAt: Date
+      updatedAt: Date
+      deletedAt: Date | null
+    }, ExtArgs["result"]["taxCalculation"]>
+    composites: {}
+  }
+
+  type TaxCalculationGetPayload<S extends boolean | null | undefined | TaxCalculationDefaultArgs> = $Result.GetResult<Prisma.$TaxCalculationPayload, S>
+
+  type TaxCalculationCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<TaxCalculationFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: TaxCalculationCountAggregateInputType | true
+    }
+
+  export interface TaxCalculationDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['TaxCalculation'], meta: { name: 'TaxCalculation' } }
+    /**
+     * Find zero or one TaxCalculation that matches the filter.
+     * @param {TaxCalculationFindUniqueArgs} args - Arguments to find a TaxCalculation
+     * @example
+     * // Get one TaxCalculation
+     * const taxCalculation = await prisma.taxCalculation.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends TaxCalculationFindUniqueArgs>(args: SelectSubset<T, TaxCalculationFindUniqueArgs<ExtArgs>>): Prisma__TaxCalculationClient<$Result.GetResult<Prisma.$TaxCalculationPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one TaxCalculation that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {TaxCalculationFindUniqueOrThrowArgs} args - Arguments to find a TaxCalculation
+     * @example
+     * // Get one TaxCalculation
+     * const taxCalculation = await prisma.taxCalculation.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends TaxCalculationFindUniqueOrThrowArgs>(args: SelectSubset<T, TaxCalculationFindUniqueOrThrowArgs<ExtArgs>>): Prisma__TaxCalculationClient<$Result.GetResult<Prisma.$TaxCalculationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first TaxCalculation that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TaxCalculationFindFirstArgs} args - Arguments to find a TaxCalculation
+     * @example
+     * // Get one TaxCalculation
+     * const taxCalculation = await prisma.taxCalculation.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends TaxCalculationFindFirstArgs>(args?: SelectSubset<T, TaxCalculationFindFirstArgs<ExtArgs>>): Prisma__TaxCalculationClient<$Result.GetResult<Prisma.$TaxCalculationPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first TaxCalculation that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TaxCalculationFindFirstOrThrowArgs} args - Arguments to find a TaxCalculation
+     * @example
+     * // Get one TaxCalculation
+     * const taxCalculation = await prisma.taxCalculation.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends TaxCalculationFindFirstOrThrowArgs>(args?: SelectSubset<T, TaxCalculationFindFirstOrThrowArgs<ExtArgs>>): Prisma__TaxCalculationClient<$Result.GetResult<Prisma.$TaxCalculationPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more TaxCalculations that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TaxCalculationFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all TaxCalculations
+     * const taxCalculations = await prisma.taxCalculation.findMany()
+     * 
+     * // Get first 10 TaxCalculations
+     * const taxCalculations = await prisma.taxCalculation.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const taxCalculationWithIdOnly = await prisma.taxCalculation.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends TaxCalculationFindManyArgs>(args?: SelectSubset<T, TaxCalculationFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TaxCalculationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a TaxCalculation.
+     * @param {TaxCalculationCreateArgs} args - Arguments to create a TaxCalculation.
+     * @example
+     * // Create one TaxCalculation
+     * const TaxCalculation = await prisma.taxCalculation.create({
+     *   data: {
+     *     // ... data to create a TaxCalculation
+     *   }
+     * })
+     * 
+     */
+    create<T extends TaxCalculationCreateArgs>(args: SelectSubset<T, TaxCalculationCreateArgs<ExtArgs>>): Prisma__TaxCalculationClient<$Result.GetResult<Prisma.$TaxCalculationPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many TaxCalculations.
+     * @param {TaxCalculationCreateManyArgs} args - Arguments to create many TaxCalculations.
+     * @example
+     * // Create many TaxCalculations
+     * const taxCalculation = await prisma.taxCalculation.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends TaxCalculationCreateManyArgs>(args?: SelectSubset<T, TaxCalculationCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many TaxCalculations and returns the data saved in the database.
+     * @param {TaxCalculationCreateManyAndReturnArgs} args - Arguments to create many TaxCalculations.
+     * @example
+     * // Create many TaxCalculations
+     * const taxCalculation = await prisma.taxCalculation.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many TaxCalculations and only return the `id`
+     * const taxCalculationWithIdOnly = await prisma.taxCalculation.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends TaxCalculationCreateManyAndReturnArgs>(args?: SelectSubset<T, TaxCalculationCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TaxCalculationPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a TaxCalculation.
+     * @param {TaxCalculationDeleteArgs} args - Arguments to delete one TaxCalculation.
+     * @example
+     * // Delete one TaxCalculation
+     * const TaxCalculation = await prisma.taxCalculation.delete({
+     *   where: {
+     *     // ... filter to delete one TaxCalculation
+     *   }
+     * })
+     * 
+     */
+    delete<T extends TaxCalculationDeleteArgs>(args: SelectSubset<T, TaxCalculationDeleteArgs<ExtArgs>>): Prisma__TaxCalculationClient<$Result.GetResult<Prisma.$TaxCalculationPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one TaxCalculation.
+     * @param {TaxCalculationUpdateArgs} args - Arguments to update one TaxCalculation.
+     * @example
+     * // Update one TaxCalculation
+     * const taxCalculation = await prisma.taxCalculation.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends TaxCalculationUpdateArgs>(args: SelectSubset<T, TaxCalculationUpdateArgs<ExtArgs>>): Prisma__TaxCalculationClient<$Result.GetResult<Prisma.$TaxCalculationPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more TaxCalculations.
+     * @param {TaxCalculationDeleteManyArgs} args - Arguments to filter TaxCalculations to delete.
+     * @example
+     * // Delete a few TaxCalculations
+     * const { count } = await prisma.taxCalculation.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends TaxCalculationDeleteManyArgs>(args?: SelectSubset<T, TaxCalculationDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more TaxCalculations.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TaxCalculationUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many TaxCalculations
+     * const taxCalculation = await prisma.taxCalculation.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends TaxCalculationUpdateManyArgs>(args: SelectSubset<T, TaxCalculationUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more TaxCalculations and returns the data updated in the database.
+     * @param {TaxCalculationUpdateManyAndReturnArgs} args - Arguments to update many TaxCalculations.
+     * @example
+     * // Update many TaxCalculations
+     * const taxCalculation = await prisma.taxCalculation.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more TaxCalculations and only return the `id`
+     * const taxCalculationWithIdOnly = await prisma.taxCalculation.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends TaxCalculationUpdateManyAndReturnArgs>(args: SelectSubset<T, TaxCalculationUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TaxCalculationPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one TaxCalculation.
+     * @param {TaxCalculationUpsertArgs} args - Arguments to update or create a TaxCalculation.
+     * @example
+     * // Update or create a TaxCalculation
+     * const taxCalculation = await prisma.taxCalculation.upsert({
+     *   create: {
+     *     // ... data to create a TaxCalculation
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the TaxCalculation we want to update
+     *   }
+     * })
+     */
+    upsert<T extends TaxCalculationUpsertArgs>(args: SelectSubset<T, TaxCalculationUpsertArgs<ExtArgs>>): Prisma__TaxCalculationClient<$Result.GetResult<Prisma.$TaxCalculationPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of TaxCalculations.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TaxCalculationCountArgs} args - Arguments to filter TaxCalculations to count.
+     * @example
+     * // Count the number of TaxCalculations
+     * const count = await prisma.taxCalculation.count({
+     *   where: {
+     *     // ... the filter for the TaxCalculations we want to count
+     *   }
+     * })
+    **/
+    count<T extends TaxCalculationCountArgs>(
+      args?: Subset<T, TaxCalculationCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], TaxCalculationCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a TaxCalculation.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TaxCalculationAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends TaxCalculationAggregateArgs>(args: Subset<T, TaxCalculationAggregateArgs>): Prisma.PrismaPromise<GetTaxCalculationAggregateType<T>>
+
+    /**
+     * Group by TaxCalculation.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TaxCalculationGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends TaxCalculationGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: TaxCalculationGroupByArgs['orderBy'] }
+        : { orderBy?: TaxCalculationGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, TaxCalculationGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetTaxCalculationGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the TaxCalculation model
+   */
+  readonly fields: TaxCalculationFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for TaxCalculation.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__TaxCalculationClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the TaxCalculation model
+   */
+  interface TaxCalculationFieldRefs {
+    readonly id: FieldRef<"TaxCalculation", 'String'>
+    readonly userId: FieldRef<"TaxCalculation", 'String'>
+    readonly year: FieldRef<"TaxCalculation", 'Int'>
+    readonly regime: FieldRef<"TaxCalculation", 'String'>
+    readonly country: FieldRef<"TaxCalculation", 'String'>
+    readonly totalIncome: FieldRef<"TaxCalculation", 'Decimal'>
+    readonly totalExpense: FieldRef<"TaxCalculation", 'Decimal'>
+    readonly netProfit: FieldRef<"TaxCalculation", 'Decimal'>
+    readonly taxableIncome: FieldRef<"TaxCalculation", 'Decimal'>
+    readonly estimatedTax: FieldRef<"TaxCalculation", 'Decimal'>
+    readonly taxRate: FieldRef<"TaxCalculation", 'Decimal'>
+    readonly deductions: FieldRef<"TaxCalculation", 'Decimal'>
+    readonly currency: FieldRef<"TaxCalculation", 'String'>
+    readonly notes: FieldRef<"TaxCalculation", 'String'>
+    readonly metadata: FieldRef<"TaxCalculation", 'Json'>
+    readonly clientRequestId: FieldRef<"TaxCalculation", 'String'>
+    readonly syncStatus: FieldRef<"TaxCalculation", 'String'>
+    readonly createdAt: FieldRef<"TaxCalculation", 'DateTime'>
+    readonly updatedAt: FieldRef<"TaxCalculation", 'DateTime'>
+    readonly deletedAt: FieldRef<"TaxCalculation", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * TaxCalculation findUnique
+   */
+  export type TaxCalculationFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TaxCalculation
+     */
+    select?: TaxCalculationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TaxCalculation
+     */
+    omit?: TaxCalculationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TaxCalculationInclude<ExtArgs> | null
+    /**
+     * Filter, which TaxCalculation to fetch.
+     */
+    where: TaxCalculationWhereUniqueInput
+  }
+
+  /**
+   * TaxCalculation findUniqueOrThrow
+   */
+  export type TaxCalculationFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TaxCalculation
+     */
+    select?: TaxCalculationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TaxCalculation
+     */
+    omit?: TaxCalculationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TaxCalculationInclude<ExtArgs> | null
+    /**
+     * Filter, which TaxCalculation to fetch.
+     */
+    where: TaxCalculationWhereUniqueInput
+  }
+
+  /**
+   * TaxCalculation findFirst
+   */
+  export type TaxCalculationFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TaxCalculation
+     */
+    select?: TaxCalculationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TaxCalculation
+     */
+    omit?: TaxCalculationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TaxCalculationInclude<ExtArgs> | null
+    /**
+     * Filter, which TaxCalculation to fetch.
+     */
+    where?: TaxCalculationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of TaxCalculations to fetch.
+     */
+    orderBy?: TaxCalculationOrderByWithRelationInput | TaxCalculationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for TaxCalculations.
+     */
+    cursor?: TaxCalculationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` TaxCalculations from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` TaxCalculations.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of TaxCalculations.
+     */
+    distinct?: TaxCalculationScalarFieldEnum | TaxCalculationScalarFieldEnum[]
+  }
+
+  /**
+   * TaxCalculation findFirstOrThrow
+   */
+  export type TaxCalculationFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TaxCalculation
+     */
+    select?: TaxCalculationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TaxCalculation
+     */
+    omit?: TaxCalculationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TaxCalculationInclude<ExtArgs> | null
+    /**
+     * Filter, which TaxCalculation to fetch.
+     */
+    where?: TaxCalculationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of TaxCalculations to fetch.
+     */
+    orderBy?: TaxCalculationOrderByWithRelationInput | TaxCalculationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for TaxCalculations.
+     */
+    cursor?: TaxCalculationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` TaxCalculations from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` TaxCalculations.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of TaxCalculations.
+     */
+    distinct?: TaxCalculationScalarFieldEnum | TaxCalculationScalarFieldEnum[]
+  }
+
+  /**
+   * TaxCalculation findMany
+   */
+  export type TaxCalculationFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TaxCalculation
+     */
+    select?: TaxCalculationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TaxCalculation
+     */
+    omit?: TaxCalculationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TaxCalculationInclude<ExtArgs> | null
+    /**
+     * Filter, which TaxCalculations to fetch.
+     */
+    where?: TaxCalculationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of TaxCalculations to fetch.
+     */
+    orderBy?: TaxCalculationOrderByWithRelationInput | TaxCalculationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing TaxCalculations.
+     */
+    cursor?: TaxCalculationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` TaxCalculations from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` TaxCalculations.
+     */
+    skip?: number
+    distinct?: TaxCalculationScalarFieldEnum | TaxCalculationScalarFieldEnum[]
+  }
+
+  /**
+   * TaxCalculation create
+   */
+  export type TaxCalculationCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TaxCalculation
+     */
+    select?: TaxCalculationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TaxCalculation
+     */
+    omit?: TaxCalculationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TaxCalculationInclude<ExtArgs> | null
+    /**
+     * The data needed to create a TaxCalculation.
+     */
+    data: XOR<TaxCalculationCreateInput, TaxCalculationUncheckedCreateInput>
+  }
+
+  /**
+   * TaxCalculation createMany
+   */
+  export type TaxCalculationCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many TaxCalculations.
+     */
+    data: TaxCalculationCreateManyInput | TaxCalculationCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * TaxCalculation createManyAndReturn
+   */
+  export type TaxCalculationCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TaxCalculation
+     */
+    select?: TaxCalculationSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the TaxCalculation
+     */
+    omit?: TaxCalculationOmit<ExtArgs> | null
+    /**
+     * The data used to create many TaxCalculations.
+     */
+    data: TaxCalculationCreateManyInput | TaxCalculationCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TaxCalculationIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * TaxCalculation update
+   */
+  export type TaxCalculationUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TaxCalculation
+     */
+    select?: TaxCalculationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TaxCalculation
+     */
+    omit?: TaxCalculationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TaxCalculationInclude<ExtArgs> | null
+    /**
+     * The data needed to update a TaxCalculation.
+     */
+    data: XOR<TaxCalculationUpdateInput, TaxCalculationUncheckedUpdateInput>
+    /**
+     * Choose, which TaxCalculation to update.
+     */
+    where: TaxCalculationWhereUniqueInput
+  }
+
+  /**
+   * TaxCalculation updateMany
+   */
+  export type TaxCalculationUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update TaxCalculations.
+     */
+    data: XOR<TaxCalculationUpdateManyMutationInput, TaxCalculationUncheckedUpdateManyInput>
+    /**
+     * Filter which TaxCalculations to update
+     */
+    where?: TaxCalculationWhereInput
+    /**
+     * Limit how many TaxCalculations to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * TaxCalculation updateManyAndReturn
+   */
+  export type TaxCalculationUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TaxCalculation
+     */
+    select?: TaxCalculationSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the TaxCalculation
+     */
+    omit?: TaxCalculationOmit<ExtArgs> | null
+    /**
+     * The data used to update TaxCalculations.
+     */
+    data: XOR<TaxCalculationUpdateManyMutationInput, TaxCalculationUncheckedUpdateManyInput>
+    /**
+     * Filter which TaxCalculations to update
+     */
+    where?: TaxCalculationWhereInput
+    /**
+     * Limit how many TaxCalculations to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TaxCalculationIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * TaxCalculation upsert
+   */
+  export type TaxCalculationUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TaxCalculation
+     */
+    select?: TaxCalculationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TaxCalculation
+     */
+    omit?: TaxCalculationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TaxCalculationInclude<ExtArgs> | null
+    /**
+     * The filter to search for the TaxCalculation to update in case it exists.
+     */
+    where: TaxCalculationWhereUniqueInput
+    /**
+     * In case the TaxCalculation found by the `where` argument doesn't exist, create a new TaxCalculation with this data.
+     */
+    create: XOR<TaxCalculationCreateInput, TaxCalculationUncheckedCreateInput>
+    /**
+     * In case the TaxCalculation was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<TaxCalculationUpdateInput, TaxCalculationUncheckedUpdateInput>
+  }
+
+  /**
+   * TaxCalculation delete
+   */
+  export type TaxCalculationDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TaxCalculation
+     */
+    select?: TaxCalculationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TaxCalculation
+     */
+    omit?: TaxCalculationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TaxCalculationInclude<ExtArgs> | null
+    /**
+     * Filter which TaxCalculation to delete.
+     */
+    where: TaxCalculationWhereUniqueInput
+  }
+
+  /**
+   * TaxCalculation deleteMany
+   */
+  export type TaxCalculationDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which TaxCalculations to delete
+     */
+    where?: TaxCalculationWhereInput
+    /**
+     * Limit how many TaxCalculations to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * TaxCalculation without action
+   */
+  export type TaxCalculationDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TaxCalculation
+     */
+    select?: TaxCalculationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TaxCalculation
+     */
+    omit?: TaxCalculationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TaxCalculationInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model GoldAsset
+   */
+
+  export type AggregateGoldAsset = {
+    _count: GoldAssetCountAggregateOutputType | null
+    _avg: GoldAssetAvgAggregateOutputType | null
+    _sum: GoldAssetSumAggregateOutputType | null
+    _min: GoldAssetMinAggregateOutputType | null
+    _max: GoldAssetMaxAggregateOutputType | null
+  }
+
+  export type GoldAssetAvgAggregateOutputType = {
+    quantity: Decimal | null
+    purchasePrice: Decimal | null
+    currentPrice: Decimal | null
+    purityPercentage: Decimal | null
+  }
+
+  export type GoldAssetSumAggregateOutputType = {
+    quantity: Decimal | null
+    purchasePrice: Decimal | null
+    currentPrice: Decimal | null
+    purityPercentage: Decimal | null
+  }
+
+  export type GoldAssetMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    type: string | null
+    quantity: Decimal | null
+    unit: string | null
+    purchasePrice: Decimal | null
+    currentPrice: Decimal | null
+    purchaseDate: Date | null
+    purityPercentage: Decimal | null
+    location: string | null
+    certificateNumber: string | null
+    notes: string | null
+    clientRequestId: string | null
+    syncStatus: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    deletedAt: Date | null
+  }
+
+  export type GoldAssetMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    type: string | null
+    quantity: Decimal | null
+    unit: string | null
+    purchasePrice: Decimal | null
+    currentPrice: Decimal | null
+    purchaseDate: Date | null
+    purityPercentage: Decimal | null
+    location: string | null
+    certificateNumber: string | null
+    notes: string | null
+    clientRequestId: string | null
+    syncStatus: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    deletedAt: Date | null
+  }
+
+  export type GoldAssetCountAggregateOutputType = {
+    id: number
+    userId: number
+    type: number
+    quantity: number
+    unit: number
+    purchasePrice: number
+    currentPrice: number
+    purchaseDate: number
+    purityPercentage: number
+    location: number
+    certificateNumber: number
+    notes: number
+    clientRequestId: number
+    syncStatus: number
+    createdAt: number
+    updatedAt: number
+    deletedAt: number
+    _all: number
+  }
+
+
+  export type GoldAssetAvgAggregateInputType = {
+    quantity?: true
+    purchasePrice?: true
+    currentPrice?: true
+    purityPercentage?: true
+  }
+
+  export type GoldAssetSumAggregateInputType = {
+    quantity?: true
+    purchasePrice?: true
+    currentPrice?: true
+    purityPercentage?: true
+  }
+
+  export type GoldAssetMinAggregateInputType = {
+    id?: true
+    userId?: true
+    type?: true
+    quantity?: true
+    unit?: true
+    purchasePrice?: true
+    currentPrice?: true
+    purchaseDate?: true
+    purityPercentage?: true
+    location?: true
+    certificateNumber?: true
+    notes?: true
+    clientRequestId?: true
+    syncStatus?: true
+    createdAt?: true
+    updatedAt?: true
+    deletedAt?: true
+  }
+
+  export type GoldAssetMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    type?: true
+    quantity?: true
+    unit?: true
+    purchasePrice?: true
+    currentPrice?: true
+    purchaseDate?: true
+    purityPercentage?: true
+    location?: true
+    certificateNumber?: true
+    notes?: true
+    clientRequestId?: true
+    syncStatus?: true
+    createdAt?: true
+    updatedAt?: true
+    deletedAt?: true
+  }
+
+  export type GoldAssetCountAggregateInputType = {
+    id?: true
+    userId?: true
+    type?: true
+    quantity?: true
+    unit?: true
+    purchasePrice?: true
+    currentPrice?: true
+    purchaseDate?: true
+    purityPercentage?: true
+    location?: true
+    certificateNumber?: true
+    notes?: true
+    clientRequestId?: true
+    syncStatus?: true
+    createdAt?: true
+    updatedAt?: true
+    deletedAt?: true
+    _all?: true
+  }
+
+  export type GoldAssetAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which GoldAsset to aggregate.
+     */
+    where?: GoldAssetWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of GoldAssets to fetch.
+     */
+    orderBy?: GoldAssetOrderByWithRelationInput | GoldAssetOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: GoldAssetWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` GoldAssets from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` GoldAssets.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned GoldAssets
+    **/
+    _count?: true | GoldAssetCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: GoldAssetAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: GoldAssetSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: GoldAssetMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: GoldAssetMaxAggregateInputType
+  }
+
+  export type GetGoldAssetAggregateType<T extends GoldAssetAggregateArgs> = {
+        [P in keyof T & keyof AggregateGoldAsset]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateGoldAsset[P]>
+      : GetScalarType<T[P], AggregateGoldAsset[P]>
+  }
+
+
+
+
+  export type GoldAssetGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: GoldAssetWhereInput
+    orderBy?: GoldAssetOrderByWithAggregationInput | GoldAssetOrderByWithAggregationInput[]
+    by: GoldAssetScalarFieldEnum[] | GoldAssetScalarFieldEnum
+    having?: GoldAssetScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: GoldAssetCountAggregateInputType | true
+    _avg?: GoldAssetAvgAggregateInputType
+    _sum?: GoldAssetSumAggregateInputType
+    _min?: GoldAssetMinAggregateInputType
+    _max?: GoldAssetMaxAggregateInputType
+  }
+
+  export type GoldAssetGroupByOutputType = {
+    id: string
+    userId: string
+    type: string
+    quantity: Decimal
+    unit: string
+    purchasePrice: Decimal
+    currentPrice: Decimal
+    purchaseDate: Date
+    purityPercentage: Decimal
+    location: string | null
+    certificateNumber: string | null
+    notes: string | null
+    clientRequestId: string | null
+    syncStatus: string
+    createdAt: Date
+    updatedAt: Date
+    deletedAt: Date | null
+    _count: GoldAssetCountAggregateOutputType | null
+    _avg: GoldAssetAvgAggregateOutputType | null
+    _sum: GoldAssetSumAggregateOutputType | null
+    _min: GoldAssetMinAggregateOutputType | null
+    _max: GoldAssetMaxAggregateOutputType | null
+  }
+
+  type GetGoldAssetGroupByPayload<T extends GoldAssetGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<GoldAssetGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof GoldAssetGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], GoldAssetGroupByOutputType[P]>
+            : GetScalarType<T[P], GoldAssetGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type GoldAssetSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    type?: boolean
+    quantity?: boolean
+    unit?: boolean
+    purchasePrice?: boolean
+    currentPrice?: boolean
+    purchaseDate?: boolean
+    purityPercentage?: boolean
+    location?: boolean
+    certificateNumber?: boolean
+    notes?: boolean
+    clientRequestId?: boolean
+    syncStatus?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    deletedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["goldAsset"]>
+
+  export type GoldAssetSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    type?: boolean
+    quantity?: boolean
+    unit?: boolean
+    purchasePrice?: boolean
+    currentPrice?: boolean
+    purchaseDate?: boolean
+    purityPercentage?: boolean
+    location?: boolean
+    certificateNumber?: boolean
+    notes?: boolean
+    clientRequestId?: boolean
+    syncStatus?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    deletedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["goldAsset"]>
+
+  export type GoldAssetSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    type?: boolean
+    quantity?: boolean
+    unit?: boolean
+    purchasePrice?: boolean
+    currentPrice?: boolean
+    purchaseDate?: boolean
+    purityPercentage?: boolean
+    location?: boolean
+    certificateNumber?: boolean
+    notes?: boolean
+    clientRequestId?: boolean
+    syncStatus?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    deletedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["goldAsset"]>
+
+  export type GoldAssetSelectScalar = {
+    id?: boolean
+    userId?: boolean
+    type?: boolean
+    quantity?: boolean
+    unit?: boolean
+    purchasePrice?: boolean
+    currentPrice?: boolean
+    purchaseDate?: boolean
+    purityPercentage?: boolean
+    location?: boolean
+    certificateNumber?: boolean
+    notes?: boolean
+    clientRequestId?: boolean
+    syncStatus?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    deletedAt?: boolean
+  }
+
+  export type GoldAssetOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "type" | "quantity" | "unit" | "purchasePrice" | "currentPrice" | "purchaseDate" | "purityPercentage" | "location" | "certificateNumber" | "notes" | "clientRequestId" | "syncStatus" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["goldAsset"]>
+  export type GoldAssetInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type GoldAssetIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type GoldAssetIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $GoldAssetPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "GoldAsset"
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userId: string
+      type: string
+      quantity: Prisma.Decimal
+      unit: string
+      purchasePrice: Prisma.Decimal
+      currentPrice: Prisma.Decimal
+      purchaseDate: Date
+      purityPercentage: Prisma.Decimal
+      location: string | null
+      certificateNumber: string | null
+      notes: string | null
+      clientRequestId: string | null
+      syncStatus: string
+      createdAt: Date
+      updatedAt: Date
+      deletedAt: Date | null
+    }, ExtArgs["result"]["goldAsset"]>
+    composites: {}
+  }
+
+  type GoldAssetGetPayload<S extends boolean | null | undefined | GoldAssetDefaultArgs> = $Result.GetResult<Prisma.$GoldAssetPayload, S>
+
+  type GoldAssetCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<GoldAssetFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: GoldAssetCountAggregateInputType | true
+    }
+
+  export interface GoldAssetDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['GoldAsset'], meta: { name: 'GoldAsset' } }
+    /**
+     * Find zero or one GoldAsset that matches the filter.
+     * @param {GoldAssetFindUniqueArgs} args - Arguments to find a GoldAsset
+     * @example
+     * // Get one GoldAsset
+     * const goldAsset = await prisma.goldAsset.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends GoldAssetFindUniqueArgs>(args: SelectSubset<T, GoldAssetFindUniqueArgs<ExtArgs>>): Prisma__GoldAssetClient<$Result.GetResult<Prisma.$GoldAssetPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one GoldAsset that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {GoldAssetFindUniqueOrThrowArgs} args - Arguments to find a GoldAsset
+     * @example
+     * // Get one GoldAsset
+     * const goldAsset = await prisma.goldAsset.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends GoldAssetFindUniqueOrThrowArgs>(args: SelectSubset<T, GoldAssetFindUniqueOrThrowArgs<ExtArgs>>): Prisma__GoldAssetClient<$Result.GetResult<Prisma.$GoldAssetPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first GoldAsset that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GoldAssetFindFirstArgs} args - Arguments to find a GoldAsset
+     * @example
+     * // Get one GoldAsset
+     * const goldAsset = await prisma.goldAsset.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends GoldAssetFindFirstArgs>(args?: SelectSubset<T, GoldAssetFindFirstArgs<ExtArgs>>): Prisma__GoldAssetClient<$Result.GetResult<Prisma.$GoldAssetPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first GoldAsset that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GoldAssetFindFirstOrThrowArgs} args - Arguments to find a GoldAsset
+     * @example
+     * // Get one GoldAsset
+     * const goldAsset = await prisma.goldAsset.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends GoldAssetFindFirstOrThrowArgs>(args?: SelectSubset<T, GoldAssetFindFirstOrThrowArgs<ExtArgs>>): Prisma__GoldAssetClient<$Result.GetResult<Prisma.$GoldAssetPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more GoldAssets that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GoldAssetFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all GoldAssets
+     * const goldAssets = await prisma.goldAsset.findMany()
+     * 
+     * // Get first 10 GoldAssets
+     * const goldAssets = await prisma.goldAsset.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const goldAssetWithIdOnly = await prisma.goldAsset.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends GoldAssetFindManyArgs>(args?: SelectSubset<T, GoldAssetFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GoldAssetPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a GoldAsset.
+     * @param {GoldAssetCreateArgs} args - Arguments to create a GoldAsset.
+     * @example
+     * // Create one GoldAsset
+     * const GoldAsset = await prisma.goldAsset.create({
+     *   data: {
+     *     // ... data to create a GoldAsset
+     *   }
+     * })
+     * 
+     */
+    create<T extends GoldAssetCreateArgs>(args: SelectSubset<T, GoldAssetCreateArgs<ExtArgs>>): Prisma__GoldAssetClient<$Result.GetResult<Prisma.$GoldAssetPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many GoldAssets.
+     * @param {GoldAssetCreateManyArgs} args - Arguments to create many GoldAssets.
+     * @example
+     * // Create many GoldAssets
+     * const goldAsset = await prisma.goldAsset.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends GoldAssetCreateManyArgs>(args?: SelectSubset<T, GoldAssetCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many GoldAssets and returns the data saved in the database.
+     * @param {GoldAssetCreateManyAndReturnArgs} args - Arguments to create many GoldAssets.
+     * @example
+     * // Create many GoldAssets
+     * const goldAsset = await prisma.goldAsset.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many GoldAssets and only return the `id`
+     * const goldAssetWithIdOnly = await prisma.goldAsset.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends GoldAssetCreateManyAndReturnArgs>(args?: SelectSubset<T, GoldAssetCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GoldAssetPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a GoldAsset.
+     * @param {GoldAssetDeleteArgs} args - Arguments to delete one GoldAsset.
+     * @example
+     * // Delete one GoldAsset
+     * const GoldAsset = await prisma.goldAsset.delete({
+     *   where: {
+     *     // ... filter to delete one GoldAsset
+     *   }
+     * })
+     * 
+     */
+    delete<T extends GoldAssetDeleteArgs>(args: SelectSubset<T, GoldAssetDeleteArgs<ExtArgs>>): Prisma__GoldAssetClient<$Result.GetResult<Prisma.$GoldAssetPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one GoldAsset.
+     * @param {GoldAssetUpdateArgs} args - Arguments to update one GoldAsset.
+     * @example
+     * // Update one GoldAsset
+     * const goldAsset = await prisma.goldAsset.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends GoldAssetUpdateArgs>(args: SelectSubset<T, GoldAssetUpdateArgs<ExtArgs>>): Prisma__GoldAssetClient<$Result.GetResult<Prisma.$GoldAssetPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more GoldAssets.
+     * @param {GoldAssetDeleteManyArgs} args - Arguments to filter GoldAssets to delete.
+     * @example
+     * // Delete a few GoldAssets
+     * const { count } = await prisma.goldAsset.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends GoldAssetDeleteManyArgs>(args?: SelectSubset<T, GoldAssetDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more GoldAssets.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GoldAssetUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many GoldAssets
+     * const goldAsset = await prisma.goldAsset.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends GoldAssetUpdateManyArgs>(args: SelectSubset<T, GoldAssetUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more GoldAssets and returns the data updated in the database.
+     * @param {GoldAssetUpdateManyAndReturnArgs} args - Arguments to update many GoldAssets.
+     * @example
+     * // Update many GoldAssets
+     * const goldAsset = await prisma.goldAsset.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more GoldAssets and only return the `id`
+     * const goldAssetWithIdOnly = await prisma.goldAsset.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends GoldAssetUpdateManyAndReturnArgs>(args: SelectSubset<T, GoldAssetUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GoldAssetPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one GoldAsset.
+     * @param {GoldAssetUpsertArgs} args - Arguments to update or create a GoldAsset.
+     * @example
+     * // Update or create a GoldAsset
+     * const goldAsset = await prisma.goldAsset.upsert({
+     *   create: {
+     *     // ... data to create a GoldAsset
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the GoldAsset we want to update
+     *   }
+     * })
+     */
+    upsert<T extends GoldAssetUpsertArgs>(args: SelectSubset<T, GoldAssetUpsertArgs<ExtArgs>>): Prisma__GoldAssetClient<$Result.GetResult<Prisma.$GoldAssetPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of GoldAssets.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GoldAssetCountArgs} args - Arguments to filter GoldAssets to count.
+     * @example
+     * // Count the number of GoldAssets
+     * const count = await prisma.goldAsset.count({
+     *   where: {
+     *     // ... the filter for the GoldAssets we want to count
+     *   }
+     * })
+    **/
+    count<T extends GoldAssetCountArgs>(
+      args?: Subset<T, GoldAssetCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], GoldAssetCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a GoldAsset.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GoldAssetAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends GoldAssetAggregateArgs>(args: Subset<T, GoldAssetAggregateArgs>): Prisma.PrismaPromise<GetGoldAssetAggregateType<T>>
+
+    /**
+     * Group by GoldAsset.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GoldAssetGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends GoldAssetGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: GoldAssetGroupByArgs['orderBy'] }
+        : { orderBy?: GoldAssetGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, GoldAssetGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetGoldAssetGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the GoldAsset model
+   */
+  readonly fields: GoldAssetFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for GoldAsset.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__GoldAssetClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the GoldAsset model
+   */
+  interface GoldAssetFieldRefs {
+    readonly id: FieldRef<"GoldAsset", 'String'>
+    readonly userId: FieldRef<"GoldAsset", 'String'>
+    readonly type: FieldRef<"GoldAsset", 'String'>
+    readonly quantity: FieldRef<"GoldAsset", 'Decimal'>
+    readonly unit: FieldRef<"GoldAsset", 'String'>
+    readonly purchasePrice: FieldRef<"GoldAsset", 'Decimal'>
+    readonly currentPrice: FieldRef<"GoldAsset", 'Decimal'>
+    readonly purchaseDate: FieldRef<"GoldAsset", 'DateTime'>
+    readonly purityPercentage: FieldRef<"GoldAsset", 'Decimal'>
+    readonly location: FieldRef<"GoldAsset", 'String'>
+    readonly certificateNumber: FieldRef<"GoldAsset", 'String'>
+    readonly notes: FieldRef<"GoldAsset", 'String'>
+    readonly clientRequestId: FieldRef<"GoldAsset", 'String'>
+    readonly syncStatus: FieldRef<"GoldAsset", 'String'>
+    readonly createdAt: FieldRef<"GoldAsset", 'DateTime'>
+    readonly updatedAt: FieldRef<"GoldAsset", 'DateTime'>
+    readonly deletedAt: FieldRef<"GoldAsset", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * GoldAsset findUnique
+   */
+  export type GoldAssetFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GoldAsset
+     */
+    select?: GoldAssetSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GoldAsset
+     */
+    omit?: GoldAssetOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GoldAssetInclude<ExtArgs> | null
+    /**
+     * Filter, which GoldAsset to fetch.
+     */
+    where: GoldAssetWhereUniqueInput
+  }
+
+  /**
+   * GoldAsset findUniqueOrThrow
+   */
+  export type GoldAssetFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GoldAsset
+     */
+    select?: GoldAssetSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GoldAsset
+     */
+    omit?: GoldAssetOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GoldAssetInclude<ExtArgs> | null
+    /**
+     * Filter, which GoldAsset to fetch.
+     */
+    where: GoldAssetWhereUniqueInput
+  }
+
+  /**
+   * GoldAsset findFirst
+   */
+  export type GoldAssetFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GoldAsset
+     */
+    select?: GoldAssetSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GoldAsset
+     */
+    omit?: GoldAssetOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GoldAssetInclude<ExtArgs> | null
+    /**
+     * Filter, which GoldAsset to fetch.
+     */
+    where?: GoldAssetWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of GoldAssets to fetch.
+     */
+    orderBy?: GoldAssetOrderByWithRelationInput | GoldAssetOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for GoldAssets.
+     */
+    cursor?: GoldAssetWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` GoldAssets from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` GoldAssets.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of GoldAssets.
+     */
+    distinct?: GoldAssetScalarFieldEnum | GoldAssetScalarFieldEnum[]
+  }
+
+  /**
+   * GoldAsset findFirstOrThrow
+   */
+  export type GoldAssetFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GoldAsset
+     */
+    select?: GoldAssetSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GoldAsset
+     */
+    omit?: GoldAssetOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GoldAssetInclude<ExtArgs> | null
+    /**
+     * Filter, which GoldAsset to fetch.
+     */
+    where?: GoldAssetWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of GoldAssets to fetch.
+     */
+    orderBy?: GoldAssetOrderByWithRelationInput | GoldAssetOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for GoldAssets.
+     */
+    cursor?: GoldAssetWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` GoldAssets from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` GoldAssets.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of GoldAssets.
+     */
+    distinct?: GoldAssetScalarFieldEnum | GoldAssetScalarFieldEnum[]
+  }
+
+  /**
+   * GoldAsset findMany
+   */
+  export type GoldAssetFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GoldAsset
+     */
+    select?: GoldAssetSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GoldAsset
+     */
+    omit?: GoldAssetOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GoldAssetInclude<ExtArgs> | null
+    /**
+     * Filter, which GoldAssets to fetch.
+     */
+    where?: GoldAssetWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of GoldAssets to fetch.
+     */
+    orderBy?: GoldAssetOrderByWithRelationInput | GoldAssetOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing GoldAssets.
+     */
+    cursor?: GoldAssetWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` GoldAssets from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` GoldAssets.
+     */
+    skip?: number
+    distinct?: GoldAssetScalarFieldEnum | GoldAssetScalarFieldEnum[]
+  }
+
+  /**
+   * GoldAsset create
+   */
+  export type GoldAssetCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GoldAsset
+     */
+    select?: GoldAssetSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GoldAsset
+     */
+    omit?: GoldAssetOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GoldAssetInclude<ExtArgs> | null
+    /**
+     * The data needed to create a GoldAsset.
+     */
+    data: XOR<GoldAssetCreateInput, GoldAssetUncheckedCreateInput>
+  }
+
+  /**
+   * GoldAsset createMany
+   */
+  export type GoldAssetCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many GoldAssets.
+     */
+    data: GoldAssetCreateManyInput | GoldAssetCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * GoldAsset createManyAndReturn
+   */
+  export type GoldAssetCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GoldAsset
+     */
+    select?: GoldAssetSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the GoldAsset
+     */
+    omit?: GoldAssetOmit<ExtArgs> | null
+    /**
+     * The data used to create many GoldAssets.
+     */
+    data: GoldAssetCreateManyInput | GoldAssetCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GoldAssetIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * GoldAsset update
+   */
+  export type GoldAssetUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GoldAsset
+     */
+    select?: GoldAssetSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GoldAsset
+     */
+    omit?: GoldAssetOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GoldAssetInclude<ExtArgs> | null
+    /**
+     * The data needed to update a GoldAsset.
+     */
+    data: XOR<GoldAssetUpdateInput, GoldAssetUncheckedUpdateInput>
+    /**
+     * Choose, which GoldAsset to update.
+     */
+    where: GoldAssetWhereUniqueInput
+  }
+
+  /**
+   * GoldAsset updateMany
+   */
+  export type GoldAssetUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update GoldAssets.
+     */
+    data: XOR<GoldAssetUpdateManyMutationInput, GoldAssetUncheckedUpdateManyInput>
+    /**
+     * Filter which GoldAssets to update
+     */
+    where?: GoldAssetWhereInput
+    /**
+     * Limit how many GoldAssets to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * GoldAsset updateManyAndReturn
+   */
+  export type GoldAssetUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GoldAsset
+     */
+    select?: GoldAssetSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the GoldAsset
+     */
+    omit?: GoldAssetOmit<ExtArgs> | null
+    /**
+     * The data used to update GoldAssets.
+     */
+    data: XOR<GoldAssetUpdateManyMutationInput, GoldAssetUncheckedUpdateManyInput>
+    /**
+     * Filter which GoldAssets to update
+     */
+    where?: GoldAssetWhereInput
+    /**
+     * Limit how many GoldAssets to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GoldAssetIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * GoldAsset upsert
+   */
+  export type GoldAssetUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GoldAsset
+     */
+    select?: GoldAssetSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GoldAsset
+     */
+    omit?: GoldAssetOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GoldAssetInclude<ExtArgs> | null
+    /**
+     * The filter to search for the GoldAsset to update in case it exists.
+     */
+    where: GoldAssetWhereUniqueInput
+    /**
+     * In case the GoldAsset found by the `where` argument doesn't exist, create a new GoldAsset with this data.
+     */
+    create: XOR<GoldAssetCreateInput, GoldAssetUncheckedCreateInput>
+    /**
+     * In case the GoldAsset was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<GoldAssetUpdateInput, GoldAssetUncheckedUpdateInput>
+  }
+
+  /**
+   * GoldAsset delete
+   */
+  export type GoldAssetDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GoldAsset
+     */
+    select?: GoldAssetSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GoldAsset
+     */
+    omit?: GoldAssetOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GoldAssetInclude<ExtArgs> | null
+    /**
+     * Filter which GoldAsset to delete.
+     */
+    where: GoldAssetWhereUniqueInput
+  }
+
+  /**
+   * GoldAsset deleteMany
+   */
+  export type GoldAssetDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which GoldAssets to delete
+     */
+    where?: GoldAssetWhereInput
+    /**
+     * Limit how many GoldAssets to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * GoldAsset without action
+   */
+  export type GoldAssetDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GoldAsset
+     */
+    select?: GoldAssetSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GoldAsset
+     */
+    omit?: GoldAssetOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GoldAssetInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -45843,6 +58338,195 @@ export namespace Prisma {
   };
 
   export type ProfilesScalarFieldEnum = (typeof ProfilesScalarFieldEnum)[keyof typeof ProfilesScalarFieldEnum]
+
+
+  export const OtpRequestScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    destination: 'destination',
+    channel: 'channel',
+    purpose: 'purpose',
+    otpHash: 'otpHash',
+    expiryTime: 'expiryTime',
+    attempts: 'attempts',
+    maxAttempts: 'maxAttempts',
+    status: 'status',
+    ipAddress: 'ipAddress',
+    userAgent: 'userAgent',
+    createdAt: 'createdAt',
+    verifiedAt: 'verifiedAt'
+  };
+
+  export type OtpRequestScalarFieldEnum = (typeof OtpRequestScalarFieldEnum)[keyof typeof OtpRequestScalarFieldEnum]
+
+
+  export const AaConsentScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    consentHandle: 'consentHandle',
+    consentId: 'consentId',
+    vua: 'vua',
+    status: 'status',
+    purpose: 'purpose',
+    fiTypes: 'fiTypes',
+    consentTypes: 'consentTypes',
+    dataFrom: 'dataFrom',
+    dataTo: 'dataTo',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type AaConsentScalarFieldEnum = (typeof AaConsentScalarFieldEnum)[keyof typeof AaConsentScalarFieldEnum]
+
+
+  export const AaConsentArtifactScalarFieldEnum: {
+    id: 'id',
+    consentId: 'consentId',
+    artifactJson: 'artifactJson',
+    signature: 'signature',
+    status: 'status',
+    createdAt: 'createdAt'
+  };
+
+  export type AaConsentArtifactScalarFieldEnum = (typeof AaConsentArtifactScalarFieldEnum)[keyof typeof AaConsentArtifactScalarFieldEnum]
+
+
+  export const AaDataSessionScalarFieldEnum: {
+    id: 'id',
+    consentId: 'consentId',
+    sessionId: 'sessionId',
+    sessionStatus: 'sessionStatus',
+    userId: 'userId',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type AaDataSessionScalarFieldEnum = (typeof AaDataSessionScalarFieldEnum)[keyof typeof AaDataSessionScalarFieldEnum]
+
+
+  export const AaFinancialDataScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    consentId: 'consentId',
+    sessionId: 'sessionId',
+    accountType: 'accountType',
+    maskedAccountNumber: 'maskedAccountNumber',
+    dataJson: 'dataJson',
+    createdAt: 'createdAt'
+  };
+
+  export type AaFinancialDataScalarFieldEnum = (typeof AaFinancialDataScalarFieldEnum)[keyof typeof AaFinancialDataScalarFieldEnum]
+
+
+  export const AaTransactionScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    consentId: 'consentId',
+    transactionDate: 'transactionDate',
+    amount: 'amount',
+    type: 'type',
+    description: 'description',
+    maskedAccountNumber: 'maskedAccountNumber',
+    createdAt: 'createdAt'
+  };
+
+  export type AaTransactionScalarFieldEnum = (typeof AaTransactionScalarFieldEnum)[keyof typeof AaTransactionScalarFieldEnum]
+
+
+  export const RecurringTransactionScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    title: 'title',
+    amount: 'amount',
+    category: 'category',
+    subcategory: 'subcategory',
+    interval: 'interval',
+    nextDueDate: 'nextDueDate',
+    autoProcess: 'autoProcess',
+    status: 'status',
+    accountId: 'accountId',
+    description: 'description',
+    merchant: 'merchant',
+    lastProcessedAt: 'lastProcessedAt',
+    clientRequestId: 'clientRequestId',
+    syncStatus: 'syncStatus',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt',
+    deletedAt: 'deletedAt'
+  };
+
+  export type RecurringTransactionScalarFieldEnum = (typeof RecurringTransactionScalarFieldEnum)[keyof typeof RecurringTransactionScalarFieldEnum]
+
+
+  export const BudgetScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    category: 'category',
+    amount: 'amount',
+    spent: 'spent',
+    period: 'period',
+    threshold: 'threshold',
+    startDate: 'startDate',
+    endDate: 'endDate',
+    alertEnabled: 'alertEnabled',
+    alertChannels: 'alertChannels',
+    clientRequestId: 'clientRequestId',
+    syncStatus: 'syncStatus',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt',
+    deletedAt: 'deletedAt'
+  };
+
+  export type BudgetScalarFieldEnum = (typeof BudgetScalarFieldEnum)[keyof typeof BudgetScalarFieldEnum]
+
+
+  export const TaxCalculationScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    year: 'year',
+    regime: 'regime',
+    country: 'country',
+    totalIncome: 'totalIncome',
+    totalExpense: 'totalExpense',
+    netProfit: 'netProfit',
+    taxableIncome: 'taxableIncome',
+    estimatedTax: 'estimatedTax',
+    taxRate: 'taxRate',
+    deductions: 'deductions',
+    currency: 'currency',
+    notes: 'notes',
+    metadata: 'metadata',
+    clientRequestId: 'clientRequestId',
+    syncStatus: 'syncStatus',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt',
+    deletedAt: 'deletedAt'
+  };
+
+  export type TaxCalculationScalarFieldEnum = (typeof TaxCalculationScalarFieldEnum)[keyof typeof TaxCalculationScalarFieldEnum]
+
+
+  export const GoldAssetScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    type: 'type',
+    quantity: 'quantity',
+    unit: 'unit',
+    purchasePrice: 'purchasePrice',
+    currentPrice: 'currentPrice',
+    purchaseDate: 'purchaseDate',
+    purityPercentage: 'purityPercentage',
+    location: 'location',
+    certificateNumber: 'certificateNumber',
+    notes: 'notes',
+    clientRequestId: 'clientRequestId',
+    syncStatus: 'syncStatus',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt',
+    deletedAt: 'deletedAt'
+  };
+
+  export type GoldAssetScalarFieldEnum = (typeof GoldAssetScalarFieldEnum)[keyof typeof GoldAssetScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -47060,12 +59744,12 @@ export namespace Prisma {
     importedRecords?: IntFilter<"ImportLog"> | number
     skippedRecords?: IntFilter<"ImportLog"> | number
     duplicateRecords?: IntFilter<"ImportLog"> | number
-    createdCategories?: StringFilter<"ImportLog"> | string
-    createdAccounts?: StringFilter<"ImportLog"> | string
-    createdGoals?: StringFilter<"ImportLog"> | string
-    updatedGoals?: StringFilter<"ImportLog"> | string
+    createdCategories?: JsonFilter<"ImportLog">
+    createdAccounts?: JsonFilter<"ImportLog">
+    createdGoals?: JsonFilter<"ImportLog">
+    updatedGoals?: JsonFilter<"ImportLog">
     failedRecords?: IntFilter<"ImportLog"> | number
-    errors?: StringFilter<"ImportLog"> | string
+    errors?: JsonFilter<"ImportLog">
     metadata?: StringNullableFilter<"ImportLog"> | string | null
     createdAt?: DateTimeFilter<"ImportLog"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -47105,12 +59789,12 @@ export namespace Prisma {
     importedRecords?: IntFilter<"ImportLog"> | number
     skippedRecords?: IntFilter<"ImportLog"> | number
     duplicateRecords?: IntFilter<"ImportLog"> | number
-    createdCategories?: StringFilter<"ImportLog"> | string
-    createdAccounts?: StringFilter<"ImportLog"> | string
-    createdGoals?: StringFilter<"ImportLog"> | string
-    updatedGoals?: StringFilter<"ImportLog"> | string
+    createdCategories?: JsonFilter<"ImportLog">
+    createdAccounts?: JsonFilter<"ImportLog">
+    createdGoals?: JsonFilter<"ImportLog">
+    updatedGoals?: JsonFilter<"ImportLog">
     failedRecords?: IntFilter<"ImportLog"> | number
-    errors?: StringFilter<"ImportLog"> | string
+    errors?: JsonFilter<"ImportLog">
     metadata?: StringNullableFilter<"ImportLog"> | string | null
     createdAt?: DateTimeFilter<"ImportLog"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -47154,12 +59838,12 @@ export namespace Prisma {
     importedRecords?: IntWithAggregatesFilter<"ImportLog"> | number
     skippedRecords?: IntWithAggregatesFilter<"ImportLog"> | number
     duplicateRecords?: IntWithAggregatesFilter<"ImportLog"> | number
-    createdCategories?: StringWithAggregatesFilter<"ImportLog"> | string
-    createdAccounts?: StringWithAggregatesFilter<"ImportLog"> | string
-    createdGoals?: StringWithAggregatesFilter<"ImportLog"> | string
-    updatedGoals?: StringWithAggregatesFilter<"ImportLog"> | string
+    createdCategories?: JsonWithAggregatesFilter<"ImportLog">
+    createdAccounts?: JsonWithAggregatesFilter<"ImportLog">
+    createdGoals?: JsonWithAggregatesFilter<"ImportLog">
+    updatedGoals?: JsonWithAggregatesFilter<"ImportLog">
     failedRecords?: IntWithAggregatesFilter<"ImportLog"> | number
-    errors?: StringWithAggregatesFilter<"ImportLog"> | string
+    errors?: JsonWithAggregatesFilter<"ImportLog">
     metadata?: StringNullableWithAggregatesFilter<"ImportLog"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"ImportLog"> | Date | string
   }
@@ -47491,9 +60175,9 @@ export namespace Prisma {
     category?: StringNullableFilter<"Notification"> | string | null
     deepLink?: StringNullableFilter<"Notification"> | string | null
     priority?: StringFilter<"Notification"> | string
-    channels?: StringFilter<"Notification"> | string
+    channels?: JsonFilter<"Notification">
     metadata?: JsonNullableFilter<"Notification">
-    deliveryStatus?: StringFilter<"Notification"> | string
+    deliveryStatus?: JsonFilter<"Notification">
     encryptedPayload?: StringNullableFilter<"Notification"> | string | null
     isRead?: BoolFilter<"Notification"> | boolean
     createdAt?: DateTimeFilter<"Notification"> | Date | string
@@ -47536,9 +60220,9 @@ export namespace Prisma {
     category?: StringNullableFilter<"Notification"> | string | null
     deepLink?: StringNullableFilter<"Notification"> | string | null
     priority?: StringFilter<"Notification"> | string
-    channels?: StringFilter<"Notification"> | string
+    channels?: JsonFilter<"Notification">
     metadata?: JsonNullableFilter<"Notification">
-    deliveryStatus?: StringFilter<"Notification"> | string
+    deliveryStatus?: JsonFilter<"Notification">
     encryptedPayload?: StringNullableFilter<"Notification"> | string | null
     isRead?: BoolFilter<"Notification"> | boolean
     createdAt?: DateTimeFilter<"Notification"> | Date | string
@@ -47583,9 +60267,9 @@ export namespace Prisma {
     category?: StringNullableWithAggregatesFilter<"Notification"> | string | null
     deepLink?: StringNullableWithAggregatesFilter<"Notification"> | string | null
     priority?: StringWithAggregatesFilter<"Notification"> | string
-    channels?: StringWithAggregatesFilter<"Notification"> | string
+    channels?: JsonWithAggregatesFilter<"Notification">
     metadata?: JsonNullableWithAggregatesFilter<"Notification">
-    deliveryStatus?: StringWithAggregatesFilter<"Notification"> | string
+    deliveryStatus?: JsonWithAggregatesFilter<"Notification">
     encryptedPayload?: StringNullableWithAggregatesFilter<"Notification"> | string | null
     isRead?: BoolWithAggregatesFilter<"Notification"> | boolean
     createdAt?: DateTimeWithAggregatesFilter<"Notification"> | Date | string
@@ -47759,7 +60443,7 @@ export namespace Prisma {
     action?: StringNullableFilter<"SyncQueue"> | string | null
     sourceDeviceId?: StringNullableFilter<"SyncQueue"> | string | null
     metadata?: JsonNullableFilter<"SyncQueue">
-    data?: StringNullableFilter<"SyncQueue"> | string | null
+    data?: JsonNullableFilter<"SyncQueue">
     status?: StringFilter<"SyncQueue"> | string
     errorMessage?: StringNullableFilter<"SyncQueue"> | string | null
     retryCount?: IntFilter<"SyncQueue"> | number
@@ -47802,7 +60486,7 @@ export namespace Prisma {
     action?: StringNullableFilter<"SyncQueue"> | string | null
     sourceDeviceId?: StringNullableFilter<"SyncQueue"> | string | null
     metadata?: JsonNullableFilter<"SyncQueue">
-    data?: StringNullableFilter<"SyncQueue"> | string | null
+    data?: JsonNullableFilter<"SyncQueue">
     status?: StringFilter<"SyncQueue"> | string
     errorMessage?: StringNullableFilter<"SyncQueue"> | string | null
     retryCount?: IntFilter<"SyncQueue"> | number
@@ -47850,7 +60534,7 @@ export namespace Prisma {
     action?: StringNullableWithAggregatesFilter<"SyncQueue"> | string | null
     sourceDeviceId?: StringNullableWithAggregatesFilter<"SyncQueue"> | string | null
     metadata?: JsonNullableWithAggregatesFilter<"SyncQueue">
-    data?: StringNullableWithAggregatesFilter<"SyncQueue"> | string | null
+    data?: JsonNullableWithAggregatesFilter<"SyncQueue">
     status?: StringWithAggregatesFilter<"SyncQueue"> | string
     errorMessage?: StringNullableWithAggregatesFilter<"SyncQueue"> | string | null
     retryCount?: IntWithAggregatesFilter<"SyncQueue"> | number
@@ -47935,7 +60619,7 @@ export namespace Prisma {
     description?: StringNullableFilter<"Transaction"> | string | null
     merchant?: StringNullableFilter<"Transaction"> | string | null
     date?: DateTimeFilter<"Transaction"> | Date | string
-    tags?: StringNullableFilter<"Transaction"> | string | null
+    tags?: JsonNullableFilter<"Transaction">
     attachment?: StringNullableFilter<"Transaction"> | string | null
     transferToAccountId?: StringNullableFilter<"Transaction"> | string | null
     transferType?: StringNullableFilter<"Transaction"> | string | null
@@ -48011,7 +60695,7 @@ export namespace Prisma {
     description?: StringNullableFilter<"Transaction"> | string | null
     merchant?: StringNullableFilter<"Transaction"> | string | null
     date?: DateTimeFilter<"Transaction"> | Date | string
-    tags?: StringNullableFilter<"Transaction"> | string | null
+    tags?: JsonNullableFilter<"Transaction">
     attachment?: StringNullableFilter<"Transaction"> | string | null
     transferToAccountId?: StringNullableFilter<"Transaction"> | string | null
     transferType?: StringNullableFilter<"Transaction"> | string | null
@@ -48087,7 +60771,7 @@ export namespace Prisma {
     description?: StringNullableWithAggregatesFilter<"Transaction"> | string | null
     merchant?: StringNullableWithAggregatesFilter<"Transaction"> | string | null
     date?: DateTimeWithAggregatesFilter<"Transaction"> | Date | string
-    tags?: StringNullableWithAggregatesFilter<"Transaction"> | string | null
+    tags?: JsonNullableWithAggregatesFilter<"Transaction">
     attachment?: StringNullableWithAggregatesFilter<"Transaction"> | string | null
     transferToAccountId?: StringNullableWithAggregatesFilter<"Transaction"> | string | null
     transferType?: StringNullableWithAggregatesFilter<"Transaction"> | string | null
@@ -48160,6 +60844,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeListRelationFilter
     aiScans?: AiScanListRelationFilter
     groupExpenses?: GroupExpenseListRelationFilter
+    recurringTransactions?: RecurringTransactionListRelationFilter
+    budgets?: BudgetListRelationFilter
+    taxCalculations?: TaxCalculationListRelationFilter
+    goldAssets?: GoldAssetListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -48211,6 +60899,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeOrderByRelationAggregateInput
     aiScans?: AiScanOrderByRelationAggregateInput
     groupExpenses?: GroupExpenseOrderByRelationAggregateInput
+    recurringTransactions?: RecurringTransactionOrderByRelationAggregateInput
+    budgets?: BudgetOrderByRelationAggregateInput
+    taxCalculations?: TaxCalculationOrderByRelationAggregateInput
+    goldAssets?: GoldAssetOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -48265,6 +60957,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeListRelationFilter
     aiScans?: AiScanListRelationFilter
     groupExpenses?: GroupExpenseListRelationFilter
+    recurringTransactions?: RecurringTransactionListRelationFilter
+    budgets?: BudgetListRelationFilter
+    taxCalculations?: TaxCalculationListRelationFilter
+    goldAssets?: GoldAssetListRelationFilter
   }, "id" | "email">
 
   export type UserOrderByWithAggregationInput = {
@@ -48415,7 +61111,7 @@ export namespace Prisma {
     language?: StringFilter<"UserSettings"> | string
     currency?: StringFilter<"UserSettings"> | string
     timezone?: StringFilter<"UserSettings"> | string
-    settings?: StringFilter<"UserSettings"> | string
+    settings?: JsonFilter<"UserSettings">
     createdAt?: DateTimeFilter<"UserSettings"> | Date | string
     updatedAt?: DateTimeFilter<"UserSettings"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -48444,7 +61140,7 @@ export namespace Prisma {
     language?: StringFilter<"UserSettings"> | string
     currency?: StringFilter<"UserSettings"> | string
     timezone?: StringFilter<"UserSettings"> | string
-    settings?: StringFilter<"UserSettings"> | string
+    settings?: JsonFilter<"UserSettings">
     createdAt?: DateTimeFilter<"UserSettings"> | Date | string
     updatedAt?: DateTimeFilter<"UserSettings"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -48475,7 +61171,7 @@ export namespace Prisma {
     language?: StringWithAggregatesFilter<"UserSettings"> | string
     currency?: StringWithAggregatesFilter<"UserSettings"> | string
     timezone?: StringWithAggregatesFilter<"UserSettings"> | string
-    settings?: StringWithAggregatesFilter<"UserSettings"> | string
+    settings?: JsonWithAggregatesFilter<"UserSettings">
     createdAt?: DateTimeWithAggregatesFilter<"UserSettings"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"UserSettings"> | Date | string
   }
@@ -49325,6 +62021,946 @@ export namespace Prisma {
     visible_features?: JsonNullableWithAggregatesFilter<"profiles">
     created_at?: DateTimeNullableWithAggregatesFilter<"profiles"> | Date | string | null
     updated_at?: DateTimeNullableWithAggregatesFilter<"profiles"> | Date | string | null
+  }
+
+  export type OtpRequestWhereInput = {
+    AND?: OtpRequestWhereInput | OtpRequestWhereInput[]
+    OR?: OtpRequestWhereInput[]
+    NOT?: OtpRequestWhereInput | OtpRequestWhereInput[]
+    id?: StringFilter<"OtpRequest"> | string
+    userId?: StringNullableFilter<"OtpRequest"> | string | null
+    destination?: StringFilter<"OtpRequest"> | string
+    channel?: StringFilter<"OtpRequest"> | string
+    purpose?: StringFilter<"OtpRequest"> | string
+    otpHash?: StringFilter<"OtpRequest"> | string
+    expiryTime?: DateTimeFilter<"OtpRequest"> | Date | string
+    attempts?: IntFilter<"OtpRequest"> | number
+    maxAttempts?: IntFilter<"OtpRequest"> | number
+    status?: StringFilter<"OtpRequest"> | string
+    ipAddress?: StringNullableFilter<"OtpRequest"> | string | null
+    userAgent?: StringNullableFilter<"OtpRequest"> | string | null
+    createdAt?: DateTimeFilter<"OtpRequest"> | Date | string
+    verifiedAt?: DateTimeNullableFilter<"OtpRequest"> | Date | string | null
+  }
+
+  export type OtpRequestOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrderInput | SortOrder
+    destination?: SortOrder
+    channel?: SortOrder
+    purpose?: SortOrder
+    otpHash?: SortOrder
+    expiryTime?: SortOrder
+    attempts?: SortOrder
+    maxAttempts?: SortOrder
+    status?: SortOrder
+    ipAddress?: SortOrderInput | SortOrder
+    userAgent?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    verifiedAt?: SortOrderInput | SortOrder
+  }
+
+  export type OtpRequestWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: OtpRequestWhereInput | OtpRequestWhereInput[]
+    OR?: OtpRequestWhereInput[]
+    NOT?: OtpRequestWhereInput | OtpRequestWhereInput[]
+    userId?: StringNullableFilter<"OtpRequest"> | string | null
+    destination?: StringFilter<"OtpRequest"> | string
+    channel?: StringFilter<"OtpRequest"> | string
+    purpose?: StringFilter<"OtpRequest"> | string
+    otpHash?: StringFilter<"OtpRequest"> | string
+    expiryTime?: DateTimeFilter<"OtpRequest"> | Date | string
+    attempts?: IntFilter<"OtpRequest"> | number
+    maxAttempts?: IntFilter<"OtpRequest"> | number
+    status?: StringFilter<"OtpRequest"> | string
+    ipAddress?: StringNullableFilter<"OtpRequest"> | string | null
+    userAgent?: StringNullableFilter<"OtpRequest"> | string | null
+    createdAt?: DateTimeFilter<"OtpRequest"> | Date | string
+    verifiedAt?: DateTimeNullableFilter<"OtpRequest"> | Date | string | null
+  }, "id">
+
+  export type OtpRequestOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrderInput | SortOrder
+    destination?: SortOrder
+    channel?: SortOrder
+    purpose?: SortOrder
+    otpHash?: SortOrder
+    expiryTime?: SortOrder
+    attempts?: SortOrder
+    maxAttempts?: SortOrder
+    status?: SortOrder
+    ipAddress?: SortOrderInput | SortOrder
+    userAgent?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    verifiedAt?: SortOrderInput | SortOrder
+    _count?: OtpRequestCountOrderByAggregateInput
+    _avg?: OtpRequestAvgOrderByAggregateInput
+    _max?: OtpRequestMaxOrderByAggregateInput
+    _min?: OtpRequestMinOrderByAggregateInput
+    _sum?: OtpRequestSumOrderByAggregateInput
+  }
+
+  export type OtpRequestScalarWhereWithAggregatesInput = {
+    AND?: OtpRequestScalarWhereWithAggregatesInput | OtpRequestScalarWhereWithAggregatesInput[]
+    OR?: OtpRequestScalarWhereWithAggregatesInput[]
+    NOT?: OtpRequestScalarWhereWithAggregatesInput | OtpRequestScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"OtpRequest"> | string
+    userId?: StringNullableWithAggregatesFilter<"OtpRequest"> | string | null
+    destination?: StringWithAggregatesFilter<"OtpRequest"> | string
+    channel?: StringWithAggregatesFilter<"OtpRequest"> | string
+    purpose?: StringWithAggregatesFilter<"OtpRequest"> | string
+    otpHash?: StringWithAggregatesFilter<"OtpRequest"> | string
+    expiryTime?: DateTimeWithAggregatesFilter<"OtpRequest"> | Date | string
+    attempts?: IntWithAggregatesFilter<"OtpRequest"> | number
+    maxAttempts?: IntWithAggregatesFilter<"OtpRequest"> | number
+    status?: StringWithAggregatesFilter<"OtpRequest"> | string
+    ipAddress?: StringNullableWithAggregatesFilter<"OtpRequest"> | string | null
+    userAgent?: StringNullableWithAggregatesFilter<"OtpRequest"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"OtpRequest"> | Date | string
+    verifiedAt?: DateTimeNullableWithAggregatesFilter<"OtpRequest"> | Date | string | null
+  }
+
+  export type AaConsentWhereInput = {
+    AND?: AaConsentWhereInput | AaConsentWhereInput[]
+    OR?: AaConsentWhereInput[]
+    NOT?: AaConsentWhereInput | AaConsentWhereInput[]
+    id?: StringFilter<"AaConsent"> | string
+    userId?: StringFilter<"AaConsent"> | string
+    consentHandle?: StringNullableFilter<"AaConsent"> | string | null
+    consentId?: StringNullableFilter<"AaConsent"> | string | null
+    vua?: StringNullableFilter<"AaConsent"> | string | null
+    status?: StringFilter<"AaConsent"> | string
+    purpose?: StringNullableFilter<"AaConsent"> | string | null
+    fiTypes?: StringNullableFilter<"AaConsent"> | string | null
+    consentTypes?: StringNullableFilter<"AaConsent"> | string | null
+    dataFrom?: DateTimeNullableFilter<"AaConsent"> | Date | string | null
+    dataTo?: DateTimeNullableFilter<"AaConsent"> | Date | string | null
+    createdAt?: DateTimeFilter<"AaConsent"> | Date | string
+    updatedAt?: DateTimeFilter<"AaConsent"> | Date | string
+  }
+
+  export type AaConsentOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    consentHandle?: SortOrderInput | SortOrder
+    consentId?: SortOrderInput | SortOrder
+    vua?: SortOrderInput | SortOrder
+    status?: SortOrder
+    purpose?: SortOrderInput | SortOrder
+    fiTypes?: SortOrderInput | SortOrder
+    consentTypes?: SortOrderInput | SortOrder
+    dataFrom?: SortOrderInput | SortOrder
+    dataTo?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type AaConsentWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    consentId?: string
+    AND?: AaConsentWhereInput | AaConsentWhereInput[]
+    OR?: AaConsentWhereInput[]
+    NOT?: AaConsentWhereInput | AaConsentWhereInput[]
+    userId?: StringFilter<"AaConsent"> | string
+    consentHandle?: StringNullableFilter<"AaConsent"> | string | null
+    vua?: StringNullableFilter<"AaConsent"> | string | null
+    status?: StringFilter<"AaConsent"> | string
+    purpose?: StringNullableFilter<"AaConsent"> | string | null
+    fiTypes?: StringNullableFilter<"AaConsent"> | string | null
+    consentTypes?: StringNullableFilter<"AaConsent"> | string | null
+    dataFrom?: DateTimeNullableFilter<"AaConsent"> | Date | string | null
+    dataTo?: DateTimeNullableFilter<"AaConsent"> | Date | string | null
+    createdAt?: DateTimeFilter<"AaConsent"> | Date | string
+    updatedAt?: DateTimeFilter<"AaConsent"> | Date | string
+  }, "id" | "consentId">
+
+  export type AaConsentOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    consentHandle?: SortOrderInput | SortOrder
+    consentId?: SortOrderInput | SortOrder
+    vua?: SortOrderInput | SortOrder
+    status?: SortOrder
+    purpose?: SortOrderInput | SortOrder
+    fiTypes?: SortOrderInput | SortOrder
+    consentTypes?: SortOrderInput | SortOrder
+    dataFrom?: SortOrderInput | SortOrder
+    dataTo?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: AaConsentCountOrderByAggregateInput
+    _max?: AaConsentMaxOrderByAggregateInput
+    _min?: AaConsentMinOrderByAggregateInput
+  }
+
+  export type AaConsentScalarWhereWithAggregatesInput = {
+    AND?: AaConsentScalarWhereWithAggregatesInput | AaConsentScalarWhereWithAggregatesInput[]
+    OR?: AaConsentScalarWhereWithAggregatesInput[]
+    NOT?: AaConsentScalarWhereWithAggregatesInput | AaConsentScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"AaConsent"> | string
+    userId?: StringWithAggregatesFilter<"AaConsent"> | string
+    consentHandle?: StringNullableWithAggregatesFilter<"AaConsent"> | string | null
+    consentId?: StringNullableWithAggregatesFilter<"AaConsent"> | string | null
+    vua?: StringNullableWithAggregatesFilter<"AaConsent"> | string | null
+    status?: StringWithAggregatesFilter<"AaConsent"> | string
+    purpose?: StringNullableWithAggregatesFilter<"AaConsent"> | string | null
+    fiTypes?: StringNullableWithAggregatesFilter<"AaConsent"> | string | null
+    consentTypes?: StringNullableWithAggregatesFilter<"AaConsent"> | string | null
+    dataFrom?: DateTimeNullableWithAggregatesFilter<"AaConsent"> | Date | string | null
+    dataTo?: DateTimeNullableWithAggregatesFilter<"AaConsent"> | Date | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"AaConsent"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"AaConsent"> | Date | string
+  }
+
+  export type AaConsentArtifactWhereInput = {
+    AND?: AaConsentArtifactWhereInput | AaConsentArtifactWhereInput[]
+    OR?: AaConsentArtifactWhereInput[]
+    NOT?: AaConsentArtifactWhereInput | AaConsentArtifactWhereInput[]
+    id?: StringFilter<"AaConsentArtifact"> | string
+    consentId?: StringFilter<"AaConsentArtifact"> | string
+    artifactJson?: StringNullableFilter<"AaConsentArtifact"> | string | null
+    signature?: StringNullableFilter<"AaConsentArtifact"> | string | null
+    status?: StringNullableFilter<"AaConsentArtifact"> | string | null
+    createdAt?: DateTimeFilter<"AaConsentArtifact"> | Date | string
+  }
+
+  export type AaConsentArtifactOrderByWithRelationInput = {
+    id?: SortOrder
+    consentId?: SortOrder
+    artifactJson?: SortOrderInput | SortOrder
+    signature?: SortOrderInput | SortOrder
+    status?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type AaConsentArtifactWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    consentId?: string
+    AND?: AaConsentArtifactWhereInput | AaConsentArtifactWhereInput[]
+    OR?: AaConsentArtifactWhereInput[]
+    NOT?: AaConsentArtifactWhereInput | AaConsentArtifactWhereInput[]
+    artifactJson?: StringNullableFilter<"AaConsentArtifact"> | string | null
+    signature?: StringNullableFilter<"AaConsentArtifact"> | string | null
+    status?: StringNullableFilter<"AaConsentArtifact"> | string | null
+    createdAt?: DateTimeFilter<"AaConsentArtifact"> | Date | string
+  }, "id" | "consentId">
+
+  export type AaConsentArtifactOrderByWithAggregationInput = {
+    id?: SortOrder
+    consentId?: SortOrder
+    artifactJson?: SortOrderInput | SortOrder
+    signature?: SortOrderInput | SortOrder
+    status?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    _count?: AaConsentArtifactCountOrderByAggregateInput
+    _max?: AaConsentArtifactMaxOrderByAggregateInput
+    _min?: AaConsentArtifactMinOrderByAggregateInput
+  }
+
+  export type AaConsentArtifactScalarWhereWithAggregatesInput = {
+    AND?: AaConsentArtifactScalarWhereWithAggregatesInput | AaConsentArtifactScalarWhereWithAggregatesInput[]
+    OR?: AaConsentArtifactScalarWhereWithAggregatesInput[]
+    NOT?: AaConsentArtifactScalarWhereWithAggregatesInput | AaConsentArtifactScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"AaConsentArtifact"> | string
+    consentId?: StringWithAggregatesFilter<"AaConsentArtifact"> | string
+    artifactJson?: StringNullableWithAggregatesFilter<"AaConsentArtifact"> | string | null
+    signature?: StringNullableWithAggregatesFilter<"AaConsentArtifact"> | string | null
+    status?: StringNullableWithAggregatesFilter<"AaConsentArtifact"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"AaConsentArtifact"> | Date | string
+  }
+
+  export type AaDataSessionWhereInput = {
+    AND?: AaDataSessionWhereInput | AaDataSessionWhereInput[]
+    OR?: AaDataSessionWhereInput[]
+    NOT?: AaDataSessionWhereInput | AaDataSessionWhereInput[]
+    id?: StringFilter<"AaDataSession"> | string
+    consentId?: StringFilter<"AaDataSession"> | string
+    sessionId?: StringFilter<"AaDataSession"> | string
+    sessionStatus?: StringFilter<"AaDataSession"> | string
+    userId?: StringFilter<"AaDataSession"> | string
+    createdAt?: DateTimeFilter<"AaDataSession"> | Date | string
+    updatedAt?: DateTimeFilter<"AaDataSession"> | Date | string
+  }
+
+  export type AaDataSessionOrderByWithRelationInput = {
+    id?: SortOrder
+    consentId?: SortOrder
+    sessionId?: SortOrder
+    sessionStatus?: SortOrder
+    userId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type AaDataSessionWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    sessionId?: string
+    AND?: AaDataSessionWhereInput | AaDataSessionWhereInput[]
+    OR?: AaDataSessionWhereInput[]
+    NOT?: AaDataSessionWhereInput | AaDataSessionWhereInput[]
+    consentId?: StringFilter<"AaDataSession"> | string
+    sessionStatus?: StringFilter<"AaDataSession"> | string
+    userId?: StringFilter<"AaDataSession"> | string
+    createdAt?: DateTimeFilter<"AaDataSession"> | Date | string
+    updatedAt?: DateTimeFilter<"AaDataSession"> | Date | string
+  }, "id" | "sessionId">
+
+  export type AaDataSessionOrderByWithAggregationInput = {
+    id?: SortOrder
+    consentId?: SortOrder
+    sessionId?: SortOrder
+    sessionStatus?: SortOrder
+    userId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: AaDataSessionCountOrderByAggregateInput
+    _max?: AaDataSessionMaxOrderByAggregateInput
+    _min?: AaDataSessionMinOrderByAggregateInput
+  }
+
+  export type AaDataSessionScalarWhereWithAggregatesInput = {
+    AND?: AaDataSessionScalarWhereWithAggregatesInput | AaDataSessionScalarWhereWithAggregatesInput[]
+    OR?: AaDataSessionScalarWhereWithAggregatesInput[]
+    NOT?: AaDataSessionScalarWhereWithAggregatesInput | AaDataSessionScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"AaDataSession"> | string
+    consentId?: StringWithAggregatesFilter<"AaDataSession"> | string
+    sessionId?: StringWithAggregatesFilter<"AaDataSession"> | string
+    sessionStatus?: StringWithAggregatesFilter<"AaDataSession"> | string
+    userId?: StringWithAggregatesFilter<"AaDataSession"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"AaDataSession"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"AaDataSession"> | Date | string
+  }
+
+  export type AaFinancialDataWhereInput = {
+    AND?: AaFinancialDataWhereInput | AaFinancialDataWhereInput[]
+    OR?: AaFinancialDataWhereInput[]
+    NOT?: AaFinancialDataWhereInput | AaFinancialDataWhereInput[]
+    id?: StringFilter<"AaFinancialData"> | string
+    userId?: StringFilter<"AaFinancialData"> | string
+    consentId?: StringFilter<"AaFinancialData"> | string
+    sessionId?: StringFilter<"AaFinancialData"> | string
+    accountType?: StringNullableFilter<"AaFinancialData"> | string | null
+    maskedAccountNumber?: StringNullableFilter<"AaFinancialData"> | string | null
+    dataJson?: StringNullableFilter<"AaFinancialData"> | string | null
+    createdAt?: DateTimeFilter<"AaFinancialData"> | Date | string
+  }
+
+  export type AaFinancialDataOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    consentId?: SortOrder
+    sessionId?: SortOrder
+    accountType?: SortOrderInput | SortOrder
+    maskedAccountNumber?: SortOrderInput | SortOrder
+    dataJson?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type AaFinancialDataWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: AaFinancialDataWhereInput | AaFinancialDataWhereInput[]
+    OR?: AaFinancialDataWhereInput[]
+    NOT?: AaFinancialDataWhereInput | AaFinancialDataWhereInput[]
+    userId?: StringFilter<"AaFinancialData"> | string
+    consentId?: StringFilter<"AaFinancialData"> | string
+    sessionId?: StringFilter<"AaFinancialData"> | string
+    accountType?: StringNullableFilter<"AaFinancialData"> | string | null
+    maskedAccountNumber?: StringNullableFilter<"AaFinancialData"> | string | null
+    dataJson?: StringNullableFilter<"AaFinancialData"> | string | null
+    createdAt?: DateTimeFilter<"AaFinancialData"> | Date | string
+  }, "id">
+
+  export type AaFinancialDataOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    consentId?: SortOrder
+    sessionId?: SortOrder
+    accountType?: SortOrderInput | SortOrder
+    maskedAccountNumber?: SortOrderInput | SortOrder
+    dataJson?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    _count?: AaFinancialDataCountOrderByAggregateInput
+    _max?: AaFinancialDataMaxOrderByAggregateInput
+    _min?: AaFinancialDataMinOrderByAggregateInput
+  }
+
+  export type AaFinancialDataScalarWhereWithAggregatesInput = {
+    AND?: AaFinancialDataScalarWhereWithAggregatesInput | AaFinancialDataScalarWhereWithAggregatesInput[]
+    OR?: AaFinancialDataScalarWhereWithAggregatesInput[]
+    NOT?: AaFinancialDataScalarWhereWithAggregatesInput | AaFinancialDataScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"AaFinancialData"> | string
+    userId?: StringWithAggregatesFilter<"AaFinancialData"> | string
+    consentId?: StringWithAggregatesFilter<"AaFinancialData"> | string
+    sessionId?: StringWithAggregatesFilter<"AaFinancialData"> | string
+    accountType?: StringNullableWithAggregatesFilter<"AaFinancialData"> | string | null
+    maskedAccountNumber?: StringNullableWithAggregatesFilter<"AaFinancialData"> | string | null
+    dataJson?: StringNullableWithAggregatesFilter<"AaFinancialData"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"AaFinancialData"> | Date | string
+  }
+
+  export type AaTransactionWhereInput = {
+    AND?: AaTransactionWhereInput | AaTransactionWhereInput[]
+    OR?: AaTransactionWhereInput[]
+    NOT?: AaTransactionWhereInput | AaTransactionWhereInput[]
+    id?: StringFilter<"AaTransaction"> | string
+    userId?: StringFilter<"AaTransaction"> | string
+    consentId?: StringFilter<"AaTransaction"> | string
+    transactionDate?: DateTimeFilter<"AaTransaction"> | Date | string
+    amount?: DecimalFilter<"AaTransaction"> | Decimal | DecimalJsLike | number | string
+    type?: StringFilter<"AaTransaction"> | string
+    description?: StringNullableFilter<"AaTransaction"> | string | null
+    maskedAccountNumber?: StringNullableFilter<"AaTransaction"> | string | null
+    createdAt?: DateTimeFilter<"AaTransaction"> | Date | string
+  }
+
+  export type AaTransactionOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    consentId?: SortOrder
+    transactionDate?: SortOrder
+    amount?: SortOrder
+    type?: SortOrder
+    description?: SortOrderInput | SortOrder
+    maskedAccountNumber?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type AaTransactionWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: AaTransactionWhereInput | AaTransactionWhereInput[]
+    OR?: AaTransactionWhereInput[]
+    NOT?: AaTransactionWhereInput | AaTransactionWhereInput[]
+    userId?: StringFilter<"AaTransaction"> | string
+    consentId?: StringFilter<"AaTransaction"> | string
+    transactionDate?: DateTimeFilter<"AaTransaction"> | Date | string
+    amount?: DecimalFilter<"AaTransaction"> | Decimal | DecimalJsLike | number | string
+    type?: StringFilter<"AaTransaction"> | string
+    description?: StringNullableFilter<"AaTransaction"> | string | null
+    maskedAccountNumber?: StringNullableFilter<"AaTransaction"> | string | null
+    createdAt?: DateTimeFilter<"AaTransaction"> | Date | string
+  }, "id">
+
+  export type AaTransactionOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    consentId?: SortOrder
+    transactionDate?: SortOrder
+    amount?: SortOrder
+    type?: SortOrder
+    description?: SortOrderInput | SortOrder
+    maskedAccountNumber?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    _count?: AaTransactionCountOrderByAggregateInput
+    _avg?: AaTransactionAvgOrderByAggregateInput
+    _max?: AaTransactionMaxOrderByAggregateInput
+    _min?: AaTransactionMinOrderByAggregateInput
+    _sum?: AaTransactionSumOrderByAggregateInput
+  }
+
+  export type AaTransactionScalarWhereWithAggregatesInput = {
+    AND?: AaTransactionScalarWhereWithAggregatesInput | AaTransactionScalarWhereWithAggregatesInput[]
+    OR?: AaTransactionScalarWhereWithAggregatesInput[]
+    NOT?: AaTransactionScalarWhereWithAggregatesInput | AaTransactionScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"AaTransaction"> | string
+    userId?: StringWithAggregatesFilter<"AaTransaction"> | string
+    consentId?: StringWithAggregatesFilter<"AaTransaction"> | string
+    transactionDate?: DateTimeWithAggregatesFilter<"AaTransaction"> | Date | string
+    amount?: DecimalWithAggregatesFilter<"AaTransaction"> | Decimal | DecimalJsLike | number | string
+    type?: StringWithAggregatesFilter<"AaTransaction"> | string
+    description?: StringNullableWithAggregatesFilter<"AaTransaction"> | string | null
+    maskedAccountNumber?: StringNullableWithAggregatesFilter<"AaTransaction"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"AaTransaction"> | Date | string
+  }
+
+  export type RecurringTransactionWhereInput = {
+    AND?: RecurringTransactionWhereInput | RecurringTransactionWhereInput[]
+    OR?: RecurringTransactionWhereInput[]
+    NOT?: RecurringTransactionWhereInput | RecurringTransactionWhereInput[]
+    id?: StringFilter<"RecurringTransaction"> | string
+    userId?: StringFilter<"RecurringTransaction"> | string
+    title?: StringFilter<"RecurringTransaction"> | string
+    amount?: DecimalFilter<"RecurringTransaction"> | Decimal | DecimalJsLike | number | string
+    category?: StringFilter<"RecurringTransaction"> | string
+    subcategory?: StringNullableFilter<"RecurringTransaction"> | string | null
+    interval?: StringFilter<"RecurringTransaction"> | string
+    nextDueDate?: DateTimeFilter<"RecurringTransaction"> | Date | string
+    autoProcess?: BoolFilter<"RecurringTransaction"> | boolean
+    status?: StringFilter<"RecurringTransaction"> | string
+    accountId?: StringNullableFilter<"RecurringTransaction"> | string | null
+    description?: StringNullableFilter<"RecurringTransaction"> | string | null
+    merchant?: StringNullableFilter<"RecurringTransaction"> | string | null
+    lastProcessedAt?: DateTimeNullableFilter<"RecurringTransaction"> | Date | string | null
+    clientRequestId?: StringNullableFilter<"RecurringTransaction"> | string | null
+    syncStatus?: StringFilter<"RecurringTransaction"> | string
+    createdAt?: DateTimeFilter<"RecurringTransaction"> | Date | string
+    updatedAt?: DateTimeFilter<"RecurringTransaction"> | Date | string
+    deletedAt?: DateTimeNullableFilter<"RecurringTransaction"> | Date | string | null
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }
+
+  export type RecurringTransactionOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    title?: SortOrder
+    amount?: SortOrder
+    category?: SortOrder
+    subcategory?: SortOrderInput | SortOrder
+    interval?: SortOrder
+    nextDueDate?: SortOrder
+    autoProcess?: SortOrder
+    status?: SortOrder
+    accountId?: SortOrderInput | SortOrder
+    description?: SortOrderInput | SortOrder
+    merchant?: SortOrderInput | SortOrder
+    lastProcessedAt?: SortOrderInput | SortOrder
+    clientRequestId?: SortOrderInput | SortOrder
+    syncStatus?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrderInput | SortOrder
+    user?: UserOrderByWithRelationInput
+  }
+
+  export type RecurringTransactionWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    clientRequestId?: string
+    AND?: RecurringTransactionWhereInput | RecurringTransactionWhereInput[]
+    OR?: RecurringTransactionWhereInput[]
+    NOT?: RecurringTransactionWhereInput | RecurringTransactionWhereInput[]
+    userId?: StringFilter<"RecurringTransaction"> | string
+    title?: StringFilter<"RecurringTransaction"> | string
+    amount?: DecimalFilter<"RecurringTransaction"> | Decimal | DecimalJsLike | number | string
+    category?: StringFilter<"RecurringTransaction"> | string
+    subcategory?: StringNullableFilter<"RecurringTransaction"> | string | null
+    interval?: StringFilter<"RecurringTransaction"> | string
+    nextDueDate?: DateTimeFilter<"RecurringTransaction"> | Date | string
+    autoProcess?: BoolFilter<"RecurringTransaction"> | boolean
+    status?: StringFilter<"RecurringTransaction"> | string
+    accountId?: StringNullableFilter<"RecurringTransaction"> | string | null
+    description?: StringNullableFilter<"RecurringTransaction"> | string | null
+    merchant?: StringNullableFilter<"RecurringTransaction"> | string | null
+    lastProcessedAt?: DateTimeNullableFilter<"RecurringTransaction"> | Date | string | null
+    syncStatus?: StringFilter<"RecurringTransaction"> | string
+    createdAt?: DateTimeFilter<"RecurringTransaction"> | Date | string
+    updatedAt?: DateTimeFilter<"RecurringTransaction"> | Date | string
+    deletedAt?: DateTimeNullableFilter<"RecurringTransaction"> | Date | string | null
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }, "id" | "clientRequestId">
+
+  export type RecurringTransactionOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    title?: SortOrder
+    amount?: SortOrder
+    category?: SortOrder
+    subcategory?: SortOrderInput | SortOrder
+    interval?: SortOrder
+    nextDueDate?: SortOrder
+    autoProcess?: SortOrder
+    status?: SortOrder
+    accountId?: SortOrderInput | SortOrder
+    description?: SortOrderInput | SortOrder
+    merchant?: SortOrderInput | SortOrder
+    lastProcessedAt?: SortOrderInput | SortOrder
+    clientRequestId?: SortOrderInput | SortOrder
+    syncStatus?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrderInput | SortOrder
+    _count?: RecurringTransactionCountOrderByAggregateInput
+    _avg?: RecurringTransactionAvgOrderByAggregateInput
+    _max?: RecurringTransactionMaxOrderByAggregateInput
+    _min?: RecurringTransactionMinOrderByAggregateInput
+    _sum?: RecurringTransactionSumOrderByAggregateInput
+  }
+
+  export type RecurringTransactionScalarWhereWithAggregatesInput = {
+    AND?: RecurringTransactionScalarWhereWithAggregatesInput | RecurringTransactionScalarWhereWithAggregatesInput[]
+    OR?: RecurringTransactionScalarWhereWithAggregatesInput[]
+    NOT?: RecurringTransactionScalarWhereWithAggregatesInput | RecurringTransactionScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"RecurringTransaction"> | string
+    userId?: StringWithAggregatesFilter<"RecurringTransaction"> | string
+    title?: StringWithAggregatesFilter<"RecurringTransaction"> | string
+    amount?: DecimalWithAggregatesFilter<"RecurringTransaction"> | Decimal | DecimalJsLike | number | string
+    category?: StringWithAggregatesFilter<"RecurringTransaction"> | string
+    subcategory?: StringNullableWithAggregatesFilter<"RecurringTransaction"> | string | null
+    interval?: StringWithAggregatesFilter<"RecurringTransaction"> | string
+    nextDueDate?: DateTimeWithAggregatesFilter<"RecurringTransaction"> | Date | string
+    autoProcess?: BoolWithAggregatesFilter<"RecurringTransaction"> | boolean
+    status?: StringWithAggregatesFilter<"RecurringTransaction"> | string
+    accountId?: StringNullableWithAggregatesFilter<"RecurringTransaction"> | string | null
+    description?: StringNullableWithAggregatesFilter<"RecurringTransaction"> | string | null
+    merchant?: StringNullableWithAggregatesFilter<"RecurringTransaction"> | string | null
+    lastProcessedAt?: DateTimeNullableWithAggregatesFilter<"RecurringTransaction"> | Date | string | null
+    clientRequestId?: StringNullableWithAggregatesFilter<"RecurringTransaction"> | string | null
+    syncStatus?: StringWithAggregatesFilter<"RecurringTransaction"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"RecurringTransaction"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"RecurringTransaction"> | Date | string
+    deletedAt?: DateTimeNullableWithAggregatesFilter<"RecurringTransaction"> | Date | string | null
+  }
+
+  export type BudgetWhereInput = {
+    AND?: BudgetWhereInput | BudgetWhereInput[]
+    OR?: BudgetWhereInput[]
+    NOT?: BudgetWhereInput | BudgetWhereInput[]
+    id?: StringFilter<"Budget"> | string
+    userId?: StringFilter<"Budget"> | string
+    category?: StringFilter<"Budget"> | string
+    amount?: DecimalFilter<"Budget"> | Decimal | DecimalJsLike | number | string
+    spent?: DecimalFilter<"Budget"> | Decimal | DecimalJsLike | number | string
+    period?: StringFilter<"Budget"> | string
+    threshold?: IntFilter<"Budget"> | number
+    startDate?: DateTimeNullableFilter<"Budget"> | Date | string | null
+    endDate?: DateTimeNullableFilter<"Budget"> | Date | string | null
+    alertEnabled?: BoolFilter<"Budget"> | boolean
+    alertChannels?: JsonFilter<"Budget">
+    clientRequestId?: StringNullableFilter<"Budget"> | string | null
+    syncStatus?: StringFilter<"Budget"> | string
+    createdAt?: DateTimeFilter<"Budget"> | Date | string
+    updatedAt?: DateTimeFilter<"Budget"> | Date | string
+    deletedAt?: DateTimeNullableFilter<"Budget"> | Date | string | null
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }
+
+  export type BudgetOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    category?: SortOrder
+    amount?: SortOrder
+    spent?: SortOrder
+    period?: SortOrder
+    threshold?: SortOrder
+    startDate?: SortOrderInput | SortOrder
+    endDate?: SortOrderInput | SortOrder
+    alertEnabled?: SortOrder
+    alertChannels?: SortOrder
+    clientRequestId?: SortOrderInput | SortOrder
+    syncStatus?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrderInput | SortOrder
+    user?: UserOrderByWithRelationInput
+  }
+
+  export type BudgetWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    clientRequestId?: string
+    userId_category_period?: BudgetUserIdCategoryPeriodCompoundUniqueInput
+    AND?: BudgetWhereInput | BudgetWhereInput[]
+    OR?: BudgetWhereInput[]
+    NOT?: BudgetWhereInput | BudgetWhereInput[]
+    userId?: StringFilter<"Budget"> | string
+    category?: StringFilter<"Budget"> | string
+    amount?: DecimalFilter<"Budget"> | Decimal | DecimalJsLike | number | string
+    spent?: DecimalFilter<"Budget"> | Decimal | DecimalJsLike | number | string
+    period?: StringFilter<"Budget"> | string
+    threshold?: IntFilter<"Budget"> | number
+    startDate?: DateTimeNullableFilter<"Budget"> | Date | string | null
+    endDate?: DateTimeNullableFilter<"Budget"> | Date | string | null
+    alertEnabled?: BoolFilter<"Budget"> | boolean
+    alertChannels?: JsonFilter<"Budget">
+    syncStatus?: StringFilter<"Budget"> | string
+    createdAt?: DateTimeFilter<"Budget"> | Date | string
+    updatedAt?: DateTimeFilter<"Budget"> | Date | string
+    deletedAt?: DateTimeNullableFilter<"Budget"> | Date | string | null
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }, "id" | "clientRequestId" | "userId_category_period">
+
+  export type BudgetOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    category?: SortOrder
+    amount?: SortOrder
+    spent?: SortOrder
+    period?: SortOrder
+    threshold?: SortOrder
+    startDate?: SortOrderInput | SortOrder
+    endDate?: SortOrderInput | SortOrder
+    alertEnabled?: SortOrder
+    alertChannels?: SortOrder
+    clientRequestId?: SortOrderInput | SortOrder
+    syncStatus?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrderInput | SortOrder
+    _count?: BudgetCountOrderByAggregateInput
+    _avg?: BudgetAvgOrderByAggregateInput
+    _max?: BudgetMaxOrderByAggregateInput
+    _min?: BudgetMinOrderByAggregateInput
+    _sum?: BudgetSumOrderByAggregateInput
+  }
+
+  export type BudgetScalarWhereWithAggregatesInput = {
+    AND?: BudgetScalarWhereWithAggregatesInput | BudgetScalarWhereWithAggregatesInput[]
+    OR?: BudgetScalarWhereWithAggregatesInput[]
+    NOT?: BudgetScalarWhereWithAggregatesInput | BudgetScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"Budget"> | string
+    userId?: StringWithAggregatesFilter<"Budget"> | string
+    category?: StringWithAggregatesFilter<"Budget"> | string
+    amount?: DecimalWithAggregatesFilter<"Budget"> | Decimal | DecimalJsLike | number | string
+    spent?: DecimalWithAggregatesFilter<"Budget"> | Decimal | DecimalJsLike | number | string
+    period?: StringWithAggregatesFilter<"Budget"> | string
+    threshold?: IntWithAggregatesFilter<"Budget"> | number
+    startDate?: DateTimeNullableWithAggregatesFilter<"Budget"> | Date | string | null
+    endDate?: DateTimeNullableWithAggregatesFilter<"Budget"> | Date | string | null
+    alertEnabled?: BoolWithAggregatesFilter<"Budget"> | boolean
+    alertChannels?: JsonWithAggregatesFilter<"Budget">
+    clientRequestId?: StringNullableWithAggregatesFilter<"Budget"> | string | null
+    syncStatus?: StringWithAggregatesFilter<"Budget"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"Budget"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"Budget"> | Date | string
+    deletedAt?: DateTimeNullableWithAggregatesFilter<"Budget"> | Date | string | null
+  }
+
+  export type TaxCalculationWhereInput = {
+    AND?: TaxCalculationWhereInput | TaxCalculationWhereInput[]
+    OR?: TaxCalculationWhereInput[]
+    NOT?: TaxCalculationWhereInput | TaxCalculationWhereInput[]
+    id?: StringFilter<"TaxCalculation"> | string
+    userId?: StringFilter<"TaxCalculation"> | string
+    year?: IntFilter<"TaxCalculation"> | number
+    regime?: StringNullableFilter<"TaxCalculation"> | string | null
+    country?: StringFilter<"TaxCalculation"> | string
+    totalIncome?: DecimalFilter<"TaxCalculation"> | Decimal | DecimalJsLike | number | string
+    totalExpense?: DecimalFilter<"TaxCalculation"> | Decimal | DecimalJsLike | number | string
+    netProfit?: DecimalFilter<"TaxCalculation"> | Decimal | DecimalJsLike | number | string
+    taxableIncome?: DecimalFilter<"TaxCalculation"> | Decimal | DecimalJsLike | number | string
+    estimatedTax?: DecimalFilter<"TaxCalculation"> | Decimal | DecimalJsLike | number | string
+    taxRate?: DecimalFilter<"TaxCalculation"> | Decimal | DecimalJsLike | number | string
+    deductions?: DecimalFilter<"TaxCalculation"> | Decimal | DecimalJsLike | number | string
+    currency?: StringFilter<"TaxCalculation"> | string
+    notes?: StringNullableFilter<"TaxCalculation"> | string | null
+    metadata?: JsonNullableFilter<"TaxCalculation">
+    clientRequestId?: StringNullableFilter<"TaxCalculation"> | string | null
+    syncStatus?: StringFilter<"TaxCalculation"> | string
+    createdAt?: DateTimeFilter<"TaxCalculation"> | Date | string
+    updatedAt?: DateTimeFilter<"TaxCalculation"> | Date | string
+    deletedAt?: DateTimeNullableFilter<"TaxCalculation"> | Date | string | null
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }
+
+  export type TaxCalculationOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    year?: SortOrder
+    regime?: SortOrderInput | SortOrder
+    country?: SortOrder
+    totalIncome?: SortOrder
+    totalExpense?: SortOrder
+    netProfit?: SortOrder
+    taxableIncome?: SortOrder
+    estimatedTax?: SortOrder
+    taxRate?: SortOrder
+    deductions?: SortOrder
+    currency?: SortOrder
+    notes?: SortOrderInput | SortOrder
+    metadata?: SortOrderInput | SortOrder
+    clientRequestId?: SortOrderInput | SortOrder
+    syncStatus?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrderInput | SortOrder
+    user?: UserOrderByWithRelationInput
+  }
+
+  export type TaxCalculationWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    clientRequestId?: string
+    AND?: TaxCalculationWhereInput | TaxCalculationWhereInput[]
+    OR?: TaxCalculationWhereInput[]
+    NOT?: TaxCalculationWhereInput | TaxCalculationWhereInput[]
+    userId?: StringFilter<"TaxCalculation"> | string
+    year?: IntFilter<"TaxCalculation"> | number
+    regime?: StringNullableFilter<"TaxCalculation"> | string | null
+    country?: StringFilter<"TaxCalculation"> | string
+    totalIncome?: DecimalFilter<"TaxCalculation"> | Decimal | DecimalJsLike | number | string
+    totalExpense?: DecimalFilter<"TaxCalculation"> | Decimal | DecimalJsLike | number | string
+    netProfit?: DecimalFilter<"TaxCalculation"> | Decimal | DecimalJsLike | number | string
+    taxableIncome?: DecimalFilter<"TaxCalculation"> | Decimal | DecimalJsLike | number | string
+    estimatedTax?: DecimalFilter<"TaxCalculation"> | Decimal | DecimalJsLike | number | string
+    taxRate?: DecimalFilter<"TaxCalculation"> | Decimal | DecimalJsLike | number | string
+    deductions?: DecimalFilter<"TaxCalculation"> | Decimal | DecimalJsLike | number | string
+    currency?: StringFilter<"TaxCalculation"> | string
+    notes?: StringNullableFilter<"TaxCalculation"> | string | null
+    metadata?: JsonNullableFilter<"TaxCalculation">
+    syncStatus?: StringFilter<"TaxCalculation"> | string
+    createdAt?: DateTimeFilter<"TaxCalculation"> | Date | string
+    updatedAt?: DateTimeFilter<"TaxCalculation"> | Date | string
+    deletedAt?: DateTimeNullableFilter<"TaxCalculation"> | Date | string | null
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }, "id" | "clientRequestId">
+
+  export type TaxCalculationOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    year?: SortOrder
+    regime?: SortOrderInput | SortOrder
+    country?: SortOrder
+    totalIncome?: SortOrder
+    totalExpense?: SortOrder
+    netProfit?: SortOrder
+    taxableIncome?: SortOrder
+    estimatedTax?: SortOrder
+    taxRate?: SortOrder
+    deductions?: SortOrder
+    currency?: SortOrder
+    notes?: SortOrderInput | SortOrder
+    metadata?: SortOrderInput | SortOrder
+    clientRequestId?: SortOrderInput | SortOrder
+    syncStatus?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrderInput | SortOrder
+    _count?: TaxCalculationCountOrderByAggregateInput
+    _avg?: TaxCalculationAvgOrderByAggregateInput
+    _max?: TaxCalculationMaxOrderByAggregateInput
+    _min?: TaxCalculationMinOrderByAggregateInput
+    _sum?: TaxCalculationSumOrderByAggregateInput
+  }
+
+  export type TaxCalculationScalarWhereWithAggregatesInput = {
+    AND?: TaxCalculationScalarWhereWithAggregatesInput | TaxCalculationScalarWhereWithAggregatesInput[]
+    OR?: TaxCalculationScalarWhereWithAggregatesInput[]
+    NOT?: TaxCalculationScalarWhereWithAggregatesInput | TaxCalculationScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"TaxCalculation"> | string
+    userId?: StringWithAggregatesFilter<"TaxCalculation"> | string
+    year?: IntWithAggregatesFilter<"TaxCalculation"> | number
+    regime?: StringNullableWithAggregatesFilter<"TaxCalculation"> | string | null
+    country?: StringWithAggregatesFilter<"TaxCalculation"> | string
+    totalIncome?: DecimalWithAggregatesFilter<"TaxCalculation"> | Decimal | DecimalJsLike | number | string
+    totalExpense?: DecimalWithAggregatesFilter<"TaxCalculation"> | Decimal | DecimalJsLike | number | string
+    netProfit?: DecimalWithAggregatesFilter<"TaxCalculation"> | Decimal | DecimalJsLike | number | string
+    taxableIncome?: DecimalWithAggregatesFilter<"TaxCalculation"> | Decimal | DecimalJsLike | number | string
+    estimatedTax?: DecimalWithAggregatesFilter<"TaxCalculation"> | Decimal | DecimalJsLike | number | string
+    taxRate?: DecimalWithAggregatesFilter<"TaxCalculation"> | Decimal | DecimalJsLike | number | string
+    deductions?: DecimalWithAggregatesFilter<"TaxCalculation"> | Decimal | DecimalJsLike | number | string
+    currency?: StringWithAggregatesFilter<"TaxCalculation"> | string
+    notes?: StringNullableWithAggregatesFilter<"TaxCalculation"> | string | null
+    metadata?: JsonNullableWithAggregatesFilter<"TaxCalculation">
+    clientRequestId?: StringNullableWithAggregatesFilter<"TaxCalculation"> | string | null
+    syncStatus?: StringWithAggregatesFilter<"TaxCalculation"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"TaxCalculation"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"TaxCalculation"> | Date | string
+    deletedAt?: DateTimeNullableWithAggregatesFilter<"TaxCalculation"> | Date | string | null
+  }
+
+  export type GoldAssetWhereInput = {
+    AND?: GoldAssetWhereInput | GoldAssetWhereInput[]
+    OR?: GoldAssetWhereInput[]
+    NOT?: GoldAssetWhereInput | GoldAssetWhereInput[]
+    id?: StringFilter<"GoldAsset"> | string
+    userId?: StringFilter<"GoldAsset"> | string
+    type?: StringFilter<"GoldAsset"> | string
+    quantity?: DecimalFilter<"GoldAsset"> | Decimal | DecimalJsLike | number | string
+    unit?: StringFilter<"GoldAsset"> | string
+    purchasePrice?: DecimalFilter<"GoldAsset"> | Decimal | DecimalJsLike | number | string
+    currentPrice?: DecimalFilter<"GoldAsset"> | Decimal | DecimalJsLike | number | string
+    purchaseDate?: DateTimeFilter<"GoldAsset"> | Date | string
+    purityPercentage?: DecimalFilter<"GoldAsset"> | Decimal | DecimalJsLike | number | string
+    location?: StringNullableFilter<"GoldAsset"> | string | null
+    certificateNumber?: StringNullableFilter<"GoldAsset"> | string | null
+    notes?: StringNullableFilter<"GoldAsset"> | string | null
+    clientRequestId?: StringNullableFilter<"GoldAsset"> | string | null
+    syncStatus?: StringFilter<"GoldAsset"> | string
+    createdAt?: DateTimeFilter<"GoldAsset"> | Date | string
+    updatedAt?: DateTimeFilter<"GoldAsset"> | Date | string
+    deletedAt?: DateTimeNullableFilter<"GoldAsset"> | Date | string | null
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }
+
+  export type GoldAssetOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    type?: SortOrder
+    quantity?: SortOrder
+    unit?: SortOrder
+    purchasePrice?: SortOrder
+    currentPrice?: SortOrder
+    purchaseDate?: SortOrder
+    purityPercentage?: SortOrder
+    location?: SortOrderInput | SortOrder
+    certificateNumber?: SortOrderInput | SortOrder
+    notes?: SortOrderInput | SortOrder
+    clientRequestId?: SortOrderInput | SortOrder
+    syncStatus?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrderInput | SortOrder
+    user?: UserOrderByWithRelationInput
+  }
+
+  export type GoldAssetWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    clientRequestId?: string
+    AND?: GoldAssetWhereInput | GoldAssetWhereInput[]
+    OR?: GoldAssetWhereInput[]
+    NOT?: GoldAssetWhereInput | GoldAssetWhereInput[]
+    userId?: StringFilter<"GoldAsset"> | string
+    type?: StringFilter<"GoldAsset"> | string
+    quantity?: DecimalFilter<"GoldAsset"> | Decimal | DecimalJsLike | number | string
+    unit?: StringFilter<"GoldAsset"> | string
+    purchasePrice?: DecimalFilter<"GoldAsset"> | Decimal | DecimalJsLike | number | string
+    currentPrice?: DecimalFilter<"GoldAsset"> | Decimal | DecimalJsLike | number | string
+    purchaseDate?: DateTimeFilter<"GoldAsset"> | Date | string
+    purityPercentage?: DecimalFilter<"GoldAsset"> | Decimal | DecimalJsLike | number | string
+    location?: StringNullableFilter<"GoldAsset"> | string | null
+    certificateNumber?: StringNullableFilter<"GoldAsset"> | string | null
+    notes?: StringNullableFilter<"GoldAsset"> | string | null
+    syncStatus?: StringFilter<"GoldAsset"> | string
+    createdAt?: DateTimeFilter<"GoldAsset"> | Date | string
+    updatedAt?: DateTimeFilter<"GoldAsset"> | Date | string
+    deletedAt?: DateTimeNullableFilter<"GoldAsset"> | Date | string | null
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }, "id" | "clientRequestId">
+
+  export type GoldAssetOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    type?: SortOrder
+    quantity?: SortOrder
+    unit?: SortOrder
+    purchasePrice?: SortOrder
+    currentPrice?: SortOrder
+    purchaseDate?: SortOrder
+    purityPercentage?: SortOrder
+    location?: SortOrderInput | SortOrder
+    certificateNumber?: SortOrderInput | SortOrder
+    notes?: SortOrderInput | SortOrder
+    clientRequestId?: SortOrderInput | SortOrder
+    syncStatus?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrderInput | SortOrder
+    _count?: GoldAssetCountOrderByAggregateInput
+    _avg?: GoldAssetAvgOrderByAggregateInput
+    _max?: GoldAssetMaxOrderByAggregateInput
+    _min?: GoldAssetMinOrderByAggregateInput
+    _sum?: GoldAssetSumOrderByAggregateInput
+  }
+
+  export type GoldAssetScalarWhereWithAggregatesInput = {
+    AND?: GoldAssetScalarWhereWithAggregatesInput | GoldAssetScalarWhereWithAggregatesInput[]
+    OR?: GoldAssetScalarWhereWithAggregatesInput[]
+    NOT?: GoldAssetScalarWhereWithAggregatesInput | GoldAssetScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"GoldAsset"> | string
+    userId?: StringWithAggregatesFilter<"GoldAsset"> | string
+    type?: StringWithAggregatesFilter<"GoldAsset"> | string
+    quantity?: DecimalWithAggregatesFilter<"GoldAsset"> | Decimal | DecimalJsLike | number | string
+    unit?: StringWithAggregatesFilter<"GoldAsset"> | string
+    purchasePrice?: DecimalWithAggregatesFilter<"GoldAsset"> | Decimal | DecimalJsLike | number | string
+    currentPrice?: DecimalWithAggregatesFilter<"GoldAsset"> | Decimal | DecimalJsLike | number | string
+    purchaseDate?: DateTimeWithAggregatesFilter<"GoldAsset"> | Date | string
+    purityPercentage?: DecimalWithAggregatesFilter<"GoldAsset"> | Decimal | DecimalJsLike | number | string
+    location?: StringNullableWithAggregatesFilter<"GoldAsset"> | string | null
+    certificateNumber?: StringNullableWithAggregatesFilter<"GoldAsset"> | string | null
+    notes?: StringNullableWithAggregatesFilter<"GoldAsset"> | string | null
+    clientRequestId?: StringNullableWithAggregatesFilter<"GoldAsset"> | string | null
+    syncStatus?: StringWithAggregatesFilter<"GoldAsset"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"GoldAsset"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"GoldAsset"> | Date | string
+    deletedAt?: DateTimeNullableWithAggregatesFilter<"GoldAsset"> | Date | string | null
   }
 
   export type AccountCreateInput = {
@@ -50516,12 +64152,12 @@ export namespace Prisma {
     importedRecords: number
     skippedRecords: number
     duplicateRecords: number
-    createdCategories?: string
-    createdAccounts?: string
-    createdGoals?: string
-    updatedGoals?: string
+    createdCategories?: JsonNullValueInput | InputJsonValue
+    createdAccounts?: JsonNullValueInput | InputJsonValue
+    createdGoals?: JsonNullValueInput | InputJsonValue
+    updatedGoals?: JsonNullValueInput | InputJsonValue
     failedRecords?: number
-    errors?: string
+    errors?: JsonNullValueInput | InputJsonValue
     metadata?: string | null
     createdAt?: Date | string
     user: UserCreateNestedOneWithoutImportLogsInput
@@ -50537,12 +64173,12 @@ export namespace Prisma {
     importedRecords: number
     skippedRecords: number
     duplicateRecords: number
-    createdCategories?: string
-    createdAccounts?: string
-    createdGoals?: string
-    updatedGoals?: string
+    createdCategories?: JsonNullValueInput | InputJsonValue
+    createdAccounts?: JsonNullValueInput | InputJsonValue
+    createdGoals?: JsonNullValueInput | InputJsonValue
+    updatedGoals?: JsonNullValueInput | InputJsonValue
     failedRecords?: number
-    errors?: string
+    errors?: JsonNullValueInput | InputJsonValue
     metadata?: string | null
     createdAt?: Date | string
   }
@@ -50556,12 +64192,12 @@ export namespace Prisma {
     importedRecords?: IntFieldUpdateOperationsInput | number
     skippedRecords?: IntFieldUpdateOperationsInput | number
     duplicateRecords?: IntFieldUpdateOperationsInput | number
-    createdCategories?: StringFieldUpdateOperationsInput | string
-    createdAccounts?: StringFieldUpdateOperationsInput | string
-    createdGoals?: StringFieldUpdateOperationsInput | string
-    updatedGoals?: StringFieldUpdateOperationsInput | string
+    createdCategories?: JsonNullValueInput | InputJsonValue
+    createdAccounts?: JsonNullValueInput | InputJsonValue
+    createdGoals?: JsonNullValueInput | InputJsonValue
+    updatedGoals?: JsonNullValueInput | InputJsonValue
     failedRecords?: IntFieldUpdateOperationsInput | number
-    errors?: StringFieldUpdateOperationsInput | string
+    errors?: JsonNullValueInput | InputJsonValue
     metadata?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutImportLogsNestedInput
@@ -50577,12 +64213,12 @@ export namespace Prisma {
     importedRecords?: IntFieldUpdateOperationsInput | number
     skippedRecords?: IntFieldUpdateOperationsInput | number
     duplicateRecords?: IntFieldUpdateOperationsInput | number
-    createdCategories?: StringFieldUpdateOperationsInput | string
-    createdAccounts?: StringFieldUpdateOperationsInput | string
-    createdGoals?: StringFieldUpdateOperationsInput | string
-    updatedGoals?: StringFieldUpdateOperationsInput | string
+    createdCategories?: JsonNullValueInput | InputJsonValue
+    createdAccounts?: JsonNullValueInput | InputJsonValue
+    createdGoals?: JsonNullValueInput | InputJsonValue
+    updatedGoals?: JsonNullValueInput | InputJsonValue
     failedRecords?: IntFieldUpdateOperationsInput | number
-    errors?: StringFieldUpdateOperationsInput | string
+    errors?: JsonNullValueInput | InputJsonValue
     metadata?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -50597,12 +64233,12 @@ export namespace Prisma {
     importedRecords: number
     skippedRecords: number
     duplicateRecords: number
-    createdCategories?: string
-    createdAccounts?: string
-    createdGoals?: string
-    updatedGoals?: string
+    createdCategories?: JsonNullValueInput | InputJsonValue
+    createdAccounts?: JsonNullValueInput | InputJsonValue
+    createdGoals?: JsonNullValueInput | InputJsonValue
+    updatedGoals?: JsonNullValueInput | InputJsonValue
     failedRecords?: number
-    errors?: string
+    errors?: JsonNullValueInput | InputJsonValue
     metadata?: string | null
     createdAt?: Date | string
   }
@@ -50616,12 +64252,12 @@ export namespace Prisma {
     importedRecords?: IntFieldUpdateOperationsInput | number
     skippedRecords?: IntFieldUpdateOperationsInput | number
     duplicateRecords?: IntFieldUpdateOperationsInput | number
-    createdCategories?: StringFieldUpdateOperationsInput | string
-    createdAccounts?: StringFieldUpdateOperationsInput | string
-    createdGoals?: StringFieldUpdateOperationsInput | string
-    updatedGoals?: StringFieldUpdateOperationsInput | string
+    createdCategories?: JsonNullValueInput | InputJsonValue
+    createdAccounts?: JsonNullValueInput | InputJsonValue
+    createdGoals?: JsonNullValueInput | InputJsonValue
+    updatedGoals?: JsonNullValueInput | InputJsonValue
     failedRecords?: IntFieldUpdateOperationsInput | number
-    errors?: StringFieldUpdateOperationsInput | string
+    errors?: JsonNullValueInput | InputJsonValue
     metadata?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -50636,12 +64272,12 @@ export namespace Prisma {
     importedRecords?: IntFieldUpdateOperationsInput | number
     skippedRecords?: IntFieldUpdateOperationsInput | number
     duplicateRecords?: IntFieldUpdateOperationsInput | number
-    createdCategories?: StringFieldUpdateOperationsInput | string
-    createdAccounts?: StringFieldUpdateOperationsInput | string
-    createdGoals?: StringFieldUpdateOperationsInput | string
-    updatedGoals?: StringFieldUpdateOperationsInput | string
+    createdCategories?: JsonNullValueInput | InputJsonValue
+    createdAccounts?: JsonNullValueInput | InputJsonValue
+    createdGoals?: JsonNullValueInput | InputJsonValue
+    updatedGoals?: JsonNullValueInput | InputJsonValue
     failedRecords?: IntFieldUpdateOperationsInput | number
-    errors?: StringFieldUpdateOperationsInput | string
+    errors?: JsonNullValueInput | InputJsonValue
     metadata?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -51020,9 +64656,9 @@ export namespace Prisma {
     category?: string | null
     deepLink?: string | null
     priority?: string
-    channels?: string
+    channels?: JsonNullValueInput | InputJsonValue
     metadata?: NullableJsonNullValueInput | InputJsonValue
-    deliveryStatus?: string
+    deliveryStatus?: JsonNullValueInput | InputJsonValue
     encryptedPayload?: string | null
     isRead?: boolean
     createdAt?: Date | string
@@ -51041,9 +64677,9 @@ export namespace Prisma {
     category?: string | null
     deepLink?: string | null
     priority?: string
-    channels?: string
+    channels?: JsonNullValueInput | InputJsonValue
     metadata?: NullableJsonNullValueInput | InputJsonValue
-    deliveryStatus?: string
+    deliveryStatus?: JsonNullValueInput | InputJsonValue
     encryptedPayload?: string | null
     isRead?: boolean
     createdAt?: Date | string
@@ -51060,9 +64696,9 @@ export namespace Prisma {
     category?: NullableStringFieldUpdateOperationsInput | string | null
     deepLink?: NullableStringFieldUpdateOperationsInput | string | null
     priority?: StringFieldUpdateOperationsInput | string
-    channels?: StringFieldUpdateOperationsInput | string
+    channels?: JsonNullValueInput | InputJsonValue
     metadata?: NullableJsonNullValueInput | InputJsonValue
-    deliveryStatus?: StringFieldUpdateOperationsInput | string
+    deliveryStatus?: JsonNullValueInput | InputJsonValue
     encryptedPayload?: NullableStringFieldUpdateOperationsInput | string | null
     isRead?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -51081,9 +64717,9 @@ export namespace Prisma {
     category?: NullableStringFieldUpdateOperationsInput | string | null
     deepLink?: NullableStringFieldUpdateOperationsInput | string | null
     priority?: StringFieldUpdateOperationsInput | string
-    channels?: StringFieldUpdateOperationsInput | string
+    channels?: JsonNullValueInput | InputJsonValue
     metadata?: NullableJsonNullValueInput | InputJsonValue
-    deliveryStatus?: StringFieldUpdateOperationsInput | string
+    deliveryStatus?: JsonNullValueInput | InputJsonValue
     encryptedPayload?: NullableStringFieldUpdateOperationsInput | string | null
     isRead?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -51101,9 +64737,9 @@ export namespace Prisma {
     category?: string | null
     deepLink?: string | null
     priority?: string
-    channels?: string
+    channels?: JsonNullValueInput | InputJsonValue
     metadata?: NullableJsonNullValueInput | InputJsonValue
-    deliveryStatus?: string
+    deliveryStatus?: JsonNullValueInput | InputJsonValue
     encryptedPayload?: string | null
     isRead?: boolean
     createdAt?: Date | string
@@ -51120,9 +64756,9 @@ export namespace Prisma {
     category?: NullableStringFieldUpdateOperationsInput | string | null
     deepLink?: NullableStringFieldUpdateOperationsInput | string | null
     priority?: StringFieldUpdateOperationsInput | string
-    channels?: StringFieldUpdateOperationsInput | string
+    channels?: JsonNullValueInput | InputJsonValue
     metadata?: NullableJsonNullValueInput | InputJsonValue
-    deliveryStatus?: StringFieldUpdateOperationsInput | string
+    deliveryStatus?: JsonNullValueInput | InputJsonValue
     encryptedPayload?: NullableStringFieldUpdateOperationsInput | string | null
     isRead?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -51140,9 +64776,9 @@ export namespace Prisma {
     category?: NullableStringFieldUpdateOperationsInput | string | null
     deepLink?: NullableStringFieldUpdateOperationsInput | string | null
     priority?: StringFieldUpdateOperationsInput | string
-    channels?: StringFieldUpdateOperationsInput | string
+    channels?: JsonNullValueInput | InputJsonValue
     metadata?: NullableJsonNullValueInput | InputJsonValue
-    deliveryStatus?: StringFieldUpdateOperationsInput | string
+    deliveryStatus?: JsonNullValueInput | InputJsonValue
     encryptedPayload?: NullableStringFieldUpdateOperationsInput | string | null
     isRead?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -51317,7 +64953,7 @@ export namespace Prisma {
     action?: string | null
     sourceDeviceId?: string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
-    data?: string | null
+    data?: NullableJsonNullValueInput | InputJsonValue
     status?: string
     errorMessage?: string | null
     retryCount?: number
@@ -51337,7 +64973,7 @@ export namespace Prisma {
     action?: string | null
     sourceDeviceId?: string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
-    data?: string | null
+    data?: NullableJsonNullValueInput | InputJsonValue
     status?: string
     errorMessage?: string | null
     retryCount?: number
@@ -51357,7 +64993,7 @@ export namespace Prisma {
     action?: NullableStringFieldUpdateOperationsInput | string | null
     sourceDeviceId?: NullableStringFieldUpdateOperationsInput | string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
-    data?: NullableStringFieldUpdateOperationsInput | string | null
+    data?: NullableJsonNullValueInput | InputJsonValue
     status?: StringFieldUpdateOperationsInput | string
     errorMessage?: NullableStringFieldUpdateOperationsInput | string | null
     retryCount?: IntFieldUpdateOperationsInput | number
@@ -51377,7 +65013,7 @@ export namespace Prisma {
     action?: NullableStringFieldUpdateOperationsInput | string | null
     sourceDeviceId?: NullableStringFieldUpdateOperationsInput | string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
-    data?: NullableStringFieldUpdateOperationsInput | string | null
+    data?: NullableJsonNullValueInput | InputJsonValue
     status?: StringFieldUpdateOperationsInput | string
     errorMessage?: NullableStringFieldUpdateOperationsInput | string | null
     retryCount?: IntFieldUpdateOperationsInput | number
@@ -51397,7 +65033,7 @@ export namespace Prisma {
     action?: string | null
     sourceDeviceId?: string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
-    data?: string | null
+    data?: NullableJsonNullValueInput | InputJsonValue
     status?: string
     errorMessage?: string | null
     retryCount?: number
@@ -51417,7 +65053,7 @@ export namespace Prisma {
     action?: NullableStringFieldUpdateOperationsInput | string | null
     sourceDeviceId?: NullableStringFieldUpdateOperationsInput | string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
-    data?: NullableStringFieldUpdateOperationsInput | string | null
+    data?: NullableJsonNullValueInput | InputJsonValue
     status?: StringFieldUpdateOperationsInput | string
     errorMessage?: NullableStringFieldUpdateOperationsInput | string | null
     retryCount?: IntFieldUpdateOperationsInput | number
@@ -51437,7 +65073,7 @@ export namespace Prisma {
     action?: NullableStringFieldUpdateOperationsInput | string | null
     sourceDeviceId?: NullableStringFieldUpdateOperationsInput | string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
-    data?: NullableStringFieldUpdateOperationsInput | string | null
+    data?: NullableJsonNullValueInput | InputJsonValue
     status?: StringFieldUpdateOperationsInput | string
     errorMessage?: NullableStringFieldUpdateOperationsInput | string | null
     retryCount?: IntFieldUpdateOperationsInput | number
@@ -51519,7 +65155,7 @@ export namespace Prisma {
     description?: string | null
     merchant?: string | null
     date: Date | string
-    tags?: string | null
+    tags?: NullableJsonNullValueInput | InputJsonValue
     attachment?: string | null
     transferToAccountId?: string | null
     transferType?: string | null
@@ -51554,7 +65190,7 @@ export namespace Prisma {
     description?: string | null
     merchant?: string | null
     date: Date | string
-    tags?: string | null
+    tags?: NullableJsonNullValueInput | InputJsonValue
     attachment?: string | null
     transferToAccountId?: string | null
     transferType?: string | null
@@ -51585,7 +65221,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     merchant?: NullableStringFieldUpdateOperationsInput | string | null
     date?: DateTimeFieldUpdateOperationsInput | Date | string
-    tags?: NullableStringFieldUpdateOperationsInput | string | null
+    tags?: NullableJsonNullValueInput | InputJsonValue
     attachment?: NullableStringFieldUpdateOperationsInput | string | null
     transferToAccountId?: NullableStringFieldUpdateOperationsInput | string | null
     transferType?: NullableStringFieldUpdateOperationsInput | string | null
@@ -51620,7 +65256,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     merchant?: NullableStringFieldUpdateOperationsInput | string | null
     date?: DateTimeFieldUpdateOperationsInput | Date | string
-    tags?: NullableStringFieldUpdateOperationsInput | string | null
+    tags?: NullableJsonNullValueInput | InputJsonValue
     attachment?: NullableStringFieldUpdateOperationsInput | string | null
     transferToAccountId?: NullableStringFieldUpdateOperationsInput | string | null
     transferType?: NullableStringFieldUpdateOperationsInput | string | null
@@ -51653,7 +65289,7 @@ export namespace Prisma {
     description?: string | null
     merchant?: string | null
     date: Date | string
-    tags?: string | null
+    tags?: NullableJsonNullValueInput | InputJsonValue
     attachment?: string | null
     transferToAccountId?: string | null
     transferType?: string | null
@@ -51684,7 +65320,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     merchant?: NullableStringFieldUpdateOperationsInput | string | null
     date?: DateTimeFieldUpdateOperationsInput | Date | string
-    tags?: NullableStringFieldUpdateOperationsInput | string | null
+    tags?: NullableJsonNullValueInput | InputJsonValue
     attachment?: NullableStringFieldUpdateOperationsInput | string | null
     transferToAccountId?: NullableStringFieldUpdateOperationsInput | string | null
     transferType?: NullableStringFieldUpdateOperationsInput | string | null
@@ -51716,7 +65352,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     merchant?: NullableStringFieldUpdateOperationsInput | string | null
     date?: DateTimeFieldUpdateOperationsInput | Date | string
-    tags?: NullableStringFieldUpdateOperationsInput | string | null
+    tags?: NullableJsonNullValueInput | InputJsonValue
     attachment?: NullableStringFieldUpdateOperationsInput | string | null
     transferToAccountId?: NullableStringFieldUpdateOperationsInput | string | null
     transferType?: NullableStringFieldUpdateOperationsInput | string | null
@@ -51786,6 +65422,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
     aiScans?: AiScanCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
+    budgets?: BudgetCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -51837,6 +65477,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
+    budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserUpdateInput = {
@@ -51888,6 +65532,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -51939,6 +65587,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -52109,7 +65761,7 @@ export namespace Prisma {
     language?: string
     currency?: string
     timezone?: string
-    settings?: string
+    settings?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutUserSettingsInput
@@ -52122,7 +65774,7 @@ export namespace Prisma {
     language?: string
     currency?: string
     timezone?: string
-    settings?: string
+    settings?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -52133,7 +65785,7 @@ export namespace Prisma {
     language?: StringFieldUpdateOperationsInput | string
     currency?: StringFieldUpdateOperationsInput | string
     timezone?: StringFieldUpdateOperationsInput | string
-    settings?: StringFieldUpdateOperationsInput | string
+    settings?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutUserSettingsNestedInput
@@ -52146,7 +65798,7 @@ export namespace Prisma {
     language?: StringFieldUpdateOperationsInput | string
     currency?: StringFieldUpdateOperationsInput | string
     timezone?: StringFieldUpdateOperationsInput | string
-    settings?: StringFieldUpdateOperationsInput | string
+    settings?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -52158,7 +65810,7 @@ export namespace Prisma {
     language?: string
     currency?: string
     timezone?: string
-    settings?: string
+    settings?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -52169,7 +65821,7 @@ export namespace Prisma {
     language?: StringFieldUpdateOperationsInput | string
     currency?: StringFieldUpdateOperationsInput | string
     timezone?: StringFieldUpdateOperationsInput | string
-    settings?: StringFieldUpdateOperationsInput | string
+    settings?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -52181,7 +65833,7 @@ export namespace Prisma {
     language?: StringFieldUpdateOperationsInput | string
     currency?: StringFieldUpdateOperationsInput | string
     timezone?: StringFieldUpdateOperationsInput | string
-    settings?: StringFieldUpdateOperationsInput | string
+    settings?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -53155,6 +66807,1115 @@ export namespace Prisma {
     updated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
+  export type OtpRequestCreateInput = {
+    id?: string
+    userId?: string | null
+    destination: string
+    channel: string
+    purpose: string
+    otpHash: string
+    expiryTime: Date | string
+    attempts?: number
+    maxAttempts?: number
+    status?: string
+    ipAddress?: string | null
+    userAgent?: string | null
+    createdAt?: Date | string
+    verifiedAt?: Date | string | null
+  }
+
+  export type OtpRequestUncheckedCreateInput = {
+    id?: string
+    userId?: string | null
+    destination: string
+    channel: string
+    purpose: string
+    otpHash: string
+    expiryTime: Date | string
+    attempts?: number
+    maxAttempts?: number
+    status?: string
+    ipAddress?: string | null
+    userAgent?: string | null
+    createdAt?: Date | string
+    verifiedAt?: Date | string | null
+  }
+
+  export type OtpRequestUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    destination?: StringFieldUpdateOperationsInput | string
+    channel?: StringFieldUpdateOperationsInput | string
+    purpose?: StringFieldUpdateOperationsInput | string
+    otpHash?: StringFieldUpdateOperationsInput | string
+    expiryTime?: DateTimeFieldUpdateOperationsInput | Date | string
+    attempts?: IntFieldUpdateOperationsInput | number
+    maxAttempts?: IntFieldUpdateOperationsInput | number
+    status?: StringFieldUpdateOperationsInput | string
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    verifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type OtpRequestUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    destination?: StringFieldUpdateOperationsInput | string
+    channel?: StringFieldUpdateOperationsInput | string
+    purpose?: StringFieldUpdateOperationsInput | string
+    otpHash?: StringFieldUpdateOperationsInput | string
+    expiryTime?: DateTimeFieldUpdateOperationsInput | Date | string
+    attempts?: IntFieldUpdateOperationsInput | number
+    maxAttempts?: IntFieldUpdateOperationsInput | number
+    status?: StringFieldUpdateOperationsInput | string
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    verifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type OtpRequestCreateManyInput = {
+    id?: string
+    userId?: string | null
+    destination: string
+    channel: string
+    purpose: string
+    otpHash: string
+    expiryTime: Date | string
+    attempts?: number
+    maxAttempts?: number
+    status?: string
+    ipAddress?: string | null
+    userAgent?: string | null
+    createdAt?: Date | string
+    verifiedAt?: Date | string | null
+  }
+
+  export type OtpRequestUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    destination?: StringFieldUpdateOperationsInput | string
+    channel?: StringFieldUpdateOperationsInput | string
+    purpose?: StringFieldUpdateOperationsInput | string
+    otpHash?: StringFieldUpdateOperationsInput | string
+    expiryTime?: DateTimeFieldUpdateOperationsInput | Date | string
+    attempts?: IntFieldUpdateOperationsInput | number
+    maxAttempts?: IntFieldUpdateOperationsInput | number
+    status?: StringFieldUpdateOperationsInput | string
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    verifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type OtpRequestUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    destination?: StringFieldUpdateOperationsInput | string
+    channel?: StringFieldUpdateOperationsInput | string
+    purpose?: StringFieldUpdateOperationsInput | string
+    otpHash?: StringFieldUpdateOperationsInput | string
+    expiryTime?: DateTimeFieldUpdateOperationsInput | Date | string
+    attempts?: IntFieldUpdateOperationsInput | number
+    maxAttempts?: IntFieldUpdateOperationsInput | number
+    status?: StringFieldUpdateOperationsInput | string
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    verifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type AaConsentCreateInput = {
+    id?: string
+    userId: string
+    consentHandle?: string | null
+    consentId?: string | null
+    vua?: string | null
+    status?: string
+    purpose?: string | null
+    fiTypes?: string | null
+    consentTypes?: string | null
+    dataFrom?: Date | string | null
+    dataTo?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type AaConsentUncheckedCreateInput = {
+    id?: string
+    userId: string
+    consentHandle?: string | null
+    consentId?: string | null
+    vua?: string | null
+    status?: string
+    purpose?: string | null
+    fiTypes?: string | null
+    consentTypes?: string | null
+    dataFrom?: Date | string | null
+    dataTo?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type AaConsentUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    consentHandle?: NullableStringFieldUpdateOperationsInput | string | null
+    consentId?: NullableStringFieldUpdateOperationsInput | string | null
+    vua?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    purpose?: NullableStringFieldUpdateOperationsInput | string | null
+    fiTypes?: NullableStringFieldUpdateOperationsInput | string | null
+    consentTypes?: NullableStringFieldUpdateOperationsInput | string | null
+    dataFrom?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dataTo?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AaConsentUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    consentHandle?: NullableStringFieldUpdateOperationsInput | string | null
+    consentId?: NullableStringFieldUpdateOperationsInput | string | null
+    vua?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    purpose?: NullableStringFieldUpdateOperationsInput | string | null
+    fiTypes?: NullableStringFieldUpdateOperationsInput | string | null
+    consentTypes?: NullableStringFieldUpdateOperationsInput | string | null
+    dataFrom?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dataTo?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AaConsentCreateManyInput = {
+    id?: string
+    userId: string
+    consentHandle?: string | null
+    consentId?: string | null
+    vua?: string | null
+    status?: string
+    purpose?: string | null
+    fiTypes?: string | null
+    consentTypes?: string | null
+    dataFrom?: Date | string | null
+    dataTo?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type AaConsentUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    consentHandle?: NullableStringFieldUpdateOperationsInput | string | null
+    consentId?: NullableStringFieldUpdateOperationsInput | string | null
+    vua?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    purpose?: NullableStringFieldUpdateOperationsInput | string | null
+    fiTypes?: NullableStringFieldUpdateOperationsInput | string | null
+    consentTypes?: NullableStringFieldUpdateOperationsInput | string | null
+    dataFrom?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dataTo?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AaConsentUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    consentHandle?: NullableStringFieldUpdateOperationsInput | string | null
+    consentId?: NullableStringFieldUpdateOperationsInput | string | null
+    vua?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    purpose?: NullableStringFieldUpdateOperationsInput | string | null
+    fiTypes?: NullableStringFieldUpdateOperationsInput | string | null
+    consentTypes?: NullableStringFieldUpdateOperationsInput | string | null
+    dataFrom?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dataTo?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AaConsentArtifactCreateInput = {
+    id?: string
+    consentId: string
+    artifactJson?: string | null
+    signature?: string | null
+    status?: string | null
+    createdAt?: Date | string
+  }
+
+  export type AaConsentArtifactUncheckedCreateInput = {
+    id?: string
+    consentId: string
+    artifactJson?: string | null
+    signature?: string | null
+    status?: string | null
+    createdAt?: Date | string
+  }
+
+  export type AaConsentArtifactUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    consentId?: StringFieldUpdateOperationsInput | string
+    artifactJson?: NullableStringFieldUpdateOperationsInput | string | null
+    signature?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AaConsentArtifactUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    consentId?: StringFieldUpdateOperationsInput | string
+    artifactJson?: NullableStringFieldUpdateOperationsInput | string | null
+    signature?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AaConsentArtifactCreateManyInput = {
+    id?: string
+    consentId: string
+    artifactJson?: string | null
+    signature?: string | null
+    status?: string | null
+    createdAt?: Date | string
+  }
+
+  export type AaConsentArtifactUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    consentId?: StringFieldUpdateOperationsInput | string
+    artifactJson?: NullableStringFieldUpdateOperationsInput | string | null
+    signature?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AaConsentArtifactUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    consentId?: StringFieldUpdateOperationsInput | string
+    artifactJson?: NullableStringFieldUpdateOperationsInput | string | null
+    signature?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AaDataSessionCreateInput = {
+    id?: string
+    consentId: string
+    sessionId: string
+    sessionStatus?: string
+    userId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type AaDataSessionUncheckedCreateInput = {
+    id?: string
+    consentId: string
+    sessionId: string
+    sessionStatus?: string
+    userId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type AaDataSessionUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    consentId?: StringFieldUpdateOperationsInput | string
+    sessionId?: StringFieldUpdateOperationsInput | string
+    sessionStatus?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AaDataSessionUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    consentId?: StringFieldUpdateOperationsInput | string
+    sessionId?: StringFieldUpdateOperationsInput | string
+    sessionStatus?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AaDataSessionCreateManyInput = {
+    id?: string
+    consentId: string
+    sessionId: string
+    sessionStatus?: string
+    userId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type AaDataSessionUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    consentId?: StringFieldUpdateOperationsInput | string
+    sessionId?: StringFieldUpdateOperationsInput | string
+    sessionStatus?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AaDataSessionUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    consentId?: StringFieldUpdateOperationsInput | string
+    sessionId?: StringFieldUpdateOperationsInput | string
+    sessionStatus?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AaFinancialDataCreateInput = {
+    id?: string
+    userId: string
+    consentId: string
+    sessionId: string
+    accountType?: string | null
+    maskedAccountNumber?: string | null
+    dataJson?: string | null
+    createdAt?: Date | string
+  }
+
+  export type AaFinancialDataUncheckedCreateInput = {
+    id?: string
+    userId: string
+    consentId: string
+    sessionId: string
+    accountType?: string | null
+    maskedAccountNumber?: string | null
+    dataJson?: string | null
+    createdAt?: Date | string
+  }
+
+  export type AaFinancialDataUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    consentId?: StringFieldUpdateOperationsInput | string
+    sessionId?: StringFieldUpdateOperationsInput | string
+    accountType?: NullableStringFieldUpdateOperationsInput | string | null
+    maskedAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    dataJson?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AaFinancialDataUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    consentId?: StringFieldUpdateOperationsInput | string
+    sessionId?: StringFieldUpdateOperationsInput | string
+    accountType?: NullableStringFieldUpdateOperationsInput | string | null
+    maskedAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    dataJson?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AaFinancialDataCreateManyInput = {
+    id?: string
+    userId: string
+    consentId: string
+    sessionId: string
+    accountType?: string | null
+    maskedAccountNumber?: string | null
+    dataJson?: string | null
+    createdAt?: Date | string
+  }
+
+  export type AaFinancialDataUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    consentId?: StringFieldUpdateOperationsInput | string
+    sessionId?: StringFieldUpdateOperationsInput | string
+    accountType?: NullableStringFieldUpdateOperationsInput | string | null
+    maskedAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    dataJson?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AaFinancialDataUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    consentId?: StringFieldUpdateOperationsInput | string
+    sessionId?: StringFieldUpdateOperationsInput | string
+    accountType?: NullableStringFieldUpdateOperationsInput | string | null
+    maskedAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    dataJson?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AaTransactionCreateInput = {
+    id?: string
+    userId: string
+    consentId: string
+    transactionDate: Date | string
+    amount: Decimal | DecimalJsLike | number | string
+    type: string
+    description?: string | null
+    maskedAccountNumber?: string | null
+    createdAt?: Date | string
+  }
+
+  export type AaTransactionUncheckedCreateInput = {
+    id?: string
+    userId: string
+    consentId: string
+    transactionDate: Date | string
+    amount: Decimal | DecimalJsLike | number | string
+    type: string
+    description?: string | null
+    maskedAccountNumber?: string | null
+    createdAt?: Date | string
+  }
+
+  export type AaTransactionUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    consentId?: StringFieldUpdateOperationsInput | string
+    transactionDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    type?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    maskedAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AaTransactionUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    consentId?: StringFieldUpdateOperationsInput | string
+    transactionDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    type?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    maskedAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AaTransactionCreateManyInput = {
+    id?: string
+    userId: string
+    consentId: string
+    transactionDate: Date | string
+    amount: Decimal | DecimalJsLike | number | string
+    type: string
+    description?: string | null
+    maskedAccountNumber?: string | null
+    createdAt?: Date | string
+  }
+
+  export type AaTransactionUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    consentId?: StringFieldUpdateOperationsInput | string
+    transactionDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    type?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    maskedAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AaTransactionUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    consentId?: StringFieldUpdateOperationsInput | string
+    transactionDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    type?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    maskedAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type RecurringTransactionCreateInput = {
+    id?: string
+    title: string
+    amount: Decimal | DecimalJsLike | number | string
+    category: string
+    subcategory?: string | null
+    interval?: string
+    nextDueDate: Date | string
+    autoProcess?: boolean
+    status?: string
+    accountId?: string | null
+    description?: string | null
+    merchant?: string | null
+    lastProcessedAt?: Date | string | null
+    clientRequestId?: string | null
+    syncStatus?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    user: UserCreateNestedOneWithoutRecurringTransactionsInput
+  }
+
+  export type RecurringTransactionUncheckedCreateInput = {
+    id?: string
+    userId: string
+    title: string
+    amount: Decimal | DecimalJsLike | number | string
+    category: string
+    subcategory?: string | null
+    interval?: string
+    nextDueDate: Date | string
+    autoProcess?: boolean
+    status?: string
+    accountId?: string | null
+    description?: string | null
+    merchant?: string | null
+    lastProcessedAt?: Date | string | null
+    clientRequestId?: string | null
+    syncStatus?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type RecurringTransactionUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    category?: StringFieldUpdateOperationsInput | string
+    subcategory?: NullableStringFieldUpdateOperationsInput | string | null
+    interval?: StringFieldUpdateOperationsInput | string
+    nextDueDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    autoProcess?: BoolFieldUpdateOperationsInput | boolean
+    status?: StringFieldUpdateOperationsInput | string
+    accountId?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    merchant?: NullableStringFieldUpdateOperationsInput | string | null
+    lastProcessedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
+    syncStatus?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    user?: UserUpdateOneRequiredWithoutRecurringTransactionsNestedInput
+  }
+
+  export type RecurringTransactionUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    category?: StringFieldUpdateOperationsInput | string
+    subcategory?: NullableStringFieldUpdateOperationsInput | string | null
+    interval?: StringFieldUpdateOperationsInput | string
+    nextDueDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    autoProcess?: BoolFieldUpdateOperationsInput | boolean
+    status?: StringFieldUpdateOperationsInput | string
+    accountId?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    merchant?: NullableStringFieldUpdateOperationsInput | string | null
+    lastProcessedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
+    syncStatus?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type RecurringTransactionCreateManyInput = {
+    id?: string
+    userId: string
+    title: string
+    amount: Decimal | DecimalJsLike | number | string
+    category: string
+    subcategory?: string | null
+    interval?: string
+    nextDueDate: Date | string
+    autoProcess?: boolean
+    status?: string
+    accountId?: string | null
+    description?: string | null
+    merchant?: string | null
+    lastProcessedAt?: Date | string | null
+    clientRequestId?: string | null
+    syncStatus?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type RecurringTransactionUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    category?: StringFieldUpdateOperationsInput | string
+    subcategory?: NullableStringFieldUpdateOperationsInput | string | null
+    interval?: StringFieldUpdateOperationsInput | string
+    nextDueDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    autoProcess?: BoolFieldUpdateOperationsInput | boolean
+    status?: StringFieldUpdateOperationsInput | string
+    accountId?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    merchant?: NullableStringFieldUpdateOperationsInput | string | null
+    lastProcessedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
+    syncStatus?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type RecurringTransactionUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    category?: StringFieldUpdateOperationsInput | string
+    subcategory?: NullableStringFieldUpdateOperationsInput | string | null
+    interval?: StringFieldUpdateOperationsInput | string
+    nextDueDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    autoProcess?: BoolFieldUpdateOperationsInput | boolean
+    status?: StringFieldUpdateOperationsInput | string
+    accountId?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    merchant?: NullableStringFieldUpdateOperationsInput | string | null
+    lastProcessedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
+    syncStatus?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type BudgetCreateInput = {
+    id?: string
+    category: string
+    amount: Decimal | DecimalJsLike | number | string
+    spent?: Decimal | DecimalJsLike | number | string
+    period?: string
+    threshold?: number
+    startDate?: Date | string | null
+    endDate?: Date | string | null
+    alertEnabled?: boolean
+    alertChannels?: JsonNullValueInput | InputJsonValue
+    clientRequestId?: string | null
+    syncStatus?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    user: UserCreateNestedOneWithoutBudgetsInput
+  }
+
+  export type BudgetUncheckedCreateInput = {
+    id?: string
+    userId: string
+    category: string
+    amount: Decimal | DecimalJsLike | number | string
+    spent?: Decimal | DecimalJsLike | number | string
+    period?: string
+    threshold?: number
+    startDate?: Date | string | null
+    endDate?: Date | string | null
+    alertEnabled?: boolean
+    alertChannels?: JsonNullValueInput | InputJsonValue
+    clientRequestId?: string | null
+    syncStatus?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type BudgetUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    category?: StringFieldUpdateOperationsInput | string
+    amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    spent?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    period?: StringFieldUpdateOperationsInput | string
+    threshold?: IntFieldUpdateOperationsInput | number
+    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    alertEnabled?: BoolFieldUpdateOperationsInput | boolean
+    alertChannels?: JsonNullValueInput | InputJsonValue
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
+    syncStatus?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    user?: UserUpdateOneRequiredWithoutBudgetsNestedInput
+  }
+
+  export type BudgetUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    category?: StringFieldUpdateOperationsInput | string
+    amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    spent?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    period?: StringFieldUpdateOperationsInput | string
+    threshold?: IntFieldUpdateOperationsInput | number
+    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    alertEnabled?: BoolFieldUpdateOperationsInput | boolean
+    alertChannels?: JsonNullValueInput | InputJsonValue
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
+    syncStatus?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type BudgetCreateManyInput = {
+    id?: string
+    userId: string
+    category: string
+    amount: Decimal | DecimalJsLike | number | string
+    spent?: Decimal | DecimalJsLike | number | string
+    period?: string
+    threshold?: number
+    startDate?: Date | string | null
+    endDate?: Date | string | null
+    alertEnabled?: boolean
+    alertChannels?: JsonNullValueInput | InputJsonValue
+    clientRequestId?: string | null
+    syncStatus?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type BudgetUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    category?: StringFieldUpdateOperationsInput | string
+    amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    spent?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    period?: StringFieldUpdateOperationsInput | string
+    threshold?: IntFieldUpdateOperationsInput | number
+    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    alertEnabled?: BoolFieldUpdateOperationsInput | boolean
+    alertChannels?: JsonNullValueInput | InputJsonValue
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
+    syncStatus?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type BudgetUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    category?: StringFieldUpdateOperationsInput | string
+    amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    spent?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    period?: StringFieldUpdateOperationsInput | string
+    threshold?: IntFieldUpdateOperationsInput | number
+    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    alertEnabled?: BoolFieldUpdateOperationsInput | boolean
+    alertChannels?: JsonNullValueInput | InputJsonValue
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
+    syncStatus?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type TaxCalculationCreateInput = {
+    id?: string
+    year: number
+    regime?: string | null
+    country?: string
+    totalIncome: Decimal | DecimalJsLike | number | string
+    totalExpense: Decimal | DecimalJsLike | number | string
+    netProfit: Decimal | DecimalJsLike | number | string
+    taxableIncome: Decimal | DecimalJsLike | number | string
+    estimatedTax: Decimal | DecimalJsLike | number | string
+    taxRate: Decimal | DecimalJsLike | number | string
+    deductions?: Decimal | DecimalJsLike | number | string
+    currency?: string
+    notes?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    clientRequestId?: string | null
+    syncStatus?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    user: UserCreateNestedOneWithoutTaxCalculationsInput
+  }
+
+  export type TaxCalculationUncheckedCreateInput = {
+    id?: string
+    userId: string
+    year: number
+    regime?: string | null
+    country?: string
+    totalIncome: Decimal | DecimalJsLike | number | string
+    totalExpense: Decimal | DecimalJsLike | number | string
+    netProfit: Decimal | DecimalJsLike | number | string
+    taxableIncome: Decimal | DecimalJsLike | number | string
+    estimatedTax: Decimal | DecimalJsLike | number | string
+    taxRate: Decimal | DecimalJsLike | number | string
+    deductions?: Decimal | DecimalJsLike | number | string
+    currency?: string
+    notes?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    clientRequestId?: string | null
+    syncStatus?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type TaxCalculationUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    year?: IntFieldUpdateOperationsInput | number
+    regime?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: StringFieldUpdateOperationsInput | string
+    totalIncome?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalExpense?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    netProfit?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    taxableIncome?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    estimatedTax?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    taxRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    deductions?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: StringFieldUpdateOperationsInput | string
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
+    syncStatus?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    user?: UserUpdateOneRequiredWithoutTaxCalculationsNestedInput
+  }
+
+  export type TaxCalculationUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    year?: IntFieldUpdateOperationsInput | number
+    regime?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: StringFieldUpdateOperationsInput | string
+    totalIncome?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalExpense?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    netProfit?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    taxableIncome?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    estimatedTax?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    taxRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    deductions?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: StringFieldUpdateOperationsInput | string
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
+    syncStatus?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type TaxCalculationCreateManyInput = {
+    id?: string
+    userId: string
+    year: number
+    regime?: string | null
+    country?: string
+    totalIncome: Decimal | DecimalJsLike | number | string
+    totalExpense: Decimal | DecimalJsLike | number | string
+    netProfit: Decimal | DecimalJsLike | number | string
+    taxableIncome: Decimal | DecimalJsLike | number | string
+    estimatedTax: Decimal | DecimalJsLike | number | string
+    taxRate: Decimal | DecimalJsLike | number | string
+    deductions?: Decimal | DecimalJsLike | number | string
+    currency?: string
+    notes?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    clientRequestId?: string | null
+    syncStatus?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type TaxCalculationUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    year?: IntFieldUpdateOperationsInput | number
+    regime?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: StringFieldUpdateOperationsInput | string
+    totalIncome?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalExpense?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    netProfit?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    taxableIncome?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    estimatedTax?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    taxRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    deductions?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: StringFieldUpdateOperationsInput | string
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
+    syncStatus?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type TaxCalculationUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    year?: IntFieldUpdateOperationsInput | number
+    regime?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: StringFieldUpdateOperationsInput | string
+    totalIncome?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalExpense?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    netProfit?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    taxableIncome?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    estimatedTax?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    taxRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    deductions?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: StringFieldUpdateOperationsInput | string
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
+    syncStatus?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type GoldAssetCreateInput = {
+    id?: string
+    type?: string
+    quantity: Decimal | DecimalJsLike | number | string
+    unit?: string
+    purchasePrice: Decimal | DecimalJsLike | number | string
+    currentPrice: Decimal | DecimalJsLike | number | string
+    purchaseDate: Date | string
+    purityPercentage?: Decimal | DecimalJsLike | number | string
+    location?: string | null
+    certificateNumber?: string | null
+    notes?: string | null
+    clientRequestId?: string | null
+    syncStatus?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    user: UserCreateNestedOneWithoutGoldAssetsInput
+  }
+
+  export type GoldAssetUncheckedCreateInput = {
+    id?: string
+    userId: string
+    type?: string
+    quantity: Decimal | DecimalJsLike | number | string
+    unit?: string
+    purchasePrice: Decimal | DecimalJsLike | number | string
+    currentPrice: Decimal | DecimalJsLike | number | string
+    purchaseDate: Date | string
+    purityPercentage?: Decimal | DecimalJsLike | number | string
+    location?: string | null
+    certificateNumber?: string | null
+    notes?: string | null
+    clientRequestId?: string | null
+    syncStatus?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type GoldAssetUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    quantity?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    unit?: StringFieldUpdateOperationsInput | string
+    purchasePrice?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currentPrice?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    purchaseDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    purityPercentage?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    certificateNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
+    syncStatus?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    user?: UserUpdateOneRequiredWithoutGoldAssetsNestedInput
+  }
+
+  export type GoldAssetUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    quantity?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    unit?: StringFieldUpdateOperationsInput | string
+    purchasePrice?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currentPrice?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    purchaseDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    purityPercentage?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    certificateNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
+    syncStatus?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type GoldAssetCreateManyInput = {
+    id?: string
+    userId: string
+    type?: string
+    quantity: Decimal | DecimalJsLike | number | string
+    unit?: string
+    purchasePrice: Decimal | DecimalJsLike | number | string
+    currentPrice: Decimal | DecimalJsLike | number | string
+    purchaseDate: Date | string
+    purityPercentage?: Decimal | DecimalJsLike | number | string
+    location?: string | null
+    certificateNumber?: string | null
+    notes?: string | null
+    clientRequestId?: string | null
+    syncStatus?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type GoldAssetUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    quantity?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    unit?: StringFieldUpdateOperationsInput | string
+    purchasePrice?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currentPrice?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    purchaseDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    purityPercentage?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    certificateNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
+    syncStatus?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type GoldAssetUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    quantity?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    unit?: StringFieldUpdateOperationsInput | string
+    purchasePrice?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currentPrice?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    purchaseDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    purityPercentage?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    certificateNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
+    syncStatus?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -54063,6 +68824,29 @@ export namespace Prisma {
   export type GoalContributionSumOrderByAggregateInput = {
     amount?: SortOrder
   }
+  export type JsonFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
 
   export type ImportLogCountOrderByAggregateInput = {
     id?: SortOrder
@@ -54102,12 +68886,7 @@ export namespace Prisma {
     importedRecords?: SortOrder
     skippedRecords?: SortOrder
     duplicateRecords?: SortOrder
-    createdCategories?: SortOrder
-    createdAccounts?: SortOrder
-    createdGoals?: SortOrder
-    updatedGoals?: SortOrder
     failedRecords?: SortOrder
-    errors?: SortOrder
     metadata?: SortOrder
     createdAt?: SortOrder
   }
@@ -54122,12 +68901,7 @@ export namespace Prisma {
     importedRecords?: SortOrder
     skippedRecords?: SortOrder
     duplicateRecords?: SortOrder
-    createdCategories?: SortOrder
-    createdAccounts?: SortOrder
-    createdGoals?: SortOrder
-    updatedGoals?: SortOrder
     failedRecords?: SortOrder
-    errors?: SortOrder
     metadata?: SortOrder
     createdAt?: SortOrder
   }
@@ -54138,6 +68912,32 @@ export namespace Prisma {
     skippedRecords?: SortOrder
     duplicateRecords?: SortOrder
     failedRecords?: SortOrder
+  }
+  export type JsonWithAggregatesFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonWithAggregatesFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonWithAggregatesFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedJsonFilter<$PrismaModel>
+    _max?: NestedJsonFilter<$PrismaModel>
   }
 
   export type InvestmentCountOrderByAggregateInput = {
@@ -54406,8 +69206,6 @@ export namespace Prisma {
     category?: SortOrder
     deepLink?: SortOrder
     priority?: SortOrder
-    channels?: SortOrder
-    deliveryStatus?: SortOrder
     encryptedPayload?: SortOrder
     isRead?: SortOrder
     createdAt?: SortOrder
@@ -54425,8 +69223,6 @@ export namespace Prisma {
     category?: SortOrder
     deepLink?: SortOrder
     priority?: SortOrder
-    channels?: SortOrder
-    deliveryStatus?: SortOrder
     encryptedPayload?: SortOrder
     isRead?: SortOrder
     createdAt?: SortOrder
@@ -54557,7 +69353,6 @@ export namespace Prisma {
     operation?: SortOrder
     action?: SortOrder
     sourceDeviceId?: SortOrder
-    data?: SortOrder
     status?: SortOrder
     errorMessage?: SortOrder
     retryCount?: SortOrder
@@ -54576,7 +69371,6 @@ export namespace Prisma {
     operation?: SortOrder
     action?: SortOrder
     sourceDeviceId?: SortOrder
-    data?: SortOrder
     status?: SortOrder
     errorMessage?: SortOrder
     retryCount?: SortOrder
@@ -54690,7 +69484,6 @@ export namespace Prisma {
     description?: SortOrder
     merchant?: SortOrder
     date?: SortOrder
-    tags?: SortOrder
     attachment?: SortOrder
     transferToAccountId?: SortOrder
     transferType?: SortOrder
@@ -54723,7 +69516,6 @@ export namespace Prisma {
     description?: SortOrder
     merchant?: SortOrder
     date?: SortOrder
-    tags?: SortOrder
     attachment?: SortOrder
     transferToAccountId?: SortOrder
     transferType?: SortOrder
@@ -54867,6 +69659,30 @@ export namespace Prisma {
     none?: AiScanWhereInput
   }
 
+  export type RecurringTransactionListRelationFilter = {
+    every?: RecurringTransactionWhereInput
+    some?: RecurringTransactionWhereInput
+    none?: RecurringTransactionWhereInput
+  }
+
+  export type BudgetListRelationFilter = {
+    every?: BudgetWhereInput
+    some?: BudgetWhereInput
+    none?: BudgetWhereInput
+  }
+
+  export type TaxCalculationListRelationFilter = {
+    every?: TaxCalculationWhereInput
+    some?: TaxCalculationWhereInput
+    none?: TaxCalculationWhereInput
+  }
+
+  export type GoldAssetListRelationFilter = {
+    every?: GoldAssetWhereInput
+    some?: GoldAssetWhereInput
+    none?: GoldAssetWhereInput
+  }
+
   export type AccountOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
@@ -54936,6 +69752,22 @@ export namespace Prisma {
   }
 
   export type AiScanOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type RecurringTransactionOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type BudgetOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type TaxCalculationOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type GoldAssetOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -55085,7 +69917,6 @@ export namespace Prisma {
     language?: SortOrder
     currency?: SortOrder
     timezone?: SortOrder
-    settings?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -55097,7 +69928,6 @@ export namespace Prisma {
     language?: SortOrder
     currency?: SortOrder
     timezone?: SortOrder
-    settings?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -55218,29 +70048,6 @@ export namespace Prisma {
     _min?: NestedFloatFilter<$PrismaModel>
     _max?: NestedFloatFilter<$PrismaModel>
   }
-  export type JsonFilter<$PrismaModel = never> =
-    | PatchUndefined<
-        Either<Required<JsonFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonFilterBase<$PrismaModel>>, 'path'>>,
-        Required<JsonFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<JsonFilterBase<$PrismaModel>>, 'path'>>
-
-  export type JsonFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    path?: string[]
-    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
-    string_contains?: string | StringFieldRefInput<$PrismaModel>
-    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
-    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
-    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-  }
 
   export type ai_eventsCountOrderByAggregateInput = {
     id?: SortOrder
@@ -55262,32 +70069,6 @@ export namespace Prisma {
     user_id?: SortOrder
     event_type?: SortOrder
     created_at?: SortOrder
-  }
-  export type JsonWithAggregatesFilter<$PrismaModel = never> =
-    | PatchUndefined<
-        Either<Required<JsonWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
-        Required<JsonWithAggregatesFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<JsonWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
-
-  export type JsonWithAggregatesFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    path?: string[]
-    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
-    string_contains?: string | StringFieldRefInput<$PrismaModel>
-    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
-    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
-    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedJsonFilter<$PrismaModel>
-    _max?: NestedJsonFilter<$PrismaModel>
   }
 
   export type ai_insightsCountOrderByAggregateInput = {
@@ -55703,6 +70484,559 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedStringFilter<$PrismaModel>
     _max?: NestedStringFilter<$PrismaModel>
+  }
+
+  export type OtpRequestCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    destination?: SortOrder
+    channel?: SortOrder
+    purpose?: SortOrder
+    otpHash?: SortOrder
+    expiryTime?: SortOrder
+    attempts?: SortOrder
+    maxAttempts?: SortOrder
+    status?: SortOrder
+    ipAddress?: SortOrder
+    userAgent?: SortOrder
+    createdAt?: SortOrder
+    verifiedAt?: SortOrder
+  }
+
+  export type OtpRequestAvgOrderByAggregateInput = {
+    attempts?: SortOrder
+    maxAttempts?: SortOrder
+  }
+
+  export type OtpRequestMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    destination?: SortOrder
+    channel?: SortOrder
+    purpose?: SortOrder
+    otpHash?: SortOrder
+    expiryTime?: SortOrder
+    attempts?: SortOrder
+    maxAttempts?: SortOrder
+    status?: SortOrder
+    ipAddress?: SortOrder
+    userAgent?: SortOrder
+    createdAt?: SortOrder
+    verifiedAt?: SortOrder
+  }
+
+  export type OtpRequestMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    destination?: SortOrder
+    channel?: SortOrder
+    purpose?: SortOrder
+    otpHash?: SortOrder
+    expiryTime?: SortOrder
+    attempts?: SortOrder
+    maxAttempts?: SortOrder
+    status?: SortOrder
+    ipAddress?: SortOrder
+    userAgent?: SortOrder
+    createdAt?: SortOrder
+    verifiedAt?: SortOrder
+  }
+
+  export type OtpRequestSumOrderByAggregateInput = {
+    attempts?: SortOrder
+    maxAttempts?: SortOrder
+  }
+
+  export type AaConsentCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    consentHandle?: SortOrder
+    consentId?: SortOrder
+    vua?: SortOrder
+    status?: SortOrder
+    purpose?: SortOrder
+    fiTypes?: SortOrder
+    consentTypes?: SortOrder
+    dataFrom?: SortOrder
+    dataTo?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type AaConsentMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    consentHandle?: SortOrder
+    consentId?: SortOrder
+    vua?: SortOrder
+    status?: SortOrder
+    purpose?: SortOrder
+    fiTypes?: SortOrder
+    consentTypes?: SortOrder
+    dataFrom?: SortOrder
+    dataTo?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type AaConsentMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    consentHandle?: SortOrder
+    consentId?: SortOrder
+    vua?: SortOrder
+    status?: SortOrder
+    purpose?: SortOrder
+    fiTypes?: SortOrder
+    consentTypes?: SortOrder
+    dataFrom?: SortOrder
+    dataTo?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type AaConsentArtifactCountOrderByAggregateInput = {
+    id?: SortOrder
+    consentId?: SortOrder
+    artifactJson?: SortOrder
+    signature?: SortOrder
+    status?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type AaConsentArtifactMaxOrderByAggregateInput = {
+    id?: SortOrder
+    consentId?: SortOrder
+    artifactJson?: SortOrder
+    signature?: SortOrder
+    status?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type AaConsentArtifactMinOrderByAggregateInput = {
+    id?: SortOrder
+    consentId?: SortOrder
+    artifactJson?: SortOrder
+    signature?: SortOrder
+    status?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type AaDataSessionCountOrderByAggregateInput = {
+    id?: SortOrder
+    consentId?: SortOrder
+    sessionId?: SortOrder
+    sessionStatus?: SortOrder
+    userId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type AaDataSessionMaxOrderByAggregateInput = {
+    id?: SortOrder
+    consentId?: SortOrder
+    sessionId?: SortOrder
+    sessionStatus?: SortOrder
+    userId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type AaDataSessionMinOrderByAggregateInput = {
+    id?: SortOrder
+    consentId?: SortOrder
+    sessionId?: SortOrder
+    sessionStatus?: SortOrder
+    userId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type AaFinancialDataCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    consentId?: SortOrder
+    sessionId?: SortOrder
+    accountType?: SortOrder
+    maskedAccountNumber?: SortOrder
+    dataJson?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type AaFinancialDataMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    consentId?: SortOrder
+    sessionId?: SortOrder
+    accountType?: SortOrder
+    maskedAccountNumber?: SortOrder
+    dataJson?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type AaFinancialDataMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    consentId?: SortOrder
+    sessionId?: SortOrder
+    accountType?: SortOrder
+    maskedAccountNumber?: SortOrder
+    dataJson?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type AaTransactionCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    consentId?: SortOrder
+    transactionDate?: SortOrder
+    amount?: SortOrder
+    type?: SortOrder
+    description?: SortOrder
+    maskedAccountNumber?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type AaTransactionAvgOrderByAggregateInput = {
+    amount?: SortOrder
+  }
+
+  export type AaTransactionMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    consentId?: SortOrder
+    transactionDate?: SortOrder
+    amount?: SortOrder
+    type?: SortOrder
+    description?: SortOrder
+    maskedAccountNumber?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type AaTransactionMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    consentId?: SortOrder
+    transactionDate?: SortOrder
+    amount?: SortOrder
+    type?: SortOrder
+    description?: SortOrder
+    maskedAccountNumber?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type AaTransactionSumOrderByAggregateInput = {
+    amount?: SortOrder
+  }
+
+  export type RecurringTransactionCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    title?: SortOrder
+    amount?: SortOrder
+    category?: SortOrder
+    subcategory?: SortOrder
+    interval?: SortOrder
+    nextDueDate?: SortOrder
+    autoProcess?: SortOrder
+    status?: SortOrder
+    accountId?: SortOrder
+    description?: SortOrder
+    merchant?: SortOrder
+    lastProcessedAt?: SortOrder
+    clientRequestId?: SortOrder
+    syncStatus?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrder
+  }
+
+  export type RecurringTransactionAvgOrderByAggregateInput = {
+    amount?: SortOrder
+  }
+
+  export type RecurringTransactionMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    title?: SortOrder
+    amount?: SortOrder
+    category?: SortOrder
+    subcategory?: SortOrder
+    interval?: SortOrder
+    nextDueDate?: SortOrder
+    autoProcess?: SortOrder
+    status?: SortOrder
+    accountId?: SortOrder
+    description?: SortOrder
+    merchant?: SortOrder
+    lastProcessedAt?: SortOrder
+    clientRequestId?: SortOrder
+    syncStatus?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrder
+  }
+
+  export type RecurringTransactionMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    title?: SortOrder
+    amount?: SortOrder
+    category?: SortOrder
+    subcategory?: SortOrder
+    interval?: SortOrder
+    nextDueDate?: SortOrder
+    autoProcess?: SortOrder
+    status?: SortOrder
+    accountId?: SortOrder
+    description?: SortOrder
+    merchant?: SortOrder
+    lastProcessedAt?: SortOrder
+    clientRequestId?: SortOrder
+    syncStatus?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrder
+  }
+
+  export type RecurringTransactionSumOrderByAggregateInput = {
+    amount?: SortOrder
+  }
+
+  export type BudgetUserIdCategoryPeriodCompoundUniqueInput = {
+    userId: string
+    category: string
+    period: string
+  }
+
+  export type BudgetCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    category?: SortOrder
+    amount?: SortOrder
+    spent?: SortOrder
+    period?: SortOrder
+    threshold?: SortOrder
+    startDate?: SortOrder
+    endDate?: SortOrder
+    alertEnabled?: SortOrder
+    alertChannels?: SortOrder
+    clientRequestId?: SortOrder
+    syncStatus?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrder
+  }
+
+  export type BudgetAvgOrderByAggregateInput = {
+    amount?: SortOrder
+    spent?: SortOrder
+    threshold?: SortOrder
+  }
+
+  export type BudgetMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    category?: SortOrder
+    amount?: SortOrder
+    spent?: SortOrder
+    period?: SortOrder
+    threshold?: SortOrder
+    startDate?: SortOrder
+    endDate?: SortOrder
+    alertEnabled?: SortOrder
+    clientRequestId?: SortOrder
+    syncStatus?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrder
+  }
+
+  export type BudgetMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    category?: SortOrder
+    amount?: SortOrder
+    spent?: SortOrder
+    period?: SortOrder
+    threshold?: SortOrder
+    startDate?: SortOrder
+    endDate?: SortOrder
+    alertEnabled?: SortOrder
+    clientRequestId?: SortOrder
+    syncStatus?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrder
+  }
+
+  export type BudgetSumOrderByAggregateInput = {
+    amount?: SortOrder
+    spent?: SortOrder
+    threshold?: SortOrder
+  }
+
+  export type TaxCalculationCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    year?: SortOrder
+    regime?: SortOrder
+    country?: SortOrder
+    totalIncome?: SortOrder
+    totalExpense?: SortOrder
+    netProfit?: SortOrder
+    taxableIncome?: SortOrder
+    estimatedTax?: SortOrder
+    taxRate?: SortOrder
+    deductions?: SortOrder
+    currency?: SortOrder
+    notes?: SortOrder
+    metadata?: SortOrder
+    clientRequestId?: SortOrder
+    syncStatus?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrder
+  }
+
+  export type TaxCalculationAvgOrderByAggregateInput = {
+    year?: SortOrder
+    totalIncome?: SortOrder
+    totalExpense?: SortOrder
+    netProfit?: SortOrder
+    taxableIncome?: SortOrder
+    estimatedTax?: SortOrder
+    taxRate?: SortOrder
+    deductions?: SortOrder
+  }
+
+  export type TaxCalculationMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    year?: SortOrder
+    regime?: SortOrder
+    country?: SortOrder
+    totalIncome?: SortOrder
+    totalExpense?: SortOrder
+    netProfit?: SortOrder
+    taxableIncome?: SortOrder
+    estimatedTax?: SortOrder
+    taxRate?: SortOrder
+    deductions?: SortOrder
+    currency?: SortOrder
+    notes?: SortOrder
+    clientRequestId?: SortOrder
+    syncStatus?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrder
+  }
+
+  export type TaxCalculationMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    year?: SortOrder
+    regime?: SortOrder
+    country?: SortOrder
+    totalIncome?: SortOrder
+    totalExpense?: SortOrder
+    netProfit?: SortOrder
+    taxableIncome?: SortOrder
+    estimatedTax?: SortOrder
+    taxRate?: SortOrder
+    deductions?: SortOrder
+    currency?: SortOrder
+    notes?: SortOrder
+    clientRequestId?: SortOrder
+    syncStatus?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrder
+  }
+
+  export type TaxCalculationSumOrderByAggregateInput = {
+    year?: SortOrder
+    totalIncome?: SortOrder
+    totalExpense?: SortOrder
+    netProfit?: SortOrder
+    taxableIncome?: SortOrder
+    estimatedTax?: SortOrder
+    taxRate?: SortOrder
+    deductions?: SortOrder
+  }
+
+  export type GoldAssetCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    type?: SortOrder
+    quantity?: SortOrder
+    unit?: SortOrder
+    purchasePrice?: SortOrder
+    currentPrice?: SortOrder
+    purchaseDate?: SortOrder
+    purityPercentage?: SortOrder
+    location?: SortOrder
+    certificateNumber?: SortOrder
+    notes?: SortOrder
+    clientRequestId?: SortOrder
+    syncStatus?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrder
+  }
+
+  export type GoldAssetAvgOrderByAggregateInput = {
+    quantity?: SortOrder
+    purchasePrice?: SortOrder
+    currentPrice?: SortOrder
+    purityPercentage?: SortOrder
+  }
+
+  export type GoldAssetMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    type?: SortOrder
+    quantity?: SortOrder
+    unit?: SortOrder
+    purchasePrice?: SortOrder
+    currentPrice?: SortOrder
+    purchaseDate?: SortOrder
+    purityPercentage?: SortOrder
+    location?: SortOrder
+    certificateNumber?: SortOrder
+    notes?: SortOrder
+    clientRequestId?: SortOrder
+    syncStatus?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrder
+  }
+
+  export type GoldAssetMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    type?: SortOrder
+    quantity?: SortOrder
+    unit?: SortOrder
+    purchasePrice?: SortOrder
+    currentPrice?: SortOrder
+    purchaseDate?: SortOrder
+    purityPercentage?: SortOrder
+    location?: SortOrder
+    certificateNumber?: SortOrder
+    notes?: SortOrder
+    clientRequestId?: SortOrder
+    syncStatus?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrder
+  }
+
+  export type GoldAssetSumOrderByAggregateInput = {
+    quantity?: SortOrder
+    purchasePrice?: SortOrder
+    currentPrice?: SortOrder
+    purityPercentage?: SortOrder
   }
 
   export type UserCreateNestedOneWithoutAccountsInput = {
@@ -56690,6 +72024,34 @@ export namespace Prisma {
     connect?: GroupExpenseWhereUniqueInput | GroupExpenseWhereUniqueInput[]
   }
 
+  export type RecurringTransactionCreateNestedManyWithoutUserInput = {
+    create?: XOR<RecurringTransactionCreateWithoutUserInput, RecurringTransactionUncheckedCreateWithoutUserInput> | RecurringTransactionCreateWithoutUserInput[] | RecurringTransactionUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: RecurringTransactionCreateOrConnectWithoutUserInput | RecurringTransactionCreateOrConnectWithoutUserInput[]
+    createMany?: RecurringTransactionCreateManyUserInputEnvelope
+    connect?: RecurringTransactionWhereUniqueInput | RecurringTransactionWhereUniqueInput[]
+  }
+
+  export type BudgetCreateNestedManyWithoutUserInput = {
+    create?: XOR<BudgetCreateWithoutUserInput, BudgetUncheckedCreateWithoutUserInput> | BudgetCreateWithoutUserInput[] | BudgetUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: BudgetCreateOrConnectWithoutUserInput | BudgetCreateOrConnectWithoutUserInput[]
+    createMany?: BudgetCreateManyUserInputEnvelope
+    connect?: BudgetWhereUniqueInput | BudgetWhereUniqueInput[]
+  }
+
+  export type TaxCalculationCreateNestedManyWithoutUserInput = {
+    create?: XOR<TaxCalculationCreateWithoutUserInput, TaxCalculationUncheckedCreateWithoutUserInput> | TaxCalculationCreateWithoutUserInput[] | TaxCalculationUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: TaxCalculationCreateOrConnectWithoutUserInput | TaxCalculationCreateOrConnectWithoutUserInput[]
+    createMany?: TaxCalculationCreateManyUserInputEnvelope
+    connect?: TaxCalculationWhereUniqueInput | TaxCalculationWhereUniqueInput[]
+  }
+
+  export type GoldAssetCreateNestedManyWithoutUserInput = {
+    create?: XOR<GoldAssetCreateWithoutUserInput, GoldAssetUncheckedCreateWithoutUserInput> | GoldAssetCreateWithoutUserInput[] | GoldAssetUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: GoldAssetCreateOrConnectWithoutUserInput | GoldAssetCreateOrConnectWithoutUserInput[]
+    createMany?: GoldAssetCreateManyUserInputEnvelope
+    connect?: GoldAssetWhereUniqueInput | GoldAssetWhereUniqueInput[]
+  }
+
   export type AccountUncheckedCreateNestedManyWithoutUserInput = {
     create?: XOR<AccountCreateWithoutUserInput, AccountUncheckedCreateWithoutUserInput> | AccountCreateWithoutUserInput[] | AccountUncheckedCreateWithoutUserInput[]
     connectOrCreate?: AccountCreateOrConnectWithoutUserInput | AccountCreateOrConnectWithoutUserInput[]
@@ -56875,6 +72237,34 @@ export namespace Prisma {
     connectOrCreate?: GroupExpenseCreateOrConnectWithoutUserInput | GroupExpenseCreateOrConnectWithoutUserInput[]
     createMany?: GroupExpenseCreateManyUserInputEnvelope
     connect?: GroupExpenseWhereUniqueInput | GroupExpenseWhereUniqueInput[]
+  }
+
+  export type RecurringTransactionUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<RecurringTransactionCreateWithoutUserInput, RecurringTransactionUncheckedCreateWithoutUserInput> | RecurringTransactionCreateWithoutUserInput[] | RecurringTransactionUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: RecurringTransactionCreateOrConnectWithoutUserInput | RecurringTransactionCreateOrConnectWithoutUserInput[]
+    createMany?: RecurringTransactionCreateManyUserInputEnvelope
+    connect?: RecurringTransactionWhereUniqueInput | RecurringTransactionWhereUniqueInput[]
+  }
+
+  export type BudgetUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<BudgetCreateWithoutUserInput, BudgetUncheckedCreateWithoutUserInput> | BudgetCreateWithoutUserInput[] | BudgetUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: BudgetCreateOrConnectWithoutUserInput | BudgetCreateOrConnectWithoutUserInput[]
+    createMany?: BudgetCreateManyUserInputEnvelope
+    connect?: BudgetWhereUniqueInput | BudgetWhereUniqueInput[]
+  }
+
+  export type TaxCalculationUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<TaxCalculationCreateWithoutUserInput, TaxCalculationUncheckedCreateWithoutUserInput> | TaxCalculationCreateWithoutUserInput[] | TaxCalculationUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: TaxCalculationCreateOrConnectWithoutUserInput | TaxCalculationCreateOrConnectWithoutUserInput[]
+    createMany?: TaxCalculationCreateManyUserInputEnvelope
+    connect?: TaxCalculationWhereUniqueInput | TaxCalculationWhereUniqueInput[]
+  }
+
+  export type GoldAssetUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<GoldAssetCreateWithoutUserInput, GoldAssetUncheckedCreateWithoutUserInput> | GoldAssetCreateWithoutUserInput[] | GoldAssetUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: GoldAssetCreateOrConnectWithoutUserInput | GoldAssetCreateOrConnectWithoutUserInput[]
+    createMany?: GoldAssetCreateManyUserInputEnvelope
+    connect?: GoldAssetWhereUniqueInput | GoldAssetWhereUniqueInput[]
   }
 
   export type AccountUpdateManyWithoutUserNestedInput = {
@@ -57247,6 +72637,62 @@ export namespace Prisma {
     deleteMany?: GroupExpenseScalarWhereInput | GroupExpenseScalarWhereInput[]
   }
 
+  export type RecurringTransactionUpdateManyWithoutUserNestedInput = {
+    create?: XOR<RecurringTransactionCreateWithoutUserInput, RecurringTransactionUncheckedCreateWithoutUserInput> | RecurringTransactionCreateWithoutUserInput[] | RecurringTransactionUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: RecurringTransactionCreateOrConnectWithoutUserInput | RecurringTransactionCreateOrConnectWithoutUserInput[]
+    upsert?: RecurringTransactionUpsertWithWhereUniqueWithoutUserInput | RecurringTransactionUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: RecurringTransactionCreateManyUserInputEnvelope
+    set?: RecurringTransactionWhereUniqueInput | RecurringTransactionWhereUniqueInput[]
+    disconnect?: RecurringTransactionWhereUniqueInput | RecurringTransactionWhereUniqueInput[]
+    delete?: RecurringTransactionWhereUniqueInput | RecurringTransactionWhereUniqueInput[]
+    connect?: RecurringTransactionWhereUniqueInput | RecurringTransactionWhereUniqueInput[]
+    update?: RecurringTransactionUpdateWithWhereUniqueWithoutUserInput | RecurringTransactionUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: RecurringTransactionUpdateManyWithWhereWithoutUserInput | RecurringTransactionUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: RecurringTransactionScalarWhereInput | RecurringTransactionScalarWhereInput[]
+  }
+
+  export type BudgetUpdateManyWithoutUserNestedInput = {
+    create?: XOR<BudgetCreateWithoutUserInput, BudgetUncheckedCreateWithoutUserInput> | BudgetCreateWithoutUserInput[] | BudgetUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: BudgetCreateOrConnectWithoutUserInput | BudgetCreateOrConnectWithoutUserInput[]
+    upsert?: BudgetUpsertWithWhereUniqueWithoutUserInput | BudgetUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: BudgetCreateManyUserInputEnvelope
+    set?: BudgetWhereUniqueInput | BudgetWhereUniqueInput[]
+    disconnect?: BudgetWhereUniqueInput | BudgetWhereUniqueInput[]
+    delete?: BudgetWhereUniqueInput | BudgetWhereUniqueInput[]
+    connect?: BudgetWhereUniqueInput | BudgetWhereUniqueInput[]
+    update?: BudgetUpdateWithWhereUniqueWithoutUserInput | BudgetUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: BudgetUpdateManyWithWhereWithoutUserInput | BudgetUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: BudgetScalarWhereInput | BudgetScalarWhereInput[]
+  }
+
+  export type TaxCalculationUpdateManyWithoutUserNestedInput = {
+    create?: XOR<TaxCalculationCreateWithoutUserInput, TaxCalculationUncheckedCreateWithoutUserInput> | TaxCalculationCreateWithoutUserInput[] | TaxCalculationUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: TaxCalculationCreateOrConnectWithoutUserInput | TaxCalculationCreateOrConnectWithoutUserInput[]
+    upsert?: TaxCalculationUpsertWithWhereUniqueWithoutUserInput | TaxCalculationUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: TaxCalculationCreateManyUserInputEnvelope
+    set?: TaxCalculationWhereUniqueInput | TaxCalculationWhereUniqueInput[]
+    disconnect?: TaxCalculationWhereUniqueInput | TaxCalculationWhereUniqueInput[]
+    delete?: TaxCalculationWhereUniqueInput | TaxCalculationWhereUniqueInput[]
+    connect?: TaxCalculationWhereUniqueInput | TaxCalculationWhereUniqueInput[]
+    update?: TaxCalculationUpdateWithWhereUniqueWithoutUserInput | TaxCalculationUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: TaxCalculationUpdateManyWithWhereWithoutUserInput | TaxCalculationUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: TaxCalculationScalarWhereInput | TaxCalculationScalarWhereInput[]
+  }
+
+  export type GoldAssetUpdateManyWithoutUserNestedInput = {
+    create?: XOR<GoldAssetCreateWithoutUserInput, GoldAssetUncheckedCreateWithoutUserInput> | GoldAssetCreateWithoutUserInput[] | GoldAssetUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: GoldAssetCreateOrConnectWithoutUserInput | GoldAssetCreateOrConnectWithoutUserInput[]
+    upsert?: GoldAssetUpsertWithWhereUniqueWithoutUserInput | GoldAssetUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: GoldAssetCreateManyUserInputEnvelope
+    set?: GoldAssetWhereUniqueInput | GoldAssetWhereUniqueInput[]
+    disconnect?: GoldAssetWhereUniqueInput | GoldAssetWhereUniqueInput[]
+    delete?: GoldAssetWhereUniqueInput | GoldAssetWhereUniqueInput[]
+    connect?: GoldAssetWhereUniqueInput | GoldAssetWhereUniqueInput[]
+    update?: GoldAssetUpdateWithWhereUniqueWithoutUserInput | GoldAssetUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: GoldAssetUpdateManyWithWhereWithoutUserInput | GoldAssetUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: GoldAssetScalarWhereInput | GoldAssetScalarWhereInput[]
+  }
+
   export type AccountUncheckedUpdateManyWithoutUserNestedInput = {
     create?: XOR<AccountCreateWithoutUserInput, AccountUncheckedCreateWithoutUserInput> | AccountCreateWithoutUserInput[] | AccountUncheckedCreateWithoutUserInput[]
     connectOrCreate?: AccountCreateOrConnectWithoutUserInput | AccountCreateOrConnectWithoutUserInput[]
@@ -57617,6 +73063,62 @@ export namespace Prisma {
     deleteMany?: GroupExpenseScalarWhereInput | GroupExpenseScalarWhereInput[]
   }
 
+  export type RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<RecurringTransactionCreateWithoutUserInput, RecurringTransactionUncheckedCreateWithoutUserInput> | RecurringTransactionCreateWithoutUserInput[] | RecurringTransactionUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: RecurringTransactionCreateOrConnectWithoutUserInput | RecurringTransactionCreateOrConnectWithoutUserInput[]
+    upsert?: RecurringTransactionUpsertWithWhereUniqueWithoutUserInput | RecurringTransactionUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: RecurringTransactionCreateManyUserInputEnvelope
+    set?: RecurringTransactionWhereUniqueInput | RecurringTransactionWhereUniqueInput[]
+    disconnect?: RecurringTransactionWhereUniqueInput | RecurringTransactionWhereUniqueInput[]
+    delete?: RecurringTransactionWhereUniqueInput | RecurringTransactionWhereUniqueInput[]
+    connect?: RecurringTransactionWhereUniqueInput | RecurringTransactionWhereUniqueInput[]
+    update?: RecurringTransactionUpdateWithWhereUniqueWithoutUserInput | RecurringTransactionUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: RecurringTransactionUpdateManyWithWhereWithoutUserInput | RecurringTransactionUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: RecurringTransactionScalarWhereInput | RecurringTransactionScalarWhereInput[]
+  }
+
+  export type BudgetUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<BudgetCreateWithoutUserInput, BudgetUncheckedCreateWithoutUserInput> | BudgetCreateWithoutUserInput[] | BudgetUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: BudgetCreateOrConnectWithoutUserInput | BudgetCreateOrConnectWithoutUserInput[]
+    upsert?: BudgetUpsertWithWhereUniqueWithoutUserInput | BudgetUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: BudgetCreateManyUserInputEnvelope
+    set?: BudgetWhereUniqueInput | BudgetWhereUniqueInput[]
+    disconnect?: BudgetWhereUniqueInput | BudgetWhereUniqueInput[]
+    delete?: BudgetWhereUniqueInput | BudgetWhereUniqueInput[]
+    connect?: BudgetWhereUniqueInput | BudgetWhereUniqueInput[]
+    update?: BudgetUpdateWithWhereUniqueWithoutUserInput | BudgetUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: BudgetUpdateManyWithWhereWithoutUserInput | BudgetUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: BudgetScalarWhereInput | BudgetScalarWhereInput[]
+  }
+
+  export type TaxCalculationUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<TaxCalculationCreateWithoutUserInput, TaxCalculationUncheckedCreateWithoutUserInput> | TaxCalculationCreateWithoutUserInput[] | TaxCalculationUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: TaxCalculationCreateOrConnectWithoutUserInput | TaxCalculationCreateOrConnectWithoutUserInput[]
+    upsert?: TaxCalculationUpsertWithWhereUniqueWithoutUserInput | TaxCalculationUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: TaxCalculationCreateManyUserInputEnvelope
+    set?: TaxCalculationWhereUniqueInput | TaxCalculationWhereUniqueInput[]
+    disconnect?: TaxCalculationWhereUniqueInput | TaxCalculationWhereUniqueInput[]
+    delete?: TaxCalculationWhereUniqueInput | TaxCalculationWhereUniqueInput[]
+    connect?: TaxCalculationWhereUniqueInput | TaxCalculationWhereUniqueInput[]
+    update?: TaxCalculationUpdateWithWhereUniqueWithoutUserInput | TaxCalculationUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: TaxCalculationUpdateManyWithWhereWithoutUserInput | TaxCalculationUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: TaxCalculationScalarWhereInput | TaxCalculationScalarWhereInput[]
+  }
+
+  export type GoldAssetUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<GoldAssetCreateWithoutUserInput, GoldAssetUncheckedCreateWithoutUserInput> | GoldAssetCreateWithoutUserInput[] | GoldAssetUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: GoldAssetCreateOrConnectWithoutUserInput | GoldAssetCreateOrConnectWithoutUserInput[]
+    upsert?: GoldAssetUpsertWithWhereUniqueWithoutUserInput | GoldAssetUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: GoldAssetCreateManyUserInputEnvelope
+    set?: GoldAssetWhereUniqueInput | GoldAssetWhereUniqueInput[]
+    disconnect?: GoldAssetWhereUniqueInput | GoldAssetWhereUniqueInput[]
+    delete?: GoldAssetWhereUniqueInput | GoldAssetWhereUniqueInput[]
+    connect?: GoldAssetWhereUniqueInput | GoldAssetWhereUniqueInput[]
+    update?: GoldAssetUpdateWithWhereUniqueWithoutUserInput | GoldAssetUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: GoldAssetUpdateManyWithWhereWithoutUserInput | GoldAssetUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: GoldAssetScalarWhereInput | GoldAssetScalarWhereInput[]
+  }
+
   export type UserCreateNestedOneWithoutUserPinInput = {
     create?: XOR<UserCreateWithoutUserPinInput, UserUncheckedCreateWithoutUserPinInput>
     connectOrCreate?: UserCreateOrConnectWithoutUserPinInput
@@ -57807,6 +73309,62 @@ export namespace Prisma {
     upsert?: GroupExpenseUpsertWithoutGroupMembersInput
     connect?: GroupExpenseWhereUniqueInput
     update?: XOR<XOR<GroupExpenseUpdateToOneWithWhereWithoutGroupMembersInput, GroupExpenseUpdateWithoutGroupMembersInput>, GroupExpenseUncheckedUpdateWithoutGroupMembersInput>
+  }
+
+  export type UserCreateNestedOneWithoutRecurringTransactionsInput = {
+    create?: XOR<UserCreateWithoutRecurringTransactionsInput, UserUncheckedCreateWithoutRecurringTransactionsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutRecurringTransactionsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserUpdateOneRequiredWithoutRecurringTransactionsNestedInput = {
+    create?: XOR<UserCreateWithoutRecurringTransactionsInput, UserUncheckedCreateWithoutRecurringTransactionsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutRecurringTransactionsInput
+    upsert?: UserUpsertWithoutRecurringTransactionsInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutRecurringTransactionsInput, UserUpdateWithoutRecurringTransactionsInput>, UserUncheckedUpdateWithoutRecurringTransactionsInput>
+  }
+
+  export type UserCreateNestedOneWithoutBudgetsInput = {
+    create?: XOR<UserCreateWithoutBudgetsInput, UserUncheckedCreateWithoutBudgetsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutBudgetsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserUpdateOneRequiredWithoutBudgetsNestedInput = {
+    create?: XOR<UserCreateWithoutBudgetsInput, UserUncheckedCreateWithoutBudgetsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutBudgetsInput
+    upsert?: UserUpsertWithoutBudgetsInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutBudgetsInput, UserUpdateWithoutBudgetsInput>, UserUncheckedUpdateWithoutBudgetsInput>
+  }
+
+  export type UserCreateNestedOneWithoutTaxCalculationsInput = {
+    create?: XOR<UserCreateWithoutTaxCalculationsInput, UserUncheckedCreateWithoutTaxCalculationsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutTaxCalculationsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserUpdateOneRequiredWithoutTaxCalculationsNestedInput = {
+    create?: XOR<UserCreateWithoutTaxCalculationsInput, UserUncheckedCreateWithoutTaxCalculationsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutTaxCalculationsInput
+    upsert?: UserUpsertWithoutTaxCalculationsInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutTaxCalculationsInput, UserUpdateWithoutTaxCalculationsInput>, UserUncheckedUpdateWithoutTaxCalculationsInput>
+  }
+
+  export type UserCreateNestedOneWithoutGoldAssetsInput = {
+    create?: XOR<UserCreateWithoutGoldAssetsInput, UserUncheckedCreateWithoutGoldAssetsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutGoldAssetsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserUpdateOneRequiredWithoutGoldAssetsNestedInput = {
+    create?: XOR<UserCreateWithoutGoldAssetsInput, UserUncheckedCreateWithoutGoldAssetsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutGoldAssetsInput
+    upsert?: UserUpsertWithoutGoldAssetsInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutGoldAssetsInput, UserUpdateWithoutGoldAssetsInput>, UserUncheckedUpdateWithoutGoldAssetsInput>
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -58059,6 +73617,29 @@ export namespace Prisma {
     gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
     not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
   }
+  export type NestedJsonFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<NestedJsonFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonFilterBase<$PrismaModel>>, 'path'>>,
+        Required<NestedJsonFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<NestedJsonFilterBase<$PrismaModel>>, 'path'>>
+
+  export type NestedJsonFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
 
   export type NestedDecimalNullableFilter<$PrismaModel = never> = {
     equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
@@ -58117,29 +73698,6 @@ export namespace Prisma {
     _sum?: NestedFloatFilter<$PrismaModel>
     _min?: NestedFloatFilter<$PrismaModel>
     _max?: NestedFloatFilter<$PrismaModel>
-  }
-  export type NestedJsonFilter<$PrismaModel = never> =
-    | PatchUndefined<
-        Either<Required<NestedJsonFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonFilterBase<$PrismaModel>>, 'path'>>,
-        Required<NestedJsonFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<NestedJsonFilterBase<$PrismaModel>>, 'path'>>
-
-  export type NestedJsonFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    path?: string[]
-    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
-    string_contains?: string | StringFieldRefInput<$PrismaModel>
-    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
-    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
-    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
   }
 
   export type NestedUuidFilter<$PrismaModel = never> = {
@@ -58215,6 +73773,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
     aiScans?: AiScanCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
+    budgets?: BudgetCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutAccountsInput = {
@@ -58265,6 +73827,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
+    budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutAccountsInput = {
@@ -58318,7 +73884,7 @@ export namespace Prisma {
     description?: string | null
     merchant?: string | null
     date: Date | string
-    tags?: string | null
+    tags?: NullableJsonNullValueInput | InputJsonValue
     attachment?: string | null
     transferToAccountId?: string | null
     transferType?: string | null
@@ -58351,7 +73917,7 @@ export namespace Prisma {
     description?: string | null
     merchant?: string | null
     date: Date | string
-    tags?: string | null
+    tags?: NullableJsonNullValueInput | InputJsonValue
     attachment?: string | null
     transferToAccountId?: string | null
     transferType?: string | null
@@ -58505,6 +74071,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAccountsInput = {
@@ -58555,6 +74125,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type GoalContributionUpsertWithWhereUniqueWithoutAccountInput = {
@@ -58621,7 +74195,7 @@ export namespace Prisma {
     description?: StringNullableFilter<"Transaction"> | string | null
     merchant?: StringNullableFilter<"Transaction"> | string | null
     date?: DateTimeFilter<"Transaction"> | Date | string
-    tags?: StringNullableFilter<"Transaction"> | string | null
+    tags?: JsonNullableFilter<"Transaction">
     attachment?: StringNullableFilter<"Transaction"> | string | null
     transferToAccountId?: StringNullableFilter<"Transaction"> | string | null
     transferType?: StringNullableFilter<"Transaction"> | string | null
@@ -58735,6 +74309,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
     aiScans?: AiScanCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
+    budgets?: BudgetCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutAdvisorAvailabilityInput = {
@@ -58785,6 +74363,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
+    budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutAdvisorAvailabilityInput = {
@@ -58851,6 +74433,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAdvisorAvailabilityInput = {
@@ -58901,6 +74487,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutSessionsAsAdvisorInput = {
@@ -58951,6 +74541,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
     aiScans?: AiScanCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
+    budgets?: BudgetCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutSessionsAsAdvisorInput = {
@@ -59001,6 +74595,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
+    budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutSessionsAsAdvisorInput = {
@@ -59093,6 +74691,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
     aiScans?: AiScanCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
+    budgets?: BudgetCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutSessionsAsClientInput = {
@@ -59143,6 +74745,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
+    budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutSessionsAsClientInput = {
@@ -59266,6 +74872,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSessionsAsAdvisorInput = {
@@ -59316,6 +74926,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type BookingRequestUpsertWithoutSessionInput = {
@@ -59420,6 +75034,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSessionsAsClientInput = {
@@ -59470,6 +75088,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ChatMessageUpsertWithWhereUniqueWithoutSessionInput = {
@@ -59625,6 +75247,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
     aiScans?: AiScanCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
+    budgets?: BudgetCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutBookingsAsAdvisorInput = {
@@ -59675,6 +75301,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
+    budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutBookingsAsAdvisorInput = {
@@ -59730,6 +75360,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
     aiScans?: AiScanCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
+    budgets?: BudgetCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutBookingsAsClientInput = {
@@ -59780,6 +75414,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
+    budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutBookingsAsClientInput = {
@@ -59891,6 +75529,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutBookingsAsAdvisorInput = {
@@ -59941,6 +75583,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserUpsertWithoutBookingsAsClientInput = {
@@ -60002,6 +75648,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutBookingsAsClientInput = {
@@ -60052,6 +75702,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutCategoriesInput = {
@@ -60102,6 +75756,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
     aiScans?: AiScanCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
+    budgets?: BudgetCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutCategoriesInput = {
@@ -60152,6 +75810,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
+    budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutCategoriesInput = {
@@ -60218,6 +75880,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCategoriesInput = {
@@ -60268,6 +75934,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutChatMessagesInput = {
@@ -60318,6 +75988,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
     aiScans?: AiScanCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
+    budgets?: BudgetCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutChatMessagesInput = {
@@ -60368,6 +76042,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
+    budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutChatMessagesInput = {
@@ -60473,6 +76151,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutChatMessagesInput = {
@@ -60523,6 +76205,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type AdvisorSessionUpsertWithoutChatMessagesInput = {
@@ -60618,6 +76304,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
     aiScans?: AiScanCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
+    budgets?: BudgetCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutDevicesInput = {
@@ -60668,6 +76358,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
+    budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutDevicesInput = {
@@ -60734,6 +76428,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutDevicesInput = {
@@ -60784,6 +76482,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutExpenseBillsInput = {
@@ -60834,6 +76536,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
     aiScans?: AiScanCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
+    budgets?: BudgetCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutExpenseBillsInput = {
@@ -60884,6 +76590,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
+    budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutExpenseBillsInput = {
@@ -60950,6 +76660,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutExpenseBillsInput = {
@@ -61000,6 +76714,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutFriendsInput = {
@@ -61050,6 +76768,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
     aiScans?: AiScanCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
+    budgets?: BudgetCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutFriendsInput = {
@@ -61100,6 +76822,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
+    budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutFriendsInput = {
@@ -61166,6 +76892,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutFriendsInput = {
@@ -61216,6 +76946,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutGoalsInput = {
@@ -61266,6 +77000,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
     aiScans?: AiScanCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
+    budgets?: BudgetCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutGoalsInput = {
@@ -61316,6 +77054,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
+    budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutGoalsInput = {
@@ -61418,6 +77160,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutGoalsInput = {
@@ -61468,6 +77214,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type GoalContributionUpsertWithWhereUniqueWithoutGoalInput = {
@@ -61620,6 +77370,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
     aiScans?: AiScanCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
+    budgets?: BudgetCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutGoalContributionsInput = {
@@ -61670,6 +77424,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
+    budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutGoalContributionsInput = {
@@ -61834,6 +77592,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutGoalContributionsInput = {
@@ -61884,6 +77646,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutImportLogsInput = {
@@ -61934,6 +77700,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
     aiScans?: AiScanCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
+    budgets?: BudgetCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutImportLogsInput = {
@@ -61984,6 +77754,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
+    budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutImportLogsInput = {
@@ -62050,6 +77824,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutImportLogsInput = {
@@ -62100,6 +77878,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutInvestmentsInput = {
@@ -62150,6 +77932,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
     aiScans?: AiScanCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
+    budgets?: BudgetCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutInvestmentsInput = {
@@ -62200,6 +77986,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
+    budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutInvestmentsInput = {
@@ -62266,6 +78056,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutInvestmentsInput = {
@@ -62316,6 +78110,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutLoansInput = {
@@ -62366,6 +78164,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
     aiScans?: AiScanCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
+    budgets?: BudgetCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutLoansInput = {
@@ -62416,6 +78218,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
+    budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutLoansInput = {
@@ -62512,6 +78318,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutLoansInput = {
@@ -62562,6 +78372,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type LoanPaymentUpsertWithWhereUniqueWithoutLoanInput = {
@@ -62742,6 +78556,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
     aiScans?: AiScanCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
+    budgets?: BudgetCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutNotificationsInput = {
@@ -62792,6 +78610,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
+    budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutNotificationsInput = {
@@ -62858,6 +78680,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutNotificationsInput = {
@@ -62908,6 +78734,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutPaymentsAsAdvisorInput = {
@@ -62958,6 +78788,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
     aiScans?: AiScanCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
+    budgets?: BudgetCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutPaymentsAsAdvisorInput = {
@@ -63008,6 +78842,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
+    budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutPaymentsAsAdvisorInput = {
@@ -63063,6 +78901,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
     aiScans?: AiScanCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
+    budgets?: BudgetCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutPaymentsAsClientInput = {
@@ -63113,6 +78955,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
+    budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutPaymentsAsClientInput = {
@@ -63218,6 +79064,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutPaymentsAsAdvisorInput = {
@@ -63268,6 +79118,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserUpsertWithoutPaymentsAsClientInput = {
@@ -63329,6 +79183,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutPaymentsAsClientInput = {
@@ -63379,6 +79237,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type AdvisorSessionUpsertWithoutPaymentInput = {
@@ -63474,6 +79336,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
     aiScans?: AiScanCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
+    budgets?: BudgetCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutRefreshTokensInput = {
@@ -63524,6 +79390,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
+    budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutRefreshTokensInput = {
@@ -63590,6 +79460,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutRefreshTokensInput = {
@@ -63640,6 +79514,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutTodosInput = {
@@ -63690,6 +79568,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
     aiScans?: AiScanCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
+    budgets?: BudgetCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutTodosInput = {
@@ -63740,6 +79622,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
+    budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutTodosInput = {
@@ -63806,6 +79692,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutTodosInput = {
@@ -63856,6 +79746,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type AccountCreateWithoutTransactionsInput = {
@@ -64010,6 +79904,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
     aiScans?: AiScanCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
+    budgets?: BudgetCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutTransactionsInput = {
@@ -64060,6 +79958,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
+    budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutTransactionsInput = {
@@ -64242,6 +80144,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutTransactionsInput = {
@@ -64292,6 +80198,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type AccountCreateWithoutUserInput = {
@@ -64825,12 +80735,12 @@ export namespace Prisma {
     importedRecords: number
     skippedRecords: number
     duplicateRecords: number
-    createdCategories?: string
-    createdAccounts?: string
-    createdGoals?: string
-    updatedGoals?: string
+    createdCategories?: JsonNullValueInput | InputJsonValue
+    createdAccounts?: JsonNullValueInput | InputJsonValue
+    createdGoals?: JsonNullValueInput | InputJsonValue
+    updatedGoals?: JsonNullValueInput | InputJsonValue
     failedRecords?: number
-    errors?: string
+    errors?: JsonNullValueInput | InputJsonValue
     metadata?: string | null
     createdAt?: Date | string
   }
@@ -64844,12 +80754,12 @@ export namespace Prisma {
     importedRecords: number
     skippedRecords: number
     duplicateRecords: number
-    createdCategories?: string
-    createdAccounts?: string
-    createdGoals?: string
-    updatedGoals?: string
+    createdCategories?: JsonNullValueInput | InputJsonValue
+    createdAccounts?: JsonNullValueInput | InputJsonValue
+    createdGoals?: JsonNullValueInput | InputJsonValue
+    updatedGoals?: JsonNullValueInput | InputJsonValue
     failedRecords?: number
-    errors?: string
+    errors?: JsonNullValueInput | InputJsonValue
     metadata?: string | null
     createdAt?: Date | string
   }
@@ -64973,9 +80883,9 @@ export namespace Prisma {
     category?: string | null
     deepLink?: string | null
     priority?: string
-    channels?: string
+    channels?: JsonNullValueInput | InputJsonValue
     metadata?: NullableJsonNullValueInput | InputJsonValue
-    deliveryStatus?: string
+    deliveryStatus?: JsonNullValueInput | InputJsonValue
     encryptedPayload?: string | null
     isRead?: boolean
     createdAt?: Date | string
@@ -64992,9 +80902,9 @@ export namespace Prisma {
     category?: string | null
     deepLink?: string | null
     priority?: string
-    channels?: string
+    channels?: JsonNullValueInput | InputJsonValue
     metadata?: NullableJsonNullValueInput | InputJsonValue
-    deliveryStatus?: string
+    deliveryStatus?: JsonNullValueInput | InputJsonValue
     encryptedPayload?: string | null
     isRead?: boolean
     createdAt?: Date | string
@@ -65148,7 +81058,7 @@ export namespace Prisma {
     description?: string | null
     merchant?: string | null
     date: Date | string
-    tags?: string | null
+    tags?: NullableJsonNullValueInput | InputJsonValue
     attachment?: string | null
     transferToAccountId?: string | null
     transferType?: string | null
@@ -65181,7 +81091,7 @@ export namespace Prisma {
     description?: string | null
     merchant?: string | null
     date: Date | string
-    tags?: string | null
+    tags?: NullableJsonNullValueInput | InputJsonValue
     attachment?: string | null
     transferToAccountId?: string | null
     transferType?: string | null
@@ -65247,7 +81157,7 @@ export namespace Prisma {
     language?: string
     currency?: string
     timezone?: string
-    settings?: string
+    settings?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -65258,7 +81168,7 @@ export namespace Prisma {
     language?: string
     currency?: string
     timezone?: string
-    settings?: string
+    settings?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -65393,6 +81303,206 @@ export namespace Prisma {
 
   export type GroupExpenseCreateManyUserInputEnvelope = {
     data: GroupExpenseCreateManyUserInput | GroupExpenseCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type RecurringTransactionCreateWithoutUserInput = {
+    id?: string
+    title: string
+    amount: Decimal | DecimalJsLike | number | string
+    category: string
+    subcategory?: string | null
+    interval?: string
+    nextDueDate: Date | string
+    autoProcess?: boolean
+    status?: string
+    accountId?: string | null
+    description?: string | null
+    merchant?: string | null
+    lastProcessedAt?: Date | string | null
+    clientRequestId?: string | null
+    syncStatus?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type RecurringTransactionUncheckedCreateWithoutUserInput = {
+    id?: string
+    title: string
+    amount: Decimal | DecimalJsLike | number | string
+    category: string
+    subcategory?: string | null
+    interval?: string
+    nextDueDate: Date | string
+    autoProcess?: boolean
+    status?: string
+    accountId?: string | null
+    description?: string | null
+    merchant?: string | null
+    lastProcessedAt?: Date | string | null
+    clientRequestId?: string | null
+    syncStatus?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type RecurringTransactionCreateOrConnectWithoutUserInput = {
+    where: RecurringTransactionWhereUniqueInput
+    create: XOR<RecurringTransactionCreateWithoutUserInput, RecurringTransactionUncheckedCreateWithoutUserInput>
+  }
+
+  export type RecurringTransactionCreateManyUserInputEnvelope = {
+    data: RecurringTransactionCreateManyUserInput | RecurringTransactionCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type BudgetCreateWithoutUserInput = {
+    id?: string
+    category: string
+    amount: Decimal | DecimalJsLike | number | string
+    spent?: Decimal | DecimalJsLike | number | string
+    period?: string
+    threshold?: number
+    startDate?: Date | string | null
+    endDate?: Date | string | null
+    alertEnabled?: boolean
+    alertChannels?: JsonNullValueInput | InputJsonValue
+    clientRequestId?: string | null
+    syncStatus?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type BudgetUncheckedCreateWithoutUserInput = {
+    id?: string
+    category: string
+    amount: Decimal | DecimalJsLike | number | string
+    spent?: Decimal | DecimalJsLike | number | string
+    period?: string
+    threshold?: number
+    startDate?: Date | string | null
+    endDate?: Date | string | null
+    alertEnabled?: boolean
+    alertChannels?: JsonNullValueInput | InputJsonValue
+    clientRequestId?: string | null
+    syncStatus?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type BudgetCreateOrConnectWithoutUserInput = {
+    where: BudgetWhereUniqueInput
+    create: XOR<BudgetCreateWithoutUserInput, BudgetUncheckedCreateWithoutUserInput>
+  }
+
+  export type BudgetCreateManyUserInputEnvelope = {
+    data: BudgetCreateManyUserInput | BudgetCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type TaxCalculationCreateWithoutUserInput = {
+    id?: string
+    year: number
+    regime?: string | null
+    country?: string
+    totalIncome: Decimal | DecimalJsLike | number | string
+    totalExpense: Decimal | DecimalJsLike | number | string
+    netProfit: Decimal | DecimalJsLike | number | string
+    taxableIncome: Decimal | DecimalJsLike | number | string
+    estimatedTax: Decimal | DecimalJsLike | number | string
+    taxRate: Decimal | DecimalJsLike | number | string
+    deductions?: Decimal | DecimalJsLike | number | string
+    currency?: string
+    notes?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    clientRequestId?: string | null
+    syncStatus?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type TaxCalculationUncheckedCreateWithoutUserInput = {
+    id?: string
+    year: number
+    regime?: string | null
+    country?: string
+    totalIncome: Decimal | DecimalJsLike | number | string
+    totalExpense: Decimal | DecimalJsLike | number | string
+    netProfit: Decimal | DecimalJsLike | number | string
+    taxableIncome: Decimal | DecimalJsLike | number | string
+    estimatedTax: Decimal | DecimalJsLike | number | string
+    taxRate: Decimal | DecimalJsLike | number | string
+    deductions?: Decimal | DecimalJsLike | number | string
+    currency?: string
+    notes?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    clientRequestId?: string | null
+    syncStatus?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type TaxCalculationCreateOrConnectWithoutUserInput = {
+    where: TaxCalculationWhereUniqueInput
+    create: XOR<TaxCalculationCreateWithoutUserInput, TaxCalculationUncheckedCreateWithoutUserInput>
+  }
+
+  export type TaxCalculationCreateManyUserInputEnvelope = {
+    data: TaxCalculationCreateManyUserInput | TaxCalculationCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type GoldAssetCreateWithoutUserInput = {
+    id?: string
+    type?: string
+    quantity: Decimal | DecimalJsLike | number | string
+    unit?: string
+    purchasePrice: Decimal | DecimalJsLike | number | string
+    currentPrice: Decimal | DecimalJsLike | number | string
+    purchaseDate: Date | string
+    purityPercentage?: Decimal | DecimalJsLike | number | string
+    location?: string | null
+    certificateNumber?: string | null
+    notes?: string | null
+    clientRequestId?: string | null
+    syncStatus?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type GoldAssetUncheckedCreateWithoutUserInput = {
+    id?: string
+    type?: string
+    quantity: Decimal | DecimalJsLike | number | string
+    unit?: string
+    purchasePrice: Decimal | DecimalJsLike | number | string
+    currentPrice: Decimal | DecimalJsLike | number | string
+    purchaseDate: Date | string
+    purityPercentage?: Decimal | DecimalJsLike | number | string
+    location?: string | null
+    certificateNumber?: string | null
+    notes?: string | null
+    clientRequestId?: string | null
+    syncStatus?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type GoldAssetCreateOrConnectWithoutUserInput = {
+    where: GoldAssetWhereUniqueInput
+    create: XOR<GoldAssetCreateWithoutUserInput, GoldAssetUncheckedCreateWithoutUserInput>
+  }
+
+  export type GoldAssetCreateManyUserInputEnvelope = {
+    data: GoldAssetCreateManyUserInput | GoldAssetCreateManyUserInput[]
     skipDuplicates?: boolean
   }
 
@@ -65805,12 +81915,12 @@ export namespace Prisma {
     importedRecords?: IntFilter<"ImportLog"> | number
     skippedRecords?: IntFilter<"ImportLog"> | number
     duplicateRecords?: IntFilter<"ImportLog"> | number
-    createdCategories?: StringFilter<"ImportLog"> | string
-    createdAccounts?: StringFilter<"ImportLog"> | string
-    createdGoals?: StringFilter<"ImportLog"> | string
-    updatedGoals?: StringFilter<"ImportLog"> | string
+    createdCategories?: JsonFilter<"ImportLog">
+    createdAccounts?: JsonFilter<"ImportLog">
+    createdGoals?: JsonFilter<"ImportLog">
+    updatedGoals?: JsonFilter<"ImportLog">
     failedRecords?: IntFilter<"ImportLog"> | number
-    errors?: StringFilter<"ImportLog"> | string
+    errors?: JsonFilter<"ImportLog">
     metadata?: StringNullableFilter<"ImportLog"> | string | null
     createdAt?: DateTimeFilter<"ImportLog"> | Date | string
   }
@@ -65923,9 +82033,9 @@ export namespace Prisma {
     category?: StringNullableFilter<"Notification"> | string | null
     deepLink?: StringNullableFilter<"Notification"> | string | null
     priority?: StringFilter<"Notification"> | string
-    channels?: StringFilter<"Notification"> | string
+    channels?: JsonFilter<"Notification">
     metadata?: JsonNullableFilter<"Notification">
-    deliveryStatus?: StringFilter<"Notification"> | string
+    deliveryStatus?: JsonFilter<"Notification">
     encryptedPayload?: StringNullableFilter<"Notification"> | string | null
     isRead?: BoolFilter<"Notification"> | boolean
     createdAt?: DateTimeFilter<"Notification"> | Date | string
@@ -66106,7 +82216,7 @@ export namespace Prisma {
     language?: StringFieldUpdateOperationsInput | string
     currency?: StringFieldUpdateOperationsInput | string
     timezone?: StringFieldUpdateOperationsInput | string
-    settings?: StringFieldUpdateOperationsInput | string
+    settings?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -66117,7 +82227,7 @@ export namespace Prisma {
     language?: StringFieldUpdateOperationsInput | string
     currency?: StringFieldUpdateOperationsInput | string
     timezone?: StringFieldUpdateOperationsInput | string
-    settings?: StringFieldUpdateOperationsInput | string
+    settings?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -66200,6 +82310,166 @@ export namespace Prisma {
     data: XOR<GroupExpenseUpdateManyMutationInput, GroupExpenseUncheckedUpdateManyWithoutUserInput>
   }
 
+  export type RecurringTransactionUpsertWithWhereUniqueWithoutUserInput = {
+    where: RecurringTransactionWhereUniqueInput
+    update: XOR<RecurringTransactionUpdateWithoutUserInput, RecurringTransactionUncheckedUpdateWithoutUserInput>
+    create: XOR<RecurringTransactionCreateWithoutUserInput, RecurringTransactionUncheckedCreateWithoutUserInput>
+  }
+
+  export type RecurringTransactionUpdateWithWhereUniqueWithoutUserInput = {
+    where: RecurringTransactionWhereUniqueInput
+    data: XOR<RecurringTransactionUpdateWithoutUserInput, RecurringTransactionUncheckedUpdateWithoutUserInput>
+  }
+
+  export type RecurringTransactionUpdateManyWithWhereWithoutUserInput = {
+    where: RecurringTransactionScalarWhereInput
+    data: XOR<RecurringTransactionUpdateManyMutationInput, RecurringTransactionUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type RecurringTransactionScalarWhereInput = {
+    AND?: RecurringTransactionScalarWhereInput | RecurringTransactionScalarWhereInput[]
+    OR?: RecurringTransactionScalarWhereInput[]
+    NOT?: RecurringTransactionScalarWhereInput | RecurringTransactionScalarWhereInput[]
+    id?: StringFilter<"RecurringTransaction"> | string
+    userId?: StringFilter<"RecurringTransaction"> | string
+    title?: StringFilter<"RecurringTransaction"> | string
+    amount?: DecimalFilter<"RecurringTransaction"> | Decimal | DecimalJsLike | number | string
+    category?: StringFilter<"RecurringTransaction"> | string
+    subcategory?: StringNullableFilter<"RecurringTransaction"> | string | null
+    interval?: StringFilter<"RecurringTransaction"> | string
+    nextDueDate?: DateTimeFilter<"RecurringTransaction"> | Date | string
+    autoProcess?: BoolFilter<"RecurringTransaction"> | boolean
+    status?: StringFilter<"RecurringTransaction"> | string
+    accountId?: StringNullableFilter<"RecurringTransaction"> | string | null
+    description?: StringNullableFilter<"RecurringTransaction"> | string | null
+    merchant?: StringNullableFilter<"RecurringTransaction"> | string | null
+    lastProcessedAt?: DateTimeNullableFilter<"RecurringTransaction"> | Date | string | null
+    clientRequestId?: StringNullableFilter<"RecurringTransaction"> | string | null
+    syncStatus?: StringFilter<"RecurringTransaction"> | string
+    createdAt?: DateTimeFilter<"RecurringTransaction"> | Date | string
+    updatedAt?: DateTimeFilter<"RecurringTransaction"> | Date | string
+    deletedAt?: DateTimeNullableFilter<"RecurringTransaction"> | Date | string | null
+  }
+
+  export type BudgetUpsertWithWhereUniqueWithoutUserInput = {
+    where: BudgetWhereUniqueInput
+    update: XOR<BudgetUpdateWithoutUserInput, BudgetUncheckedUpdateWithoutUserInput>
+    create: XOR<BudgetCreateWithoutUserInput, BudgetUncheckedCreateWithoutUserInput>
+  }
+
+  export type BudgetUpdateWithWhereUniqueWithoutUserInput = {
+    where: BudgetWhereUniqueInput
+    data: XOR<BudgetUpdateWithoutUserInput, BudgetUncheckedUpdateWithoutUserInput>
+  }
+
+  export type BudgetUpdateManyWithWhereWithoutUserInput = {
+    where: BudgetScalarWhereInput
+    data: XOR<BudgetUpdateManyMutationInput, BudgetUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type BudgetScalarWhereInput = {
+    AND?: BudgetScalarWhereInput | BudgetScalarWhereInput[]
+    OR?: BudgetScalarWhereInput[]
+    NOT?: BudgetScalarWhereInput | BudgetScalarWhereInput[]
+    id?: StringFilter<"Budget"> | string
+    userId?: StringFilter<"Budget"> | string
+    category?: StringFilter<"Budget"> | string
+    amount?: DecimalFilter<"Budget"> | Decimal | DecimalJsLike | number | string
+    spent?: DecimalFilter<"Budget"> | Decimal | DecimalJsLike | number | string
+    period?: StringFilter<"Budget"> | string
+    threshold?: IntFilter<"Budget"> | number
+    startDate?: DateTimeNullableFilter<"Budget"> | Date | string | null
+    endDate?: DateTimeNullableFilter<"Budget"> | Date | string | null
+    alertEnabled?: BoolFilter<"Budget"> | boolean
+    alertChannels?: JsonFilter<"Budget">
+    clientRequestId?: StringNullableFilter<"Budget"> | string | null
+    syncStatus?: StringFilter<"Budget"> | string
+    createdAt?: DateTimeFilter<"Budget"> | Date | string
+    updatedAt?: DateTimeFilter<"Budget"> | Date | string
+    deletedAt?: DateTimeNullableFilter<"Budget"> | Date | string | null
+  }
+
+  export type TaxCalculationUpsertWithWhereUniqueWithoutUserInput = {
+    where: TaxCalculationWhereUniqueInput
+    update: XOR<TaxCalculationUpdateWithoutUserInput, TaxCalculationUncheckedUpdateWithoutUserInput>
+    create: XOR<TaxCalculationCreateWithoutUserInput, TaxCalculationUncheckedCreateWithoutUserInput>
+  }
+
+  export type TaxCalculationUpdateWithWhereUniqueWithoutUserInput = {
+    where: TaxCalculationWhereUniqueInput
+    data: XOR<TaxCalculationUpdateWithoutUserInput, TaxCalculationUncheckedUpdateWithoutUserInput>
+  }
+
+  export type TaxCalculationUpdateManyWithWhereWithoutUserInput = {
+    where: TaxCalculationScalarWhereInput
+    data: XOR<TaxCalculationUpdateManyMutationInput, TaxCalculationUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type TaxCalculationScalarWhereInput = {
+    AND?: TaxCalculationScalarWhereInput | TaxCalculationScalarWhereInput[]
+    OR?: TaxCalculationScalarWhereInput[]
+    NOT?: TaxCalculationScalarWhereInput | TaxCalculationScalarWhereInput[]
+    id?: StringFilter<"TaxCalculation"> | string
+    userId?: StringFilter<"TaxCalculation"> | string
+    year?: IntFilter<"TaxCalculation"> | number
+    regime?: StringNullableFilter<"TaxCalculation"> | string | null
+    country?: StringFilter<"TaxCalculation"> | string
+    totalIncome?: DecimalFilter<"TaxCalculation"> | Decimal | DecimalJsLike | number | string
+    totalExpense?: DecimalFilter<"TaxCalculation"> | Decimal | DecimalJsLike | number | string
+    netProfit?: DecimalFilter<"TaxCalculation"> | Decimal | DecimalJsLike | number | string
+    taxableIncome?: DecimalFilter<"TaxCalculation"> | Decimal | DecimalJsLike | number | string
+    estimatedTax?: DecimalFilter<"TaxCalculation"> | Decimal | DecimalJsLike | number | string
+    taxRate?: DecimalFilter<"TaxCalculation"> | Decimal | DecimalJsLike | number | string
+    deductions?: DecimalFilter<"TaxCalculation"> | Decimal | DecimalJsLike | number | string
+    currency?: StringFilter<"TaxCalculation"> | string
+    notes?: StringNullableFilter<"TaxCalculation"> | string | null
+    metadata?: JsonNullableFilter<"TaxCalculation">
+    clientRequestId?: StringNullableFilter<"TaxCalculation"> | string | null
+    syncStatus?: StringFilter<"TaxCalculation"> | string
+    createdAt?: DateTimeFilter<"TaxCalculation"> | Date | string
+    updatedAt?: DateTimeFilter<"TaxCalculation"> | Date | string
+    deletedAt?: DateTimeNullableFilter<"TaxCalculation"> | Date | string | null
+  }
+
+  export type GoldAssetUpsertWithWhereUniqueWithoutUserInput = {
+    where: GoldAssetWhereUniqueInput
+    update: XOR<GoldAssetUpdateWithoutUserInput, GoldAssetUncheckedUpdateWithoutUserInput>
+    create: XOR<GoldAssetCreateWithoutUserInput, GoldAssetUncheckedCreateWithoutUserInput>
+  }
+
+  export type GoldAssetUpdateWithWhereUniqueWithoutUserInput = {
+    where: GoldAssetWhereUniqueInput
+    data: XOR<GoldAssetUpdateWithoutUserInput, GoldAssetUncheckedUpdateWithoutUserInput>
+  }
+
+  export type GoldAssetUpdateManyWithWhereWithoutUserInput = {
+    where: GoldAssetScalarWhereInput
+    data: XOR<GoldAssetUpdateManyMutationInput, GoldAssetUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type GoldAssetScalarWhereInput = {
+    AND?: GoldAssetScalarWhereInput | GoldAssetScalarWhereInput[]
+    OR?: GoldAssetScalarWhereInput[]
+    NOT?: GoldAssetScalarWhereInput | GoldAssetScalarWhereInput[]
+    id?: StringFilter<"GoldAsset"> | string
+    userId?: StringFilter<"GoldAsset"> | string
+    type?: StringFilter<"GoldAsset"> | string
+    quantity?: DecimalFilter<"GoldAsset"> | Decimal | DecimalJsLike | number | string
+    unit?: StringFilter<"GoldAsset"> | string
+    purchasePrice?: DecimalFilter<"GoldAsset"> | Decimal | DecimalJsLike | number | string
+    currentPrice?: DecimalFilter<"GoldAsset"> | Decimal | DecimalJsLike | number | string
+    purchaseDate?: DateTimeFilter<"GoldAsset"> | Date | string
+    purityPercentage?: DecimalFilter<"GoldAsset"> | Decimal | DecimalJsLike | number | string
+    location?: StringNullableFilter<"GoldAsset"> | string | null
+    certificateNumber?: StringNullableFilter<"GoldAsset"> | string | null
+    notes?: StringNullableFilter<"GoldAsset"> | string | null
+    clientRequestId?: StringNullableFilter<"GoldAsset"> | string | null
+    syncStatus?: StringFilter<"GoldAsset"> | string
+    createdAt?: DateTimeFilter<"GoldAsset"> | Date | string
+    updatedAt?: DateTimeFilter<"GoldAsset"> | Date | string
+    deletedAt?: DateTimeNullableFilter<"GoldAsset"> | Date | string | null
+  }
+
   export type UserCreateWithoutUserPinInput = {
     id?: string
     email: string
@@ -66248,6 +82518,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
     aiScans?: AiScanCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
+    budgets?: BudgetCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutUserPinInput = {
@@ -66298,6 +82572,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
+    budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutUserPinInput = {
@@ -66364,6 +82642,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutUserPinInput = {
@@ -66414,6 +82696,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutUserSettingsInput = {
@@ -66464,6 +82750,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
     aiScans?: AiScanCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
+    budgets?: BudgetCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutUserSettingsInput = {
@@ -66514,6 +82804,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
+    budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutUserSettingsInput = {
@@ -66580,6 +82874,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutUserSettingsInput = {
@@ -66630,6 +82928,10 @@ export namespace Prisma {
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutOtpCodesInput = {
@@ -66680,6 +82982,10 @@ export namespace Prisma {
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
     aiScans?: AiScanCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
+    budgets?: BudgetCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutOtpCodesInput = {
@@ -66730,6 +83036,10 @@ export namespace Prisma {
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
+    budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutOtpCodesInput = {
@@ -66796,6 +83106,10 @@ export namespace Prisma {
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutOtpCodesInput = {
@@ -66846,6 +83160,10 @@ export namespace Prisma {
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutAiScansInput = {
@@ -66896,6 +83214,10 @@ export namespace Prisma {
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
+    budgets?: BudgetCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutAiScansInput = {
@@ -66946,6 +83268,10 @@ export namespace Prisma {
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
+    budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutAiScansInput = {
@@ -67012,6 +83338,10 @@ export namespace Prisma {
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAiScansInput = {
@@ -67062,6 +83392,10 @@ export namespace Prisma {
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type TransactionCreateWithoutGroupExpenseInput = {
@@ -67074,7 +83408,7 @@ export namespace Prisma {
     description?: string | null
     merchant?: string | null
     date: Date | string
-    tags?: string | null
+    tags?: NullableJsonNullValueInput | InputJsonValue
     attachment?: string | null
     transferToAccountId?: string | null
     transferType?: string | null
@@ -67108,7 +83442,7 @@ export namespace Prisma {
     description?: string | null
     merchant?: string | null
     date: Date | string
-    tags?: string | null
+    tags?: NullableJsonNullValueInput | InputJsonValue
     attachment?: string | null
     transferToAccountId?: string | null
     transferType?: string | null
@@ -67231,6 +83565,10 @@ export namespace Prisma {
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
     aiScans?: AiScanCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
+    budgets?: BudgetCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutGroupExpensesInput = {
@@ -67281,6 +83619,10 @@ export namespace Prisma {
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
+    budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutGroupExpensesInput = {
@@ -67452,6 +83794,10 @@ export namespace Prisma {
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutGroupExpensesInput = {
@@ -67502,6 +83848,10 @@ export namespace Prisma {
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type GroupExpenseMemberUpsertWithWhereUniqueWithoutGroupExpenseInput = {
@@ -67662,6 +84012,934 @@ export namespace Prisma {
     transactions?: TransactionUncheckedUpdateManyWithoutGroupExpenseNestedInput
   }
 
+  export type UserCreateWithoutRecurringTransactionsInput = {
+    id?: string
+    email: string
+    name: string
+    password: string
+    role?: string
+    status?: string
+    isApproved?: boolean
+    firstName?: string | null
+    lastName?: string | null
+    salary?: Decimal | DecimalJsLike | number | string | null
+    dateOfBirth?: Date | string | null
+    jobType?: string | null
+    lastSynced?: Date | string | null
+    syncToken?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    avatarId?: string | null
+    city?: string | null
+    country?: string | null
+    gender?: string | null
+    state?: string | null
+    accounts?: AccountCreateNestedManyWithoutUserInput
+    advisorAvailability?: AdvisorAvailabilityCreateNestedManyWithoutAdvisorInput
+    sessionsAsAdvisor?: AdvisorSessionCreateNestedManyWithoutAdvisorInput
+    sessionsAsClient?: AdvisorSessionCreateNestedManyWithoutClientInput
+    bookingsAsAdvisor?: BookingRequestCreateNestedManyWithoutAdvisorInput
+    bookingsAsClient?: BookingRequestCreateNestedManyWithoutClientInput
+    categories?: CategoryCreateNestedManyWithoutUserInput
+    chatMessages?: ChatMessageCreateNestedManyWithoutSenderInput
+    devices?: DeviceCreateNestedManyWithoutUserInput
+    expenseBills?: ExpenseBillCreateNestedManyWithoutUserInput
+    friends?: FriendCreateNestedManyWithoutUserInput
+    goals?: GoalCreateNestedManyWithoutUserInput
+    goalContributions?: GoalContributionCreateNestedManyWithoutUserInput
+    importLogs?: ImportLogCreateNestedManyWithoutUserInput
+    investments?: InvestmentCreateNestedManyWithoutUserInput
+    loans?: LoanCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    paymentsAsAdvisor?: PaymentCreateNestedManyWithoutAdvisorInput
+    paymentsAsClient?: PaymentCreateNestedManyWithoutClientInput
+    refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
+    todos?: TodoCreateNestedManyWithoutUserInput
+    transactions?: TransactionCreateNestedManyWithoutUserInput
+    userPin?: UserPinCreateNestedOneWithoutUserInput
+    userSettings?: UserSettingsCreateNestedOneWithoutUserInput
+    otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
+    aiScans?: AiScanCreateNestedManyWithoutUserInput
+    groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
+    budgets?: BudgetCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutRecurringTransactionsInput = {
+    id?: string
+    email: string
+    name: string
+    password: string
+    role?: string
+    status?: string
+    isApproved?: boolean
+    firstName?: string | null
+    lastName?: string | null
+    salary?: Decimal | DecimalJsLike | number | string | null
+    dateOfBirth?: Date | string | null
+    jobType?: string | null
+    lastSynced?: Date | string | null
+    syncToken?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    avatarId?: string | null
+    city?: string | null
+    country?: string | null
+    gender?: string | null
+    state?: string | null
+    accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
+    advisorAvailability?: AdvisorAvailabilityUncheckedCreateNestedManyWithoutAdvisorInput
+    sessionsAsAdvisor?: AdvisorSessionUncheckedCreateNestedManyWithoutAdvisorInput
+    sessionsAsClient?: AdvisorSessionUncheckedCreateNestedManyWithoutClientInput
+    bookingsAsAdvisor?: BookingRequestUncheckedCreateNestedManyWithoutAdvisorInput
+    bookingsAsClient?: BookingRequestUncheckedCreateNestedManyWithoutClientInput
+    categories?: CategoryUncheckedCreateNestedManyWithoutUserInput
+    chatMessages?: ChatMessageUncheckedCreateNestedManyWithoutSenderInput
+    devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
+    expenseBills?: ExpenseBillUncheckedCreateNestedManyWithoutUserInput
+    friends?: FriendUncheckedCreateNestedManyWithoutUserInput
+    goals?: GoalUncheckedCreateNestedManyWithoutUserInput
+    goalContributions?: GoalContributionUncheckedCreateNestedManyWithoutUserInput
+    importLogs?: ImportLogUncheckedCreateNestedManyWithoutUserInput
+    investments?: InvestmentUncheckedCreateNestedManyWithoutUserInput
+    loans?: LoanUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    paymentsAsAdvisor?: PaymentUncheckedCreateNestedManyWithoutAdvisorInput
+    paymentsAsClient?: PaymentUncheckedCreateNestedManyWithoutClientInput
+    refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
+    todos?: TodoUncheckedCreateNestedManyWithoutUserInput
+    transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
+    userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
+    userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
+    otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
+    aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
+    groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
+    budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutRecurringTransactionsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutRecurringTransactionsInput, UserUncheckedCreateWithoutRecurringTransactionsInput>
+  }
+
+  export type UserUpsertWithoutRecurringTransactionsInput = {
+    update: XOR<UserUpdateWithoutRecurringTransactionsInput, UserUncheckedUpdateWithoutRecurringTransactionsInput>
+    create: XOR<UserCreateWithoutRecurringTransactionsInput, UserUncheckedCreateWithoutRecurringTransactionsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutRecurringTransactionsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutRecurringTransactionsInput, UserUncheckedUpdateWithoutRecurringTransactionsInput>
+  }
+
+  export type UserUpdateWithoutRecurringTransactionsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    isApproved?: BoolFieldUpdateOperationsInput | boolean
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    jobType?: NullableStringFieldUpdateOperationsInput | string | null
+    lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    syncToken?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    avatarId?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableStringFieldUpdateOperationsInput | string | null
+    state?: NullableStringFieldUpdateOperationsInput | string | null
+    accounts?: AccountUpdateManyWithoutUserNestedInput
+    advisorAvailability?: AdvisorAvailabilityUpdateManyWithoutAdvisorNestedInput
+    sessionsAsAdvisor?: AdvisorSessionUpdateManyWithoutAdvisorNestedInput
+    sessionsAsClient?: AdvisorSessionUpdateManyWithoutClientNestedInput
+    bookingsAsAdvisor?: BookingRequestUpdateManyWithoutAdvisorNestedInput
+    bookingsAsClient?: BookingRequestUpdateManyWithoutClientNestedInput
+    categories?: CategoryUpdateManyWithoutUserNestedInput
+    chatMessages?: ChatMessageUpdateManyWithoutSenderNestedInput
+    devices?: DeviceUpdateManyWithoutUserNestedInput
+    expenseBills?: ExpenseBillUpdateManyWithoutUserNestedInput
+    friends?: FriendUpdateManyWithoutUserNestedInput
+    goals?: GoalUpdateManyWithoutUserNestedInput
+    goalContributions?: GoalContributionUpdateManyWithoutUserNestedInput
+    importLogs?: ImportLogUpdateManyWithoutUserNestedInput
+    investments?: InvestmentUpdateManyWithoutUserNestedInput
+    loans?: LoanUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    paymentsAsAdvisor?: PaymentUpdateManyWithoutAdvisorNestedInput
+    paymentsAsClient?: PaymentUpdateManyWithoutClientNestedInput
+    refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
+    todos?: TodoUpdateManyWithoutUserNestedInput
+    transactions?: TransactionUpdateManyWithoutUserNestedInput
+    userPin?: UserPinUpdateOneWithoutUserNestedInput
+    userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
+    otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
+    aiScans?: AiScanUpdateManyWithoutUserNestedInput
+    groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutRecurringTransactionsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    isApproved?: BoolFieldUpdateOperationsInput | boolean
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    jobType?: NullableStringFieldUpdateOperationsInput | string | null
+    lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    syncToken?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    avatarId?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableStringFieldUpdateOperationsInput | string | null
+    state?: NullableStringFieldUpdateOperationsInput | string | null
+    accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
+    advisorAvailability?: AdvisorAvailabilityUncheckedUpdateManyWithoutAdvisorNestedInput
+    sessionsAsAdvisor?: AdvisorSessionUncheckedUpdateManyWithoutAdvisorNestedInput
+    sessionsAsClient?: AdvisorSessionUncheckedUpdateManyWithoutClientNestedInput
+    bookingsAsAdvisor?: BookingRequestUncheckedUpdateManyWithoutAdvisorNestedInput
+    bookingsAsClient?: BookingRequestUncheckedUpdateManyWithoutClientNestedInput
+    categories?: CategoryUncheckedUpdateManyWithoutUserNestedInput
+    chatMessages?: ChatMessageUncheckedUpdateManyWithoutSenderNestedInput
+    devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
+    expenseBills?: ExpenseBillUncheckedUpdateManyWithoutUserNestedInput
+    friends?: FriendUncheckedUpdateManyWithoutUserNestedInput
+    goals?: GoalUncheckedUpdateManyWithoutUserNestedInput
+    goalContributions?: GoalContributionUncheckedUpdateManyWithoutUserNestedInput
+    importLogs?: ImportLogUncheckedUpdateManyWithoutUserNestedInput
+    investments?: InvestmentUncheckedUpdateManyWithoutUserNestedInput
+    loans?: LoanUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    paymentsAsAdvisor?: PaymentUncheckedUpdateManyWithoutAdvisorNestedInput
+    paymentsAsClient?: PaymentUncheckedUpdateManyWithoutClientNestedInput
+    refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
+    todos?: TodoUncheckedUpdateManyWithoutUserNestedInput
+    transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
+    userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
+    userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+    otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
+    aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
+    groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserCreateWithoutBudgetsInput = {
+    id?: string
+    email: string
+    name: string
+    password: string
+    role?: string
+    status?: string
+    isApproved?: boolean
+    firstName?: string | null
+    lastName?: string | null
+    salary?: Decimal | DecimalJsLike | number | string | null
+    dateOfBirth?: Date | string | null
+    jobType?: string | null
+    lastSynced?: Date | string | null
+    syncToken?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    avatarId?: string | null
+    city?: string | null
+    country?: string | null
+    gender?: string | null
+    state?: string | null
+    accounts?: AccountCreateNestedManyWithoutUserInput
+    advisorAvailability?: AdvisorAvailabilityCreateNestedManyWithoutAdvisorInput
+    sessionsAsAdvisor?: AdvisorSessionCreateNestedManyWithoutAdvisorInput
+    sessionsAsClient?: AdvisorSessionCreateNestedManyWithoutClientInput
+    bookingsAsAdvisor?: BookingRequestCreateNestedManyWithoutAdvisorInput
+    bookingsAsClient?: BookingRequestCreateNestedManyWithoutClientInput
+    categories?: CategoryCreateNestedManyWithoutUserInput
+    chatMessages?: ChatMessageCreateNestedManyWithoutSenderInput
+    devices?: DeviceCreateNestedManyWithoutUserInput
+    expenseBills?: ExpenseBillCreateNestedManyWithoutUserInput
+    friends?: FriendCreateNestedManyWithoutUserInput
+    goals?: GoalCreateNestedManyWithoutUserInput
+    goalContributions?: GoalContributionCreateNestedManyWithoutUserInput
+    importLogs?: ImportLogCreateNestedManyWithoutUserInput
+    investments?: InvestmentCreateNestedManyWithoutUserInput
+    loans?: LoanCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    paymentsAsAdvisor?: PaymentCreateNestedManyWithoutAdvisorInput
+    paymentsAsClient?: PaymentCreateNestedManyWithoutClientInput
+    refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
+    todos?: TodoCreateNestedManyWithoutUserInput
+    transactions?: TransactionCreateNestedManyWithoutUserInput
+    userPin?: UserPinCreateNestedOneWithoutUserInput
+    userSettings?: UserSettingsCreateNestedOneWithoutUserInput
+    otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
+    aiScans?: AiScanCreateNestedManyWithoutUserInput
+    groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutBudgetsInput = {
+    id?: string
+    email: string
+    name: string
+    password: string
+    role?: string
+    status?: string
+    isApproved?: boolean
+    firstName?: string | null
+    lastName?: string | null
+    salary?: Decimal | DecimalJsLike | number | string | null
+    dateOfBirth?: Date | string | null
+    jobType?: string | null
+    lastSynced?: Date | string | null
+    syncToken?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    avatarId?: string | null
+    city?: string | null
+    country?: string | null
+    gender?: string | null
+    state?: string | null
+    accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
+    advisorAvailability?: AdvisorAvailabilityUncheckedCreateNestedManyWithoutAdvisorInput
+    sessionsAsAdvisor?: AdvisorSessionUncheckedCreateNestedManyWithoutAdvisorInput
+    sessionsAsClient?: AdvisorSessionUncheckedCreateNestedManyWithoutClientInput
+    bookingsAsAdvisor?: BookingRequestUncheckedCreateNestedManyWithoutAdvisorInput
+    bookingsAsClient?: BookingRequestUncheckedCreateNestedManyWithoutClientInput
+    categories?: CategoryUncheckedCreateNestedManyWithoutUserInput
+    chatMessages?: ChatMessageUncheckedCreateNestedManyWithoutSenderInput
+    devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
+    expenseBills?: ExpenseBillUncheckedCreateNestedManyWithoutUserInput
+    friends?: FriendUncheckedCreateNestedManyWithoutUserInput
+    goals?: GoalUncheckedCreateNestedManyWithoutUserInput
+    goalContributions?: GoalContributionUncheckedCreateNestedManyWithoutUserInput
+    importLogs?: ImportLogUncheckedCreateNestedManyWithoutUserInput
+    investments?: InvestmentUncheckedCreateNestedManyWithoutUserInput
+    loans?: LoanUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    paymentsAsAdvisor?: PaymentUncheckedCreateNestedManyWithoutAdvisorInput
+    paymentsAsClient?: PaymentUncheckedCreateNestedManyWithoutClientInput
+    refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
+    todos?: TodoUncheckedCreateNestedManyWithoutUserInput
+    transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
+    userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
+    userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
+    otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
+    aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
+    groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutBudgetsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutBudgetsInput, UserUncheckedCreateWithoutBudgetsInput>
+  }
+
+  export type UserUpsertWithoutBudgetsInput = {
+    update: XOR<UserUpdateWithoutBudgetsInput, UserUncheckedUpdateWithoutBudgetsInput>
+    create: XOR<UserCreateWithoutBudgetsInput, UserUncheckedCreateWithoutBudgetsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutBudgetsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutBudgetsInput, UserUncheckedUpdateWithoutBudgetsInput>
+  }
+
+  export type UserUpdateWithoutBudgetsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    isApproved?: BoolFieldUpdateOperationsInput | boolean
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    jobType?: NullableStringFieldUpdateOperationsInput | string | null
+    lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    syncToken?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    avatarId?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableStringFieldUpdateOperationsInput | string | null
+    state?: NullableStringFieldUpdateOperationsInput | string | null
+    accounts?: AccountUpdateManyWithoutUserNestedInput
+    advisorAvailability?: AdvisorAvailabilityUpdateManyWithoutAdvisorNestedInput
+    sessionsAsAdvisor?: AdvisorSessionUpdateManyWithoutAdvisorNestedInput
+    sessionsAsClient?: AdvisorSessionUpdateManyWithoutClientNestedInput
+    bookingsAsAdvisor?: BookingRequestUpdateManyWithoutAdvisorNestedInput
+    bookingsAsClient?: BookingRequestUpdateManyWithoutClientNestedInput
+    categories?: CategoryUpdateManyWithoutUserNestedInput
+    chatMessages?: ChatMessageUpdateManyWithoutSenderNestedInput
+    devices?: DeviceUpdateManyWithoutUserNestedInput
+    expenseBills?: ExpenseBillUpdateManyWithoutUserNestedInput
+    friends?: FriendUpdateManyWithoutUserNestedInput
+    goals?: GoalUpdateManyWithoutUserNestedInput
+    goalContributions?: GoalContributionUpdateManyWithoutUserNestedInput
+    importLogs?: ImportLogUpdateManyWithoutUserNestedInput
+    investments?: InvestmentUpdateManyWithoutUserNestedInput
+    loans?: LoanUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    paymentsAsAdvisor?: PaymentUpdateManyWithoutAdvisorNestedInput
+    paymentsAsClient?: PaymentUpdateManyWithoutClientNestedInput
+    refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
+    todos?: TodoUpdateManyWithoutUserNestedInput
+    transactions?: TransactionUpdateManyWithoutUserNestedInput
+    userPin?: UserPinUpdateOneWithoutUserNestedInput
+    userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
+    otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
+    aiScans?: AiScanUpdateManyWithoutUserNestedInput
+    groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutBudgetsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    isApproved?: BoolFieldUpdateOperationsInput | boolean
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    jobType?: NullableStringFieldUpdateOperationsInput | string | null
+    lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    syncToken?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    avatarId?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableStringFieldUpdateOperationsInput | string | null
+    state?: NullableStringFieldUpdateOperationsInput | string | null
+    accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
+    advisorAvailability?: AdvisorAvailabilityUncheckedUpdateManyWithoutAdvisorNestedInput
+    sessionsAsAdvisor?: AdvisorSessionUncheckedUpdateManyWithoutAdvisorNestedInput
+    sessionsAsClient?: AdvisorSessionUncheckedUpdateManyWithoutClientNestedInput
+    bookingsAsAdvisor?: BookingRequestUncheckedUpdateManyWithoutAdvisorNestedInput
+    bookingsAsClient?: BookingRequestUncheckedUpdateManyWithoutClientNestedInput
+    categories?: CategoryUncheckedUpdateManyWithoutUserNestedInput
+    chatMessages?: ChatMessageUncheckedUpdateManyWithoutSenderNestedInput
+    devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
+    expenseBills?: ExpenseBillUncheckedUpdateManyWithoutUserNestedInput
+    friends?: FriendUncheckedUpdateManyWithoutUserNestedInput
+    goals?: GoalUncheckedUpdateManyWithoutUserNestedInput
+    goalContributions?: GoalContributionUncheckedUpdateManyWithoutUserNestedInput
+    importLogs?: ImportLogUncheckedUpdateManyWithoutUserNestedInput
+    investments?: InvestmentUncheckedUpdateManyWithoutUserNestedInput
+    loans?: LoanUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    paymentsAsAdvisor?: PaymentUncheckedUpdateManyWithoutAdvisorNestedInput
+    paymentsAsClient?: PaymentUncheckedUpdateManyWithoutClientNestedInput
+    refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
+    todos?: TodoUncheckedUpdateManyWithoutUserNestedInput
+    transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
+    userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
+    userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+    otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
+    aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
+    groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserCreateWithoutTaxCalculationsInput = {
+    id?: string
+    email: string
+    name: string
+    password: string
+    role?: string
+    status?: string
+    isApproved?: boolean
+    firstName?: string | null
+    lastName?: string | null
+    salary?: Decimal | DecimalJsLike | number | string | null
+    dateOfBirth?: Date | string | null
+    jobType?: string | null
+    lastSynced?: Date | string | null
+    syncToken?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    avatarId?: string | null
+    city?: string | null
+    country?: string | null
+    gender?: string | null
+    state?: string | null
+    accounts?: AccountCreateNestedManyWithoutUserInput
+    advisorAvailability?: AdvisorAvailabilityCreateNestedManyWithoutAdvisorInput
+    sessionsAsAdvisor?: AdvisorSessionCreateNestedManyWithoutAdvisorInput
+    sessionsAsClient?: AdvisorSessionCreateNestedManyWithoutClientInput
+    bookingsAsAdvisor?: BookingRequestCreateNestedManyWithoutAdvisorInput
+    bookingsAsClient?: BookingRequestCreateNestedManyWithoutClientInput
+    categories?: CategoryCreateNestedManyWithoutUserInput
+    chatMessages?: ChatMessageCreateNestedManyWithoutSenderInput
+    devices?: DeviceCreateNestedManyWithoutUserInput
+    expenseBills?: ExpenseBillCreateNestedManyWithoutUserInput
+    friends?: FriendCreateNestedManyWithoutUserInput
+    goals?: GoalCreateNestedManyWithoutUserInput
+    goalContributions?: GoalContributionCreateNestedManyWithoutUserInput
+    importLogs?: ImportLogCreateNestedManyWithoutUserInput
+    investments?: InvestmentCreateNestedManyWithoutUserInput
+    loans?: LoanCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    paymentsAsAdvisor?: PaymentCreateNestedManyWithoutAdvisorInput
+    paymentsAsClient?: PaymentCreateNestedManyWithoutClientInput
+    refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
+    todos?: TodoCreateNestedManyWithoutUserInput
+    transactions?: TransactionCreateNestedManyWithoutUserInput
+    userPin?: UserPinCreateNestedOneWithoutUserInput
+    userSettings?: UserSettingsCreateNestedOneWithoutUserInput
+    otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
+    aiScans?: AiScanCreateNestedManyWithoutUserInput
+    groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
+    budgets?: BudgetCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutTaxCalculationsInput = {
+    id?: string
+    email: string
+    name: string
+    password: string
+    role?: string
+    status?: string
+    isApproved?: boolean
+    firstName?: string | null
+    lastName?: string | null
+    salary?: Decimal | DecimalJsLike | number | string | null
+    dateOfBirth?: Date | string | null
+    jobType?: string | null
+    lastSynced?: Date | string | null
+    syncToken?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    avatarId?: string | null
+    city?: string | null
+    country?: string | null
+    gender?: string | null
+    state?: string | null
+    accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
+    advisorAvailability?: AdvisorAvailabilityUncheckedCreateNestedManyWithoutAdvisorInput
+    sessionsAsAdvisor?: AdvisorSessionUncheckedCreateNestedManyWithoutAdvisorInput
+    sessionsAsClient?: AdvisorSessionUncheckedCreateNestedManyWithoutClientInput
+    bookingsAsAdvisor?: BookingRequestUncheckedCreateNestedManyWithoutAdvisorInput
+    bookingsAsClient?: BookingRequestUncheckedCreateNestedManyWithoutClientInput
+    categories?: CategoryUncheckedCreateNestedManyWithoutUserInput
+    chatMessages?: ChatMessageUncheckedCreateNestedManyWithoutSenderInput
+    devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
+    expenseBills?: ExpenseBillUncheckedCreateNestedManyWithoutUserInput
+    friends?: FriendUncheckedCreateNestedManyWithoutUserInput
+    goals?: GoalUncheckedCreateNestedManyWithoutUserInput
+    goalContributions?: GoalContributionUncheckedCreateNestedManyWithoutUserInput
+    importLogs?: ImportLogUncheckedCreateNestedManyWithoutUserInput
+    investments?: InvestmentUncheckedCreateNestedManyWithoutUserInput
+    loans?: LoanUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    paymentsAsAdvisor?: PaymentUncheckedCreateNestedManyWithoutAdvisorInput
+    paymentsAsClient?: PaymentUncheckedCreateNestedManyWithoutClientInput
+    refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
+    todos?: TodoUncheckedCreateNestedManyWithoutUserInput
+    transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
+    userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
+    userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
+    otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
+    aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
+    groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
+    budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutTaxCalculationsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutTaxCalculationsInput, UserUncheckedCreateWithoutTaxCalculationsInput>
+  }
+
+  export type UserUpsertWithoutTaxCalculationsInput = {
+    update: XOR<UserUpdateWithoutTaxCalculationsInput, UserUncheckedUpdateWithoutTaxCalculationsInput>
+    create: XOR<UserCreateWithoutTaxCalculationsInput, UserUncheckedCreateWithoutTaxCalculationsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutTaxCalculationsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutTaxCalculationsInput, UserUncheckedUpdateWithoutTaxCalculationsInput>
+  }
+
+  export type UserUpdateWithoutTaxCalculationsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    isApproved?: BoolFieldUpdateOperationsInput | boolean
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    jobType?: NullableStringFieldUpdateOperationsInput | string | null
+    lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    syncToken?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    avatarId?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableStringFieldUpdateOperationsInput | string | null
+    state?: NullableStringFieldUpdateOperationsInput | string | null
+    accounts?: AccountUpdateManyWithoutUserNestedInput
+    advisorAvailability?: AdvisorAvailabilityUpdateManyWithoutAdvisorNestedInput
+    sessionsAsAdvisor?: AdvisorSessionUpdateManyWithoutAdvisorNestedInput
+    sessionsAsClient?: AdvisorSessionUpdateManyWithoutClientNestedInput
+    bookingsAsAdvisor?: BookingRequestUpdateManyWithoutAdvisorNestedInput
+    bookingsAsClient?: BookingRequestUpdateManyWithoutClientNestedInput
+    categories?: CategoryUpdateManyWithoutUserNestedInput
+    chatMessages?: ChatMessageUpdateManyWithoutSenderNestedInput
+    devices?: DeviceUpdateManyWithoutUserNestedInput
+    expenseBills?: ExpenseBillUpdateManyWithoutUserNestedInput
+    friends?: FriendUpdateManyWithoutUserNestedInput
+    goals?: GoalUpdateManyWithoutUserNestedInput
+    goalContributions?: GoalContributionUpdateManyWithoutUserNestedInput
+    importLogs?: ImportLogUpdateManyWithoutUserNestedInput
+    investments?: InvestmentUpdateManyWithoutUserNestedInput
+    loans?: LoanUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    paymentsAsAdvisor?: PaymentUpdateManyWithoutAdvisorNestedInput
+    paymentsAsClient?: PaymentUpdateManyWithoutClientNestedInput
+    refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
+    todos?: TodoUpdateManyWithoutUserNestedInput
+    transactions?: TransactionUpdateManyWithoutUserNestedInput
+    userPin?: UserPinUpdateOneWithoutUserNestedInput
+    userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
+    otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
+    aiScans?: AiScanUpdateManyWithoutUserNestedInput
+    groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutTaxCalculationsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    isApproved?: BoolFieldUpdateOperationsInput | boolean
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    jobType?: NullableStringFieldUpdateOperationsInput | string | null
+    lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    syncToken?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    avatarId?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableStringFieldUpdateOperationsInput | string | null
+    state?: NullableStringFieldUpdateOperationsInput | string | null
+    accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
+    advisorAvailability?: AdvisorAvailabilityUncheckedUpdateManyWithoutAdvisorNestedInput
+    sessionsAsAdvisor?: AdvisorSessionUncheckedUpdateManyWithoutAdvisorNestedInput
+    sessionsAsClient?: AdvisorSessionUncheckedUpdateManyWithoutClientNestedInput
+    bookingsAsAdvisor?: BookingRequestUncheckedUpdateManyWithoutAdvisorNestedInput
+    bookingsAsClient?: BookingRequestUncheckedUpdateManyWithoutClientNestedInput
+    categories?: CategoryUncheckedUpdateManyWithoutUserNestedInput
+    chatMessages?: ChatMessageUncheckedUpdateManyWithoutSenderNestedInput
+    devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
+    expenseBills?: ExpenseBillUncheckedUpdateManyWithoutUserNestedInput
+    friends?: FriendUncheckedUpdateManyWithoutUserNestedInput
+    goals?: GoalUncheckedUpdateManyWithoutUserNestedInput
+    goalContributions?: GoalContributionUncheckedUpdateManyWithoutUserNestedInput
+    importLogs?: ImportLogUncheckedUpdateManyWithoutUserNestedInput
+    investments?: InvestmentUncheckedUpdateManyWithoutUserNestedInput
+    loans?: LoanUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    paymentsAsAdvisor?: PaymentUncheckedUpdateManyWithoutAdvisorNestedInput
+    paymentsAsClient?: PaymentUncheckedUpdateManyWithoutClientNestedInput
+    refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
+    todos?: TodoUncheckedUpdateManyWithoutUserNestedInput
+    transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
+    userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
+    userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+    otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
+    aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
+    groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserCreateWithoutGoldAssetsInput = {
+    id?: string
+    email: string
+    name: string
+    password: string
+    role?: string
+    status?: string
+    isApproved?: boolean
+    firstName?: string | null
+    lastName?: string | null
+    salary?: Decimal | DecimalJsLike | number | string | null
+    dateOfBirth?: Date | string | null
+    jobType?: string | null
+    lastSynced?: Date | string | null
+    syncToken?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    avatarId?: string | null
+    city?: string | null
+    country?: string | null
+    gender?: string | null
+    state?: string | null
+    accounts?: AccountCreateNestedManyWithoutUserInput
+    advisorAvailability?: AdvisorAvailabilityCreateNestedManyWithoutAdvisorInput
+    sessionsAsAdvisor?: AdvisorSessionCreateNestedManyWithoutAdvisorInput
+    sessionsAsClient?: AdvisorSessionCreateNestedManyWithoutClientInput
+    bookingsAsAdvisor?: BookingRequestCreateNestedManyWithoutAdvisorInput
+    bookingsAsClient?: BookingRequestCreateNestedManyWithoutClientInput
+    categories?: CategoryCreateNestedManyWithoutUserInput
+    chatMessages?: ChatMessageCreateNestedManyWithoutSenderInput
+    devices?: DeviceCreateNestedManyWithoutUserInput
+    expenseBills?: ExpenseBillCreateNestedManyWithoutUserInput
+    friends?: FriendCreateNestedManyWithoutUserInput
+    goals?: GoalCreateNestedManyWithoutUserInput
+    goalContributions?: GoalContributionCreateNestedManyWithoutUserInput
+    importLogs?: ImportLogCreateNestedManyWithoutUserInput
+    investments?: InvestmentCreateNestedManyWithoutUserInput
+    loans?: LoanCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    paymentsAsAdvisor?: PaymentCreateNestedManyWithoutAdvisorInput
+    paymentsAsClient?: PaymentCreateNestedManyWithoutClientInput
+    refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
+    todos?: TodoCreateNestedManyWithoutUserInput
+    transactions?: TransactionCreateNestedManyWithoutUserInput
+    userPin?: UserPinCreateNestedOneWithoutUserInput
+    userSettings?: UserSettingsCreateNestedOneWithoutUserInput
+    otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
+    aiScans?: AiScanCreateNestedManyWithoutUserInput
+    groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
+    budgets?: BudgetCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutGoldAssetsInput = {
+    id?: string
+    email: string
+    name: string
+    password: string
+    role?: string
+    status?: string
+    isApproved?: boolean
+    firstName?: string | null
+    lastName?: string | null
+    salary?: Decimal | DecimalJsLike | number | string | null
+    dateOfBirth?: Date | string | null
+    jobType?: string | null
+    lastSynced?: Date | string | null
+    syncToken?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    avatarId?: string | null
+    city?: string | null
+    country?: string | null
+    gender?: string | null
+    state?: string | null
+    accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
+    advisorAvailability?: AdvisorAvailabilityUncheckedCreateNestedManyWithoutAdvisorInput
+    sessionsAsAdvisor?: AdvisorSessionUncheckedCreateNestedManyWithoutAdvisorInput
+    sessionsAsClient?: AdvisorSessionUncheckedCreateNestedManyWithoutClientInput
+    bookingsAsAdvisor?: BookingRequestUncheckedCreateNestedManyWithoutAdvisorInput
+    bookingsAsClient?: BookingRequestUncheckedCreateNestedManyWithoutClientInput
+    categories?: CategoryUncheckedCreateNestedManyWithoutUserInput
+    chatMessages?: ChatMessageUncheckedCreateNestedManyWithoutSenderInput
+    devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
+    expenseBills?: ExpenseBillUncheckedCreateNestedManyWithoutUserInput
+    friends?: FriendUncheckedCreateNestedManyWithoutUserInput
+    goals?: GoalUncheckedCreateNestedManyWithoutUserInput
+    goalContributions?: GoalContributionUncheckedCreateNestedManyWithoutUserInput
+    importLogs?: ImportLogUncheckedCreateNestedManyWithoutUserInput
+    investments?: InvestmentUncheckedCreateNestedManyWithoutUserInput
+    loans?: LoanUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    paymentsAsAdvisor?: PaymentUncheckedCreateNestedManyWithoutAdvisorInput
+    paymentsAsClient?: PaymentUncheckedCreateNestedManyWithoutClientInput
+    refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
+    todos?: TodoUncheckedCreateNestedManyWithoutUserInput
+    transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
+    userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
+    userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
+    otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
+    aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
+    groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
+    budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutGoldAssetsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutGoldAssetsInput, UserUncheckedCreateWithoutGoldAssetsInput>
+  }
+
+  export type UserUpsertWithoutGoldAssetsInput = {
+    update: XOR<UserUpdateWithoutGoldAssetsInput, UserUncheckedUpdateWithoutGoldAssetsInput>
+    create: XOR<UserCreateWithoutGoldAssetsInput, UserUncheckedCreateWithoutGoldAssetsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutGoldAssetsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutGoldAssetsInput, UserUncheckedUpdateWithoutGoldAssetsInput>
+  }
+
+  export type UserUpdateWithoutGoldAssetsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    isApproved?: BoolFieldUpdateOperationsInput | boolean
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    jobType?: NullableStringFieldUpdateOperationsInput | string | null
+    lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    syncToken?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    avatarId?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableStringFieldUpdateOperationsInput | string | null
+    state?: NullableStringFieldUpdateOperationsInput | string | null
+    accounts?: AccountUpdateManyWithoutUserNestedInput
+    advisorAvailability?: AdvisorAvailabilityUpdateManyWithoutAdvisorNestedInput
+    sessionsAsAdvisor?: AdvisorSessionUpdateManyWithoutAdvisorNestedInput
+    sessionsAsClient?: AdvisorSessionUpdateManyWithoutClientNestedInput
+    bookingsAsAdvisor?: BookingRequestUpdateManyWithoutAdvisorNestedInput
+    bookingsAsClient?: BookingRequestUpdateManyWithoutClientNestedInput
+    categories?: CategoryUpdateManyWithoutUserNestedInput
+    chatMessages?: ChatMessageUpdateManyWithoutSenderNestedInput
+    devices?: DeviceUpdateManyWithoutUserNestedInput
+    expenseBills?: ExpenseBillUpdateManyWithoutUserNestedInput
+    friends?: FriendUpdateManyWithoutUserNestedInput
+    goals?: GoalUpdateManyWithoutUserNestedInput
+    goalContributions?: GoalContributionUpdateManyWithoutUserNestedInput
+    importLogs?: ImportLogUpdateManyWithoutUserNestedInput
+    investments?: InvestmentUpdateManyWithoutUserNestedInput
+    loans?: LoanUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    paymentsAsAdvisor?: PaymentUpdateManyWithoutAdvisorNestedInput
+    paymentsAsClient?: PaymentUpdateManyWithoutClientNestedInput
+    refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
+    todos?: TodoUpdateManyWithoutUserNestedInput
+    transactions?: TransactionUpdateManyWithoutUserNestedInput
+    userPin?: UserPinUpdateOneWithoutUserNestedInput
+    userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
+    otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
+    aiScans?: AiScanUpdateManyWithoutUserNestedInput
+    groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutGoldAssetsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    isApproved?: BoolFieldUpdateOperationsInput | boolean
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    jobType?: NullableStringFieldUpdateOperationsInput | string | null
+    lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    syncToken?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    avatarId?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableStringFieldUpdateOperationsInput | string | null
+    state?: NullableStringFieldUpdateOperationsInput | string | null
+    accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
+    advisorAvailability?: AdvisorAvailabilityUncheckedUpdateManyWithoutAdvisorNestedInput
+    sessionsAsAdvisor?: AdvisorSessionUncheckedUpdateManyWithoutAdvisorNestedInput
+    sessionsAsClient?: AdvisorSessionUncheckedUpdateManyWithoutClientNestedInput
+    bookingsAsAdvisor?: BookingRequestUncheckedUpdateManyWithoutAdvisorNestedInput
+    bookingsAsClient?: BookingRequestUncheckedUpdateManyWithoutClientNestedInput
+    categories?: CategoryUncheckedUpdateManyWithoutUserNestedInput
+    chatMessages?: ChatMessageUncheckedUpdateManyWithoutSenderNestedInput
+    devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
+    expenseBills?: ExpenseBillUncheckedUpdateManyWithoutUserNestedInput
+    friends?: FriendUncheckedUpdateManyWithoutUserNestedInput
+    goals?: GoalUncheckedUpdateManyWithoutUserNestedInput
+    goalContributions?: GoalContributionUncheckedUpdateManyWithoutUserNestedInput
+    importLogs?: ImportLogUncheckedUpdateManyWithoutUserNestedInput
+    investments?: InvestmentUncheckedUpdateManyWithoutUserNestedInput
+    loans?: LoanUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    paymentsAsAdvisor?: PaymentUncheckedUpdateManyWithoutAdvisorNestedInput
+    paymentsAsClient?: PaymentUncheckedUpdateManyWithoutClientNestedInput
+    refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
+    todos?: TodoUncheckedUpdateManyWithoutUserNestedInput
+    transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
+    userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
+    userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+    otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
+    aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
+    groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
+  }
+
   export type GoalContributionCreateManyAccountInput = {
     id?: string
     userId: string
@@ -67686,7 +84964,7 @@ export namespace Prisma {
     description?: string | null
     merchant?: string | null
     date: Date | string
-    tags?: string | null
+    tags?: NullableJsonNullValueInput | InputJsonValue
     attachment?: string | null
     transferToAccountId?: string | null
     transferType?: string | null
@@ -67781,7 +85059,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     merchant?: NullableStringFieldUpdateOperationsInput | string | null
     date?: DateTimeFieldUpdateOperationsInput | Date | string
-    tags?: NullableStringFieldUpdateOperationsInput | string | null
+    tags?: NullableJsonNullValueInput | InputJsonValue
     attachment?: NullableStringFieldUpdateOperationsInput | string | null
     transferToAccountId?: NullableStringFieldUpdateOperationsInput | string | null
     transferType?: NullableStringFieldUpdateOperationsInput | string | null
@@ -67814,7 +85092,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     merchant?: NullableStringFieldUpdateOperationsInput | string | null
     date?: DateTimeFieldUpdateOperationsInput | Date | string
-    tags?: NullableStringFieldUpdateOperationsInput | string | null
+    tags?: NullableJsonNullValueInput | InputJsonValue
     attachment?: NullableStringFieldUpdateOperationsInput | string | null
     transferToAccountId?: NullableStringFieldUpdateOperationsInput | string | null
     transferType?: NullableStringFieldUpdateOperationsInput | string | null
@@ -67846,7 +85124,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     merchant?: NullableStringFieldUpdateOperationsInput | string | null
     date?: DateTimeFieldUpdateOperationsInput | Date | string
-    tags?: NullableStringFieldUpdateOperationsInput | string | null
+    tags?: NullableJsonNullValueInput | InputJsonValue
     attachment?: NullableStringFieldUpdateOperationsInput | string | null
     transferToAccountId?: NullableStringFieldUpdateOperationsInput | string | null
     transferType?: NullableStringFieldUpdateOperationsInput | string | null
@@ -68261,12 +85539,12 @@ export namespace Prisma {
     importedRecords: number
     skippedRecords: number
     duplicateRecords: number
-    createdCategories?: string
-    createdAccounts?: string
-    createdGoals?: string
-    updatedGoals?: string
+    createdCategories?: JsonNullValueInput | InputJsonValue
+    createdAccounts?: JsonNullValueInput | InputJsonValue
+    createdGoals?: JsonNullValueInput | InputJsonValue
+    updatedGoals?: JsonNullValueInput | InputJsonValue
     failedRecords?: number
-    errors?: string
+    errors?: JsonNullValueInput | InputJsonValue
     metadata?: string | null
     createdAt?: Date | string
   }
@@ -68319,9 +85597,9 @@ export namespace Prisma {
     category?: string | null
     deepLink?: string | null
     priority?: string
-    channels?: string
+    channels?: JsonNullValueInput | InputJsonValue
     metadata?: NullableJsonNullValueInput | InputJsonValue
-    deliveryStatus?: string
+    deliveryStatus?: JsonNullValueInput | InputJsonValue
     encryptedPayload?: string | null
     isRead?: boolean
     createdAt?: Date | string
@@ -68383,7 +85661,7 @@ export namespace Prisma {
     description?: string | null
     merchant?: string | null
     date: Date | string
-    tags?: string | null
+    tags?: NullableJsonNullValueInput | InputJsonValue
     attachment?: string | null
     transferToAccountId?: string | null
     transferType?: string | null
@@ -68445,6 +85723,86 @@ export namespace Prisma {
     createdByName?: string | null
     status?: string | null
     notificationStatus?: string | null
+    syncStatus?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type RecurringTransactionCreateManyUserInput = {
+    id?: string
+    title: string
+    amount: Decimal | DecimalJsLike | number | string
+    category: string
+    subcategory?: string | null
+    interval?: string
+    nextDueDate: Date | string
+    autoProcess?: boolean
+    status?: string
+    accountId?: string | null
+    description?: string | null
+    merchant?: string | null
+    lastProcessedAt?: Date | string | null
+    clientRequestId?: string | null
+    syncStatus?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type BudgetCreateManyUserInput = {
+    id?: string
+    category: string
+    amount: Decimal | DecimalJsLike | number | string
+    spent?: Decimal | DecimalJsLike | number | string
+    period?: string
+    threshold?: number
+    startDate?: Date | string | null
+    endDate?: Date | string | null
+    alertEnabled?: boolean
+    alertChannels?: JsonNullValueInput | InputJsonValue
+    clientRequestId?: string | null
+    syncStatus?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type TaxCalculationCreateManyUserInput = {
+    id?: string
+    year: number
+    regime?: string | null
+    country?: string
+    totalIncome: Decimal | DecimalJsLike | number | string
+    totalExpense: Decimal | DecimalJsLike | number | string
+    netProfit: Decimal | DecimalJsLike | number | string
+    taxableIncome: Decimal | DecimalJsLike | number | string
+    estimatedTax: Decimal | DecimalJsLike | number | string
+    taxRate: Decimal | DecimalJsLike | number | string
+    deductions?: Decimal | DecimalJsLike | number | string
+    currency?: string
+    notes?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    clientRequestId?: string | null
+    syncStatus?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type GoldAssetCreateManyUserInput = {
+    id?: string
+    type?: string
+    quantity: Decimal | DecimalJsLike | number | string
+    unit?: string
+    purchasePrice: Decimal | DecimalJsLike | number | string
+    currentPrice: Decimal | DecimalJsLike | number | string
+    purchaseDate: Date | string
+    purityPercentage?: Decimal | DecimalJsLike | number | string
+    location?: string | null
+    certificateNumber?: string | null
+    notes?: string | null
+    clientRequestId?: string | null
     syncStatus?: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -69038,12 +86396,12 @@ export namespace Prisma {
     importedRecords?: IntFieldUpdateOperationsInput | number
     skippedRecords?: IntFieldUpdateOperationsInput | number
     duplicateRecords?: IntFieldUpdateOperationsInput | number
-    createdCategories?: StringFieldUpdateOperationsInput | string
-    createdAccounts?: StringFieldUpdateOperationsInput | string
-    createdGoals?: StringFieldUpdateOperationsInput | string
-    updatedGoals?: StringFieldUpdateOperationsInput | string
+    createdCategories?: JsonNullValueInput | InputJsonValue
+    createdAccounts?: JsonNullValueInput | InputJsonValue
+    createdGoals?: JsonNullValueInput | InputJsonValue
+    updatedGoals?: JsonNullValueInput | InputJsonValue
     failedRecords?: IntFieldUpdateOperationsInput | number
-    errors?: StringFieldUpdateOperationsInput | string
+    errors?: JsonNullValueInput | InputJsonValue
     metadata?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -69057,12 +86415,12 @@ export namespace Prisma {
     importedRecords?: IntFieldUpdateOperationsInput | number
     skippedRecords?: IntFieldUpdateOperationsInput | number
     duplicateRecords?: IntFieldUpdateOperationsInput | number
-    createdCategories?: StringFieldUpdateOperationsInput | string
-    createdAccounts?: StringFieldUpdateOperationsInput | string
-    createdGoals?: StringFieldUpdateOperationsInput | string
-    updatedGoals?: StringFieldUpdateOperationsInput | string
+    createdCategories?: JsonNullValueInput | InputJsonValue
+    createdAccounts?: JsonNullValueInput | InputJsonValue
+    createdGoals?: JsonNullValueInput | InputJsonValue
+    updatedGoals?: JsonNullValueInput | InputJsonValue
     failedRecords?: IntFieldUpdateOperationsInput | number
-    errors?: StringFieldUpdateOperationsInput | string
+    errors?: JsonNullValueInput | InputJsonValue
     metadata?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -69076,12 +86434,12 @@ export namespace Prisma {
     importedRecords?: IntFieldUpdateOperationsInput | number
     skippedRecords?: IntFieldUpdateOperationsInput | number
     duplicateRecords?: IntFieldUpdateOperationsInput | number
-    createdCategories?: StringFieldUpdateOperationsInput | string
-    createdAccounts?: StringFieldUpdateOperationsInput | string
-    createdGoals?: StringFieldUpdateOperationsInput | string
-    updatedGoals?: StringFieldUpdateOperationsInput | string
+    createdCategories?: JsonNullValueInput | InputJsonValue
+    createdAccounts?: JsonNullValueInput | InputJsonValue
+    createdGoals?: JsonNullValueInput | InputJsonValue
+    updatedGoals?: JsonNullValueInput | InputJsonValue
     failedRecords?: IntFieldUpdateOperationsInput | number
-    errors?: StringFieldUpdateOperationsInput | string
+    errors?: JsonNullValueInput | InputJsonValue
     metadata?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -69214,9 +86572,9 @@ export namespace Prisma {
     category?: NullableStringFieldUpdateOperationsInput | string | null
     deepLink?: NullableStringFieldUpdateOperationsInput | string | null
     priority?: StringFieldUpdateOperationsInput | string
-    channels?: StringFieldUpdateOperationsInput | string
+    channels?: JsonNullValueInput | InputJsonValue
     metadata?: NullableJsonNullValueInput | InputJsonValue
-    deliveryStatus?: StringFieldUpdateOperationsInput | string
+    deliveryStatus?: JsonNullValueInput | InputJsonValue
     encryptedPayload?: NullableStringFieldUpdateOperationsInput | string | null
     isRead?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -69233,9 +86591,9 @@ export namespace Prisma {
     category?: NullableStringFieldUpdateOperationsInput | string | null
     deepLink?: NullableStringFieldUpdateOperationsInput | string | null
     priority?: StringFieldUpdateOperationsInput | string
-    channels?: StringFieldUpdateOperationsInput | string
+    channels?: JsonNullValueInput | InputJsonValue
     metadata?: NullableJsonNullValueInput | InputJsonValue
-    deliveryStatus?: StringFieldUpdateOperationsInput | string
+    deliveryStatus?: JsonNullValueInput | InputJsonValue
     encryptedPayload?: NullableStringFieldUpdateOperationsInput | string | null
     isRead?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -69252,9 +86610,9 @@ export namespace Prisma {
     category?: NullableStringFieldUpdateOperationsInput | string | null
     deepLink?: NullableStringFieldUpdateOperationsInput | string | null
     priority?: StringFieldUpdateOperationsInput | string
-    channels?: StringFieldUpdateOperationsInput | string
+    channels?: JsonNullValueInput | InputJsonValue
     metadata?: NullableJsonNullValueInput | InputJsonValue
-    deliveryStatus?: StringFieldUpdateOperationsInput | string
+    deliveryStatus?: JsonNullValueInput | InputJsonValue
     encryptedPayload?: NullableStringFieldUpdateOperationsInput | string | null
     isRead?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -69401,7 +86759,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     merchant?: NullableStringFieldUpdateOperationsInput | string | null
     date?: DateTimeFieldUpdateOperationsInput | Date | string
-    tags?: NullableStringFieldUpdateOperationsInput | string | null
+    tags?: NullableJsonNullValueInput | InputJsonValue
     attachment?: NullableStringFieldUpdateOperationsInput | string | null
     transferToAccountId?: NullableStringFieldUpdateOperationsInput | string | null
     transferType?: NullableStringFieldUpdateOperationsInput | string | null
@@ -69434,7 +86792,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     merchant?: NullableStringFieldUpdateOperationsInput | string | null
     date?: DateTimeFieldUpdateOperationsInput | Date | string
-    tags?: NullableStringFieldUpdateOperationsInput | string | null
+    tags?: NullableJsonNullValueInput | InputJsonValue
     attachment?: NullableStringFieldUpdateOperationsInput | string | null
     transferToAccountId?: NullableStringFieldUpdateOperationsInput | string | null
     transferType?: NullableStringFieldUpdateOperationsInput | string | null
@@ -69466,7 +86824,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     merchant?: NullableStringFieldUpdateOperationsInput | string | null
     date?: DateTimeFieldUpdateOperationsInput | Date | string
-    tags?: NullableStringFieldUpdateOperationsInput | string | null
+    tags?: NullableJsonNullValueInput | InputJsonValue
     attachment?: NullableStringFieldUpdateOperationsInput | string | null
     transferToAccountId?: NullableStringFieldUpdateOperationsInput | string | null
     transferType?: NullableStringFieldUpdateOperationsInput | string | null
@@ -69632,6 +86990,246 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
+  export type RecurringTransactionUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    category?: StringFieldUpdateOperationsInput | string
+    subcategory?: NullableStringFieldUpdateOperationsInput | string | null
+    interval?: StringFieldUpdateOperationsInput | string
+    nextDueDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    autoProcess?: BoolFieldUpdateOperationsInput | boolean
+    status?: StringFieldUpdateOperationsInput | string
+    accountId?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    merchant?: NullableStringFieldUpdateOperationsInput | string | null
+    lastProcessedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
+    syncStatus?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type RecurringTransactionUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    category?: StringFieldUpdateOperationsInput | string
+    subcategory?: NullableStringFieldUpdateOperationsInput | string | null
+    interval?: StringFieldUpdateOperationsInput | string
+    nextDueDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    autoProcess?: BoolFieldUpdateOperationsInput | boolean
+    status?: StringFieldUpdateOperationsInput | string
+    accountId?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    merchant?: NullableStringFieldUpdateOperationsInput | string | null
+    lastProcessedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
+    syncStatus?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type RecurringTransactionUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    category?: StringFieldUpdateOperationsInput | string
+    subcategory?: NullableStringFieldUpdateOperationsInput | string | null
+    interval?: StringFieldUpdateOperationsInput | string
+    nextDueDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    autoProcess?: BoolFieldUpdateOperationsInput | boolean
+    status?: StringFieldUpdateOperationsInput | string
+    accountId?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    merchant?: NullableStringFieldUpdateOperationsInput | string | null
+    lastProcessedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
+    syncStatus?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type BudgetUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    category?: StringFieldUpdateOperationsInput | string
+    amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    spent?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    period?: StringFieldUpdateOperationsInput | string
+    threshold?: IntFieldUpdateOperationsInput | number
+    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    alertEnabled?: BoolFieldUpdateOperationsInput | boolean
+    alertChannels?: JsonNullValueInput | InputJsonValue
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
+    syncStatus?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type BudgetUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    category?: StringFieldUpdateOperationsInput | string
+    amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    spent?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    period?: StringFieldUpdateOperationsInput | string
+    threshold?: IntFieldUpdateOperationsInput | number
+    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    alertEnabled?: BoolFieldUpdateOperationsInput | boolean
+    alertChannels?: JsonNullValueInput | InputJsonValue
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
+    syncStatus?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type BudgetUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    category?: StringFieldUpdateOperationsInput | string
+    amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    spent?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    period?: StringFieldUpdateOperationsInput | string
+    threshold?: IntFieldUpdateOperationsInput | number
+    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    alertEnabled?: BoolFieldUpdateOperationsInput | boolean
+    alertChannels?: JsonNullValueInput | InputJsonValue
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
+    syncStatus?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type TaxCalculationUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    year?: IntFieldUpdateOperationsInput | number
+    regime?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: StringFieldUpdateOperationsInput | string
+    totalIncome?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalExpense?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    netProfit?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    taxableIncome?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    estimatedTax?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    taxRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    deductions?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: StringFieldUpdateOperationsInput | string
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
+    syncStatus?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type TaxCalculationUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    year?: IntFieldUpdateOperationsInput | number
+    regime?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: StringFieldUpdateOperationsInput | string
+    totalIncome?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalExpense?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    netProfit?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    taxableIncome?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    estimatedTax?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    taxRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    deductions?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: StringFieldUpdateOperationsInput | string
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
+    syncStatus?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type TaxCalculationUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    year?: IntFieldUpdateOperationsInput | number
+    regime?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: StringFieldUpdateOperationsInput | string
+    totalIncome?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalExpense?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    netProfit?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    taxableIncome?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    estimatedTax?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    taxRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    deductions?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: StringFieldUpdateOperationsInput | string
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
+    syncStatus?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type GoldAssetUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    quantity?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    unit?: StringFieldUpdateOperationsInput | string
+    purchasePrice?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currentPrice?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    purchaseDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    purityPercentage?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    certificateNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
+    syncStatus?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type GoldAssetUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    quantity?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    unit?: StringFieldUpdateOperationsInput | string
+    purchasePrice?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currentPrice?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    purchaseDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    purityPercentage?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    certificateNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
+    syncStatus?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type GoldAssetUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    quantity?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    unit?: StringFieldUpdateOperationsInput | string
+    purchasePrice?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currentPrice?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    purchaseDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    purityPercentage?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    certificateNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
+    syncStatus?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
   export type TransactionCreateManyGroupExpenseInput = {
     id?: string
     userId: string
@@ -69644,7 +87242,7 @@ export namespace Prisma {
     description?: string | null
     merchant?: string | null
     date: Date | string
-    tags?: string | null
+    tags?: NullableJsonNullValueInput | InputJsonValue
     attachment?: string | null
     transferToAccountId?: string | null
     transferType?: string | null
@@ -69688,7 +87286,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     merchant?: NullableStringFieldUpdateOperationsInput | string | null
     date?: DateTimeFieldUpdateOperationsInput | Date | string
-    tags?: NullableStringFieldUpdateOperationsInput | string | null
+    tags?: NullableJsonNullValueInput | InputJsonValue
     attachment?: NullableStringFieldUpdateOperationsInput | string | null
     transferToAccountId?: NullableStringFieldUpdateOperationsInput | string | null
     transferType?: NullableStringFieldUpdateOperationsInput | string | null
@@ -69722,7 +87320,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     merchant?: NullableStringFieldUpdateOperationsInput | string | null
     date?: DateTimeFieldUpdateOperationsInput | Date | string
-    tags?: NullableStringFieldUpdateOperationsInput | string | null
+    tags?: NullableJsonNullValueInput | InputJsonValue
     attachment?: NullableStringFieldUpdateOperationsInput | string | null
     transferToAccountId?: NullableStringFieldUpdateOperationsInput | string | null
     transferType?: NullableStringFieldUpdateOperationsInput | string | null
@@ -69754,7 +87352,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     merchant?: NullableStringFieldUpdateOperationsInput | string | null
     date?: DateTimeFieldUpdateOperationsInput | Date | string
-    tags?: NullableStringFieldUpdateOperationsInput | string | null
+    tags?: NullableJsonNullValueInput | InputJsonValue
     attachment?: NullableStringFieldUpdateOperationsInput | string | null
     transferToAccountId?: NullableStringFieldUpdateOperationsInput | string | null
     transferType?: NullableStringFieldUpdateOperationsInput | string | null

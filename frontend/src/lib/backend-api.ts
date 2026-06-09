@@ -301,33 +301,39 @@ class BackendService {
   private token: string | null = null;
 
   constructor() {
+    const inflightRequests = new Map<string, Promise<any>>();
+    const defaultAdapter = axios.defaults.adapter;
+
     this.api = axios.create({
       baseURL: API_BASE_URL,
-    });
+      adapter: (config) => {
+        const method = (config.method || 'get').toLowerCase();
+        if (method === 'get') {
+          const key = JSON.stringify({ url: config.url, params: config.params });
+          if (inflightRequests.has(key)) {
+            console.info(`[BackendService] Deduplicating concurrent GET request: ${config.url}`);
+            return inflightRequests.get(key)!;
+          }
 
-    // Deduplicate identical concurrent GET requests
-    const originalRequest = this.api.request.bind(this.api);
-    const inflightRequests = new Map<string, Promise<any>>();
+          const adapterFn = config.adapter || defaultAdapter;
+          if (!adapterFn) {
+            throw new Error('No adapter found in Axios');
+          }
+          const promise = Promise.resolve(adapterFn(config)).finally(() => {
+            inflightRequests.delete(key);
+          });
 
-    this.api.request = (config: any) => {
-      const method = (config.method || 'get').toLowerCase();
-      if (method === 'get') {
-        const key = JSON.stringify({ url: config.url, params: config.params });
-        if (inflightRequests.has(key)) {
-          console.info(`[BackendService] Deduplicating concurrent GET request: ${config.url}`);
-          return inflightRequests.get(key)!;
+          inflightRequests.set(key, promise);
+          return promise;
         }
 
-        const promise = originalRequest(config).finally(() => {
-          inflightRequests.delete(key);
-        });
-
-        inflightRequests.set(key, promise);
-        return promise;
+        const adapterFn = config.adapter || defaultAdapter;
+        if (!adapterFn) {
+          throw new Error('No adapter found in Axios');
+        }
+        return adapterFn(config);
       }
-
-      return originalRequest(config);
-    };
+    });
 
     // Add token to every request
     this.api.interceptors.request.use((config) => {

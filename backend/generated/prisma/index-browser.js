@@ -652,6 +652,165 @@ exports.Prisma.ProfilesScalarFieldEnum = {
   updated_at: 'updated_at'
 };
 
+exports.Prisma.OtpRequestScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  destination: 'destination',
+  channel: 'channel',
+  purpose: 'purpose',
+  otpHash: 'otpHash',
+  expiryTime: 'expiryTime',
+  attempts: 'attempts',
+  maxAttempts: 'maxAttempts',
+  status: 'status',
+  ipAddress: 'ipAddress',
+  userAgent: 'userAgent',
+  createdAt: 'createdAt',
+  verifiedAt: 'verifiedAt'
+};
+
+exports.Prisma.AaConsentScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  consentHandle: 'consentHandle',
+  consentId: 'consentId',
+  vua: 'vua',
+  status: 'status',
+  purpose: 'purpose',
+  fiTypes: 'fiTypes',
+  consentTypes: 'consentTypes',
+  dataFrom: 'dataFrom',
+  dataTo: 'dataTo',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.AaConsentArtifactScalarFieldEnum = {
+  id: 'id',
+  consentId: 'consentId',
+  artifactJson: 'artifactJson',
+  signature: 'signature',
+  status: 'status',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.AaDataSessionScalarFieldEnum = {
+  id: 'id',
+  consentId: 'consentId',
+  sessionId: 'sessionId',
+  sessionStatus: 'sessionStatus',
+  userId: 'userId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.AaFinancialDataScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  consentId: 'consentId',
+  sessionId: 'sessionId',
+  accountType: 'accountType',
+  maskedAccountNumber: 'maskedAccountNumber',
+  dataJson: 'dataJson',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.AaTransactionScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  consentId: 'consentId',
+  transactionDate: 'transactionDate',
+  amount: 'amount',
+  type: 'type',
+  description: 'description',
+  maskedAccountNumber: 'maskedAccountNumber',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.RecurringTransactionScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  title: 'title',
+  amount: 'amount',
+  category: 'category',
+  subcategory: 'subcategory',
+  interval: 'interval',
+  nextDueDate: 'nextDueDate',
+  autoProcess: 'autoProcess',
+  status: 'status',
+  accountId: 'accountId',
+  description: 'description',
+  merchant: 'merchant',
+  lastProcessedAt: 'lastProcessedAt',
+  clientRequestId: 'clientRequestId',
+  syncStatus: 'syncStatus',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
+};
+
+exports.Prisma.BudgetScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  category: 'category',
+  amount: 'amount',
+  spent: 'spent',
+  period: 'period',
+  threshold: 'threshold',
+  startDate: 'startDate',
+  endDate: 'endDate',
+  alertEnabled: 'alertEnabled',
+  alertChannels: 'alertChannels',
+  clientRequestId: 'clientRequestId',
+  syncStatus: 'syncStatus',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
+};
+
+exports.Prisma.TaxCalculationScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  year: 'year',
+  regime: 'regime',
+  country: 'country',
+  totalIncome: 'totalIncome',
+  totalExpense: 'totalExpense',
+  netProfit: 'netProfit',
+  taxableIncome: 'taxableIncome',
+  estimatedTax: 'estimatedTax',
+  taxRate: 'taxRate',
+  deductions: 'deductions',
+  currency: 'currency',
+  notes: 'notes',
+  metadata: 'metadata',
+  clientRequestId: 'clientRequestId',
+  syncStatus: 'syncStatus',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
+};
+
+exports.Prisma.GoldAssetScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  type: 'type',
+  quantity: 'quantity',
+  unit: 'unit',
+  purchasePrice: 'purchasePrice',
+  currentPrice: 'currentPrice',
+  purchaseDate: 'purchaseDate',
+  purityPercentage: 'purityPercentage',
+  location: 'location',
+  certificateNumber: 'certificateNumber',
+  notes: 'notes',
+  clientRequestId: 'clientRequestId',
+  syncStatus: 'syncStatus',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -717,7 +876,17 @@ exports.Prisma.ModelName = {
   GroupExpense: 'GroupExpense',
   GroupExpenseMember: 'GroupExpenseMember',
   user_features: 'user_features',
-  profiles: 'profiles'
+  profiles: 'profiles',
+  OtpRequest: 'OtpRequest',
+  AaConsent: 'AaConsent',
+  AaConsentArtifact: 'AaConsentArtifact',
+  AaDataSession: 'AaDataSession',
+  AaFinancialData: 'AaFinancialData',
+  AaTransaction: 'AaTransaction',
+  RecurringTransaction: 'RecurringTransaction',
+  Budget: 'Budget',
+  TaxCalculation: 'TaxCalculation',
+  GoldAsset: 'GoldAsset'
 };
 
 /**

@@ -69,7 +69,9 @@ const getGlobalFeatures = async () => {
       return {};
     }
 
-    const parsedSettings = JSON.parse(settings.settings);
+    const parsedSettings = typeof settings.settings === 'string'
+      ? JSON.parse(settings.settings)
+      : (settings.settings as any);
     const roleCentric = parsedSettings.admin_global_feature_settings || {};
     cachedFeatures = reconstructFeatures(roleCentric);
     cacheTimestamp = now;
@@ -228,7 +230,9 @@ const getAIGlobalFeatures = async () => {
       return cachedAIFeatures;
     }
 
-    const parsedSettings = JSON.parse(settings.settings);
+    const parsedSettings = typeof settings.settings === 'string'
+      ? JSON.parse(settings.settings)
+      : (settings.settings as any);
     // Use configured settings if available, otherwise use defaults
     const roleCentric = parsedSettings.admin_ai_feature_settings || {};
     cachedAIFeatures = reconstructAIFeatures(roleCentric);
