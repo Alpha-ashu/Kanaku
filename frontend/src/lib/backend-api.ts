@@ -101,6 +101,7 @@ function assertCloudEntityId(id: string, entityName: string) {
 
 class BackendService {
   // ===== GOLD =====
+  // Gold is stored as an investment with assetType='gold'
   async createGold(gold: {
     type: string;
     quantity: number;
@@ -115,12 +116,30 @@ class BackendService {
     createdAt: Date;
     updatedAt: Date;
   }) {
-    const response = await this.api.post('/gold', {
-      ...gold,
+    // Map gold fields to investment schema (gold is stored as an investment asset)
+    const investmentPayload = {
+      assetType: 'gold',
+      assetName: `${gold.type} (${gold.purityPercentage}% purity)`,
+      quantity: gold.quantity,
+      buyPrice: gold.purchasePrice,
+      currentPrice: gold.currentPrice,
+      totalInvested: gold.quantity * gold.purchasePrice,
+      currentValue: gold.quantity * gold.currentPrice,
+      profitLoss: gold.quantity * (gold.currentPrice - gold.purchasePrice),
       purchaseDate: gold.purchaseDate.toISOString(),
-      createdAt: gold.createdAt.toISOString(),
-      updatedAt: gold.updatedAt.toISOString(),
-    });
+      lastUpdated: gold.updatedAt.toISOString(),
+      metadata: {
+        goldType: gold.type,
+        unit: gold.unit,
+        purityPercentage: gold.purityPercentage,
+        location: gold.location,
+        certificateNumber: gold.certificateNumber,
+        notes: gold.notes,
+      },
+      clientRequestId: generateUUID(),
+    };
+
+    const response = await this.api.post('/investments', investmentPayload);
     return response.data;
   }
 

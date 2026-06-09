@@ -107,20 +107,24 @@ const buildProfilePayload = (
     currency: settingsRecord?.currency || defaultCurrency,
     language: settingsRecord?.language || 'en',
     updatedAt: profileRecord?.updated_at || userRecord?.updatedAt || null,
-    dateOfBirth,
-    jobType,
-    monthlyIncome,
     pinEnabled: pinRecord ? Boolean(pinRecord.isActive) : false,
-    isApproved: userRecord?.isApproved ?? authUser?.isApproved ?? false,
   };
 
+  // BUG-15 FIX: Sensitive financial PII fields only included when explicitly requested
+  // via ?includePrivate=true — never in default profile payload
   if (includePrivate) {
+    payload.dateOfBirth = dateOfBirth;
+    payload.jobType = jobType;
+    payload.monthlyIncome = monthlyIncome;
+    payload.role = role;
+    payload.isApproved = userRecord?.isApproved ?? authUser?.isApproved ?? false;
     if (salary !== 0) {
       payload.salary = salary;
     }
-    if (role !== 'user') {
-      payload.role = role;
-    }
+  } else {
+    // Public profile: expose role (needed for UI routing) but not financial PII
+    payload.role = role;
+    payload.isApproved = userRecord?.isApproved ?? authUser?.isApproved ?? false;
   }
 
   const allowedNullKeys = new Set([

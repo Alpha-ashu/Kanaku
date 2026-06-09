@@ -5,6 +5,7 @@ import { initializeSocket } from './sockets/index';
 import { closeRedis, initRedis } from './cache/redis';
 import { startAIBackgroundJobs, stopAIBackgroundJobs } from './modules/ai/ai.engine';
 import { initializeNotificationWorkers } from './workers/index';
+import { startCleanupWorker, stopCleanupWorker } from './workers/cleanup.worker';
 import { getQueues } from './config/queue';
 
 const PORT = process.env.PORT || 3000;
@@ -60,11 +61,13 @@ try {
 }
 
 startAIBackgroundJobs();
+startCleanupWorker();
 
 const shutdown = async (signal: string) => {
   logger.info(`Received ${signal}. Shutting down server...`);
   server.close(async () => {
     stopAIBackgroundJobs();
+    stopCleanupWorker();
     await closeRedis();
     process.exit(0);
   });

@@ -5,7 +5,38 @@ import { createClient } from '@supabase/supabase-js';
 import { audit } from '../utils/auditLogger';
 import { prisma } from '../db/prisma';
 
-const ensureUserInDb = async (userId: string, userClaims: any) => {
+// ─── Typed JWT payload interfaces ─────────────────────────────────────────────
+
+/** Claims present in a custom backend-issued JWT */
+interface CustomJwtPayload extends jwt.JwtPayload {
+  userId?: string;
+  email?: string;
+  role?: string;
+  isApproved?: boolean;
+  name?: string;
+}
+
+/** Claims present in a Supabase-issued JWT */
+interface SupabaseJwtPayload extends jwt.JwtPayload {
+  email?: string;
+  user_metadata?: {
+    role?: string;
+    full_name?: string;
+  };
+  app_metadata?: {
+    role?: string;
+  };
+}
+
+/** Shape of user claims passed to ensureUserInDb */
+interface UserClaims {
+  email?: string;
+  name?: string;
+  role?: string;
+  isApproved?: boolean;
+}
+
+const ensureUserInDb = async (userId: string, userClaims: UserClaims) => {
   try {
     await prisma.user.upsert({
       where: { id: userId },
@@ -153,12 +184,11 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
     }
 
     const customSecret = process.env.JWT_SECRET || process.env.SUPABASE_JWT_SECRET || '';
-    let decoded: any;
 
     // 1. Try Custom JWT first (fast, local)
     if (customSecret) {
       try {
-        decoded = jwt.verify(token, customSecret);
+        const decoded = jwt.verify(token, customSecret) as CustomJwtPayload;
 
         const userId = typeof decoded === 'object'
           ? (typeof decoded.userId === 'string' ? decoded.userId : decoded.sub)
@@ -197,7 +227,7 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
     // 2. Try Supabase JWT Secret verification (fast, no network call needed)
     if (supabaseJwtSecret) {
       try {
-        const supabaseDecoded = jwt.verify(token, supabaseJwtSecret) as any;
+        const supabaseDecoded = jwt.verify(token, supabaseJwtSecret) as SupabaseJwtPayload;
         const userId = supabaseDecoded?.sub;
 
         if (typeof userId === 'string' && userId.length > 0) {
@@ -259,17 +289,17 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
 
     if (ALLOW_UNVERIFIED_DEV_JWT) {
       try {
-        const unverified = jwt.decode(token) as any;
+        const unverified = jwt.decode(token) as SupabaseJwtPayload | null;
         const userId = unverified?.sub;
         if (typeof userId === 'string' && userId.length > 0) {
           logger.warn('Auth: Using UNVERIFIED token in development mode because ALLOW_UNVERIFIED_JWT=true. Configure SUPABASE_JWT_SECRET or JWT_SECRET for proper verification.');
           req.userId = userId;
           req.user = {
             id: userId,
-            email: unverified.email || '',
-            role: normalizeAppRole(unverified.user_metadata?.role || unverified.app_metadata?.role),
+            email: unverified?.email || '',
+            role: normalizeAppRole(unverified?.user_metadata?.role || unverified?.app_metadata?.role),
             isApproved: false,
-            name: unverified.user_metadata?.full_name,
+            name: unverified?.user_metadata?.full_name,
           };
           await ensureUserInDb(userId, req.user);
           return next();

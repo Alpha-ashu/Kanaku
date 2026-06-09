@@ -23,7 +23,8 @@ const router = Router();
 // All admin routes require authentication
 router.use(authMiddleware);
 
-// Feature flags (publicly readable by all authenticated users, but writable only by admin)
+// Feature flags (readable by authenticated users — returns role-filtered view for non-admins)
+// BUG-04 FIX: Non-admin users get only their own role's enabled features, not the full RBAC matrix
 router.get('/features', AdminController.getFeatureFlags);
 router.get('/ai-features', AdminController.getAIFeatureFlags);
 

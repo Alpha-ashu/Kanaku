@@ -5,7 +5,8 @@ export default {
   testMatch: [
     '**/__tests__/**/*.ts',
     '**/?(*.)+(spec|test).[tj]s',
-    '**/integration/*.js'
+    '**/integration/*.js',
+    '**/integration/*.ts',
   ],
   transform: {
     '^.+\\.ts$': 'ts-jest',
@@ -16,4 +17,15 @@ export default {
     '!src/server.ts',
   ],
   setupFiles: ['<rootDir>/tests/setup.ts'],
+  // Test groups for targeted runs
+  testTimeout: 30000,
+  // Coverage thresholds
+  coverageThreshold: {
+    global: {
+      branches: 60,
+      functions: 60,
+      lines: 60,
+      statements: 60,
+    },
+  },
 };

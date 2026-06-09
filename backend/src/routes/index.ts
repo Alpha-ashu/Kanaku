@@ -24,6 +24,12 @@ import { categorizationRoutes, learnRouter } from '../modules/categorization/cat
 import { avatarRoutes } from '../modules/avatars/avatar.routes';
 import voiceRoutes from '../modules/voice/voice.routes';
 import importRoutes from '../modules/import/import.routes';
+import { otpRoutes } from '../modules/otp/otp.routes';
+import { aaRoutes } from '../modules/aa/aa.routes';
+import { recurringRoutes } from '../modules/recurring/recurring.routes';
+import { budgetRoutes } from '../modules/budgets/budget.routes';
+import { taxRoutes } from '../modules/tax/tax.routes';
+import { goldRoutes } from '../modules/gold/gold.routes';
 
 const router = Router();
 
@@ -95,5 +101,17 @@ router.use('/admin', adminRoutes);
 
 // Public stock routes
 router.use('/stocks', stockRoutes);
+
+// OTP Verification (RBI-compliant)
+router.use('/otp', otpRoutes);
+
+// Account Aggregator (RBI AA — Setu integration)
+router.use('/aa', aaRoutes);
+
+// Sub-feature modules (Recurring, Budgets, Tax, Gold)
+router.use('/recurring', recurringRoutes);
+router.use('/budgets', budgetRoutes);
+router.use('/tax', taxRoutes);
+router.use('/gold', goldRoutes);
 
 export { router as apiRoutes };

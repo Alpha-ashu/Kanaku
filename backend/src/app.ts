@@ -10,6 +10,7 @@ import { rateLimit, authenticatedRateLimit } from './middleware/rateLimit';
 import { getCircuitBreakerStatus } from './utils/circuitBreaker';
 import { sanitize } from './utils/sanitize';
 import { logger } from './config/logger';
+import { prisma } from './db/prisma';
 
 import { isAllowedOrigin } from './config/cors';
 
@@ -70,7 +71,7 @@ app.use(express.json({ limit: '1mb' }));
 // Strip HTML/script tags from all string fields in the request body (including arrays & nested objects).
 app.use((req, _res, next) => {
   if (req.body && typeof req.body === 'object') {
-    const sanitizeValue = (val: any): any => {
+    const sanitizeValue = (val: unknown): unknown => {
       if (typeof val === 'string') {
         return sanitize(val);
       }
@@ -91,7 +92,7 @@ app.use((req, _res, next) => {
       return result;
     };
 
-    req.body = sanitizeObject(req.body);
+    req.body = sanitizeObject(req.body as Record<string, unknown>);
   }
   next();
 });
@@ -135,14 +136,13 @@ app.get('/health', async (req, res) => {
   let dbError: any = null;
 
   try {
-    const { prisma } = require('./db/prisma');
     await prisma.$queryRaw`SELECT 1`;
     dbStatus = 'connected';
-  } catch (err: any) {
+  } catch (err: unknown) {
     dbStatus = 'error';
     dbError = {
-      message: err.message,
-      code: err.code,
+      message: err instanceof Error ? err.message : String(err),
+      code: (err as NodeJS.ErrnoException)?.code,
     };
   }
 

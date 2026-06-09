@@ -52,3 +52,8 @@ secure/
 
 backend/generated/
 backend/.pg-testdata/
+
+# SQLite dev databases (Mo-1 fix)
+backend/*.db
+backend/dev.db
+

@@ -21,6 +21,27 @@ import {
 } from '../../utils/featureHelpers';
 
 // Get all users (admin only)
+
+/**
+ * BUG-04 FIX: Strip internal roleAccess matrix from feature flag responses for non-admin users.
+ * Non-admins only see { enabled: boolean, children?: {...} } — never the full RBAC matrix.
+ */
+function stripRoleAccessMatrix(features: Record<string, any>): Record<string, any> {
+  const stripped: Record<string, any> = {};
+  for (const [key, value] of Object.entries(features)) {
+    if (value && typeof value === 'object') {
+      const { roleAccess, ...rest } = value;
+      if (rest.children && typeof rest.children === 'object') {
+        rest.children = stripRoleAccessMatrix(rest.children);
+      }
+      stripped[key] = rest;
+    } else {
+      stripped[key] = value;
+    }
+  }
+  return stripped;
+}
+
 export const getAllUsers = async (req: AuthRequest, res: Response) => {
   try {
     const { role, approved } = req.query;
@@ -246,6 +267,10 @@ export const getFeatureFlags = async (req: AuthRequest, res: Response) => {
 
     const userRole = req.user.role as UserRole;
 
+    // BUG-04 FIX: Set proper cache control to prevent CDN caching of user-specific data
+    res.setHeader('Cache-Control', 'private, no-store, no-cache, must-revalidate');
+    res.setHeader('Vary', 'Authorization');
+
     // Find the first admin user in the system to load global feature flags
     const adminUser = await prisma.user.findFirst({
       where: { role: 'admin' },
@@ -270,7 +295,15 @@ export const getFeatureFlags = async (req: AuthRequest, res: Response) => {
       }
     }
 
+    // Non-admin users get only their role's enabled/disabled features — no roleAccess matrix
     const reconstructed = reconstructFeatures(globalFeatures, userRole === 'admin' ? undefined : userRole);
+
+    // BUG-04 FIX: Strip roleAccess from responses for non-admin users
+    if (userRole !== 'admin') {
+      const filtered = stripRoleAccessMatrix(reconstructed);
+      return res.json(filtered);
+    }
+
     res.json(reconstructed);
   } catch (error: any) {
     logger.error('Failed to fetch feature flags', { error, userId: req.userId });

@@ -110,10 +110,8 @@ class PageErrorBoundary extends React.Component<
   }
 
   static getDerivedStateFromError(error: Error) {
-    return (prevState: { error: Error | null; attemptCount: number }) => ({
-      error,
-      attemptCount: (prevState.attemptCount || 0) + 1,
-    });
+    // Must return a plain state object (not a function) per React lifecycle rules
+    return { error };
   }
 
   componentDidCatch(error: Error, info: React.ErrorInfo) {
@@ -125,13 +123,17 @@ class PageErrorBoundary extends React.Component<
       attemptCount: this.state.attemptCount,
     });
 
+    // Increment attempt counter on each catch
+    const nextAttemptCount = this.state.attemptCount + 1;
+    this.setState({ attemptCount: nextAttemptCount });
+
     // Auto-retry on chunk load failures or module errors (common after service worker updates)
     const isModuleError = error.message.includes('Failed to fetch dynamically imported module') ||
                          error.message.includes('Expected a JavaScript-or-Wasm module script') ||
                          error.message.includes('Failed to import');
 
-    if (isModuleError && this.state.attemptCount <= 2) {
-      console.warn(`[PageErrorBoundary] Auto-retrying after module load failure (attempt ${this.state.attemptCount})...`);
+    if (isModuleError && nextAttemptCount <= 2) {
+      console.warn(`[PageErrorBoundary] Auto-retrying after module load failure (attempt ${nextAttemptCount})...`);
       this.retryTimer = setTimeout(() => {
         this.setState({ error: null });
       }, 500);
