@@ -290,9 +290,9 @@ export const ResultsView: React.FC<{
   const effectiveCurrency = scanResult.currency || currency;
 
   return (
-    <div className="KANKU-receipt-review">
+    <div className="KANAKU-receipt-review">
       {/* Confidence + optional location */}
-      <div className="KANKU-receipt-review__top">
+      <div className="KANAKU-receipt-review__top">
         <div className="min-w-0">
           <ConfidenceBadge confidence={scanResult.confidence ?? 0} />
         </div>
@@ -319,17 +319,17 @@ export const ResultsView: React.FC<{
       )}
 
       {/* ── Main fields card ── */}
-      <div className="KANKU-receipt-card">
+      <div className="KANAKU-receipt-card">
         {/* Card header */}
-        <div className="KANKU-receipt-card__head">
-          <p className="KANKU-receipt-card__title">Review Data</p>
+        <div className="KANAKU-receipt-card__head">
+          <p className="KANAKU-receipt-card__title">Review Data</p>
           <p className="text-xs font-semibold text-gray-400">
             {scanResult.items?.length || 0} item{scanResult.items?.length === 1 ? '' : 's'}
           </p>
         </div>
 
         {/* Fields grid */}
-        <div className="KANKU-receipt-fields">
+        <div className="KANAKU-receipt-fields">
           {/* Amount */}
           <AmountField
             amount={scanResult.amount}
@@ -542,7 +542,7 @@ const TaxBreakdownPanel: React.FC<{
  const totalTax = taxes.reduce((s, t) => s + t.amount, 0);
 
  return (
- <div className="KANKU-receipt-card overflow-hidden border-orange-100 bg-orange-50">
+ <div className="KANAKU-receipt-card overflow-hidden border-orange-100 bg-orange-50">
  <div className="flex items-center gap-2 border-b border-orange-100 px-4 py-3">
  <Layers size={14} className="text-orange-500" />
  <p className="text-[10px] font-bold uppercase tracking-widest text-orange-600">
@@ -583,7 +583,7 @@ const ItemsPanel: React.FC<{
  if (!items || items.length === 0) return null;
 
  return (
- <div className="KANKU-receipt-card overflow-hidden border-gray-200 bg-white">
+ <div className="KANAKU-receipt-card overflow-hidden border-gray-200 bg-white">
  <div className="flex items-center gap-2 border-b border-gray-100 px-4 py-3">
  <Receipt size={14} className="text-gray-500" />
  <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
@@ -621,7 +621,7 @@ const AmountField: React.FC<{
  hasError?: boolean;
  onChange: (value: number) => void;
 }> = ({ amount, currency, hasError, onChange }) => (
- <div className={cn("KANKU-receipt-field KANKU-receipt-amount transition-colors", hasError &&"rounded-lg bg-red-50/80 p-2")}>
+ <div className={cn("KANAKU-receipt-field KANAKU-receipt-amount transition-colors", hasError &&"rounded-lg bg-red-50/80 p-2")}>
  <label className={cn("mb-1 block text-[10px] font-bold uppercase tracking-widest", hasError ?"text-red-500" :"text-gray-400")}>
  Total Amount *
  </label>
@@ -646,7 +646,7 @@ const TextField: React.FC<{
  placeholder?: string;
  className?: string;
 }> = ({ label, value, onChange, placeholder, className }) => (
- <div className={cn('KANKU-receipt-field', className)}>
+ <div className={cn('KANAKU-receipt-field', className)}>
  <label className="mb-1 block text-[10px] font-bold uppercase tracking-widest text-gray-400">
  {label}
  </label>
@@ -666,7 +666,7 @@ const NumberField: React.FC<{
  onChange: (value?: number) => void;
  className?: string;
 }> = ({ label, value, onChange, className }) => (
- <div className={cn('KANKU-receipt-field', className)}>
+ <div className={cn('KANAKU-receipt-field', className)}>
  <label className="mb-1 block text-[10px] font-bold uppercase tracking-widest text-gray-400">
  {label}
  </label>
@@ -688,7 +688,7 @@ const DateField: React.FC<{
  onChange: (date?: Date) => void;
  className?: string;
 }> = ({ label, value, onChange, className }) => (
- <div className={cn('KANKU-receipt-field', className)}>
+ <div className={cn('KANAKU-receipt-field', className)}>
  <label className="mb-1 block text-[10px] font-bold uppercase tracking-widest text-gray-400">
  {label}
  </label>
@@ -713,7 +713,7 @@ const SelectField: React.FC<{
  onChange: (value: string) => void;
  className?: string;
 }> = ({ label, value, options, onChange, className }) => (
- <div className={cn('KANKU-receipt-field', className)}>
+ <div className={cn('KANAKU-receipt-field', className)}>
  <label className="mb-1 block text-[10px] font-bold uppercase tracking-widest text-gray-400">
  {label}
  </label>
@@ -753,7 +753,7 @@ const SubcategoryField: React.FC<{
  };
 
  return (
- <div className="KANKU-receipt-field KANKU-receipt-field--wide">
+ <div className="KANAKU-receipt-field KANAKU-receipt-field--wide">
  <label className="mb-1 block text-[10px] font-bold uppercase tracking-widest text-gray-400">
  Subcategory
  </label>
@@ -808,7 +808,7 @@ const AccountSelector: React.FC<{
  currency: string;
  onChange: (id: number | null) => void;
 }> = ({ accounts, selectedId, currency, onChange }) => (
- <div className="KANKU-receipt-card p-4">
+ <div className="KANAKU-receipt-card p-4">
  <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-gray-400">
  Charge to Account *
  </label>

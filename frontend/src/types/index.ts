@@ -1,5 +1,5 @@
 /**
- * Global Type Definitions for KANKU
+ * Global Type Definitions for KANAKU
  * Centralized type system for consistency across the application
  */
 

@@ -8,11 +8,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public final class SmsDetectionStore {
-    private static final String PREFS_NAME = "KANKU_sms_detection";
+
+    private static final String PREFS_NAME = "KANAKU_sms_detection";
     private static final String ENABLED_KEY = "enabled";
     private static final String PENDING_TRANSACTIONS_KEY = "pending_transactions";
 
-    private SmsDetectionStore() {}
+    private SmsDetectionStore() {
+    }
 
     private static SharedPreferences getPrefs(Context context) {
         return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);

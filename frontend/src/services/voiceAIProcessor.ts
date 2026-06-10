@@ -1,4 +1,4 @@
-import { KANKUAI } from './KANKUIntelligenceEngine';
+import { KANAKUAI } from './KANAKUIntelligenceEngine';
 import { parseMultipleTransactions, parseVoiceExpense } from '@/lib/voiceExpenseParser';
 
 export interface VoiceExpenseResult {
@@ -216,7 +216,7 @@ class VoiceAIProcessor {
         date: this.extractDate(description),
       };
 
-      const aiResult = await KANKUAI.extractExpenseData(description, 'voice', this.userId);
+      const aiResult = await KANAKUAI.extractExpenseData(description, 'voice', this.userId);
       result.category = result.category || aiResult.category;
       result.confidence = Math.max(result.confidence, aiResult.confidence);
 
@@ -264,8 +264,8 @@ class VoiceAIProcessor {
     // Extract date
     result.date = this.extractDate(chunk);
 
-    //  Use KANKUAI for intelligent categorization
-    const aiResult = await KANKUAI.extractExpenseData(chunk, 'voice', this.userId);
+    //  Use KANAKUAI for intelligent categorization
+    const aiResult = await KANAKUAI.extractExpenseData(chunk, 'voice', this.userId);
 
     result.category = aiResult.category;
     result.confidence = Math.max(result.confidence, aiResult.confidence);
@@ -463,7 +463,7 @@ class VoiceAIProcessor {
       const category = correctedExpense.category;
 
       if (merchant && category) {
-        await KANKUAI.learnFromFeedback(
+        await KANAKUAI.learnFromFeedback(
           this.userId,
           merchant,
           category,

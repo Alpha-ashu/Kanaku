@@ -53,7 +53,7 @@ class PinService {
 
   private async ensureLocalUser(request: CreatePinRequest): Promise<void> {
     const normalizedRole = this.normalizeRole(request.role);
-    const resolvedEmail = request.email?.trim() || `user-${request.userId.slice(0, 8)}@placeholder.KANKU.app`;
+    const resolvedEmail = request.email?.trim() || `user-${request.userId.slice(0, 8)}@placeholder.KANAKU.app`;
     const fallbackNameFromEmail = resolvedEmail.split('@')[0]?.replace(/[._-]+/g, ' ').trim() || 'User';
     const resolvedName = request.name?.trim() || fallbackNameFromEmail || 'User';
 

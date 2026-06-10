@@ -483,7 +483,7 @@ export const ImportDataModal: React.FC<ImportDataModalProps> = ({
  <Database size={18} />
  </div>
  <div>
- <h4 className="font-semibold text-amber-900">KANKUbackup detected</h4>
+ <h4 className="font-semibold text-amber-900">KANAKUbackup detected</h4>
  <p className="mt-1 text-sm text-amber-800">
  Restoring this file will replace your current local data.
  </p>

@@ -596,7 +596,7 @@ export interface Notification {
 }
 
 // Database Class
-export class KANKUDB extends Dexie {
+export class KANAKUDB extends Dexie {
   accounts!: Table<Account>;
   friends!: Table<Friend>;
   transactions!: Table<Transaction>;
@@ -609,7 +609,7 @@ export class KANKUDB extends Dexie {
   notifications!: Table<Notification>;
 
   constructor() {
-    super('KANKUDB');
+    super('KANAKUDB');
     this.version(1).stores({
       accounts: '++id, type, isActive',
       transactions: '++id, type, accountId, category, date',
@@ -638,7 +638,7 @@ export class KANKUDB extends Dexie {
 }
 
 // Add additional tables for production features
-export class ProductionDB extends KANKUDB {
+export class ProductionDB extends KANAKUDB {
     gold!: Table<GoldEntry>;
   logs!: Table<{ id: string; level: string; message: string; timestamp: Date }>;
   errorReports!: Table<{ id: string; report: string; timestamp: Date }>;

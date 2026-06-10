@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Shield, TrendingUp, Sparkles, ArrowRight, AlertTriangle, Calendar } from 'lucide-react';
-import { KANKULogo } from '@/app/components/ui/KANKULogo';
+import { KANAKULogo } from '@/app/components/ui/KANAKULogo';
 import { motion } from 'framer-motion';
 import { SignInForm } from './SignInForm';
 import { SignUpForm } from './SignUpForm';
@@ -21,13 +21,13 @@ const internalLog = {
  warn: (context: string, err?: unknown) => {
  if (import.meta.env.DEV) {
  // eslint-disable-next-line no-console
- console.warn(`[KANKU/${context}]`, err instanceof Error ? err.message : err);
+ console.warn(`[KANAKU/${context}]`, err instanceof Error ? err.message : err);
  }
  },
  error: (context: string, err?: unknown) => {
  if (import.meta.env.DEV) {
  // eslint-disable-next-line no-console
- console.error(`[KANKU/${context}]`, err instanceof Error ? err.message : err);
+ console.error(`[KANAKU/${context}]`, err instanceof Error ? err.message : err);
  }
  },
 };
@@ -172,7 +172,7 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
         localStorage.setItem('onboarding_completed', 'true');
       }
 
-      window.dispatchEvent(new CustomEvent('KANKU_AUTH_CHANGE'));
+      window.dispatchEvent(new CustomEvent('KANAKU_AUTH_CHANGE'));
       return;
     } catch (error: any) {
       internalLog.error('handleSignIn', error);
@@ -237,7 +237,7 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
 
       localStorage.removeItem('auth_flow_step');
       localStorage.removeItem('pending_auth_email');
-      window.dispatchEvent(new CustomEvent('KANKU_AUTH_CHANGE'));
+      window.dispatchEvent(new CustomEvent('KANAKU_AUTH_CHANGE'));
       toast.success("Account created! Let's set up your profile.");
     } catch (error: any) {
       const isNetworkError = error?.name === 'AuthRetryableFetchError' || error?.message?.includes('aborted');
@@ -268,7 +268,7 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
       // New users skip AuthFlow onboarding and go to NewUserOnboarding in App.tsx
       localStorage.removeItem('auth_flow_step');
       localStorage.removeItem('pending_auth_email');
-      window.dispatchEvent(new CustomEvent('KANKU_AUTH_CHANGE'));
+      window.dispatchEvent(new CustomEvent('KANAKU_AUTH_CHANGE'));
     } else {
       // Check if user already has PIN server-side before routing to pin-setup
       try {
@@ -281,7 +281,7 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
           localStorage.setItem('onboarding_completed', 'true');
           localStorage.removeItem('auth_flow_step');
           localStorage.removeItem('pending_auth_email');
-          window.dispatchEvent(new CustomEvent('KANKU_AUTH_CHANGE'));
+          window.dispatchEvent(new CustomEvent('KANAKU_AUTH_CHANGE'));
           return;
         }
       } catch {
@@ -309,7 +309,7 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
  localStorage.setItem('onboarding_completed', 'true');
  localStorage.removeItem('auth_flow_step');
  localStorage.removeItem('pending_auth_email');
- window.dispatchEvent(new CustomEvent('KANKU_AUTH_CHANGE'));
+ window.dispatchEvent(new CustomEvent('KANAKU_AUTH_CHANGE'));
  return;
  }
  } catch {
@@ -393,7 +393,7 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
  localStorage.removeItem('auth_flow_step');
  localStorage.removeItem('pending_auth_email');
 
- toast.success('Setup complete! Welcome to KANKU!');
+ toast.success('Setup complete! Welcome to KANAKU!');
 
  // Dispatch global event for other modules
  window.dispatchEvent(new CustomEvent('PROFILE_SETUP_COMPLETED', {
@@ -483,11 +483,11 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
  className="absolute inset-0 rounded-[2rem] border-2 border-blue-200 border-dashed"
  />
  <div className="absolute inset-2 bg-white rounded-3xl flex items-center justify-center shadow-sm">
- <KANKULogo className="w-12 h-12 drop-shadow-sm" />
+ <KANAKULogo className="w-12 h-12 drop-shadow-sm" />
  </div>
  </div>
  <h1 className="text-4xl sm:text-5xl font-extrabold text-gray-900 tracking-tight mb-4">
- KANKU
+ KANAKU
  </h1>
  <p className="text-base sm:text-lg text-gray-500 font-medium max-w-[280px] sm:max-w-md mx-auto leading-relaxed">
  Experience the future of personal finance. Track, grow, and master your wealth seamlessly.
@@ -879,7 +879,7 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
  <button
  onClick={() => {
  localStorage.setItem('onboarding_completed', 'true');
- window.dispatchEvent(new CustomEvent('KANKU_AUTH_CHANGE'));
+ window.dispatchEvent(new CustomEvent('KANAKU_AUTH_CHANGE'));
  }}
  className="py-3 px-8 bg-white text-blue-600 rounded-xl font-semibold text-lg hover:bg-blue-50 transition-colors"
  >
@@ -946,7 +946,7 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
  <span className="group-hover:-translate-x-0.5 transition-transform"></span> Back
  </button>
  <h2 className="text-2xl font-bold text-gray-900">Create Account</h2>
- <p className="text-gray-500 mt-1 text-sm">Join KANKU to start mastering your wealth.</p>
+ <p className="text-gray-500 mt-1 text-sm">Join KANAKU to start mastering your wealth.</p>
  </div>
  <div className="p-6 sm:p-8 pt-6">
  <SignUpForm

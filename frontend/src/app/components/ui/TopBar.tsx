@@ -10,7 +10,7 @@ import { motion, Reorder, useDragControls } from 'framer-motion';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db, type Notification as AppNotification } from '@/lib/database';
 import { SyncStatusBar } from '@/app/components/ui/SyncStatusBar';
-import { KANKULogo } from '@/app/components/ui/KANKULogo';
+import { KANAKULogo } from '@/app/components/ui/KANAKULogo';
 
 interface DraggablePageMenuItemProps {
  item: NavigationItem;
@@ -375,8 +375,8 @@ export const TopBar: React.FC = () => {
 
   {/* Logo & Name */}
   <div className="flex items-center gap-2 sm:gap-3 mr-2 sm:mr-4 shrink-0 lg:hidden">
-    <KANKULogo className="w-7 h-7 sm:w-8 sm:h-8" />
-    <span className="text-sm sm:text-xl font-bold font-display text-gray-900 tracking-tight">KANKU</span>
+    <KANAKULogo className="w-7 h-7 sm:w-8 sm:h-8" />
+    <span className="text-sm sm:text-xl font-bold font-display text-gray-900 tracking-tight">KANAKU</span>
   </div>
  <SheetContent side="left" className="w-[270px] h-[calc(100vh-24px)] my-3 ml-3 rounded-[32px] bg-white border border-slate-100 shadow-2xl text-slate-900 z-[100] p-0 overflow-hidden flex flex-col focus:outline-none">
  <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
@@ -386,10 +386,10 @@ export const TopBar: React.FC = () => {
     <div className="p-5 border-b border-slate-100 bg-gradient-to-b from-slate-50/50 to-white flex items-center justify-between gap-3 shrink-0">
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 rounded-2xl bg-slate-900 p-2 flex items-center justify-center shadow-md shadow-slate-900/10">
-          <KANKULogo className="w-full h-full text-white" />
+          <KANAKULogo className="w-full h-full text-white" />
         </div>
         <div className="flex flex-col">
-          <h1 className="text-base font-black font-display tracking-tight text-slate-900 leading-none">KANKU</h1>
+          <h1 className="text-base font-black font-display tracking-tight text-slate-900 leading-none">KANAKU</h1>
           <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-1">Fintech Suite</span>
         </div>
       </div>
@@ -421,7 +421,7 @@ export const TopBar: React.FC = () => {
     {(() => {
       const profileStr = typeof window !== 'undefined' ? localStorage.getItem('user_profile') : null;
       let displayName = 'User';
-      let email = user?.email || 'user@kanku.com';
+      let email = user?.email || 'user@KANAKU.com';
       let avatarUrl = '';
       let roleName = role ? role.toUpperCase() : 'USER';
       
@@ -485,7 +485,7 @@ export const TopBar: React.FC = () => {
  onFocus={() => setIsFocused(true)}
  onBlur={() => setTimeout(() => setIsFocused(false), 200)}
  placeholder="Search transactions, assets..."
- className="KANKU-search-bar"
+ className="KANAKU-search-bar"
  />
  {!searchQuery && (
  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-300 border border-slate-200 px-1.5 py-0.5 rounded-md pointer-events-none group-hover:border-slate-300 transition-colors">
@@ -703,7 +703,7 @@ export const TopBar: React.FC = () => {
  ) : (
  <div className="py-20 text-center text-slate-400">
  <Search size={32} className="mx-auto mb-3 opacity-30 animate-pulse text-indigo-500" />
- <p className="text-sm font-bold text-slate-900">Search anything in KANKU</p>
+ <p className="text-sm font-bold text-slate-900">Search anything in KANAKU</p>
  <p className="text-xs text-slate-400 font-medium mt-1">Type matching words for accounts, transactions, or pages</p>
  </div>
  )}

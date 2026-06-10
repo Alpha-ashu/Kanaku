@@ -1,9 +1,9 @@
 # Security Audit Response (06 March 2026)
 
 ## Overview
-This document serves as the formal architectural response to the security observations raised during the VAPT (Vulnerability Assessment and Penetration Testing) review of the KANKU application.
+This document serves as the formal architectural response to the security observations raised during the VAPT (Vulnerability Assessment and Penetration Testing) review of the KANAKU application.
 
-The KANKU application is built on a **Serverless Backend-as-a-Service (BaaS) architecture** utilizing Supabase. This architecture inherently handles authentication and database authorization differently than a traditional monolith (e.g., NodeJS + Express server with a standard SQL DB).
+The KANAKU application is built on a **Serverless Backend-as-a-Service (BaaS) architecture** utilizing Supabase. This architecture inherently handles authentication and database authorization differently than a traditional monolith (e.g., NodeJS + Express server with a standard SQL DB).
 
 ---
 
@@ -30,7 +30,7 @@ The KANKU application is built on a **Serverless Backend-as-a-Service (BaaS) arc
 * **Observation:** The raw `access_token` and `refresh_token` are returned directly to the UI in the response body.
 * **Proposed Fix:** Return only a `profile_id` to the UI and handle tokens via `httpOnly` secure cookies.
 * **Resolution / Justification:** 
-  KANKU is a **Single Page Application (SPA)** that utilizes **PostgreSQL Row Level Security (RLS)** to aggressively restrict database interactions based on the active user identity.
+  KANAKU is a **Single Page Application (SPA)** that utilizes **PostgreSQL Row Level Security (RLS)** to aggressively restrict database interactions based on the active user identity.
   1. For the frontend (`@supabase/supabase-js`) to dynamically query data securely (e.g., fetching only the active user's transactions for the offline-first Dexie sync), the Javascript environment **must natively possess the `access_token`** to inject it as a `Bearer` header into its API requests.
   2. If the `access_token` is abstracted away behind a secure `httpOnly` cookie proxy, the Javascript client loses its auth context, rendering both the Supabase realtime subscriptions and RLS policies completely non-functional.
   3. The `refresh_token` and `access_token` are actively managed and gracefully destroyed upon log-out. They are not permanently exposed or exploitable unless the physical device is compromised (in which case, session hijacking is a universal risk).

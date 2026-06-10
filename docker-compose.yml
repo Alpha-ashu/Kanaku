@@ -3,10 +3,10 @@
 services:
   postgres:
     image: postgres:15
-    container_name: KANKU_postgres
+    container_name: KANAKU_postgres
     restart: unless-stopped
     environment:
-      POSTGRES_DB: KANKU
+      POSTGRES_DB: KANAKU
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
     ports:
@@ -15,11 +15,11 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
     networks:
-      - KANKU_network
+      - KANAKU_network
 
   pgadmin:
     image: dpage/pgadmin4:latest
-    container_name: KANKU_pgadmin
+    container_name: KANAKU_pgadmin
     restart: unless-stopped
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@example.com
@@ -29,13 +29,13 @@ services:
     depends_on:
       - postgres
     networks:
-      - KANKU_network
+      - KANAKU_network
 
 volumes:
   postgres_data:
 
 
 networks:
-  KANKU_network:
+  KANAKU_network:
     driver: bridge
 

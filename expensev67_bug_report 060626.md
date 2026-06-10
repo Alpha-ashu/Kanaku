@@ -43,7 +43,7 @@
 
 **Evidence from HAR:**
 ```json
-Request Body: {"email":"user@kanku.com","password":"User@2026!k","gotrue_meta_security":{}}
+Request Body: {"email":"user@KANAKU.com","password":"User@2026!k","gotrue_meta_security":{}}
 ```
 
 **Description:**  
@@ -201,7 +201,7 @@ Sequential numeric PINs like `123456` are among the most commonly guessed PINs g
 Profile response:
 {
   "id": "17fec621-f481-44ae-8597-97e127c0f9a2",
-  "email": "user@kanku.com",
+  "email": "user@KANAKU.com",
   "salary": 0,
   "monthlyIncome": 0,
   "dateOfBirth": "",
@@ -505,7 +505,7 @@ Setting `x-xss-protection: 0` intentionally disables the browser's built-in XSS 
 
 **Evidence from HAR:**
 ```json
-Request Body: {"email":"user@kanku.com","password":"User@2026!k"}
+Request Body: {"email":"user@KANAKU.com","password":"User@2026!k"}
 ```
 JWT claims also reveal:
 ```json
@@ -528,7 +528,7 @@ Step 1: Client requests a challenge
 
 Step 2: Client sends only the numeric code
   POST /auth/v1/token
-  Body: { "email": "user@kanku.com", "challengeCode": 74829 }
+  Body: { "email": "user@KANAKU.com", "challengeCode": 74829 }
 
 Step 3: Server looks up challengeId → maps to real password → authenticates → discards code
 ```

@@ -244,7 +244,7 @@ export class CloudSyncService {
   }
 
   constructor() {
-    this.apiEndpoint = process.env.VITE_API_BASE_URL || 'https://api.KANKU.app';
+    this.apiEndpoint = process.env.VITE_API_BASE_URL || 'https://api.KANAKU.app';
     this.authToken = localStorage.getItem('auth_token');
   }
 

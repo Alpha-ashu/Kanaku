@@ -2,7 +2,7 @@
                        BUG FIX SUMMARY - April 17, 2026
 ================================================================================
 
-PROJECT: KANKU - Personal Finance Management Platform
+PROJECT: KANAKU - Personal Finance Management Platform
 SCOPE: Backend validation and security hardening
 STATUS: ✅ COMPLETE - All 8 bugs identified and fixed
 

@@ -7,7 +7,7 @@ import { incrementAIUsage } from '../../utils/aiUsageTracker';
 import { audit } from '../../utils/auditLogger';
 
 //  BACKEND AI EXTRACTION LOGIC
-// Simplified version of KANKUAI for backend processing
+// Simplified version of KANAKUAI for backend processing
 
 async function extractExpenseDataBackend(text: string, source: 'ocr' | 'voice'): Promise<{
   amount?: number;
@@ -143,7 +143,7 @@ export const processOCRRequest = async (req: AuthRequest, res: Response) => {
       timestamp: new Date().toISOString(),
     });
 
-    //  Backend AI extraction logic (simplified version of KANKUAI)
+    //  Backend AI extraction logic (simplified version of KANAKUAI)
     const extractedData = await extractExpenseDataBackend(cleanData, 'ocr');
 
     const processingTime = performance.now() - startTime;
@@ -159,7 +159,7 @@ export const processOCRRequest = async (req: AuthRequest, res: Response) => {
       success: true,
       data: extractedData,
       processingTime,
-      source: 'KANKU-ai',
+      source: 'KANAKU-ai',
     });
 
   } catch (error) {
@@ -218,7 +218,7 @@ export const processVoiceRequest = async (req: AuthRequest, res: Response) => {
       success: true,
       data: extractedData,
       processingTime,
-      source: 'KANKU-ai',
+      source: 'KANAKU-ai',
     });
 
   } catch (error) {
@@ -487,7 +487,7 @@ async function storeAIPrediction(
     )
     VALUES (
       ${id}, ${userId}, 'expense', ${hashInput(rawInputId)}, ${JSON.stringify(prediction)},
-      ${prediction.confidence || 0.5}, ${processingTime}, 'KANKU-v1.0', ${new Date()}
+      ${prediction.confidence || 0.5}, ${processingTime}, 'KANAKU-v1.0', ${new Date()}
     )
   `;
 

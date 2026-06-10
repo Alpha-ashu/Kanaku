@@ -224,7 +224,7 @@ export class StatusReporter {
     };
 
     const report = `
-=== KANKU Status Report ===
+=== KANAKU Status Report ===
 Generated: ${new Date().toLocaleString()}
 Overall Status: ${health.status.toUpperCase()}
 
@@ -264,7 +264,7 @@ Browser Info:
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `KANKU-status-${new Date().toISOString()}.txt`;
+    a.download = `KANAKU-status-${new Date().toISOString()}.txt`;
     a.click();
     URL.revokeObjectURL(url);
   }

@@ -24,8 +24,8 @@ const getRoleFromEmail = (email?: string | null): UserRole | null => {
   const cleanEmail = email.trim().toLowerCase();
   
   if (
-    cleanEmail === 'admin@kanku.com' ||
-    cleanEmail === 'superadmin@kanku.com' ||
+    cleanEmail === 'admin@KANAKU.com' ||
+    cleanEmail === 'superadmin@KANAKU.com' ||
     cleanEmail === 'admin@example.com' ||
     cleanEmail.startsWith('admin@') ||
     cleanEmail.startsWith('superadmin@') ||
@@ -35,7 +35,7 @@ const getRoleFromEmail = (email?: string | null): UserRole | null => {
   }
   
   if (
-    cleanEmail === 'manager@kanku.com' ||
+    cleanEmail === 'manager@KANAKU.com' ||
     cleanEmail.startsWith('manager@') ||
     cleanEmail.includes('manager')
   ) {
@@ -43,8 +43,8 @@ const getRoleFromEmail = (email?: string | null): UserRole | null => {
   }
   
   if (
-    cleanEmail === 'advisor@kanku.com' ||
-    cleanEmail === 'advisore@kanku.com' ||
+    cleanEmail === 'advisor@KANAKU.com' ||
+    cleanEmail === 'advisore@KANAKU.com' ||
     cleanEmail.startsWith('advisor@') ||
     cleanEmail.includes('advisor')
   ) {
@@ -52,7 +52,7 @@ const getRoleFromEmail = (email?: string | null): UserRole | null => {
   }
   
   if (
-    cleanEmail === 'user@kanku.com' ||
+    cleanEmail === 'user@KANAKU.com' ||
     cleanEmail.startsWith('user@') ||
     cleanEmail.includes('user')
   ) {

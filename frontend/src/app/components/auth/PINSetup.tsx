@@ -3,7 +3,7 @@ import { Eye, EyeOff, ShieldCheck, ChevronLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { backupPINKeys, isPINSet, restorePINKeys, storeMasterKey, verifyPIN } from '@/lib/encryption';
 import { isPinMissing, isPinServiceUnavailable, pinService } from '@/services/pinService';
-import { KANKULogo } from '@/app/components/ui/KANKULogo';
+import { KANAKULogo } from '@/app/components/ui/KANAKULogo';
 
 interface PINSetupProps {
   onComplete: (pin: string) => void;
@@ -229,9 +229,9 @@ export const PINSetup: React.FC<PINSetupProps> = ({
         {/* Header */}
         <div className="pt-4 pb-6 flex flex-col items-center px-6">
           <div className="mb-4">
-            <KANKULogo className="w-12 h-12" />
+            <KANAKULogo className="w-12 h-12" />
           </div>
-          <h1 className="text-3xl font-black text-gray-900 tracking-tighter mb-1">KANKU</h1>
+          <h1 className="text-3xl font-black text-gray-900 tracking-tighter mb-1">KANAKU</h1>
           <p className="text-sm text-gray-500 font-medium text-center max-w-[240px] leading-tight">
             {currentStepSub}
           </p>

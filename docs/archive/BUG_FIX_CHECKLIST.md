@@ -1,6 +1,6 @@
 # Bug Fix Verification Checklist
 
-## Project: KANKU Finance Management Platform
+## Project: KANAKU Finance Management Platform
 ## Date: April 17, 2026
 
 ---

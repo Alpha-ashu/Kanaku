@@ -36,10 +36,10 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey, {
 });
 
 const testUsers = [
-  { email: 'admin@kanku.com', password: 'Admin@2026!k', role: 'admin', name: 'System Admin' },
-  { email: 'manager@kanku.com', password: 'Manager@2026!k', role: 'manager', name: 'Compliance Manager' },
-  { email: 'advisor@kanku.com', password: 'Advisor@2026!k', role: 'advisor', name: 'Senior Advisor' },
-  { email: 'user@kanku.com', password: 'User@2026!k', role: 'user', name: 'Premium Client' }
+  { email: 'admin@KANAKU.com', password: 'Admin@2026!k', role: 'admin', name: 'System Admin' },
+  { email: 'manager@KANAKU.com', password: 'Manager@2026!k', role: 'manager', name: 'Compliance Manager' },
+  { email: 'advisor@KANAKU.com', password: 'Advisor@2026!k', role: 'advisor', name: 'Senior Advisor' },
+  { email: 'user@KANAKU.com', password: 'User@2026!k', role: 'user', name: 'Premium Client' }
 ];
 
 async function seed() {

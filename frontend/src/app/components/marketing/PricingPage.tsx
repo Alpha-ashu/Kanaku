@@ -173,7 +173,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ onBack, onGetStarted, 
 
  {/* Footer Minimal */}
  <footer className="py-10 border-t border-gray-100 text-center">
- <p className="text-xs text-gray-400"> {new Date().getFullYear()} KANKU. All rights reserved.</p>
+ <p className="text-xs text-gray-400"> {new Date().getFullYear()} KANAKU. All rights reserved.</p>
  </footer>
  </div>
  );

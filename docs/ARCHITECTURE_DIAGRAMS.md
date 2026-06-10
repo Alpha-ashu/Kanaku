@@ -1,4 +1,4 @@
-# KANKU — Architecture Flow Diagrams
+# KANAKU — Architecture Flow Diagrams
 
 **Date:** June 9, 2026  
 **Format:** ASCII + Mermaid-compatible diagrams

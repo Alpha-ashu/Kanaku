@@ -37,7 +37,7 @@ function initializeApp(): void {
       </React.StrictMode>
     );
 
-    console.log('KANKUApp initialized successfully in production mode');
+    console.log('KANAKUApp initialized successfully in production mode');
   } catch (error) {
     console.error('Failed to initialize app:', error);
 

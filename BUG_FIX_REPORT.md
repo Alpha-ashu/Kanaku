@@ -1,4 +1,4 @@
-# Bug Fix Report — KANKU Application (expensev67)
+# Bug Fix Report — KANAKU Application (expensev67)
 **Fix Date:** 2026-06-09  
 **Original Report:** `expensev67_bug_report 060626.md`  
 **Original Bugs:** 19 bugs identified from HAR analysis  
@@ -285,7 +285,7 @@ All API responses now send `Cross-Origin-Resource-Policy: same-origin`.
 ```json
 {
   "id": "uuid",
-  "email": "user@kanku.com",
+  "email": "user@KANAKU.com",
   "salary": 0,
   "monthlyIncome": 0,
   "dateOfBirth": "",
@@ -298,7 +298,7 @@ All API responses now send `Cross-Origin-Resource-Policy: same-origin`.
 ```json
 {
   "id": "uuid",
-  "email": "user@kanku.com",
+  "email": "user@KANAKU.com",
   "firstName": "User",
   "lastName": "",
   "country": "",

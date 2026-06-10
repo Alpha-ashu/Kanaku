@@ -1,6 +1,6 @@
-# KANKUIntelligence Systems Documentation
+# KANAKUIntelligence Systems Documentation
 
-This document outlines the architecture, logic, and implementation details for KANKU's core intelligence features: **OCR Bill Scanning**, **Bank Statement Analysis**, and **Voice Financial Assistance**.
+This document outlines the architecture, logic, and implementation details for KANAKU's core intelligence features: **OCR Bill Scanning**, **Bank Statement Analysis**, and **Voice Financial Assistance**.
 
 ---
 
@@ -35,7 +35,7 @@ Designed for structured documents (PDFs), this engine extracts entire transactio
 2.  **Semantic Structuring**:
     *   Passes extracted text to the Gemini structuring pipeline for professional-grade accuracy in identifying transaction dates, descriptions, and amounts.
 3.  **Automatic Categorization**:
-    *   Maps narration strings (NEFT, UPI, etc.) to KANKUcategories using LLM insights and a local keyword dictionary.
+    *   Maps narration strings (NEFT, UPI, etc.) to KANAKUcategories using LLM insights and a local keyword dictionary.
 
 ---
 

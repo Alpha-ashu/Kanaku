@@ -149,14 +149,14 @@ export const Settings: React.FC = () => {
  // Step 3: Clear all storage (PIN & admin settings preserved)
  try {
  const pinBackup = {
- hash: localStorage.getItem('KANKU_encrypted_key'),
- salt: localStorage.getItem('KANKU_salt'),
+ hash: localStorage.getItem('KANAKU_encrypted_key'),
+ salt: localStorage.getItem('KANAKU_salt'),
  adminSettings: localStorage.getItem('admin_global_feature_settings'),
  };
  localStorage.clear();
  sessionStorage.clear();
- if (pinBackup.hash) localStorage.setItem('KANKU_encrypted_key', pinBackup.hash);
- if (pinBackup.salt) localStorage.setItem('KANKU_salt', pinBackup.salt);
+ if (pinBackup.hash) localStorage.setItem('KANAKU_encrypted_key', pinBackup.hash);
+ if (pinBackup.salt) localStorage.setItem('KANAKU_salt', pinBackup.salt);
  if (pinBackup.adminSettings) localStorage.setItem('admin_global_feature_settings', pinBackup.adminSettings);
  } catch (e) {
  console.warn('Storage clear error (non-blocking):', e);
@@ -184,7 +184,7 @@ export const Settings: React.FC = () => {
 
  // Step 5: Delete the database
  try {
- window.indexedDB.deleteDatabase('KANKUDB');
+ window.indexedDB.deleteDatabase('KANAKUDB');
  } catch (e) {
  console.warn('IndexedDB delete error (non-blocking):', e);
  }
@@ -201,14 +201,14 @@ export const Settings: React.FC = () => {
  // Force cleanup even on error (PIN & admin settings preserved)
  try {
  const pinBackup = {
- hash: localStorage.getItem('KANKU_encrypted_key'),
- salt: localStorage.getItem('KANKU_salt'),
+ hash: localStorage.getItem('KANAKU_encrypted_key'),
+ salt: localStorage.getItem('KANAKU_salt'),
  adminSettings: localStorage.getItem('admin_global_feature_settings'),
  };
  localStorage.clear();
  sessionStorage.clear();
- if (pinBackup.hash) localStorage.setItem('KANKU_encrypted_key', pinBackup.hash);
- if (pinBackup.salt) localStorage.setItem('KANKU_salt', pinBackup.salt);
+ if (pinBackup.hash) localStorage.setItem('KANAKU_encrypted_key', pinBackup.hash);
+ if (pinBackup.salt) localStorage.setItem('KANAKU_salt', pinBackup.salt);
  if (pinBackup.adminSettings) localStorage.setItem('admin_global_feature_settings', pinBackup.adminSettings);
  } catch (e) {
  // Ignore
@@ -268,7 +268,7 @@ export const Settings: React.FC = () => {
  }
 
  // Prevent stale queued upserts from replaying after reload.
- localStorage.removeItem('KANKU_sync_queue_v3');
+ localStorage.removeItem('KANAKU_sync_queue_v3');
 
  await runWithCloudSyncSuppressed(async () => {
  await Promise.all([
@@ -330,7 +330,7 @@ export const Settings: React.FC = () => {
 
  try {
  if (!smsStatus.enabled) {
- toast.info('KANKUreads bank transaction messages only to help track expenses automatically. SMS content stays on this device.');
+ toast.info('KANAKUreads bank transaction messages only to help track expenses automatically. SMS content stays on this device.');
  const result = await enableSmsTransactionDetection(30);
  setSmsStatus(result.status);
 

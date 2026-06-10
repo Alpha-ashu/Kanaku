@@ -367,7 +367,7 @@ export const SUPABASE_CONFIG = {
 // ==================== App Configuration ====================
 
 export const APP_CONFIG = {
-  NAME: 'KANKU',
+  NAME: 'KANAKU',
   VERSION: '1.0.0',
   DESCRIPTION: 'Personal Finance Management Platform',
   SUPPORT_EMAIL: 'support@expensetracker.app',

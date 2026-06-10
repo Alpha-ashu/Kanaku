@@ -30,7 +30,7 @@ export interface LearnedMapping {
 // Storage keys
 // 
 
-const LEARNED_MAPPINGS_KEY = 'KANKU.smartCategorization.learnedMappings.v1';
+const LEARNED_MAPPINGS_KEY = 'KANAKU.smartCategorization.learnedMappings.v1';
 
 // 
 // Keyword Database - extended with Indian context

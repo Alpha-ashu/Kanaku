@@ -57,7 +57,7 @@ If corporate policy later approves deeper NLP or localization upgrades, evaluate
 When Node.js tooling is available in the target environment, run:
 
 ```powershell
-Set-Location "C:\Users\sashra19\Documents\Intellij\KANKU\frontend"
+Set-Location "C:\Users\sashra19\Documents\Intellij\KANAKU\frontend"
 npm run type-check
 npm run test:unit
 npm run build

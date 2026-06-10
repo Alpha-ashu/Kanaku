@@ -128,7 +128,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = ({
  localStorage.setItem('email_verified', 'true');
  localStorage.setItem('user_status', 'verified');
  setVerified(true);
- toast.success('Email verified successfully! Welcome to KANKU ');
+ toast.success('Email verified successfully! Welcome to KANAKU ');
 
  // Short delay to show success state before navigating
  setTimeout(() => onVerified(), 800);

@@ -1,5 +1,5 @@
 /**
- * KANKU Full OpenAPI 3.0 Specification
+ * KANAKU Full OpenAPI 3.0 Specification
  * Hand-crafted comprehensive spec covering ALL 150+ endpoints:
  * Auth, PIN, Accounts, Transactions, Goals, Loans, Investments,
  * Friends, Groups, Todos, Settings, Notifications, Sync, Dashboard,
@@ -737,14 +737,14 @@ export function generateOpenApiDocument(baseUrl?: string) {
   return {
     openapi: '3.0.3',
     info: {
-      title: 'KANKU Backend API',
+      title: 'KANAKU Backend API',
       version: '1.0.0',
-      description: `# KANKU Personal Finance API\n\n**${totalOps} operations** across **${totalPaths} paths** — fully documented end-to-end.\n\n## Authenticate\n1. \`POST /api/v1/auth/register\` or \`POST /api/v1/auth/login\`\n2. Copy the JWT from the \`Authorization\` response header\n3. Click **Authorize 🔓** → enter: \`Bearer <token>\`\n\n## Roles\n| Role | Access |\n|------|--------|\n| \`user\` | Personal finance |\n| \`advisor\` | User + advisor workspace |\n| \`manager\` | Advisor verification |\n| \`admin\` | Full system access |\n\n## Rate Limits\n| Scope | Limit |\n|-------|-------|\n| /auth/* | 5/min |\n| /bills POST | 10/min |\n| /receipts/scan | 8/min |\n| /sync/* | 100/min |\n| All other | 60/min (prod) |`,
-      contact: { name: 'KANKU API', email: 'api@kanku.in' },
+      description: `# KANAKU Personal Finance API\n\n**${totalOps} operations** across **${totalPaths} paths** — fully documented end-to-end.\n\n## Authenticate\n1. \`POST /api/v1/auth/register\` or \`POST /api/v1/auth/login\`\n2. Copy the JWT from the \`Authorization\` response header\n3. Click **Authorize 🔓** → enter: \`Bearer <token>\`\n\n## Roles\n| Role | Access |\n|------|--------|\n| \`user\` | Personal finance |\n| \`advisor\` | User + advisor workspace |\n| \`manager\` | Advisor verification |\n| \`admin\` | Full system access |\n\n## Rate Limits\n| Scope | Limit |\n|-------|-------|\n| /auth/* | 5/min |\n| /bills POST | 10/min |\n| /receipts/scan | 8/min |\n| /sync/* | 100/min |\n| All other | 60/min (prod) |`,
+      contact: { name: 'KANAKU API', email: 'api@KANAKU.in' },
     },
     servers: [
       { url: baseUrl || 'http://localhost:3000', description: 'Development' },
-      { url: 'https://api.kanku.in', description: 'Production' },
+      { url: 'https://api.KANAKU.in', description: 'Production' },
     ],
     tags: [
       { name: 'System' }, { name: 'Auth' }, { name: 'PIN' }, { name: 'Accounts' },
@@ -778,7 +778,7 @@ export function generateOpenApiDocument(baseUrl?: string) {
 
 export function generateApiTestingGuide(baseUrl: string) {
   const totalOps = Object.values(ALL_PATHS).reduce<number>((n, p) => n + Object.keys(p as object).length, 0);
-  return `# KANKU API Testing Guide\n\nBase URL: \`${baseUrl}/api/v1\`\nSwagger UI: \`${baseUrl}/api-docs\`\nOpenAPI JSON: \`${baseUrl}/api-docs/openapi.json\`\n\n**Total operations: ${totalOps}**\n\n## 1. Authentication\n\n\`\`\`bash\ncurl -si -X POST ${baseUrl}/api/v1/auth/login \\\n  -H "Content-Type: application/json" \\\n  -d '{"email":"test@example.com","password":"TestPass123!"}' \\\n  | grep -i authorization\n\`\`\`\nIn Swagger UI: Click **Authorize 🔓** → enter: \`Bearer <token>\`\n\n## 2. Core User Journey\n1. Register → JWT\n2. POST /pin/create → Set PIN\n3. POST /accounts → Create bank account\n4. POST /transactions (income) → Add salary\n5. POST /transactions (expense) → Add expense\n6. GET /dashboard/summary → Net worth + categories\n7. POST /goals → Savings goal\n8. POST /loans → EMI loan\n9. POST /loans/:id/payment → Record EMI\n10. GET /ai/insights → AI financial advice\n\n## 3. Advisor Journey\n1. POST /advisors/apply → Submit application\n2. (Admin approves) PUT /admin/users/:id/approve\n3. POST /advisors/availability → Set working hours\n4. GET /bookings → Incoming requests\n5. PUT /bookings/:id/accept → Accept → Session created\n6. POST /sessions/:id/start → Start session\n7. POST /sessions/:id/messages → Chat\n8. POST /sessions/:id/complete → Complete\n\n## 4. Import Journey\n1. POST /import/upload → Upload CSV\n2. GET /import/:sessionId → Review\n3. POST /import/confirm → Save\n\n## 5. Error Codes\n| Code | HTTP | Cause |\n|------|------|-------|\n| MISSING_FIELDS | 400 | Required field absent |\n| INVALID_EMAIL | 400 | Email format invalid |\n| PASSWORD_TOO_SHORT | 400 | Password < 8 chars |\n| INVALID_AMOUNT | 400 | Amount ≤ 0 |\n| INVALID_TRANSFER | 400 | Same source/target account |\n| INVALID_PIN | 400 | Weak PIN |\n| NOT_FOUND | 404 | Resource missing |\n| DUPLICATE_ACCOUNT | 409 | Name+type exists |\n| ACCOUNT_SUSPENDED | 403 | User suspended |\n\n## 6. Rate Limits\n| Scope | Limit |\n|-------|-------|\n| /auth/* | 5/min |\n| /bills POST | 10/min |\n| /receipts/scan | 8/min |\n| /sync/* | 100/min |\n| Everything else | 60/min |\n`;
+  return `# KANAKU API Testing Guide\n\nBase URL: \`${baseUrl}/api/v1\`\nSwagger UI: \`${baseUrl}/api-docs\`\nOpenAPI JSON: \`${baseUrl}/api-docs/openapi.json\`\n\n**Total operations: ${totalOps}**\n\n## 1. Authentication\n\n\`\`\`bash\ncurl -si -X POST ${baseUrl}/api/v1/auth/login \\\n  -H "Content-Type: application/json" \\\n  -d '{"email":"test@example.com","password":"TestPass123!"}' \\\n  | grep -i authorization\n\`\`\`\nIn Swagger UI: Click **Authorize 🔓** → enter: \`Bearer <token>\`\n\n## 2. Core User Journey\n1. Register → JWT\n2. POST /pin/create → Set PIN\n3. POST /accounts → Create bank account\n4. POST /transactions (income) → Add salary\n5. POST /transactions (expense) → Add expense\n6. GET /dashboard/summary → Net worth + categories\n7. POST /goals → Savings goal\n8. POST /loans → EMI loan\n9. POST /loans/:id/payment → Record EMI\n10. GET /ai/insights → AI financial advice\n\n## 3. Advisor Journey\n1. POST /advisors/apply → Submit application\n2. (Admin approves) PUT /admin/users/:id/approve\n3. POST /advisors/availability → Set working hours\n4. GET /bookings → Incoming requests\n5. PUT /bookings/:id/accept → Accept → Session created\n6. POST /sessions/:id/start → Start session\n7. POST /sessions/:id/messages → Chat\n8. POST /sessions/:id/complete → Complete\n\n## 4. Import Journey\n1. POST /import/upload → Upload CSV\n2. GET /import/:sessionId → Review\n3. POST /import/confirm → Save\n\n## 5. Error Codes\n| Code | HTTP | Cause |\n|------|------|-------|\n| MISSING_FIELDS | 400 | Required field absent |\n| INVALID_EMAIL | 400 | Email format invalid |\n| PASSWORD_TOO_SHORT | 400 | Password < 8 chars |\n| INVALID_AMOUNT | 400 | Amount ≤ 0 |\n| INVALID_TRANSFER | 400 | Same source/target account |\n| INVALID_PIN | 400 | Weak PIN |\n| NOT_FOUND | 404 | Resource missing |\n| DUPLICATE_ACCOUNT | 409 | Name+type exists |\n| ACCOUNT_SUSPENDED | 403 | User suspended |\n\n## 6. Rate Limits\n| Scope | Limit |\n|-------|-------|\n| /auth/* | 5/min |\n| /bills POST | 10/min |\n| /receipts/scan | 8/min |\n| /sync/* | 100/min |\n| Everything else | 60/min |\n`;
 }
 
 // ─── Legacy exports kept for backward compatibility ────────────────────────────
@@ -813,7 +813,7 @@ type EndpointOverride = Partial<OpenApiOperation> & {
   responseExample?: Record<string, unknown>;
 };
 
-const API_TITLE = 'KANKU Backend API';
+const API_TITLE = 'KANAKU Backend API';
 const API_VERSION = '1.0.0';
 
 const ROUTE_MOUNTS: RouteMount[] = [
@@ -845,7 +845,7 @@ const ROUTE_MOUNTS: RouteMount[] = [
 const ENDPOINT_OVERRIDES: Record<string, EndpointOverride> = {
   'post /api/v1/auth/register': {
     summary: 'Register a new user',
-    description: 'Creates a KANKU account and returns authentication data.',
+    description: 'Creates a KANAKU account and returns authentication data.',
     requestExample: {
       name: 'Asha Sharma',
       email: 'asha@example.com',

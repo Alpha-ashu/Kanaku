@@ -232,8 +232,8 @@ const getRoleFromEmail = (email?: string | null): UserRole | null => {
   const cleanEmail = email.trim().toLowerCase();
   
   if (
-    cleanEmail === 'admin@kanku.com' ||
-    cleanEmail === 'superadmin@kanku.com' ||
+    cleanEmail === 'admin@KANAKU.com' ||
+    cleanEmail === 'superadmin@KANAKU.com' ||
     cleanEmail === 'admin@example.com' ||
     cleanEmail.startsWith('admin@') ||
     cleanEmail.startsWith('superadmin@') ||
@@ -243,7 +243,7 @@ const getRoleFromEmail = (email?: string | null): UserRole | null => {
   }
   
   if (
-    cleanEmail === 'manager@kanku.com' ||
+    cleanEmail === 'manager@KANAKU.com' ||
     cleanEmail.startsWith('manager@') ||
     cleanEmail.includes('manager')
   ) {
@@ -251,8 +251,8 @@ const getRoleFromEmail = (email?: string | null): UserRole | null => {
   }
   
   if (
-    cleanEmail === 'advisor@kanku.com' ||
-    cleanEmail === 'advisore@kanku.com' ||
+    cleanEmail === 'advisor@KANAKU.com' ||
+    cleanEmail === 'advisore@KANAKU.com' ||
     cleanEmail.startsWith('advisor@') ||
     cleanEmail.includes('advisor')
   ) {
@@ -260,7 +260,7 @@ const getRoleFromEmail = (email?: string | null): UserRole | null => {
   }
   
   if (
-    cleanEmail === 'user@kanku.com' ||
+    cleanEmail === 'user@KANAKU.com' ||
     cleanEmail.startsWith('user@') ||
     cleanEmail.includes('user')
   ) {
@@ -343,7 +343,7 @@ const clearLocalAuthPresentationState = (preservePinKeys = false) => {
     'user_name',
     'pin_created_at',
     'pin_expiry',
-    'KANKU_last_full_sync_at',
+    'KANAKU_last_full_sync_at',
   ].forEach((key) => localStorage.removeItem(key));
 
   if (!preservePinKeys) {
@@ -851,7 +851,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     window.addEventListener('offline', handleOffline);
     window.addEventListener('online', handleOnline);
-    window.addEventListener('KANKU_AUTH_CHANGE', handleCustomAuthChange);
+    window.addEventListener('KANAKU_AUTH_CHANGE', handleCustomAuthChange);
 
     let initialSyncDone = false;
 
@@ -1050,7 +1050,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       supabase.auth.stopAutoRefresh();
       window.removeEventListener('offline', handleOffline);
       window.removeEventListener('online', handleOnline);
-      window.removeEventListener('KANKU_AUTH_CHANGE', handleCustomAuthChange);
+      window.removeEventListener('KANAKU_AUTH_CHANGE', handleCustomAuthChange);
     };
   }, []);
 

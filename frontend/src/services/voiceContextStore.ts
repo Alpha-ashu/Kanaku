@@ -29,7 +29,7 @@ export interface RecentAction {
   timestamp: string;
 }
 
-const CONTEXT_KEY = "kanku_voice_context";
+const CONTEXT_KEY = "KANAKU_voice_context";
 const MAX_RECENT = 10;
 
 // ─────────────────────────────────────────────────────────────────────────────

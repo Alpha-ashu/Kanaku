@@ -34,7 +34,7 @@ export interface AIPrediction {
   timestamp: string;
 }
 
-class KANKUIntelligenceEngine {
+class KANAKUIntelligenceEngine {
   private merchantPatterns: Map<string, AIMerchantPattern[]> = new Map();
   private learningData: AILearningData[] = [];
   private initialized = false;
@@ -42,14 +42,14 @@ class KANKUIntelligenceEngine {
   async initialize(): Promise<void> {
     if (this.initialized) return;
 
-    console.log(' Initializing KANKUIntelligence Engine...');
+    console.log(' Initializing KANAKUIntelligence Engine...');
 
     // Load learning data from localStorage (privacy-first - client-side only)
     await this.loadLearningData();
     await this.loadMerchantPatterns();
 
     this.initialized = true;
-    console.log(' KANKUIntelligence Engine Ready');
+    console.log(' KANAKUIntelligence Engine Ready');
   }
 
   //  CORE AI LOGIC - This is the important layer!
@@ -307,7 +307,7 @@ class KANKUIntelligenceEngine {
 
   private async loadLearningData(): Promise<void> {
     try {
-      const stored = localStorage.getItem('KANKU_learning_data');
+      const stored = localStorage.getItem('KANAKU_learning_data');
       if (stored) {
         this.learningData = JSON.parse(stored);
         console.log(` Loaded ${this.learningData.length} learning entries`);
@@ -319,7 +319,7 @@ class KANKUIntelligenceEngine {
 
   private async saveLearningData(): Promise<void> {
     try {
-      localStorage.setItem('KANKU_learning_data', JSON.stringify(this.learningData));
+      localStorage.setItem('KANAKU_learning_data', JSON.stringify(this.learningData));
     } catch (error) {
       console.error('Failed to save learning data:', error);
     }
@@ -327,7 +327,7 @@ class KANKUIntelligenceEngine {
 
   private async loadMerchantPatterns(): Promise<void> {
     try {
-      const stored = localStorage.getItem('KANKU_merchant_patterns');
+      const stored = localStorage.getItem('KANAKU_merchant_patterns');
       if (stored) {
         const patterns = JSON.parse(stored);
         patterns.forEach((pattern: AIMerchantPattern) => {
@@ -348,7 +348,7 @@ class KANKUIntelligenceEngine {
       this.merchantPatterns.forEach(patterns => {
         allPatterns.push(...patterns);
       });
-      localStorage.setItem('KANKU_merchant_patterns', JSON.stringify(allPatterns));
+      localStorage.setItem('KANAKU_merchant_patterns', JSON.stringify(allPatterns));
     } catch (error) {
       console.error('Failed to save merchant patterns:', error);
     }
@@ -380,8 +380,8 @@ class KANKUIntelligenceEngine {
 }
 
 // Singleton instance
-export const KANKUAI = new KANKUIntelligenceEngine();
+export const KANAKUAI = new KANAKUIntelligenceEngine();
 
 // Auto-initialize on module load
-KANKUAI.initialize().catch(console.error);
+KANAKUAI.initialize().catch(console.error);
 

@@ -8,7 +8,7 @@ async function run() {
     });
     console.log('Users in database:', users);
 
-    console.log('Querying UserPin for user@kanku.com...');
+    console.log('Querying UserPin for user@KANAKU.com...');
     const userPin = await prisma.userPin.findFirst({
       where: { userId: '17fec621-f481-44ae-8597-97e127c0f9a2' }
     });

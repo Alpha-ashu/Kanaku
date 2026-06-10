@@ -185,7 +185,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   // Uses the stored merchant field that was saved alongside the transaction.
   useEffect(() => {
     if (transactions.length === 0) return;
-    const REPAIR_KEY = 'KANKU_description_repair_v2';
+    const REPAIR_KEY = 'KANAKU_description_repair_v2';
     if (localStorage.getItem(REPAIR_KEY)) return;
 
     const toRepair = transactions.filter(

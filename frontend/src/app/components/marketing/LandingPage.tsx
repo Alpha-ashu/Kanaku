@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { KANKULogo } from '@/app/components/ui/KANKULogo';
+import { KANAKULogo } from '@/app/components/ui/KANAKULogo';
 import { PublicNavbar } from '@/app/components/ui/PublicNavbar';
 
 interface LandingPageProps {
@@ -211,7 +211,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin,
  </h1>
 
  <p className="text-gray-500 text-base lg:text-lg leading-relaxed max-w-lg">
- At KANKUwe are the architects of your financial future, where smart budgeting meets
+ At KANAKUwe are the architects of your financial future, where smart budgeting meets
  AI intelligence. Our journey began with a shared passion for making money management
  effortless and personal.
  </p>
@@ -323,7 +323,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin,
  <section id="features" className="max-w-7xl mx-auto px-6 lg:px-8 py-20 lg:py-28">
  <div className="text-center mb-14 space-y-4">
  <p className="text-violet-600 font-semibold text-sm tracking-widest uppercase">
- Why choose KANKU
+ Why choose KANAKU
  </p>
  <h2 className="text-3xl lg:text-4xl font-extrabold text-gray-900 tracking-tight">
  AI-Powered Finance Management
@@ -414,11 +414,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin,
  <footer className="border-t border-gray-100 bg-white">
  <div className="max-w-7xl mx-auto px-6 lg:px-8 py-10 flex flex-col sm:flex-row items-center justify-between gap-4">
  <div className="flex items-center gap-2">
- <KANKULogo className="w-7 h-7" />
- <span className="text-sm font-bold text-gray-700">KANKU</span>
+ <KANAKULogo className="w-7 h-7" />
+ <span className="text-sm font-bold text-gray-700">KANAKU</span>
  </div>
  <p className="text-xs text-gray-400">
- {new Date().getFullYear()} KANKU. All rights reserved.
+ {new Date().getFullYear()} KANAKU. All rights reserved.
  </p>
  <div className="flex items-center gap-5">
  {[

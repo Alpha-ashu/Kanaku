@@ -2,7 +2,7 @@
 
 ## 1. System Overview
 
-The Kanku app integrates with India's Account Aggregator (AA) framework regulated by RBI to enable secure, consent-based financial data sharing. The integration uses Setu AA APIs and follows strict compliance requirements.
+The KANAKU app integrates with India's Account Aggregator (AA) framework regulated by RBI to enable secure, consent-based financial data sharing. The integration uses Setu AA APIs and follows strict compliance requirements.
 
 ### Architecture Layers
 
@@ -212,9 +212,9 @@ aa_transactions         - Processed, queryable transactions
 AA_BASE_URL=https://aa-sandbox.setu.co
 AA_CLIENT_ID=your_client_id
 AA_CLIENT_SECRET=your_client_secret
-AA_REDIRECT_URL=https://app.kanku.in/aa/callback
-AA_FIU_ID=kanku_app
-AA_NOTIFICATION_URL=https://api.kanku.in/api/v1/aa/notification
+AA_REDIRECT_URL=https://app.KANAKU.in/aa/callback
+AA_FIU_ID=KANAKU_app
+AA_NOTIFICATION_URL=https://api.KANAKU.in/api/v1/aa/notification
 ```
 
 ---

@@ -8,14 +8,14 @@ require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 
 const prisma = new PrismaClient();
 
-const DEMO_PASSWORD = process.env.DEMO_USER_PASSWORD || 'KANKU@123';
+const DEMO_PASSWORD = process.env.DEMO_USER_PASSWORD || 'KANAKU@123';
 const DEMO_PIN = process.env.DEMO_USER_PIN || '123456';
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL;
 const SUPABASE_PUBLISHABLE_KEY = process.env.VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY;
 
 const DEMO_USERS = [
   {
-    email: 'superadmin@KANKU.com',
+    email: 'superadmin@KANAKU.com',
     role: 'admin',
     name: 'Super Admin',
     profile: {
@@ -51,7 +51,7 @@ const DEMO_USERS = [
     },
   },
   {
-    email: 'user@KANKU.com',
+    email: 'user@KANAKU.com',
     role: 'user',
     name: 'Demo User',
     profile: {
@@ -87,7 +87,7 @@ const DEMO_USERS = [
     },
   },
   {
-    email: 'advisore@KANKU.com',
+    email: 'advisore@KANAKU.com',
     role: 'advisor',
     name: 'Demo Advisor',
     profile: {

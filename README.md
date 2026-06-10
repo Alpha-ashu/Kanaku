@@ -1,9 +1,9 @@
-# KANKU: Modern Expense Tracker
+# KANAKU: Modern Expense Tracker
 
 > [!IMPORTANT]
-> **AI DEVELOPER NOTICE**: Before making any changes, please read the [KANKU_DEVELOPER_CONTEXT.md](./KANKU_DEVELOPER_CONTEXT.md) for architecture rules and the design system guide.
+> **AI DEVELOPER NOTICE**: Before making any changes, please read the [KANAKU_DEVELOPER_CONTEXT.md](./KANAKU_DEVELOPER_CONTEXT.md) for architecture rules and the design system guide.
 
-KANKUis a full-stack finance app with a React frontend, an Express/Prisma backend, Supabase integration, offline-first local storage, and AI-assisted import and receipt flows.
+KANAKUis a full-stack finance app with a React frontend, an Express/Prisma backend, Supabase integration, offline-first local storage, and AI-assisted import and receipt flows.
 
 ## Repo map
 

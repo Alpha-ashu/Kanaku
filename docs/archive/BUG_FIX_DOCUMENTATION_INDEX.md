@@ -1,6 +1,6 @@
 #  Bug Fix Documentation Index
 
-## KANKU Finance Management Platform
+## KANAKU Finance Management Platform
 **Completion Date**: April 17, 2026  
 **Status**:  ALL BUGS FIXED AND DOCUMENTED
 

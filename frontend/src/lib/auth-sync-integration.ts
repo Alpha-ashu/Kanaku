@@ -61,7 +61,7 @@ interface SyncQueueItem {
 
 const MAX_SYNC_RETRIES = 10;
 
-const SYNC_QUEUE_STORAGE_KEY = 'KANKU_sync_queue_v3';
+const SYNC_QUEUE_STORAGE_KEY = 'KANAKU_sync_queue_v3';
 const CORE_SYNC_TABLES: SyncedTableName[] = [
   'accounts',
   'friends',
@@ -1430,7 +1430,7 @@ async function fetchBackendRows(path: string) {
   }
 }
 
-const LAST_FULL_SYNC_KEY = 'KANKU_last_full_sync_at';
+const LAST_FULL_SYNC_KEY = 'KANAKU_last_full_sync_at';
 const FULL_SYNC_COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes
 
 async function shouldSkipFullSync(requestedTables: SyncedTableName[]): Promise<boolean> {
@@ -1476,7 +1476,7 @@ async function syncUserDataFromBackend(
   if (!force) {
     const cooldownMs = 5 * 60 * 1000; // 5 minutes
     finalTablesToSync = targetTables.filter(table => {
-      const lastSyncStr = localStorage.getItem(`KANKU_last_sync_at_${table}`);
+      const lastSyncStr = localStorage.getItem(`KANAKU_last_sync_at_${table}`);
       if (!lastSyncStr) return true;
       const lastSync = Number(lastSyncStr);
       if (isNaN(lastSync) || Date.now() - lastSync < 0 || Date.now() - lastSync >= cooldownMs) {
@@ -1976,7 +1976,7 @@ async function syncUserDataFromBackend(
 
   const now = Date.now().toString();
   finalTablesToSync.forEach(table => {
-    localStorage.setItem(`KANKU_last_sync_at_${table}`, now);
+    localStorage.setItem(`KANAKU_last_sync_at_${table}`, now);
   });
 
   if (tablesToSync.length >= CORE_SYNC_TABLES.length) {
@@ -2018,7 +2018,7 @@ export async function syncUserDataFromCloud(
   if (!force) {
     const cooldownMs = 5 * 60 * 1000; // 5 minutes
     finalTablesToSync = targetTables.filter(table => {
-      const lastSyncStr = localStorage.getItem(`KANKU_last_sync_at_${table}`);
+      const lastSyncStr = localStorage.getItem(`KANAKU_last_sync_at_${table}`);
       if (!lastSyncStr) return true;
       const lastSync = Number(lastSyncStr);
       if (isNaN(lastSync) || Date.now() - lastSync < 0 || Date.now() - lastSync >= cooldownMs) {
@@ -2366,7 +2366,7 @@ export async function syncUserDataFromCloud(
 
     const now = Date.now().toString();
     currentSyncTables.forEach(table => {
-      localStorage.setItem(`KANKU_last_sync_at_${table}`, now);
+      localStorage.setItem(`KANAKU_last_sync_at_${table}`, now);
     });
 
     if (tablesToSync.length >= CORE_SYNC_TABLES.length) {
@@ -2454,7 +2454,7 @@ export function subscribeToUserCloudSync(userId: string) {
     };
   }
 
-  const channel = supabase.channel(`KANKU-user-sync-${userId}`);
+  const channel = supabase.channel(`KANAKU-user-sync-${userId}`);
 
   for (const table of subscribableTables) {
     channel.on(

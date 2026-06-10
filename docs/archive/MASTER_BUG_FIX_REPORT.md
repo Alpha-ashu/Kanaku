@@ -1,5 +1,5 @@
 #  MASTER BUG FIX REPORT
-## KANKU Finance Management Platform - April 17, 2026
+## KANAKU Finance Management Platform - April 17, 2026
 
 ---
 

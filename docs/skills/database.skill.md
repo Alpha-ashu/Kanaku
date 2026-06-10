@@ -1,4 +1,4 @@
-# Database Skill Reference  KANKU
+# Database Skill Reference  KANAKU
 
 > Stack: PostgreSQL  Prisma ORM  Supabase (managed Postgres + Auth + RLS)
 
@@ -98,10 +98,10 @@ CREATE POLICY "user_isolation" ON transactions
 
 ```env
 # Direct connection (migrations, prisma studio)
-DATABASE_URL="postgresql://user:pass@host:5432/KANKU"
+DATABASE_URL="postgresql://user:pass@host:5432/KANAKU"
 
 # Pooled connection (app runtime via PgBouncer / Supabase pooler)
-DATABASE_URL_POOLED="postgresql://user:pass@pooler.supabase.com:6543/KANKU?pgbouncer=true"
+DATABASE_URL_POOLED="postgresql://user:pass@pooler.supabase.com:6543/KANAKU?pgbouncer=true"
 ```
 
 - Use pooled URL in the Express app (`datasource db { url = env("DATABASE_URL") }`).

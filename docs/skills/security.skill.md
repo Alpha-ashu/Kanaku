@@ -1,4 +1,4 @@
-# Security Skill Reference  KANKU
+# Security Skill Reference  KANAKU
 
 > **Stack**: Supabase Auth  Custom JWT  Helmet  CORS  express-rate-limit  Zod  bcrypt  Prisma
 
@@ -174,7 +174,7 @@ Secure deep linking with validation
  Security headers verified in production
 
 
-For vulnerability reporting: Please email security@KANKU.app
+For vulnerability reporting: Please email security@KANAKU.app
 
 ---
 

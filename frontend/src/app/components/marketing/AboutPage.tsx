@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Shield, Users, Target, Heart, Zap, Globe, Lock } from 'lucide-react';
-import { KANKULogo } from '@/app/components/ui/KANKULogo';
+import { KANAKULogo } from '@/app/components/ui/KANAKULogo';
 import { PublicNavbar } from '@/app/components/ui/PublicNavbar';
 
 interface AboutPageProps {
@@ -40,7 +40,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onBack, onGetStarted, onNa
  ];
 
  const milestones = [
-  { year: "November 2025", event: "KANKU was founded by Shaik Ashraf K to build a secure, local-first finance manager." },
+  { year: "November 2025", event: "KANAKU was founded by Shaik Ashraf K to build a secure, local-first finance manager." },
   { year: "Early 2026", event: "Launched advanced AI-powered transaction analysis, offline-first sync engine, and receipt OCR." },
   { year: "Mid 2026", event: "Grown to support cooperative advisor-client planning sessions, live commodity tracking, and group expenses." }
  ];
@@ -79,7 +79,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onBack, onGetStarted, onNa
       transition={{ delay: 0.1 }}
       className="text-lg lg:text-xl text-gray-500 leading-relaxed max-w-2xl mx-auto"
     >
-      KANKU was founded in November 2025 by Shaik Ashraf K (Founder & CEO) with a mission to solve the fragmentation and security concerns inherent in personal finance management. Frustrated by complex spreadsheets, clunky banking software, and the fear of cloud data leakage, Shaik envisioned an intelligent, local-first finance companion that puts the user completely in control of their wealth.
+      KANAKU was founded in November 2025 by Shaik Ashraf K (Founder & CEO) with a mission to solve the fragmentation and security concerns inherent in personal finance management. Frustrated by complex spreadsheets, clunky banking software, and the fear of cloud data leakage, Shaik envisioned an intelligent, local-first finance companion that puts the user completely in control of their wealth.
     </motion.p>
  </div>
  </section>
@@ -136,10 +136,10 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onBack, onGetStarted, onNa
  <div className="max-w-7xl mx-auto px-6 lg:px-8">
  <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-[3rem] p-10 lg:p-20 flex flex-col items-center text-center text-white overflow-hidden relative">
  <div className="absolute bottom-0 right-0 w-64 h-64 bg-violet-500/20 rounded-full blur-3xl" />
- <KANKULogo className="w-16 h-16 mb-6 mx-auto" />
+ <KANAKULogo className="w-16 h-16 mb-6 mx-auto" />
  <h2 className="text-3xl lg:text-5xl font-bold mb-6">Join the Revolution</h2>
  <p className="text-gray-400 max-w-xl mx-auto mb-10 text-lg">
- Start managing your wealth smarter today. Join over 50k users who trust KANKUfor their financial journey.
+ Start managing your wealth smarter today. Join over 50k users who trust KANAKUfor their financial journey.
  </p>
  <button
  onClick={onGetStarted}
@@ -155,8 +155,8 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onBack, onGetStarted, onNa
   <footer className="py-12 border-t border-gray-100 text-center bg-gray-50/50">
     <div className="max-w-4xl mx-auto px-6 text-sm text-gray-400 space-y-2">
       <p className="font-semibold text-gray-600">Project Created By: Shaik Ashraf K</p>
-      <p>Initial Project Creation: November 2025 | Organization: Kanku</p>
-      <p className="text-xs text-gray-400">© {new Date().getFullYear()} Kanku. All rights reserved by Kanku.</p>
+      <p>Initial Project Creation: November 2025 | Organization: KANAKU</p>
+      <p className="text-xs text-gray-400">© {new Date().getFullYear()} KANAKU. All rights reserved by KANAKU.</p>
     </div>
   </footer>
  </div>

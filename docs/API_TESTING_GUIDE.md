@@ -1,4 +1,4 @@
-# KANKU API — Swagger Testing Guide
+# KANAKU API — Swagger Testing Guide
 
 **Swagger UI:** `GET /api-docs`  
 **OpenAPI JSON:** `GET /api-docs/openapi.json`  

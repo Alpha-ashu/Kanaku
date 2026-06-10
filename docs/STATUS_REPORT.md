@@ -1,4 +1,4 @@
-# KANKU Application — Current Status Report
+# KANAKU Application — Current Status Report
 
 **Date:** June 9, 2026  
 **Reviewer:** Senior Developer Code Review  
@@ -8,7 +8,7 @@
 
 ## Executive Summary
 
-KANKU is a well-architected personal finance application with a strong security foundation, offline-first design, and comprehensive feature set. The codebase demonstrates professional-grade patterns: layered architecture, Zod validation, ownership checks, atomic DB transactions, and rate limiting. This review identified and resolved several bugs and gaps.
+KANAKU is a well-architected personal finance application with a strong security foundation, offline-first design, and comprehensive feature set. The codebase demonstrates professional-grade patterns: layered architecture, Zod validation, ownership checks, atomic DB transactions, and rate limiting. This review identified and resolved several bugs and gaps.
 
 ---
 

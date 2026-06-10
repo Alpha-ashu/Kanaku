@@ -1,6 +1,6 @@
 # Finora — Backend & Database Architecture Document
 
-> **Project:** Finora (formerly KANKU) — Financial-Grade Expense Tracker  
+> **Project:** Finora (formerly KANAKU) — Financial-Grade Expense Tracker  
 > **Stack:** Node.js · Express · TypeScript · Prisma · PostgreSQL · Supabase Auth · Redis · Socket.IO · BullMQ  
 > **Prepared:** June 9, 2026  
 > **Status:** Living Document — update on every significant structural change

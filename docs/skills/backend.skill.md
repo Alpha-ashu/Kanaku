@@ -1,4 +1,4 @@
-# Backend Skill Reference  KANKU
+# Backend Skill Reference  KANAKU
 
 > Stack: Node.js  TypeScript  Express  Prisma  PostgreSQL  Zod  Winston
 

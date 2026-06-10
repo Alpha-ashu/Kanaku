@@ -98,7 +98,7 @@ export const Diagnostics: React.FC = () => {
 
  const mockUser = {
  id: `mock-${targetRole}-id`,
- email: `${targetRole}@kanku.com`,
+ email: `${targetRole}@KANAKU.com`,
  user_metadata: { role: targetRole, full_name: `Mock ${targetRole}` },
  aud: 'authenticated',
  role: 'authenticated',

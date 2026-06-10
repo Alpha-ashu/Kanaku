@@ -18,16 +18,18 @@ import org.json.JSONObject;
 import java.util.Locale;
 
 public final class SmsNotificationHelper {
-    private static final String CHANNEL_ID = "KANKU_sms_detection";
+
+    private static final String CHANNEL_ID = "KANAKU_sms_detection";
     private static final String CHANNEL_NAME = "SMS Transaction Detection";
 
-    private SmsNotificationHelper() {}
+    private SmsNotificationHelper() {
+    }
 
     public static void showDetectionNotification(Context context, JSONObject transaction) {
         createChannel(context);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
-            && ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                && ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
 
@@ -39,36 +41,36 @@ public final class SmsNotificationHelper {
         launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
         PendingIntent pendingIntent = PendingIntent.getActivity(
-            context,
-            Math.abs(transaction.optString("sourceSmsId", "").hashCode()),
-            launchIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+                context,
+                Math.abs(transaction.optString("sourceSmsId", "").hashCode()),
+                launchIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
         );
 
         String merchant = transaction.optString("merchant", "");
         String amountLabel = formatAmount(
-            transaction.optDouble("amount", 0d),
-            transaction.optString("currencyCode", "INR")
+                transaction.optDouble("amount", 0d),
+                transaction.optString("currencyCode", "INR")
         );
         String action = "income".equalsIgnoreCase(transaction.optString("transactionType", "expense"))
-            ? "received"
-            : "spent";
+                ? "received"
+                : "spent";
         String body = merchant.isEmpty()
-            ? amountLabel + " " + action + ". Review and add it to KANKU."
-            : amountLabel + " " + action + " at " + merchant + ". Review and add it to KANKU.";
+                ? amountLabel + " " + action + ". Review and add it to KANAKU."
+                : amountLabel + " " + action + " at " + merchant + ". Review and add it to KANAKU.";
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.mipmap.ic_launcher)
-            .setContentTitle("New Transaction Detected")
-            .setContentText(body)
-            .setStyle(new NotificationCompat.BigTextStyle().bigText(body))
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setAutoCancel(true)
-            .setContentIntent(pendingIntent);
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setContentTitle("New Transaction Detected")
+                .setContentText(body)
+                .setStyle(new NotificationCompat.BigTextStyle().bigText(body))
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setAutoCancel(true)
+                .setContentIntent(pendingIntent);
 
         NotificationManagerCompat.from(context).notify(
-            Math.abs(transaction.optString("sourceSmsId", "").hashCode()),
-            builder.build()
+                Math.abs(transaction.optString("sourceSmsId", "").hashCode()),
+                builder.build()
         );
     }
 
@@ -83,9 +85,9 @@ public final class SmsNotificationHelper {
         }
 
         NotificationChannel channel = new NotificationChannel(
-            CHANNEL_ID,
-            CHANNEL_NAME,
-            NotificationManager.IMPORTANCE_HIGH
+                CHANNEL_ID,
+                CHANNEL_NAME,
+                NotificationManager.IMPORTANCE_HIGH
         );
         channel.setDescription("Alerts for bank transactions detected from SMS.");
         manager.createNotificationChannel(channel);

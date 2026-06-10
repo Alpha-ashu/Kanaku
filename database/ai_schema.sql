@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS ai_predictions (
     actual_result JSONB, -- What user actually chose
     feedback VARCHAR(20) CHECK (feedback IN ('correct', 'incorrect', 'neutral', 'pending')),
     feedback_timestamp TIMESTAMP WITH TIME ZONE,
-    model_version VARCHAR(20) DEFAULT 'KANKU-v1.0',
+    model_version VARCHAR(20) DEFAULT 'KANAKU-v1.0',
     confidence_score DECIMAL(3,2),
     processing_time_ms INTEGER,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,

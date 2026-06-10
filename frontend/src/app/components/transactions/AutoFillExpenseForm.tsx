@@ -3,7 +3,7 @@ import { Camera, Mic, Upload, X, Check, AlertCircle, Zap, Brain } from 'lucide-r
 import { motion } from 'motion/react';
 import { ocrEngine, ExpenseData } from '@/services/tesseractOCRService';
 import { createVoiceAIProcessor, VoiceExpenseResult } from '@/services/voiceAIProcessor';
-import { KANKUAI } from '@/services/KANKUIntelligenceEngine';
+import { KANAKUAI } from '@/services/KANAKUIntelligenceEngine';
 import { useAICapability } from '@/contexts/AppContext';
 
 // AUTO-FILL EXPENSE FORM LOGIC
@@ -60,10 +60,10 @@ export const AutoFillExpenseForm: React.FC<AutoFillExpenseFormProps> = ({
  setExtractedData(null);
 
  try {
- console.log(' Processing image with KANKUAI OCR...');
+ console.log(' Processing image with KANAKUAI OCR...');
  const startTime = performance.now();
 
- // Use Tesseract OCR + KANKUAI
+ // Use Tesseract OCR + KANAKUAI
  const ocrResult = await ocrEngine.extractExpenseData(imageFile);
 
  const processingTime = performance.now() - startTime;
@@ -104,9 +104,9 @@ export const AutoFillExpenseForm: React.FC<AutoFillExpenseFormProps> = ({
  setExtractedData(null);
 
  try {
- console.log(' Starting voice input with KANKUAI...');
+ console.log(' Starting voice input with KANAKUAI...');
 
- // Use Voice AI + KANKUIntelligence
+ // Use Voice AI + KANAKUIntelligence
  const voiceResults = await voiceProcessor.startListening();
 
  if (voiceResults.length > 0) {
@@ -195,7 +195,7 @@ export const AutoFillExpenseForm: React.FC<AutoFillExpenseFormProps> = ({
  try {
  // Learn from user feedback
  if ('merchant' in extractedData && extractedData.merchant) {
- await KANKUAI.learnFromFeedback(
+ await KANAKUAI.learnFromFeedback(
  userId,
  extractedData.merchant,
  extractedData.category || 'Others',
@@ -242,7 +242,7 @@ export const AutoFillExpenseForm: React.FC<AutoFillExpenseFormProps> = ({
  <div className="flex items-center justify-between">
  <div className="flex items-center space-x-2">
  <Brain className="w-5 h-5" />
- <h3 className="font-semibold">KANKUAI</h3>
+ <h3 className="font-semibold">KANAKUAI</h3>
  </div>
  <button
  onClick={onClose}
@@ -304,7 +304,7 @@ export const AutoFillExpenseForm: React.FC<AutoFillExpenseFormProps> = ({
  <div className="text-center py-8">
  <div className="inline-flex items-center space-x-3">
  <Zap className="w-6 h-6 text-blue-600 animate-pulse" />
- <span className="text-gray-600">Processing with KANKUAI...</span>
+ <span className="text-gray-600">Processing with KANAKUAI...</span>
  </div>
  </div>
  ) : extractedData ? (

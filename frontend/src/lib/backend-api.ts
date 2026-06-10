@@ -304,6 +304,10 @@ class BackendService {
     const inflightRequests = new Map<string, Promise<any>>();
     const defaultAdapter = axios.defaults.adapter;
 
+    if (!defaultAdapter) {
+      throw new Error('No default Axios adapter found');
+    }
+
     this.api = axios.create({
       baseURL: API_BASE_URL,
       adapter: (config) => {
@@ -315,11 +319,7 @@ class BackendService {
             return inflightRequests.get(key)!;
           }
 
-          const adapterFn = config.adapter || defaultAdapter;
-          if (!adapterFn) {
-            throw new Error('No adapter found in Axios');
-          }
-          const promise = Promise.resolve(adapterFn(config)).finally(() => {
+          const promise = Promise.resolve((defaultAdapter as Function)(config)).finally(() => {
             inflightRequests.delete(key);
           });
 
@@ -327,11 +327,7 @@ class BackendService {
           return promise;
         }
 
-        const adapterFn = config.adapter || defaultAdapter;
-        if (!adapterFn) {
-          throw new Error('No adapter found in Axios');
-        }
-        return adapterFn(config);
+        return (defaultAdapter as Function)(config);
       }
     });
 

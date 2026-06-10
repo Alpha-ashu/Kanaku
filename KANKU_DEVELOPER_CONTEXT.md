@@ -1,4 +1,4 @@
-# KANKU Project: Master Developer Context & Governance Document
+# KANAKU Project: Master Developer Context & Governance Document
 
 This document serves as the single source of truth for the project's architecture, design system, feature inventory, and implementation history. **Any AI assistant or developer working on this project must read this file first to ensure consistency.**
 
@@ -9,7 +9,7 @@ This document serves as the single source of truth for the project's architectur
 ## 1. Project Overview
 
 ### 1.1 Vision
-To democratize personal wealth management by building a beautiful, intuitive, and highly secure local-first platform. Kanku (Finora) puts users in absolute control of their financial data, eliminating the reliance on bloated bank portals and fragmented, insecure spreadsheets.
+To democratize personal wealth management by building a beautiful, intuitive, and highly secure local-first platform. KANAKU (Finora) puts users in absolute control of their financial data, eliminating the reliance on bloated bank portals and fragmented, insecure spreadsheets.
 
 ### 1.2 Mission
 To deliver a privacy-respecting financial companion that combines offline-first local performance with seamless cloud backup, intelligent AI automation (voice-to-expense and receipt OCR), and cooperative financial advisory channels.
@@ -138,7 +138,7 @@ For new feature development and refactoring, the backend must use a decoupled **
 
 #### 3. Self-Healing Password Migration Fallback (`auth.service.ts`)
 
-**Problem**: The auth redesign routed authentication through the backend using local bcrypt checks (`bcrypt.compare`). However, existing seeded users (like `user@kanku.com`) had `"supabase-managed-account"` or null in their database `password` field, locking them out with `401 Unauthorized` errors.
+**Problem**: The auth redesign routed authentication through the backend using local bcrypt checks (`bcrypt.compare`). However, existing seeded users (like `user@KANAKU.com`) had `"supabase-managed-account"` or null in their database `password` field, locking them out with `401 Unauthorized` errors.
 
 **Fix**:
 - Implemented a self-healing fallback path in [auth.service.ts](file:///k:/Project/kenku/Finora/backend/src/modules/auth/auth.service.ts#L227-L256).
@@ -198,9 +198,9 @@ For new feature development and refactoring, the backend must use a decoupled **
 
 #### 3. TopBar Logo & App Name Visibility (`TopBar.tsx`)
 
-**Problem**: The KANKU logo and app name were hidden on screens smaller than `lg` (mobile and tablet viewports) inside the top header floating card `flex items-center justify-between px-4 lg:px-6 h-16 w-full`, leaving the top header unidentified on mobile.
+**Problem**: The KANAKU logo and app name were hidden on screens smaller than `lg` (mobile and tablet viewports) inside the top header floating card `flex items-center justify-between px-4 lg:px-6 h-16 w-full`, leaving the top header unidentified on mobile.
 
-**Fix**: Changed the container class from `hidden lg:flex` to `flex items-center gap-2 sm:gap-3 mr-2 sm:mr-4 shrink-0` to render the logo and app name next to the mobile menu button on all screen sizes, scaling logo dimensions to `w-7 h-7 sm:w-8 sm:h-8` and label text to `text-sm sm:text-xl` for perfect responsive fit. Added dynamic, unique linearGradient IDs via React `useId` to [KANKULogo.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/ui/KANKULogo.tsx) to resolve DOM ID collision issues that rendered the logo blank when multiple instances coexisted.
+**Fix**: Changed the container class from `hidden lg:flex` to `flex items-center gap-2 sm:gap-3 mr-2 sm:mr-4 shrink-0` to render the logo and app name next to the mobile menu button on all screen sizes, scaling logo dimensions to `w-7 h-7 sm:w-8 sm:h-8` and label text to `text-sm sm:text-xl` for perfect responsive fit. Added dynamic, unique linearGradient IDs via React `useId` to [KANAKULogo.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/ui/KANAKULogo.tsx) to resolve DOM ID collision issues that rendered the logo blank when multiple instances coexisted.
 
 ---
 
@@ -472,7 +472,7 @@ This was caused by a combination of two separate, compounding bugs:
 - **Backend Role Support**: Added the `'manager'` role type to `UserRole` union in the backend RBAC middleware (`rbac.ts`), aligning with the database's string-based role capabilities.
 - **403 Forbidden Resolved**: Updated the backend advisor routes (`advisor.routes.ts`) for approving, rejecting, and viewing pending advisor applications (`/admin/applications`) to allow both `'admin'` and `'manager'` roles (`requireRole(['admin', 'manager'])`). Compliance managers can now successfully access the application verification panel without server denial.
 - **Compiler Type Safety**: Resolved strict TypeScript compilation errors in `AdminFeaturePanel.tsx` by declaring a base `FeatureControlBase` array and mapping it to the final `FEATURES: FeatureControl[]` type, preventing string-to-union literal mismatches on `readiness` settings. Corrected a type mismatch on `visibleFeatures` inside `useSharedMenu.ts` with a safe `FeatureVisibility` cast.
-- **Global Settings Preservation**: Solved the feature matrix reset on user logout. Wiped all user-specific credentials during `localStorage.clear()` but preserved `admin_global_feature_settings` along with the PIN keys (`KANKU_encrypted_key` and `KANKU_salt`) across all signout methods in `encryption.ts`, `Settings.tsx`, and `SecurityContext.tsx`. The Master Feature Matrix configuration is now persistent and consistent.
+- **Global Settings Preservation**: Solved the feature matrix reset on user logout. Wiped all user-specific credentials during `localStorage.clear()` but preserved `admin_global_feature_settings` along with the PIN keys (`KANAKU_encrypted_key` and `KANAKU_salt`) across all signout methods in `encryption.ts`, `Settings.tsx`, and `SecurityContext.tsx`. The Master Feature Matrix configuration is now persistent and consistent.
 
 #### 4. Sidebar Panel Navigation Stabilization & Admin Role Assignment Console (`navigation.ts`, `useSharedMenu.ts`, `AdminDashboard.tsx`, `admin.routes.ts`)
 - **Admin Console Registered**: Created and registered the main `'admin'` page (`Admin Dashboard`) in `sidebarMenuItems` and `headerMenuItems` with a distinctive `ShieldAlert` icon, separate from `'admin-feature-panel'` (Feature Panel).
@@ -1338,7 +1338,7 @@ export function ExpensePage() {
 - Status:
   - Prisma schema changes written and Prisma Client generated
   - Database migration blocked by `prepared statement "s1" already exists` during `prisma db push`
-  - `KANKU_DEVELOPER_CONTEXT.md` updated with current progress and pending next steps
+  - `KANAKU_DEVELOPER_CONTEXT.md` updated with current progress and pending next steps
 
 ---
 
@@ -2457,7 +2457,7 @@ Git Hygiene: Untracked and removed the local database folder backend/.pg-testdat
  to keep the repository clean.
 Developer Context: Updated the BUG-17 status from Open to Fixed in 
 
-KANKU_DEVELOPER_CONTEXT.md
+KANAKU_DEVELOPER_CONTEXT.md
 .
 GitHub Push: Staged, committed, and pushed all updates directly to GitHub:
 bash
@@ -2700,7 +2700,7 @@ $ npm test
 
 3. **Manual Flow Verification**:
    - Verified the login flow, redirection, and page reload persistence using the browser subagent:
-     - Logged in with valid credentials `user@kanku.com` / `User@2026!k`.
+     - Logged in with valid credentials `user@KANAKU.com` / `User@2026!k`.
      - Successfully authenticated, synced user account, and redirected to the **Secure PIN gate**.
      - Reloaded the page. Custom tokens were successfully loaded from `localStorage` and decoded, restoring the authenticated user session instantly, without returning to the login screen.
 
@@ -2854,7 +2854,7 @@ Implemented route-based data synchronization and table loading to resolve admini
 ### 1. Route-Based Sync Optimization & Double-Fetch Prevention (June 2026)
 
 - **Parameterize Sync Interfaces**: Exported `SyncedTableName` from [auth-sync-integration.ts](file:///k:/Project/kenku/Finora/frontend/src/lib/auth-sync-integration.ts) and updated `syncUserDataFromCloud` and `syncUserDataFromBackend` to accept an optional `requestedTables?: SyncedTableName[]` parameter. When passed as `[]`, it skips remote fetches entirely.
-- **Per-Table Sync Cooldowns**: Implemented per-table sync timestamps stored in `localStorage` (`KANKU_last_sync_at_${table}`). When `force = false`, the sync engine automatically filters out and skips pulling any requested table that was successfully pulled within the last 5 minutes.
+- **Per-Table Sync Cooldowns**: Implemented per-table sync timestamps stored in `localStorage` (`KANAKU_last_sync_at_${table}`). When `force = false`, the sync engine automatically filters out and skips pulling any requested table that was successfully pulled within the last 5 minutes.
 - **Route-to-Table Mapping**: Defined the `PAGE_REQUIRED_TABLES` mapping object in [App.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/App.tsx) to map pages/routes to their minimum necessary sync tables. Updated the PIN-unlock sync effect to fetch only page-specific required tables (avoiding fetching retail user tables when on the Compliance Dashboard).
 - **Page Change Watcher**: Added a navigation watcher `useEffect` in [App.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/App.tsx) to execute non-forced background subset syncs on-demand when the active page changes.
 - **Double-Fetch Prevention**:
@@ -2997,7 +2997,7 @@ $ npm test
 
 3. **Manual Flow Verification**:
    - Verified the login flow, redirection, and page reload persistence using the browser subagent:
-     - Logged in with valid credentials `user@kanku.com` / `User@2026!k`.
+     - Logged in with valid credentials `user@KANAKU.com` / `User@2026!k`.
      - Successfully authenticated, synced user account, and redirected to the **Secure PIN gate**.
      - Reloaded the page. Custom tokens were successfully loaded from `localStorage` and decoded, restoring the authenticated user session instantly, without returning to the login screen.
 
@@ -3151,7 +3151,7 @@ Parameterize Sync Interfaces: Exported SyncedTableName from
 
 auth-sync-integration.ts
  and updated syncUserDataFromCloud and syncUserDataFromBackend to accept optional requestedTables. When passed as [], no remote fetches are made.
-Per-Table Sync Cooldowns: Implemented per-table sync timestamps stored in localStorage (KANKU_last_sync_at_${table}). The sync engine now automatically filters out and skips pulling any requested table that was successfully pulled within the last 5 minutes.
+Per-Table Sync Cooldowns: Implemented per-table sync timestamps stored in localStorage (KANAKU_last_sync_at_${table}). The sync engine now automatically filters out and skips pulling any requested table that was successfully pulled within the last 5 minutes.
 Route-to-Table Mapping: Defined PAGE_REQUIRED_TABLES in 
 
 App.tsx
@@ -3195,7 +3195,7 @@ Implemented route-based data synchronization and table loading to resolve admini
 ### 1. Route-Based Sync Optimization & Double-Fetch Prevention (June 2026)
 
 - **Parameterize Sync Interfaces**: Exported `SyncedTableName` from [auth-sync-integration.ts](file:///k:/Project/kenku/Finora/frontend/src/lib/auth-sync-integration.ts) and updated `syncUserDataFromCloud` and `syncUserDataFromBackend` to accept an optional `requestedTables?: SyncedTableName[]` parameter. When passed as `[]`, it skips remote fetches entirely.
-- **Per-Table Sync Cooldowns**: Implemented per-table sync timestamps stored in `localStorage` (`KANKU_last_sync_at_${table}`). When `force = false`, the sync engine automatically filters out and skips pulling any requested table that was successfully pulled within the last 5 minutes.
+- **Per-Table Sync Cooldowns**: Implemented per-table sync timestamps stored in `localStorage` (`KANAKU_last_sync_at_${table}`). When `force = false`, the sync engine automatically filters out and skips pulling any requested table that was successfully pulled within the last 5 minutes.
 - **Route-to-Table Mapping**: Defined the `PAGE_REQUIRED_TABLES` mapping object in [App.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/App.tsx) to map pages/routes to their minimum necessary sync tables. Updated the PIN-unlock sync effect to fetch only page-specific required tables (avoiding fetching retail user tables when on the Compliance Dashboard).
 - **Page Change Watcher**: Added a navigation watcher `useEffect` in [App.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/App.tsx) to execute non-forced background subset syncs on-demand when the active page changes.
 - **Double-Fetch Prevention**:
@@ -3338,7 +3338,7 @@ $ npm test
 
 3. **Manual Flow Verification**:
    - Verified the login flow, redirection, and page reload persistence using the browser subagent:
-     - Logged in with valid credentials `user@kanku.com` / `User@2026!k`.
+     - Logged in with valid credentials `user@KANAKU.com` / `User@2026!k`.
      - Successfully authenticated, synced user account, and redirected to the **Secure PIN gate**.
      - Reloaded the page. Custom tokens were successfully loaded from `localStorage` and decoded, restoring the authenticated user session instantly, without returning to the login screen.
 
@@ -3644,14 +3644,14 @@ We will resolve the casing mismatch between the frontend payload (snake_case) an
 We will replace hard window reloads with custom event dispatching and listeners to transition auth and onboarding states reactively.
 
 #### [MODIFY] [AuthContext.tsx](file:///k:/Project/kenku/Finora/frontend/src/contexts/AuthContext.tsx)
-- Register a listener for a new custom event `'KANKU_AUTH_CHANGE'`. When fired, trigger custom token recovery in-memory to update `user`, `session`, `role`, and background syncs without reloading the page.
+- Register a listener for a new custom event `'KANAKU_AUTH_CHANGE'`. When fired, trigger custom token recovery in-memory to update `user`, `session`, `role`, and background syncs without reloading the page.
 
 #### [MODIFY] [AuthFlow.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/auth/AuthFlow.tsx)
-- Replace all instances of `window.location.reload()` with `window.dispatchEvent(new CustomEvent('KANKU_AUTH_CHANGE'))` in:
+- Replace all instances of `window.location.reload()` with `window.dispatchEvent(new CustomEvent('KANAKU_AUTH_CHANGE'))` in:
   - `handleSignIn` (login success)
   - `handleSignUp` (registration success)
   - `handleOTPVerified` / `handleOTPSkip` (OTP success/skip path)
-- In `renderComplete`, update the "Go to Dashboard" button to set `onboarding_completed` in localStorage and dispatch the `'KANKU_AUTH_CHANGE'` event.
+- In `renderComplete`, update the "Go to Dashboard" button to set `onboarding_completed` in localStorage and dispatch the `'KANAKU_AUTH_CHANGE'` event.
 
 #### [MODIFY] [NewUserOnboarding.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/auth/onboarding/NewUserOnboarding.tsx)
 - Update the completion transition in step 4 to remove `window.location.reload()`.
@@ -3695,7 +3695,7 @@ This walkthrough details the changes implemented to resolve the 5 priority onboa
 - **Currency Lookup Fallback**: Added country-to-currency mapping directly in the backend's `buildProfilePayload` function, defaulting users with Country = India to `INR` instead of `USD` when Settings records are not yet initialized.
 
 ### 3. SPA Session Reloads Optimization
-- **Event-Driven Authentication**: Registered a `'KANKU_AUTH_CHANGE'` custom event listener in [AuthContext.tsx](file:///k:/Project/kenku/Finora/frontend/src/contexts/AuthContext.tsx) to re-evaluate tokens in-memory, updating application state reactively.
+- **Event-Driven Authentication**: Registered a `'KANAKU_AUTH_CHANGE'` custom event listener in [AuthContext.tsx](file:///k:/Project/kenku/Finora/frontend/src/contexts/AuthContext.tsx) to re-evaluate tokens in-memory, updating application state reactively.
 - **SPA Transitions**: Removed all `window.location.reload()` calls from [AuthFlow.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/auth/AuthFlow.tsx), [NewUserOnboarding.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/auth/onboarding/NewUserOnboarding.tsx), and onboarding completion gates.
 - **Reactive Onboarding**: Added a local state tracker and listener for the `'ONBOARDING_COMPLETED'` event in [App.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/App.tsx) to transition pages smoothly without hard reloads.
 

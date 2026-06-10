@@ -339,7 +339,7 @@ JSON.parse(localStorage.getItem('admin_global_feature_settings'))
 ## Contact
 
 For questions or issues with the feature gate system, refer to:
-- Architecture brief: `KANKU_DEVELOPER_CONTEXT.md`
+- Architecture brief: `KANAKU_DEVELOPER_CONTEXT.md`
 - Implementation guide: `docs/MASTER_DOCUMENT.md`
 - API documentation: `backend/API_DOCUMENTATION.md`
 

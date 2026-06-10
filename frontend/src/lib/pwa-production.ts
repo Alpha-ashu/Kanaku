@@ -168,7 +168,7 @@ export class PWAInstallManager {
     prompt.className = 'pwa-install-prompt';
     prompt.innerHTML = `
       <div class="pwa-install-content">
-        <span>Install KANKU App</span>
+        <span>Install KANAKU App</span>
         <div class="pwa-install-actions">
           <button class="pwa-install-btn" onclick="window.__pwaInstallManager.install()">Install</button>
           <button class="pwa-install-btn pwa-install-dismiss">Not Now</button>

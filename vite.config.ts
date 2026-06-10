@@ -302,6 +302,9 @@ export default defineConfig(({ mode }) => {
     server: {
       port: 9002,
       host: true,
+      watch: {
+        ignored: ['**/android/**', '**/ios/**', '**/node_modules/**'],
+      },
       proxy: {
         '/api/v1': {
           target: apiProxyTarget,

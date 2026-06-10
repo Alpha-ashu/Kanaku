@@ -56,7 +56,7 @@ describe('SANITY TESTS - Post-Change Verification', () => {
       const res = await request(app).get('/api-docs/openapi.json');
       expect(res.status).toBe(200);
       expect(res.body.openapi).toMatch(/^3\./);
-      expect(res.body.info.title).toBe('KANKU Backend API');
+      expect(res.body.info.title).toBe('KANAKU Backend API');
     });
   });
 

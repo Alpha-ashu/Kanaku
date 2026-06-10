@@ -31,7 +31,7 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({
  {
  title:"2. How We Use Data",
  icon: <Eye className="w-5 h-5 text-indigo-500" />,
- content:"Your data is used solely to provide and improve KANKUservices, including AI-powered financial insights, personalized budgeting, and secure data sync. We DO NOT sell your personal or financial information to third parties."
+ content:"Your data is used solely to provide and improve KANAKUservices, including AI-powered financial insights, personalized budgeting, and secure data sync. We DO NOT sell your personal or financial information to third parties."
  },
  {
  title:"3. Data Storage & Security",
@@ -46,7 +46,7 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({
  {
  title:"5. Offline Sync",
  icon: <HardDrive className="w-5 h-5 text-pink-500" />,
- content:"KANKUoperates with a local-first philosophy. This means your data is primary on your device, ensuring privacy even when you're not connected to the internet."
+ content:"KANAKUoperates with a local-first philosophy. This means your data is primary on your device, ensuring privacy even when you're not connected to the internet."
  }
  ];
 
@@ -124,7 +124,7 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({
  <Lock className="w-10 h-10 mx-auto mb-6 text-gray-400" />
  <h3 className="text-2xl font-bold mb-4">Secure by Design</h3>
  <p className="text-gray-400 mb-8 max-w-md mx-auto">
- We believe privacy is a fundamental right. KANKUis built from the ground up to be the most private financial tool you've ever used.
+ We believe privacy is a fundamental right. KANAKUis built from the ground up to be the most private financial tool you've ever used.
  </p>
  <div className="flex items-center justify-center gap-4">
  <div className="px-4 py-2 rounded-xl border border-gray-800 text-xs font-bold text-gray-500 uppercase tracking-widest">End-to-End Encrypted</div>
@@ -134,7 +134,7 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({
  </div>
 
  <footer className="py-10 border-t border-gray-100 text-center">
- <p className="text-xs text-gray-400"> {new Date().getFullYear()} KANKU. All rights reserved.</p>
+ <p className="text-xs text-gray-400"> {new Date().getFullYear()} KANAKU. All rights reserved.</p>
  </footer>
  </div>
  );

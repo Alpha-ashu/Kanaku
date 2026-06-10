@@ -1,12 +1,12 @@
-# KANKU - Role-Based Governance, Permissions & Workflows
+# KANAKU - Role-Based Governance, Permissions & Workflows
 
-This document establishes the user roles, security access levels, functional workflows, and authorization permissions within the Kanku (Finora) ecosystem.
+This document establishes the user roles, security access levels, functional workflows, and authorization permissions within the KANAKU (Finora) ecosystem.
 
 ---
 
 ## 1. System Roles Overview
 
-Kanku classifies users into four distinct roles:
+KANAKU classifies users into four distinct roles:
 1. **Admin**: Platform governance, security administration, and global overrides.
 2. **Advisor**: Verified financial planners conducting client consultative audits.
 3. **Client**: Collaborative platform users working with financial advisors.

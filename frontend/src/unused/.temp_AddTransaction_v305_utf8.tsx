@@ -439,7 +439,7 @@ export function AddTransaction() {
   };
 
   const DesktopUI = () => (
-    <div className="hidden lg:flex KANKU-screen-page KANKU-transaction-entry flex-col h-screen bg-[#F8FAFC] overflow-hidden">
+    <div className="hidden lg:flex KANAKU-screen-page KANAKU-transaction-entry flex-col h-screen bg-[#F8FAFC] overflow-hidden">
       <header className="h-14 border-b bg-white flex items-center justify-between px-6 shrink-0">
         <div className="flex items-center gap-3">
           <button onClick={() => setCurrentPage(returnPage)} className="p-1.5 hover:bg-slate-100 rounded-full transition-colors text-slate-500 md:hidden">
@@ -669,7 +669,7 @@ export function AddTransaction() {
   );
 
   const MobileUI = () => (
-    <div className="flex lg:hidden KANKU-screen-page KANKU-transaction-entry flex-col h-[100dvh] bg-white overflow-hidden relative pb-[64px]">
+    <div className="flex lg:hidden KANAKU-screen-page KANAKU-transaction-entry flex-col h-[100dvh] bg-white overflow-hidden relative pb-[64px]">
       <div className={cn("p-4 pt-6 rounded-b-2xl shadow-lg relative overflow-hidden shrink-0 text-white", accent.amountCard)}>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">

@@ -1,7 +1,7 @@
 # Mobile Fullscreen Fix - Complete Guide
 
 ## Overview
-This fix ensures that all pages in the KANKUapplication display in full screen on mobile devices without any left or right cropping.
+This fix ensures that all pages in the KANAKUapplication display in full screen on mobile devices without any left or right cropping.
 
 ## Files Modified
 
@@ -281,7 +281,7 @@ button, [role="button"] {
 
 ## Conclusion
 
-This mobile fullscreen fix provides a comprehensive solution for preventing left and right cropping across all pages in the KANKUapplication. The universal CSS selectors ensure that existing and future components will automatically benefit from the mobile optimizations without requiring individual component modifications.
+This mobile fullscreen fix provides a comprehensive solution for preventing left and right cropping across all pages in the KANAKUapplication. The universal CSS selectors ensure that existing and future components will automatically benefit from the mobile optimizations without requiring individual component modifications.
 
 The fix is:
 - **Universal**: Works across all pages and components

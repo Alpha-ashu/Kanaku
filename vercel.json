@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "name": "kanku",
-  "buildCommand": "npm run project:build",
+  "name": "KANAKU",
+  "buildCommand": "npm install --prefix backend && npm run project:build",
   "outputDirectory": "dist",
   "functions": {
     "api/*.ts": {

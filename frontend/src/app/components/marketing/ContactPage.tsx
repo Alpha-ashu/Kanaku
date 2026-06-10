@@ -32,8 +32,8 @@ export const ContactPage: React.FC<ContactPageProps> = ({ onBack, onGetStarted, 
  {
  icon: <Mail className="w-5 h-5 text-violet-600" />,
  label:"Email",
- value:"support@KANKU.app",
- link:"mailto:support@KANKU.app"
+ value:"support@KANAKU.app",
+ link:"mailto:support@KANAKU.app"
  },
  {
  icon: <MessageSquare className="w-5 h-5 text-pink-600" />,
@@ -80,7 +80,7 @@ export const ContactPage: React.FC<ContactPageProps> = ({ onBack, onGetStarted, 
  transition={{ delay: 0.1 }}
  className="text-lg text-gray-500 max-w-xl mx-auto"
  >
- Have questions about KANKU? Our team is here to help you navigate your financial journey.
+ Have questions about KANAKU? Our team is here to help you navigate your financial journey.
  </motion.p>
  </div>
 
@@ -171,7 +171,7 @@ export const ContactPage: React.FC<ContactPageProps> = ({ onBack, onGetStarted, 
 
  {/* Footer Minimal */}
  <footer className="py-10 border-t border-gray-100 text-center">
- <p className="text-xs text-gray-400"> {new Date().getFullYear()} KANKU. All rights reserved.</p>
+ <p className="text-xs text-gray-400"> {new Date().getFullYear()} KANAKU. All rights reserved.</p>
  </footer>
  </div>
  );

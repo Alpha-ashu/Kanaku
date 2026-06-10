@@ -12,7 +12,7 @@ export const AuthPage: React.FC = () => {
         <div className="p-6 border-b border-gray-200">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              KANKU
+              KANAKU
             </h1>
             <p className="text-sm text-gray-600">
               {isSignUp ? 'Create your account to get started' : 'Welcome back! Sign in to continue'}

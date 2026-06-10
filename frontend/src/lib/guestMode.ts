@@ -8,10 +8,10 @@
  */
 
 //  Constants 
-export const GUEST_USER_ID = '__KANKU_guest__';
-const LEGACY_GUEST_USER_ID = '__KANKU_guest__';
-const GUEST_MODE_KEY = 'KANKU_guest_mode';
-const GUEST_CREATED_KEY = 'KANKU_guest_created_at';
+export const GUEST_USER_ID = '__KANAKU_guest__';
+const LEGACY_GUEST_USER_ID = '__KANAKU_guest__';
+const GUEST_MODE_KEY = 'KANAKU_guest_mode';
+const GUEST_CREATED_KEY = 'KANAKU_guest_created_at';
 
 //  State helpers 
 export const isGuestMode = (): boolean =>
@@ -164,7 +164,7 @@ export async function migrateGuestDataToUser(realUserId: string): Promise<{
 
   } catch (err) {
     if (import.meta.env.DEV) {
-      console.warn('[KANKU/GuestMigration] Migration error:', err);
+      console.warn('[KANAKU/GuestMigration] Migration error:', err);
     }
   }
 

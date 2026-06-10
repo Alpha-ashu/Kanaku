@@ -1,4 +1,4 @@
-# KANKU Application — Master Documentation
+# KANAKU Application — Master Documentation
 
 **Version:** 1.0.0  
 **Date:** June 9, 2026  
@@ -24,7 +24,7 @@
 ## 1. Application Overview
 
 ### Purpose
-KANKU is a personal finance management application designed for the Indian market. It enables users to track income, expenses, loans, goals, investments, and group expenses in a secure, offline-first manner with real-time cloud sync.
+KANAKU is a personal finance management application designed for the Indian market. It enables users to track income, expenses, loans, goals, investments, and group expenses in a secure, offline-first manner with real-time cloud sync.
 
 ### Scope
 - **Target Users:** Individual consumers, financial advisors, and enterprise admins
@@ -607,7 +607,7 @@ OpenAPI JSON at: `GET /api-docs/openapi.json`
 
 **Required:**
 ```bash
-DATABASE_URL=postgresql://user:password@host:5432/KANKU
+DATABASE_URL=postgresql://user:password@host:5432/KANAKU
 JWT_SECRET=your-long-random-secret
 SUPABASE_URL=https://project.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key

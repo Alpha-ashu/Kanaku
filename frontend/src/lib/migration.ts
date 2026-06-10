@@ -2,37 +2,37 @@
  * migration.ts
  *
  * Handles one-time migration of legacy localStorage keys:
- *   v1: KANKU (original)  KANKU(intermediate brand)
- *   v2: KANKU KANKU  (current brand, migrating back)
+ *   v1: KANAKU (original)  KANAKU(intermediate brand)
+ *   v2: KANAKU KANAKU  (current brand, migrating back)
  */
 
-const MIGRATION_V1_KEY = 'KANKU_global_migration_v1';
-const MIGRATION_V2_KEY = 'KANKU_global_migration_v2';
+const MIGRATION_V1_KEY = 'KANAKU_global_migration_v1';
+const MIGRATION_V2_KEY = 'KANAKU_global_migration_v2';
 
 export function runGlobalMigration() {
   if (typeof window === 'undefined' || !window.localStorage) return;
 
-  // v1: KANKU (original)  KANKU
+  // v1: KANAKU (original)  KANAKU
   if (!localStorage.getItem(MIGRATION_V1_KEY)) {
     const v1Migrations = [
       // Encryption keys
-      { old: 'KANKU_encrypted_key', new: 'KANKU_encrypted_key' },
-      { old: 'KANKU_salt', new: 'KANKU_salt' },
-      { old: 'KANKU_encrypted_key', new: 'KANKU_encrypted_key' },
-      { old: 'KANKU_salt', new: 'KANKU_salt' },
+      { old: 'KANAKU_encrypted_key', new: 'KANAKU_encrypted_key' },
+      { old: 'KANAKU_salt', new: 'KANAKU_salt' },
+      { old: 'KANAKU_encrypted_key', new: 'KANAKU_encrypted_key' },
+      { old: 'KANAKU_salt', new: 'KANAKU_salt' },
 
       // Guest Mode
-      { old: 'KANKU_guest_mode', new: 'KANKU_guest_mode' },
-      { old: 'KANKU_guest_created_at', new: 'KANKU_guest_created_at' },
+      { old: 'KANAKU_guest_mode', new: 'KANAKU_guest_mode' },
+      { old: 'KANAKU_guest_created_at', new: 'KANAKU_guest_created_at' },
 
       // Sync & Engine
-      { old: 'KANKU_sync_queue_v3', new: 'KANKU_sync_queue_v3' },
-      { old: 'KANKU_learning_data', new: 'KANKU_learning_data' },
-      { old: 'KANKU_merchant_patterns', new: 'KANKU_merchant_patterns' },
-      { old: 'KANKU_description_repair_v2', new: 'KANKU_description_repair_v2' },
+      { old: 'KANAKU_sync_queue_v3', new: 'KANAKU_sync_queue_v3' },
+      { old: 'KANAKU_learning_data', new: 'KANAKU_learning_data' },
+      { old: 'KANAKU_merchant_patterns', new: 'KANAKU_merchant_patterns' },
+      { old: 'KANAKU_description_repair_v2', new: 'KANAKU_description_repair_v2' },
 
       // App State
-      { old: 'KANKU_onboarding_completed', new: 'onboarding_completed' },
+      { old: 'KANAKU_onboarding_completed', new: 'onboarding_completed' },
     ];
 
     let v1Count = 0;
@@ -48,31 +48,31 @@ export function runGlobalMigration() {
 
     localStorage.setItem(MIGRATION_V1_KEY, 'done');
     if (v1Count > 0) {
-      console.info(`[KANKU/Migration] v1 complete. ${v1Count} keys migrated.`);
+      console.info(`[KANAKU/Migration] v1 complete. ${v1Count} keys migrated.`);
     }
   }
 
-  // v2: KANKU KANKU 
+  // v2: KANAKU KANAKU 
   if (!localStorage.getItem(MIGRATION_V2_KEY)) {
-    console.info('[KANKU/Migration] Starting v2 brand migration (KANKU  KANKU)...');
+    console.info('[KANAKU/Migration] Starting v2 brand migration (KANAKU  KANAKU)...');
 
     const v2Migrations = [
       // Encryption keys (critical  must migrate before app reads them)
-      { old: 'KANKU_encrypted_key', new: 'KANKU_encrypted_key' },
-      { old: 'KANKU_salt', new: 'KANKU_salt' },
+      { old: 'KANAKU_encrypted_key', new: 'KANAKU_encrypted_key' },
+      { old: 'KANAKU_salt', new: 'KANAKU_salt' },
 
       // Guest Mode
-      { old: 'KANKU_guest_mode', new: 'KANKU_guest_mode' },
-      { old: 'KANKU_guest_created_at', new: 'KANKU_guest_created_at' },
+      { old: 'KANAKU_guest_mode', new: 'KANAKU_guest_mode' },
+      { old: 'KANAKU_guest_created_at', new: 'KANAKU_guest_created_at' },
 
       // Sync & Engine
-      { old: 'KANKU_sync_queue_v3', new: 'KANKU_sync_queue_v3' },
-      { old: 'KANKU_learning_data', new: 'KANKU_learning_data' },
-      { old: 'KANKU_merchant_patterns', new: 'KANKU_merchant_patterns' },
-      { old: 'KANKU_description_repair_v2', new: 'KANKU_description_repair_v2' },
+      { old: 'KANAKU_sync_queue_v3', new: 'KANAKU_sync_queue_v3' },
+      { old: 'KANAKU_learning_data', new: 'KANAKU_learning_data' },
+      { old: 'KANAKU_merchant_patterns', new: 'KANAKU_merchant_patterns' },
+      { old: 'KANAKU_description_repair_v2', new: 'KANAKU_description_repair_v2' },
 
       // Internal repair flags
-      { old: 'KANKU_global_migration_v1', new: MIGRATION_V1_KEY },
+      { old: 'KANAKU_global_migration_v1', new: MIGRATION_V1_KEY },
     ];
 
     let v2Count = 0;
@@ -88,7 +88,7 @@ export function runGlobalMigration() {
     });
 
     localStorage.setItem(MIGRATION_V2_KEY, 'done');
-    console.info(`[KANKU/Migration] v2 complete. ${v2Count} keys migrated.`);
+    console.info(`[KANAKU/Migration] v2 complete. ${v2Count} keys migrated.`);
   }
 }
 

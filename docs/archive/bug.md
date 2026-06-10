@@ -1,4 +1,4 @@
-﻿# KANKU ” Deep App Analysis & Full Audit Report
+﻿# KANAKU ” Deep App Analysis & Full Audit Report
 > Reviewed against: `security.skill.md` · `frontend.skill.md` · `backend.skill.md` · `database.skill.md`
 > Analysis Date: May 11, 2026
 
@@ -86,9 +86,9 @@ where: { id, userId, deletedAt: null }
 ###  WARN ” Placeholder Email in PIN Service
 ```ts
 // pin.service.ts:54
-const resolvedEmail = request.email?.trim() || `user-${request.userId.slice(0, 8)}@placeholder.KANKU.app`;
+const resolvedEmail = request.email?.trim() || `user-${request.userId.slice(0, 8)}@placeholder.KANAKU.app`;
 ```
-This hardcodes `KANKU.app` domain ” branding issue + user confusion if email is ever shown.
+This hardcodes `KANAKU.app` domain ” branding issue + user confusion if email is ever shown.
 
 ###  WARN ” `console.error` in PIN Service (not using Winston logger)
 All methods in `pin.service.ts` use `console.error(...)` instead of `logger.error(...)`. This bypasses structured logging and the audit trail.
@@ -132,13 +132,13 @@ new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', ... }).form
 ```
 The app has a global `currency` from `AppContext`. This should respect the user's currency setting.
 
-#### 2. Branding: "KANKU" in User-Facing Strings
+#### 2. Branding: "KANAKU" in User-Facing Strings
 | File | Line | Issue |
 |---|---|---|
-| `App.tsx` | 139, 339, 508 | `"Loading KANKU..."` shown to users |
-| `AppContext.tsx` | 122 | `REPAIR_KEY = 'KANKU_description_repair_v2'` |
-| `migration.ts` | 14 | `[KANKU/Migration] Starting brand migration...` |
-| `pin.service.ts` | 54 | `placeholder.KANKU.app` email domain |
+| `App.tsx` | 139, 339, 508 | `"Loading KANAKU..."` shown to users |
+| `AppContext.tsx` | 122 | `REPAIR_KEY = 'KANAKU_description_repair_v2'` |
+| `migration.ts` | 14 | `[KANAKU/Migration] Starting brand migration...` |
+| `pin.service.ts` | 54 | `placeholder.KANAKU.app` email domain |
 
 #### 3. Missing `console.log` Cleanup
 `AppContext.tsx` line 476:
@@ -148,7 +148,7 @@ console.log(' AppContext applying admin feature settings:', ...);
 This should be `logger.info()` or removed. Production builds leak internal state details.
 
 #### 4. `useOptionalApp` Fallback Pattern
-`App.tsx` shows a spinner when `useOptionalApp()` returns undefined. This is acceptable but the "Loading KANKU..." text (line 139) needs rebranding.
+`App.tsx` shows a spinner when `useOptionalApp()` returns undefined. This is acceptable but the "Loading KANAKU..." text (line 139) needs rebranding.
 
 #### 5. `syncStats` is Incomplete
 `AppContext.tsx` line 72: `syncStats` is a hardcoded `useMemo` with `pendingCount: 0` and `lastSyncedAt: null` ” it doesn't reflect real sync state. This means the sync status UI will always show stale data.
@@ -266,7 +266,7 @@ Security-sensitive records isolated to the auth schema.
 |---|---|---|
 | ´ P0 | Frontend | Fix `PageHeaderCard is not defined` crash in `Transactions.tsx` |
 | ´ P0 | Database | Migrate all `Float` monetary fields to `Decimal(12, 2)` |
-| P1 | Frontend | Rebrand all "Loading KANKU..." strings to "KANKU" |
+| P1 | Frontend | Rebrand all "Loading KANAKU..." strings to "KANAKU" |
 | P1 | Backend | Fix silent `success: true` on profile update failure |
 | P1 | Backend | Replace `console.error` in `pin.service.ts` with Winston `logger.error` |
 | P2 | Frontend | Fix hardcoded `en-IN`/`INR` locale ” use `currency` from AppContext |
@@ -275,6 +275,6 @@ Security-sensitive records isolated to the auth schema.
 | P2 | Frontend | Wire up `HelpCircle` and `Settings` buttons in AddTransaction header |
 | P2 | Frontend | Fix `syncStats.pendingCount` ” make it reflect actual Dexie pending count |
 |  P3 | Frontend | Remove `console.log` from `AppContext.tsx` (admin feature settings) |
-|  P3 | Backend | Fix `placeholder.KANKU.app` email domain in `pin.service.ts` |
+|  P3 | Backend | Fix `placeholder.KANAKU.app` email domain in `pin.service.ts` |
 |  P3 | DB | Consolidate `User` + `profiles` tables or add clear sync boundary |
 

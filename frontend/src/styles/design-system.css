@@ -85,7 +85,7 @@
 
 /* Standardized Components */
 
-.KANKU-card {
+.KANAKU-card {
   background-color: #FFFFFF;
   border-radius: 16px;
   padding: var(--space-2xl);
@@ -95,7 +95,7 @@
   flex-direction: column;
 }
 
-.KANKU-btn {
+.KANAKU-btn {
   height: var(--h-button);
   padding: 0 var(--space-xl);
   border-radius: var(--radius-md);
@@ -111,29 +111,29 @@
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.KANKU-btn-primary {
+.KANAKU-btn-primary {
   background-color: #EF4444;
   /* Standard Red */
   color: white;
   box-shadow: 0 10px 15px -3px rgba(239, 68, 68, 0.3);
 }
 
-.KANKU-btn-primary:hover {
+.KANAKU-btn-primary:hover {
   background-color: #DC2626;
   transform: translateY(-1px);
 }
 
-.KANKU-btn-secondary {
+.KANAKU-btn-secondary {
   background-color: #F8FAFC;
   color: #475569;
   border: 1px solid #E2E8F0;
 }
 
-.KANKU-btn-secondary:hover {
+.KANAKU-btn-secondary:hover {
   background-color: #F1F5F9;
 }
 
-.KANKU-input {
+.KANAKU-input {
   width: 100%;
   height: var(--h-input);
   background-color: #F8FAFC;
@@ -145,16 +145,16 @@
   transition: all 0.2s ease;
 }
 
-.KANKU-input:focus {
+.KANAKU-input:focus {
   outline: none;
   box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.05);
 }
 
-.KANKU-input::placeholder {
+.KANAKU-input::placeholder {
   color: #CBD5E1;
 }
 
-.KANKU-search-bar {
+.KANAKU-search-bar {
   background-color: #F8FAFC;
   border: 1px solid #F1F5F9;
   border-radius: var(--radius-md);
@@ -167,7 +167,7 @@
   transition: all 0.2s ease;
 }
 
-.KANKU-search-bar:focus {
+.KANAKU-search-bar:focus {
   background-color: white;
   border-color: #E2E8F0;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
@@ -176,7 +176,7 @@
 
 /* Typography & Alignment Utilities */
 
-.KANKU-label {
+.KANAKU-label {
   font-size: 0.625rem;
   /* 10px */
   font-weight: 900;

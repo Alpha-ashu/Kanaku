@@ -42,7 +42,7 @@ const client = new Client({
 async function main() {
   await client.connect();
 
-  console.log('[ensure-cloud-sync-schema] Applying KANKU cloud sync schema...');
+  console.log('[ensure-cloud-sync-schema] Applying KANAKU cloud sync schema...');
   await client.query('BEGIN');
 
   try {

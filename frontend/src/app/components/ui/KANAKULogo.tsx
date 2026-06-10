@@ -1,11 +1,11 @@
 import React, { useId } from 'react';
 
-export const KANKULogo = ({ className = "w-10 h-10" }: { className?: string }) => {
+export const KANAKULogo = ({ className = "w-10 h-10" }: { className?: string }) => {
   const uniqueId = useId().replace(/:/g, '-');
-  const topGradId = `KANKU-top-${uniqueId}`;
-  const rightGradId = `KANKU-right-${uniqueId}`;
-  const bottomGradId = `KANKU-bottom-${uniqueId}`;
-  const leftGradId = `KANKU-left-${uniqueId}`;
+  const topGradId = `KANAKU-top-${uniqueId}`;
+  const rightGradId = `KANAKU-right-${uniqueId}`;
+  const bottomGradId = `KANAKU-bottom-${uniqueId}`;
+  const leftGradId = `KANAKU-left-${uniqueId}`;
 
   return (
     <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" className={className}>

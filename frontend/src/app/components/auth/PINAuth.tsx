@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { LogOut, KeyRound, AlertCircle, ChevronLeft, ShieldCheck, Eye, EyeOff, Lock } from 'lucide-react';
-import { KANKULogo } from '@/app/components/ui/KANKULogo';
+import { KANAKULogo } from '@/app/components/ui/KANAKULogo';
 import { clearSecurityData, isPINSet, verifyPIN, storeMasterKey, backupPINKeys, restorePINKeys } from '@/lib/encryption';
 import { isPinMissing, isPinServiceUnavailable, pinService } from '@/services/pinService';
 import { toast } from 'sonner';
@@ -191,7 +191,7 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
         }
 
         const key = await storeMasterKey(pin);
-        await finalizeAuth(key, 'PIN created! Welcome to KANKU');
+        await finalizeAuth(key, 'PIN created! Welcome to KANAKU');
 
       } else {
         // Guest mode: verify locally only, no server call.
@@ -336,7 +336,7 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  ? createStage === 'enter'
  ? 'Choose a 6-digit PIN to secure your account'
  : 'Re-enter the same PIN to confirm'
- : 'Enter your PIN to access KANKU';
+ : 'Enter your PIN to access KANAKU';
 
  // Loading skeleton 
  if (isLoading) {
@@ -344,7 +344,7 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1a56f0]">
  <div className="flex flex-col items-center gap-4">
  <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center">
- <KANKULogo className="w-9 h-9" />
+ <KANAKULogo className="w-9 h-9" />
  </div>
  <div className="w-7 h-7 border-3 border-white/30 border-t-white rounded-full animate-spin" />
  </div>
@@ -389,9 +389,9 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  {/* Header */}
  <div className="pt-4 pb-6 flex flex-col items-center px-6">
  <div className="mb-4">
- <KANKULogo className="w-12 h-12" />
+ <KANAKULogo className="w-12 h-12" />
  </div>
- <h1 className="text-3xl font-black text-gray-900 tracking-tighter mb-1">KANKU</h1>
+ <h1 className="text-3xl font-black text-gray-900 tracking-tighter mb-1">KANAKU</h1>
  <p className="text-sm text-gray-500 font-medium text-center max-w-[240px] leading-tight">{currentStepSub}</p>
  </div>
 

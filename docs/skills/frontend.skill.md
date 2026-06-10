@@ -1,4 +1,4 @@
-# Frontend Skill Reference  KANKU
+# Frontend Skill Reference  KANAKU
 
 > Stack: React 18  TypeScript (strict)  Vite  Capacitor  Dexie  Sonner  Tailwind CSS
 
@@ -127,7 +127,7 @@ try {
 
 - Use design tokens defined in `tailwind.config.ts` (colours, spacing, breakpoints).
 - **Glassmorphism**: Use `bg-white/70 backdrop-blur-xl border border-white/20 shadow-xl`.
-- **Gradients**: Standardize on the KANKUgradient: `#7B4CFF` to `#4A9EFF`.
+- **Gradients**: Standardize on the KANAKUgradient: `#7B4CFF` to `#4A9EFF`.
 - **Typography**: Use **Outfit** or **Inter** as the primary font for a premium fintech feel.
 - **Rounded Corners**: Standardize on `rounded-2xl` for cards and `rounded-3xl` for containers.
 - **Micro-animations**: Use `framer-motion` for all state-driven UI changes.

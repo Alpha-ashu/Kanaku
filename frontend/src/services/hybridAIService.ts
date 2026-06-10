@@ -1,7 +1,7 @@
 import { TokenManager } from '@/lib/api';
 import { ocrEngine, ExpenseData } from './tesseractOCRService';
 import { createVoiceAIProcessor, VoiceExpenseResult } from './voiceAIProcessor';
-import { KANKUAI } from './KANKUIntelligenceEngine';
+import { KANAKUAI } from './KANAKUIntelligenceEngine';
 
 //  HYBRID OFFLINE/ONLINE AI SUPPORT
 // This service provides intelligent fallback between offline and online AI processing
@@ -149,9 +149,9 @@ class HybridAIService {
 
   //  OFFLINE PROCESSING METHODS
   private async processOfflineOCR(imageFile: File): Promise<ExpenseData> {
-    console.log(' Processing OCR offline with Tesseract + KANKUAI...');
+    console.log(' Processing OCR offline with Tesseract + KANAKUAI...');
 
-    // Use Tesseract OCR + KANKUAI
+    // Use Tesseract OCR + KANAKUAI
     const result = await ocrEngine.extractExpenseData(imageFile);
 
     console.log(` Offline OCR result:`, result);

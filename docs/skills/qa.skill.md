@@ -1,6 +1,6 @@
-# QA & Testing Skill Reference  KANKU
+# QA & Testing Skill Reference  KANAKU
 
-This document provides the standard quality assurance and testing protocols for the KANKUproject.
+This document provides the standard quality assurance and testing protocols for the KANAKUproject.
 
 ---
 
@@ -32,7 +32,7 @@ This document provides the standard quality assurance and testing protocols for 
 - [ ] **Airplane Mode**: Add transactions while offline and verify they save to Dexie.
 - [ ] **Reconnection**: Go back online and verify background sync to Supabase.
 - [ ] **Conflict Resolution**: Simulate simultaneous edits on two devices and verify timestamp-based wins.
-- [ ] **Brand Migration**: Verify that local storage keys are correctly migrated from `KANKU` to `KANKU` namespace without data loss.
+- [ ] **Brand Migration**: Verify that local storage keys are correctly migrated from `KANAKU` to `KANAKU` namespace without data loss.
 
 ### AI Engine Reliability
 - [ ] **Tesseract Fallback**: Disable Gemini API key and verify that the heuristic engine still extracts Merchant/Amount/GST correctly.

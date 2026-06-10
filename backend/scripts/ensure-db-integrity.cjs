@@ -29,7 +29,7 @@ const client = new Client({
 
 async function main() {
   await client.connect();
-  console.log('[ensure-db-integrity] Applying KANKU DB integrity schema...');
+  console.log('[ensure-db-integrity] Applying KANAKU DB integrity schema...');
   await client.query('BEGIN');
 
   try {
