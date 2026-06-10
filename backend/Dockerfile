@@ -3,13 +3,13 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Install deps first (layer cache)
+# Install deps first (layer cache) — skip postinstall, schema not copied yet
 COPY package*.json ./
-RUN npm ci
+RUN npm ci --ignore-scripts
 
-# Copy source and build
+# Copy source, then generate prisma client with the real schema
 COPY . .
-RUN npx prisma generate --schema prisma/schema.prisma
+RUN npx prisma generate --schema backend/prisma/schema.prisma
 RUN npm run build
 
 # ── Stage 2: Production image ────────────────────────────────────────────────
