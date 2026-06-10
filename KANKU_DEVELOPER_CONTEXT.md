@@ -3809,3 +3809,1177 @@ This walkthrough details the changes implemented to address the backend profile 
 - **User Profile Job Type Normalization**: Updated [UserProfile.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/profile/UserProfile.tsx) to normalize the backend-fetched `jobType` string using the component's `normalizeJobType` mapping function, preventing UI display fallback to "Not specified".
 - **Database Schema Audit**: Checked `schema.prisma` and confirmed the database schema is fully complete with all core and optional feature tables and columns (User, Profile, Accounts, Transactions, Goals, Loans, Investments, split Groups, Notifications, and AI insights) and fields to store country, state, city, avatar_id/avatarId, and monthly_income/salary are correctly configured.
 
+
+---
+
+# SECTION: Production Infrastructure, Architecture Flows & Database ER Diagram
+
+> Added: 2026-06-11 — covers all production deployment changes, system architecture diagrams, feature flow diagrams, and complete entity-relationship diagrams of the Prisma schema.
+
+---
+
+## Production Deployment Architecture
+
+### Live Endpoints
+
+| Service | URL | Platform |
+|---|---|---|
+| **Frontend** | https://expensev67.vercel.app | Vercel (CDN, Singapore + IAD) |
+| **Backend API** | https://kanaku.fly.dev | Fly.io (Singapore, `sin` region) |
+| **Health Check** | https://kanaku.fly.dev/health | Returns `{status:"ok", redis, database}` |
+
+### Infrastructure Stack
+
+| Layer | Technology | Notes |
+|---|---|---|
+| Frontend runtime | Vercel CDN | Static React/Vite bundle; `vercel.json` proxies `/api/*` to Fly.io |
+| Backend runtime | Fly.io (1 GB RAM, 1 shared CPU) | Node 22 Alpine, Express + Prisma; always-on (`min_machines_running=1`) |
+| Database | Supabase PostgreSQL | `DATABASE_URL` + `DIRECT_URL` + `READ_REPLICA_URL` |
+| Cache / OTP / Rate-limit | Upstash Redis (TLS) | `REDIS_URL` via `ioredis` |
+| File storage | Supabase Storage | Receipts, bill images, avatars |
+| Email | SendGrid | Transactional + OTP emails |
+| Push notifications | Firebase FCM | `fcmToken` per Device row |
+| Payments | Stripe | Advisor session checkout + webhooks |
+| Voice / OCR AI | Google Gemini 1.5 Flash | Primary; OpenAI Whisper as fallback |
+| Stock data | TwelveData | Live market quotes |
+| RBI AA | Setu Account Aggregator | Consent-based bank data fetch |
+
+### CI/CD Pipelines
+
+| Workflow | File | Trigger | Deploys to |
+|---|---|---|---|
+| Fly.io deploy (all pushes) | `.github/workflows/fly-deploy.yml` | Push to `main` | Fly.io via `flyctl deploy --remote-only` |
+| Fly.io deploy (backend changes) | `.github/workflows/deploy-fly.yml` | Push to `main` on `backend/**` / `fly.toml` | Fly.io with explicit config |
+| Vercel deploy | `.github/workflows/deploy-vercel.yml` | Push to `main` on `frontend/**` | Vercel via `vercel deploy --prod` |
+
+> **Required GitHub Secrets**: `FLY_API_TOKEN`, `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`
+
+### Vercel Route Proxy (`vercel.json`)
+
+```
+/assets/*           → serve static (immutable cache, 1 year)
+/api/v1/stocks      → /api/stocks.ts (Vercel Function, 15s timeout)
+/api/v1/stocks/*    → /api/stocks.ts
+/api/*              → https://kanaku.fly.dev/api/$1 (proxy)
+/health             → https://kanaku.fly.dev/health
+/socket.io/*        → https://kanaku.fly.dev/socket.io/$1
+/*                  → /index.html (SPA fallback)
+```
+
+### Required Vercel Environment Variables (Production)
+
+| Variable | Value | Why |
+|---|---|---|
+| `VITE_SOCKET_URL` | `https://kanaku.fly.dev` | Socket.IO must connect directly — Vercel routing does not support WebSocket upgrades |
+| `VITE_API_URL` | `/api/v1` (default, no change needed) | Relative path proxied via `vercel.json` routes |
+
+---
+
+## Production Deployment Change Log
+
+### 2026-06-10/11 — Full Production Deployment & Critical Bug Fixes
+
+All changes below were required to go from a local-only project to a working production deployment on Fly.io + Vercel.
+
+---
+
+#### 1. Docker Multi-Stage Build — Node 22 + Missing Runtime Deps
+
+**Problem**: Container crashed at startup with `Cannot find module 'bcryptjs'`. `@supabase/realtime-js` also threw `Node.js 20 detected without native WebSocket support`.
+
+**Root Cause**: `bcryptjs`, `@sendgrid/mail`, `nodemailer`, `tweetnacl-util` were listed only in the **root** `package.json`. The production Docker runner copies `backend/package.json` and runs `npm install --omit=dev`, so root-level deps were never installed. Node 20 also lacks the native `WebSocket` global required by Supabase realtime.
+
+**Fix (`backend/Dockerfile` + `backend/package.json`)**:
+- Upgraded `FROM node:20-alpine` → `FROM node:22-alpine` in both build stages.
+- Added missing runtime packages to `backend/package.json`: `bcryptjs`, `@sendgrid/mail`, `nodemailer`, `tweetnacl-util`.
+- Ran `npm install` inside `backend/` to regenerate the lock file with the new packages before committing.
+
+---
+
+#### 2. Prisma v6 Breaking Change — `$use` Middleware Removed
+
+**Problem**: `TypeError: client.$use is not a function` on backend startup. Prisma v6 removed the `$use` middleware API.
+
+**Fix (`backend/src/db/prisma.ts`)**: Replaced `client.$use(middleware)` with the `$extends` query extension API:
+
+```typescript
+return base.$extends({
+  query: {
+    $allModels: {
+      async $allOperations({ args, query }) {
+        const start = Date.now();
+        const timeout = new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error(`Query timeout ${QUERY_TIMEOUT_MS}ms`)), QUERY_TIMEOUT_MS)
+        );
+        const result = await Promise.race([query(args), timeout]);
+        if (Date.now() - start > SLOW_QUERY_MS) logger.warn('[Prisma] Slow query');
+        return result;
+      },
+    },
+  },
+}) as unknown as PrismaClient;
+```
+
+---
+
+#### 3. TypeScript TS5110 — `moduleResolution: node16` + `module: commonjs` Conflict
+
+**Problem**: `error TS5110: Option 'module' must be set to 'Node16' when option 'moduleResolution' is set to 'Node16'`. Build failed.
+
+**Fix (`backend/tsconfig.json`)**:
+```json
+"module": "commonjs",
+"moduleResolution": "node"   // was "node16" — incompatible combination
+```
+
+---
+
+#### 4. CORS — Frontend Requests Blocked
+
+**Problem**: All API calls from `https://expensev67.vercel.app` failed with `Failed to fetch`. The `FRONTEND_URL` Fly secret was set to `http://localhost:9002` (stale dev value).
+
+**Fix**: Updated the Fly.io secret:
+```
+flyctl secrets set "FRONTEND_URL=https://expensev67.vercel.app"
+```
+Backend `buildAllowedOrigins()` in `backend/src/config/cors.ts` reads `CORS_ORIGIN` or `FRONTEND_URL` to build the allowlist.
+
+---
+
+#### 5. Login Tokens Missing from JSON Response Body
+
+**Problem**: Login returned HTTP 200 but the app did not open. `AuthFlow.tsx` reads `accessToken` and `refreshToken` from `response.data` (JSON body), but the backend was placing them only in HTTP response headers.
+
+**Fix (`backend/src/modules/auth/auth.controller.ts`)**: Added both tokens to the JSON response body:
+
+```typescript
+res.json({
+  success: true,
+  message: 'Login successful',
+  data: {
+    accessToken: tokens.accessToken,    // ADDED
+    refreshToken: tokens.refreshToken,  // ADDED
+    user: { id, email, name, role, isApproved },
+    device: { isKnown, isTrusted, requiresOtp },
+  },
+});
+```
+
+> The HTTP client in `api.ts` also reads tokens from headers as a fallback — both transport paths now work.
+
+---
+
+#### 6. Test Accounts Provisioned
+
+A Prisma script (`set-roles.cjs`) was run locally to seed roles and set `isApproved: true`:
+
+| Email | Role | Purpose |
+|---|---|---|
+| admin@kanku.com | `admin` | **SECURED** — actual admin |
+| manager@kanku.com | `manager` | **SECURED** — actual manager |
+| advisor@kanku.com | `advisor` | Test account |
+| user@kanku.com | `user` | Test account |
+
+---
+
+#### 7. Fly.io Cold-Start Login Timeout
+
+**Problem**: With `min_machines_running = 0`, Fly.io suspended the machine during inactivity. First login after quiet period caused the frontend's 30-second timeout to fire, showing "The request took too long".
+
+**Fix (`fly.toml`)**:
+```toml
+auto_stop_machines  = 'off'    # was 'suspend'
+min_machines_running = 1        # was 0 — machine now always running
+```
+
+**Defensive fix (`frontend/src/lib/api.ts`)** — auto-retry the challenge call once on timeout:
+```typescript
+try {
+  challengeResponse = await doChallenge();
+} catch (err: any) {
+  if (err?.code === 'TIMEOUT_ERROR') {
+    await new Promise(resolve => setTimeout(resolve, 3000));
+    challengeResponse = await doChallenge();
+  } else {
+    throw err;
+  }
+}
+```
+
+---
+
+#### Files Changed in This Production Session
+
+| File | Change |
+|---|---|
+| `backend/Dockerfile` | Node 20→22; simplified runner stage; copies `generated/` Prisma client |
+| `backend/package.json` | Added `bcryptjs`, `@sendgrid/mail`, `nodemailer`, `tweetnacl-util` |
+| `backend/tsconfig.json` | `moduleResolution: node16` → `node` (fixes TS5110) |
+| `backend/src/db/prisma.ts` | `$use` → `$extends` (Prisma v6 breaking change) |
+| `backend/src/modules/auth/auth.controller.ts` | Added `accessToken`/`refreshToken` to login JSON body |
+| `fly.toml` | `auto_stop_machines: off`, `min_machines_running: 1` |
+| `vercel.json` | Corrected backend URL (`kanaku.fly.dev`), project name, Singapore region |
+| `frontend/src/lib/api.ts` | Login challenge auto-retry on `TIMEOUT_ERROR` |
+| `.github/workflows/deploy-fly.yml` | Created — path-filtered Fly.io deploy workflow |
+| `.github/workflows/deploy-vercel.yml` | Created — Vercel deploy via GitHub Actions |
+
+---
+
+## System Architecture Diagram
+
+```mermaid
+graph TB
+    subgraph Client["Client Layer"]
+        Browser[User Browser / PWA]
+    end
+
+    subgraph Deploy["Deployment"]
+        Vercel["Vercel — CDN\nexpensev67.vercel.app\nReact + Vite static bundle"]
+        Fly["Fly.io — Singapore\nkanaku.fly.dev\nExpress + TypeScript + Prisma\n1 GB RAM — always-on"]
+    end
+
+    subgraph Data["Data Layer"]
+        PG[(Supabase PostgreSQL\n30+ models)]
+        Redis[(Upstash Redis\nCache · OTP · Rate-limit)]
+        Storage[Supabase Storage\nReceipts · Files · Avatars]
+    end
+
+    subgraph AI["AI Services"]
+        Gemini[Google Gemini 1.5 Flash\nOCR · NLP · Voice]
+        Whisper[OpenAI Whisper\nAudio transcription fallback]
+    end
+
+    subgraph Comms["Notification Services"]
+        SendGrid[SendGrid\nTransactional email · OTP]
+        Firebase[Firebase FCM\nMobile push notifications]
+    end
+
+    subgraph Finance["Financial Integrations"]
+        Stripe[Stripe\nAdvisor session payments]
+        Setu[Setu AA\nRBI Account Aggregator]
+        TwelveData[TwelveData\nLive stock market data]
+    end
+
+    Browser -->|HTTPS| Vercel
+    Vercel -->|Proxy /api/*| Fly
+    Browser <-->|"Socket.IO WSS direct"| Fly
+
+    Fly <--> PG
+    Fly <--> Redis
+    Fly <--> Storage
+    Fly --> Gemini
+    Fly --> Whisper
+    Fly --> SendGrid
+    Fly --> Firebase
+    Fly --> Stripe
+    Fly --> Setu
+    Fly --> TwelveData
+```
+
+---
+
+## Authentication & Security Flow
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant FE as Frontend
+    participant BE as Backend
+    participant R as Redis
+    participant DB as PostgreSQL
+    participant E as SendGrid
+
+    rect rgb(230,245,255)
+        Note over U,E: REGISTER
+        U->>FE: name · email · password
+        FE->>BE: POST /auth/register
+        BE->>DB: Check email unique → Create User (bcrypt hash)
+        BE-->>FE: accessToken · refreshToken · user (body + headers)
+        FE->>FE: Store tokens → Onboarding
+    end
+
+    rect rgb(230,255,235)
+        Note over U,E: LOGIN — 2-step challenge
+        U->>FE: email · password
+        FE->>BE: POST /auth/login/challenge
+        BE->>DB: bcrypt.compare credentials
+        BE->>R: Store 6-digit code (60 s TTL)
+        BE-->>FE: challengeCode
+        FE->>BE: POST /auth/login {email, challengeCode}
+        BE->>R: Verify and consume code
+        BE->>DB: Fetch User + UserSettings + Device
+        BE-->>FE: accessToken · refreshToken · user · device (JSON body)
+    end
+
+    rect rgb(255,245,220)
+        Note over U,E: NEW DEVICE — OTP VERIFICATION
+        FE->>BE: POST /auth/otp/send
+        BE->>R: OTP hash (5 min TTL)
+        BE->>E: Email 6-digit OTP
+        U->>FE: Enter OTP
+        FE->>BE: POST /auth/otp/verify
+        BE->>DB: Device.isTrusted = true
+    end
+
+    rect rgb(245,230,255)
+        Note over U,E: PIN SETUP
+        FE->>BE: POST /pin/create { pin }
+        BE->>DB: UserPin { bcrypt(pin), expiresAt, failedAttempts:0 }
+        BE-->>FE: PIN active
+    end
+```
+
+---
+
+## Core Financial Features Flow
+
+```mermaid
+flowchart TD
+    User([User])
+    Dashboard[Dashboard\nNet Worth · Cashflow · Summary]
+
+    subgraph Accounts["Accounts"]
+        A1[Add — Bank / Cash / Card / Wallet]
+        A2[View balances]
+        A3[Auto-update on transaction]
+    end
+
+    subgraph Transactions["Transactions"]
+        T1[Manual entry]
+        T2[Voice input]
+        T3[Receipt scan]
+        T4[CSV import]
+        T5[SMS auto-detect]
+        T6[AI auto-categorise]
+        T7[Recurring schedule]
+    end
+
+    subgraph Goals["Goals"]
+        G1[Create + target amount]
+        G2[Contribute from account]
+        G3[Progress tracker]
+    end
+
+    subgraph Budget["Budget"]
+        B1[Set category limit]
+        B2[Alert at threshold]
+        B3[Push notification on overspend]
+    end
+
+    subgraph Loans["Loans"]
+        L1[Add + interest rate]
+        L2[Pay EMI]
+        L3[Outstanding balance]
+    end
+
+    subgraph Wealth["Wealth Vault"]
+        I1[Stocks / Mutual Funds]
+        I2[Gold assets]
+        I3[P&L auto-computed]
+    end
+
+    subgraph Groups["Group Expenses"]
+        GR1[Create group]
+        GR2[Split — equal / % / custom]
+        GR3[Track · settle up]
+    end
+
+    User --> Dashboard
+    Dashboard <--> Accounts & Transactions & Goals & Budget & Loans & Wealth & Groups
+    T1 & T2 & T3 & T4 & T5 --> T6 --> A3
+    T7 --> T1
+    G2 --> G3
+    B1 --> B2 --> B3
+    L2 --> L3
+    I1 & I2 --> I3
+```
+
+---
+
+## AI Features Flow
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant FE as Frontend
+    participant BE as Backend
+    participant G as Gemini 1.5 Flash
+    participant W as OpenAI Whisper
+    participant DB as PostgreSQL
+
+    rect rgb(230,245,255)
+        Note over U,DB: RECEIPT / BILL SCAN
+        U->>FE: Photo of bill
+        FE->>BE: POST /receipts/start (base64)
+        BE->>G: OCR extract — amount, merchant, date, category
+        G-->>BE: Structured JSON + confidence score
+        BE->>DB: AiScan record (provider=gemini)
+        BE-->>FE: jobId
+        FE->>BE: GET /receipts/status/:jobId (poll)
+        BE-->>FE: Extracted fields
+        FE->>U: Review and confirm → Transaction
+    end
+
+    rect rgb(230,255,235)
+        Note over U,DB: VOICE INPUT
+        U->>FE: Speak — "Paid 500 for groceries"
+        FE->>BE: POST /voice/process-audio (audio blob)
+        BE->>G: Transcribe + NLP parse
+        alt Gemini unavailable
+            BE->>W: Whisper fallback transcription
+        end
+        G-->>BE: amount · category · merchant · date
+        BE-->>FE: Pre-filled transaction fields
+        FE->>U: Confirm and save
+    end
+
+    rect rgb(255,245,220)
+        Note over U,DB: AI INSIGHTS
+        U->>FE: Open Insights page
+        FE->>BE: GET /ai/insights
+        BE->>DB: Fetch 90-day transaction history
+        BE->>G: Analyse patterns + anomalies
+        G-->>BE: Recommendations · fraud alerts · bill predictions
+        BE->>DB: Store ai_insights · user_features
+        BE-->>FE: healthScore · insights · fraudAlerts
+    end
+```
+
+---
+
+## Advisor Marketplace Flow
+
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant A as Advisor
+    participant BE as Backend
+    participant S as Stripe
+    participant IO as Socket.IO
+    participant DB as Database
+
+    rect rgb(230,245,255)
+        Note over C,DB: ADVISOR ONBOARDING
+        A->>BE: POST /advisors/apply
+        BE->>DB: Advisor (status: pending)
+        Note over BE: Admin approves via PUT /advisors/admin/:id/approve
+        BE->>IO: Notify advisor — approved
+    end
+
+    rect rgb(230,255,235)
+        Note over C,DB: CLIENT BOOKS
+        C->>BE: GET /advisors (browse)
+        C->>BE: GET /advisors/:id/availability
+        C->>BE: POST /bookings {advisorId, slot}
+        BE->>DB: BookingRequest (pending)
+        BE->>IO: booking_notification → advisor
+        A->>BE: PUT /bookings/:id/accept
+        BE->>IO: booking_status_changed → client
+    end
+
+    rect rgb(255,245,220)
+        Note over C,DB: PAYMENT
+        C->>BE: POST /payments/initiate
+        BE->>S: Create checkout session
+        C->>S: Complete payment
+        S->>BE: POST /payments/webhook (verified)
+        BE->>DB: Payment confirmed · AdvisorSession created
+        BE->>IO: payment_status_updated → both
+    end
+
+    rect rgb(245,230,255)
+        Note over C,A: SESSION + CHAT
+        C<<->>A: ChatMessages in DB per sessionId
+        A->>BE: Complete session + notes
+        C->>BE: Rate session
+    end
+```
+
+---
+
+## Real-time Cross-Device Sync
+
+```mermaid
+graph TB
+    subgraph Phone["Phone (Device A)"]
+        P_UI[React UI]
+        P_Sync[Sync Service]
+        P_Sock[Socket.IO — room: user-id]
+    end
+
+    subgraph Laptop["Laptop (Device B)"]
+        L_UI[React UI]
+        L_Sync[Sync Service]
+        L_Sock[Socket.IO — room: user-id]
+    end
+
+    subgraph Server["Backend"]
+        Sock_Srv[Socket.IO Server]
+        SyncAPI[/sync/push · /sync/pull]
+        Queue[(SyncQueue\npending → synced)]
+        Rooms["Room: user:{userId}\nRoom: device:{deviceId}"]
+    end
+
+    P_UI -->|Edit transaction| P_Sync
+    P_Sync -->|POST /sync/push| SyncAPI
+    SyncAPI --> Queue --> Sock_Srv --> Rooms
+    Rooms -->|transaction_updated| L_Sock --> L_UI
+    L_Sync -->|"POST /sync/pull?lastSyncedAt"| SyncAPI -->|delta| L_Sync
+    P_Sock <-->|JWT auth on connect| Sock_Srv
+    L_Sock <-->|JWT auth on connect| Sock_Srv
+```
+
+**Socket.IO event reference:**
+
+| Direction | Event | Payload |
+|---|---|---|
+| Client → Server | `sync_request` | `{ lastSyncedAt, entityTypes }` |
+| Server → Client | `sync_response` | Delta entity list |
+| Server → All Devices | `transaction_updated` | Transaction object |
+| Server → All Devices | `account_updated` | Account object |
+| Server → All Devices | `goal_updated` | Goal object |
+| Server → Advisor | `booking_notification` | Booking details |
+| Server → Client | `booking_status_changed` | Status + rejectionReason |
+| Server → Both | `payment_status_updated` | Payment status |
+
+---
+
+## RBI Account Aggregator (Setu AA) Flow
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant FE as Frontend
+    participant BE as Backend
+    participant Setu as Setu AA
+    participant Bank as User's Bank
+    participant DB as Database
+
+    U->>FE: Link bank account
+    FE->>BE: POST /aa/consent {accounts, purpose, dateRange}
+    BE->>DB: AaConsent (CREATED)
+    BE->>Setu: Create consent request
+    Setu-->>BE: consentHandle · redirectUrl
+    BE-->>FE: Redirect to Setu portal
+    Note over U,Bank: User approves on Setu portal
+    Setu->>Bank: FIP approval
+    Bank-->>Setu: Signed JWS artifact
+    Setu->>BE: POST /aa/notification (webhook)
+    BE->>DB: AaConsent → ACTIVE · AaConsentArtifact stored
+    FE->>BE: POST /aa/data/session {consentId}
+    BE->>Setu: Initiate data fetch
+    Setu->>Bank: Encrypted FI data request
+    Bank-->>Setu: Account + transaction data
+    Setu-->>BE: Data ready
+    BE->>DB: AaFinancialData · AaTransactions (normalised)
+    FE->>BE: GET /aa/data/fetch/:sessionId
+    BE-->>FE: Financial summary
+    FE->>U: Import transactions from bank
+```
+
+---
+
+## Notification Delivery Flow
+
+```mermaid
+flowchart TD
+    Trigger[Event — booking · overspend · payment · loan due]
+    BE[Backend notification.service\nCreate Notification row]
+    AppCh[In-app — Notification.isRead:false]
+    EmailCh[Email — SendGrid]
+    PushCh[Push — Firebase FCM → Device.fcmToken]
+    SocketCh[Socket.IO — real-time toast]
+
+    Trigger --> BE
+    BE --> AppCh & EmailCh & PushCh & SocketCh
+    AppCh -->|Unread badge| Frontend
+    EmailCh -->|Inbox| User
+    PushCh -->|Phone banner| User
+    SocketCh -->|Sonner toast| Frontend
+```
+
+---
+
+## Database Entity-Relationship Diagrams
+
+### Core Finance — User, Accounts, Transactions, Goals, Budget
+
+```mermaid
+erDiagram
+    User {
+        uuid id PK
+        string email UK
+        string name
+        string password
+        string role
+        boolean isApproved
+        string firstName
+        string lastName
+        decimal salary
+        datetime dateOfBirth
+        string jobType
+    }
+    Account {
+        uuid id PK
+        uuid userId FK
+        string name
+        string type
+        decimal balance
+        string currency
+        boolean isActive
+        string syncStatus
+        datetime deletedAt
+    }
+    Transaction {
+        uuid id PK
+        uuid userId FK
+        uuid accountId FK
+        uuid groupExpenseId FK
+        string type
+        decimal amount
+        string category
+        string subcategory
+        datetime date
+        json tags
+        string dedupHash UK
+        datetime deletedAt
+    }
+    Goal {
+        uuid id PK
+        uuid userId FK
+        string name
+        decimal targetAmount
+        decimal currentAmount
+        datetime targetDate
+        boolean isGroupGoal
+        datetime deletedAt
+    }
+    GoalContribution {
+        uuid id PK
+        uuid userId FK
+        uuid goalId FK
+        uuid accountId FK
+        decimal amount
+        datetime date
+    }
+    Budget {
+        uuid id PK
+        uuid userId FK
+        string category
+        decimal amount
+        decimal spent
+        string period
+        int threshold
+        boolean alertEnabled
+        json alertChannels
+        datetime deletedAt
+    }
+    RecurringTransaction {
+        uuid id PK
+        uuid userId FK
+        string title
+        decimal amount
+        string category
+        string interval
+        datetime nextDueDate
+        string status
+        datetime deletedAt
+    }
+    Category {
+        uuid id PK
+        uuid userId FK
+        string name
+        string type
+        string color
+        datetime deletedAt
+    }
+
+    User ||--o{ Account : owns
+    User ||--o{ Transaction : creates
+    User ||--o{ Goal : sets
+    User ||--o{ Budget : defines
+    User ||--o{ RecurringTransaction : schedules
+    User ||--o{ Category : customises
+    Account ||--o{ Transaction : records
+    Account ||--o{ GoalContribution : sources
+    Goal ||--o{ GoalContribution : receives
+```
+
+### Auth & Security — Devices, Tokens, PIN, OTP
+
+```mermaid
+erDiagram
+    User {
+        uuid id PK
+        string email UK
+        string role
+    }
+    Device {
+        uuid id PK
+        uuid userId FK
+        string deviceId UK
+        string platform
+        boolean isActive
+        boolean isTrusted
+        string fcmToken
+        string apnsToken
+        string publicKey
+    }
+    RefreshToken {
+        uuid id PK
+        string token UK
+        uuid userId FK
+        datetime expiresAt
+    }
+    UserPin {
+        uuid id PK
+        uuid userId FK UK
+        string pinHash
+        datetime expiresAt
+        boolean isActive
+        int failedAttempts
+        datetime lockedUntil
+    }
+    UserSettings {
+        uuid id PK
+        uuid userId FK UK
+        string theme
+        string language
+        string currency
+        string timezone
+        json settings
+    }
+    OtpCode {
+        uuid id PK
+        uuid userId FK
+        string code
+        datetime expiresAt
+        boolean used
+        int attempts
+    }
+    OtpRequest {
+        uuid id PK
+        string destination
+        string channel
+        string purpose
+        string otpHash
+        datetime expiryTime
+        string status
+    }
+    AuditLog {
+        uuid id PK
+        uuid userId
+        string action
+        string resource
+        string status
+        string ip
+    }
+
+    User ||--o{ Device : registers
+    User ||--o{ RefreshToken : issues
+    User ||--|| UserPin : has
+    User ||--|| UserSettings : configures
+    User ||--o{ OtpCode : requests
+```
+
+### Advisor & Payments
+
+```mermaid
+erDiagram
+    User {
+        uuid id PK
+        string role
+    }
+    AdvisorAvailability {
+        uuid id PK
+        uuid advisorId FK
+        int dayOfWeek
+        string startTime
+        string endTime
+        boolean isActive
+    }
+    BookingRequest {
+        uuid id PK
+        uuid clientId FK
+        uuid advisorId FK
+        string sessionType
+        datetime proposedDate
+        decimal amount
+        string status
+        string rejectionReason
+    }
+    AdvisorSession {
+        uuid id PK
+        uuid bookingId FK UK
+        uuid advisorId FK
+        uuid clientId FK
+        datetime startTime
+        string status
+        float rating
+    }
+    Payment {
+        uuid id PK
+        uuid sessionId FK UK
+        uuid clientId FK
+        uuid advisorId FK
+        decimal amount
+        string status
+        string paymentMethod
+    }
+    ChatMessage {
+        uuid id PK
+        uuid sessionId FK
+        uuid senderId FK
+        string message
+        datetime timestamp
+    }
+
+    User ||--o{ AdvisorAvailability : "sets (advisor)"
+    User ||--o{ BookingRequest : "creates (client)"
+    User ||--o{ BookingRequest : "receives (advisor)"
+    BookingRequest ||--o| AdvisorSession : becomes
+    AdvisorSession ||--o| Payment : billed-via
+    AdvisorSession ||--o{ ChatMessage : contains
+```
+
+### Wealth, Loans & Tax
+
+```mermaid
+erDiagram
+    User {
+        uuid id PK
+    }
+    Investment {
+        uuid id PK
+        uuid userId FK
+        string assetType
+        string assetName
+        decimal quantity
+        decimal buyPrice
+        decimal currentPrice
+        decimal totalInvested
+        decimal currentValue
+        decimal profitLoss
+        datetime deletedAt
+    }
+    GoldAsset {
+        uuid id PK
+        uuid userId FK
+        string type
+        decimal quantity
+        string unit
+        decimal purchasePrice
+        decimal currentPrice
+        decimal purityPercentage
+        datetime deletedAt
+    }
+    TaxCalculation {
+        uuid id PK
+        uuid userId FK
+        int year
+        string regime
+        decimal totalIncome
+        decimal estimatedTax
+        decimal taxRate
+        decimal deductions
+        datetime deletedAt
+    }
+    Loan {
+        uuid id PK
+        uuid userId FK
+        string type
+        decimal principalAmount
+        decimal outstandingBalance
+        decimal interestRate
+        decimal emiAmount
+        string status
+        datetime deletedAt
+    }
+    LoanPayment {
+        uuid id PK
+        uuid loanId FK
+        decimal amount
+        datetime date
+        datetime deletedAt
+    }
+
+    User ||--o{ Investment : holds
+    User ||--o{ GoldAsset : owns
+    User ||--o{ TaxCalculation : calculates
+    User ||--o{ Loan : tracks
+    Loan ||--o{ LoanPayment : repaid-via
+```
+
+### Social — Friends, Group Expenses, Bills, Imports
+
+```mermaid
+erDiagram
+    User {
+        uuid id PK
+    }
+    Friend {
+        uuid id PK
+        uuid userId FK
+        string name
+        string email
+        string phone
+        datetime deletedAt
+    }
+    GroupExpense {
+        uuid id PK
+        uuid userId FK
+        string name
+        decimal totalAmount
+        string paidBy
+        datetime date
+        string splitType
+        decimal yourShare
+        datetime deletedAt
+    }
+    GroupExpenseMember {
+        uuid id PK
+        uuid groupExpenseId FK
+        uuid userId
+        string name
+        decimal shareAmount
+        boolean hasPaid
+        datetime paidAt
+        datetime deletedAt
+    }
+    ExpenseBill {
+        uuid id PK
+        uuid userId FK
+        string storagePath
+        string sha256
+        string scanStatus
+        string moderationStatus
+    }
+    ImportLog {
+        uuid id PK
+        uuid userId FK
+        string fileName
+        string fileType
+        int totalRecords
+        int importedRecords
+        int skippedRecords
+    }
+
+    User ||--o{ Friend : adds
+    User ||--o{ GroupExpense : creates
+    GroupExpense ||--o{ GroupExpenseMember : splits-among
+    User ||--o{ ExpenseBill : uploads
+    User ||--o{ ImportLog : triggers
+```
+
+### AI & Analytics — Scans, Insights, Events
+
+```mermaid
+erDiagram
+    User {
+        uuid id PK
+    }
+    AiScan {
+        uuid id PK
+        uuid userId FK
+        uuid billId
+        uuid transactionId
+        string extractedJson
+        float confidence
+        string provider
+        int processingMs
+        string status
+    }
+    ai_events {
+        string id PK
+        string user_id
+        string event_type
+        json metadata_json
+        datetime created_at
+    }
+    ai_insights {
+        string id PK
+        string user_id
+        string insight_type
+        json insight_data_json
+        float confidence_score
+    }
+    user_features {
+        string user_id PK
+        decimal avg_spend
+        decimal monthly_income
+        decimal savings_rate
+        string top_category
+        float risk_score
+        string peak_day
+    }
+    ai_model_runs {
+        string id PK
+        string run_type
+        string status
+        int processed_users
+    }
+
+    User ||--o{ AiScan : generates
+```
+
+### RBI Account Aggregator — Consent, Sessions, Data
+
+```mermaid
+erDiagram
+    AaConsent {
+        uuid id PK
+        uuid userId
+        string consentHandle
+        string consentId UK
+        string vua
+        string status
+        string fiTypes
+        datetime dataFrom
+        datetime dataTo
+    }
+    AaConsentArtifact {
+        uuid id PK
+        string consentId UK
+        string artifactJson
+        string signature
+    }
+    AaDataSession {
+        uuid id PK
+        string consentId
+        string sessionId UK
+        string sessionStatus
+        uuid userId
+    }
+    AaFinancialData {
+        uuid id PK
+        uuid userId
+        string consentId
+        string sessionId
+        string accountType
+        string maskedAccountNumber
+    }
+    AaTransaction {
+        uuid id PK
+        uuid userId
+        string consentId
+        datetime transactionDate
+        decimal amount
+        string type
+    }
+
+    AaConsent ||--o| AaConsentArtifact : signed-into
+    AaConsent ||--o{ AaDataSession : spawns
+    AaDataSession ||--o{ AaFinancialData : fetches
+    AaFinancialData ||--o{ AaTransaction : contains
+```
+
+### System — Notifications, Sync, Profiles, Todos
+
+```mermaid
+erDiagram
+    User {
+        uuid id PK
+    }
+    SyncQueue {
+        uuid id PK
+        uuid userId
+        uuid deviceId
+        string entityType
+        string entityId
+        string operation
+        string status
+        json data
+        int retryCount
+        int maxRetries
+    }
+    Notification {
+        uuid id PK
+        uuid userId FK
+        string title
+        string message
+        string type
+        json channels
+        json deliveryStatus
+        boolean isRead
+        string deepLink
+        datetime deletedAt
+    }
+    profiles {
+        uuid id PK
+        string email UK
+        string full_name
+        string avatar_url
+        decimal monthly_income
+        string job_type
+        string country
+        json visible_features
+    }
+    Todo {
+        uuid id PK
+        uuid userId FK
+        string title
+        boolean completed
+    }
+
+    User ||--o{ SyncQueue : "queues changes"
+    User ||--o{ Notification : receives
+    User ||--o{ Todo : creates
+```
+
+---
+
+## Backend Module Inventory
+
+| Module | Key Endpoints | External Services |
+|---|---|---|
+| **auth** | `/register`, `/login/challenge`, `/login`, `/profile`, `/otp/*`, `/devices` | Redis, SendGrid, JWT, bcrypt |
+| **accounts** | CRUD `/accounts` | Prisma |
+| **transactions** | CRUD `/transactions`, `/account/:id` | Prisma |
+| **goals** | CRUD `/goals` + contribution endpoints | Prisma, Redis cache |
+| **loans** | CRUD `/loans`, `/:id/payment` | Prisma |
+| **investments** | CRUD `/investments` | Prisma |
+| **gold** | CRUD `/gold` | Prisma |
+| **budget** | CRUD `/budget`, `/:id/recalculate` | Prisma |
+| **recurring** | CRUD `/recurring`, `/:id/toggle` | Prisma |
+| **groups** | CRUD + member management | Prisma, Socket.IO |
+| **tax** | CRUD `/tax` | Prisma |
+| **dashboard** | GET `/dashboard/summary`, `/cashflow` | Prisma aggregations |
+| **reports** | Summary, breakdown, trends, export | Prisma |
+| **import** | POST `/import/upload` (preview), `/import/confirm` | Multer, CSV/Excel parser |
+| **receipts** | POST `/receipts/start`, GET `/receipts/status/:id` | Gemini OCR, Supabase Storage |
+| **voice** | POST `/voice/process-audio`, `/voice/process`, `/voice/learn` | Gemini 1.5 Flash, OpenAI Whisper |
+| **ai** | `/ai/insights`, `/ai/quota`, `/ai/health-score`, `/ai/fraud-alerts` | Gemini, PostgreSQL |
+| **advisors** | Browse, apply, availability, admin approve/reject | Prisma, Socket.IO |
+| **bookings** | CRUD, accept/reject/reschedule/cancel | Prisma, Socket.IO |
+| **payments** | Initiate, complete, fail, refund, webhook | Stripe |
+| **sync** | POST `/sync/pull`, `/sync/push`, `/sync/register-device` | SyncQueue, Socket.IO |
+| **notifications** | CRUD, mark-read, mark-all-read, send (admin) | Prisma, SendGrid, Firebase |
+| **settings** | GET/PUT `/settings` | Prisma UserSettings |
+| **pin** | Create, verify, update, reset, key-backup | Prisma UserPin, bcrypt |
+| **avatars** | GET `/avatars/dicebear/:style/svg` | DiceBear API (proxied + SVG sanitized) |
+| **aa** | Consent lifecycle, data session, financial summary | Setu Account Aggregator |
+| **admin** | Users, feature flags, analytics, advisor verification | Prisma, Redis |
+
+---
+
+## Security Architecture
+
+| Mechanism | Implementation |
+|---|---|
+| Password hashing | bcrypt in `auth.service.ts` |
+| JWT access tokens | Short-lived, signed with `JWT_SECRET` |
+| JWT refresh tokens | Persisted in `RefreshToken` table |
+| 2-step login | Challenge code in Redis (60 s TTL) — prevents credential replay |
+| OTP | SHA-256 hashed in `OtpRequest`; plaintext sent via SendGrid only |
+| Device trust | `Device.isTrusted` flag; OTP required for all new devices |
+| PIN | bcrypt hash in `UserPin`; lockout after `failedAttempts`; PIN in backend, never client-only |
+| Rate limiting | 5 req/min auth; 3/min destructive ops; 8-10/min receipt scan |
+| CORS | Allowlist built from `FRONTEND_URL`/`CORS_ORIGIN` env var |
+| Socket.IO auth | JWT verified on every `connection` event |
+| SVG sanitization | Avatar proxy sanitizes all Dicebear SVG output before serving |
+| PII gating | `?includePrivate` flag on profile endpoint — strips sensitive fields by default |
+| Soft-delete | `deletedAt` on all sensitive models — data retained for audit |
+| Audit logging | `AuditLog` table for all sensitive actions |
+| Content-Security-Policy | HTTP headers on all responses |
+| Stripe webhook | Signature verified before any payment state mutation |
+
