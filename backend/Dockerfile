@@ -24,9 +24,9 @@ COPY package*.json ./
 RUN npm ci --omit=dev --ignore-scripts && npm cache clean --force
 
 # Copy built output + required assets
-COPY --from=builder /app/dist            ./dist
-COPY --from=builder /app/generated       ./generated
-COPY --from=builder /app/prisma          ./prisma
+COPY --from=builder /app/dist               ./dist
+COPY --from=builder /app/backend/generated  ./generated
+COPY --from=builder /app/backend/prisma     ./prisma
 
 # Non-root user for security
 USER kanaku
