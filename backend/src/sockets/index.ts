@@ -3,6 +3,9 @@ import jwt from 'jsonwebtoken';
 import { Server, Socket } from 'socket.io';
 import { prisma } from '../db/prisma';
 import { isAllowedOrigin } from '../config/cors';
+import { redisConnection } from '../config/queue';
+
+const SOCKET_AUTH_CACHE_TTL = 60; // seconds — cache verified identity to avoid DB on every connect
 
 interface AuthenticatedSocket extends Socket {
   userId: string;
@@ -91,53 +94,66 @@ export class SocketManager {
         const decoded = jwt.verify(token, customSecret) as jwt.JwtPayload;
         const userId = typeof decoded === 'object' ? decoded.userId || decoded.sub : null;
 
-      if (typeof userId === 'string' && userId.length > 0) {
-        const dbUser = await prisma.user.findUnique({
-          where: { id: userId },
-          select: { id: true, role: true, status: true },
-        });
-
-          if (dbUser?.status === 'suspended') {
-            return null;
-          }
-
-          return {
-            id: userId,
-            role: dbUser?.role || (ALLOW_TEST_ROLE_FALLBACK && typeof decoded.role === 'string' ? decoded.role : 'user'),
-          };
+        if (typeof userId === 'string' && userId.length > 0) {
+          const identity = await this.resolveUserIdentity(userId, decoded);
+          if (identity) return identity;
         }
-      } catch (error) {
+      } catch {
         // Fall through to Supabase validation.
       }
     }
 
-    if (!supabase) {
-      return null;
-    }
+    if (!supabase) return null;
 
     try {
       const { data: { user }, error } = await supabase.auth.getUser(token);
-      if (error || !user) {
-        return null;
-      }
-
-      const dbUser = await prisma.user.findUnique({
-        where: { id: user.id },
-        select: { id: true, role: true, status: true },
-      });
-
-      if (dbUser?.status === 'suspended') {
-        return null;
-      }
-
-      return {
-        id: user.id,
-        role: dbUser?.role || 'user',
-      };
+      if (error || !user) return null;
+      return await this.resolveUserIdentity(user.id, null);
     } catch (error) {
       console.error('Token verification error:', error);
       return null;
     }
+  }
+
+  /** Resolves user identity from Redis cache; falls back to DB and caches the result. */
+  private async resolveUserIdentity(
+    userId: string,
+    decodedToken: jwt.JwtPayload | null
+  ): Promise<SocketUserIdentity | null> {
+    const cacheKey = `socket:user:${userId}`;
+
+    // Check cache first
+    try {
+      const cached = await redisConnection.get(cacheKey);
+      if (cached) {
+        return JSON.parse(cached) as SocketUserIdentity;
+      }
+    } catch {
+      // Redis unavailable — fall through to DB
+    }
+
+    const dbUser = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, role: true, status: true },
+    });
+
+    if (dbUser?.status === 'suspended') return null;
+
+    const identity: SocketUserIdentity = {
+      id: userId,
+      role: dbUser?.role ?? (ALLOW_TEST_ROLE_FALLBACK && typeof decodedToken?.role === 'string'
+        ? decodedToken.role
+        : 'user'),
+    };
+
+    // Cache for SOCKET_AUTH_CACHE_TTL seconds
+    try {
+      await redisConnection.set(cacheKey, JSON.stringify(identity), 'EX', SOCKET_AUTH_CACHE_TTL);
+    } catch {
+      // Redis unavailable — non-fatal
+    }
+
+    return identity;
   }
 
   private trackUserConnection(userId: string, socketId: string, deviceId: string) {

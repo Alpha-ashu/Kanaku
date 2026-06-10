@@ -62,11 +62,9 @@ export const ManagerAdvisorVerification: React.FC = () => {
    isFetching.current = true;
    setLoading(true);
    try {
-     // Reusing the admin endpoint but logic will be tailored for Manager workflow
      const data = await backendService.api.get('/advisors/admin/applications');
      const result = data.data;
-     
-     // Enhance data with mock KYC flags for the UI demonstration
+
      const enhancedPending = (result.pending || []).map((app: any) => ({
        ...app,
        status: 'pending',
@@ -90,6 +88,7 @@ export const ManagerAdvisorVerification: React.FC = () => {
 
      setApplications([...enhancedPending, ...enhancedAll]);
    } catch (err: any) {
+     console.error('Failed to load verification queue:', err?.message ?? err);
      toast.error('Failed to load verification queue');
    } finally {
      setLoading(false);
@@ -97,7 +96,12 @@ export const ManagerAdvisorVerification: React.FC = () => {
    }
  }, []);
 
- useEffect(() => { fetchApplications(); }, [fetchApplications]);
+ // Only fetch once auth is ready and user is authorized
+ useEffect(() => {
+   if (!dataReady) return;
+   if (role !== 'manager' && role !== 'admin') return;
+   fetchApplications();
+ }, [dataReady, role, fetchApplications]);
 
  const handleApprove = async (app: AdvisorApplication) => {
  setProcessingId(app.id);

@@ -1,0 +1,52 @@
+# fly.toml — Fly.io config for KANAKU backend (Express + Socket.IO + BullMQ)
+# Deploy: fly deploy  |  First time: fly launch --no-deploy then fly deploy
+
+app = "kanaku-backend"
+primary_region = "sin"   # Singapore — closest to India (your primary market)
+
+[build]
+  dockerfile = "backend/Dockerfile"
+
+[env]
+  NODE_ENV = "production"
+  PORT     = "3000"
+
+[http_service]
+  internal_port       = 3000
+  force_https         = true
+  auto_stop_machines  = false   # Keep alive for persistent Socket.IO connections
+  auto_start_machines = true
+  min_machines_running = 2     # Always 2 instances for HA
+  processes           = ["app"]
+
+  [http_service.concurrency]
+    type       = "connections"
+    hard_limit = 1000
+    soft_limit = 800
+
+# Health check — Fly restarts the machine if /health fails
+[[http_service.checks]]
+  grace_period  = "10s"
+  interval      = "15s"
+  method        = "GET"
+  path          = "/health"
+  timeout       = "5s"
+
+# Multi-region — adds read replicas in other regions
+[[regions]]
+  code = "sin"   # Singapore (primary)
+
+[[regions]]
+  code = "bom"   # Mumbai — India tier-2
+
+[[regions]]
+  code = "iad"   # Washington DC — matches Vercel iad1
+
+# Persistent volume for logs / temp files if needed
+# [[mounts]]
+#   source      = "kanaku_data"
+#   destination = "/data"
+
+[metrics]
+  port = 9091
+  path = "/metrics"

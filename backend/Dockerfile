@@ -1,19 +1,41 @@
-FROM node:20-alpine
+# ── Stage 1: Build ──────────────────────────────────────────────────────────
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+# Install deps first (layer cache)
 COPY package*.json ./
-RUN npm ci --only=production
+RUN npm ci
 
+# Copy source and build
 COPY . .
-
-# Generate Prisma client types
-RUN npx prisma generate
-
+RUN npx prisma generate --schema prisma/schema.prisma
 RUN npm run build
+
+# ── Stage 2: Production image ────────────────────────────────────────────────
+FROM node:20-alpine AS runner
+
+RUN addgroup -S kanaku && adduser -S kanaku -G kanaku
+
+WORKDIR /app
+
+# Only production deps
+COPY package*.json ./
+RUN npm ci --only=production && npm cache clean --force
+
+# Copy built output + required assets
+COPY --from=builder /app/dist            ./dist
+COPY --from=builder /app/generated       ./generated
+COPY --from=builder /app/prisma          ./prisma
+
+# Non-root user for security
+USER kanaku
 
 EXPOSE 3000
 
-# Run DB migrations first, then start the server.
-# If DATABASE_URL is not reachable the container exits early with a clear error.
-CMD ["sh", "-c", "npx prisma migrate deploy && npm start"]
+# Healthcheck so Fly restarts unhealthy containers
+HEALTHCHECK --interval=15s --timeout=5s --start-period=10s --retries=3 \
+  CMD wget -qO- http://localhost:3000/health || exit 1
+
+# Run migrations then start — migrations use DIRECT_URL (non-pooled)
+CMD ["sh", "-c", "npx prisma migrate deploy --schema prisma/schema.prisma && node dist/server.js"]

@@ -7,7 +7,7 @@ import { setupGlobalErrorHandlers } from '@/lib/errorHandling';
 import { runGlobalMigration } from '@/lib/migration';
 import '@/styles/index.css';
 
-// Perform global brand migration (KANAKU -> KANAKU) before anything else
+// Perform global brand migration (KANKU -> KANAKU) before anything else
 runGlobalMigration();
 
 // Capture uncaught errors and unhandled rejections from app startup

@@ -1,6 +1,6 @@
 import { Response, NextFunction } from 'express';
 import { AuthRequest, getUserId } from '../../middleware/auth';
-import { prisma } from '../../db/prisma';
+import { prisma, prismaRead } from '../../db/prisma';
 import { Prisma } from '../../db/prisma-client';
 import { AppError } from '../../utils/AppError';
 
@@ -20,10 +20,10 @@ export const getDashboardSummary = async (req: AuthRequest, res: Response, next:
     const startOfMonth = new Date(year, month, 1);
     const endOfMonth = new Date(year, month + 1, 0, 23, 59, 59, 999);
 
-    // Run all queries in parallel
+    // All dashboard queries are read-only — route to replica for scale
     const [monthlyTotals, categoryBreakdown, accounts, recentTransactions] = await Promise.all([
       // 1. Monthly income vs expense totals
-      prisma.$queryRaw<{ type: string; _sum: number }[]>`
+      prismaRead.$queryRaw<{ type: string; _sum: number }[]>`
         SELECT type, COALESCE(SUM(amount), 0) as "_sum"
         FROM "Transaction"
         WHERE "userId" = ${userId}
@@ -34,8 +34,8 @@ export const getDashboardSummary = async (req: AuthRequest, res: Response, next:
         GROUP BY type
       `,
 
-      // 2. Category breakdown for expenses this month
-      prisma.$queryRaw<{ category: string; total: number; count: number }[]>`
+      // 2. Category breakdown for expenses this month (top 15)
+      prismaRead.$queryRaw<{ category: string; total: number; count: number }[]>`
         SELECT category,
                COALESCE(SUM(amount), 0)::float as total,
                COUNT(*)::int as count
@@ -47,17 +47,18 @@ export const getDashboardSummary = async (req: AuthRequest, res: Response, next:
           AND date <= ${endOfMonth}
         GROUP BY category
         ORDER BY total DESC
+        LIMIT 15
       `,
 
       // 3. Account balances
-      prisma.account.findMany({
+      prismaRead.account.findMany({
         where: { userId, isActive: true, deletedAt: null },
         select: { id: true, name: true, type: true, balance: true, currency: true },
         orderBy: { name: 'asc' },
       }),
 
       // 4. Last 5 transactions
-      prisma.transaction.findMany({
+      prismaRead.transaction.findMany({
         where: { userId, deletedAt: null },
         orderBy: { date: 'desc' },
         take: 5,

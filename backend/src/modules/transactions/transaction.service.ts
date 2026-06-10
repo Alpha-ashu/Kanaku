@@ -41,15 +41,10 @@ export class TransactionService {
     }
 
     const { limit, page } = query;
-    let parsedLimit: number | undefined;
-    let parsedPage: number | undefined;
-    let skip: number | undefined;
-
-    if (limit !== undefined || page !== undefined) {
-      parsedLimit = Math.min(100, Math.max(1, parseInt(limit as string) || 20));
-      parsedPage = Math.max(1, parseInt(page as string) || 1);
-      skip = (parsedPage - 1) * parsedLimit;
-    }
+    // Always paginate — never return unbounded result sets
+    const parsedLimit = Math.min(100, Math.max(1, parseInt(limit as string) || 20));
+    const parsedPage  = Math.max(1, parseInt(page as string) || 1);
+    const skip        = (parsedPage - 1) * parsedLimit;
 
     const [transactions, totalCount] = await Promise.all([
       transactionRepository.findMany(userId, whereClause, parsedLimit, skip),
@@ -59,8 +54,8 @@ export class TransactionService {
     return {
       transactions,
       totalCount,
-      page: parsedPage || 1,
-      limit: parsedLimit || totalCount,
+      page: parsedPage,
+      limit: parsedLimit,
     };
   }
 

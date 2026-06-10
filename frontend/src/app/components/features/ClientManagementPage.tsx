@@ -5,6 +5,7 @@ import { Card } from '@/app/components/ui/card';
 import { Users, Search, FolderKanban, ShieldCheck, Mail, Phone, ArrowUpRight, TrendingUp } from 'lucide-react';
 import { toast } from 'sonner';
 import { backendService } from '@/lib/backend-api';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Client {
  id: string | number;
@@ -18,11 +19,17 @@ interface Client {
 }
 
 export const ClientManagementPage: React.FC = () => {
+ const { role, dataReady } = useAuth();
  const [clients, setClients] = useState<Client[]>([]);
  const [isLoading, setIsLoading] = useState(true);
 
  useEffect(() => {
+   if (!dataReady) return;
    const fetchClients = async () => {
+     if (role !== 'advisor') {
+       setIsLoading(false);
+       return;
+     }
      try {
        setIsLoading(true);
        const response = await backendService.api.get('/advisors/me/sessions');
@@ -89,8 +96,8 @@ export const ClientManagementPage: React.FC = () => {
        }));
 
        setClients(mappedClients);
-     } catch (error) {
-       console.error('Failed to load clients:', error);
+     } catch (error: any) {
+       console.error('Failed to load clients:', error?.message ?? error);
        toast.error('Failed to load clients');
      } finally {
        setIsLoading(false);
@@ -98,7 +105,7 @@ export const ClientManagementPage: React.FC = () => {
    };
 
    fetchClients();
- }, []);
+ }, [role, dataReady]);
 
  const [searchQuery, setSearchQuery] = useState('');
 

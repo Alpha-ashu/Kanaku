@@ -148,7 +148,7 @@ export function createEmailWorker() {
     },
     {
       connection: redisConnection as any,
-      concurrency: parseInt(process.env.NOTIFICATION_EMAIL_BATCH_SIZE || "10"),
+      concurrency: parseInt(process.env.EMAIL_WORKER_CONCURRENCY || process.env.NOTIFICATION_EMAIL_BATCH_SIZE || "50"),
     }
   );
 

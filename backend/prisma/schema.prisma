@@ -5,9 +5,10 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-  schemas  = ["public"]
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+  schemas   = ["public"]
 }
 
 model Account {
@@ -168,6 +169,7 @@ model Device {
   @@index([isActive])
   @@index([userId])
   @@index([fcmToken])
+  @@index([userId, isActive])  // active device lookup for push notifications
   @@schema("public")
 }
 
@@ -390,6 +392,7 @@ model Notification {
   @@index([sourceUserId])
   @@index([type])
   @@index([deletedAt])
+  @@index([userId, isRead, createdAt])  // unread notification counts + sorted feed
   @@schema("public")
 }
 
@@ -510,7 +513,11 @@ model Transaction {
   @@index([groupExpenseId])
   @@index([syncStatus])
   @@index([userId])
-  @@index([userId, date]) // Composite index for user transaction queries
+  @@index([userId, date])
+  @@index([userId, type, date])       // dashboard monthly totals (income/expense by date range)
+  @@index([userId, category, date])   // category breakdown queries
+  @@index([userId, accountId, date])  // account-level transaction queries
+  @@index([userId, deletedAt, date])  // soft-delete filtered date queries
   @@index([deletedAt])
   @@schema("public")
 }
@@ -571,6 +578,7 @@ model User {
 
   @@index([isApproved])
   @@index([role])
+  @@index([role, isApproved])  // advisor approval queue queries
   @@schema("public")
 }
 

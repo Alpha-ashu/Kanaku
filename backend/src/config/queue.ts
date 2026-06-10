@@ -2,70 +2,66 @@ import { Queue } from "bullmq";
 import Redis from "ioredis";
 
 /**
- * Redis Configuration for Bull Job Queues
- * Supports async email and push notification delivery
+ * Redis Configuration
+ *
+ * Supports two connection styles:
+ *   - REDIS_URL   → full URL (used by Upstash, Redis Cloud, Railway Redis)
+ *                   e.g. rediss://default:<password>@<host>:6380
+ *   - REDIS_HOST / REDIS_PORT / REDIS_PASSWORD → explicit fields (local dev)
+ *
+ * Upstash requires TLS (rediss://) and maxRetriesPerRequest=null for BullMQ.
  */
 
-const redisConfig = {
-  host: process.env.REDIS_HOST || "localhost",
-  port: parseInt(process.env.REDIS_PORT || "6379"),
-  password: process.env.REDIS_PASSWORD || undefined,
-  db: parseInt(process.env.REDIS_DB || "0"),
-  maxRetriesPerRequest: null, // Null for unlimited retries (recommended for Bull)
-};
+function createRedisClient(): Redis {
+  const redisUrl = process.env.REDIS_URL;
 
-export const redisConnection = new Redis(redisConfig);
-export const redisSubscriber = new Redis(redisConfig);
+  if (redisUrl) {
+    // URL-based connection (Upstash, Railway Redis, Redis Cloud)
+    return new Redis(redisUrl, {
+      maxRetriesPerRequest: null,  // Required by BullMQ
+      enableReadyCheck: false,
+      tls: redisUrl.startsWith("rediss://") ? {} : undefined,
+    });
+  }
 
-// Handle errors gracefully to prevent console spam when running without a local Redis instance
-redisConnection.on("error", (err) => {
-  // Silent or throttled logging to prevent console spam
-});
-redisSubscriber.on("error", (err) => {
-  // Silent or throttled logging
-});
-
-/**
- * Initialize job queues
- */
-export function initializeQueues() {
-  // Create queues
-  const emailQueue = new Queue("email-notifications", {
-    connection: redisConnection as any,
+  // Explicit host/port (local dev)
+  return new Redis({
+    host:                process.env.REDIS_HOST || "localhost",
+    port:                parseInt(process.env.REDIS_PORT || "6379"),
+    password:            process.env.REDIS_PASSWORD || undefined,
+    db:                  parseInt(process.env.REDIS_DB || "0"),
+    maxRetriesPerRequest: null,
+    enableReadyCheck:    false,
   });
-  emailQueue.on("error", (err) => {
-    // Suppress/log connection errors when Redis is offline
-  });
-
-  const pushQueue = new Queue("push-notifications", {
-    connection: redisConnection as any,
-  });
-  pushQueue.on("error", (err) => {
-    // Suppress/log connection errors when Redis is offline
-  });
-
-  const syncQueue = new Queue("sync-operations", {
-    connection: redisConnection as any,
-  });
-  syncQueue.on("error", (err) => {
-    // Suppress/log connection errors when Redis is offline
-  });
-
-  // NOTE: QueueScheduler was removed in BullMQ v5. The scheduler is now built
-  // into the Queue itself and requires no separate instance.
-
-  console.log("✓ Job queues initialized (email, push, sync)");
-
-  return {
-    emailQueue,
-    pushQueue,
-    syncQueue,
-  };
 }
 
-/**
- * Test Redis connection
- */
+export const redisConnection  = createRedisClient();
+export const redisSubscriber  = createRedisClient();
+
+redisConnection.on("error", (err) => {
+  if (process.env.NODE_ENV === "production") {
+    console.error("[Redis] Connection error:", err.message);
+  }
+});
+redisSubscriber.on("error", (err) => {
+  if (process.env.NODE_ENV === "production") {
+    console.error("[Redis] Subscriber error:", err.message);
+  }
+});
+
+export function initializeQueues() {
+  const emailQueue = new Queue("email-notifications", { connection: redisConnection as any });
+  const pushQueue  = new Queue("push-notifications",  { connection: redisConnection as any });
+  const syncQueue  = new Queue("sync-operations",     { connection: redisConnection as any });
+
+  [emailQueue, pushQueue, syncQueue].forEach(q =>
+    q.on("error", (err) => console.error(`[Queue:${q.name}] Error:`, err.message))
+  );
+
+  console.log("✓ Job queues initialized (email, push, sync)");
+  return { emailQueue, pushQueue, syncQueue };
+}
+
 export async function testRedisConnection(): Promise<boolean> {
   try {
     const result = await redisConnection.ping();
@@ -73,29 +69,17 @@ export async function testRedisConnection(): Promise<boolean> {
       console.log("✓ Redis connected successfully");
       return true;
     }
-  } catch (error) {
-    console.error("✗ Redis connection failed:", error);
-    return false;
+  } catch (error: any) {
+    console.error("✗ Redis connection failed:", error.message);
   }
   return false;
 }
 
-/**
- * Clean up Redis connections (call on app shutdown)
- */
 export async function closeRedisConnections() {
-  try {
-    await redisConnection.quit();
-    await redisSubscriber.quit();
-    console.log("✓ Redis connections closed");
-  } catch (error) {
-    console.error("Error closing Redis connections:", error);
-  }
+  await Promise.allSettled([redisConnection.quit(), redisSubscriber.quit()]);
+  console.log("✓ Redis connections closed");
 }
 
-/**
- * Alias for initializeQueues — satisfies the named import in server.ts.
- */
 export const getQueues = initializeQueues;
 
 export default {

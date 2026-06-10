@@ -302,10 +302,21 @@ class BackendService {
 
   constructor() {
     const inflightRequests = new Map<string, Promise<any>>();
-    const defaultAdapter = axios.defaults.adapter;
 
-    if (!defaultAdapter) {
-      throw new Error('No default Axios adapter found');
+    // Axios v1.x stores adapter as string[] (['xhr','http']), not a function.
+    // Resolve to the actual HTTP adapter for this environment before creating the instance,
+    // so our custom adapter can call it directly without risking infinite recursion.
+    const rawAdapter = axios.defaults.adapter;
+    let defaultAdapter: (config: any) => Promise<any>;
+    if (typeof rawAdapter === 'function') {
+      defaultAdapter = rawAdapter;
+    } else if ((axios as any).getAdapter) {
+      const name = typeof XMLHttpRequest !== 'undefined' ? 'xhr' : 'http';
+      defaultAdapter = (axios as any).getAdapter(rawAdapter ?? name);
+    } else {
+      // Last-resort: create a plain instance (no custom adapter) to delegate to
+      const plain = axios.create({ baseURL: API_BASE_URL });
+      defaultAdapter = (config: any) => plain.request(config);
     }
 
     this.api = axios.create({
@@ -319,7 +330,7 @@ class BackendService {
             return inflightRequests.get(key)!;
           }
 
-          const promise = Promise.resolve((defaultAdapter as Function)(config)).finally(() => {
+          const promise = Promise.resolve(defaultAdapter(config)).finally(() => {
             inflightRequests.delete(key);
           });
 
@@ -327,7 +338,7 @@ class BackendService {
           return promise;
         }
 
-        return (defaultAdapter as Function)(config);
+        return defaultAdapter(config);
       }
     });
 
