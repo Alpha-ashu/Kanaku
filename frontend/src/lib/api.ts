@@ -501,11 +501,25 @@ export const api = {
   // Authentication
   auth: {
     login: async (credentials: { email: string; password: string }) => {
-      const challengeResponse = await apiClient.post<any>(
+      const doChallenge = () => apiClient.post<any>(
         '/auth/login/challenge',
         { email: credentials.email, password: credentials.password },
         { showErrorToast: false }
       );
+
+      // If the backend is waking from suspension the first call may time out.
+      // Retry once after a short pause so the user never sees a dead-end error.
+      let challengeResponse;
+      try {
+        challengeResponse = await doChallenge();
+      } catch (err: any) {
+        if (err?.code === 'TIMEOUT_ERROR') {
+          await new Promise(resolve => setTimeout(resolve, 3000));
+          challengeResponse = await doChallenge();
+        } else {
+          throw err;
+        }
+      }
 
       if (!challengeResponse.success || !challengeResponse.data?.code) {
         throw new Error(challengeResponse.message || 'Verification challenge failed.');
