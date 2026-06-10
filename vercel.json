@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "name": "KANAKU",
+  "name": "kanakku",
   "buildCommand": "npm run build:frontend",
   "outputDirectory": "dist",
   "regions": ["iad1", "sin1", "bom1"],
