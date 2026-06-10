@@ -10,7 +10,7 @@ RUN npm ci --ignore-scripts
 # Copy source, then generate prisma client with the real schema
 COPY . .
 RUN npx prisma generate --schema backend/prisma/schema.prisma
-RUN npm run build
+RUN npm run build:backend
 
 # ── Stage 2: Production image ────────────────────────────────────────────────
 FROM node:20-alpine AS runner
