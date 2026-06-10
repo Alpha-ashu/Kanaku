@@ -7,7 +7,10 @@
       "Bash(npx prisma@6.19.2 migrate diff --from-schema-datasource backend/prisma/schema.prisma --to-schema-datamodel backend/prisma/schema.prisma --script)",
       "Bash(npx prisma@6.19.2 migrate resolve --applied \"20260610_add_composite_indexes\" --schema backend/prisma/schema.prisma)",
       "Bash(npx prisma@6.19.2 migrate resolve --rolled-back \"20260610_add_composite_indexes\" --schema backend/prisma/schema.prisma)",
-      "Bash(npx prisma@6.19.2 db execute --schema backend/prisma/schema.prisma --file backend/prisma/migrations/20260610_add_composite_indexes/migration.sql)"
+      "Bash(npx prisma@6.19.2 db execute --schema backend/prisma/schema.prisma --file backend/prisma/migrations/20260610_add_composite_indexes/migration.sql)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)"
     ]
   }
 }
