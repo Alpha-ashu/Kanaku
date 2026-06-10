@@ -32,16 +32,6 @@ primary_region = "sin"   # Singapore — closest to India (your primary market)
   path          = "/health"
   timeout       = "5s"
 
-# Multi-region — adds read replicas in other regions
-[[regions]]
-  code = "sin"   # Singapore (primary)
-
-[[regions]]
-  code = "bom"   # Mumbai — India tier-2
-
-[[regions]]
-  code = "iad"   # Washington DC — matches Vercel iad1
-
 # Persistent volume for logs / temp files if needed
 # [[mounts]]
 #   source      = "kanaku_data"
