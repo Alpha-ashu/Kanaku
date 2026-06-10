@@ -27,15 +27,15 @@
     },
     {
       "src": "/api/(.*)",
-      "dest": "https://kanaku-backend.fly.dev/api/$1"
+      "dest": "https://kanaku.fly.dev/api/$1"
     },
     {
       "src": "/health",
-      "dest": "https://kanaku-backend.fly.dev/health"
+      "dest": "https://kanaku.fly.dev/health"
     },
     {
       "src": "/socket.io/(.*)",
-      "dest": "https://kanaku-backend.fly.dev/socket.io/$1"
+      "dest": "https://kanaku.fly.dev/socket.io/$1"
     },
     {
       "src": "/(.*)",
