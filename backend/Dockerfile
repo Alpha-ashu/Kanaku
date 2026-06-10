@@ -24,9 +24,12 @@ COPY package*.json ./
 RUN npm ci --omit=dev --ignore-scripts && npm cache clean --force
 
 # Copy built output + required assets
-COPY --from=builder /app/dist               ./dist
-COPY --from=builder /app/backend/generated  ./generated
-COPY --from=builder /app/backend/prisma     ./prisma
+COPY --from=builder /app/dist                        ./dist
+COPY --from=builder /app/backend/generated           ./generated
+COPY --from=builder /app/backend/prisma              ./prisma
+# Copy prisma CLI so migrate deploy works without npx downloading it at startup
+COPY --from=builder /app/node_modules/prisma         ./node_modules/prisma
+COPY --from=builder /app/node_modules/.bin/prisma    ./node_modules/.bin/prisma
 
 # Non-root user for security
 USER kanaku
@@ -38,4 +41,4 @@ HEALTHCHECK --interval=15s --timeout=5s --start-period=10s --retries=3 \
   CMD wget -qO- http://localhost:3000/health || exit 1
 
 # Run migrations then start — migrations use DIRECT_URL (non-pooled)
-CMD ["sh", "-c", "npx prisma migrate deploy --schema prisma/schema.prisma && node dist/server.js"]
+CMD ["sh", "-c", "node_modules/.bin/prisma migrate deploy --schema prisma/schema.prisma && node dist/server.js"]
