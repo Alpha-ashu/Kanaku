@@ -3,14 +3,18 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Install deps first (layer cache) — skip postinstall, schema not copied yet
+# Install root deps (has prisma CLI needed for generate) — skip postinstall
 COPY package*.json ./
 RUN npm ci --ignore-scripts
 
-# Copy source, then generate prisma client with the real schema
+# Install backend deps (has typescript for tsc)
+COPY backend/package*.json ./backend/
+RUN cd backend && npm ci
+
+# Copy source, generate prisma client, build
 COPY . .
 RUN npx prisma generate --schema backend/prisma/schema.prisma
-RUN npm run build:backend
+RUN cd backend && npm run build
 
 # ── Stage 2: Production image ────────────────────────────────────────────────
 FROM node:20-alpine AS runner
@@ -19,26 +23,21 @@ RUN addgroup -S kanaku && adduser -S kanaku -G kanaku
 
 WORKDIR /app
 
-# Only production deps
-COPY package*.json ./
-RUN npm ci --omit=dev --ignore-scripts && npm cache clean --force
+# Use backend/package.json — has "type":"commonjs" and all backend production deps
+COPY backend/package*.json ./
+RUN npm ci --omit=dev && npm cache clean --force
 
 # Copy built output + required assets
-COPY --from=builder /app/backend/dist                ./dist
-COPY --from=builder /app/backend/generated           ./generated
-COPY --from=builder /app/backend/prisma              ./prisma
-# Root package.json has "type":"module" but backend compiles to CommonJS.
-# This tells Node to treat dist/*.js as CommonJS regardless.
-RUN echo '{"type":"commonjs"}' > dist/package.json
+COPY --from=builder /app/backend/dist      ./dist
+COPY --from=builder /app/backend/generated ./generated
+COPY --from=builder /app/backend/prisma    ./prisma
 
 # Non-root user for security
 USER kanaku
 
 EXPOSE 3000
 
-# Healthcheck so Fly restarts unhealthy containers
 HEALTHCHECK --interval=15s --timeout=5s --start-period=10s --retries=3 \
   CMD wget -qO- http://localhost:3000/health || exit 1
 
-# Run migrations then start — migrations use DIRECT_URL (non-pooled)
 CMD ["node", "dist/server.js"]
