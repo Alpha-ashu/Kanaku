@@ -23,14 +23,9 @@ RUN addgroup -S kanaku && adduser -S kanaku -G kanaku
 
 WORKDIR /app
 
-# Step 1: install root production deps (bcryptjs, nodemailer, ioredis, etc.)
-COPY package*.json ./
-RUN npm ci --omit=dev --ignore-scripts
-
-# Step 2: replace package.json with backend's (type:commonjs, adds node-cron etc.)
-# then install any additional backend deps not in root
-COPY backend/package*.json ./
-RUN npm install --omit=dev --ignore-scripts --no-package-lock && npm cache clean --force
+# All runtime deps are in backend/package.json — single clean install
+COPY backend/package.json ./
+RUN npm install --omit=dev --ignore-scripts && npm cache clean --force
 
 # Copy built output + required assets
 COPY --from=builder /app/backend/dist      ./dist
