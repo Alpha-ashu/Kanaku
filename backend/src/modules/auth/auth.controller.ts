@@ -377,6 +377,8 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
       success: true,
       message: 'Login successful',
       data: {
+        accessToken: tokens.accessToken,
+        refreshToken: tokens.refreshToken,
         user: input.challengeCode ? {
           id: userRecord.id,
           email: userRecord.email,
