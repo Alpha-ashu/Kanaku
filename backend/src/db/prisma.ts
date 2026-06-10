@@ -14,7 +14,7 @@ const SLOW_QUERY_MS    = 2_000;
 const READ_REPLICA_URL = process.env.READ_REPLICA_URL;
 
 function buildClient(datasourceUrl?: string): PrismaClient {
-  const client = new PrismaClient({
+  const base = new PrismaClient({
     log: [
       { emit: 'event', level: 'warn'  },
       { emit: 'event', level: 'error' },
@@ -22,32 +22,31 @@ function buildClient(datasourceUrl?: string): PrismaClient {
     ...(datasourceUrl ? { datasources: { db: { url: datasourceUrl } } } : {}),
   });
 
-  (client as any).$on('warn',  (e: any) => logger.warn('[Prisma]',  e));
-  (client as any).$on('error', (e: any) => logger.error('[Prisma]', e));
+  (base as any).$on('warn',  (e: any) => logger.warn('[Prisma]',  e));
+  (base as any).$on('error', (e: any) => logger.error('[Prisma]', e));
 
-  // Query timeout + slow-query logging
-  (client as any).$use(async (params: any, next: any) => {
-    const start   = Date.now();
-    const timeout = new Promise((_, reject) =>
-      setTimeout(
-        () => reject(new Error(
-          `[Prisma] Query timeout: ${params.model}.${params.action} exceeded ${QUERY_TIMEOUT_MS}ms`
-        )),
-        QUERY_TIMEOUT_MS
-      )
-    );
-
-    const result   = await Promise.race([next(params), timeout]);
-    const duration = Date.now() - start;
-
-    if (duration > SLOW_QUERY_MS) {
-      logger.warn(`[Prisma] Slow query (${duration}ms): ${params.model}.${params.action}`);
-    }
-
-    return result;
-  });
-
-  return client;
+  // Query timeout + slow-query logging via $extends (Prisma v5+)
+  return base.$extends({
+    query: {
+      $allModels: {
+        async $allOperations({ args, query }: { args: any; query: (args: any) => Promise<any> }) {
+          const start = Date.now();
+          const timeoutPromise = new Promise<never>((_, reject) =>
+            setTimeout(
+              () => reject(new Error(`[Prisma] Query timeout exceeded ${QUERY_TIMEOUT_MS}ms`)),
+              QUERY_TIMEOUT_MS,
+            )
+          );
+          const result = await Promise.race([query(args), timeoutPromise]);
+          const duration = Date.now() - start;
+          if (duration > SLOW_QUERY_MS) {
+            logger.warn(`[Prisma] Slow query (${duration}ms)`);
+          }
+          return result;
+        },
+      },
+    },
+  }) as unknown as PrismaClient;
 }
 
 // Write client — always hits primary DB
