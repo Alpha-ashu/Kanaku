@@ -775,8 +775,9 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
  }}
  >
  <div>
- <label className="block text-sm font-medium text-gray-700 mb-1">Bank Name</label>
+ <label htmlFor="bankName" className="block text-sm font-medium text-gray-700 mb-1">Bank Name</label>
  <select
+ id="bankName"
  name="bankName"
  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
  required
@@ -816,8 +817,9 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
  </div>
 
  <div>
- <label className="block text-sm font-medium text-gray-700 mb-1">Salary Credit Date</label>
+ <label htmlFor="creditDate" className="block text-sm font-medium text-gray-700 mb-1">Salary Credit Date</label>
  <select
+ id="creditDate"
  name="creditDate"
  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
  required
