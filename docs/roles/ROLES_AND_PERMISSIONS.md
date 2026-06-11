@@ -1,6 +1,6 @@
 # KANAKU - Role-Based Governance, Permissions & Workflows
 
-This document establishes the user roles, security access levels, functional workflows, and authorization permissions within the KANAKU (Finora) ecosystem.
+This document establishes the user roles, security access levels, functional workflows, and authorization permissions within the KANAKU (KANAKU) ecosystem.
 
 ---
 

@@ -1,6 +1,6 @@
 import { readFileSync, writeFileSync } from 'fs';
 
-const filePath = 'k:/Project/Finora/frontend/src/services/statementImportService.ts';
+const filePath = 'k:/Project/KANAKU/frontend/src/services/statementImportService.ts';
 let code = readFileSync(filePath, 'utf8');
 
 const START = '  private async extractTransactionsFromText(text: string, userId: string) {';

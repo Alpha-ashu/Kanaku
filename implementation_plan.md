@@ -22,7 +22,7 @@ This plan details the changes required to optimize feature flag retrieval, secur
 
 Remove redundancy in features polling by disabling periodic background fetching and relying entirely on the mount fetch and push-based WebSocket broadcasts.
 
-#### [MODIFY] [AppContext.tsx](file:///k:/Project/kenku/Finora/frontend/src/contexts/AppContext.tsx)
+#### [MODIFY] [AppContext.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/contexts/AppContext.tsx)
 - Remove the `setInterval` block inside the `useEffect` on lines 690-694.
 - Remove the `visibilitychange` listener that triggers a re-fetch of features.
 - Retain the immediate fetch on mount/session change and the WebSocket listener that triggers `fetchGlobalFlags()` in real-time.
@@ -31,13 +31,13 @@ Remove redundancy in features polling by disabling periodic background fetching 
 
 ### 2. Role-Based Feature Payload Filtering
 
-#### [NEW] [featureHelpers.ts](file:///k:/Project/kenku/Finora/backend/src/utils/featureHelpers.ts)
+#### [NEW] [featureHelpers.ts](file:///k:/Project/kenku/KANAKU/backend/src/utils/featureHelpers.ts)
 - Implement `transformFeaturesToRoleCentric(features)`: Convert feature-centric structures to role-centric flat configurations before database storage.
 - Implement `reconstructFeatures(roleCentric, targetRole?)`: Dynamically reconstruct the feature-centric configuration (filtering by targetRole if provided).
 - Implement `transformAIFeaturesToRoleCentric(aiFeatures)`.
 - Implement `reconstructAIFeatures(roleCentric, targetRole?)`.
 
-#### [MODIFY] [admin.controller.ts](file:///k:/Project/kenku/Finora/backend/src/modules/admin/admin.controller.ts)
+#### [MODIFY] [admin.controller.ts](file:///k:/Project/kenku/KANAKU/backend/src/modules/admin/admin.controller.ts)
 - **`toggleFeatureFlag`**:
   - Transform features to role-centric flat dictionary and save under `admin_global_feature_settings`.
 - **`getFeatureFlags`**:
@@ -47,42 +47,42 @@ Remove redundancy in features polling by disabling periodic background fetching 
 - **`getAIFeatureFlags`**:
   - Reconstruct for `admin` role or requesting user's role-centric structure.
 
-#### [MODIFY] [featureGate.ts](file:///k:/Project/kenku/Finora/backend/src/middleware/featureGate.ts)
+#### [MODIFY] [featureGate.ts](file:///k:/Project/kenku/KANAKU/backend/src/middleware/featureGate.ts)
 - Modify `getGlobalFeatures()` and `getAIGlobalFeatures()` to reconstruct feature-centric settings on-the-fly using the helper, ensuring the middleware checkers function without modification.
 
 ---
 
 ### 3. JWT Claim Security
 
-#### [VERIFY] [auth.ts](file:///k:/Project/kenku/Finora/backend/src/utils/auth.ts) & [securityGate.ts](file:///k:/Project/kenku/Finora/backend/src/middleware/securityGate.ts)
+#### [VERIFY] [auth.ts](file:///k:/Project/kenku/KANAKU/backend/src/utils/auth.ts) & [securityGate.ts](file:///k:/Project/kenku/KANAKU/backend/src/middleware/securityGate.ts)
 - Custom tokens sign only non-sensitive user identity attributes. No environment credentials or secret URLs are encoded. No changes required.
 
 ---
 
 ### 4. Duplicate Records Prevention
 
-#### [MODIFY] [auth-sync-integration.ts](file:///k:/Project/kenku/Finora/frontend/src/lib/auth-sync-integration.ts)
+#### [MODIFY] [auth-sync-integration.ts](file:///k:/Project/kenku/KANAKU/frontend/src/lib/auth-sync-integration.ts)
 - **`saveTransactionWithBackendSync`**: Generate `transaction.dedupHash = transaction.dedupHash || crypto.randomUUID()` and send it in the request payload.
 - **`saveAccountWithBackendSync`**: Generate `account.clientRequestId = account.clientRequestId || crypto.randomUUID()` and send it in the request payload.
 - **`saveGoalWithBackendSync`**: Generate `goal.clientRequestId = goal.clientRequestId || crypto.randomUUID()` and send it in the request payload.
 
-#### [MODIFY] [AddTransaction.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/transactions/AddTransaction.tsx)
+#### [MODIFY] [AddTransaction.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/transactions/AddTransaction.tsx)
 - In `handleSubmit`, query the local Dexie DB for any identical transaction (same account, type, amount, description) created within the last 10 seconds. Block the submission if a duplicate is found.
 
-#### [MODIFY] [AddAccount.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/core/AddAccount.tsx)
+#### [MODIFY] [AddAccount.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/core/AddAccount.tsx)
 - In `handleSubmit`, check if an active account with the same name and type already exists locally. Block if found.
 
-#### [MODIFY] [AddGoal.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/goals/AddGoal.tsx)
+#### [MODIFY] [AddGoal.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/goals/AddGoal.tsx)
 - In `handleSubmit`, check if an active goal with the same name already exists locally. Block if found.
 
-#### [MODIFY] [AddGroup.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/groups/AddGroup.tsx)
+#### [MODIFY] [AddGroup.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/groups/AddGroup.tsx)
 - In `handleSubmit`, check if a group expense with the same name and date already exists locally. Block if found.
 
-#### [MODIFY] [goal.controller.ts](file:///k:/Project/kenku/Finora/backend/src/modules/goals/goal.controller.ts)
+#### [MODIFY] [goal.controller.ts](file:///k:/Project/kenku/KANAKU/backend/src/modules/goals/goal.controller.ts)
 - **`createGoal`**: Pre-validate that a goal with the same name does not already exist for this user (with `deletedAt: null`).
 - **`updateGoal`**: Pre-validate name uniqueness if it is being changed.
 
-#### [MODIFY] [group.controller.ts](file:///k:/Project/kenku/Finora/backend/src/modules/groups/group.controller.ts)
+#### [MODIFY] [group.controller.ts](file:///k:/Project/kenku/KANAKU/backend/src/modules/groups/group.controller.ts)
 - **`createGroup`**: Pre-validate that a group expense with the same name, amount, and date does not already exist for this user.
 
 ---

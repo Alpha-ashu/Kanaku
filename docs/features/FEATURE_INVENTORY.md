@@ -1,6 +1,6 @@
 # KANAKU - Feature Inventory & Specifications
 
-This document catalogs every functional feature of KANAKU (Finora), explaining the business value, user journeys, technical flows, and dependencies.
+This document catalogs every functional feature of KANAKU (KANAKU), explaining the business value, user journeys, technical flows, and dependencies.
 
 ---
 

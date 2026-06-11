@@ -207,7 +207,7 @@ export const initializeEmailWorker = (emailQueue: Queue) => {
         `;
 
         // await transporter.sendMail({
-        //   from: process.env.SMTP_FROM_EMAIL || 'noreply@finora.app',
+        //   from: process.env.SMTP_FROM_EMAIL || 'noreply@KANAKU.app',
         //   to: user.email,
         //   subject: title,
         //   html: emailContent,

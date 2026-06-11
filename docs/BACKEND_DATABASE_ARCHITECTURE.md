@@ -1,6 +1,6 @@
-# Finora — Backend & Database Architecture Document
+# KANAKU — Backend & Database Architecture Document
 
-> **Project:** Finora (formerly KANAKU) — Financial-Grade Expense Tracker  
+> **Project:** KANAKU (formerly KANAKU) — Financial-Grade Expense Tracker  
 > **Stack:** Node.js · Express · TypeScript · Prisma · PostgreSQL · Supabase Auth · Redis · Socket.IO · BullMQ  
 > **Prepared:** June 9, 2026  
 > **Status:** Living Document — update on every significant structural change
@@ -48,7 +48,7 @@
 
 ## 1. System Overview
 
-Finora is a **financial-grade, offline-first expense tracking application** serving mobile (Android via Capacitor), web, and desktop clients. The backend is a **monolithic Node.js/Express API** organized into **domain modules**, deployed as a containerized service alongside PostgreSQL and Redis.
+KANAKU is a **financial-grade, offline-first expense tracking application** serving mobile (Android via Capacitor), web, and desktop clients. The backend is a **monolithic Node.js/Express API** organized into **domain modules**, deployed as a containerized service alongside PostgreSQL and Redis.
 
 ### Core Design Principles
 

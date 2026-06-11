@@ -1,7 +1,7 @@
 import fs from 'fs';
 import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs';
 
-const pdfPath = 'k:/Project/Finora/tests/canara_epassbook_2026-05-14 184602.001357.pdf';
+const pdfPath = 'k:/Project/KANAKU/tests/canara_epassbook_2026-05-14 184602.001357.pdf';
 const data = fs.readFileSync(pdfPath);
 const uint8 = new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
 
@@ -9,7 +9,7 @@ if (typeof globalThis.document === 'undefined') {
   globalThis.document = { createElement: () => ({ getContext: () => null }) };
 }
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'k:/Project/Finora/node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs';
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'k:/Project/KANAKU/node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs';
 
 async function main() {
   const pdf = await pdfjsLib.getDocument({ data: uint8, disableFontFace: true }).promise;

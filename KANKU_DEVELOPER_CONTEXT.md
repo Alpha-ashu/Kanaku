@@ -9,7 +9,7 @@ This document serves as the single source of truth for the project's architectur
 ## 1. Project Overview
 
 ### 1.1 Vision
-To democratize personal wealth management by building a beautiful, intuitive, and highly secure local-first platform. KANAKU (Finora) puts users in absolute control of their financial data, eliminating the reliance on bloated bank portals and fragmented, insecure spreadsheets.
+To democratize personal wealth management by building a beautiful, intuitive, and highly secure local-first platform. KANAKU (KANAKU) puts users in absolute control of their financial data, eliminating the reliance on bloated bank portals and fragmented, insecure spreadsheets.
 
 ### 1.2 Mission
 To deliver a privacy-respecting financial companion that combines offline-first local performance with seamless cloud backup, intelligent AI automation (voice-to-expense and receipt OCR), and cooperative financial advisory channels.
@@ -124,7 +124,7 @@ For new feature development and refactoring, the backend must use a decoupled **
 **Problem**: The "Change Secure PIN" card had an unprofessional layout on smaller screens. The "Change PIN" button text wrapped awkwardly (`Change` stacked on top of `PIN`) and overlapped the description text.
 
 **Fix**:
-- Updated the parent container in [UserProfile.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/profile/UserProfile.tsx) to be responsive: `flex flex-col sm:flex-row sm:items-center justify-between gap-4`.
+- Updated the parent container in [UserProfile.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/profile/UserProfile.tsx) to be responsive: `flex flex-col sm:flex-row sm:items-center justify-between gap-4`.
 - Added `flex-1 min-w-0` to the description container to let it flex and wrap text properly without overlapping.
 - Added `shrink-0 whitespace-nowrap` to the button to prevent label wrapping.
 
@@ -133,7 +133,7 @@ For new feature development and refactoring, the backend must use a decoupled **
 **Problem**: The floating bottom navigation bar felt cramped, and the end icons (Dashboard and Reports) were too close to the rounded corners of the container. Additionally, the central Quick Add button had negative horizontal margins (`-mx-1`) that pulled adjacent icons too close.
 
 **Fix**:
-- Modified [BottomNav.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/core/BottomNav.tsx) to increase item spacing to `gap-1 sm:gap-2` and added horizontal padding (`px-3 sm:px-4`) to keep the end icons clear of the rounded corners.
+- Modified [BottomNav.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/core/BottomNav.tsx) to increase item spacing to `gap-1 sm:gap-2` and added horizontal padding (`px-3 sm:px-4`) to keep the end icons clear of the rounded corners.
 - Removed the `-mx-1` negative margin on the central Quick Add button, allowing the flex gaps to lay out naturally.
 
 #### 3. Self-Healing Password Migration Fallback (`auth.service.ts`)
@@ -141,7 +141,7 @@ For new feature development and refactoring, the backend must use a decoupled **
 **Problem**: The auth redesign routed authentication through the backend using local bcrypt checks (`bcrypt.compare`). However, existing seeded users (like `user@KANAKU.com`) had `"supabase-managed-account"` or null in their database `password` field, locking them out with `401 Unauthorized` errors.
 
 **Fix**:
-- Implemented a self-healing fallback path in [auth.service.ts](file:///k:/Project/kenku/Finora/backend/src/modules/auth/auth.service.ts#L227-L256).
+- Implemented a self-healing fallback path in [auth.service.ts](file:///k:/Project/kenku/KANAKU/backend/src/modules/auth/auth.service.ts#L227-L256).
 - If a user's database password is empty or matches `"supabase-managed-account"`, the backend attempts to authenticate their credentials against Supabase Auth.
 - On successful validation, the password is encrypted locally using `bcrypt` and saved to the PostgreSQL `User` table, migrating the account seamlessly.
 
@@ -150,7 +150,7 @@ For new feature development and refactoring, the backend must use a decoupled **
 **Problem**: The User Profile API did not return crucial fields like `mobileNumber`, `dateOfBirth`, `jobType`, `monthlyIncome`, `pinEnabled`, and `isApproved`, causing missing fields in the UI. Standard clean loops automatically stripped default falsy values (like `monthlyIncome = 0` or `pinEnabled = false`) from the JSON payload response.
 
 **Fix**:
-- Modified `buildProfilePayload` in [auth.controller.ts](file:///k:/Project/kenku/Finora/backend/src/modules/auth/auth.controller.ts) to accept the PIN record, fetch the user's PIN status via `prisma.userPin.findUnique`, and map all requested profile details directly.
+- Modified `buildProfilePayload` in [auth.controller.ts](file:///k:/Project/kenku/KANAKU/backend/src/modules/auth/auth.controller.ts) to accept the PIN record, fetch the user's PIN status via `prisma.userPin.findUnique`, and map all requested profile details directly.
 - Established an `allowedNullKeys` Set protecting standard keys from being pruned in the key deletion loop, returning them cleanly as `false`, `0`, `""`, or `null`.
 
 #### 5. Frontend Route-Based Sync & Startup Performance (`AuthContext.tsx`)
@@ -158,7 +158,7 @@ For new feature development and refactoring, the backend must use a decoupled **
 **Problem**: Immediately upon login or startup, the application synchronously requested all database tables (goals, transactions, challenges, settings, friends, accounts, loans, investments, etc.) even when only loading the Profile view, wasting bandwidth and slowing down initial page loads.
 
 **Fix**:
-- Modified `syncFromSupabase` in [AuthContext.tsx](file:///k:/Project/kenku/Finora/frontend/src/contexts/AuthContext.tsx) to check if `requestedTables` is empty/undefined and return early after fetching ONLY the profile:
+- Modified `syncFromSupabase` in [AuthContext.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/contexts/AuthContext.tsx) to check if `requestedTables` is empty/undefined and return early after fetching ONLY the profile:
   ```typescript
   if (!requestedTables || requestedTables.length === 0) {
     await syncProfileFromBackend(user);
@@ -172,7 +172,7 @@ For new feature development and refactoring, the backend must use a decoupled **
 **Problem**: While loading profile details from local storage or backend APIs, the user profile page flickered and displayed incorrect defaults ("Not specified", "0", blank fields).
 
 **Fix**:
-- Implemented a responsive, pulse-animated `<ProfileSkeleton />` component in [UserProfile.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/profile/UserProfile.tsx) matching the two-column grid design.
+- Implemented a responsive, pulse-animated `<ProfileSkeleton />` component in [UserProfile.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/profile/UserProfile.tsx) matching the two-column grid design.
 - Added a conditional rendering gate on `isLoading` to render the skeleton while fetching, ensuring smooth transitions without placeholder flicker.
 
 ---
@@ -200,7 +200,7 @@ For new feature development and refactoring, the backend must use a decoupled **
 
 **Problem**: The KANAKU logo and app name were hidden on screens smaller than `lg` (mobile and tablet viewports) inside the top header floating card `flex items-center justify-between px-4 lg:px-6 h-16 w-full`, leaving the top header unidentified on mobile.
 
-**Fix**: Changed the container class from `hidden lg:flex` to `flex items-center gap-2 sm:gap-3 mr-2 sm:mr-4 shrink-0` to render the logo and app name next to the mobile menu button on all screen sizes, scaling logo dimensions to `w-7 h-7 sm:w-8 sm:h-8` and label text to `text-sm sm:text-xl` for perfect responsive fit. Added dynamic, unique linearGradient IDs via React `useId` to [KANAKULogo.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/ui/KANAKULogo.tsx) to resolve DOM ID collision issues that rendered the logo blank when multiple instances coexisted.
+**Fix**: Changed the container class from `hidden lg:flex` to `flex items-center gap-2 sm:gap-3 mr-2 sm:mr-4 shrink-0` to render the logo and app name next to the mobile menu button on all screen sizes, scaling logo dimensions to `w-7 h-7 sm:w-8 sm:h-8` and label text to `text-sm sm:text-xl` for perfect responsive fit. Added dynamic, unique linearGradient IDs via React `useId` to [KANAKULogo.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/ui/KANAKULogo.tsx) to resolve DOM ID collision issues that rendered the logo blank when multiple instances coexisted.
 
 ---
 
@@ -1865,20 +1865,20 @@ See `frontend/src/lib/app-integration-guide.tsx` for complete implementation exa
   - Falls back to 30-second polling in case of socket disconnection.
 
 #### 2. Multimodal AI Capability Gating
-- **OCR Scan Visibility Controls**: Gated the **Scan Receipt** button in [AddTransaction.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/transactions/AddTransaction.tsx) to hide when OCR is disabled. In this state, the **Add Attachment** button dynamically scales to occupy the full width of the container.
-- **Voice Assistant Quick Action Gating**: Gated the **Voice** quick action button in [QuickActionModal.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/shared/QuickActionModal.tsx) to hide when the Voice Assistant is disabled.
+- **OCR Scan Visibility Controls**: Gated the **Scan Receipt** button in [AddTransaction.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/transactions/AddTransaction.tsx) to hide when OCR is disabled. In this state, the **Add Attachment** button dynamically scales to occupy the full width of the container.
+- **Voice Assistant Quick Action Gating**: Gated the **Voice** quick action button in [QuickActionModal.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/shared/QuickActionModal.tsx) to hide when the Voice Assistant is disabled.
 - **Routing & Rendering Guards**:
-  - Implemented client-side route guards in [App.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/App.tsx) (both in the navigation check `useEffect` and the render-level `renderPage` function) to redirect users away from `voice-input`, `voice-review`, and `ai-insights` pages if their corresponding master AI modules are disabled.
-  - Integrated gates inside [useSharedMenu.ts](file:///k:/Project/kenku/Finora/frontend/src/hooks/useSharedMenu.ts) to automatically filter out **AI Insights** from the sidebar navigation menu if `aiAutomation` is disabled.
+  - Implemented client-side route guards in [App.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/App.tsx) (both in the navigation check `useEffect` and the render-level `renderPage` function) to redirect users away from `voice-input`, `voice-review`, and `ai-insights` pages if their corresponding master AI modules are disabled.
+  - Integrated gates inside [useSharedMenu.ts](file:///k:/Project/kenku/KANAKU/frontend/src/hooks/useSharedMenu.ts) to automatically filter out **AI Insights** from the sidebar navigation menu if `aiAutomation` is disabled.
 
 #### 3. Sub-Feature Modal Popup Restoration
-- **Premium Glassmorphic Modal**: Restored the configuration popup modal inside [AdminFeaturePanel.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/admin/AdminFeaturePanel.tsx) to manage nested sub-features and role access.
+- **Premium Glassmorphic Modal**: Restored the configuration popup modal inside [AdminFeaturePanel.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/admin/AdminFeaturePanel.tsx) to manage nested sub-features and role access.
 - **Framer Motion Overlay**: Replaced the inline accordion list with an overlay modal featuring a high-end backdrop blur, slide-up animations, and granular role visibility overrides for the 4 primary user roles.
 
 #### 4. Navigation & Layout Realignment
-- **Compact Sidebar Navigation**: Redesigned [Sidebar.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/core/Sidebar.tsx) to fit all navigation items vertically on desktop viewports without scrolling. Reduced spacing to `space-y-2`, button sizes to `w-10 h-10` with `rounded-xl` active overlays, and icon sizes to `size={20}`.
-- **Floating Horizontal TopBar Card**: Reconstructed [TopBar.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/ui/TopBar.tsx) to float as a premium card-like header (`fixed top-3 left-3 right-3 lg:top-4 lg:left-[112px] lg:right-6`) with `rounded-3xl` and shadow. Removed the viewport-relative `layout-container` constraints inside the header to align items to the card boundaries.
-- **App Layout Top Padding**: Adjusted the top padding of the `<main>` layout container in [App.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/App.tsx) from `pt-16` to `pt-24 lg:pt-28` to align perfectly with the floating header coordinates.
+- **Compact Sidebar Navigation**: Redesigned [Sidebar.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/core/Sidebar.tsx) to fit all navigation items vertically on desktop viewports without scrolling. Reduced spacing to `space-y-2`, button sizes to `w-10 h-10` with `rounded-xl` active overlays, and icon sizes to `size={20}`.
+- **Floating Horizontal TopBar Card**: Reconstructed [TopBar.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/ui/TopBar.tsx) to float as a premium card-like header (`fixed top-3 left-3 right-3 lg:top-4 lg:left-[112px] lg:right-6`) with `rounded-3xl` and shadow. Removed the viewport-relative `layout-container` constraints inside the header to align items to the card boundaries.
+- **App Layout Top Padding**: Adjusted the top padding of the `<main>` layout container in [App.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/App.tsx) from `pt-16` to `pt-24 lg:pt-28` to align perfectly with the floating header coordinates.
 
 #### Files Changed / Created
 
@@ -1897,28 +1897,28 @@ See `frontend/src/lib/app-integration-guide.tsx` for complete implementation exa
 ### **2026-06-01 — Phase 5: Mobile Navigation & Backend Compiler Integrity**
 
 #### 1. Mobile Navigation & Drawer Card Refinement
-- **Glassmorphic Floating Drawer**: Redesigned the mobile navigation slide-out panel inside [TopBar.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/ui/TopBar.tsx) to render as a floating, glassmorphic card offset from the viewport borders (`h-[calc(100vh-24px)] my-3 ml-3 rounded-[32px] border border-slate-100 shadow-2xl`).
+- **Glassmorphic Floating Drawer**: Redesigned the mobile navigation slide-out panel inside [TopBar.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/ui/TopBar.tsx) to render as a floating, glassmorphic card offset from the viewport borders (`h-[calc(100vh-24px)] my-3 ml-3 rounded-[32px] border border-slate-100 shadow-2xl`).
 - **Minimal UI cleanup**: Cleaned up the drawer interface by removing the drag-and-drop guidelines explanation panel to fit compact screen spaces.
 - **Drawer Footer Card**: Integrated a premium user profile footer card inside the mobile drawer containing the user's name, email, role badge, and user avatar alongside a hoverable Log Out icon button linked to the Supabase auth `signOut` routine.
 
 #### 2. Role-Specific Bottom Navigation
-- **Dynamic Access Maps**: Implemented credential-based page lists in [BottomNav.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/core/BottomNav.tsx) (Admin, Manager, User, Advisor) matching required feature-flag visibilities via `canAccessPage`.
+- **Dynamic Access Maps**: Implemented credential-based page lists in [BottomNav.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/core/BottomNav.tsx) (Admin, Manager, User, Advisor) matching required feature-flag visibilities via `canAccessPage`.
 - **Symmetric Manager Layout**: Arranged navigation items for the Manager role symmetrically as a 3-item list (Home/Dashboard, Plus Action, Advisor Verification) to place the prominent black action button in the center.
 - **Dynamic Width & Tab Indicator Capsule**:
   - Automatically scales container width down to a centered floating pill layout (`w-[260px]`) for 3 or fewer navigation options, preventing stretched icons.
   - Positioned the active tab indicator slightly offset at `top-1` with `rounded-full` capsule styling and a subtle shadow, preventing any clipping under the parent's `overflow-hidden`.
 
 #### 3. AI Insights Fetch Gating
-- **Console Warning Prevention**: Gated the `/ai/insights` fetch request inside [AIInsightsCard.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/shared/AIInsightsCard.tsx) to skip network requests entirely when `aiAutomation` is disabled, eliminating 403 Forbidden console log noise.
+- **Console Warning Prevention**: Gated the `/ai/insights` fetch request inside [AIInsightsCard.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/shared/AIInsightsCard.tsx) to skip network requests entirely when `aiAutomation` is disabled, eliminating 403 Forbidden console log noise.
 
 #### 4. Compiler Integrity & Strict Type Safety
-- **Backend Route Middleware Signature**: Corrected the `requireAIFeature` middleware invocation signature in backend [receipt.routes.ts](file:///k:/Project/kenku/Finora/backend/src/modules/receipts/receipt.routes.ts) from 3 arguments to the correct 2 arguments (`moduleKey`, `capabilityKey`) and chained with standard `requireFeature('transactions')` to verify standard module access.
-- **Removed Redundant TSConfig Options**: Completely deleted the `"ignoreDeprecations"` option from the root [tsconfig.json](file:///k:/Project/kenku/Finora/tsconfig.json). Since the project configuration uses modern compiler flags (`target: ES2020`, `moduleResolution: bundler`), this option was redundant and caused compiler warnings.
+- **Backend Route Middleware Signature**: Corrected the `requireAIFeature` middleware invocation signature in backend [receipt.routes.ts](file:///k:/Project/kenku/KANAKU/backend/src/modules/receipts/receipt.routes.ts) from 3 arguments to the correct 2 arguments (`moduleKey`, `capabilityKey`) and chained with standard `requireFeature('transactions')` to verify standard module access.
+- **Removed Redundant TSConfig Options**: Completely deleted the `"ignoreDeprecations"` option from the root [tsconfig.json](file:///k:/Project/kenku/KANAKU/tsconfig.json). Since the project configuration uses modern compiler flags (`target: ES2020`, `moduleResolution: bundler`), this option was redundant and caused compiler warnings.
 - **Strict Type Error Resolution**: Resolved multiple latent strict compiler warnings across the codebase:
-  - Fixed union type widening (`RegExpMatchArray | false`) in [receiptScannerService.ts](file:///k:/Project/kenku/Finora/frontend/src/services/receiptScannerService.ts) using ternary checks.
-  - Added explicit parameter type annotations in [NewUserOnboarding.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/auth/onboarding/NewUserOnboarding.tsx), [AuthContext.tsx](file:///k:/Project/kenku/Finora/frontend/src/contexts/AuthContext.tsx), [auth-sync-integration.ts](file:///k:/Project/kenku/Finora/frontend/src/lib/auth-sync-integration.ts), [test.ts](file:///k:/Project/kenku/Finora/frontend/src/utils/supabase/test.ts), and [hybridAIService.ts](file:///k:/Project/kenku/Finora/frontend/src/services/hybridAIService.ts).
-  - Explicitly typed the recursive return signature of `fetchCurrencyConversionRate` in [investmentUtils.ts](file:///k:/Project/kenku/Finora/frontend/src/lib/investmentUtils.ts) as `Promise<number>`.
-  - Added dynamic index signature casting to `any` in [TaxCalculatorPage.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/features/TaxCalculatorPage.tsx), [Settings.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/profile/Settings.tsx), and [FeatureGate.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/ui/FeatureGate.tsx).
+  - Fixed union type widening (`RegExpMatchArray | false`) in [receiptScannerService.ts](file:///k:/Project/kenku/KANAKU/frontend/src/services/receiptScannerService.ts) using ternary checks.
+  - Added explicit parameter type annotations in [NewUserOnboarding.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/auth/onboarding/NewUserOnboarding.tsx), [AuthContext.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/contexts/AuthContext.tsx), [auth-sync-integration.ts](file:///k:/Project/kenku/KANAKU/frontend/src/lib/auth-sync-integration.ts), [test.ts](file:///k:/Project/kenku/KANAKU/frontend/src/utils/supabase/test.ts), and [hybridAIService.ts](file:///k:/Project/kenku/KANAKU/frontend/src/services/hybridAIService.ts).
+  - Explicitly typed the recursive return signature of `fetchCurrencyConversionRate` in [investmentUtils.ts](file:///k:/Project/kenku/KANAKU/frontend/src/lib/investmentUtils.ts) as `Promise<number>`.
+  - Added dynamic index signature casting to `any` in [TaxCalculatorPage.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/features/TaxCalculatorPage.tsx), [Settings.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/profile/Settings.tsx), and [FeatureGate.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/ui/FeatureGate.tsx).
   - Excluded the deprecated `frontend/src/unused` directory from typechecking.
 
 #### Files Changed / Created
@@ -1941,7 +1941,7 @@ See `frontend/src/lib/app-integration-guide.tsx` for complete implementation exa
 | `frontend/src/utils/supabase/test.ts` | Annotated table map parameter with explicit type |
 
 #### 5. Distinctive Icon Assignments
-- **Lucide Icon Upgrade**: Replaced overlapping, ambiguous, or duplicate settings icons inside [navigation.ts](file:///k:/Project/kenku/Finora/frontend/src/app/constants/navigation.ts) and [BottomNav.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/core/BottomNav.tsx):
+- **Lucide Icon Upgrade**: Replaced overlapping, ambiguous, or duplicate settings icons inside [navigation.ts](file:///k:/Project/kenku/KANAKU/frontend/src/app/constants/navigation.ts) and [BottomNav.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/core/BottomNav.tsx):
   - **Loans**: Replaced `CreditCard` with `Landmark` (representing banking and financial liabilities).
   - **Todo Lists**: Replaced `CheckSquare` with `ListTodo` (representing task checklists).
   - **Book Advisor**: Replaced `BookOpen` with `Handshake` (representing consulting agreements).
@@ -1967,7 +1967,7 @@ See `frontend/src/lib/app-integration-guide.tsx` for complete implementation exa
 - **Recurring Transactions**: Replaced `RefreshCw` with `Repeat` (rectangular cycle arrows) for recurring item settings.
 
 #### 2. Search Suggestion Mappings & BottomNav Unification
-- **Dynamic Search Icons in TopBar**: Updated [TopBar.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/ui/TopBar.tsx) to resolve search suggestion page icons dynamically from `headerMenuItems` in [navigation.ts](file:///k:/Project/kenku/Finora/frontend/src/app/constants/navigation.ts). This resolves mismatched hardcoded icons (such as displaying `Users` for Admin settings or `Target` for Investments/Transactions) and ensures all search icons update automatically in response to config changes.
+- **Dynamic Search Icons in TopBar**: Updated [TopBar.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/ui/TopBar.tsx) to resolve search suggestion page icons dynamically from `headerMenuItems` in [navigation.ts](file:///k:/Project/kenku/KANAKU/frontend/src/app/constants/navigation.ts). This resolves mismatched hardcoded icons (such as displaying `Users` for Admin settings or `Target` for Investments/Transactions) and ensures all search icons update automatically in response to config changes.
 - **Unified BottomNav Dashboard Icon**: Swapped `Home` for `LayoutDashboard` to match the desktop sidebar's dashboard icon, preventing UI discrepancy between desktop and mobile.
 
 #### Files Changed / Created
@@ -1983,11 +1983,11 @@ See `frontend/src/lib/app-integration-guide.tsx` for complete implementation exa
 ### **2026-06-01 — Phase 7: Serverless Environment WebSocket Optimization & Resource Leak Prevention**
 
 #### 1. Graceful WebSocket Gating on Vercel
-- **Serverless Hosting Compatibility**: Since Vercel serverless environments are stateless and ephemeral, they do not support persistent WebSocket connections. Updated [socket-client.ts](file:///k:/Project/kenku/Finora/frontend/src/lib/socket-client.ts) to detect Vercel environment hostnames (`vercel.app`).
+- **Serverless Hosting Compatibility**: Since Vercel serverless environments are stateless and ephemeral, they do not support persistent WebSocket connections. Updated [socket-client.ts](file:///k:/Project/kenku/KANAKU/frontend/src/lib/socket-client.ts) to detect Vercel environment hostnames (`vercel.app`).
 - **Silent Degradation**: If Vercel is detected, the client skips the `Socket.io` connection attempt entirely, log-warning once, and gracefully falling back to HTTP polling. This eliminates constant browser connection retries and prevents `wss://... net::ERR_CONNECTION_REFUSED` console warnings from cluttering the browser console.
 
 #### 2. Connection Leak and Reconnection Storm Mitigation
-- **Clean Socket Disposal**: Modified [socket-client.ts](file:///k:/Project/kenku/Finora/frontend/src/lib/socket-client.ts) to call `socket.disconnect()` on any active but disconnected socket client instance before creating a new one, eliminating socket reference leaks.
+- **Clean Socket Disposal**: Modified [socket-client.ts](file:///k:/Project/kenku/KANAKU/frontend/src/lib/socket-client.ts) to call `socket.disconnect()` on any active but disconnected socket client instance before creating a new one, eliminating socket reference leaks.
 - **Deduplicated Reconnection Threads**: Disabled Socket.io's built-in reconnection handler by setting `reconnection: false` to prevent it from running in parallel with the application's custom auth-refresh reconnect thread. Removed manual trigger callbacks from the reconnect promise catch block to avoid creating dual-stacked socket reconnection loops.
 
 #### Files Changed / Created
@@ -2001,7 +2001,7 @@ See `frontend/src/lib/app-integration-guide.tsx` for complete implementation exa
 ### **2026-06-01 — Phase 8: Paginated Horizontal Scroll Category Carousels**
 
 #### 1. Horizontal Scroll Carousels
-- **Paginated Layout**: Refactored the transactions category grid (`CategoryGrid` inside [AddTransaction.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/transactions/AddTransaction.tsx)) and the goals category grid (`GoalCategoryGrid` inside [AddGoal.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/goals/AddGoal.tsx)) from vertical scrollable grids to horizontal carousels. Each page displays 8 items structured as a 4-column by 2-row grid.
+- **Paginated Layout**: Refactored the transactions category grid (`CategoryGrid` inside [AddTransaction.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/transactions/AddTransaction.tsx)) and the goals category grid (`GoalCategoryGrid` inside [AddGoal.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/goals/AddGoal.tsx)) from vertical scrollable grids to horizontal carousels. Each page displays 8 items structured as a 4-column by 2-row grid.
 - **Smooth Swiping**: Configured snap-scrolling on the scrollable container (`overflow-x-auto snap-x snap-mandatory scrollbar-none`) and page alignment (`snap-align-start w-full shrink-0`) to create a native, premium feel.
 - **Layout Preservation**: Automatically pads incomplete pages with invisible grid cells to prevent remaining items from stretching or distorting grid dimensions.
 
@@ -2461,7 +2461,7 @@ KANAKU_DEVELOPER_CONTEXT.md
 .
 GitHub Push: Staged, committed, and pushed all updates directly to GitHub:
 bash
-main -> main (Alpha-ashu/Finora.git)
+main -> main (Alpha-ashu/KANAKU.git)
 3. Verification
 Backend Compilation: npm run build:backend compiles successfully with zero TypeScript errors.
 Frontend Compilation: npm run build:frontend compiles and minifies production assets successfully.
@@ -2571,7 +2571,7 @@ All 63 tests across 14 test suites now pass successfully:
 ```bash
 $ npm test
 
- RUN  v4.1.0 K:/Project/kenku/Finora/frontend
+ RUN  v4.1.0 K:/Project/kenku/KANAKU/frontend
 
  ✓ src/lib/voiceExpenseParser.test.ts (6 tests) 76ms
  ✓ src/services/bankStatementScannerService.test.ts (2 tests) 80ms
@@ -2606,9 +2606,9 @@ $ npm test
 - **Silent Key Backup Fix**: Updated GET `/api/v1/pin/key-backup` to return HTTP 404 Not Found when no key backup is configured.
 - **Voice Assistant API Authentication**: Appended `Authorization: Bearer <token>` dynamically resolved from supabase session/memory in `voiceTransactionService.ts` for all transaction creation and friend lookup network requests.
 - **Privacy Hardening**: Conditional pruning of empty financial/PII properties (`salary`, `monthlyIncome`, `dateOfBirth`, `jobType`) and default `'user'` roles from the profile response payload in `auth.controller.ts`.
-- **Direct Supabase UI Call Elimination (BUG-01 & BUG-02)**: Refactored `handleSignIn` and `handleSignUp` in [AuthFlow.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/auth/AuthFlow.tsx) to use backend-proxied API calls, and updated [UserProfile.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/profile/UserProfile.tsx) to use backend password verification, eliminating direct UI credentials/API key transmissions.
-- **Concurrent Profile Querying (BUG-09)**: Optimized `getProfile` in [auth.controller.ts](file:///k:/Project/kenku/Finora/backend/src/modules/auth/auth.controller.ts) to fetch user, profiles, and settings concurrently, eliminating sequential delay bottlenecks.
-- **Offline Redis Performance Hardening (BUG-09)**: Configured [redis.ts](file:///k:/Project/kenku/Finora/backend/src/cache/redis.ts) to fail-open instantly if Redis is down or not connected (`status !== 'connected'`).
+- **Direct Supabase UI Call Elimination (BUG-01 & BUG-02)**: Refactored `handleSignIn` and `handleSignUp` in [AuthFlow.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/auth/AuthFlow.tsx) to use backend-proxied API calls, and updated [UserProfile.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/profile/UserProfile.tsx) to use backend password verification, eliminating direct UI credentials/API key transmissions.
+- **Concurrent Profile Querying (BUG-09)**: Optimized `getProfile` in [auth.controller.ts](file:///k:/Project/kenku/KANAKU/backend/src/modules/auth/auth.controller.ts) to fetch user, profiles, and settings concurrently, eliminating sequential delay bottlenecks.
+- **Offline Redis Performance Hardening (BUG-09)**: Configured [redis.ts](file:///k:/Project/kenku/KANAKU/backend/src/cache/redis.ts) to fail-open instantly if Redis is down or not connected (`status !== 'connected'`).
 
 ### Verification & Integration Tests
 - **Local Postgres Database Port 5434**: Restored database system functionality by manually creating the standard folders and nested folders (`pg_commit_ts`, `pg_dynshmem`, `pg_notify`, `pg_replslot`, `pg_serial`, `pg_snapshots`, `pg_stat`, `pg_tblspc`, `pg_twophase`, `pg_logical/snapshots`, `pg_logical/mappings`, `pg_multixact/members`, `pg_multixact/offsets`) omitted by Git, and ran the daemon.
@@ -2630,11 +2630,11 @@ $ npm test
 ## UI and Layout Optimizations (June 2026)
 
 - **Security & PIN Card Alignment Fix**:
-  - Redesigned the "Change Secure PIN" layout in [UserProfile.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/profile/UserProfile.tsx) to be responsive using `flex flex-col sm:flex-row sm:items-center justify-between gap-4`.
+  - Redesigned the "Change Secure PIN" layout in [UserProfile.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/profile/UserProfile.tsx) to be responsive using `flex flex-col sm:flex-row sm:items-center justify-between gap-4`.
   - Added `flex-1 min-w-0` to the description container to prevent text overflow/wrapping issues.
   - Added `shrink-0 whitespace-nowrap` to the button to prevent the button text ("Change PIN") from wrapping into multiple lines or overlapping nearby content.
 - **Bottom Navigation Bar Spacing Optimization**:
-  - Replaced the tight `gap-0.5` class with a responsive `gap-1 sm:gap-2` and added `px-3 sm:px-4` padding in [BottomNav.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/core/BottomNav.tsx). This ensures icons have a comfortable, professional separation and do not get clipped by the rounded bar corners.
+  - Replaced the tight `gap-0.5` class with a responsive `gap-1 sm:gap-2` and added `px-3 sm:px-4` padding in [BottomNav.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/core/BottomNav.tsx). This ensures icons have a comfortable, professional separation and do not get clipped by the rounded bar corners.
   - Replaced `-mx-1` negative margin with `mx-0` on the central Quick Add button so that the adjacent navigation items are not pulled unnaturally close to the center button.
 - **Verification**: Verified using `npm run type-check` (passed cleanly).
 
@@ -2643,7 +2643,7 @@ $ npm test
 ## Password Migration Fallback Fix (June 2026)
 
 - **Self-Healing Password Migration**:
-  - Refactored the login validation in [auth.service.ts](file:///k:/Project/kenku/Finora/backend/src/modules/auth/auth.service.ts) to handle cases where a user's password hash in the local database is unmigrated (empty) or set to the fallback value `"supabase-managed-account"`.
+  - Refactored the login validation in [auth.service.ts](file:///k:/Project/kenku/KANAKU/backend/src/modules/auth/auth.service.ts) to handle cases where a user's password hash in the local database is unmigrated (empty) or set to the fallback value `"supabase-managed-account"`.
   - Added a fallback validation path that authenticates the user directly against Supabase Auth (using the service role or anon client) on their first post-redesign login attempt.
   - Upon successful authentication with Supabase, the user's password is dynamically hashed using `bcrypt` and saved locally to the PostgreSQL `User` table, ensuring all future login calls are executed locally, securely, and with minimum latency.
 - **Verification**: Verified via backend compilation (`npm run build:backend`) and critical integration tests (`npm run test:security:critical`), all passing cleanly.
@@ -2653,11 +2653,11 @@ $ npm test
  ## UI and Layout Optimizations (June 2026)
  
  - **Security & PIN Card Alignment Fix**:
-   - Redesigned the "Change Secure PIN" layout in [UserProfile.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/profile/UserProfile.tsx) to be responsive using `flex flex-col sm:flex-row sm:items-center justify-between gap-4`.
+   - Redesigned the "Change Secure PIN" layout in [UserProfile.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/profile/UserProfile.tsx) to be responsive using `flex flex-col sm:flex-row sm:items-center justify-between gap-4`.
    - Added `flex-1 min-w-0` to the description container to prevent text overflow/wrapping issues.
    - Added `shrink-0 whitespace-nowrap` to the button to prevent the button text ("Change PIN") from wrapping into multiple lines or overlapping nearby content.
  - **Bottom Navigation Bar Spacing Optimization**:
-   - Replaced the tight `gap-0.5` class with a responsive `gap-1 sm:gap-2` and added `px-3 sm:px-4` padding in [BottomNav.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/core/BottomNav.tsx). This ensures icons have a comfortable, professional separation and do not get clipped by the rounded bar corners.
+   - Replaced the tight `gap-0.5` class with a responsive `gap-1 sm:gap-2` and added `px-3 sm:px-4` padding in [BottomNav.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/core/BottomNav.tsx). This ensures icons have a comfortable, professional separation and do not get clipped by the rounded bar corners.
    - Replaced `-mx-1` negative margin with `mx-0` on the central Quick Add button so that the adjacent navigation items are not pulled unnaturally close to the center button.
  - **Verification**: Verified using `npm run type-check` (passed cleanly).
  
@@ -2666,7 +2666,7 @@ $ npm test
  ## Password Migration Fallback Fix (June 2026)
  
  - **Self-Healing Password Migration**:
-   - Refactored the login validation in [auth.service.ts](file:///k:/Project/kenku/Finora/backend/src/modules/auth/auth.service.ts) to handle cases where a user's password hash in the local database is unmigrated (empty) or set to the fallback value `"supabase-managed-account"`.
+   - Refactored the login validation in [auth.service.ts](file:///k:/Project/kenku/KANAKU/backend/src/modules/auth/auth.service.ts) to handle cases where a user's password hash in the local database is unmigrated (empty) or set to the fallback value `"supabase-managed-account"`.
    - Added a fallback validation path that authenticates the user directly against Supabase Auth (using the service role or anon client) on their first post-redesign login attempt.
    - Upon successful authentication with Supabase, the user's password is dynamically hashed using `bcrypt` and saved locally to the PostgreSQL `User` table, ensuring all future login calls are executed locally, securely, and with minimum latency.
  - **Verification**: Verified via backend compilation (`npm run build:backend`) and critical integration tests (`npm run test:security:critical`), all passing cleanly.
@@ -2678,17 +2678,17 @@ $ npm test
 ### Changes Made
 
 1. **Persist Custom JWT Tokens (`api.ts`)**:
-   - Modified `TokenManager` in [api.ts](file:///k:/Project/kenku/Finora/frontend/src/lib/api.ts) to write custom tokens to `localStorage` under `'auth_token'` and `'refresh_token'` keys in `setAccessToken` and `setRefreshToken`. This prevents custom token loss upon page reloads.
+   - Modified `TokenManager` in [api.ts](file:///k:/Project/kenku/KANAKU/frontend/src/lib/api.ts) to write custom tokens to `localStorage` under `'auth_token'` and `'refresh_token'` keys in `setAccessToken` and `setRefreshToken`. This prevents custom token loss upon page reloads.
 
 2. **Synchronous Session Recovery & Background Probing (`AuthContext.tsx`)**:
-   - Added `decodeJwt` helper function in [AuthContext.tsx](file:///k:/Project/kenku/Finora/frontend/src/contexts/AuthContext.tsx) to safely parse base64url-encoded JWT payloads on the client side.
+   - Added `decodeJwt` helper function in [AuthContext.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/contexts/AuthContext.tsx) to safely parse base64url-encoded JWT payloads on the client side.
    - Updated the `onAuthStateChange` subscription. When Supabase returns `session: null`, it checks for a custom JWT. If found, it decodes the token, constructs mock Supabase `User` and `Session` objects, and immediately resolves the session states (`session`, `user`, `role`) offline-first.
    - Added background validation of custom sessions using `api.auth.getProfile()`. If the backend returns a `401 Unauthorized` error, the session is invalidated and `TokenManager.clearTokens()` is called.
    - Modified `handleOnline` to also recover custom token sessions instead of overwriting them with `null` when coming online.
    - Cleaned up `signOut` to wipe custom tokens in the `finally` block using `TokenManager.clearTokens()`.
 
 3. **Fallback in Permission Service (`permissionService.ts`)**:
-   - Modified `refreshPermissions` in [permissionService.ts](file:///k:/Project/kenku/Finora/frontend/src/services/permissionService.ts) to fallback to decoding the active custom token if `supabase.auth.getUser()` returns null.
+   - Modified `refreshPermissions` in [permissionService.ts](file:///k:/Project/kenku/KANAKU/frontend/src/services/permissionService.ts) to fallback to decoding the active custom token if `supabase.auth.getUser()` returns null.
 
 ### Verification & Validation Results
 
@@ -2756,22 +2756,22 @@ $ npm test
 ### Changes Made
 
 1. **Security Headers (BUG-13 & BUG-14 & BUG-18)**:
-   - Fixed Helmet's Content Security Policy overrides in [app.ts](file:///k:/Project/kenku/Finora/backend/src/app.ts) by removing the redundant manual `getDefaultDirectives()` spread, which previously caused duplicate/broad directive warnings (e.g. style-src).
+   - Fixed Helmet's Content Security Policy overrides in [app.ts](file:///k:/Project/kenku/KANAKU/backend/src/app.ts) by removing the redundant manual `getDefaultDirectives()` spread, which previously caused duplicate/broad directive warnings (e.g. style-src).
    - Configured custom middleware to explicitly set `X-XSS-Protection: 1; mode=block` for older browsers.
    - Configured `Cross-Origin-Resource-Policy: same-origin` to restrict cross-origin access to resource sharing.
 
 2. **Conditional PII/Financial Field Trimming (BUG-15)**:
-   - Modified `buildProfilePayload`, `getProfile`, and `updateProfile` in [auth.controller.ts](file:///k:/Project/kenku/Finora/backend/src/modules/auth/auth.controller.ts) to filter out sensitive attributes (`salary`, `monthlyIncome`, `dateOfBirth`, `jobType`, `role`, `isApproved`) by default.
+   - Modified `buildProfilePayload`, `getProfile`, and `updateProfile` in [auth.controller.ts](file:///k:/Project/kenku/KANAKU/backend/src/modules/auth/auth.controller.ts) to filter out sensitive attributes (`salary`, `monthlyIncome`, `dateOfBirth`, `jobType`, `role`, `isApproved`) by default.
    - Private fields are returned only if requested via `includePrivate=true` by authorized components.
    - Added logic to automatically prune empty properties (empty strings, null, undefined) from the profile response payload to minimize security exposure.
-   - Updated `api.auth.getProfile` in [api.ts](file:///k:/Project/kenku/Finora/frontend/src/lib/api.ts) to bypass profile caching when requesting the private profile payload.
-   - Updated [UserProfile.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/profile/UserProfile.tsx) and [permissionService.ts](file:///k:/Project/kenku/Finora/frontend/src/services/permissionService.ts) to fetch the private payload explicitly when role, approval, or editable financial data is needed.
+   - Updated `api.auth.getProfile` in [api.ts](file:///k:/Project/kenku/KANAKU/frontend/src/lib/api.ts) to bypass profile caching when requesting the private profile payload.
+   - Updated [UserProfile.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/profile/UserProfile.tsx) and [permissionService.ts](file:///k:/Project/kenku/KANAKU/frontend/src/services/permissionService.ts) to fetch the private payload explicitly when role, approval, or editable financial data is needed.
 
 3. **Notification & Transaction Pagination (BUG-11 & BUG-12)**:
-   - Re-implemented notification fetching with limit and page options inside `getNotifications` in [notification.controller.ts](file:///k:/Project/kenku/Finora/backend/src/modules/notifications/notification.controller.ts) and attached `X-Total-Count`, `X-Page`, and `X-Limit` headers to response payloads.
-   - Refactored `findMany` and implemented `count` in [transaction.repository.ts](file:///k:/Project/kenku/Finora/backend/src/modules/transactions/transaction.repository.ts) to support Prisma offset pagination options (`take` and `skip`).
-   - Updated `fetchTransactions` in [transaction.service.ts](file:///k:/Project/kenku/Finora/backend/src/modules/transactions/transaction.service.ts) to process pagination queries and query the total transaction count.
-   - Updated `getTransactions` in [transaction.controller.ts](file:///k:/Project/kenku/Finora/backend/src/modules/transactions/transaction.controller.ts) to attach pagination HTTP response headers, ensuring backward compatibility for legacy clients expecting flat data array envelopes.
+   - Re-implemented notification fetching with limit and page options inside `getNotifications` in [notification.controller.ts](file:///k:/Project/kenku/KANAKU/backend/src/modules/notifications/notification.controller.ts) and attached `X-Total-Count`, `X-Page`, and `X-Limit` headers to response payloads.
+   - Refactored `findMany` and implemented `count` in [transaction.repository.ts](file:///k:/Project/kenku/KANAKU/backend/src/modules/transactions/transaction.repository.ts) to support Prisma offset pagination options (`take` and `skip`).
+   - Updated `fetchTransactions` in [transaction.service.ts](file:///k:/Project/kenku/KANAKU/backend/src/modules/transactions/transaction.service.ts) to process pagination queries and query the total transaction count.
+   - Updated `getTransactions` in [transaction.controller.ts](file:///k:/Project/kenku/KANAKU/backend/src/modules/transactions/transaction.controller.ts) to attach pagination HTTP response headers, ensuring backward compatibility for legacy clients expecting flat data array envelopes.
 
 ### Verification & Validation Results
 
@@ -2800,12 +2800,12 @@ $ npm test
 ### Changes Made
 
 1. **Two-Phase Authentication Flow (BUG-19)**:
-   - Created the `verifyPasswordOnly` method in [auth.service.ts](file:///k:/Project/kenku/Finora/backend/src/modules/auth/auth.service.ts) to validate user credentials without generating access or refresh tokens.
-   - Implemented `loginChallenge` in [auth.controller.ts](file:///k:/Project/kenku/Finora/backend/src/modules/auth/auth.controller.ts) which acts as Phase 1: it validates user passwords, generates a single-use random 6-digit challenge code, and caches it in Redis (or in-memory fallback) for 60 seconds.
-   - Updated `login` in [auth.controller.ts](file:///k:/Project/kenku/Finora/backend/src/modules/auth/auth.controller.ts) to support Phase 2: if a `challengeCode` is provided, it verifies the code, deletes it from the cache, and issues the JWT tokens. Backward compatibility is maintained by automatically falling back to standard password verification if no code is sent.
-   - Exposed the `POST /login/challenge` route in [auth.routes.ts](file:///k:/Project/kenku/Finora/backend/src/modules/auth/auth.routes.ts).
-   - Refactored `login` in [api.ts](file:///k:/Project/kenku/Finora/frontend/src/lib/api.ts) to transparently coordinate Phase 1 and Phase 2. The client requests the challenge first, and then submits ONLY the numeric challenge code to the final login endpoint. Consequently, the plaintext password is never sent to the login endpoint and is never captured in network tools or HAR files.
-   - Added a comprehensive integration test in [auth.test.ts](file:///k:/Project/kenku/Finora/backend/tests/integration/auth.test.ts) to verify the challenge-response flow works flawlessly.
+   - Created the `verifyPasswordOnly` method in [auth.service.ts](file:///k:/Project/kenku/KANAKU/backend/src/modules/auth/auth.service.ts) to validate user credentials without generating access or refresh tokens.
+   - Implemented `loginChallenge` in [auth.controller.ts](file:///k:/Project/kenku/KANAKU/backend/src/modules/auth/auth.controller.ts) which acts as Phase 1: it validates user passwords, generates a single-use random 6-digit challenge code, and caches it in Redis (or in-memory fallback) for 60 seconds.
+   - Updated `login` in [auth.controller.ts](file:///k:/Project/kenku/KANAKU/backend/src/modules/auth/auth.controller.ts) to support Phase 2: if a `challengeCode` is provided, it verifies the code, deletes it from the cache, and issues the JWT tokens. Backward compatibility is maintained by automatically falling back to standard password verification if no code is sent.
+   - Exposed the `POST /login/challenge` route in [auth.routes.ts](file:///k:/Project/kenku/KANAKU/backend/src/modules/auth/auth.routes.ts).
+   - Refactored `login` in [api.ts](file:///k:/Project/kenku/KANAKU/frontend/src/lib/api.ts) to transparently coordinate Phase 1 and Phase 2. The client requests the challenge first, and then submits ONLY the numeric challenge code to the final login endpoint. Consequently, the plaintext password is never sent to the login endpoint and is never captured in network tools or HAR files.
+   - Added a comprehensive integration test in [auth.test.ts](file:///k:/Project/kenku/KANAKU/backend/tests/integration/auth.test.ts) to verify the challenge-response flow works flawlessly.
 
 ### Verification & Validation Results
 
@@ -2823,14 +2823,14 @@ $ npm test
 ### Changes Made
 
 1. **Typing & Variable Compilation Fixes**:
-   - Resolved TS compilation issues in [AuthContext.tsx](file:///k:/Project/kenku/Finora/frontend/src/contexts/AuthContext.tsx) by adding explicit `any` type annotations to `catch` parameters.
-   - Resolved compiler errors in [offline-sync-engine.ts](file:///k:/Project/kenku/Finora/frontend/src/lib/offline-sync-engine.ts) by updating stale variables `user.id` to `userId` inside the sync try-catch block.
+   - Resolved TS compilation issues in [AuthContext.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/contexts/AuthContext.tsx) by adding explicit `any` type annotations to `catch` parameters.
+   - Resolved compiler errors in [offline-sync-engine.ts](file:///k:/Project/kenku/KANAKU/frontend/src/lib/offline-sync-engine.ts) by updating stale variables `user.id` to `userId` inside the sync try-catch block.
 
 2. **Startup 401 API Request Guards**:
-   - Guarded `/ai/insights` requests in [AIInsightsCard.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/shared/AIInsightsCard.tsx) by ensuring fetches only run after the user session has fully loaded and is authenticated (`user` is present).
-   - Guarded `/admin/features` requests in [AdminFeaturePanel.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/admin/AdminFeaturePanel.tsx) by delaying feature flag retrieval until the user and loading state have initialized.
-   - Guarded [AdminAIDashboard.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/admin/AdminAIDashboard.tsx) telemetry fetches with authenticated user and role-access checks on load.
-   - Refactored [AdminAdvisorVerification.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/admin/AdminAdvisorVerification.tsx) to move early JSX returns below hook definitions to conform to React hook guidelines, and guarded the initial verification applications fetch to prevent unauthorized calls.
+   - Guarded `/ai/insights` requests in [AIInsightsCard.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/shared/AIInsightsCard.tsx) by ensuring fetches only run after the user session has fully loaded and is authenticated (`user` is present).
+   - Guarded `/admin/features` requests in [AdminFeaturePanel.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/admin/AdminFeaturePanel.tsx) by delaying feature flag retrieval until the user and loading state have initialized.
+   - Guarded [AdminAIDashboard.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/admin/AdminAIDashboard.tsx) telemetry fetches with authenticated user and role-access checks on load.
+   - Refactored [AdminAdvisorVerification.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/admin/AdminAdvisorVerification.tsx) to move early JSX returns below hook definitions to conform to React hook guidelines, and guarded the initial verification applications fetch to prevent unauthorized calls.
 
 ### Verification Results
 
@@ -2853,13 +2853,13 @@ Implemented route-based data synchronization and table loading to resolve admini
 
 ### 1. Route-Based Sync Optimization & Double-Fetch Prevention (June 2026)
 
-- **Parameterize Sync Interfaces**: Exported `SyncedTableName` from [auth-sync-integration.ts](file:///k:/Project/kenku/Finora/frontend/src/lib/auth-sync-integration.ts) and updated `syncUserDataFromCloud` and `syncUserDataFromBackend` to accept an optional `requestedTables?: SyncedTableName[]` parameter. When passed as `[]`, it skips remote fetches entirely.
+- **Parameterize Sync Interfaces**: Exported `SyncedTableName` from [auth-sync-integration.ts](file:///k:/Project/kenku/KANAKU/frontend/src/lib/auth-sync-integration.ts) and updated `syncUserDataFromCloud` and `syncUserDataFromBackend` to accept an optional `requestedTables?: SyncedTableName[]` parameter. When passed as `[]`, it skips remote fetches entirely.
 - **Per-Table Sync Cooldowns**: Implemented per-table sync timestamps stored in `localStorage` (`KANAKU_last_sync_at_${table}`). When `force = false`, the sync engine automatically filters out and skips pulling any requested table that was successfully pulled within the last 5 minutes.
-- **Route-to-Table Mapping**: Defined the `PAGE_REQUIRED_TABLES` mapping object in [App.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/App.tsx) to map pages/routes to their minimum necessary sync tables. Updated the PIN-unlock sync effect to fetch only page-specific required tables (avoiding fetching retail user tables when on the Compliance Dashboard).
-- **Page Change Watcher**: Added a navigation watcher `useEffect` in [App.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/App.tsx) to execute non-forced background subset syncs on-demand when the active page changes.
+- **Route-to-Table Mapping**: Defined the `PAGE_REQUIRED_TABLES` mapping object in [App.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/App.tsx) to map pages/routes to their minimum necessary sync tables. Updated the PIN-unlock sync effect to fetch only page-specific required tables (avoiding fetching retail user tables when on the Compliance Dashboard).
+- **Page Change Watcher**: Added a navigation watcher `useEffect` in [App.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/App.tsx) to execute non-forced background subset syncs on-demand when the active page changes.
 - **Double-Fetch Prevention**:
-  - Removed `force: true` option from the `api.auth.getProfile` call inside [UserProfile.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/profile/UserProfile.tsx) to utilize API client caching and request deduplication.
-  - Added synchronous in-flight `useRef` guards to `loadDashboard()` in [AdminAIDashboard.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/admin/AdminAIDashboard.tsx), and `fetchApplications()` in both [ManagerAdvisorVerification.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/manager/ManagerAdvisorVerification.tsx) and [AdminAdvisorVerification.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/admin/AdminAdvisorVerification.tsx) to prevent concurrent backend queries under React Strict Mode double-mounts.
+  - Removed `force: true` option from the `api.auth.getProfile` call inside [UserProfile.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/profile/UserProfile.tsx) to utilize API client caching and request deduplication.
+  - Added synchronous in-flight `useRef` guards to `loadDashboard()` in [AdminAIDashboard.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/admin/AdminAIDashboard.tsx), and `fetchApplications()` in both [ManagerAdvisorVerification.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/manager/ManagerAdvisorVerification.tsx) and [AdminAdvisorVerification.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/admin/AdminAdvisorVerification.tsx) to prevent concurrent backend queries under React Strict Mode double-mounts.
 
 ### 2. Onboarding Profile Setup Desktop Redesign, Avatars & Usability Enhancements
 
@@ -2939,9 +2939,9 @@ $ npm test
 - **Silent Key Backup Fix**: Updated GET `/api/v1/pin/key-backup` to return HTTP 404 Not Found when no key backup is configured.
 - **Voice Assistant API Authentication**: Appended `Authorization: Bearer <token>` dynamically resolved from supabase session/memory in `voiceTransactionService.ts` for all transaction creation and friend lookup network requests.
 - **Privacy Hardening**: Conditional pruning of empty financial/PII properties (`salary`, `monthlyIncome`, `dateOfBirth`, `jobType`) and default `'user'` roles from the profile response payload in `auth.controller.ts`.
-- **Direct Supabase UI Call Elimination (BUG-01 & BUG-02)**: Refactored `handleSignIn` and `handleSignUp` in [AuthFlow.tsx](file:///k:/Project/kenku\Finora/frontend/src/app/components/auth/AuthFlow.tsx) to use backend-proxied API calls, and updated [UserProfile.tsx](file:///k:/Project/kenku\Finora/frontend/src/app/components/profile/UserProfile.tsx) to use backend password verification, eliminating direct UI credentials/API key transmissions.
-- **Concurrent Profile Querying (BUG-09)**: Optimized `getProfile` in [auth.controller.ts](file:///k:/Project/kenku\Finora/backend/src/modules/auth/auth.controller.ts) to fetch user, profiles, and settings concurrently, eliminating sequential delay bottlenecks.
-- **Offline Redis Performance Hardening (BUG-09)**: Configured [redis.ts](file:///k:/Project/kenku\Finora/backend/src/cache/redis.ts) to fail-open instantly if Redis is down or not connected (`status !== 'connected'`).
+- **Direct Supabase UI Call Elimination (BUG-01 & BUG-02)**: Refactored `handleSignIn` and `handleSignUp` in [AuthFlow.tsx](file:///k:/Project/kenku\KANAKU/frontend/src/app/components/auth/AuthFlow.tsx) to use backend-proxied API calls, and updated [UserProfile.tsx](file:///k:/Project/kenku\KANAKU/frontend/src/app/components/profile/UserProfile.tsx) to use backend password verification, eliminating direct UI credentials/API key transmissions.
+- **Concurrent Profile Querying (BUG-09)**: Optimized `getProfile` in [auth.controller.ts](file:///k:/Project/kenku\KANAKU/backend/src/modules/auth/auth.controller.ts) to fetch user, profiles, and settings concurrently, eliminating sequential delay bottlenecks.
+- **Offline Redis Performance Hardening (BUG-09)**: Configured [redis.ts](file:///k:/Project/kenku\KANAKU/backend/src/cache/redis.ts) to fail-open instantly if Redis is down or not connected (`status !== 'connected'`).
 
 ### Verification & Integration Tests
 - **Local Postgres Database Port 5434**: Restored database system functionality by manually creating the standard folders and nested folders (`pg_commit_ts`, `pg_dynshmem`, `pg_notify`, `pg_replslot`, `pg_serial`, `pg_snapshots`, `pg_stat`, `pg_tblspc`, `pg_twophase`, `pg_logical/snapshots`, `pg_logical/mappings`, `pg_multixact/members`, `pg_multixact/offsets`) omitted by Git, and ran the daemon.
@@ -2963,7 +2963,7 @@ $ npm test
 ## Password Migration Fallback Fix (June 2026)
 
 - **Self-Healing Password Migration**:
-  - Refactored the login validation in [auth.service.ts](file:///k:/Project/kenku\Finora/backend/src/modules/auth/auth.service.ts) to handle cases where a user's password hash in the local database is unmigrated (empty) or set to the fallback value `"supabase-managed-account"`.
+  - Refactored the login validation in [auth.service.ts](file:///k:/Project/kenku\KANAKU/backend/src/modules/auth/auth.service.ts) to handle cases where a user's password hash in the local database is unmigrated (empty) or set to the fallback value `"supabase-managed-account"`.
   - Added a fallback validation path that authenticates the user directly against Supabase Auth (using the service role or anon client) on their first post-redesign login attempt.
   - Upon successful authentication with Supabase, the user's password is dynamically hashed using `bcrypt` and saved locally to the PostgreSQL `User` table, ensuring all future login calls are executed locally, securely, and with minimum latency.
 - **Verification**: Verified via backend compilation (`npm run build:backend`) and critical integration tests (`npm run test:security:critical`), all passing cleanly.
@@ -2975,17 +2975,17 @@ $ npm test
 ### Changes Made
 
 1. **Persist Custom JWT Tokens (`api.ts`)**:
-   - Modified `TokenManager` in [api.ts](file:///k:/Project/kenku\Finora/frontend/src/lib/api.ts) to write custom tokens to `localStorage` under `'auth_token'` and `'refresh_token'` keys in `setAccessToken` and `setRefreshToken`. This prevents custom token loss upon page reloads.
+   - Modified `TokenManager` in [api.ts](file:///k:/Project/kenku\KANAKU/frontend/src/lib/api.ts) to write custom tokens to `localStorage` under `'auth_token'` and `'refresh_token'` keys in `setAccessToken` and `setRefreshToken`. This prevents custom token loss upon page reloads.
 
 2. **Synchronous Session Recovery & Background Probing (`AuthContext.tsx`)**:
-   - Added `decodeJwt` helper function in [AuthContext.tsx](file:///k:/Project/kenku\Finora/frontend/src/contexts/AuthContext.tsx) to safely parse base64url-encoded JWT payloads on the client side.
+   - Added `decodeJwt` helper function in [AuthContext.tsx](file:///k:/Project/kenku\KANAKU/frontend/src/contexts/AuthContext.tsx) to safely parse base64url-encoded JWT payloads on the client side.
    - Updated the `onAuthStateChange` subscription. When Supabase returns `session: null`, it checks for a custom JWT. If found, it decodes the token, constructs mock Supabase `User` and `Session` objects, and immediately resolves the session states (`session`, `user`, `role`) offline-first.
    - Added background validation of custom sessions using `api.auth.getProfile()`. If the backend returns a `401 Unauthorized` error, the session is invalidated and `TokenManager.clearTokens()` is called.
    - Modified `handleOnline` to also recover custom token sessions instead of overwriting them with `null` when coming online.
    - Cleaned up `signOut` to wipe custom tokens in the `finally` block using `TokenManager.clearTokens()`.
 
 3. **Fallback in Permission Service (`permissionService.ts`)**:
-   - Modified `refreshPermissions` in [permissionService.ts](file:///k:/Project/kenku\Finora/frontend/src/services/permissionService.ts) to fallback to decoding the active custom token if `supabase.auth.getUser()` returns null.
+   - Modified `refreshPermissions` in [permissionService.ts](file:///k:/Project/kenku\KANAKU/frontend/src/services/permissionService.ts) to fallback to decoding the active custom token if `supabase.auth.getUser()` returns null.
 
 ### Verification & Validation Results
 
@@ -3053,22 +3053,22 @@ $ npm test
 ### Changes Made
 
 1. **Security Headers (BUG-13 & BUG-14 & BUG-18)**:
-   - Fixed Helmet's Content Security Policy overrides in [app.ts](file:///k:/Project/kenku\Finora/backend/src/app.ts) by removing the redundant manual `getDefaultDirectives()` spread, which previously caused duplicate/broad directive warnings (e.g. style-src).
+   - Fixed Helmet's Content Security Policy overrides in [app.ts](file:///k:/Project/kenku\KANAKU/backend/src/app.ts) by removing the redundant manual `getDefaultDirectives()` spread, which previously caused duplicate/broad directive warnings (e.g. style-src).
    - Configured custom middleware to explicitly set `X-XSS-Protection: 1; mode=block` for older browsers.
    - Configured `Cross-Origin-Resource-Policy: same-origin` to restrict cross-origin access to resource sharing.
 
 2. **Conditional PII/Financial Field Trimming (BUG-15)**:
-   - Modified `buildProfilePayload`, `getProfile`, and `updateProfile` in [auth.controller.ts](file:///k:/Project/kenku\Finora/backend/src/modules/auth/auth.controller.ts) to filter out sensitive attributes (`salary`, `monthlyIncome`, `dateOfBirth`, `jobType`, `role`, `isApproved`) by default.
+   - Modified `buildProfilePayload`, `getProfile`, and `updateProfile` in [auth.controller.ts](file:///k:/Project/kenku\KANAKU/backend/src/modules/auth/auth.controller.ts) to filter out sensitive attributes (`salary`, `monthlyIncome`, `dateOfBirth`, `jobType`, `role`, `isApproved`) by default.
    - Private fields are returned only if requested via `includePrivate=true` by authorized components.
    - Added logic to automatically prune empty properties (empty strings, null, undefined) from the profile response payload to minimize security exposure.
-   - Updated `api.auth.getProfile` in [api.ts](file:///k:/Project/kenku\Finora/frontend/src/lib/api.ts) to bypass profile caching when requesting the private profile payload.
-   - Updated [UserProfile.tsx](file:///k:/Project/kenku\Finora/frontend/src/app/components/profile/UserProfile.tsx) and [permissionService.ts](file:///k:/Project/kenku\Finora/frontend/src/services/permissionService.ts) to fetch the private payload explicitly when role, approval, or editable financial data is needed.
+   - Updated `api.auth.getProfile` in [api.ts](file:///k:/Project/kenku\KANAKU/frontend/src/lib/api.ts) to bypass profile caching when requesting the private profile payload.
+   - Updated [UserProfile.tsx](file:///k:/Project/kenku\KANAKU/frontend/src/app/components/profile/UserProfile.tsx) and [permissionService.ts](file:///k:/Project/kenku\KANAKU/frontend/src/services/permissionService.ts) to fetch the private payload explicitly when role, approval, or editable financial data is needed.
 
 3. **Notification & Transaction Pagination (BUG-11 & BUG-12)**:
-   - Re-implemented notification fetching with limit and page options inside `getNotifications` in [notification.controller.ts](file:///k:/Project/kenku\Finora/backend/src/modules/notifications/notification.controller.ts) and attached `X-Total-Count`, `X-Page`, and `X-Limit` headers to response payloads.
-   - Refactored `findMany` and implemented `count` in [transaction.repository.ts](file:///k:/Project/kenku\Finora/backend/src/modules/transactions/transaction.repository.ts) to support Prisma offset pagination options (`take` and `skip`).
-   - Updated `fetchTransactions` in [transaction.service.ts](file:///k:/Project/kenku\Finora/backend/src/modules/transactions/transaction.service.ts) to process pagination queries and query the total transaction count.
-   - Updated `getTransactions` in [transaction.controller.ts](file:///k:/Project/kenku\Finora/backend/src/modules/transactions/transaction.controller.ts) to attach pagination HTTP response headers, ensuring backward compatibility for legacy clients expecting flat data array envelopes.
+   - Re-implemented notification fetching with limit and page options inside `getNotifications` in [notification.controller.ts](file:///k:/Project/kenku\KANAKU/backend/src/modules/notifications/notification.controller.ts) and attached `X-Total-Count`, `X-Page`, and `X-Limit` headers to response payloads.
+   - Refactored `findMany` and implemented `count` in [transaction.repository.ts](file:///k:/Project/kenku\KANAKU/backend/src/modules/transactions/transaction.repository.ts) to support Prisma offset pagination options (`take` and `skip`).
+   - Updated `fetchTransactions` in [transaction.service.ts](file:///k:/Project/kenku\KANAKU/backend/src/modules/transactions/transaction.service.ts) to process pagination queries and query the total transaction count.
+   - Updated `getTransactions` in [transaction.controller.ts](file:///k:/Project/kenku\KANAKU/backend/src/modules/transactions/transaction.controller.ts) to attach pagination HTTP response headers, ensuring backward compatibility for legacy clients expecting flat data array envelopes.
 
 ### Verification & Validation Results
 
@@ -3097,12 +3097,12 @@ $ npm test
 ### Changes Made
 
 1. **Two-Phase Authentication Flow (BUG-19)**:
-   - Created the `verifyPasswordOnly` method in [auth.service.ts](file:///k:/Project/kenku\Finora/backend/src/modules/auth/auth.service.ts) to validate user credentials without generating access or refresh tokens.
-   - Implemented `loginChallenge` in [auth.controller.ts](file:///k:/Project/kenku\Finora/backend/src/modules/auth/auth.controller.ts) which acts as Phase 1: it validates user passwords, generates a single-use random 6-digit challenge code, and caches it in Redis (or in-memory fallback) for 60 seconds.
-   - Updated `login` in [auth.controller.ts](file:///k:/Project/kenku\Finora/backend/src/modules/auth/auth.controller.ts) to support Phase 2: if a `challengeCode` is provided, it verifies the code, deletes it from the cache, and issues the JWT tokens. Backward compatibility is maintained by automatically falling back to standard password verification if no code is sent.
-   - Exposed the `POST /login/challenge` route in [auth.routes.ts](file:///k:/Project/kenku\Finora/backend/src/modules/auth/auth.routes.ts).
-   - Refactored `login` in [api.ts](file:///k:/Project/kenku\Finora/frontend/src/lib/api.ts) to transparently coordinate Phase 1 and Phase 2. The client requests the challenge first, and then submits ONLY the numeric challenge code to the final login endpoint. Consequently, the plaintext password is never sent to the login endpoint and is never captured in network tools or HAR files.
-   - Added a comprehensive integration test in [auth.test.ts](file:///k:/Project/kenku\Finora/backend/tests/integration/auth.test.ts) to verify the challenge-response flow works flawlessly.
+   - Created the `verifyPasswordOnly` method in [auth.service.ts](file:///k:/Project/kenku\KANAKU/backend/src/modules/auth/auth.service.ts) to validate user credentials without generating access or refresh tokens.
+   - Implemented `loginChallenge` in [auth.controller.ts](file:///k:/Project/kenku\KANAKU/backend/src/modules/auth/auth.controller.ts) which acts as Phase 1: it validates user passwords, generates a single-use random 6-digit challenge code, and caches it in Redis (or in-memory fallback) for 60 seconds.
+   - Updated `login` in [auth.controller.ts](file:///k:/Project/kenku\KANAKU/backend/src/modules/auth/auth.controller.ts) to support Phase 2: if a `challengeCode` is provided, it verifies the code, deletes it from the cache, and issues the JWT tokens. Backward compatibility is maintained by automatically falling back to standard password verification if no code is sent.
+   - Exposed the `POST /login/challenge` route in [auth.routes.ts](file:///k:/Project/kenku\KANAKU/backend/src/modules/auth/auth.routes.ts).
+   - Refactored `login` in [api.ts](file:///k:/Project/kenku\KANAKU/frontend/src/lib/api.ts) to transparently coordinate Phase 1 and Phase 2. The client requests the challenge first, and then submits ONLY the numeric challenge code to the final login endpoint. Consequently, the plaintext password is never sent to the login endpoint and is never captured in network tools or HAR files.
+   - Added a comprehensive integration test in [auth.test.ts](file:///k:/Project/kenku\KANAKU/backend/tests/integration/auth.test.ts) to verify the challenge-response flow works flawlessly.
 
 ### Verification & Validation Results
 
@@ -3120,16 +3120,16 @@ $ npm test
 ### Changes Made
 
 1. **Delayed Cloud Sync Until PIN Unlock**:
-   - Refactored [AuthContext.tsx](file:///k:/Project/kenku\Finora/frontend/src/contexts/AuthContext.tsx) to remove the automatic background data sync (`syncFromSupabase(...)`) and permission fetching from the `onAuthStateChange` startup hook.
-   - Reordered the routing gates in [App.tsx](file:///k:/Project/kenku\Finora/frontend/src/app/App.tsx) to check and prompt for onboarding completion, PIN setup, and PIN verification **before** checking the `dataReady` (synchronized data) state.
-   - Introduced a React `useEffect` hook in `AppContent` in [App.tsx](file:///k:/Project/kenku\Finora/frontend/src/app/App.tsx) that triggers the permissions fetch and cloud data synchronization via `triggerDataSync()` only after the user is fully PIN-authenticated (`isAuthenticated === true`).
+   - Refactored [AuthContext.tsx](file:///k:/Project/kenku\KANAKU/frontend/src/contexts/AuthContext.tsx) to remove the automatic background data sync (`syncFromSupabase(...)`) and permission fetching from the `onAuthStateChange` startup hook.
+   - Reordered the routing gates in [App.tsx](file:///k:/Project/kenku\KANAKU/frontend/src/app/App.tsx) to check and prompt for onboarding completion, PIN setup, and PIN verification **before** checking the `dataReady` (synchronized data) state.
+   - Introduced a React `useEffect` hook in `AppContent` in [App.tsx](file:///k:/Project/kenku\KANAKU/frontend/src/app/App.tsx) that triggers the permissions fetch and cloud data synchronization via `triggerDataSync()` only after the user is fully PIN-authenticated (`isAuthenticated === true`).
    - If local data exists in Dexie, `triggerDataSync` resolves instantly to unblock the dashboard, while the heavy cloud sync runs in the background.
 
 2. **Pre-Auth WebSocket sync gating**:
-   - Updated the real-time WebSocket sync effect in [AppContext.tsx](file:///k:/Project/kenku\Finora/frontend/src/contexts/AppContext.tsx) to check `isAuthenticated` from `useSecurity()`, preventing any WebSocket events (friend acceptance, todos updates, group expenses) from spawning background Dexie queries or API requests while the user is still locked on the PIN screen.
+   - Updated the real-time WebSocket sync effect in [AppContext.tsx](file:///k:/Project/kenku\KANAKU/frontend/src/contexts/AppContext.tsx) to check `isAuthenticated` from `useSecurity()`, preventing any WebSocket events (friend acceptance, todos updates, group expenses) from spawning background Dexie queries or API requests while the user is still locked on the PIN screen.
 
 3. **Consolidated Profile API Caching & Deduplication**:
-   - Extended [api.ts](file:///k:/Project/kenku\Finora/frontend/src/lib/api.ts) with separate caches (`profilePrivateCache`, `profilePublicCache`) and in-flight request trackers (`profilePrivateRequestInFlight`, `profilePublicRequestInFlight`) to handle both public and private (`includePrivate=true`) profile requests.
+   - Extended [api.ts](file:///k:/Project/kenku\KANAKU/frontend/src/lib/api.ts) with separate caches (`profilePrivateCache`, `profilePublicCache`) and in-flight request trackers (`profilePrivateRequestInFlight`, `profilePublicRequestInFlight`) to handle both public and private (`includePrivate=true`) profile requests.
    - Updated `api.auth.getProfile` to deduplicate concurrent requests (sharing a single network call) and reuse cached payloads (where a private profile satisfies both private and public requests), reducing profile-related network requests by 66% during startup.
    - Updated `api.clearCache` to flush all private/public caches and tracker instances.
 
@@ -3194,13 +3194,13 @@ Implemented route-based data synchronization and table loading to resolve admini
 
 ### 1. Route-Based Sync Optimization & Double-Fetch Prevention (June 2026)
 
-- **Parameterize Sync Interfaces**: Exported `SyncedTableName` from [auth-sync-integration.ts](file:///k:/Project/kenku/Finora/frontend/src/lib/auth-sync-integration.ts) and updated `syncUserDataFromCloud` and `syncUserDataFromBackend` to accept an optional `requestedTables?: SyncedTableName[]` parameter. When passed as `[]`, it skips remote fetches entirely.
+- **Parameterize Sync Interfaces**: Exported `SyncedTableName` from [auth-sync-integration.ts](file:///k:/Project/kenku/KANAKU/frontend/src/lib/auth-sync-integration.ts) and updated `syncUserDataFromCloud` and `syncUserDataFromBackend` to accept an optional `requestedTables?: SyncedTableName[]` parameter. When passed as `[]`, it skips remote fetches entirely.
 - **Per-Table Sync Cooldowns**: Implemented per-table sync timestamps stored in `localStorage` (`KANAKU_last_sync_at_${table}`). When `force = false`, the sync engine automatically filters out and skips pulling any requested table that was successfully pulled within the last 5 minutes.
-- **Route-to-Table Mapping**: Defined the `PAGE_REQUIRED_TABLES` mapping object in [App.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/App.tsx) to map pages/routes to their minimum necessary sync tables. Updated the PIN-unlock sync effect to fetch only page-specific required tables (avoiding fetching retail user tables when on the Compliance Dashboard).
-- **Page Change Watcher**: Added a navigation watcher `useEffect` in [App.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/App.tsx) to execute non-forced background subset syncs on-demand when the active page changes.
+- **Route-to-Table Mapping**: Defined the `PAGE_REQUIRED_TABLES` mapping object in [App.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/App.tsx) to map pages/routes to their minimum necessary sync tables. Updated the PIN-unlock sync effect to fetch only page-specific required tables (avoiding fetching retail user tables when on the Compliance Dashboard).
+- **Page Change Watcher**: Added a navigation watcher `useEffect` in [App.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/App.tsx) to execute non-forced background subset syncs on-demand when the active page changes.
 - **Double-Fetch Prevention**:
-  - Removed `force: true` option from the `api.auth.getProfile` call inside [UserProfile.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/profile/UserProfile.tsx) to utilize API client caching and request deduplication.
-  - Added synchronous in-flight `useRef` guards to `loadDashboard()` in [AdminAIDashboard.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/admin/AdminAIDashboard.tsx), and `fetchApplications()` in both [ManagerAdvisorVerification.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/manager/ManagerAdvisorVerification.tsx) and [AdminAdvisorVerification.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/admin/AdminAdvisorVerification.tsx) to prevent concurrent backend queries under React Strict Mode double-mounts.
+  - Removed `force: true` option from the `api.auth.getProfile` call inside [UserProfile.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/profile/UserProfile.tsx) to utilize API client caching and request deduplication.
+  - Added synchronous in-flight `useRef` guards to `loadDashboard()` in [AdminAIDashboard.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/admin/AdminAIDashboard.tsx), and `fetchApplications()` in both [ManagerAdvisorVerification.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/manager/ManagerAdvisorVerification.tsx) and [AdminAdvisorVerification.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/admin/AdminAdvisorVerification.tsx) to prevent concurrent backend queries under React Strict Mode double-mounts.
 
 ### 2. Onboarding Profile Setup Desktop Redesign, Avatars & Usability Enhancements
 
@@ -3280,9 +3280,9 @@ $ npm test
 - **Silent Key Backup Fix**: Updated GET `/api/v1/pin/key-backup` to return HTTP 404 Not Found when no key backup is configured.
 - **Voice Assistant API Authentication**: Appended `Authorization: Bearer <token>` dynamically resolved from supabase session/memory in `voiceTransactionService.ts` for all transaction creation and friend lookup network requests.
 - **Privacy Hardening**: Conditional pruning of empty financial/PII properties (`salary`, `monthlyIncome`, `dateOfBirth`, `jobType`) and default `'user'` roles from the profile response payload in `auth.controller.ts`.
-- **Direct Supabase UI Call Elimination (BUG-01 & BUG-02)**: Refactored `handleSignIn` and `handleSignUp` in [AuthFlow.tsx](file:///k:/Project/kenku\Finora/frontend/src/app/components/auth/AuthFlow.tsx) to use backend-proxied API calls, and updated [UserProfile.tsx](file:///k:/Project/kenku\Finora/frontend/src/app/components/profile/UserProfile.tsx) to use backend password verification, eliminating direct UI credentials/API key transmissions.
-- **Concurrent Profile Querying (BUG-09)**: Optimized `getProfile` in [auth.controller.ts](file:///k:/Project/kenku\Finora/backend/src/modules/auth/auth.controller.ts) to fetch user, profiles, and settings concurrently, eliminating sequential delay bottlenecks.
-- **Offline Redis Performance Hardening (BUG-09)**: Configured [redis.ts](file:///k:/Project/kenku\Finora/backend/src/cache/redis.ts) to fail-open instantly if Redis is down or not connected (`status !== 'connected'`).
+- **Direct Supabase UI Call Elimination (BUG-01 & BUG-02)**: Refactored `handleSignIn` and `handleSignUp` in [AuthFlow.tsx](file:///k:/Project/kenku\KANAKU/frontend/src/app/components/auth/AuthFlow.tsx) to use backend-proxied API calls, and updated [UserProfile.tsx](file:///k:/Project/kenku\KANAKU/frontend/src/app/components/profile/UserProfile.tsx) to use backend password verification, eliminating direct UI credentials/API key transmissions.
+- **Concurrent Profile Querying (BUG-09)**: Optimized `getProfile` in [auth.controller.ts](file:///k:/Project/kenku\KANAKU/backend/src/modules/auth/auth.controller.ts) to fetch user, profiles, and settings concurrently, eliminating sequential delay bottlenecks.
+- **Offline Redis Performance Hardening (BUG-09)**: Configured [redis.ts](file:///k:/Project/kenku\KANAKU/backend/src/cache/redis.ts) to fail-open instantly if Redis is down or not connected (`status !== 'connected'`).
 
 ### Verification & Integration Tests
 - **Local Postgres Database Port 5434**: Restored database system functionality by manually creating the standard folders and nested folders (`pg_commit_ts`, `pg_dynshmem`, `pg_notify`, `pg_replslot`, `pg_serial`, `pg_snapshots`, `pg_stat`, `pg_tblspc`, `pg_twophase`, `pg_logical/snapshots`, `pg_logical/mappings`, `pg_multixact/members`, `pg_multixact/offsets`) omitted by Git, and ran the daemon.
@@ -3304,7 +3304,7 @@ $ npm test
 ## Password Migration Fallback Fix (June 2026)
 
 - **Self-Healing Password Migration**:
-  - Refactored the login validation in [auth.service.ts](file:///k:/Project/kenku\Finora/backend/src/modules/auth/auth.service.ts) to handle cases where a user's password hash in the local database is unmigrated (empty) or set to the fallback value `"supabase-managed-account"`.
+  - Refactored the login validation in [auth.service.ts](file:///k:/Project/kenku\KANAKU/backend/src/modules/auth/auth.service.ts) to handle cases where a user's password hash in the local database is unmigrated (empty) or set to the fallback value `"supabase-managed-account"`.
   - Added a fallback validation path that authenticates the user directly against Supabase Auth (using the service role or anon client) on their first post-redesign login attempt.
   - Upon successful authentication with Supabase, the user's password is dynamically hashed using `bcrypt` and saved locally to the PostgreSQL `User` table, ensuring all future login calls are executed locally, securely, and with minimum latency.
 - **Verification**: Verified via backend compilation (`npm run build:backend`) and critical integration tests (`npm run test:security:critical`), all passing cleanly.
@@ -3316,17 +3316,17 @@ $ npm test
 ### Changes Made
 
 1. **Persist Custom JWT Tokens (`api.ts`)**:
-   - Modified `TokenManager` in [api.ts](file:///k:/Project/kenku\Finora/frontend/src/lib/api.ts) to write custom tokens to `localStorage` under `'auth_token'` and `'refresh_token'` keys in `setAccessToken` and `setRefreshToken`. This prevents custom token loss upon page reloads.
+   - Modified `TokenManager` in [api.ts](file:///k:/Project/kenku\KANAKU/frontend/src/lib/api.ts) to write custom tokens to `localStorage` under `'auth_token'` and `'refresh_token'` keys in `setAccessToken` and `setRefreshToken`. This prevents custom token loss upon page reloads.
 
 2. **Synchronous Session Recovery & Background Probing (`AuthContext.tsx`)**:
-   - Added `decodeJwt` helper function in [AuthContext.tsx](file:///k:/Project/kenku\Finora/frontend/src/contexts/AuthContext.tsx) to safely parse base64url-encoded JWT payloads on the client side.
+   - Added `decodeJwt` helper function in [AuthContext.tsx](file:///k:/Project/kenku\KANAKU/frontend/src/contexts/AuthContext.tsx) to safely parse base64url-encoded JWT payloads on the client side.
    - Updated the `onAuthStateChange` subscription. When Supabase returns `session: null`, it checks for a custom JWT. If found, it decodes the token, constructs mock Supabase `User` and `Session` objects, and immediately resolves the session states (`session`, `user`, `role`) offline-first.
    - Added background validation of custom sessions using `api.auth.getProfile()`. If the backend returns a `401 Unauthorized` error, the session is invalidated and `TokenManager.clearTokens()` is called.
    - Modified `handleOnline` to also recover custom token sessions instead of overwriting them with `null` when coming online.
    - Cleaned up `signOut` to wipe custom tokens in the `finally` block using `TokenManager.clearTokens()`.
 
 3. **Fallback in Permission Service (`permissionService.ts`)**:
-   - Modified `refreshPermissions` in [permissionService.ts](file:///k:/Project/kenku\Finora/frontend/src/services/permissionService.ts) to fallback to decoding the active custom token if `supabase.auth.getUser()` returns null.
+   - Modified `refreshPermissions` in [permissionService.ts](file:///k:/Project/kenku\KANAKU/frontend/src/services/permissionService.ts) to fallback to decoding the active custom token if `supabase.auth.getUser()` returns null.
 
 ### Verification & Validation Results
 
@@ -3394,22 +3394,22 @@ $ npm test
 ### Changes Made
 
 1. **Security Headers (BUG-13 & BUG-14 & BUG-18)**:
-   - Fixed Helmet's Content Security Policy overrides in [app.ts](file:///k:/Project/kenku\Finora/backend/src/app.ts) by removing the redundant manual `getDefaultDirectives()` spread, which previously caused duplicate/broad directive warnings (e.g. style-src).
+   - Fixed Helmet's Content Security Policy overrides in [app.ts](file:///k:/Project/kenku\KANAKU/backend/src/app.ts) by removing the redundant manual `getDefaultDirectives()` spread, which previously caused duplicate/broad directive warnings (e.g. style-src).
    - Configured custom middleware to explicitly set `X-XSS-Protection: 1; mode=block` for older browsers.
    - Configured `Cross-Origin-Resource-Policy: same-origin` to restrict cross-origin access to resource sharing.
 
 2. **Conditional PII/Financial Field Trimming (BUG-15)**:
-   - Modified `buildProfilePayload`, `getProfile`, and `updateProfile` in [auth.controller.ts](file:///k:/Project/kenku\Finora/backend/src/modules/auth/auth.controller.ts) to filter out sensitive attributes (`salary`, `monthlyIncome`, `dateOfBirth`, `jobType`, `role`, `isApproved`) by default.
+   - Modified `buildProfilePayload`, `getProfile`, and `updateProfile` in [auth.controller.ts](file:///k:/Project/kenku\KANAKU/backend/src/modules/auth/auth.controller.ts) to filter out sensitive attributes (`salary`, `monthlyIncome`, `dateOfBirth`, `jobType`, `role`, `isApproved`) by default.
    - Private fields are returned only if requested via `includePrivate=true` by authorized components.
    - Added logic to automatically prune empty properties (empty strings, null, undefined) from the profile response payload to minimize security exposure.
-   - Updated `api.auth.getProfile` in [api.ts](file:///k:/Project/kenku\Finora/frontend/src/lib/api.ts) to bypass profile caching when requesting the private profile payload.
-   - Updated [UserProfile.tsx](file:///k:/Project/kenku\Finora/frontend/src/app/components/profile/UserProfile.tsx) and [permissionService.ts](file:///k:/Project/kenku\Finora/frontend/src/services/permissionService.ts) to fetch the private payload explicitly when role, approval, or editable financial data is needed.
+   - Updated `api.auth.getProfile` in [api.ts](file:///k:/Project/kenku\KANAKU/frontend/src/lib/api.ts) to bypass profile caching when requesting the private profile payload.
+   - Updated [UserProfile.tsx](file:///k:/Project/kenku\KANAKU/frontend/src/app/components/profile/UserProfile.tsx) and [permissionService.ts](file:///k:/Project/kenku\KANAKU/frontend/src/services/permissionService.ts) to fetch the private payload explicitly when role, approval, or editable financial data is needed.
 
 3. **Notification & Transaction Pagination (BUG-11 & BUG-12)**:
-   - Re-implemented notification fetching with limit and page options inside `getNotifications` in [notification.controller.ts](file:///k:/Project/kenku\Finora/backend/src/modules/notifications/notification.controller.ts) and attached `X-Total-Count`, `X-Page`, and `X-Limit` headers to response payloads.
-   - Refactored `findMany` and implemented `count` in [transaction.repository.ts](file:///k:/Project/kenku\Finora/backend/src/modules/transactions/transaction.repository.ts) to support Prisma offset pagination options (`take` and `skip`).
-   - Updated `fetchTransactions` in [transaction.service.ts](file:///k:/Project/kenku\Finora/backend/src/modules/transactions/transaction.service.ts) to process pagination queries and query the total transaction count.
-   - Updated `getTransactions` in [transaction.controller.ts](file:///k:/Project/kenku\Finora/backend/src/modules/transactions/transaction.controller.ts) to attach pagination HTTP response headers, ensuring backward compatibility for legacy clients expecting flat data array envelopes.
+   - Re-implemented notification fetching with limit and page options inside `getNotifications` in [notification.controller.ts](file:///k:/Project/kenku\KANAKU/backend/src/modules/notifications/notification.controller.ts) and attached `X-Total-Count`, `X-Page`, and `X-Limit` headers to response payloads.
+   - Refactored `findMany` and implemented `count` in [transaction.repository.ts](file:///k:/Project/kenku\KANAKU/backend/src/modules/transactions/transaction.repository.ts) to support Prisma offset pagination options (`take` and `skip`).
+   - Updated `fetchTransactions` in [transaction.service.ts](file:///k:/Project/kenku\KANAKU/backend/src/modules/transactions/transaction.service.ts) to process pagination queries and query the total transaction count.
+   - Updated `getTransactions` in [transaction.controller.ts](file:///k:/Project/kenku\KANAKU/backend/src/modules/transactions/transaction.controller.ts) to attach pagination HTTP response headers, ensuring backward compatibility for legacy clients expecting flat data array envelopes.
 
 ### Verification & Validation Results
 
@@ -3438,12 +3438,12 @@ $ npm test
 ### Changes Made
 
 1. **Two-Phase Authentication Flow (BUG-19)**:
-   - Created the `verifyPasswordOnly` method in [auth.service.ts](file:///k:/Project/kenku\Finora/backend/src/modules/auth/auth.service.ts) to validate user credentials without generating access or refresh tokens.
-   - Implemented `loginChallenge` in [auth.controller.ts](file:///k:/Project/kenku\Finora/backend/src/modules/auth/auth.controller.ts) which acts as Phase 1: it validates user passwords, generates a single-use random 6-digit challenge code, and caches it in Redis (or in-memory fallback) for 60 seconds.
-   - Updated `login` in [auth.controller.ts](file:///k:/Project/kenku\Finora/backend/src/modules/auth/auth.controller.ts) to support Phase 2: if a `challengeCode` is provided, it verifies the code, deletes it from the cache, and issues the JWT tokens. Backward compatibility is maintained by automatically falling back to standard password verification if no code is sent.
-   - Exposed the `POST /login/challenge` route in [auth.routes.ts](file:///k:/Project/kenku\Finora/backend/src/modules/auth/auth.routes.ts).
-   - Refactored `login` in [api.ts](file:///k:/Project/kenku\Finora/frontend/src/lib/api.ts) to transparently coordinate Phase 1 and Phase 2. The client requests the challenge first, and then submits ONLY the numeric challenge code to the final login endpoint. Consequently, the plaintext password is never sent to the login endpoint and is never captured in network tools or HAR files.
-   - Added a comprehensive integration test in [auth.test.ts](file:///k:/Project/kenku\Finora/backend/tests/integration/auth.test.ts) to verify the challenge-response flow works flawlessly.
+   - Created the `verifyPasswordOnly` method in [auth.service.ts](file:///k:/Project/kenku\KANAKU/backend/src/modules/auth/auth.service.ts) to validate user credentials without generating access or refresh tokens.
+   - Implemented `loginChallenge` in [auth.controller.ts](file:///k:/Project/kenku\KANAKU/backend/src/modules/auth/auth.controller.ts) which acts as Phase 1: it validates user passwords, generates a single-use random 6-digit challenge code, and caches it in Redis (or in-memory fallback) for 60 seconds.
+   - Updated `login` in [auth.controller.ts](file:///k:/Project/kenku\KANAKU/backend/src/modules/auth/auth.controller.ts) to support Phase 2: if a `challengeCode` is provided, it verifies the code, deletes it from the cache, and issues the JWT tokens. Backward compatibility is maintained by automatically falling back to standard password verification if no code is sent.
+   - Exposed the `POST /login/challenge` route in [auth.routes.ts](file:///k:/Project/kenku\KANAKU/backend/src/modules/auth/auth.routes.ts).
+   - Refactored `login` in [api.ts](file:///k:/Project/kenku\KANAKU/frontend/src/lib/api.ts) to transparently coordinate Phase 1 and Phase 2. The client requests the challenge first, and then submits ONLY the numeric challenge code to the final login endpoint. Consequently, the plaintext password is never sent to the login endpoint and is never captured in network tools or HAR files.
+   - Added a comprehensive integration test in [auth.test.ts](file:///k:/Project/kenku\KANAKU/backend/tests/integration/auth.test.ts) to verify the challenge-response flow works flawlessly.
 
 ### Verification & Validation Results
 
@@ -3461,16 +3461,16 @@ $ npm test
 ### Changes Made
 
 1. **Delayed Cloud Sync Until PIN Unlock**:
-   - Refactored [AuthContext.tsx](file:///k:/Project/kenku\Finora/frontend/src/contexts/AuthContext.tsx) to remove the automatic background data sync (`syncFromSupabase(...)`) and permission fetching from the `onAuthStateChange` startup hook.
-   - Reordered the routing gates in [App.tsx](file:///k:/Project/kenku\Finora/frontend/src/app/App.tsx) to check and prompt for onboarding completion, PIN setup, and PIN verification **before** checking the `dataReady` (synchronized data) state.
-   - Introduced a React `useEffect` hook in `AppContent` in [App.tsx](file:///k:/Project/kenku\Finora/frontend/src/app/App.tsx) that triggers the permissions fetch and cloud data synchronization via `triggerDataSync()` only after the user is fully PIN-authenticated (`isAuthenticated === true`).
+   - Refactored [AuthContext.tsx](file:///k:/Project/kenku\KANAKU/frontend/src/contexts/AuthContext.tsx) to remove the automatic background data sync (`syncFromSupabase(...)`) and permission fetching from the `onAuthStateChange` startup hook.
+   - Reordered the routing gates in [App.tsx](file:///k:/Project/kenku\KANAKU/frontend/src/app/App.tsx) to check and prompt for onboarding completion, PIN setup, and PIN verification **before** checking the `dataReady` (synchronized data) state.
+   - Introduced a React `useEffect` hook in `AppContent` in [App.tsx](file:///k:/Project/kenku\KANAKU/frontend/src/app/App.tsx) that triggers the permissions fetch and cloud data synchronization via `triggerDataSync()` only after the user is fully PIN-authenticated (`isAuthenticated === true`).
    - If local data exists in Dexie, `triggerDataSync` resolves instantly to unblock the dashboard, while the heavy cloud sync runs in the background.
 
 2. **Pre-Auth WebSocket sync gating**:
-   - Updated the real-time WebSocket sync effect in [AppContext.tsx](file:///k:/Project/kenku\Finora/frontend/src/contexts/AppContext.tsx) to check `isAuthenticated` from `useSecurity()`, preventing any WebSocket events (friend acceptance, todos updates, group expenses) from spawning background Dexie queries or API requests while the user is still locked on the PIN screen.
+   - Updated the real-time WebSocket sync effect in [AppContext.tsx](file:///k:/Project/kenku\KANAKU/frontend/src/contexts/AppContext.tsx) to check `isAuthenticated` from `useSecurity()`, preventing any WebSocket events (friend acceptance, todos updates, group expenses) from spawning background Dexie queries or API requests while the user is still locked on the PIN screen.
 
 3. **Consolidated Profile API Caching & Deduplication**:
-   - Extended [api.ts](file:///k:/Project/kenku\Finora/frontend/src/lib/api.ts) with separate caches (`profilePrivateCache`, `profilePublicCache`) and in-flight request trackers (`profilePrivateRequestInFlight`, `profilePublicRequestInFlight`) to handle both public and private (`includePrivate=true`) profile requests.
+   - Extended [api.ts](file:///k:/Project/kenku\KANAKU/frontend/src/lib/api.ts) with separate caches (`profilePrivateCache`, `profilePublicCache`) and in-flight request trackers (`profilePrivateRequestInFlight`, `profilePublicRequestInFlight`) to handle both public and private (`includePrivate=true`) profile requests.
    - Updated `api.auth.getProfile` to deduplicate concurrent requests (sharing a single network call) and reuse cached payloads (where a private profile satisfies both private and public requests), reducing profile-related network requests by 66% during startup.
    - Updated `api.clearCache` to flush all private/public caches and tracker instances.
 
@@ -3495,11 +3495,11 @@ $ npm test
 ### Changes Made
 
 1. **Card Layout & Styling Clashes Resolved**:
-   - Modified all major cards in [UserProfile.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/profile/UserProfile.tsx) (Basic Info, Location & Currency, Secure Information, and Security & PIN) to use `variant="flat"`.
+   - Modified all major cards in [UserProfile.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/profile/UserProfile.tsx) (Basic Info, Location & Currency, Secure Information, and Security & PIN) to use `variant="flat"`.
    - Transferred the exact premium layout and shadow classes: `overflow-hidden relative shadow-[0px_1px_2px_rgba(0,0,0,0.04),_0px_4px_12px_rgba(0,0,0,0.06)] bg-white border border-gray-200 rounded-2xl p-6 lg:p-8` directly to `className` to resolve the Tailwind Merge conflict where `border-black/5` from `Card` component defaults clashing with `border-gray-200`.
 
 2. **Weak PIN Client Highlight & Feedback**:
-   - Introduced dynamic `isPinWeak` calculation in [UserProfile.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/profile/UserProfile.tsx) utilizing `pinService.isWeakPin(newPin)`.
+   - Introduced dynamic `isPinWeak` calculation in [UserProfile.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/profile/UserProfile.tsx) utilizing `pinService.isWeakPin(newPin)`.
    - Applied real-time UI border feedback on the "New PIN" input: switching from the standard green theme (`border-green-200 focus:border-green-500 bg-white`) to an alert red theme (`border-red-300 focus:border-red-500 bg-red-50/30`) when a weak 6-digit PIN pattern (sequential/repeating digits) is typed.
    - Appended a detailed visual helper warning (`<p className="text-xs text-red-600 font-semibold ...">`) indicating why the PIN was rejected.
    - Disabled the "Update Secure PIN" submission button dynamically whenever `isPinWeak` is active, preventing submission attempts.
@@ -3515,12 +3515,12 @@ $ npm test
 ### Changes Made
 
 1. **PIN Autofill & DOM Form Validation Fixed**:
-   - Wrapped the PIN update fields in [UserProfile.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/profile/UserProfile.tsx) with a proper HTML `<form>` container. This resolves the browser console warning: `[DOM] Password field is not contained in a form`.
+   - Wrapped the PIN update fields in [UserProfile.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/profile/UserProfile.tsx) with a proper HTML `<form>` container. This resolves the browser console warning: `[DOM] Password field is not contained in a form`.
    - Set `autoComplete="new-password"` on all current, new, and confirm PIN inputs, successfully preventing browser password managers from auto-filling saved values (such as `2026`) into the current PIN field.
    - Refactored the submission button to `type="submit"` to allow native form submission handling.
 
 2. **Unified Axios Request manager / In-flight Deduplication**:
-   - Implemented an in-flight request cache wrapper inside the `BackendService` constructor in [backend-api.ts](file:///k:/Project/kenku/Finora/frontend/src/lib/backend-api.ts).
+   - Implemented an in-flight request cache wrapper inside the `BackendService` constructor in [backend-api.ts](file:///k:/Project/kenku/KANAKU/frontend/src/lib/backend-api.ts).
    - By overriding `this.api.request`, any concurrent GET requests with identical URLs and parameters are intercepted, stored in a temporary map, and resolved using a single network promise. This eliminates the duplicate/burst requests during initialization (e.g., duplicate calls to `/admin/features`).
 
 ### Verification Results
@@ -3556,7 +3556,7 @@ This plan details the changes required to resolve the 5 critical bugs in onboard
 
 We will hide the custom virtual keypad on mobile devices and enable native mobile keyboard inputs to function without getting ignored/locked out.
 
-#### [MODIFY] [PINSetup.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/auth/PINSetup.tsx)
+#### [MODIFY] [PINSetup.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/auth/PINSetup.tsx)
 - Hide the custom keypad grid container on mobile screens using Tailwind responsive utilities (`hidden md:grid` instead of `grid`).
 - Add a proper `onChange` handler to the hidden input to capture digit entries and backspaces reactively on mobile virtual keyboards:
   ```typescript
@@ -3573,7 +3573,7 @@ We will hide the custom virtual keypad on mobile devices and enable native mobil
   ```
 - Simplify `onKeyDown` to only let specific key operations propagate, preventing double handling.
 
-#### [MODIFY] [PINAuth.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/auth/PINAuth.tsx)
+#### [MODIFY] [PINAuth.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/auth/PINAuth.tsx)
 - Add a proper `onChange` handler to the hidden input to capture digit entries reactively on mobile virtual keyboards:
   ```typescript
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -3591,7 +3591,7 @@ We will hide the custom virtual keypad on mobile devices and enable native mobil
 
 We will resolve the casing mismatch between the frontend payload (snake_case) and the backend controller destructuring (camelCase) to prevent data overwrite with `null` values. We will also introduce country-to-currency mapping on the backend, and return the `updatedAt` timestamp from the server.
 
-#### [MODIFY] [AuthContext.tsx](file:///k:/Project/kenku/Finora/frontend/src/contexts/AuthContext.tsx)
+#### [MODIFY] [AuthContext.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/contexts/AuthContext.tsx)
 - Modify `profilePayload` inside `syncProfileFromBackend` to construct the payload using **camelCase** keys to match what the backend `AuthService.updateProfile` destructures:
   ```typescript
   const profilePayload = {
@@ -3612,7 +3612,7 @@ We will resolve the casing mismatch between the frontend payload (snake_case) an
   };
   ```
 
-#### [MODIFY] [auth.controller.ts](file:///k:/Project/kenku/Finora/backend/src/modules/auth/auth.controller.ts)
+#### [MODIFY] [auth.controller.ts](file:///k:/Project/kenku/KANAKU/backend/src/modules/auth/auth.controller.ts)
 - In `buildProfilePayload`, add `updatedAt: profileRecord?.updated_at || userRecord?.updatedAt || null` to the returned payload to ensure the frontend correctly reads remote update timestamps.
 - Add a country-to-currency fallback mapper in `buildProfilePayload` so that countries like India default to `INR` instead of `USD` when explicit user settings are not yet found:
   ```typescript
@@ -3643,20 +3643,20 @@ We will resolve the casing mismatch between the frontend payload (snake_case) an
 
 We will replace hard window reloads with custom event dispatching and listeners to transition auth and onboarding states reactively.
 
-#### [MODIFY] [AuthContext.tsx](file:///k:/Project/kenku/Finora/frontend/src/contexts/AuthContext.tsx)
+#### [MODIFY] [AuthContext.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/contexts/AuthContext.tsx)
 - Register a listener for a new custom event `'KANAKU_AUTH_CHANGE'`. When fired, trigger custom token recovery in-memory to update `user`, `session`, `role`, and background syncs without reloading the page.
 
-#### [MODIFY] [AuthFlow.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/auth/AuthFlow.tsx)
+#### [MODIFY] [AuthFlow.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/auth/AuthFlow.tsx)
 - Replace all instances of `window.location.reload()` with `window.dispatchEvent(new CustomEvent('KANAKU_AUTH_CHANGE'))` in:
   - `handleSignIn` (login success)
   - `handleSignUp` (registration success)
   - `handleOTPVerified` / `handleOTPSkip` (OTP success/skip path)
 - In `renderComplete`, update the "Go to Dashboard" button to set `onboarding_completed` in localStorage and dispatch the `'KANAKU_AUTH_CHANGE'` event.
 
-#### [MODIFY] [NewUserOnboarding.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/auth/onboarding/NewUserOnboarding.tsx)
+#### [MODIFY] [NewUserOnboarding.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/auth/onboarding/NewUserOnboarding.tsx)
 - Update the completion transition in step 4 to remove `window.location.reload()`.
 
-#### [MODIFY] [App.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/App.tsx)
+#### [MODIFY] [App.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/App.tsx)
 - In `AppContent`, introduce a state variable `onboardingCompleted` initialized using local storage and user metadata.
 - Listen for the `'ONBOARDING_COMPLETED'` event and set `onboardingCompleted` to `true`, transitioning the view gate smoothly to the PIN setup step without any full page reload.
 
@@ -3685,19 +3685,19 @@ This walkthrough details the changes implemented to resolve the 5 priority onboa
 ## Changes Made
 
 ### 1. PIN Keypad & Input Handling
-- **Responsive Layout**: Added Tailwind `hidden md:grid` responsive classes to the custom number pad grid in [PINSetup.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/auth/PINSetup.tsx), hiding it on mobile viewports.
-- **Reactive Mobile Typing**: Added a reactive `onChange` input value mapping in both [PINSetup.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/auth/PINSetup.tsx) and [PINAuth.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/auth/PINAuth.tsx) to capture virtual/soft-keyboard digit taps and backspaces natively, solving the keyboard soft lock.
-- **Backspace Label**: Updated [PINAuth.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/auth/PINAuth.tsx) to render the standard `⌫` backspace symbol.
+- **Responsive Layout**: Added Tailwind `hidden md:grid` responsive classes to the custom number pad grid in [PINSetup.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/auth/PINSetup.tsx), hiding it on mobile viewports.
+- **Reactive Mobile Typing**: Added a reactive `onChange` input value mapping in both [PINSetup.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/auth/PINSetup.tsx) and [PINAuth.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/auth/PINAuth.tsx) to capture virtual/soft-keyboard digit taps and backspaces natively, solving the keyboard soft lock.
+- **Backspace Label**: Updated [PINAuth.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/auth/PINAuth.tsx) to render the standard `⌫` backspace symbol.
 
 ### 2. Profile Data Alignment & Country-to-Currency Persistence
-- **camelCase Synchronization**: Converted `profilePayload` in [AuthContext.tsx](file:///k:/Project/kenku/Finora/frontend/src/contexts/AuthContext.tsx) and [AuthFlow.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/auth/AuthFlow.tsx) to use camelCase keys, matching the database schema destructuring in the backend Express service and preventing NULL data loss overwrites on sync.
-- **Server Timestamp Hydration**: Modified `buildProfilePayload` in [auth.controller.ts](file:///k:/Project/kenku/Finora/backend/src/modules/auth/auth.controller.ts) to return `updatedAt`, enabling correct sync resolution on reload.
+- **camelCase Synchronization**: Converted `profilePayload` in [AuthContext.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/contexts/AuthContext.tsx) and [AuthFlow.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/auth/AuthFlow.tsx) to use camelCase keys, matching the database schema destructuring in the backend Express service and preventing NULL data loss overwrites on sync.
+- **Server Timestamp Hydration**: Modified `buildProfilePayload` in [auth.controller.ts](file:///k:/Project/kenku/KANAKU/backend/src/modules/auth/auth.controller.ts) to return `updatedAt`, enabling correct sync resolution on reload.
 - **Currency Lookup Fallback**: Added country-to-currency mapping directly in the backend's `buildProfilePayload` function, defaulting users with Country = India to `INR` instead of `USD` when Settings records are not yet initialized.
 
 ### 3. SPA Session Reloads Optimization
-- **Event-Driven Authentication**: Registered a `'KANAKU_AUTH_CHANGE'` custom event listener in [AuthContext.tsx](file:///k:/Project/kenku/Finora/frontend/src/contexts/AuthContext.tsx) to re-evaluate tokens in-memory, updating application state reactively.
-- **SPA Transitions**: Removed all `window.location.reload()` calls from [AuthFlow.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/auth/AuthFlow.tsx), [NewUserOnboarding.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/auth/onboarding/NewUserOnboarding.tsx), and onboarding completion gates.
-- **Reactive Onboarding**: Added a local state tracker and listener for the `'ONBOARDING_COMPLETED'` event in [App.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/App.tsx) to transition pages smoothly without hard reloads.
+- **Event-Driven Authentication**: Registered a `'KANAKU_AUTH_CHANGE'` custom event listener in [AuthContext.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/contexts/AuthContext.tsx) to re-evaluate tokens in-memory, updating application state reactively.
+- **SPA Transitions**: Removed all `window.location.reload()` calls from [AuthFlow.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/auth/AuthFlow.tsx), [NewUserOnboarding.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/auth/onboarding/NewUserOnboarding.tsx), and onboarding completion gates.
+- **Reactive Onboarding**: Added a local state tracker and listener for the `'ONBOARDING_COMPLETED'` event in [App.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/App.tsx) to transition pages smoothly without hard reloads.
 
 ---
 
@@ -3716,7 +3716,7 @@ Please verify the full onboarding loop on your dev environment:
 5. Logout and login again to confirm complete consistency of all onboarding data.
 # Implementation Plan - Performance Optimization & Profile Data Alignment
 
-Implement performance optimization and complete profile data integration in Finora across both frontend and backend.
+Implement performance optimization and complete profile data integration in KANAKU across both frontend and backend.
 
 ## User Review Required
 
@@ -3730,7 +3730,7 @@ Document anything that requires user review or feedback.
 
 ### Backend Components
 
-#### [MODIFY] [auth.controller.ts](file:///k:/Project/kenku/Finora/backend/src/modules/auth/auth.controller.ts)
+#### [MODIFY] [auth.controller.ts](file:///k:/Project/kenku/KANAKU/backend/src/modules/auth/auth.controller.ts)
 - Modify `buildProfilePayload` signature and body to:
   - Accept `pinRecord` as the seventh parameter.
   - Map `fullName`, `mobileNumber`, `dateOfBirth`, `gender`, `jobType`, `monthlyIncome`, `avatarUrl`, `pinEnabled`, `isApproved`, and `updatedAt` directly into the payload.
@@ -3742,7 +3742,7 @@ Document anything that requires user review or feedback.
 
 ### Frontend Components
 
-#### [MODIFY] [AuthContext.tsx](file:///k:/Project/kenku/Finora/frontend/src/contexts/AuthContext.tsx)
+#### [MODIFY] [AuthContext.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/contexts/AuthContext.tsx)
 - Modify `syncFromSupabase` to return early if `requestedTables` is empty/undefined:
   ```typescript
   if (!requestedTables || requestedTables.length === 0) {
@@ -3752,7 +3752,7 @@ Document anything that requires user review or feedback.
   ```
   This prevents unnecessary background sync pulls of goals, transactions, accounts, loans, friends, etc. upon login or initial load of the profile page.
 
-#### [MODIFY] [UserProfile.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/profile/UserProfile.tsx)
+#### [MODIFY] [UserProfile.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/profile/UserProfile.tsx)
 - Define a `ProfileSkeleton` layout component that matches the two-column styling of the profile screen.
 - Render `<ProfileSkeleton />` when `isLoading === true` to avoid displaying "Not specified", "0", or empty fields before data fetches resolve.
 
@@ -3779,22 +3779,22 @@ This walkthrough details the changes implemented to address the backend profile 
 ## Changes Made
 
 ### 1. Backend Audit Logging & Profile Fixes
-- Added detailed request and response logging to `register`, `getProfile`, and `updateProfile` in [auth.controller.ts](file:///k:/Project/kenku/Finora/backend/src/modules/auth/auth.controller.ts) and [auth.service.ts](file:///k:/Project/kenku/Finora/backend/src/modules/auth/auth.service.ts).
+- Added detailed request and response logging to `register`, `getProfile`, and `updateProfile` in [auth.controller.ts](file:///k:/Project/kenku/KANAKU/backend/src/modules/auth/auth.controller.ts) and [auth.service.ts](file:///k:/Project/kenku/KANAKU/backend/src/modules/auth/auth.service.ts).
 
 ### 2. P0 PIN Security Fix
-- **HTTP 401 Rejection**: Updated the `/verify` PIN endpoint in [pin.routes.ts](file:///k:/Project/kenku/Finora/backend/src/modules/pin/pin.routes.ts) to return status code `401` with `success: false` instead of `200` on incorrect PIN entry.
-- **Backend-First Verification**: Rewrote PIN submit validation in [PINAuth.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/auth/PINAuth.tsx) to call the backend verification API first and block UI navigation until backend confirms success.
-- **Offline Fallback**: In [PINAuth.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/auth/PINAuth.tsx), fallback local verification (checking the local hash in localStorage) is used ONLY if the server is unreachable (503/timeout).
+- **HTTP 401 Rejection**: Updated the `/verify` PIN endpoint in [pin.routes.ts](file:///k:/Project/kenku/KANAKU/backend/src/modules/pin/pin.routes.ts) to return status code `401` with `success: false` instead of `200` on incorrect PIN entry.
+- **Backend-First Verification**: Rewrote PIN submit validation in [PINAuth.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/auth/PINAuth.tsx) to call the backend verification API first and block UI navigation until backend confirms success.
+- **Offline Fallback**: In [PINAuth.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/auth/PINAuth.tsx), fallback local verification (checking the local hash in localStorage) is used ONLY if the server is unreachable (503/timeout).
 
 ### 3. Onboarding Mobile Number Fix
-- **Mobile Number Persistence**: Fixed profile setup form submission in [AuthFlow.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/auth/AuthFlow.tsx) (line 614) to pass `userProfile?.mobile || ''` instead of `''`, preventing the user's mobile number from being wiped out on onboarding completion.
+- **Mobile Number Persistence**: Fixed profile setup form submission in [AuthFlow.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/auth/AuthFlow.tsx) (line 614) to pass `userProfile?.mobile || ''` instead of `''`, preventing the user's mobile number from being wiped out on onboarding completion.
 
 ### 4. Performance Optimization
-- **Route-based Lazy Loading**: Optimized `PAGE_REQUIRED_TABLES['dashboard']` in [App.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/App.tsx) to only require `['accounts']` (which syncs accounts and profiles). Other tables (transactions, goals, etc.) are lazy-loaded on demand as the user navigates.
+- **Route-based Lazy Loading**: Optimized `PAGE_REQUIRED_TABLES['dashboard']` in [App.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/App.tsx) to only require `['accounts']` (which syncs accounts and profiles). Other tables (transactions, goals, etc.) are lazy-loaded on demand as the user navigates.
 - This resolves the startup request bloat by limiting initial load requests from >15 down to 3-5.
 
 ### 5. Automated Tests
-- Added integration tests to [security.test.ts](file:///k:/Project/kenku/Finora/backend/tests/integration/security.test.ts) verifying that valid PIN verification returns 200/success and invalid PIN verification returns 401/unauthorized.
+- Added integration tests to [security.test.ts](file:///k:/Project/kenku/KANAKU/backend/tests/integration/security.test.ts) verifying that valid PIN verification returns 200/success and invalid PIN verification returns 401/unauthorized.
 
 ### 6. Date Selection UI & UX Improvement
 - **Styled Wrapper Picker**: Replaced the native date inputs in the User Profile page, signup profile setup step, and onboarding step pages with a styled clickable container.
@@ -3803,10 +3803,10 @@ This walkthrough details the changes implemented to address the backend profile 
 - **Date Formatting**: Renders a clean formatted date representation (e.g., `15-May-1988`) inside the container when a date is selected, matching standard form entry layouts across pages.
 
 ### 7. User Registration Onboarding & Profile Sync Fixes
-- **Onboarding Name Resolution**: Updated [NewUserOnboarding.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/auth/onboarding/NewUserOnboarding.tsx) to fetch the registered user's name from localStorage, `useAuth` context user metadata, or the backend profile endpoint `api.auth.getProfile()`, ensuring the display name and account name are correctly loaded and displayed in the profile onboarding flow instead of showing stale or "User" default values.
-- **Singapore & Global Currency Field Alignment**: Added country-to-currency mapping in [BankAccountStep.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/auth/onboarding/BankAccountStep.tsx) supporting `SGD`, `INR`, `$`, `GBP`, `CAD`, `AUD`, and `AED`. Spaced the inputs dynamically with `pl-14` for 3-letter codes and `pl-8` for single character currency symbols, resolving visual overlaps.
-- **Onboarding Persistence Fix**: Removed the unconfigured Supabase session check wrapper (`supabase.auth.getUser()`) in [OnboardingCompleteStep.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/auth/onboarding/OnboardingCompleteStep.tsx) to allow API updates to proceed directly for custom Express backend users. Passed `avatarUrl` to ensure the chosen profile photo is saved to the database.
-- **User Profile Job Type Normalization**: Updated [UserProfile.tsx](file:///k:/Project/kenku/Finora/frontend/src/app/components/profile/UserProfile.tsx) to normalize the backend-fetched `jobType` string using the component's `normalizeJobType` mapping function, preventing UI display fallback to "Not specified".
+- **Onboarding Name Resolution**: Updated [NewUserOnboarding.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/auth/onboarding/NewUserOnboarding.tsx) to fetch the registered user's name from localStorage, `useAuth` context user metadata, or the backend profile endpoint `api.auth.getProfile()`, ensuring the display name and account name are correctly loaded and displayed in the profile onboarding flow instead of showing stale or "User" default values.
+- **Singapore & Global Currency Field Alignment**: Added country-to-currency mapping in [BankAccountStep.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/auth/onboarding/BankAccountStep.tsx) supporting `SGD`, `INR`, `$`, `GBP`, `CAD`, `AUD`, and `AED`. Spaced the inputs dynamically with `pl-14` for 3-letter codes and `pl-8` for single character currency symbols, resolving visual overlaps.
+- **Onboarding Persistence Fix**: Removed the unconfigured Supabase session check wrapper (`supabase.auth.getUser()`) in [OnboardingCompleteStep.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/auth/onboarding/OnboardingCompleteStep.tsx) to allow API updates to proceed directly for custom Express backend users. Passed `avatarUrl` to ensure the chosen profile photo is saved to the database.
+- **User Profile Job Type Normalization**: Updated [UserProfile.tsx](file:///k:/Project/kenku/KANAKU/frontend/src/app/components/profile/UserProfile.tsx) to normalize the backend-fetched `jobType` string using the component's `normalizeJobType` mapping function, preventing UI display fallback to "Not specified".
 - **Database Schema Audit**: Checked `schema.prisma` and confirmed the database schema is fully complete with all core and optional feature tables and columns (User, Profile, Accounts, Transactions, Goals, Loans, Investments, split Groups, Notifications, and AI insights) and fields to store country, state, city, avatar_id/avatarId, and monthly_income/salary are correctly configured.
 
 
@@ -3975,10 +3975,10 @@ A Prisma script (`set-roles.cjs`) was run locally to seed roles and set `isAppro
 
 | Email | Role | Purpose |
 |---|---|---|
-| admin@kanku.com | `admin` | **SECURED** — actual admin |
-| manager@kanku.com | `manager` | **SECURED** — actual manager |
-| advisor@kanku.com | `advisor` | Test account |
-| user@kanku.com | `user` | Test account |
+| admin@KANAKU.com | `admin` | **SECURED** — actual admin |
+| manager@KANAKU.com | `manager` | **SECURED** — actual manager |
+| advisor@KANAKU.com | `advisor` | Test account |
+| user@KANAKU.com | `user` | Test account |
 
 ---
 

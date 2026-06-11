@@ -1,4 +1,4 @@
-# Finora — Feature & Page API Reference
+# KANAKU — Feature & Page API Reference
 
 > **Base URL:** `https://your-api-domain.com/api/v1`  
 > **Auth Header:** `Authorization: Bearer <JWT_TOKEN>` (required on all protected routes)  

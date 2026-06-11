@@ -35,7 +35,7 @@ interface RegisteredDevice {
  * Falls back to localStorage if fingerprinting fails
  */
 function generateDeviceId(): string {
-  const STORAGE_KEY = 'finora_device_id';
+  const STORAGE_KEY = 'KANAKU_device_id';
   
   // Try to retrieve existing device ID from secure storage
   try {

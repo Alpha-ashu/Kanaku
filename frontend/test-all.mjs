@@ -91,4 +91,4 @@ async function test(pdfPath) {
   console.log(`CR: ${credits.toFixed(2)} | DR: ${debits.toFixed(2)} | Total: ${(credits+debits).toFixed(2)}`);
 }
 
-test('k:/Project/Finora/tests/indian bank.pdf').catch(console.error);
+test('k:/Project/KANAKU/tests/indian bank.pdf').catch(console.error);

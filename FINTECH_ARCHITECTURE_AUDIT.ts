@@ -1,6 +1,6 @@
 /**
  * ═══════════════════════════════════════════════════════════════════════════════
- * FINORA CODEBASE - COMPREHENSIVE FINTECH ARCHITECTURE & SECURITY AUDIT
+ * KANAKU CODEBASE - COMPREHENSIVE FINTECH ARCHITECTURE & SECURITY AUDIT
  * ═══════════════════════════════════════════════════════════════════════════════
  * 
  * Scope: Financial application architecture, banking-grade security, scalability,
@@ -2279,17 +2279,17 @@ export const importantIssue_HorizontalScaling = {
         version: '3.8'
         services:
           app-1:
-            image: finora-backend:latest
+            image: KANAKU-backend:latest
             ports: ["3001:3000"]
             depends_on: [redis, postgres, postgres-replica]
             
           app-2:
-            image: finora-backend:latest
+            image: KANAKU-backend:latest
             ports: ["3002:3000"]
             depends_on: [redis, postgres, postgres-replica]
             
           app-3:
-            image: finora-backend:latest
+            image: KANAKU-backend:latest
             ports: ["3003:3000"]
             depends_on: [redis, postgres, postgres-replica]
             
@@ -2301,7 +2301,7 @@ export const importantIssue_HorizontalScaling = {
             image: postgres:15
             environment:
               POSTGRES_PASSWORD: ${DB_PASSWORD}
-              POSTGRES_DB: finora
+              POSTGRES_DB: KANAKU
             ports: ["5432:5432"]
             
           postgres-replica:

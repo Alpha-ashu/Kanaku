@@ -1,6 +1,6 @@
 /**
  * ═══════════════════════════════════════════════════════════════════════════════
- * FINORA SECURITY & ARCHITECTURE AUDIT - EXECUTIVE SUMMARY
+ * KANAKU SECURITY & ARCHITECTURE AUDIT - EXECUTIVE SUMMARY
  * Quick Reference for Leadership & Implementation Teams
  * ═══════════════════════════════════════════════════════════════════════════════
  */
@@ -459,7 +459,7 @@ export const action_items_24h = [
     action: 'Back up production database (before any changes)',
     assigned_to: 'DevOps / DBA',
     deadline: 'Today',
-    command: 'pg_dump finora > finora_backup_$(date +%Y%m%d).sql'
+    command: 'pg_dump KANAKU > KANAKU_backup_$(date +%Y%m%d).sql'
   },
   {
     priority: '🔴 3',

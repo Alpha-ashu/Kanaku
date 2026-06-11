@@ -94,7 +94,7 @@ async function test(label, pdfPath) {
 }
 
 async function main() {
-  await test('INDIAN BANK', 'k:/Project/Finora/tests/indian bank.pdf');
-  await test('CANARA', 'k:/Project/Finora/tests/canara_epassbook_2026-05-14 184602.001357.pdf');
+  await test('INDIAN BANK', 'k:/Project/KANAKU/tests/indian bank.pdf');
+  await test('CANARA', 'k:/Project/KANAKU/tests/canara_epassbook_2026-05-14 184602.001357.pdf');
 }
 main().catch(console.error);

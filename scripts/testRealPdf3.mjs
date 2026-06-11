@@ -1,7 +1,7 @@
 import fs from 'fs';
 import * as pdfjsLib from 'pdfjs-dist/build/pdf.mjs';
 
-const pdfPath = 'k:/Project/Finora/tests/canara_epassbook_2026-05-14 184602.001357.pdf';
+const pdfPath = 'k:/Project/KANAKU/tests/canara_epassbook_2026-05-14 184602.001357.pdf';
 const data = fs.readFileSync(pdfPath);
 const uint8 = new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
 

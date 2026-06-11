@@ -1,6 +1,6 @@
 /**
  * ═══════════════════════════════════════════════════════════════════════════════
- * FINORA IMPLEMENTATION GUIDE - CRITICAL SECURITY & ARCHITECTURE FIXES
+ * KANAKU IMPLEMENTATION GUIDE - CRITICAL SECURITY & ARCHITECTURE FIXES
  * ═══════════════════════════════════════════════════════════════════════════════
  * 
  * This guide provides step-by-step implementation for the 6 CRITICAL issues
@@ -799,7 +799,7 @@ export const step3_DatabaseConstraints = {
     {
       step: 1,
       task: 'Backup database',
-      command: 'pg_dump finora > finora_backup_$(date +%Y%m%d).sql',
+      command: 'pg_dump KANAKU > KANAKU_backup_$(date +%Y%m%d).sql',
       timing: '5 min'
     },
     {

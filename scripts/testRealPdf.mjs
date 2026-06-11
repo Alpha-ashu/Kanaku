@@ -7,9 +7,9 @@ const require = createRequire(import.meta.url);
 // Use the same pdfjs that the app uses
 let pdfjsLib;
 try {
-  pdfjsLib = require('k:/Project/Finora/node_modules/pdfjs-dist/build/pdf.js');
+  pdfjsLib = require('k:/Project/KANAKU/node_modules/pdfjs-dist/build/pdf.js');
 } catch (e) {
-  pdfjsLib = require('k:/Project/Finora/frontend/node_modules/pdfjs-dist/build/pdf.js');
+  pdfjsLib = require('k:/Project/KANAKU/frontend/node_modules/pdfjs-dist/build/pdf.js');
 }
 
 // Minimal canvas stub for Node (pdfjs may need it)
@@ -17,7 +17,7 @@ if (typeof globalThis.document === 'undefined') {
   globalThis.document = { createElement: () => ({ getContext: () => null }) };
 }
 
-const pdfPath = 'k:/Project/Finora/tests/canara_epassbook_2026-05-14 184602.001357.pdf';
+const pdfPath = 'k:/Project/KANAKU/tests/canara_epassbook_2026-05-14 184602.001357.pdf';
 const data = readFileSync(pdfPath);
 const uint8 = new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
 

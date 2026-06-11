@@ -94,7 +94,7 @@ export async function sendPushNotification(
         notification: {
           icon: "/icon-192x192.png",
           badge: "/badge-72x72.png",
-          tag: "finora-notification",
+          tag: "KANAKU-notification",
           requireInteraction: false,
         },
       },
@@ -102,7 +102,7 @@ export async function sendPushNotification(
         priority: data.priority === "high" ? "high" : "normal",
         notification: {
           clickAction: "FLUTTER_NOTIFICATION_CLICK",
-          channelId: "finora_notifications",
+          channelId: "KANAKU_notifications",
         },
       },
       apns: {

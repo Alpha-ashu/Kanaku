@@ -1,7 +1,7 @@
 # Feature Gates & Admin Sub-Feature Modal Test Guide
 
 ## Overview
-This document provides comprehensive test scenarios to validate that the feature gate system works correctly across the Finora application, including the Admin Feature Panel, sub-feature modals, and component-level enforcement.
+This document provides comprehensive test scenarios to validate that the feature gate system works correctly across the KANAKU application, including the Admin Feature Panel, sub-feature modals, and component-level enforcement.
 
 ## Architecture Summary
 
@@ -84,7 +84,7 @@ Components get fresh data via useSubFeature()
 **Objective**: Verify feature changes propagate to other open tabs via BroadcastChannel
 
 **Setup**:
-- Open Finora in 2 browser tabs
+- Open KANAKU in 2 browser tabs
 - Tab A: Logged in as admin
 - Tab B: Logged in as user (or same admin), Accounts page visible
 

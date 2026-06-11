@@ -2,7 +2,7 @@
  * migration.ts
  *
  * Handles one-time migration of legacy localStorage keys:
- *   v1: KANKU_* (original brand) → KANAKU_* (current brand)
+ *   v1: KANAKU_* (original brand) → KANAKU_* (current brand)
  *   v2: cleanup pass — marks migration complete for new installs
  */
 
@@ -12,25 +12,25 @@ const MIGRATION_V2_KEY = 'KANAKU_global_migration_v2';
 export function runGlobalMigration() {
   if (typeof window === 'undefined' || !window.localStorage) return;
 
-  // v1: KANKU_* → KANAKU_*
+  // v1: KANAKU_* → KANAKU_*
   if (!localStorage.getItem(MIGRATION_V1_KEY)) {
     const v1Migrations = [
       // Encryption keys
-      { old: 'KANKU_encrypted_key', new: 'KANAKU_encrypted_key' },
-      { old: 'KANKU_salt', new: 'KANAKU_salt' },
+      { old: 'KANAKU_encrypted_key', new: 'KANAKU_encrypted_key' },
+      { old: 'KANAKU_salt', new: 'KANAKU_salt' },
 
       // Guest Mode
-      { old: 'KANKU_guest_mode', new: 'KANAKU_guest_mode' },
-      { old: 'KANKU_guest_created_at', new: 'KANAKU_guest_created_at' },
+      { old: 'KANAKU_guest_mode', new: 'KANAKU_guest_mode' },
+      { old: 'KANAKU_guest_created_at', new: 'KANAKU_guest_created_at' },
 
       // Sync & Engine
-      { old: 'KANKU_sync_queue_v3', new: 'KANAKU_sync_queue_v3' },
-      { old: 'KANKU_learning_data', new: 'KANAKU_learning_data' },
-      { old: 'KANKU_merchant_patterns', new: 'KANAKU_merchant_patterns' },
-      { old: 'KANKU_description_repair_v2', new: 'KANAKU_description_repair_v2' },
+      { old: 'KANAKU_sync_queue_v3', new: 'KANAKU_sync_queue_v3' },
+      { old: 'KANAKU_learning_data', new: 'KANAKU_learning_data' },
+      { old: 'KANAKU_merchant_patterns', new: 'KANAKU_merchant_patterns' },
+      { old: 'KANAKU_description_repair_v2', new: 'KANAKU_description_repair_v2' },
 
       // App State
-      { old: 'KANKU_onboarding_completed', new: 'onboarding_completed' },
+      { old: 'KANAKU_onboarding_completed', new: 'onboarding_completed' },
     ];
 
     let v1Count = 0;

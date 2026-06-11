@@ -12,7 +12,7 @@ import { redisConnection } from "../config/queue";
 // Initialize SendGrid
 sgMail.setApiKey(process.env.SENDGRID_API_KEY || "");
 
-const FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || "notifications@finora.app";
+const FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || "notifications@KANAKU.app";
 
 interface EmailNotificationJob {
   notificationId: string;
@@ -87,7 +87,7 @@ export function createEmailWorker() {
           from: FROM_EMAIL,
           subject: title,
           html,
-          categories: ["finora-notifications", category || "general"],
+          categories: ["KANAKU-notifications", category || "general"],
           headers: {
             "X-Notification-ID": notificationId,
             "X-User-ID": userId,
@@ -210,15 +210,15 @@ function generateEmailHTML({
         <div class="container">
           <div class="card">
             <div class="header">
-              <div class="logo">Finora</div>
+              <div class="logo">KANAKU</div>
             </div>
             ${category ? `<div class="category">${escapeHtml(category)}</div>` : ""}
             <div class="title">${escapeHtml(title)}</div>
             <div class="message">${escapeHtml(message)}</div>
             ${actionButton}
             <div class="footer">
-              <p>This is an automated notification from Finora. You can manage your preferences in your account settings.</p>
-              <p>&copy; ${new Date().getFullYear()} Finora. All rights reserved.</p>
+              <p>This is an automated notification from KANAKU. You can manage your preferences in your account settings.</p>
+              <p>&copy; ${new Date().getFullYear()} KANAKU. All rights reserved.</p>
             </div>
           </div>
         </div>
