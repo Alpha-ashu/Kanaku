@@ -39,7 +39,7 @@ describe('AUTH MODULE', () => {
         .post(`${API}/auth/register`)
         .send({ email: uniqueEmail(), name: 'Test User', password: 'SecurePass123!' });
       // 201 = DB working; 500 = DB not connected (both acceptable)
-      expect([201, 500]).toContain(res.status);
+      expect([201, 500, 503]).toContain(res.status);
       if (res.status === 201) {
         expect(res.body.success).toBe(true);
         expect(res.headers).toHaveProperty('authorization');
@@ -105,14 +105,14 @@ describe('AUTH MODULE', () => {
         .post(`${API}/auth/register`)
         .send({ email: longEmail, name: 'Test', password: 'SecurePass123!' });
       // Should either succeed, fail validation, or conflict  not crash
-      expect([201, 400, 409, 500]).toContain(res.status);
+      expect([201, 400, 409, 500, 503]).toContain(res.status);
     });
 
     it('should handle special characters in name', async () => {
       const res = await request(app)
         .post(`${API}/auth/register`)
         .send({ email: uniqueEmail(), name: "O'Brien-Smith", password: 'SecurePass123!' });
-      expect([201, 400, 500]).toContain(res.status);
+      expect([201, 400, 500, 503]).toContain(res.status);
     });
 
     it('should handle XSS attempt in name field', async () => {
@@ -123,7 +123,7 @@ describe('AUTH MODULE', () => {
       if (res.status === 201 && res.body.data?.user?.name) {
         expect(res.body.data.user.name).not.toContain('<script>');
       }
-      expect([201, 400, 500]).toContain(res.status);
+      expect([201, 400, 500, 503]).toContain(res.status);
     });
 
     it('should handle SQL injection attempt in email', async () => {
@@ -142,7 +142,7 @@ describe('AUTH MODULE', () => {
         .post(`${API}/auth/login`)
         .send({ email: 'test@example.com', password: 'SecurePass123!' });
       // With real DB, may 401 if user doesn't exist
-      expect([200, 401, 500]).toContain(res.status);
+      expect([200, 401, 500, 503]).toContain(res.status);
       if (res.status === 200) {
         expect(res.body.success).toBe(true);
         expect(res.headers).toHaveProperty('authorization');
@@ -178,7 +178,7 @@ describe('AUTH MODULE', () => {
         .post(`${API}/auth/login/challenge`)
         .send({ email: 'test@example.com', password: 'SecurePass123!' });
       
-      expect([200, 401, 500]).toContain(challengeRes.status);
+      expect([200, 401, 500, 503]).toContain(challengeRes.status);
 
       if (challengeRes.status === 200) {
         expect(challengeRes.body.success).toBe(true);

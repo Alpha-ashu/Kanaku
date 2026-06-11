@@ -31,6 +31,7 @@ RUN npm install --omit=dev --ignore-scripts && npm cache clean --force
 COPY --from=builder /app/backend/dist      ./dist
 COPY --from=builder /app/backend/generated ./generated
 COPY --from=builder /app/backend/prisma    ./prisma
+COPY --from=builder /app/backend/scripts   ./scripts
 
 # Non-root user for security
 USER kanaku

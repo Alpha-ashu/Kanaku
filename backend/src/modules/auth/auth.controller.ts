@@ -185,6 +185,21 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
       throw AppError.badRequest('Your password must be at least 8 characters long.', 'PASSWORD_TOO_SHORT');
     }
 
+    // Enforce password strength: must contain uppercase, lowercase, and a digit
+    const missingRequirements: string[] = [];
+    if (!/[A-Z]/.test(input.password)) missingRequirements.push('one uppercase letter');
+    if (!/[a-z]/.test(input.password)) missingRequirements.push('one lowercase letter');
+    if (!/[0-9]/.test(input.password)) missingRequirements.push('one number');
+    if (!/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?`~]/.test(input.password)) missingRequirements.push('one special character (!@#$%^&* etc.)');
+
+    if (missingRequirements.length > 0) {
+      logger.warn(`[AuthController] Registration failed: weak password for email: ${input.email}. Missing: ${missingRequirements.join(', ')}`);
+      throw AppError.badRequest(
+        `Password must include ${missingRequirements.join(', ')}.`,
+        'PASSWORD_TOO_WEAK',
+      );
+    }
+
     const sanitizedInput = {
       ...input,
       name: sanitize(input.name),

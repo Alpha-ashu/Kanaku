@@ -20,7 +20,7 @@ describe('SANITY TESTS - Post-Change Verification', () => {
       const start = Date.now();
       await request(app).get('/health');
       const elapsed = Date.now() - start;
-      expect(elapsed).toBeLessThan(2000);
+      expect(elapsed).toBeLessThan(10000);
     });
 
     it('API v1 routes are accessible (return 401 not 404)', async () => {

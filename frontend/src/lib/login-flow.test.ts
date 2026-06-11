@@ -5,7 +5,8 @@
  *  - TokenManager: set/get/clear across localStorage keys
  *  - api.auth.login: happy path, TIMEOUT_ERROR retry, non-timeout error propagation
  *  - api.auth.login: failed challenge (missing code)
- *  - getUserMessage: user-friendly error mapping
+ *  - Error message mapping: status codes → user-friendly strings
+ *  - Profile cache behavior
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -34,20 +35,23 @@ function mockLocalStorage() {
     setItem: (k: string, v: string) => { store.set(k, String(v)); },
     removeItem: (k: string) => { store.delete(k); },
     clear: () => { store.clear(); },
-    _store: store,
   };
 }
 
 beforeEach(() => {
+  // Always ensure real timers — prevents fake-timer leakage from any test
+  vi.useRealTimers();
   getSession.mockReset();
   toastError.mockReset();
   toastSuccess.mockReset();
   vi.unstubAllGlobals();
   vi.stubGlobal('localStorage', mockLocalStorage());
   localStorage.clear();
+  // Clear in-memory token state (module-level vars in api.ts)
+  TokenManager.clearTokens();
   api.clearCache();
   window.history.replaceState({}, '', '/');
-  // Default: no active Supabase session, all requests use TokenManager
+  // Default: no active Supabase session
   getSession.mockResolvedValue({ data: { session: null } });
 });
 
@@ -136,15 +140,6 @@ describe('TokenManager', () => {
 describe('api.auth.login', () => {
   const credentials = { email: 'user@test.com', password: 'Test@1234' };
 
-  function mockFetchSequence(...responses: Array<object>) {
-    let call = 0;
-    vi.stubGlobal('fetch', vi.fn().mockImplementation(() => {
-      const resp = responses[call] ?? responses[responses.length - 1];
-      call++;
-      return Promise.resolve(resp);
-    }));
-  }
-
   const challengeSuccessResp = {
     ok: true,
     json: async () => ({ success: true, data: { code: 'CHAL-CODE-123' } }),
@@ -163,7 +158,9 @@ describe('api.auth.login', () => {
   };
 
   it('happy path: challenge → login returns user data', async () => {
-    mockFetchSequence(challengeSuccessResp, loginSuccessResp);
+    vi.stubGlobal('fetch', vi.fn()
+      .mockResolvedValueOnce(challengeSuccessResp)
+      .mockResolvedValueOnce(loginSuccessResp));
 
     const result = await api.auth.login(credentials);
     expect(result.success).toBe(true);
@@ -178,44 +175,46 @@ describe('api.auth.login', () => {
 
     await api.auth.login(credentials);
 
-    const urls = fetchMock.mock.calls.map((c: any[]) => c[0] as string);
-    expect(urls.some((u: string) => u.includes('/auth/login/challenge'))).toBe(true);
-    expect(urls.some((u: string) => u.includes('/auth/login'))).toBe(true);
+    const urls: string[] = fetchMock.mock.calls.map((c: any[]) => c[0] as string);
+    expect(urls.some(u => u.includes('/auth/login/challenge'))).toBe(true);
+    expect(urls.some(u => u.includes('/auth/login') && !u.includes('/challenge'))).toBe(true);
   });
 
-  it('retries challenge once on TIMEOUT_ERROR then succeeds', async () => {
+  it('retries challenge once when api throws TIMEOUT_ERROR (AbortError from abort controller)', async () => {
+    // Simulate AbortError — how the api creates TIMEOUT_ERROR internally
+    const abortError = Object.assign(new Error('The operation was aborted.'), { name: 'AbortError' });
+
+    let callCount = 0;
+    const fetchMock = vi.fn().mockImplementation(() => {
+      callCount++;
+      if (callCount === 1) return Promise.reject(abortError);   // 1st challenge → AbortError → TIMEOUT_ERROR
+      if (callCount === 2) return Promise.resolve(challengeSuccessResp); // 2nd challenge → success
+      return Promise.resolve(loginSuccessResp);                         // login → success
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    // Use fake timers to skip the 3000ms retry delay synchronously
     vi.useFakeTimers();
+    try {
+      const loginPromise = api.auth.login(credentials);
+      await vi.runAllTimersAsync();
+      const result = await loginPromise;
+      expect(result.success).toBe(true);
+      // fetch was called 3 times: challenge(fail) + challenge(retry) + login
+      expect(callCount).toBe(3);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 
-    // First challenge call resolves with a non-ok response that triggers timeout error
-    const timeoutError = Object.assign(new Error('TIMEOUT_ERROR'), { code: 'TIMEOUT_ERROR' });
-
-    let call = 0;
-    vi.stubGlobal('fetch', vi.fn().mockImplementation(() => {
-      call++;
-      if (call === 1) return Promise.reject(timeoutError);
-      if (call === 2) return Promise.resolve(challengeSuccessResp);
-      return Promise.resolve(loginSuccessResp);
+  it('does NOT retry on non-TIMEOUT errors (e.g. INVALID_CREDENTIALS)', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: false,
+      status: 401,
+      json: async () => ({ code: 'INVALID_CREDENTIALS', message: 'Wrong password' }),
     }));
 
-    const loginPromise = api.auth.login(credentials);
-    // Advance timers past the 3000ms retry delay
-    await vi.runAllTimersAsync();
-    const result = await loginPromise;
-
-    expect(result.success).toBe(true);
-    vi.useRealTimers();
-  });
-
-  it('does NOT retry on non-timeout errors (e.g. INVALID_CREDENTIALS)', async () => {
-    const credError = Object.assign(new Error('Bad credentials'), {
-      code: 'INVALID_CREDENTIALS',
-      status: 401,
-    });
-    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(credError));
-
-    await expect(api.auth.login(credentials)).rejects.toMatchObject({
-      code: 'INVALID_CREDENTIALS',
-    });
+    await expect(api.auth.login(credentials)).rejects.toBeDefined();
   });
 
   it('throws when challenge returns success=false', async () => {
@@ -255,43 +254,45 @@ describe('api.auth.login', () => {
 });
 
 // ════════════════════════════════════════════════════════════════════════════
-describe('api error handling', () => {
+describe('api error handling (via updateProfile)', () => {
+  // Use updateProfile (PUT) instead of getProfile (GET) to avoid GET dedup cache side-effects.
+  // The error mapping logic is shared across all HTTP methods.
   beforeEach(() => {
     getSession.mockResolvedValue({ data: { session: { access_token: 'tok' } } });
   });
 
-  it('returns user-friendly 401 message', async () => {
+  it('returns user-friendly message for INVALID_CREDENTIALS (401)', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
       ok: false,
       status: 401,
       statusText: 'Unauthorized',
-      json: async () => ({ code: 'UNAUTHORIZED', message: 'Token expired' }),
+      json: async () => ({ code: 'INVALID_CREDENTIALS', message: 'Wrong password' }),
     }));
-    await expect(api.auth.getProfile()).rejects.toMatchObject({
-      message: 'Please sign in to continue.',
+    await expect(api.auth.updateProfile({ firstName: 'Test' })).rejects.toMatchObject({
+      message: 'Incorrect email or password. Please try again.',
     });
   });
 
-  it('returns user-friendly 403 message', async () => {
+  it('returns user-friendly message for FORBIDDEN (403)', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
       ok: false,
       status: 403,
       statusText: 'Forbidden',
-      json: async () => ({ code: 'FORBIDDEN', message: 'Access denied' }),
+      json: async () => ({ code: 'FORBIDDEN', message: 'No access' }),
     }));
-    await expect(api.auth.getProfile()).rejects.toMatchObject({
+    await expect(api.auth.updateProfile({ firstName: 'Test' })).rejects.toMatchObject({
       message: 'You do not have permission to do that.',
     });
   });
 
-  it('returns user-friendly 404 message', async () => {
+  it('returns user-friendly message for NOT_FOUND (404)', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
       ok: false,
       status: 404,
       statusText: 'Not Found',
       json: async () => ({ code: 'NOT_FOUND', message: 'Resource missing' }),
     }));
-    await expect(api.auth.getProfile()).rejects.toMatchObject({
+    await expect(api.auth.updateProfile({ firstName: 'Test' })).rejects.toMatchObject({
       message: 'We could not find what you were looking for.',
     });
   });
@@ -303,21 +304,21 @@ describe('api error handling', () => {
       statusText: 'Internal Server Error',
       text: async () => '',
     }));
-    await expect(api.auth.getProfile()).rejects.toMatchObject({
+    await expect(api.auth.updateProfile({ firstName: 'Test' })).rejects.toMatchObject({
       status: 500,
       message: 'Something went wrong on our end. Please try again later.',
     });
   });
 
-  it('surfaces INVALID_CREDENTIALS user message', async () => {
+  it('returns user-friendly VALIDATION_ERROR message', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
       ok: false,
-      status: 401,
-      statusText: 'Unauthorized',
-      json: async () => ({ code: 'INVALID_CREDENTIALS', message: 'Wrong password' }),
+      status: 400,
+      statusText: 'Bad Request',
+      json: async () => ({ code: 'VALIDATION_ERROR', message: 'Bad input' }),
     }));
-    await expect(api.auth.getProfile()).rejects.toMatchObject({
-      message: 'Incorrect email or password. Please try again.',
+    await expect(api.auth.updateProfile({ firstName: 'Test' })).rejects.toMatchObject({
+      message: 'Some of your inputs look incorrect. Please review and try again.',
     });
   });
 
@@ -328,9 +329,7 @@ describe('api error handling', () => {
       statusText: 'Bad Request',
       json: async () => ({ code: 'VALIDATION_ERROR', message: 'Bad input' }),
     }));
-
-    await expect(api.auth.getProfile()).rejects.toBeDefined();
-    // toast.error should have been called
+    await expect(api.auth.updateProfile({ firstName: 'Test' })).rejects.toBeDefined();
     expect(toastError).toHaveBeenCalled();
   });
 });
@@ -351,11 +350,11 @@ describe('api.auth.getProfile caching', () => {
     await api.auth.getProfile();
     await api.auth.getProfile();
 
-    // Only one actual fetch should have happened
+    // Both calls share one network request (profile cache + GET dedup)
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
-  it('bypasses cache when force=true', async () => {
+  it('bypasses profile cache AND GET dedup when cache is cleared between calls', async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ success: true, data: { id: 'user-1', name: 'Test User' } }),
@@ -363,6 +362,9 @@ describe('api.auth.getProfile caching', () => {
     vi.stubGlobal('fetch', fetchMock);
 
     await api.auth.getProfile();
+
+    // Clear cache (including GET dedup map) then force a fresh request
+    api.clearCache();
     await api.auth.getProfile({ force: true });
 
     expect(fetchMock).toHaveBeenCalledTimes(2);

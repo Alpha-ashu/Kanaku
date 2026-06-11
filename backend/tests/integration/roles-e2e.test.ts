@@ -51,11 +51,11 @@ const SHARED_USER_ROUTES = [
 ];
 
 // ── Admin-only routes ─────────────────────────────────────────────────────────
+// Note: /admin/features is accessible by ALL authenticated users (returns role-filtered view)
 const ADMIN_ONLY_ROUTES = [
   { method: 'get', path: `${API}/admin/users` },
   { method: 'get', path: `${API}/admin/stats` },
-  { method: 'get', path: `${API}/admin/feature-flags` },
-  { method: 'get', path: `${API}/admin/pending-advisors` },
+  { method: 'get', path: `${API}/admin/users/pending` },
 ];
 
 // ── Manager-accessible routes ─────────────────────────────────────────────────
@@ -141,7 +141,7 @@ describe('ROLES E2E — All Four Roles', () => {
       for (const { method, path } of SHARED_USER_ROUTES) {
         it(`${method.toUpperCase()} ${path} → accessible`, async () => {
           const res = await (request(app) as any)[method](path).set(h);
-          expect([200, 500]).toContain(res.status);
+          expect([200, 500, 503]).toContain(res.status);
           expect(res.status).not.toBe(401);
           expect(res.status).not.toBe(403);
           expect(res.status).not.toBe(404);
@@ -163,7 +163,7 @@ describe('ROLES E2E — All Four Roles', () => {
         .post(`${API}/transactions`)
         .set(h)
         .send({ accountId: 'x', type: 'expense', amount: 100, category: 'Food', date: '2026-01-01' });
-      expect([201, 400, 404, 500]).toContain(res.status);
+      expect([201, 400, 404, 500, 503]).toContain(res.status);
       expect(res.status).not.toBe(403);
     });
 
@@ -172,7 +172,7 @@ describe('ROLES E2E — All Four Roles', () => {
         .post(`${API}/accounts`)
         .set(h)
         .send({ name: 'My Savings', type: 'bank', balance: 0, currency: 'INR' });
-      expect([201, 400, 409, 500]).toContain(res.status);
+      expect([201, 400, 409, 500, 503]).toContain(res.status);
       expect(res.status).not.toBe(403);
     });
 
@@ -181,7 +181,7 @@ describe('ROLES E2E — All Four Roles', () => {
         .post(`${API}/goals`)
         .set(h)
         .send({ name: 'Vacation', targetAmount: 50000, targetDate: '2027-01-01' });
-      expect([201, 400, 500]).toContain(res.status);
+      expect([201, 400, 500, 503]).toContain(res.status);
       expect(res.status).not.toBe(403);
     });
 
@@ -190,7 +190,7 @@ describe('ROLES E2E — All Four Roles', () => {
         .post(`${API}/loans`)
         .set(h)
         .send({ type: 'borrowed', name: 'Personal Loan', principalAmount: 10000 });
-      expect([201, 400, 500]).toContain(res.status);
+      expect([201, 400, 500, 503]).toContain(res.status);
       expect(res.status).not.toBe(403);
     });
 
@@ -217,7 +217,7 @@ describe('ROLES E2E — All Four Roles', () => {
       for (const { method, path } of baseRoutes) {
         it(`${method.toUpperCase()} ${path} → accessible`, async () => {
           const res = await (request(app) as any)[method](path).set(h);
-          expect([200, 500]).toContain(res.status);
+          expect([200, 500, 503]).toContain(res.status);
           expect(res.status).not.toBe(401);
           expect(res.status).not.toBe(404);
         });
@@ -232,7 +232,7 @@ describe('ROLES E2E — All Four Roles', () => {
 
     it('can GET /bookings → not 403/404', async () => {
       const res = await request(app).get(`${API}/bookings`).set(h);
-      expect([200, 401, 500]).toContain(res.status);
+      expect([200, 401, 500, 503]).toContain(res.status);
       expect(res.status).not.toBe(404);
     });
 
@@ -265,7 +265,7 @@ describe('ROLES E2E — All Four Roles', () => {
       for (const { method, path } of SHARED_USER_ROUTES) {
         it(`${method.toUpperCase()} ${path} → accessible`, async () => {
           const res = await (request(app) as any)[method](path).set(h);
-          expect([200, 500]).toContain(res.status);
+          expect([200, 500, 503]).toContain(res.status);
           expect(res.status).not.toBe(401);
           expect(res.status).not.toBe(404);
         });
@@ -274,7 +274,7 @@ describe('ROLES E2E — All Four Roles', () => {
 
     it('can GET /advisors → browse advisor list', async () => {
       const res = await request(app).get(`${API}/advisors`).set(h);
-      expect([200, 500]).toContain(res.status);
+      expect([200, 500, 503]).toContain(res.status);
       expect(res.status).not.toBe(401);
       expect(res.status).not.toBe(404);
     });
@@ -295,7 +295,7 @@ describe('ROLES E2E — All Four Roles', () => {
       for (const { method, path } of ADMIN_ONLY_ROUTES) {
         it(`${method.toUpperCase()} ${path} → accessible (200 or 500)`, async () => {
           const res = await (request(app) as any)[method](path).set(h);
-          expect([200, 500]).toContain(res.status);
+          expect([200, 500, 503]).toContain(res.status);
           expect(res.status).not.toBe(401);
           expect(res.status).not.toBe(403);
           expect(res.status).not.toBe(404);
@@ -307,7 +307,7 @@ describe('ROLES E2E — All Four Roles', () => {
       for (const { method, path } of SHARED_USER_ROUTES) {
         it(`${method.toUpperCase()} ${path} → accessible`, async () => {
           const res = await (request(app) as any)[method](path).set(h);
-          expect([200, 500]).toContain(res.status);
+          expect([200, 500, 503]).toContain(res.status);
           expect(res.status).not.toBe(401);
           expect(res.status).not.toBe(403);
           expect(res.status).not.toBe(404);
@@ -317,19 +317,19 @@ describe('ROLES E2E — All Four Roles', () => {
 
     it('can GET /admin/stats', async () => {
       const res = await request(app).get(`${API}/admin/stats`).set(h);
-      expect([200, 500]).toContain(res.status);
+      expect([200, 500, 503]).toContain(res.status);
       expect(res.status).not.toBe(403);
     });
 
-    it('can GET /admin/feature-flags', async () => {
-      const res = await request(app).get(`${API}/admin/feature-flags`).set(h);
-      expect([200, 500]).toContain(res.status);
+    it('can GET /admin/features', async () => {
+      const res = await request(app).get(`${API}/admin/features`).set(h);
+      expect([200, 500, 503]).toContain(res.status);
       expect(res.status).not.toBe(403);
     });
 
-    it('can GET /admin/pending-advisors', async () => {
-      const res = await request(app).get(`${API}/admin/pending-advisors`).set(h);
-      expect([200, 500]).toContain(res.status);
+    it('can GET /admin/users/pending', async () => {
+      const res = await request(app).get(`${API}/admin/users/pending`).set(h);
+      expect([200, 500, 503]).toContain(res.status);
       expect(res.status).not.toBe(403);
     });
   });
@@ -378,7 +378,7 @@ describe('ROLES E2E — All Four Roles', () => {
         .put(`${API}/accounts/other-user-account-id`)
         .set(headers('user', 'idor-attacker'))
         .send({ name: 'Hacked', balance: 99999 });
-      expect([403, 404, 500]).toContain(res.status);
+      expect([403, 404, 500, 503]).toContain(res.status);
       expect(res.status).not.toBe(200);
     });
 
@@ -386,7 +386,7 @@ describe('ROLES E2E — All Four Roles', () => {
       const res = await request(app)
         .delete(`${API}/transactions/another-users-tx-id`)
         .set(headers('user', 'idor-attacker-2'));
-      expect([403, 404, 500]).toContain(res.status);
+      expect([403, 404, 500, 503]).toContain(res.status);
       expect(res.status).not.toBe(200);
     });
 

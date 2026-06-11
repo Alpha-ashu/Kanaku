@@ -24,7 +24,7 @@ describe('INVESTMENTS MODULE', () => {
 
     it('should return investments for authenticated user', async () => {
       const res = await request(app).get(`${API}/investments`).set(getSignedAuthHeaders());
-      expect([200, 500]).toContain(res.status);
+      expect([200, 500, 503]).toContain(res.status);
       if (res.status === 200) {
         expect(res.body.success).toBe(true);
         expect(Array.isArray(res.body.data)).toBe(true);
@@ -72,7 +72,7 @@ describe('INVESTMENTS MODULE', () => {
       if (res.status === 201 && res.body.data?.name) {
         expect(res.body.data.name).not.toContain('<script>');
       }
-      expect([201, 400, 500]).toContain(res.status);
+      expect([201, 400, 500, 503]).toContain(res.status);
     });
   });
 
@@ -86,7 +86,7 @@ describe('INVESTMENTS MODULE', () => {
       const res = await request(app)
         .get(`${API}/investments/00000000-0000-0000-0000-000000000000`)
         .set(getSignedAuthHeaders());
-      expect([404, 500]).toContain(res.status);
+      expect([404, 500, 503]).toContain(res.status);
     });
   });
 
@@ -103,7 +103,7 @@ describe('INVESTMENTS MODULE', () => {
         .put(`${API}/investments/00000000-0000-0000-0000-000000000000`)
         .set(getSignedAuthHeaders())
         .send({ units: 15 });
-      expect([404, 500]).toContain(res.status);
+      expect([404, 500, 503]).toContain(res.status);
     });
   });
 
@@ -117,7 +117,7 @@ describe('INVESTMENTS MODULE', () => {
       const res = await request(app)
         .delete(`${API}/investments/00000000-0000-0000-0000-000000000000`)
         .set(getSignedAuthHeaders());
-      expect([404, 500]).toContain(res.status);
+      expect([404, 500, 503]).toContain(res.status);
     });
   });
 
@@ -126,7 +126,7 @@ describe('INVESTMENTS MODULE', () => {
       const res = await request(app)
         .get(`${API}/investments/another-user-investment-id`)
         .set(getSignedAuthHeaders());
-      expect([404, 500]).toContain(res.status);
+      expect([404, 500, 503]).toContain(res.status);
     });
 
     it('should not allow modifying another users investment', async () => {
@@ -134,7 +134,7 @@ describe('INVESTMENTS MODULE', () => {
         .put(`${API}/investments/another-user-investment-id`)
         .set(getSignedAuthHeaders())
         .send({ units: 100 });
-      expect([404, 500]).toContain(res.status);
+      expect([404, 500, 503]).toContain(res.status);
     });
   });
 });

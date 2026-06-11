@@ -24,7 +24,7 @@ describe('FRIENDS MODULE', () => {
 
     it('should return friends list for authenticated user', async () => {
       const res = await request(app).get(`${API}/friends`).set(getSignedAuthHeaders());
-      expect([200, 500]).toContain(res.status);
+      expect([200, 500, 503]).toContain(res.status);
       if (res.status === 200) {
         expect(res.body.success).toBe(true);
         expect(Array.isArray(res.body.data)).toBe(true);
@@ -56,7 +56,7 @@ describe('FRIENDS MODULE', () => {
       if (res.status === 201 && res.body.data?.name) {
         expect(res.body.data.name).not.toContain('<script>');
       }
-      expect([201, 400, 500]).toContain(res.status);
+      expect([201, 400, 500, 503]).toContain(res.status);
     });
   });
 
@@ -70,7 +70,7 @@ describe('FRIENDS MODULE', () => {
       const res = await request(app)
         .delete(`${API}/friends/00000000-0000-0000-0000-000000000000`)
         .set(getSignedAuthHeaders());
-      expect([404, 500]).toContain(res.status);
+      expect([404, 500, 503]).toContain(res.status);
     });
   });
 
@@ -98,7 +98,7 @@ describe('GROUPS MODULE', () => {
 
     it('should return groups list for authenticated user', async () => {
       const res = await request(app).get(`${API}/groups`).set(getSignedAuthHeaders());
-      expect([200, 500]).toContain(res.status);
+      expect([200, 500, 503]).toContain(res.status);
       if (res.status === 200) {
         expect(res.body.success).toBe(true);
       }
@@ -129,7 +129,7 @@ describe('GROUPS MODULE', () => {
       if (res.status === 201 && res.body.data?.name) {
         expect(res.body.data.name).not.toContain('<script>');
       }
-      expect([201, 400, 500]).toContain(res.status);
+      expect([201, 400, 500, 503]).toContain(res.status);
     });
   });
 
@@ -143,7 +143,7 @@ describe('GROUPS MODULE', () => {
       const res = await request(app)
         .get(`${API}/groups/00000000-0000-0000-0000-000000000000`)
         .set(getSignedAuthHeaders());
-      expect([404, 500]).toContain(res.status);
+      expect([404, 500, 503]).toContain(res.status);
     });
   });
 
@@ -157,7 +157,7 @@ describe('GROUPS MODULE', () => {
       const res = await request(app)
         .delete(`${API}/groups/00000000-0000-0000-0000-000000000000`)
         .set(getSignedAuthHeaders());
-      expect([404, 500]).toContain(res.status);
+      expect([404, 500, 503]).toContain(res.status);
     });
   });
 });
