@@ -24,10 +24,9 @@
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
     /* Path mapping */
-    "baseUrl": ".",
     "paths": {
       "@/*": [
-        "frontend/src/*"
+        "./frontend/src/*"
       ]
     }
   },
