@@ -6,14 +6,16 @@ import * as AdvisorController from './advisor.controller';
 
 const router = Router();
 
-// Public routes
+// Public routes (no auth required)
 router.get('/', AdvisorController.listAdvisors);
-router.get('/:id', AdvisorController.getAdvisor);
 
 // Protected routes
 router.use(authMiddleware);
 
 // Any authenticated user: apply / check own application
+// IMPORTANT: These specific paths MUST be defined BEFORE the /:id catch-all
+router.get('/application/my', AdvisorController.getMyApplication);
+router.get('/application/:id/document/:docType', AdvisorController.getApplicationDocument);
 router.post(
   '/apply',
   uploadFields([
@@ -23,8 +25,6 @@ router.post(
   ]),
   AdvisorController.applyAsAdvisor,
 );
-router.get('/application/my', AdvisorController.getMyApplication);
-router.get('/application/:id/document/:docType', AdvisorController.getApplicationDocument);
 
 // Approved advisor only
 router.put('/online-status', requireRole('advisor'), requireApproved, AdvisorController.setOnlineStatus);
@@ -44,5 +44,8 @@ router.put('/sessions/:id/rate', AdvisorController.rateSession);
 router.get('/admin/applications', requireRole(['admin', 'manager']), AdvisorController.listPendingAdvisors);
 router.put('/admin/:id/approve', requireRole(['admin', 'manager']), AdvisorController.approveAdvisor);
 router.put('/admin/:id/reject', requireRole(['admin', 'manager']), AdvisorController.rejectAdvisor);
+
+// Single advisor lookup (catch-all /:id MUST be last to avoid shadowing specific routes)
+router.get('/:id', AdvisorController.getAdvisor);
 
 export { router as advisorRoutes };
