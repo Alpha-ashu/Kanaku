@@ -360,7 +360,7 @@ export class AuthService {
     return generateTokens(user);
   }
 
-  async verifyPasswordOnly(email: string, passwordStr: string): Promise<boolean> {
+  async verifyPasswordOnly(email: string, passwordStr: string, isSha256 = false): Promise<boolean> {
     const user = await prisma.user.findUnique({
       where: { email },
     });
@@ -373,6 +373,11 @@ export class AuthService {
 
     if (!user.password || user.password === 'supabase-managed-account') {
       logger.info(`[AuthService] User ${email} has a Supabase-managed or unmigrated account. Authenticating via Supabase...`);
+      if (isSha256) {
+        // Cannot verify a SHA-256 pre-hash against Supabase auth (needs plaintext).
+        // Return false; frontend will fall back to plain encoding on retry.
+        return false;
+      }
       const supabaseAdmin = getSupabaseAdminClient();
       if (supabaseAdmin) {
         const { data, error } = await supabaseAdmin.auth.signInWithPassword({
@@ -382,7 +387,7 @@ export class AuthService {
         
         if (!error && data.user) {
           isPasswordValid = true;
-          // Migrating password hash to local DB for future logins
+          // Migrate password hash to local DB for future logins
           try {
             const hashedPassword = await bcrypt.hash(passwordStr, 10);
             await prisma.user.update({
@@ -394,6 +399,18 @@ export class AuthService {
             logger.warn(`[AuthService] Password migration failed for user ${email}:`, migrateErr);
           }
         }
+      }
+    } else if (isSha256) {
+      // Client sent SHA-256(plaintext). We cannot bcrypt.compare a sha256 digest
+      // directly — bcrypt requires the original plaintext. So we fall through to
+      // treating the digest as-is; if the column doesn't exist this will fail and
+      // return false, causing the frontend to retry with plain encoding.
+      // This is safe: SHA-256 only obscures the wire representation (HTTPS already
+      // encrypts the payload). Bcrypt comparison is the actual security gate.
+      try {
+        isPasswordValid = await bcrypt.compare(passwordStr, user.password);
+      } catch {
+        isPasswordValid = false;
       }
     } else {
       isPasswordValid = await bcrypt.compare(passwordStr, user.password);

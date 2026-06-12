@@ -64,6 +64,13 @@ app.use(cors({
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: [
+    'Content-Type',
+    'Authorization',
+    'x-refresh-token',
+    'x-pw-encoding',   // password encoding negotiation (sha256 vs plain)
+    'x-request-id',
+  ],
 }));
 app.use(express.json({ limit: '1mb' }));
 

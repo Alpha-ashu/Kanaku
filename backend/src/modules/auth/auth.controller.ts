@@ -258,6 +258,10 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
 export const loginChallenge = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { email, password } = req.body;
+    // x-pw-encoding header tells us if the client pre-hashed the password with SHA-256.
+    // 'sha256' — password field is a hex-encoded SHA-256 digest of the raw password.
+    // 'plain' or absent — password field is the raw plaintext (legacy / old browser fallback).
+    const pwEncoding = (req.headers['x-pw-encoding'] || 'plain') as string;
 
     if (!email || !password) {
       throw AppError.badRequest('Please enter your email and password.', 'MISSING_FIELDS');
@@ -267,7 +271,11 @@ export const loginChallenge = async (req: Request, res: Response, next: NextFunc
       throw AppError.badRequest('Please enter a valid email address.', 'INVALID_EMAIL');
     }
 
-    const isPasswordValid = await authService.verifyPasswordOnly(email.toLowerCase().trim(), password);
+    const isPasswordValid = await authService.verifyPasswordOnly(
+      email.toLowerCase().trim(),
+      password,
+      pwEncoding === 'sha256',
+    );
     if (!isPasswordValid) {
       throw AppError.unauthorized('Incorrect email or password. Please check your credentials and try again.', 'INVALID_CREDENTIALS');
     }
