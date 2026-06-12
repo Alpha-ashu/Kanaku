@@ -9,7 +9,7 @@ export default {
     '**/integration/*.ts',
   ],
   transform: {
-    '^.+\\.ts$': 'ts-jest',
+    '^.+\\.ts$': ['ts-jest', { tsconfig: 'tests/tsconfig.json' }],
   },
   collectCoverageFrom: [
     'src/**/*.ts',

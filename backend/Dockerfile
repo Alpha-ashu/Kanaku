@@ -9,7 +9,7 @@ RUN npm ci --ignore-scripts
 
 # Install backend deps (has typescript for tsc)
 COPY backend/package*.json ./backend/
-RUN cd backend && npm ci
+RUN cd backend && npm ci --legacy-peer-deps
 
 # Copy source, generate prisma client, build
 COPY . .

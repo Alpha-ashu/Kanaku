@@ -169,7 +169,7 @@ export const BookAdvisor: React.FC = () => {
  {/* High Density Header */}
  <header className="flex items-center justify-between px-4 lg:px-6 py-4 bg-white border-b border-slate-100 shrink-0">
  <div className="flex items-center gap-3">
- <button onClick={() => setCurrentPage('dashboard')} className="lg:!hidden p-2 text-slate-600 hover:bg-slate-50 rounded-xl transition-all">
+ <button type="button" aria-label="Go to dashboard" onClick={() => setCurrentPage('dashboard')} className="lg:!hidden p-2 text-slate-600 hover:bg-slate-50 rounded-xl transition-all">
  <ChevronLeft size={20} />
  </button>
  <div className="flex items-center gap-4">
@@ -337,7 +337,7 @@ export const BookAdvisor: React.FC = () => {
  <p className="text-[10px] font-black truncate max-w-[150px]">{selectedAdvisor.name}</p>
  </div>
  </div>
- <button onClick={() => setSelectedAdvisor(null)} className="p-1.5 hover:bg-white/10 rounded-lg transition-colors">
+ <button type="button" aria-label="Close booking panel" onClick={() => setSelectedAdvisor(null)} className="p-1.5 hover:bg-white/10 rounded-lg transition-colors">
  <X size={16} />
  </button>
  </div>
@@ -381,18 +381,20 @@ export const BookAdvisor: React.FC = () => {
  {/* Date/Time */}
  <div className="grid grid-cols-2 gap-3">
  <div className="space-y-1">
- <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Preferred Date</label>
- <input 
- type="date" 
+ <label htmlFor="booking-preferred-date" className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Preferred Date</label>
+ <input
+ id="booking-preferred-date"
+ type="date"
  value={form.preferredDate}
  onChange={e => setForm(f => ({ ...f, preferredDate: e.target.value }))}
  className="w-full bg-slate-50 border-none rounded-xl py-2.5 px-3 font-bold text-slate-900 text-xs"
  />
  </div>
  <div className="space-y-1">
- <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Start Time</label>
- <input 
- type="time" 
+ <label htmlFor="booking-preferred-time" className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Start Time</label>
+ <input
+ id="booking-preferred-time"
+ type="time"
  value={form.preferredTime}
  onChange={e => setForm(f => ({ ...f, preferredTime: e.target.value }))}
  className="w-full bg-slate-50 border-none rounded-xl py-2.5 px-3 font-bold text-slate-900 text-xs"
@@ -452,7 +454,7 @@ export const BookAdvisor: React.FC = () => {
  <div className="premium-glass-card flex-1 flex flex-col p-4 lg:overflow-hidden">
  <div className="flex items-center justify-between mb-4">
  <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Recent Activity</h3>
- <button onClick={fetchData} className="text-indigo-600 hover:rotate-180 transition-transform duration-500">
+ <button type="button" aria-label="Refresh bookings" onClick={fetchData} className="text-indigo-600 hover:rotate-180 transition-transform duration-500">
  <RefreshCw size={12} />
  </button>
  </div>

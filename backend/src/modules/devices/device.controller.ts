@@ -33,7 +33,7 @@ export const registerDevice = async (req: Request, res: Response, next: NextFunc
 
     const validatedData = registerDeviceSchema.parse(req.body);
 
-    const device = await DeviceService.registerDevice(userId, validatedData);
+    const device = await DeviceService.registerDevice(userId, validatedData as any);
 
     res.status(200).json({
       success: true,

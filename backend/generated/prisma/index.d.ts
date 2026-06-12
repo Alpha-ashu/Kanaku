@@ -19,6 +19,11 @@ export type PrismaPromise<T> = $Public.PrismaPromise<T>
  */
 export type Account = $Result.DefaultSelection<Prisma.$AccountPayload>
 /**
+ * Model AdvisorApplication
+ * 
+ */
+export type AdvisorApplication = $Result.DefaultSelection<Prisma.$AdvisorApplicationPayload>
+/**
  * Model AdvisorAvailability
  * 
  */
@@ -361,6 +366,16 @@ export class PrismaClient<
     * ```
     */
   get account(): Prisma.AccountDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.advisorApplication`: Exposes CRUD operations for the **AdvisorApplication** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more AdvisorApplications
+    * const advisorApplications = await prisma.advisorApplication.findMany()
+    * ```
+    */
+  get advisorApplication(): Prisma.AdvisorApplicationDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.advisorAvailability`: Exposes CRUD operations for the **AdvisorAvailability** model.
@@ -1233,6 +1248,7 @@ export namespace Prisma {
 
   export const ModelName: {
     Account: 'Account',
+    AdvisorApplication: 'AdvisorApplication',
     AdvisorAvailability: 'AdvisorAvailability',
     AdvisorSession: 'AdvisorSession',
     BookingRequest: 'BookingRequest',
@@ -1294,7 +1310,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "account" | "advisorAvailability" | "advisorSession" | "bookingRequest" | "category" | "chatMessage" | "device" | "expenseBill" | "friend" | "goal" | "goalContribution" | "importLog" | "investment" | "loan" | "loanPayment" | "notification" | "payment" | "refreshToken" | "syncQueue" | "todo" | "transaction" | "user" | "userPin" | "userSettings" | "otpCode" | "aiScan" | "ai_events" | "ai_insights" | "ai_model_runs" | "auditLog" | "groupExpense" | "groupExpenseMember" | "user_features" | "profiles" | "otpRequest" | "aaConsent" | "aaConsentArtifact" | "aaDataSession" | "aaFinancialData" | "aaTransaction" | "recurringTransaction" | "budget" | "taxCalculation" | "goldAsset"
+      modelProps: "account" | "advisorApplication" | "advisorAvailability" | "advisorSession" | "bookingRequest" | "category" | "chatMessage" | "device" | "expenseBill" | "friend" | "goal" | "goalContribution" | "importLog" | "investment" | "loan" | "loanPayment" | "notification" | "payment" | "refreshToken" | "syncQueue" | "todo" | "transaction" | "user" | "userPin" | "userSettings" | "otpCode" | "aiScan" | "ai_events" | "ai_insights" | "ai_model_runs" | "auditLog" | "groupExpense" | "groupExpenseMember" | "user_features" | "profiles" | "otpRequest" | "aaConsent" | "aaConsentArtifact" | "aaDataSession" | "aaFinancialData" | "aaTransaction" | "recurringTransaction" | "budget" | "taxCalculation" | "goldAsset"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1369,6 +1385,80 @@ export namespace Prisma {
           count: {
             args: Prisma.AccountCountArgs<ExtArgs>
             result: $Utils.Optional<AccountCountAggregateOutputType> | number
+          }
+        }
+      }
+      AdvisorApplication: {
+        payload: Prisma.$AdvisorApplicationPayload<ExtArgs>
+        fields: Prisma.AdvisorApplicationFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.AdvisorApplicationFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AdvisorApplicationPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.AdvisorApplicationFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AdvisorApplicationPayload>
+          }
+          findFirst: {
+            args: Prisma.AdvisorApplicationFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AdvisorApplicationPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.AdvisorApplicationFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AdvisorApplicationPayload>
+          }
+          findMany: {
+            args: Prisma.AdvisorApplicationFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AdvisorApplicationPayload>[]
+          }
+          create: {
+            args: Prisma.AdvisorApplicationCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AdvisorApplicationPayload>
+          }
+          createMany: {
+            args: Prisma.AdvisorApplicationCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.AdvisorApplicationCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AdvisorApplicationPayload>[]
+          }
+          delete: {
+            args: Prisma.AdvisorApplicationDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AdvisorApplicationPayload>
+          }
+          update: {
+            args: Prisma.AdvisorApplicationUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AdvisorApplicationPayload>
+          }
+          deleteMany: {
+            args: Prisma.AdvisorApplicationDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.AdvisorApplicationUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.AdvisorApplicationUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AdvisorApplicationPayload>[]
+          }
+          upsert: {
+            args: Prisma.AdvisorApplicationUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AdvisorApplicationPayload>
+          }
+          aggregate: {
+            args: Prisma.AdvisorApplicationAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateAdvisorApplication>
+          }
+          groupBy: {
+            args: Prisma.AdvisorApplicationGroupByArgs<ExtArgs>
+            result: $Utils.Optional<AdvisorApplicationGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.AdvisorApplicationCountArgs<ExtArgs>
+            result: $Utils.Optional<AdvisorApplicationCountAggregateOutputType> | number
           }
         }
       }
@@ -4651,6 +4741,7 @@ export namespace Prisma {
   }
   export type GlobalOmitConfig = {
     account?: AccountOmit
+    advisorApplication?: AdvisorApplicationOmit
     advisorAvailability?: AdvisorAvailabilityOmit
     advisorSession?: AdvisorSessionOmit
     bookingRequest?: BookingRequestOmit
@@ -4918,6 +5009,7 @@ export namespace Prisma {
   export type UserCountOutputType = {
     accounts: number
     advisorAvailability: number
+    reviewedApplications: number
     sessionsAsAdvisor: number
     sessionsAsClient: number
     bookingsAsAdvisor: number
@@ -4950,6 +5042,7 @@ export namespace Prisma {
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     accounts?: boolean | UserCountOutputTypeCountAccountsArgs
     advisorAvailability?: boolean | UserCountOutputTypeCountAdvisorAvailabilityArgs
+    reviewedApplications?: boolean | UserCountOutputTypeCountReviewedApplicationsArgs
     sessionsAsAdvisor?: boolean | UserCountOutputTypeCountSessionsAsAdvisorArgs
     sessionsAsClient?: boolean | UserCountOutputTypeCountSessionsAsClientArgs
     bookingsAsAdvisor?: boolean | UserCountOutputTypeCountBookingsAsAdvisorArgs
@@ -5002,6 +5095,13 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountAdvisorAvailabilityArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: AdvisorAvailabilityWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountReviewedApplicationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AdvisorApplicationWhereInput
   }
 
   /**
@@ -6543,6 +6643,1307 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: AccountInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model AdvisorApplication
+   */
+
+  export type AggregateAdvisorApplication = {
+    _count: AdvisorApplicationCountAggregateOutputType | null
+    _avg: AdvisorApplicationAvgAggregateOutputType | null
+    _sum: AdvisorApplicationSumAggregateOutputType | null
+    _min: AdvisorApplicationMinAggregateOutputType | null
+    _max: AdvisorApplicationMaxAggregateOutputType | null
+  }
+
+  export type AdvisorApplicationAvgAggregateOutputType = {
+    experienceYears: number | null
+  }
+
+  export type AdvisorApplicationSumAggregateOutputType = {
+    experienceYears: number | null
+  }
+
+  export type AdvisorApplicationMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    fullName: string | null
+    email: string | null
+    phone: string | null
+    experienceYears: number | null
+    expertise: string | null
+    organizationName: string | null
+    bio: string | null
+    panDocumentPath: string | null
+    aadhaarDocumentPath: string | null
+    certDocumentPath: string | null
+    status: string | null
+    rejectionReason: string | null
+    reviewedBy: string | null
+    reviewedAt: Date | null
+    submittedAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type AdvisorApplicationMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    fullName: string | null
+    email: string | null
+    phone: string | null
+    experienceYears: number | null
+    expertise: string | null
+    organizationName: string | null
+    bio: string | null
+    panDocumentPath: string | null
+    aadhaarDocumentPath: string | null
+    certDocumentPath: string | null
+    status: string | null
+    rejectionReason: string | null
+    reviewedBy: string | null
+    reviewedAt: Date | null
+    submittedAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type AdvisorApplicationCountAggregateOutputType = {
+    id: number
+    userId: number
+    fullName: number
+    email: number
+    phone: number
+    experienceYears: number
+    expertise: number
+    organizationName: number
+    bio: number
+    panDocumentPath: number
+    aadhaarDocumentPath: number
+    certDocumentPath: number
+    status: number
+    rejectionReason: number
+    reviewedBy: number
+    reviewedAt: number
+    submittedAt: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type AdvisorApplicationAvgAggregateInputType = {
+    experienceYears?: true
+  }
+
+  export type AdvisorApplicationSumAggregateInputType = {
+    experienceYears?: true
+  }
+
+  export type AdvisorApplicationMinAggregateInputType = {
+    id?: true
+    userId?: true
+    fullName?: true
+    email?: true
+    phone?: true
+    experienceYears?: true
+    expertise?: true
+    organizationName?: true
+    bio?: true
+    panDocumentPath?: true
+    aadhaarDocumentPath?: true
+    certDocumentPath?: true
+    status?: true
+    rejectionReason?: true
+    reviewedBy?: true
+    reviewedAt?: true
+    submittedAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type AdvisorApplicationMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    fullName?: true
+    email?: true
+    phone?: true
+    experienceYears?: true
+    expertise?: true
+    organizationName?: true
+    bio?: true
+    panDocumentPath?: true
+    aadhaarDocumentPath?: true
+    certDocumentPath?: true
+    status?: true
+    rejectionReason?: true
+    reviewedBy?: true
+    reviewedAt?: true
+    submittedAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type AdvisorApplicationCountAggregateInputType = {
+    id?: true
+    userId?: true
+    fullName?: true
+    email?: true
+    phone?: true
+    experienceYears?: true
+    expertise?: true
+    organizationName?: true
+    bio?: true
+    panDocumentPath?: true
+    aadhaarDocumentPath?: true
+    certDocumentPath?: true
+    status?: true
+    rejectionReason?: true
+    reviewedBy?: true
+    reviewedAt?: true
+    submittedAt?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type AdvisorApplicationAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AdvisorApplication to aggregate.
+     */
+    where?: AdvisorApplicationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AdvisorApplications to fetch.
+     */
+    orderBy?: AdvisorApplicationOrderByWithRelationInput | AdvisorApplicationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: AdvisorApplicationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AdvisorApplications from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AdvisorApplications.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned AdvisorApplications
+    **/
+    _count?: true | AdvisorApplicationCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: AdvisorApplicationAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: AdvisorApplicationSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: AdvisorApplicationMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: AdvisorApplicationMaxAggregateInputType
+  }
+
+  export type GetAdvisorApplicationAggregateType<T extends AdvisorApplicationAggregateArgs> = {
+        [P in keyof T & keyof AggregateAdvisorApplication]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateAdvisorApplication[P]>
+      : GetScalarType<T[P], AggregateAdvisorApplication[P]>
+  }
+
+
+
+
+  export type AdvisorApplicationGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AdvisorApplicationWhereInput
+    orderBy?: AdvisorApplicationOrderByWithAggregationInput | AdvisorApplicationOrderByWithAggregationInput[]
+    by: AdvisorApplicationScalarFieldEnum[] | AdvisorApplicationScalarFieldEnum
+    having?: AdvisorApplicationScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: AdvisorApplicationCountAggregateInputType | true
+    _avg?: AdvisorApplicationAvgAggregateInputType
+    _sum?: AdvisorApplicationSumAggregateInputType
+    _min?: AdvisorApplicationMinAggregateInputType
+    _max?: AdvisorApplicationMaxAggregateInputType
+  }
+
+  export type AdvisorApplicationGroupByOutputType = {
+    id: string
+    userId: string
+    fullName: string
+    email: string
+    phone: string
+    experienceYears: number
+    expertise: string
+    organizationName: string | null
+    bio: string
+    panDocumentPath: string | null
+    aadhaarDocumentPath: string | null
+    certDocumentPath: string | null
+    status: string
+    rejectionReason: string | null
+    reviewedBy: string | null
+    reviewedAt: Date | null
+    submittedAt: Date
+    createdAt: Date
+    updatedAt: Date
+    _count: AdvisorApplicationCountAggregateOutputType | null
+    _avg: AdvisorApplicationAvgAggregateOutputType | null
+    _sum: AdvisorApplicationSumAggregateOutputType | null
+    _min: AdvisorApplicationMinAggregateOutputType | null
+    _max: AdvisorApplicationMaxAggregateOutputType | null
+  }
+
+  type GetAdvisorApplicationGroupByPayload<T extends AdvisorApplicationGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<AdvisorApplicationGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof AdvisorApplicationGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], AdvisorApplicationGroupByOutputType[P]>
+            : GetScalarType<T[P], AdvisorApplicationGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type AdvisorApplicationSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    fullName?: boolean
+    email?: boolean
+    phone?: boolean
+    experienceYears?: boolean
+    expertise?: boolean
+    organizationName?: boolean
+    bio?: boolean
+    panDocumentPath?: boolean
+    aadhaarDocumentPath?: boolean
+    certDocumentPath?: boolean
+    status?: boolean
+    rejectionReason?: boolean
+    reviewedBy?: boolean
+    reviewedAt?: boolean
+    submittedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    reviewer?: boolean | AdvisorApplication$reviewerArgs<ExtArgs>
+  }, ExtArgs["result"]["advisorApplication"]>
+
+  export type AdvisorApplicationSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    fullName?: boolean
+    email?: boolean
+    phone?: boolean
+    experienceYears?: boolean
+    expertise?: boolean
+    organizationName?: boolean
+    bio?: boolean
+    panDocumentPath?: boolean
+    aadhaarDocumentPath?: boolean
+    certDocumentPath?: boolean
+    status?: boolean
+    rejectionReason?: boolean
+    reviewedBy?: boolean
+    reviewedAt?: boolean
+    submittedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    reviewer?: boolean | AdvisorApplication$reviewerArgs<ExtArgs>
+  }, ExtArgs["result"]["advisorApplication"]>
+
+  export type AdvisorApplicationSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    fullName?: boolean
+    email?: boolean
+    phone?: boolean
+    experienceYears?: boolean
+    expertise?: boolean
+    organizationName?: boolean
+    bio?: boolean
+    panDocumentPath?: boolean
+    aadhaarDocumentPath?: boolean
+    certDocumentPath?: boolean
+    status?: boolean
+    rejectionReason?: boolean
+    reviewedBy?: boolean
+    reviewedAt?: boolean
+    submittedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    reviewer?: boolean | AdvisorApplication$reviewerArgs<ExtArgs>
+  }, ExtArgs["result"]["advisorApplication"]>
+
+  export type AdvisorApplicationSelectScalar = {
+    id?: boolean
+    userId?: boolean
+    fullName?: boolean
+    email?: boolean
+    phone?: boolean
+    experienceYears?: boolean
+    expertise?: boolean
+    organizationName?: boolean
+    bio?: boolean
+    panDocumentPath?: boolean
+    aadhaarDocumentPath?: boolean
+    certDocumentPath?: boolean
+    status?: boolean
+    rejectionReason?: boolean
+    reviewedBy?: boolean
+    reviewedAt?: boolean
+    submittedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type AdvisorApplicationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "fullName" | "email" | "phone" | "experienceYears" | "expertise" | "organizationName" | "bio" | "panDocumentPath" | "aadhaarDocumentPath" | "certDocumentPath" | "status" | "rejectionReason" | "reviewedBy" | "reviewedAt" | "submittedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["advisorApplication"]>
+  export type AdvisorApplicationInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    reviewer?: boolean | AdvisorApplication$reviewerArgs<ExtArgs>
+  }
+  export type AdvisorApplicationIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    reviewer?: boolean | AdvisorApplication$reviewerArgs<ExtArgs>
+  }
+  export type AdvisorApplicationIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    reviewer?: boolean | AdvisorApplication$reviewerArgs<ExtArgs>
+  }
+
+  export type $AdvisorApplicationPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "AdvisorApplication"
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs>
+      reviewer: Prisma.$UserPayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userId: string
+      fullName: string
+      email: string
+      phone: string
+      experienceYears: number
+      expertise: string
+      organizationName: string | null
+      bio: string
+      panDocumentPath: string | null
+      aadhaarDocumentPath: string | null
+      certDocumentPath: string | null
+      status: string
+      rejectionReason: string | null
+      reviewedBy: string | null
+      reviewedAt: Date | null
+      submittedAt: Date
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["advisorApplication"]>
+    composites: {}
+  }
+
+  type AdvisorApplicationGetPayload<S extends boolean | null | undefined | AdvisorApplicationDefaultArgs> = $Result.GetResult<Prisma.$AdvisorApplicationPayload, S>
+
+  type AdvisorApplicationCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<AdvisorApplicationFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: AdvisorApplicationCountAggregateInputType | true
+    }
+
+  export interface AdvisorApplicationDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['AdvisorApplication'], meta: { name: 'AdvisorApplication' } }
+    /**
+     * Find zero or one AdvisorApplication that matches the filter.
+     * @param {AdvisorApplicationFindUniqueArgs} args - Arguments to find a AdvisorApplication
+     * @example
+     * // Get one AdvisorApplication
+     * const advisorApplication = await prisma.advisorApplication.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends AdvisorApplicationFindUniqueArgs>(args: SelectSubset<T, AdvisorApplicationFindUniqueArgs<ExtArgs>>): Prisma__AdvisorApplicationClient<$Result.GetResult<Prisma.$AdvisorApplicationPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one AdvisorApplication that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {AdvisorApplicationFindUniqueOrThrowArgs} args - Arguments to find a AdvisorApplication
+     * @example
+     * // Get one AdvisorApplication
+     * const advisorApplication = await prisma.advisorApplication.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends AdvisorApplicationFindUniqueOrThrowArgs>(args: SelectSubset<T, AdvisorApplicationFindUniqueOrThrowArgs<ExtArgs>>): Prisma__AdvisorApplicationClient<$Result.GetResult<Prisma.$AdvisorApplicationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AdvisorApplication that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AdvisorApplicationFindFirstArgs} args - Arguments to find a AdvisorApplication
+     * @example
+     * // Get one AdvisorApplication
+     * const advisorApplication = await prisma.advisorApplication.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends AdvisorApplicationFindFirstArgs>(args?: SelectSubset<T, AdvisorApplicationFindFirstArgs<ExtArgs>>): Prisma__AdvisorApplicationClient<$Result.GetResult<Prisma.$AdvisorApplicationPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AdvisorApplication that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AdvisorApplicationFindFirstOrThrowArgs} args - Arguments to find a AdvisorApplication
+     * @example
+     * // Get one AdvisorApplication
+     * const advisorApplication = await prisma.advisorApplication.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends AdvisorApplicationFindFirstOrThrowArgs>(args?: SelectSubset<T, AdvisorApplicationFindFirstOrThrowArgs<ExtArgs>>): Prisma__AdvisorApplicationClient<$Result.GetResult<Prisma.$AdvisorApplicationPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more AdvisorApplications that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AdvisorApplicationFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all AdvisorApplications
+     * const advisorApplications = await prisma.advisorApplication.findMany()
+     * 
+     * // Get first 10 AdvisorApplications
+     * const advisorApplications = await prisma.advisorApplication.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const advisorApplicationWithIdOnly = await prisma.advisorApplication.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends AdvisorApplicationFindManyArgs>(args?: SelectSubset<T, AdvisorApplicationFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AdvisorApplicationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a AdvisorApplication.
+     * @param {AdvisorApplicationCreateArgs} args - Arguments to create a AdvisorApplication.
+     * @example
+     * // Create one AdvisorApplication
+     * const AdvisorApplication = await prisma.advisorApplication.create({
+     *   data: {
+     *     // ... data to create a AdvisorApplication
+     *   }
+     * })
+     * 
+     */
+    create<T extends AdvisorApplicationCreateArgs>(args: SelectSubset<T, AdvisorApplicationCreateArgs<ExtArgs>>): Prisma__AdvisorApplicationClient<$Result.GetResult<Prisma.$AdvisorApplicationPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many AdvisorApplications.
+     * @param {AdvisorApplicationCreateManyArgs} args - Arguments to create many AdvisorApplications.
+     * @example
+     * // Create many AdvisorApplications
+     * const advisorApplication = await prisma.advisorApplication.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends AdvisorApplicationCreateManyArgs>(args?: SelectSubset<T, AdvisorApplicationCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many AdvisorApplications and returns the data saved in the database.
+     * @param {AdvisorApplicationCreateManyAndReturnArgs} args - Arguments to create many AdvisorApplications.
+     * @example
+     * // Create many AdvisorApplications
+     * const advisorApplication = await prisma.advisorApplication.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many AdvisorApplications and only return the `id`
+     * const advisorApplicationWithIdOnly = await prisma.advisorApplication.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends AdvisorApplicationCreateManyAndReturnArgs>(args?: SelectSubset<T, AdvisorApplicationCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AdvisorApplicationPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a AdvisorApplication.
+     * @param {AdvisorApplicationDeleteArgs} args - Arguments to delete one AdvisorApplication.
+     * @example
+     * // Delete one AdvisorApplication
+     * const AdvisorApplication = await prisma.advisorApplication.delete({
+     *   where: {
+     *     // ... filter to delete one AdvisorApplication
+     *   }
+     * })
+     * 
+     */
+    delete<T extends AdvisorApplicationDeleteArgs>(args: SelectSubset<T, AdvisorApplicationDeleteArgs<ExtArgs>>): Prisma__AdvisorApplicationClient<$Result.GetResult<Prisma.$AdvisorApplicationPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one AdvisorApplication.
+     * @param {AdvisorApplicationUpdateArgs} args - Arguments to update one AdvisorApplication.
+     * @example
+     * // Update one AdvisorApplication
+     * const advisorApplication = await prisma.advisorApplication.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends AdvisorApplicationUpdateArgs>(args: SelectSubset<T, AdvisorApplicationUpdateArgs<ExtArgs>>): Prisma__AdvisorApplicationClient<$Result.GetResult<Prisma.$AdvisorApplicationPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more AdvisorApplications.
+     * @param {AdvisorApplicationDeleteManyArgs} args - Arguments to filter AdvisorApplications to delete.
+     * @example
+     * // Delete a few AdvisorApplications
+     * const { count } = await prisma.advisorApplication.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends AdvisorApplicationDeleteManyArgs>(args?: SelectSubset<T, AdvisorApplicationDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AdvisorApplications.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AdvisorApplicationUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many AdvisorApplications
+     * const advisorApplication = await prisma.advisorApplication.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends AdvisorApplicationUpdateManyArgs>(args: SelectSubset<T, AdvisorApplicationUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AdvisorApplications and returns the data updated in the database.
+     * @param {AdvisorApplicationUpdateManyAndReturnArgs} args - Arguments to update many AdvisorApplications.
+     * @example
+     * // Update many AdvisorApplications
+     * const advisorApplication = await prisma.advisorApplication.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more AdvisorApplications and only return the `id`
+     * const advisorApplicationWithIdOnly = await prisma.advisorApplication.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends AdvisorApplicationUpdateManyAndReturnArgs>(args: SelectSubset<T, AdvisorApplicationUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AdvisorApplicationPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one AdvisorApplication.
+     * @param {AdvisorApplicationUpsertArgs} args - Arguments to update or create a AdvisorApplication.
+     * @example
+     * // Update or create a AdvisorApplication
+     * const advisorApplication = await prisma.advisorApplication.upsert({
+     *   create: {
+     *     // ... data to create a AdvisorApplication
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the AdvisorApplication we want to update
+     *   }
+     * })
+     */
+    upsert<T extends AdvisorApplicationUpsertArgs>(args: SelectSubset<T, AdvisorApplicationUpsertArgs<ExtArgs>>): Prisma__AdvisorApplicationClient<$Result.GetResult<Prisma.$AdvisorApplicationPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of AdvisorApplications.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AdvisorApplicationCountArgs} args - Arguments to filter AdvisorApplications to count.
+     * @example
+     * // Count the number of AdvisorApplications
+     * const count = await prisma.advisorApplication.count({
+     *   where: {
+     *     // ... the filter for the AdvisorApplications we want to count
+     *   }
+     * })
+    **/
+    count<T extends AdvisorApplicationCountArgs>(
+      args?: Subset<T, AdvisorApplicationCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], AdvisorApplicationCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a AdvisorApplication.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AdvisorApplicationAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends AdvisorApplicationAggregateArgs>(args: Subset<T, AdvisorApplicationAggregateArgs>): Prisma.PrismaPromise<GetAdvisorApplicationAggregateType<T>>
+
+    /**
+     * Group by AdvisorApplication.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AdvisorApplicationGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends AdvisorApplicationGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: AdvisorApplicationGroupByArgs['orderBy'] }
+        : { orderBy?: AdvisorApplicationGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, AdvisorApplicationGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetAdvisorApplicationGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the AdvisorApplication model
+   */
+  readonly fields: AdvisorApplicationFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for AdvisorApplication.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__AdvisorApplicationClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    reviewer<T extends AdvisorApplication$reviewerArgs<ExtArgs> = {}>(args?: Subset<T, AdvisorApplication$reviewerArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the AdvisorApplication model
+   */
+  interface AdvisorApplicationFieldRefs {
+    readonly id: FieldRef<"AdvisorApplication", 'String'>
+    readonly userId: FieldRef<"AdvisorApplication", 'String'>
+    readonly fullName: FieldRef<"AdvisorApplication", 'String'>
+    readonly email: FieldRef<"AdvisorApplication", 'String'>
+    readonly phone: FieldRef<"AdvisorApplication", 'String'>
+    readonly experienceYears: FieldRef<"AdvisorApplication", 'Int'>
+    readonly expertise: FieldRef<"AdvisorApplication", 'String'>
+    readonly organizationName: FieldRef<"AdvisorApplication", 'String'>
+    readonly bio: FieldRef<"AdvisorApplication", 'String'>
+    readonly panDocumentPath: FieldRef<"AdvisorApplication", 'String'>
+    readonly aadhaarDocumentPath: FieldRef<"AdvisorApplication", 'String'>
+    readonly certDocumentPath: FieldRef<"AdvisorApplication", 'String'>
+    readonly status: FieldRef<"AdvisorApplication", 'String'>
+    readonly rejectionReason: FieldRef<"AdvisorApplication", 'String'>
+    readonly reviewedBy: FieldRef<"AdvisorApplication", 'String'>
+    readonly reviewedAt: FieldRef<"AdvisorApplication", 'DateTime'>
+    readonly submittedAt: FieldRef<"AdvisorApplication", 'DateTime'>
+    readonly createdAt: FieldRef<"AdvisorApplication", 'DateTime'>
+    readonly updatedAt: FieldRef<"AdvisorApplication", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * AdvisorApplication findUnique
+   */
+  export type AdvisorApplicationFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AdvisorApplication
+     */
+    select?: AdvisorApplicationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AdvisorApplication
+     */
+    omit?: AdvisorApplicationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AdvisorApplicationInclude<ExtArgs> | null
+    /**
+     * Filter, which AdvisorApplication to fetch.
+     */
+    where: AdvisorApplicationWhereUniqueInput
+  }
+
+  /**
+   * AdvisorApplication findUniqueOrThrow
+   */
+  export type AdvisorApplicationFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AdvisorApplication
+     */
+    select?: AdvisorApplicationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AdvisorApplication
+     */
+    omit?: AdvisorApplicationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AdvisorApplicationInclude<ExtArgs> | null
+    /**
+     * Filter, which AdvisorApplication to fetch.
+     */
+    where: AdvisorApplicationWhereUniqueInput
+  }
+
+  /**
+   * AdvisorApplication findFirst
+   */
+  export type AdvisorApplicationFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AdvisorApplication
+     */
+    select?: AdvisorApplicationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AdvisorApplication
+     */
+    omit?: AdvisorApplicationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AdvisorApplicationInclude<ExtArgs> | null
+    /**
+     * Filter, which AdvisorApplication to fetch.
+     */
+    where?: AdvisorApplicationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AdvisorApplications to fetch.
+     */
+    orderBy?: AdvisorApplicationOrderByWithRelationInput | AdvisorApplicationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AdvisorApplications.
+     */
+    cursor?: AdvisorApplicationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AdvisorApplications from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AdvisorApplications.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AdvisorApplications.
+     */
+    distinct?: AdvisorApplicationScalarFieldEnum | AdvisorApplicationScalarFieldEnum[]
+  }
+
+  /**
+   * AdvisorApplication findFirstOrThrow
+   */
+  export type AdvisorApplicationFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AdvisorApplication
+     */
+    select?: AdvisorApplicationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AdvisorApplication
+     */
+    omit?: AdvisorApplicationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AdvisorApplicationInclude<ExtArgs> | null
+    /**
+     * Filter, which AdvisorApplication to fetch.
+     */
+    where?: AdvisorApplicationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AdvisorApplications to fetch.
+     */
+    orderBy?: AdvisorApplicationOrderByWithRelationInput | AdvisorApplicationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AdvisorApplications.
+     */
+    cursor?: AdvisorApplicationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AdvisorApplications from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AdvisorApplications.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AdvisorApplications.
+     */
+    distinct?: AdvisorApplicationScalarFieldEnum | AdvisorApplicationScalarFieldEnum[]
+  }
+
+  /**
+   * AdvisorApplication findMany
+   */
+  export type AdvisorApplicationFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AdvisorApplication
+     */
+    select?: AdvisorApplicationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AdvisorApplication
+     */
+    omit?: AdvisorApplicationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AdvisorApplicationInclude<ExtArgs> | null
+    /**
+     * Filter, which AdvisorApplications to fetch.
+     */
+    where?: AdvisorApplicationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AdvisorApplications to fetch.
+     */
+    orderBy?: AdvisorApplicationOrderByWithRelationInput | AdvisorApplicationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing AdvisorApplications.
+     */
+    cursor?: AdvisorApplicationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AdvisorApplications from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AdvisorApplications.
+     */
+    skip?: number
+    distinct?: AdvisorApplicationScalarFieldEnum | AdvisorApplicationScalarFieldEnum[]
+  }
+
+  /**
+   * AdvisorApplication create
+   */
+  export type AdvisorApplicationCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AdvisorApplication
+     */
+    select?: AdvisorApplicationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AdvisorApplication
+     */
+    omit?: AdvisorApplicationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AdvisorApplicationInclude<ExtArgs> | null
+    /**
+     * The data needed to create a AdvisorApplication.
+     */
+    data: XOR<AdvisorApplicationCreateInput, AdvisorApplicationUncheckedCreateInput>
+  }
+
+  /**
+   * AdvisorApplication createMany
+   */
+  export type AdvisorApplicationCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many AdvisorApplications.
+     */
+    data: AdvisorApplicationCreateManyInput | AdvisorApplicationCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * AdvisorApplication createManyAndReturn
+   */
+  export type AdvisorApplicationCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AdvisorApplication
+     */
+    select?: AdvisorApplicationSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the AdvisorApplication
+     */
+    omit?: AdvisorApplicationOmit<ExtArgs> | null
+    /**
+     * The data used to create many AdvisorApplications.
+     */
+    data: AdvisorApplicationCreateManyInput | AdvisorApplicationCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AdvisorApplicationIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * AdvisorApplication update
+   */
+  export type AdvisorApplicationUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AdvisorApplication
+     */
+    select?: AdvisorApplicationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AdvisorApplication
+     */
+    omit?: AdvisorApplicationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AdvisorApplicationInclude<ExtArgs> | null
+    /**
+     * The data needed to update a AdvisorApplication.
+     */
+    data: XOR<AdvisorApplicationUpdateInput, AdvisorApplicationUncheckedUpdateInput>
+    /**
+     * Choose, which AdvisorApplication to update.
+     */
+    where: AdvisorApplicationWhereUniqueInput
+  }
+
+  /**
+   * AdvisorApplication updateMany
+   */
+  export type AdvisorApplicationUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update AdvisorApplications.
+     */
+    data: XOR<AdvisorApplicationUpdateManyMutationInput, AdvisorApplicationUncheckedUpdateManyInput>
+    /**
+     * Filter which AdvisorApplications to update
+     */
+    where?: AdvisorApplicationWhereInput
+    /**
+     * Limit how many AdvisorApplications to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * AdvisorApplication updateManyAndReturn
+   */
+  export type AdvisorApplicationUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AdvisorApplication
+     */
+    select?: AdvisorApplicationSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the AdvisorApplication
+     */
+    omit?: AdvisorApplicationOmit<ExtArgs> | null
+    /**
+     * The data used to update AdvisorApplications.
+     */
+    data: XOR<AdvisorApplicationUpdateManyMutationInput, AdvisorApplicationUncheckedUpdateManyInput>
+    /**
+     * Filter which AdvisorApplications to update
+     */
+    where?: AdvisorApplicationWhereInput
+    /**
+     * Limit how many AdvisorApplications to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AdvisorApplicationIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * AdvisorApplication upsert
+   */
+  export type AdvisorApplicationUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AdvisorApplication
+     */
+    select?: AdvisorApplicationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AdvisorApplication
+     */
+    omit?: AdvisorApplicationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AdvisorApplicationInclude<ExtArgs> | null
+    /**
+     * The filter to search for the AdvisorApplication to update in case it exists.
+     */
+    where: AdvisorApplicationWhereUniqueInput
+    /**
+     * In case the AdvisorApplication found by the `where` argument doesn't exist, create a new AdvisorApplication with this data.
+     */
+    create: XOR<AdvisorApplicationCreateInput, AdvisorApplicationUncheckedCreateInput>
+    /**
+     * In case the AdvisorApplication was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<AdvisorApplicationUpdateInput, AdvisorApplicationUncheckedUpdateInput>
+  }
+
+  /**
+   * AdvisorApplication delete
+   */
+  export type AdvisorApplicationDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AdvisorApplication
+     */
+    select?: AdvisorApplicationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AdvisorApplication
+     */
+    omit?: AdvisorApplicationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AdvisorApplicationInclude<ExtArgs> | null
+    /**
+     * Filter which AdvisorApplication to delete.
+     */
+    where: AdvisorApplicationWhereUniqueInput
+  }
+
+  /**
+   * AdvisorApplication deleteMany
+   */
+  export type AdvisorApplicationDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AdvisorApplications to delete
+     */
+    where?: AdvisorApplicationWhereInput
+    /**
+     * Limit how many AdvisorApplications to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * AdvisorApplication.reviewer
+   */
+  export type AdvisorApplication$reviewerArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the User
+     */
+    omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
+  }
+
+  /**
+   * AdvisorApplication without action
+   */
+  export type AdvisorApplicationDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AdvisorApplication
+     */
+    select?: AdvisorApplicationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AdvisorApplication
+     */
+    omit?: AdvisorApplicationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AdvisorApplicationInclude<ExtArgs> | null
   }
 
 
@@ -30520,6 +31921,8 @@ export namespace Prisma {
     name: string | null
     password: string | null
     role: string | null
+    roleMode: string | null
+    advisorStatus: string | null
     status: string | null
     isApproved: boolean | null
     firstName: string | null
@@ -30544,6 +31947,8 @@ export namespace Prisma {
     name: string | null
     password: string | null
     role: string | null
+    roleMode: string | null
+    advisorStatus: string | null
     status: string | null
     isApproved: boolean | null
     firstName: string | null
@@ -30568,6 +31973,8 @@ export namespace Prisma {
     name: number
     password: number
     role: number
+    roleMode: number
+    advisorStatus: number
     status: number
     isApproved: number
     firstName: number
@@ -30602,6 +32009,8 @@ export namespace Prisma {
     name?: true
     password?: true
     role?: true
+    roleMode?: true
+    advisorStatus?: true
     status?: true
     isApproved?: true
     firstName?: true
@@ -30626,6 +32035,8 @@ export namespace Prisma {
     name?: true
     password?: true
     role?: true
+    roleMode?: true
+    advisorStatus?: true
     status?: true
     isApproved?: true
     firstName?: true
@@ -30650,6 +32061,8 @@ export namespace Prisma {
     name?: true
     password?: true
     role?: true
+    roleMode?: true
+    advisorStatus?: true
     status?: true
     isApproved?: true
     firstName?: true
@@ -30761,6 +32174,8 @@ export namespace Prisma {
     name: string
     password: string
     role: string
+    roleMode: string
+    advisorStatus: string
     status: string
     isApproved: boolean
     firstName: string | null
@@ -30804,6 +32219,8 @@ export namespace Prisma {
     name?: boolean
     password?: boolean
     role?: boolean
+    roleMode?: boolean
+    advisorStatus?: boolean
     status?: boolean
     isApproved?: boolean
     firstName?: boolean
@@ -30822,6 +32239,8 @@ export namespace Prisma {
     state?: boolean
     accounts?: boolean | User$accountsArgs<ExtArgs>
     advisorAvailability?: boolean | User$advisorAvailabilityArgs<ExtArgs>
+    advisorApplication?: boolean | User$advisorApplicationArgs<ExtArgs>
+    reviewedApplications?: boolean | User$reviewedApplicationsArgs<ExtArgs>
     sessionsAsAdvisor?: boolean | User$sessionsAsAdvisorArgs<ExtArgs>
     sessionsAsClient?: boolean | User$sessionsAsClientArgs<ExtArgs>
     bookingsAsAdvisor?: boolean | User$bookingsAsAdvisorArgs<ExtArgs>
@@ -30860,6 +32279,8 @@ export namespace Prisma {
     name?: boolean
     password?: boolean
     role?: boolean
+    roleMode?: boolean
+    advisorStatus?: boolean
     status?: boolean
     isApproved?: boolean
     firstName?: boolean
@@ -30884,6 +32305,8 @@ export namespace Prisma {
     name?: boolean
     password?: boolean
     role?: boolean
+    roleMode?: boolean
+    advisorStatus?: boolean
     status?: boolean
     isApproved?: boolean
     firstName?: boolean
@@ -30908,6 +32331,8 @@ export namespace Prisma {
     name?: boolean
     password?: boolean
     role?: boolean
+    roleMode?: boolean
+    advisorStatus?: boolean
     status?: boolean
     isApproved?: boolean
     firstName?: boolean
@@ -30926,10 +32351,12 @@ export namespace Prisma {
     state?: boolean
   }
 
-  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "email" | "name" | "password" | "role" | "status" | "isApproved" | "firstName" | "lastName" | "salary" | "dateOfBirth" | "jobType" | "lastSynced" | "syncToken" | "createdAt" | "updatedAt" | "avatarId" | "city" | "country" | "gender" | "state", ExtArgs["result"]["user"]>
+  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "email" | "name" | "password" | "role" | "roleMode" | "advisorStatus" | "status" | "isApproved" | "firstName" | "lastName" | "salary" | "dateOfBirth" | "jobType" | "lastSynced" | "syncToken" | "createdAt" | "updatedAt" | "avatarId" | "city" | "country" | "gender" | "state", ExtArgs["result"]["user"]>
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     accounts?: boolean | User$accountsArgs<ExtArgs>
     advisorAvailability?: boolean | User$advisorAvailabilityArgs<ExtArgs>
+    advisorApplication?: boolean | User$advisorApplicationArgs<ExtArgs>
+    reviewedApplications?: boolean | User$reviewedApplicationsArgs<ExtArgs>
     sessionsAsAdvisor?: boolean | User$sessionsAsAdvisorArgs<ExtArgs>
     sessionsAsClient?: boolean | User$sessionsAsClientArgs<ExtArgs>
     bookingsAsAdvisor?: boolean | User$bookingsAsAdvisorArgs<ExtArgs>
@@ -30969,6 +32396,8 @@ export namespace Prisma {
     objects: {
       accounts: Prisma.$AccountPayload<ExtArgs>[]
       advisorAvailability: Prisma.$AdvisorAvailabilityPayload<ExtArgs>[]
+      advisorApplication: Prisma.$AdvisorApplicationPayload<ExtArgs> | null
+      reviewedApplications: Prisma.$AdvisorApplicationPayload<ExtArgs>[]
       sessionsAsAdvisor: Prisma.$AdvisorSessionPayload<ExtArgs>[]
       sessionsAsClient: Prisma.$AdvisorSessionPayload<ExtArgs>[]
       bookingsAsAdvisor: Prisma.$BookingRequestPayload<ExtArgs>[]
@@ -31005,6 +32434,8 @@ export namespace Prisma {
       name: string
       password: string
       role: string
+      roleMode: string
+      advisorStatus: string
       status: string
       isApproved: boolean
       firstName: string | null
@@ -31417,6 +32848,8 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     accounts<T extends User$accountsArgs<ExtArgs> = {}>(args?: Subset<T, User$accountsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AccountPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     advisorAvailability<T extends User$advisorAvailabilityArgs<ExtArgs> = {}>(args?: Subset<T, User$advisorAvailabilityArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AdvisorAvailabilityPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    advisorApplication<T extends User$advisorApplicationArgs<ExtArgs> = {}>(args?: Subset<T, User$advisorApplicationArgs<ExtArgs>>): Prisma__AdvisorApplicationClient<$Result.GetResult<Prisma.$AdvisorApplicationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    reviewedApplications<T extends User$reviewedApplicationsArgs<ExtArgs> = {}>(args?: Subset<T, User$reviewedApplicationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AdvisorApplicationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     sessionsAsAdvisor<T extends User$sessionsAsAdvisorArgs<ExtArgs> = {}>(args?: Subset<T, User$sessionsAsAdvisorArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AdvisorSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     sessionsAsClient<T extends User$sessionsAsClientArgs<ExtArgs> = {}>(args?: Subset<T, User$sessionsAsClientArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AdvisorSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     bookingsAsAdvisor<T extends User$bookingsAsAdvisorArgs<ExtArgs> = {}>(args?: Subset<T, User$bookingsAsAdvisorArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BookingRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -31480,6 +32913,8 @@ export namespace Prisma {
     readonly name: FieldRef<"User", 'String'>
     readonly password: FieldRef<"User", 'String'>
     readonly role: FieldRef<"User", 'String'>
+    readonly roleMode: FieldRef<"User", 'String'>
+    readonly advisorStatus: FieldRef<"User", 'String'>
     readonly status: FieldRef<"User", 'String'>
     readonly isApproved: FieldRef<"User", 'Boolean'>
     readonly firstName: FieldRef<"User", 'String'>
@@ -31929,6 +33364,49 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: AdvisorAvailabilityScalarFieldEnum | AdvisorAvailabilityScalarFieldEnum[]
+  }
+
+  /**
+   * User.advisorApplication
+   */
+  export type User$advisorApplicationArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AdvisorApplication
+     */
+    select?: AdvisorApplicationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AdvisorApplication
+     */
+    omit?: AdvisorApplicationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AdvisorApplicationInclude<ExtArgs> | null
+    where?: AdvisorApplicationWhereInput
+  }
+
+  /**
+   * User.reviewedApplications
+   */
+  export type User$reviewedApplicationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AdvisorApplication
+     */
+    select?: AdvisorApplicationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AdvisorApplication
+     */
+    omit?: AdvisorApplicationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AdvisorApplicationInclude<ExtArgs> | null
+    where?: AdvisorApplicationWhereInput
+    orderBy?: AdvisorApplicationOrderByWithRelationInput | AdvisorApplicationOrderByWithRelationInput[]
+    cursor?: AdvisorApplicationWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: AdvisorApplicationScalarFieldEnum | AdvisorApplicationScalarFieldEnum[]
   }
 
   /**
@@ -57728,6 +59206,31 @@ export namespace Prisma {
   export type AccountScalarFieldEnum = (typeof AccountScalarFieldEnum)[keyof typeof AccountScalarFieldEnum]
 
 
+  export const AdvisorApplicationScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    fullName: 'fullName',
+    email: 'email',
+    phone: 'phone',
+    experienceYears: 'experienceYears',
+    expertise: 'expertise',
+    organizationName: 'organizationName',
+    bio: 'bio',
+    panDocumentPath: 'panDocumentPath',
+    aadhaarDocumentPath: 'aadhaarDocumentPath',
+    certDocumentPath: 'certDocumentPath',
+    status: 'status',
+    rejectionReason: 'rejectionReason',
+    reviewedBy: 'reviewedBy',
+    reviewedAt: 'reviewedAt',
+    submittedAt: 'submittedAt',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type AdvisorApplicationScalarFieldEnum = (typeof AdvisorApplicationScalarFieldEnum)[keyof typeof AdvisorApplicationScalarFieldEnum]
+
+
   export const AdvisorAvailabilityScalarFieldEnum: {
     id: 'id',
     advisorId: 'advisorId',
@@ -58120,6 +59623,8 @@ export namespace Prisma {
     name: 'name',
     password: 'password',
     role: 'role',
+    roleMode: 'roleMode',
+    advisorStatus: 'advisorStatus',
     status: 'status',
     isApproved: 'isApproved',
     firstName: 'firstName',
@@ -58790,6 +60295,136 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<"Account"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Account"> | Date | string
     deletedAt?: DateTimeNullableWithAggregatesFilter<"Account"> | Date | string | null
+  }
+
+  export type AdvisorApplicationWhereInput = {
+    AND?: AdvisorApplicationWhereInput | AdvisorApplicationWhereInput[]
+    OR?: AdvisorApplicationWhereInput[]
+    NOT?: AdvisorApplicationWhereInput | AdvisorApplicationWhereInput[]
+    id?: StringFilter<"AdvisorApplication"> | string
+    userId?: StringFilter<"AdvisorApplication"> | string
+    fullName?: StringFilter<"AdvisorApplication"> | string
+    email?: StringFilter<"AdvisorApplication"> | string
+    phone?: StringFilter<"AdvisorApplication"> | string
+    experienceYears?: IntFilter<"AdvisorApplication"> | number
+    expertise?: StringFilter<"AdvisorApplication"> | string
+    organizationName?: StringNullableFilter<"AdvisorApplication"> | string | null
+    bio?: StringFilter<"AdvisorApplication"> | string
+    panDocumentPath?: StringNullableFilter<"AdvisorApplication"> | string | null
+    aadhaarDocumentPath?: StringNullableFilter<"AdvisorApplication"> | string | null
+    certDocumentPath?: StringNullableFilter<"AdvisorApplication"> | string | null
+    status?: StringFilter<"AdvisorApplication"> | string
+    rejectionReason?: StringNullableFilter<"AdvisorApplication"> | string | null
+    reviewedBy?: StringNullableFilter<"AdvisorApplication"> | string | null
+    reviewedAt?: DateTimeNullableFilter<"AdvisorApplication"> | Date | string | null
+    submittedAt?: DateTimeFilter<"AdvisorApplication"> | Date | string
+    createdAt?: DateTimeFilter<"AdvisorApplication"> | Date | string
+    updatedAt?: DateTimeFilter<"AdvisorApplication"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    reviewer?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+  }
+
+  export type AdvisorApplicationOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    fullName?: SortOrder
+    email?: SortOrder
+    phone?: SortOrder
+    experienceYears?: SortOrder
+    expertise?: SortOrder
+    organizationName?: SortOrderInput | SortOrder
+    bio?: SortOrder
+    panDocumentPath?: SortOrderInput | SortOrder
+    aadhaarDocumentPath?: SortOrderInput | SortOrder
+    certDocumentPath?: SortOrderInput | SortOrder
+    status?: SortOrder
+    rejectionReason?: SortOrderInput | SortOrder
+    reviewedBy?: SortOrderInput | SortOrder
+    reviewedAt?: SortOrderInput | SortOrder
+    submittedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    user?: UserOrderByWithRelationInput
+    reviewer?: UserOrderByWithRelationInput
+  }
+
+  export type AdvisorApplicationWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    userId?: string
+    AND?: AdvisorApplicationWhereInput | AdvisorApplicationWhereInput[]
+    OR?: AdvisorApplicationWhereInput[]
+    NOT?: AdvisorApplicationWhereInput | AdvisorApplicationWhereInput[]
+    fullName?: StringFilter<"AdvisorApplication"> | string
+    email?: StringFilter<"AdvisorApplication"> | string
+    phone?: StringFilter<"AdvisorApplication"> | string
+    experienceYears?: IntFilter<"AdvisorApplication"> | number
+    expertise?: StringFilter<"AdvisorApplication"> | string
+    organizationName?: StringNullableFilter<"AdvisorApplication"> | string | null
+    bio?: StringFilter<"AdvisorApplication"> | string
+    panDocumentPath?: StringNullableFilter<"AdvisorApplication"> | string | null
+    aadhaarDocumentPath?: StringNullableFilter<"AdvisorApplication"> | string | null
+    certDocumentPath?: StringNullableFilter<"AdvisorApplication"> | string | null
+    status?: StringFilter<"AdvisorApplication"> | string
+    rejectionReason?: StringNullableFilter<"AdvisorApplication"> | string | null
+    reviewedBy?: StringNullableFilter<"AdvisorApplication"> | string | null
+    reviewedAt?: DateTimeNullableFilter<"AdvisorApplication"> | Date | string | null
+    submittedAt?: DateTimeFilter<"AdvisorApplication"> | Date | string
+    createdAt?: DateTimeFilter<"AdvisorApplication"> | Date | string
+    updatedAt?: DateTimeFilter<"AdvisorApplication"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    reviewer?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+  }, "id" | "userId">
+
+  export type AdvisorApplicationOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    fullName?: SortOrder
+    email?: SortOrder
+    phone?: SortOrder
+    experienceYears?: SortOrder
+    expertise?: SortOrder
+    organizationName?: SortOrderInput | SortOrder
+    bio?: SortOrder
+    panDocumentPath?: SortOrderInput | SortOrder
+    aadhaarDocumentPath?: SortOrderInput | SortOrder
+    certDocumentPath?: SortOrderInput | SortOrder
+    status?: SortOrder
+    rejectionReason?: SortOrderInput | SortOrder
+    reviewedBy?: SortOrderInput | SortOrder
+    reviewedAt?: SortOrderInput | SortOrder
+    submittedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: AdvisorApplicationCountOrderByAggregateInput
+    _avg?: AdvisorApplicationAvgOrderByAggregateInput
+    _max?: AdvisorApplicationMaxOrderByAggregateInput
+    _min?: AdvisorApplicationMinOrderByAggregateInput
+    _sum?: AdvisorApplicationSumOrderByAggregateInput
+  }
+
+  export type AdvisorApplicationScalarWhereWithAggregatesInput = {
+    AND?: AdvisorApplicationScalarWhereWithAggregatesInput | AdvisorApplicationScalarWhereWithAggregatesInput[]
+    OR?: AdvisorApplicationScalarWhereWithAggregatesInput[]
+    NOT?: AdvisorApplicationScalarWhereWithAggregatesInput | AdvisorApplicationScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"AdvisorApplication"> | string
+    userId?: StringWithAggregatesFilter<"AdvisorApplication"> | string
+    fullName?: StringWithAggregatesFilter<"AdvisorApplication"> | string
+    email?: StringWithAggregatesFilter<"AdvisorApplication"> | string
+    phone?: StringWithAggregatesFilter<"AdvisorApplication"> | string
+    experienceYears?: IntWithAggregatesFilter<"AdvisorApplication"> | number
+    expertise?: StringWithAggregatesFilter<"AdvisorApplication"> | string
+    organizationName?: StringNullableWithAggregatesFilter<"AdvisorApplication"> | string | null
+    bio?: StringWithAggregatesFilter<"AdvisorApplication"> | string
+    panDocumentPath?: StringNullableWithAggregatesFilter<"AdvisorApplication"> | string | null
+    aadhaarDocumentPath?: StringNullableWithAggregatesFilter<"AdvisorApplication"> | string | null
+    certDocumentPath?: StringNullableWithAggregatesFilter<"AdvisorApplication"> | string | null
+    status?: StringWithAggregatesFilter<"AdvisorApplication"> | string
+    rejectionReason?: StringNullableWithAggregatesFilter<"AdvisorApplication"> | string | null
+    reviewedBy?: StringNullableWithAggregatesFilter<"AdvisorApplication"> | string | null
+    reviewedAt?: DateTimeNullableWithAggregatesFilter<"AdvisorApplication"> | Date | string | null
+    submittedAt?: DateTimeWithAggregatesFilter<"AdvisorApplication"> | Date | string
+    createdAt?: DateTimeWithAggregatesFilter<"AdvisorApplication"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"AdvisorApplication"> | Date | string
   }
 
   export type AdvisorAvailabilityWhereInput = {
@@ -60801,6 +62436,8 @@ export namespace Prisma {
     name?: StringFilter<"User"> | string
     password?: StringFilter<"User"> | string
     role?: StringFilter<"User"> | string
+    roleMode?: StringFilter<"User"> | string
+    advisorStatus?: StringFilter<"User"> | string
     status?: StringFilter<"User"> | string
     isApproved?: BoolFilter<"User"> | boolean
     firstName?: StringNullableFilter<"User"> | string | null
@@ -60819,6 +62456,8 @@ export namespace Prisma {
     state?: StringNullableFilter<"User"> | string | null
     accounts?: AccountListRelationFilter
     advisorAvailability?: AdvisorAvailabilityListRelationFilter
+    advisorApplication?: XOR<AdvisorApplicationNullableScalarRelationFilter, AdvisorApplicationWhereInput> | null
+    reviewedApplications?: AdvisorApplicationListRelationFilter
     sessionsAsAdvisor?: AdvisorSessionListRelationFilter
     sessionsAsClient?: AdvisorSessionListRelationFilter
     bookingsAsAdvisor?: BookingRequestListRelationFilter
@@ -60856,6 +62495,8 @@ export namespace Prisma {
     name?: SortOrder
     password?: SortOrder
     role?: SortOrder
+    roleMode?: SortOrder
+    advisorStatus?: SortOrder
     status?: SortOrder
     isApproved?: SortOrder
     firstName?: SortOrderInput | SortOrder
@@ -60874,6 +62515,8 @@ export namespace Prisma {
     state?: SortOrderInput | SortOrder
     accounts?: AccountOrderByRelationAggregateInput
     advisorAvailability?: AdvisorAvailabilityOrderByRelationAggregateInput
+    advisorApplication?: AdvisorApplicationOrderByWithRelationInput
+    reviewedApplications?: AdvisorApplicationOrderByRelationAggregateInput
     sessionsAsAdvisor?: AdvisorSessionOrderByRelationAggregateInput
     sessionsAsClient?: AdvisorSessionOrderByRelationAggregateInput
     bookingsAsAdvisor?: BookingRequestOrderByRelationAggregateInput
@@ -60914,6 +62557,8 @@ export namespace Prisma {
     name?: StringFilter<"User"> | string
     password?: StringFilter<"User"> | string
     role?: StringFilter<"User"> | string
+    roleMode?: StringFilter<"User"> | string
+    advisorStatus?: StringFilter<"User"> | string
     status?: StringFilter<"User"> | string
     isApproved?: BoolFilter<"User"> | boolean
     firstName?: StringNullableFilter<"User"> | string | null
@@ -60932,6 +62577,8 @@ export namespace Prisma {
     state?: StringNullableFilter<"User"> | string | null
     accounts?: AccountListRelationFilter
     advisorAvailability?: AdvisorAvailabilityListRelationFilter
+    advisorApplication?: XOR<AdvisorApplicationNullableScalarRelationFilter, AdvisorApplicationWhereInput> | null
+    reviewedApplications?: AdvisorApplicationListRelationFilter
     sessionsAsAdvisor?: AdvisorSessionListRelationFilter
     sessionsAsClient?: AdvisorSessionListRelationFilter
     bookingsAsAdvisor?: BookingRequestListRelationFilter
@@ -60969,6 +62616,8 @@ export namespace Prisma {
     name?: SortOrder
     password?: SortOrder
     role?: SortOrder
+    roleMode?: SortOrder
+    advisorStatus?: SortOrder
     status?: SortOrder
     isApproved?: SortOrder
     firstName?: SortOrderInput | SortOrder
@@ -61001,6 +62650,8 @@ export namespace Prisma {
     name?: StringWithAggregatesFilter<"User"> | string
     password?: StringWithAggregatesFilter<"User"> | string
     role?: StringWithAggregatesFilter<"User"> | string
+    roleMode?: StringWithAggregatesFilter<"User"> | string
+    advisorStatus?: StringWithAggregatesFilter<"User"> | string
     status?: StringWithAggregatesFilter<"User"> | string
     isApproved?: BoolWithAggregatesFilter<"User"> | boolean
     firstName?: StringNullableWithAggregatesFilter<"User"> | string | null
@@ -63098,6 +64749,158 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type AdvisorApplicationCreateInput = {
+    id?: string
+    fullName: string
+    email: string
+    phone: string
+    experienceYears: number
+    expertise: string
+    organizationName?: string | null
+    bio: string
+    panDocumentPath?: string | null
+    aadhaarDocumentPath?: string | null
+    certDocumentPath?: string | null
+    status?: string
+    rejectionReason?: string | null
+    reviewedAt?: Date | string | null
+    submittedAt?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutAdvisorApplicationInput
+    reviewer?: UserCreateNestedOneWithoutReviewedApplicationsInput
+  }
+
+  export type AdvisorApplicationUncheckedCreateInput = {
+    id?: string
+    userId: string
+    fullName: string
+    email: string
+    phone: string
+    experienceYears: number
+    expertise: string
+    organizationName?: string | null
+    bio: string
+    panDocumentPath?: string | null
+    aadhaarDocumentPath?: string | null
+    certDocumentPath?: string | null
+    status?: string
+    rejectionReason?: string | null
+    reviewedBy?: string | null
+    reviewedAt?: Date | string | null
+    submittedAt?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type AdvisorApplicationUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    fullName?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: StringFieldUpdateOperationsInput | string
+    experienceYears?: IntFieldUpdateOperationsInput | number
+    expertise?: StringFieldUpdateOperationsInput | string
+    organizationName?: NullableStringFieldUpdateOperationsInput | string | null
+    bio?: StringFieldUpdateOperationsInput | string
+    panDocumentPath?: NullableStringFieldUpdateOperationsInput | string | null
+    aadhaarDocumentPath?: NullableStringFieldUpdateOperationsInput | string | null
+    certDocumentPath?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    submittedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutAdvisorApplicationNestedInput
+    reviewer?: UserUpdateOneWithoutReviewedApplicationsNestedInput
+  }
+
+  export type AdvisorApplicationUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    fullName?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: StringFieldUpdateOperationsInput | string
+    experienceYears?: IntFieldUpdateOperationsInput | number
+    expertise?: StringFieldUpdateOperationsInput | string
+    organizationName?: NullableStringFieldUpdateOperationsInput | string | null
+    bio?: StringFieldUpdateOperationsInput | string
+    panDocumentPath?: NullableStringFieldUpdateOperationsInput | string | null
+    aadhaarDocumentPath?: NullableStringFieldUpdateOperationsInput | string | null
+    certDocumentPath?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    submittedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AdvisorApplicationCreateManyInput = {
+    id?: string
+    userId: string
+    fullName: string
+    email: string
+    phone: string
+    experienceYears: number
+    expertise: string
+    organizationName?: string | null
+    bio: string
+    panDocumentPath?: string | null
+    aadhaarDocumentPath?: string | null
+    certDocumentPath?: string | null
+    status?: string
+    rejectionReason?: string | null
+    reviewedBy?: string | null
+    reviewedAt?: Date | string | null
+    submittedAt?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type AdvisorApplicationUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    fullName?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: StringFieldUpdateOperationsInput | string
+    experienceYears?: IntFieldUpdateOperationsInput | number
+    expertise?: StringFieldUpdateOperationsInput | string
+    organizationName?: NullableStringFieldUpdateOperationsInput | string | null
+    bio?: StringFieldUpdateOperationsInput | string
+    panDocumentPath?: NullableStringFieldUpdateOperationsInput | string | null
+    aadhaarDocumentPath?: NullableStringFieldUpdateOperationsInput | string | null
+    certDocumentPath?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    submittedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AdvisorApplicationUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    fullName?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: StringFieldUpdateOperationsInput | string
+    experienceYears?: IntFieldUpdateOperationsInput | number
+    expertise?: StringFieldUpdateOperationsInput | string
+    organizationName?: NullableStringFieldUpdateOperationsInput | string | null
+    bio?: StringFieldUpdateOperationsInput | string
+    panDocumentPath?: NullableStringFieldUpdateOperationsInput | string | null
+    aadhaarDocumentPath?: NullableStringFieldUpdateOperationsInput | string | null
+    certDocumentPath?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    submittedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type AdvisorAvailabilityCreateInput = {
@@ -65379,6 +67182,8 @@ export namespace Prisma {
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -65397,6 +67202,8 @@ export namespace Prisma {
     state?: string | null
     accounts?: AccountCreateNestedManyWithoutUserInput
     advisorAvailability?: AdvisorAvailabilityCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationCreateNestedManyWithoutReviewerInput
     sessionsAsAdvisor?: AdvisorSessionCreateNestedManyWithoutAdvisorInput
     sessionsAsClient?: AdvisorSessionCreateNestedManyWithoutClientInput
     bookingsAsAdvisor?: BookingRequestCreateNestedManyWithoutAdvisorInput
@@ -65434,6 +67241,8 @@ export namespace Prisma {
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -65452,6 +67261,8 @@ export namespace Prisma {
     state?: string | null
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     advisorAvailability?: AdvisorAvailabilityUncheckedCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationUncheckedCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationUncheckedCreateNestedManyWithoutReviewerInput
     sessionsAsAdvisor?: AdvisorSessionUncheckedCreateNestedManyWithoutAdvisorInput
     sessionsAsClient?: AdvisorSessionUncheckedCreateNestedManyWithoutClientInput
     bookingsAsAdvisor?: BookingRequestUncheckedCreateNestedManyWithoutAdvisorInput
@@ -65489,6 +67300,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -65507,6 +67320,8 @@ export namespace Prisma {
     state?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUpdateManyWithoutUserNestedInput
     advisorAvailability?: AdvisorAvailabilityUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUpdateManyWithoutReviewerNestedInput
     sessionsAsAdvisor?: AdvisorSessionUpdateManyWithoutAdvisorNestedInput
     sessionsAsClient?: AdvisorSessionUpdateManyWithoutClientNestedInput
     bookingsAsAdvisor?: BookingRequestUpdateManyWithoutAdvisorNestedInput
@@ -65544,6 +67359,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -65562,6 +67379,8 @@ export namespace Prisma {
     state?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     advisorAvailability?: AdvisorAvailabilityUncheckedUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUncheckedUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUncheckedUpdateManyWithoutReviewerNestedInput
     sessionsAsAdvisor?: AdvisorSessionUncheckedUpdateManyWithoutAdvisorNestedInput
     sessionsAsClient?: AdvisorSessionUncheckedUpdateManyWithoutClientNestedInput
     bookingsAsAdvisor?: BookingRequestUncheckedUpdateManyWithoutAdvisorNestedInput
@@ -65599,6 +67418,8 @@ export namespace Prisma {
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -65623,6 +67444,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -65647,6 +67470,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -68185,6 +70010,101 @@ export namespace Prisma {
     not?: NestedIntFilter<$PrismaModel> | number
   }
 
+  export type UserNullableScalarRelationFilter = {
+    is?: UserWhereInput | null
+    isNot?: UserWhereInput | null
+  }
+
+  export type AdvisorApplicationCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    fullName?: SortOrder
+    email?: SortOrder
+    phone?: SortOrder
+    experienceYears?: SortOrder
+    expertise?: SortOrder
+    organizationName?: SortOrder
+    bio?: SortOrder
+    panDocumentPath?: SortOrder
+    aadhaarDocumentPath?: SortOrder
+    certDocumentPath?: SortOrder
+    status?: SortOrder
+    rejectionReason?: SortOrder
+    reviewedBy?: SortOrder
+    reviewedAt?: SortOrder
+    submittedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type AdvisorApplicationAvgOrderByAggregateInput = {
+    experienceYears?: SortOrder
+  }
+
+  export type AdvisorApplicationMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    fullName?: SortOrder
+    email?: SortOrder
+    phone?: SortOrder
+    experienceYears?: SortOrder
+    expertise?: SortOrder
+    organizationName?: SortOrder
+    bio?: SortOrder
+    panDocumentPath?: SortOrder
+    aadhaarDocumentPath?: SortOrder
+    certDocumentPath?: SortOrder
+    status?: SortOrder
+    rejectionReason?: SortOrder
+    reviewedBy?: SortOrder
+    reviewedAt?: SortOrder
+    submittedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type AdvisorApplicationMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    fullName?: SortOrder
+    email?: SortOrder
+    phone?: SortOrder
+    experienceYears?: SortOrder
+    expertise?: SortOrder
+    organizationName?: SortOrder
+    bio?: SortOrder
+    panDocumentPath?: SortOrder
+    aadhaarDocumentPath?: SortOrder
+    certDocumentPath?: SortOrder
+    status?: SortOrder
+    rejectionReason?: SortOrder
+    reviewedBy?: SortOrder
+    reviewedAt?: SortOrder
+    submittedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type AdvisorApplicationSumOrderByAggregateInput = {
+    experienceYears?: SortOrder
+  }
+
+  export type IntWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedIntFilter<$PrismaModel>
+    _min?: NestedIntFilter<$PrismaModel>
+    _max?: NestedIntFilter<$PrismaModel>
+  }
+
   export type AdvisorAvailabilityCountOrderByAggregateInput = {
     id?: SortOrder
     advisorId?: SortOrder
@@ -68224,22 +70144,6 @@ export namespace Prisma {
 
   export type AdvisorAvailabilitySumOrderByAggregateInput = {
     dayOfWeek?: SortOrder
-  }
-
-  export type IntWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[] | ListIntFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
-    _count?: NestedIntFilter<$PrismaModel>
-    _avg?: NestedFloatFilter<$PrismaModel>
-    _sum?: NestedIntFilter<$PrismaModel>
-    _min?: NestedIntFilter<$PrismaModel>
-    _max?: NestedIntFilter<$PrismaModel>
   }
 
   export type FloatNullableFilter<$PrismaModel = never> = {
@@ -69553,6 +71457,17 @@ export namespace Prisma {
     none?: AdvisorAvailabilityWhereInput
   }
 
+  export type AdvisorApplicationNullableScalarRelationFilter = {
+    is?: AdvisorApplicationWhereInput | null
+    isNot?: AdvisorApplicationWhereInput | null
+  }
+
+  export type AdvisorApplicationListRelationFilter = {
+    every?: AdvisorApplicationWhereInput
+    some?: AdvisorApplicationWhereInput
+    none?: AdvisorApplicationWhereInput
+  }
+
   export type AdvisorSessionListRelationFilter = {
     every?: AdvisorSessionWhereInput
     some?: AdvisorSessionWhereInput
@@ -69691,6 +71606,10 @@ export namespace Prisma {
     _count?: SortOrder
   }
 
+  export type AdvisorApplicationOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
   export type AdvisorSessionOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
@@ -69777,6 +71696,8 @@ export namespace Prisma {
     name?: SortOrder
     password?: SortOrder
     role?: SortOrder
+    roleMode?: SortOrder
+    advisorStatus?: SortOrder
     status?: SortOrder
     isApproved?: SortOrder
     firstName?: SortOrder
@@ -69805,6 +71726,8 @@ export namespace Prisma {
     name?: SortOrder
     password?: SortOrder
     role?: SortOrder
+    roleMode?: SortOrder
+    advisorStatus?: SortOrder
     status?: SortOrder
     isApproved?: SortOrder
     firstName?: SortOrder
@@ -69829,6 +71752,8 @@ export namespace Prisma {
     name?: SortOrder
     password?: SortOrder
     role?: SortOrder
+    roleMode?: SortOrder
+    advisorStatus?: SortOrder
     status?: SortOrder
     isApproved?: SortOrder
     firstName?: SortOrder
@@ -71207,9 +73132,15 @@ export namespace Prisma {
     deleteMany?: GroupExpenseScalarWhereInput | GroupExpenseScalarWhereInput[]
   }
 
-  export type UserCreateNestedOneWithoutAdvisorAvailabilityInput = {
-    create?: XOR<UserCreateWithoutAdvisorAvailabilityInput, UserUncheckedCreateWithoutAdvisorAvailabilityInput>
-    connectOrCreate?: UserCreateOrConnectWithoutAdvisorAvailabilityInput
+  export type UserCreateNestedOneWithoutAdvisorApplicationInput = {
+    create?: XOR<UserCreateWithoutAdvisorApplicationInput, UserUncheckedCreateWithoutAdvisorApplicationInput>
+    connectOrCreate?: UserCreateOrConnectWithoutAdvisorApplicationInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutReviewedApplicationsInput = {
+    create?: XOR<UserCreateWithoutReviewedApplicationsInput, UserUncheckedCreateWithoutReviewedApplicationsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutReviewedApplicationsInput
     connect?: UserWhereUniqueInput
   }
 
@@ -71219,6 +73150,30 @@ export namespace Prisma {
     decrement?: number
     multiply?: number
     divide?: number
+  }
+
+  export type UserUpdateOneRequiredWithoutAdvisorApplicationNestedInput = {
+    create?: XOR<UserCreateWithoutAdvisorApplicationInput, UserUncheckedCreateWithoutAdvisorApplicationInput>
+    connectOrCreate?: UserCreateOrConnectWithoutAdvisorApplicationInput
+    upsert?: UserUpsertWithoutAdvisorApplicationInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutAdvisorApplicationInput, UserUpdateWithoutAdvisorApplicationInput>, UserUncheckedUpdateWithoutAdvisorApplicationInput>
+  }
+
+  export type UserUpdateOneWithoutReviewedApplicationsNestedInput = {
+    create?: XOR<UserCreateWithoutReviewedApplicationsInput, UserUncheckedCreateWithoutReviewedApplicationsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutReviewedApplicationsInput
+    upsert?: UserUpsertWithoutReviewedApplicationsInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutReviewedApplicationsInput, UserUpdateWithoutReviewedApplicationsInput>, UserUncheckedUpdateWithoutReviewedApplicationsInput>
+  }
+
+  export type UserCreateNestedOneWithoutAdvisorAvailabilityInput = {
+    create?: XOR<UserCreateWithoutAdvisorAvailabilityInput, UserUncheckedCreateWithoutAdvisorAvailabilityInput>
+    connectOrCreate?: UserCreateOrConnectWithoutAdvisorAvailabilityInput
+    connect?: UserWhereUniqueInput
   }
 
   export type UserUpdateOneRequiredWithoutAdvisorAvailabilityNestedInput = {
@@ -71851,6 +73806,19 @@ export namespace Prisma {
     connect?: AdvisorAvailabilityWhereUniqueInput | AdvisorAvailabilityWhereUniqueInput[]
   }
 
+  export type AdvisorApplicationCreateNestedOneWithoutUserInput = {
+    create?: XOR<AdvisorApplicationCreateWithoutUserInput, AdvisorApplicationUncheckedCreateWithoutUserInput>
+    connectOrCreate?: AdvisorApplicationCreateOrConnectWithoutUserInput
+    connect?: AdvisorApplicationWhereUniqueInput
+  }
+
+  export type AdvisorApplicationCreateNestedManyWithoutReviewerInput = {
+    create?: XOR<AdvisorApplicationCreateWithoutReviewerInput, AdvisorApplicationUncheckedCreateWithoutReviewerInput> | AdvisorApplicationCreateWithoutReviewerInput[] | AdvisorApplicationUncheckedCreateWithoutReviewerInput[]
+    connectOrCreate?: AdvisorApplicationCreateOrConnectWithoutReviewerInput | AdvisorApplicationCreateOrConnectWithoutReviewerInput[]
+    createMany?: AdvisorApplicationCreateManyReviewerInputEnvelope
+    connect?: AdvisorApplicationWhereUniqueInput | AdvisorApplicationWhereUniqueInput[]
+  }
+
   export type AdvisorSessionCreateNestedManyWithoutAdvisorInput = {
     create?: XOR<AdvisorSessionCreateWithoutAdvisorInput, AdvisorSessionUncheckedCreateWithoutAdvisorInput> | AdvisorSessionCreateWithoutAdvisorInput[] | AdvisorSessionUncheckedCreateWithoutAdvisorInput[]
     connectOrCreate?: AdvisorSessionCreateOrConnectWithoutAdvisorInput | AdvisorSessionCreateOrConnectWithoutAdvisorInput[]
@@ -72064,6 +74032,19 @@ export namespace Prisma {
     connectOrCreate?: AdvisorAvailabilityCreateOrConnectWithoutAdvisorInput | AdvisorAvailabilityCreateOrConnectWithoutAdvisorInput[]
     createMany?: AdvisorAvailabilityCreateManyAdvisorInputEnvelope
     connect?: AdvisorAvailabilityWhereUniqueInput | AdvisorAvailabilityWhereUniqueInput[]
+  }
+
+  export type AdvisorApplicationUncheckedCreateNestedOneWithoutUserInput = {
+    create?: XOR<AdvisorApplicationCreateWithoutUserInput, AdvisorApplicationUncheckedCreateWithoutUserInput>
+    connectOrCreate?: AdvisorApplicationCreateOrConnectWithoutUserInput
+    connect?: AdvisorApplicationWhereUniqueInput
+  }
+
+  export type AdvisorApplicationUncheckedCreateNestedManyWithoutReviewerInput = {
+    create?: XOR<AdvisorApplicationCreateWithoutReviewerInput, AdvisorApplicationUncheckedCreateWithoutReviewerInput> | AdvisorApplicationCreateWithoutReviewerInput[] | AdvisorApplicationUncheckedCreateWithoutReviewerInput[]
+    connectOrCreate?: AdvisorApplicationCreateOrConnectWithoutReviewerInput | AdvisorApplicationCreateOrConnectWithoutReviewerInput[]
+    createMany?: AdvisorApplicationCreateManyReviewerInputEnvelope
+    connect?: AdvisorApplicationWhereUniqueInput | AdvisorApplicationWhereUniqueInput[]
   }
 
   export type AdvisorSessionUncheckedCreateNestedManyWithoutAdvisorInput = {
@@ -72293,6 +74274,30 @@ export namespace Prisma {
     update?: AdvisorAvailabilityUpdateWithWhereUniqueWithoutAdvisorInput | AdvisorAvailabilityUpdateWithWhereUniqueWithoutAdvisorInput[]
     updateMany?: AdvisorAvailabilityUpdateManyWithWhereWithoutAdvisorInput | AdvisorAvailabilityUpdateManyWithWhereWithoutAdvisorInput[]
     deleteMany?: AdvisorAvailabilityScalarWhereInput | AdvisorAvailabilityScalarWhereInput[]
+  }
+
+  export type AdvisorApplicationUpdateOneWithoutUserNestedInput = {
+    create?: XOR<AdvisorApplicationCreateWithoutUserInput, AdvisorApplicationUncheckedCreateWithoutUserInput>
+    connectOrCreate?: AdvisorApplicationCreateOrConnectWithoutUserInput
+    upsert?: AdvisorApplicationUpsertWithoutUserInput
+    disconnect?: AdvisorApplicationWhereInput | boolean
+    delete?: AdvisorApplicationWhereInput | boolean
+    connect?: AdvisorApplicationWhereUniqueInput
+    update?: XOR<XOR<AdvisorApplicationUpdateToOneWithWhereWithoutUserInput, AdvisorApplicationUpdateWithoutUserInput>, AdvisorApplicationUncheckedUpdateWithoutUserInput>
+  }
+
+  export type AdvisorApplicationUpdateManyWithoutReviewerNestedInput = {
+    create?: XOR<AdvisorApplicationCreateWithoutReviewerInput, AdvisorApplicationUncheckedCreateWithoutReviewerInput> | AdvisorApplicationCreateWithoutReviewerInput[] | AdvisorApplicationUncheckedCreateWithoutReviewerInput[]
+    connectOrCreate?: AdvisorApplicationCreateOrConnectWithoutReviewerInput | AdvisorApplicationCreateOrConnectWithoutReviewerInput[]
+    upsert?: AdvisorApplicationUpsertWithWhereUniqueWithoutReviewerInput | AdvisorApplicationUpsertWithWhereUniqueWithoutReviewerInput[]
+    createMany?: AdvisorApplicationCreateManyReviewerInputEnvelope
+    set?: AdvisorApplicationWhereUniqueInput | AdvisorApplicationWhereUniqueInput[]
+    disconnect?: AdvisorApplicationWhereUniqueInput | AdvisorApplicationWhereUniqueInput[]
+    delete?: AdvisorApplicationWhereUniqueInput | AdvisorApplicationWhereUniqueInput[]
+    connect?: AdvisorApplicationWhereUniqueInput | AdvisorApplicationWhereUniqueInput[]
+    update?: AdvisorApplicationUpdateWithWhereUniqueWithoutReviewerInput | AdvisorApplicationUpdateWithWhereUniqueWithoutReviewerInput[]
+    updateMany?: AdvisorApplicationUpdateManyWithWhereWithoutReviewerInput | AdvisorApplicationUpdateManyWithWhereWithoutReviewerInput[]
+    deleteMany?: AdvisorApplicationScalarWhereInput | AdvisorApplicationScalarWhereInput[]
   }
 
   export type AdvisorSessionUpdateManyWithoutAdvisorNestedInput = {
@@ -72719,6 +74724,30 @@ export namespace Prisma {
     update?: AdvisorAvailabilityUpdateWithWhereUniqueWithoutAdvisorInput | AdvisorAvailabilityUpdateWithWhereUniqueWithoutAdvisorInput[]
     updateMany?: AdvisorAvailabilityUpdateManyWithWhereWithoutAdvisorInput | AdvisorAvailabilityUpdateManyWithWhereWithoutAdvisorInput[]
     deleteMany?: AdvisorAvailabilityScalarWhereInput | AdvisorAvailabilityScalarWhereInput[]
+  }
+
+  export type AdvisorApplicationUncheckedUpdateOneWithoutUserNestedInput = {
+    create?: XOR<AdvisorApplicationCreateWithoutUserInput, AdvisorApplicationUncheckedCreateWithoutUserInput>
+    connectOrCreate?: AdvisorApplicationCreateOrConnectWithoutUserInput
+    upsert?: AdvisorApplicationUpsertWithoutUserInput
+    disconnect?: AdvisorApplicationWhereInput | boolean
+    delete?: AdvisorApplicationWhereInput | boolean
+    connect?: AdvisorApplicationWhereUniqueInput
+    update?: XOR<XOR<AdvisorApplicationUpdateToOneWithWhereWithoutUserInput, AdvisorApplicationUpdateWithoutUserInput>, AdvisorApplicationUncheckedUpdateWithoutUserInput>
+  }
+
+  export type AdvisorApplicationUncheckedUpdateManyWithoutReviewerNestedInput = {
+    create?: XOR<AdvisorApplicationCreateWithoutReviewerInput, AdvisorApplicationUncheckedCreateWithoutReviewerInput> | AdvisorApplicationCreateWithoutReviewerInput[] | AdvisorApplicationUncheckedCreateWithoutReviewerInput[]
+    connectOrCreate?: AdvisorApplicationCreateOrConnectWithoutReviewerInput | AdvisorApplicationCreateOrConnectWithoutReviewerInput[]
+    upsert?: AdvisorApplicationUpsertWithWhereUniqueWithoutReviewerInput | AdvisorApplicationUpsertWithWhereUniqueWithoutReviewerInput[]
+    createMany?: AdvisorApplicationCreateManyReviewerInputEnvelope
+    set?: AdvisorApplicationWhereUniqueInput | AdvisorApplicationWhereUniqueInput[]
+    disconnect?: AdvisorApplicationWhereUniqueInput | AdvisorApplicationWhereUniqueInput[]
+    delete?: AdvisorApplicationWhereUniqueInput | AdvisorApplicationWhereUniqueInput[]
+    connect?: AdvisorApplicationWhereUniqueInput | AdvisorApplicationWhereUniqueInput[]
+    update?: AdvisorApplicationUpdateWithWhereUniqueWithoutReviewerInput | AdvisorApplicationUpdateWithWhereUniqueWithoutReviewerInput[]
+    updateMany?: AdvisorApplicationUpdateManyWithWhereWithoutReviewerInput | AdvisorApplicationUpdateManyWithWhereWithoutReviewerInput[]
+    deleteMany?: AdvisorApplicationScalarWhereInput | AdvisorApplicationScalarWhereInput[]
   }
 
   export type AdvisorSessionUncheckedUpdateManyWithoutAdvisorNestedInput = {
@@ -73731,6 +75760,8 @@ export namespace Prisma {
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -73748,6 +75779,8 @@ export namespace Prisma {
     gender?: string | null
     state?: string | null
     advisorAvailability?: AdvisorAvailabilityCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationCreateNestedManyWithoutReviewerInput
     sessionsAsAdvisor?: AdvisorSessionCreateNestedManyWithoutAdvisorInput
     sessionsAsClient?: AdvisorSessionCreateNestedManyWithoutClientInput
     bookingsAsAdvisor?: BookingRequestCreateNestedManyWithoutAdvisorInput
@@ -73785,6 +75818,8 @@ export namespace Prisma {
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -73802,6 +75837,8 @@ export namespace Prisma {
     gender?: string | null
     state?: string | null
     advisorAvailability?: AdvisorAvailabilityUncheckedCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationUncheckedCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationUncheckedCreateNestedManyWithoutReviewerInput
     sessionsAsAdvisor?: AdvisorSessionUncheckedCreateNestedManyWithoutAdvisorInput
     sessionsAsClient?: AdvisorSessionUncheckedCreateNestedManyWithoutClientInput
     bookingsAsAdvisor?: BookingRequestUncheckedCreateNestedManyWithoutAdvisorInput
@@ -74029,6 +76066,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -74046,6 +76085,8 @@ export namespace Prisma {
     gender?: NullableStringFieldUpdateOperationsInput | string | null
     state?: NullableStringFieldUpdateOperationsInput | string | null
     advisorAvailability?: AdvisorAvailabilityUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUpdateManyWithoutReviewerNestedInput
     sessionsAsAdvisor?: AdvisorSessionUpdateManyWithoutAdvisorNestedInput
     sessionsAsClient?: AdvisorSessionUpdateManyWithoutClientNestedInput
     bookingsAsAdvisor?: BookingRequestUpdateManyWithoutAdvisorNestedInput
@@ -74083,6 +76124,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -74100,6 +76143,8 @@ export namespace Prisma {
     gender?: NullableStringFieldUpdateOperationsInput | string | null
     state?: NullableStringFieldUpdateOperationsInput | string | null
     advisorAvailability?: AdvisorAvailabilityUncheckedUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUncheckedUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUncheckedUpdateManyWithoutReviewerNestedInput
     sessionsAsAdvisor?: AdvisorSessionUncheckedUpdateManyWithoutAdvisorNestedInput
     sessionsAsClient?: AdvisorSessionUncheckedUpdateManyWithoutClientNestedInput
     bookingsAsAdvisor?: BookingRequestUncheckedUpdateManyWithoutAdvisorNestedInput
@@ -74261,12 +76306,14 @@ export namespace Prisma {
     deletedAt?: DateTimeNullableFilter<"GroupExpense"> | Date | string | null
   }
 
-  export type UserCreateWithoutAdvisorAvailabilityInput = {
+  export type UserCreateWithoutAdvisorApplicationInput = {
     id?: string
     email: string
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -74284,6 +76331,504 @@ export namespace Prisma {
     gender?: string | null
     state?: string | null
     accounts?: AccountCreateNestedManyWithoutUserInput
+    advisorAvailability?: AdvisorAvailabilityCreateNestedManyWithoutAdvisorInput
+    reviewedApplications?: AdvisorApplicationCreateNestedManyWithoutReviewerInput
+    sessionsAsAdvisor?: AdvisorSessionCreateNestedManyWithoutAdvisorInput
+    sessionsAsClient?: AdvisorSessionCreateNestedManyWithoutClientInput
+    bookingsAsAdvisor?: BookingRequestCreateNestedManyWithoutAdvisorInput
+    bookingsAsClient?: BookingRequestCreateNestedManyWithoutClientInput
+    categories?: CategoryCreateNestedManyWithoutUserInput
+    chatMessages?: ChatMessageCreateNestedManyWithoutSenderInput
+    devices?: DeviceCreateNestedManyWithoutUserInput
+    expenseBills?: ExpenseBillCreateNestedManyWithoutUserInput
+    friends?: FriendCreateNestedManyWithoutUserInput
+    goals?: GoalCreateNestedManyWithoutUserInput
+    goalContributions?: GoalContributionCreateNestedManyWithoutUserInput
+    importLogs?: ImportLogCreateNestedManyWithoutUserInput
+    investments?: InvestmentCreateNestedManyWithoutUserInput
+    loans?: LoanCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    paymentsAsAdvisor?: PaymentCreateNestedManyWithoutAdvisorInput
+    paymentsAsClient?: PaymentCreateNestedManyWithoutClientInput
+    refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
+    todos?: TodoCreateNestedManyWithoutUserInput
+    transactions?: TransactionCreateNestedManyWithoutUserInput
+    userPin?: UserPinCreateNestedOneWithoutUserInput
+    userSettings?: UserSettingsCreateNestedOneWithoutUserInput
+    otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
+    aiScans?: AiScanCreateNestedManyWithoutUserInput
+    groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
+    budgets?: BudgetCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutAdvisorApplicationInput = {
+    id?: string
+    email: string
+    name: string
+    password: string
+    role?: string
+    roleMode?: string
+    advisorStatus?: string
+    status?: string
+    isApproved?: boolean
+    firstName?: string | null
+    lastName?: string | null
+    salary?: Decimal | DecimalJsLike | number | string | null
+    dateOfBirth?: Date | string | null
+    jobType?: string | null
+    lastSynced?: Date | string | null
+    syncToken?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    avatarId?: string | null
+    city?: string | null
+    country?: string | null
+    gender?: string | null
+    state?: string | null
+    accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
+    advisorAvailability?: AdvisorAvailabilityUncheckedCreateNestedManyWithoutAdvisorInput
+    reviewedApplications?: AdvisorApplicationUncheckedCreateNestedManyWithoutReviewerInput
+    sessionsAsAdvisor?: AdvisorSessionUncheckedCreateNestedManyWithoutAdvisorInput
+    sessionsAsClient?: AdvisorSessionUncheckedCreateNestedManyWithoutClientInput
+    bookingsAsAdvisor?: BookingRequestUncheckedCreateNestedManyWithoutAdvisorInput
+    bookingsAsClient?: BookingRequestUncheckedCreateNestedManyWithoutClientInput
+    categories?: CategoryUncheckedCreateNestedManyWithoutUserInput
+    chatMessages?: ChatMessageUncheckedCreateNestedManyWithoutSenderInput
+    devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
+    expenseBills?: ExpenseBillUncheckedCreateNestedManyWithoutUserInput
+    friends?: FriendUncheckedCreateNestedManyWithoutUserInput
+    goals?: GoalUncheckedCreateNestedManyWithoutUserInput
+    goalContributions?: GoalContributionUncheckedCreateNestedManyWithoutUserInput
+    importLogs?: ImportLogUncheckedCreateNestedManyWithoutUserInput
+    investments?: InvestmentUncheckedCreateNestedManyWithoutUserInput
+    loans?: LoanUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    paymentsAsAdvisor?: PaymentUncheckedCreateNestedManyWithoutAdvisorInput
+    paymentsAsClient?: PaymentUncheckedCreateNestedManyWithoutClientInput
+    refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
+    todos?: TodoUncheckedCreateNestedManyWithoutUserInput
+    transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
+    userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
+    userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
+    otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
+    aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
+    groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
+    budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutAdvisorApplicationInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutAdvisorApplicationInput, UserUncheckedCreateWithoutAdvisorApplicationInput>
+  }
+
+  export type UserCreateWithoutReviewedApplicationsInput = {
+    id?: string
+    email: string
+    name: string
+    password: string
+    role?: string
+    roleMode?: string
+    advisorStatus?: string
+    status?: string
+    isApproved?: boolean
+    firstName?: string | null
+    lastName?: string | null
+    salary?: Decimal | DecimalJsLike | number | string | null
+    dateOfBirth?: Date | string | null
+    jobType?: string | null
+    lastSynced?: Date | string | null
+    syncToken?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    avatarId?: string | null
+    city?: string | null
+    country?: string | null
+    gender?: string | null
+    state?: string | null
+    accounts?: AccountCreateNestedManyWithoutUserInput
+    advisorAvailability?: AdvisorAvailabilityCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationCreateNestedOneWithoutUserInput
+    sessionsAsAdvisor?: AdvisorSessionCreateNestedManyWithoutAdvisorInput
+    sessionsAsClient?: AdvisorSessionCreateNestedManyWithoutClientInput
+    bookingsAsAdvisor?: BookingRequestCreateNestedManyWithoutAdvisorInput
+    bookingsAsClient?: BookingRequestCreateNestedManyWithoutClientInput
+    categories?: CategoryCreateNestedManyWithoutUserInput
+    chatMessages?: ChatMessageCreateNestedManyWithoutSenderInput
+    devices?: DeviceCreateNestedManyWithoutUserInput
+    expenseBills?: ExpenseBillCreateNestedManyWithoutUserInput
+    friends?: FriendCreateNestedManyWithoutUserInput
+    goals?: GoalCreateNestedManyWithoutUserInput
+    goalContributions?: GoalContributionCreateNestedManyWithoutUserInput
+    importLogs?: ImportLogCreateNestedManyWithoutUserInput
+    investments?: InvestmentCreateNestedManyWithoutUserInput
+    loans?: LoanCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    paymentsAsAdvisor?: PaymentCreateNestedManyWithoutAdvisorInput
+    paymentsAsClient?: PaymentCreateNestedManyWithoutClientInput
+    refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
+    todos?: TodoCreateNestedManyWithoutUserInput
+    transactions?: TransactionCreateNestedManyWithoutUserInput
+    userPin?: UserPinCreateNestedOneWithoutUserInput
+    userSettings?: UserSettingsCreateNestedOneWithoutUserInput
+    otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
+    aiScans?: AiScanCreateNestedManyWithoutUserInput
+    groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
+    budgets?: BudgetCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutReviewedApplicationsInput = {
+    id?: string
+    email: string
+    name: string
+    password: string
+    role?: string
+    roleMode?: string
+    advisorStatus?: string
+    status?: string
+    isApproved?: boolean
+    firstName?: string | null
+    lastName?: string | null
+    salary?: Decimal | DecimalJsLike | number | string | null
+    dateOfBirth?: Date | string | null
+    jobType?: string | null
+    lastSynced?: Date | string | null
+    syncToken?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    avatarId?: string | null
+    city?: string | null
+    country?: string | null
+    gender?: string | null
+    state?: string | null
+    accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
+    advisorAvailability?: AdvisorAvailabilityUncheckedCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationUncheckedCreateNestedOneWithoutUserInput
+    sessionsAsAdvisor?: AdvisorSessionUncheckedCreateNestedManyWithoutAdvisorInput
+    sessionsAsClient?: AdvisorSessionUncheckedCreateNestedManyWithoutClientInput
+    bookingsAsAdvisor?: BookingRequestUncheckedCreateNestedManyWithoutAdvisorInput
+    bookingsAsClient?: BookingRequestUncheckedCreateNestedManyWithoutClientInput
+    categories?: CategoryUncheckedCreateNestedManyWithoutUserInput
+    chatMessages?: ChatMessageUncheckedCreateNestedManyWithoutSenderInput
+    devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
+    expenseBills?: ExpenseBillUncheckedCreateNestedManyWithoutUserInput
+    friends?: FriendUncheckedCreateNestedManyWithoutUserInput
+    goals?: GoalUncheckedCreateNestedManyWithoutUserInput
+    goalContributions?: GoalContributionUncheckedCreateNestedManyWithoutUserInput
+    importLogs?: ImportLogUncheckedCreateNestedManyWithoutUserInput
+    investments?: InvestmentUncheckedCreateNestedManyWithoutUserInput
+    loans?: LoanUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    paymentsAsAdvisor?: PaymentUncheckedCreateNestedManyWithoutAdvisorInput
+    paymentsAsClient?: PaymentUncheckedCreateNestedManyWithoutClientInput
+    refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
+    todos?: TodoUncheckedCreateNestedManyWithoutUserInput
+    transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
+    userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
+    userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
+    otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
+    aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
+    groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
+    budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutReviewedApplicationsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutReviewedApplicationsInput, UserUncheckedCreateWithoutReviewedApplicationsInput>
+  }
+
+  export type UserUpsertWithoutAdvisorApplicationInput = {
+    update: XOR<UserUpdateWithoutAdvisorApplicationInput, UserUncheckedUpdateWithoutAdvisorApplicationInput>
+    create: XOR<UserCreateWithoutAdvisorApplicationInput, UserUncheckedCreateWithoutAdvisorApplicationInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutAdvisorApplicationInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutAdvisorApplicationInput, UserUncheckedUpdateWithoutAdvisorApplicationInput>
+  }
+
+  export type UserUpdateWithoutAdvisorApplicationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    isApproved?: BoolFieldUpdateOperationsInput | boolean
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    jobType?: NullableStringFieldUpdateOperationsInput | string | null
+    lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    syncToken?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    avatarId?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableStringFieldUpdateOperationsInput | string | null
+    state?: NullableStringFieldUpdateOperationsInput | string | null
+    accounts?: AccountUpdateManyWithoutUserNestedInput
+    advisorAvailability?: AdvisorAvailabilityUpdateManyWithoutAdvisorNestedInput
+    reviewedApplications?: AdvisorApplicationUpdateManyWithoutReviewerNestedInput
+    sessionsAsAdvisor?: AdvisorSessionUpdateManyWithoutAdvisorNestedInput
+    sessionsAsClient?: AdvisorSessionUpdateManyWithoutClientNestedInput
+    bookingsAsAdvisor?: BookingRequestUpdateManyWithoutAdvisorNestedInput
+    bookingsAsClient?: BookingRequestUpdateManyWithoutClientNestedInput
+    categories?: CategoryUpdateManyWithoutUserNestedInput
+    chatMessages?: ChatMessageUpdateManyWithoutSenderNestedInput
+    devices?: DeviceUpdateManyWithoutUserNestedInput
+    expenseBills?: ExpenseBillUpdateManyWithoutUserNestedInput
+    friends?: FriendUpdateManyWithoutUserNestedInput
+    goals?: GoalUpdateManyWithoutUserNestedInput
+    goalContributions?: GoalContributionUpdateManyWithoutUserNestedInput
+    importLogs?: ImportLogUpdateManyWithoutUserNestedInput
+    investments?: InvestmentUpdateManyWithoutUserNestedInput
+    loans?: LoanUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    paymentsAsAdvisor?: PaymentUpdateManyWithoutAdvisorNestedInput
+    paymentsAsClient?: PaymentUpdateManyWithoutClientNestedInput
+    refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
+    todos?: TodoUpdateManyWithoutUserNestedInput
+    transactions?: TransactionUpdateManyWithoutUserNestedInput
+    userPin?: UserPinUpdateOneWithoutUserNestedInput
+    userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
+    otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
+    aiScans?: AiScanUpdateManyWithoutUserNestedInput
+    groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutAdvisorApplicationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    isApproved?: BoolFieldUpdateOperationsInput | boolean
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    jobType?: NullableStringFieldUpdateOperationsInput | string | null
+    lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    syncToken?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    avatarId?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableStringFieldUpdateOperationsInput | string | null
+    state?: NullableStringFieldUpdateOperationsInput | string | null
+    accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
+    advisorAvailability?: AdvisorAvailabilityUncheckedUpdateManyWithoutAdvisorNestedInput
+    reviewedApplications?: AdvisorApplicationUncheckedUpdateManyWithoutReviewerNestedInput
+    sessionsAsAdvisor?: AdvisorSessionUncheckedUpdateManyWithoutAdvisorNestedInput
+    sessionsAsClient?: AdvisorSessionUncheckedUpdateManyWithoutClientNestedInput
+    bookingsAsAdvisor?: BookingRequestUncheckedUpdateManyWithoutAdvisorNestedInput
+    bookingsAsClient?: BookingRequestUncheckedUpdateManyWithoutClientNestedInput
+    categories?: CategoryUncheckedUpdateManyWithoutUserNestedInput
+    chatMessages?: ChatMessageUncheckedUpdateManyWithoutSenderNestedInput
+    devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
+    expenseBills?: ExpenseBillUncheckedUpdateManyWithoutUserNestedInput
+    friends?: FriendUncheckedUpdateManyWithoutUserNestedInput
+    goals?: GoalUncheckedUpdateManyWithoutUserNestedInput
+    goalContributions?: GoalContributionUncheckedUpdateManyWithoutUserNestedInput
+    importLogs?: ImportLogUncheckedUpdateManyWithoutUserNestedInput
+    investments?: InvestmentUncheckedUpdateManyWithoutUserNestedInput
+    loans?: LoanUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    paymentsAsAdvisor?: PaymentUncheckedUpdateManyWithoutAdvisorNestedInput
+    paymentsAsClient?: PaymentUncheckedUpdateManyWithoutClientNestedInput
+    refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
+    todos?: TodoUncheckedUpdateManyWithoutUserNestedInput
+    transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
+    userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
+    userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+    otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
+    aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
+    groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUpsertWithoutReviewedApplicationsInput = {
+    update: XOR<UserUpdateWithoutReviewedApplicationsInput, UserUncheckedUpdateWithoutReviewedApplicationsInput>
+    create: XOR<UserCreateWithoutReviewedApplicationsInput, UserUncheckedCreateWithoutReviewedApplicationsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutReviewedApplicationsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutReviewedApplicationsInput, UserUncheckedUpdateWithoutReviewedApplicationsInput>
+  }
+
+  export type UserUpdateWithoutReviewedApplicationsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    isApproved?: BoolFieldUpdateOperationsInput | boolean
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    jobType?: NullableStringFieldUpdateOperationsInput | string | null
+    lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    syncToken?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    avatarId?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableStringFieldUpdateOperationsInput | string | null
+    state?: NullableStringFieldUpdateOperationsInput | string | null
+    accounts?: AccountUpdateManyWithoutUserNestedInput
+    advisorAvailability?: AdvisorAvailabilityUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUpdateOneWithoutUserNestedInput
+    sessionsAsAdvisor?: AdvisorSessionUpdateManyWithoutAdvisorNestedInput
+    sessionsAsClient?: AdvisorSessionUpdateManyWithoutClientNestedInput
+    bookingsAsAdvisor?: BookingRequestUpdateManyWithoutAdvisorNestedInput
+    bookingsAsClient?: BookingRequestUpdateManyWithoutClientNestedInput
+    categories?: CategoryUpdateManyWithoutUserNestedInput
+    chatMessages?: ChatMessageUpdateManyWithoutSenderNestedInput
+    devices?: DeviceUpdateManyWithoutUserNestedInput
+    expenseBills?: ExpenseBillUpdateManyWithoutUserNestedInput
+    friends?: FriendUpdateManyWithoutUserNestedInput
+    goals?: GoalUpdateManyWithoutUserNestedInput
+    goalContributions?: GoalContributionUpdateManyWithoutUserNestedInput
+    importLogs?: ImportLogUpdateManyWithoutUserNestedInput
+    investments?: InvestmentUpdateManyWithoutUserNestedInput
+    loans?: LoanUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    paymentsAsAdvisor?: PaymentUpdateManyWithoutAdvisorNestedInput
+    paymentsAsClient?: PaymentUpdateManyWithoutClientNestedInput
+    refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
+    todos?: TodoUpdateManyWithoutUserNestedInput
+    transactions?: TransactionUpdateManyWithoutUserNestedInput
+    userPin?: UserPinUpdateOneWithoutUserNestedInput
+    userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
+    otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
+    aiScans?: AiScanUpdateManyWithoutUserNestedInput
+    groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutReviewedApplicationsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    isApproved?: BoolFieldUpdateOperationsInput | boolean
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    jobType?: NullableStringFieldUpdateOperationsInput | string | null
+    lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    syncToken?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    avatarId?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableStringFieldUpdateOperationsInput | string | null
+    state?: NullableStringFieldUpdateOperationsInput | string | null
+    accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
+    advisorAvailability?: AdvisorAvailabilityUncheckedUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUncheckedUpdateOneWithoutUserNestedInput
+    sessionsAsAdvisor?: AdvisorSessionUncheckedUpdateManyWithoutAdvisorNestedInput
+    sessionsAsClient?: AdvisorSessionUncheckedUpdateManyWithoutClientNestedInput
+    bookingsAsAdvisor?: BookingRequestUncheckedUpdateManyWithoutAdvisorNestedInput
+    bookingsAsClient?: BookingRequestUncheckedUpdateManyWithoutClientNestedInput
+    categories?: CategoryUncheckedUpdateManyWithoutUserNestedInput
+    chatMessages?: ChatMessageUncheckedUpdateManyWithoutSenderNestedInput
+    devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
+    expenseBills?: ExpenseBillUncheckedUpdateManyWithoutUserNestedInput
+    friends?: FriendUncheckedUpdateManyWithoutUserNestedInput
+    goals?: GoalUncheckedUpdateManyWithoutUserNestedInput
+    goalContributions?: GoalContributionUncheckedUpdateManyWithoutUserNestedInput
+    importLogs?: ImportLogUncheckedUpdateManyWithoutUserNestedInput
+    investments?: InvestmentUncheckedUpdateManyWithoutUserNestedInput
+    loans?: LoanUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    paymentsAsAdvisor?: PaymentUncheckedUpdateManyWithoutAdvisorNestedInput
+    paymentsAsClient?: PaymentUncheckedUpdateManyWithoutClientNestedInput
+    refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
+    todos?: TodoUncheckedUpdateManyWithoutUserNestedInput
+    transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
+    userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
+    userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+    otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
+    aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
+    groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserCreateWithoutAdvisorAvailabilityInput = {
+    id?: string
+    email: string
+    name: string
+    password: string
+    role?: string
+    roleMode?: string
+    advisorStatus?: string
+    status?: string
+    isApproved?: boolean
+    firstName?: string | null
+    lastName?: string | null
+    salary?: Decimal | DecimalJsLike | number | string | null
+    dateOfBirth?: Date | string | null
+    jobType?: string | null
+    lastSynced?: Date | string | null
+    syncToken?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    avatarId?: string | null
+    city?: string | null
+    country?: string | null
+    gender?: string | null
+    state?: string | null
+    accounts?: AccountCreateNestedManyWithoutUserInput
+    advisorApplication?: AdvisorApplicationCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationCreateNestedManyWithoutReviewerInput
     sessionsAsAdvisor?: AdvisorSessionCreateNestedManyWithoutAdvisorInput
     sessionsAsClient?: AdvisorSessionCreateNestedManyWithoutClientInput
     bookingsAsAdvisor?: BookingRequestCreateNestedManyWithoutAdvisorInput
@@ -74321,6 +76866,8 @@ export namespace Prisma {
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -74338,6 +76885,8 @@ export namespace Prisma {
     gender?: string | null
     state?: string | null
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
+    advisorApplication?: AdvisorApplicationUncheckedCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationUncheckedCreateNestedManyWithoutReviewerInput
     sessionsAsAdvisor?: AdvisorSessionUncheckedCreateNestedManyWithoutAdvisorInput
     sessionsAsClient?: AdvisorSessionUncheckedCreateNestedManyWithoutClientInput
     bookingsAsAdvisor?: BookingRequestUncheckedCreateNestedManyWithoutAdvisorInput
@@ -74391,6 +76940,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -74408,6 +76959,8 @@ export namespace Prisma {
     gender?: NullableStringFieldUpdateOperationsInput | string | null
     state?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUpdateManyWithoutUserNestedInput
+    advisorApplication?: AdvisorApplicationUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUpdateManyWithoutReviewerNestedInput
     sessionsAsAdvisor?: AdvisorSessionUpdateManyWithoutAdvisorNestedInput
     sessionsAsClient?: AdvisorSessionUpdateManyWithoutClientNestedInput
     bookingsAsAdvisor?: BookingRequestUpdateManyWithoutAdvisorNestedInput
@@ -74445,6 +76998,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -74462,6 +77017,8 @@ export namespace Prisma {
     gender?: NullableStringFieldUpdateOperationsInput | string | null
     state?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
+    advisorApplication?: AdvisorApplicationUncheckedUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUncheckedUpdateManyWithoutReviewerNestedInput
     sessionsAsAdvisor?: AdvisorSessionUncheckedUpdateManyWithoutAdvisorNestedInput
     sessionsAsClient?: AdvisorSessionUncheckedUpdateManyWithoutClientNestedInput
     bookingsAsAdvisor?: BookingRequestUncheckedUpdateManyWithoutAdvisorNestedInput
@@ -74499,6 +77056,8 @@ export namespace Prisma {
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -74517,6 +77076,8 @@ export namespace Prisma {
     state?: string | null
     accounts?: AccountCreateNestedManyWithoutUserInput
     advisorAvailability?: AdvisorAvailabilityCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationCreateNestedManyWithoutReviewerInput
     sessionsAsClient?: AdvisorSessionCreateNestedManyWithoutClientInput
     bookingsAsAdvisor?: BookingRequestCreateNestedManyWithoutAdvisorInput
     bookingsAsClient?: BookingRequestCreateNestedManyWithoutClientInput
@@ -74553,6 +77114,8 @@ export namespace Prisma {
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -74571,6 +77134,8 @@ export namespace Prisma {
     state?: string | null
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     advisorAvailability?: AdvisorAvailabilityUncheckedCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationUncheckedCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationUncheckedCreateNestedManyWithoutReviewerInput
     sessionsAsClient?: AdvisorSessionUncheckedCreateNestedManyWithoutClientInput
     bookingsAsAdvisor?: BookingRequestUncheckedCreateNestedManyWithoutAdvisorInput
     bookingsAsClient?: BookingRequestUncheckedCreateNestedManyWithoutClientInput
@@ -74649,6 +77214,8 @@ export namespace Prisma {
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -74667,6 +77234,8 @@ export namespace Prisma {
     state?: string | null
     accounts?: AccountCreateNestedManyWithoutUserInput
     advisorAvailability?: AdvisorAvailabilityCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationCreateNestedManyWithoutReviewerInput
     sessionsAsAdvisor?: AdvisorSessionCreateNestedManyWithoutAdvisorInput
     bookingsAsAdvisor?: BookingRequestCreateNestedManyWithoutAdvisorInput
     bookingsAsClient?: BookingRequestCreateNestedManyWithoutClientInput
@@ -74703,6 +77272,8 @@ export namespace Prisma {
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -74721,6 +77292,8 @@ export namespace Prisma {
     state?: string | null
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     advisorAvailability?: AdvisorAvailabilityUncheckedCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationUncheckedCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationUncheckedCreateNestedManyWithoutReviewerInput
     sessionsAsAdvisor?: AdvisorSessionUncheckedCreateNestedManyWithoutAdvisorInput
     bookingsAsAdvisor?: BookingRequestUncheckedCreateNestedManyWithoutAdvisorInput
     bookingsAsClient?: BookingRequestUncheckedCreateNestedManyWithoutClientInput
@@ -74830,6 +77403,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -74848,6 +77423,8 @@ export namespace Prisma {
     state?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUpdateManyWithoutUserNestedInput
     advisorAvailability?: AdvisorAvailabilityUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUpdateManyWithoutReviewerNestedInput
     sessionsAsClient?: AdvisorSessionUpdateManyWithoutClientNestedInput
     bookingsAsAdvisor?: BookingRequestUpdateManyWithoutAdvisorNestedInput
     bookingsAsClient?: BookingRequestUpdateManyWithoutClientNestedInput
@@ -74884,6 +77461,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -74902,6 +77481,8 @@ export namespace Prisma {
     state?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     advisorAvailability?: AdvisorAvailabilityUncheckedUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUncheckedUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUncheckedUpdateManyWithoutReviewerNestedInput
     sessionsAsClient?: AdvisorSessionUncheckedUpdateManyWithoutClientNestedInput
     bookingsAsAdvisor?: BookingRequestUncheckedUpdateManyWithoutAdvisorNestedInput
     bookingsAsClient?: BookingRequestUncheckedUpdateManyWithoutClientNestedInput
@@ -74992,6 +77573,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -75010,6 +77593,8 @@ export namespace Prisma {
     state?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUpdateManyWithoutUserNestedInput
     advisorAvailability?: AdvisorAvailabilityUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUpdateManyWithoutReviewerNestedInput
     sessionsAsAdvisor?: AdvisorSessionUpdateManyWithoutAdvisorNestedInput
     bookingsAsAdvisor?: BookingRequestUpdateManyWithoutAdvisorNestedInput
     bookingsAsClient?: BookingRequestUpdateManyWithoutClientNestedInput
@@ -75046,6 +77631,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -75064,6 +77651,8 @@ export namespace Prisma {
     state?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     advisorAvailability?: AdvisorAvailabilityUncheckedUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUncheckedUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUncheckedUpdateManyWithoutReviewerNestedInput
     sessionsAsAdvisor?: AdvisorSessionUncheckedUpdateManyWithoutAdvisorNestedInput
     bookingsAsAdvisor?: BookingRequestUncheckedUpdateManyWithoutAdvisorNestedInput
     bookingsAsClient?: BookingRequestUncheckedUpdateManyWithoutClientNestedInput
@@ -75205,6 +77794,8 @@ export namespace Prisma {
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -75223,6 +77814,8 @@ export namespace Prisma {
     state?: string | null
     accounts?: AccountCreateNestedManyWithoutUserInput
     advisorAvailability?: AdvisorAvailabilityCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationCreateNestedManyWithoutReviewerInput
     sessionsAsAdvisor?: AdvisorSessionCreateNestedManyWithoutAdvisorInput
     sessionsAsClient?: AdvisorSessionCreateNestedManyWithoutClientInput
     bookingsAsClient?: BookingRequestCreateNestedManyWithoutClientInput
@@ -75259,6 +77852,8 @@ export namespace Prisma {
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -75277,6 +77872,8 @@ export namespace Prisma {
     state?: string | null
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     advisorAvailability?: AdvisorAvailabilityUncheckedCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationUncheckedCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationUncheckedCreateNestedManyWithoutReviewerInput
     sessionsAsAdvisor?: AdvisorSessionUncheckedCreateNestedManyWithoutAdvisorInput
     sessionsAsClient?: AdvisorSessionUncheckedCreateNestedManyWithoutClientInput
     bookingsAsClient?: BookingRequestUncheckedCreateNestedManyWithoutClientInput
@@ -75318,6 +77915,8 @@ export namespace Prisma {
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -75336,6 +77935,8 @@ export namespace Prisma {
     state?: string | null
     accounts?: AccountCreateNestedManyWithoutUserInput
     advisorAvailability?: AdvisorAvailabilityCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationCreateNestedManyWithoutReviewerInput
     sessionsAsAdvisor?: AdvisorSessionCreateNestedManyWithoutAdvisorInput
     sessionsAsClient?: AdvisorSessionCreateNestedManyWithoutClientInput
     bookingsAsAdvisor?: BookingRequestCreateNestedManyWithoutAdvisorInput
@@ -75372,6 +77973,8 @@ export namespace Prisma {
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -75390,6 +77993,8 @@ export namespace Prisma {
     state?: string | null
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     advisorAvailability?: AdvisorAvailabilityUncheckedCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationUncheckedCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationUncheckedCreateNestedManyWithoutReviewerInput
     sessionsAsAdvisor?: AdvisorSessionUncheckedCreateNestedManyWithoutAdvisorInput
     sessionsAsClient?: AdvisorSessionUncheckedCreateNestedManyWithoutClientInput
     bookingsAsAdvisor?: BookingRequestUncheckedCreateNestedManyWithoutAdvisorInput
@@ -75487,6 +78092,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -75505,6 +78112,8 @@ export namespace Prisma {
     state?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUpdateManyWithoutUserNestedInput
     advisorAvailability?: AdvisorAvailabilityUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUpdateManyWithoutReviewerNestedInput
     sessionsAsAdvisor?: AdvisorSessionUpdateManyWithoutAdvisorNestedInput
     sessionsAsClient?: AdvisorSessionUpdateManyWithoutClientNestedInput
     bookingsAsClient?: BookingRequestUpdateManyWithoutClientNestedInput
@@ -75541,6 +78150,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -75559,6 +78170,8 @@ export namespace Prisma {
     state?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     advisorAvailability?: AdvisorAvailabilityUncheckedUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUncheckedUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUncheckedUpdateManyWithoutReviewerNestedInput
     sessionsAsAdvisor?: AdvisorSessionUncheckedUpdateManyWithoutAdvisorNestedInput
     sessionsAsClient?: AdvisorSessionUncheckedUpdateManyWithoutClientNestedInput
     bookingsAsClient?: BookingRequestUncheckedUpdateManyWithoutClientNestedInput
@@ -75606,6 +78219,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -75624,6 +78239,8 @@ export namespace Prisma {
     state?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUpdateManyWithoutUserNestedInput
     advisorAvailability?: AdvisorAvailabilityUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUpdateManyWithoutReviewerNestedInput
     sessionsAsAdvisor?: AdvisorSessionUpdateManyWithoutAdvisorNestedInput
     sessionsAsClient?: AdvisorSessionUpdateManyWithoutClientNestedInput
     bookingsAsAdvisor?: BookingRequestUpdateManyWithoutAdvisorNestedInput
@@ -75660,6 +78277,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -75678,6 +78297,8 @@ export namespace Prisma {
     state?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     advisorAvailability?: AdvisorAvailabilityUncheckedUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUncheckedUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUncheckedUpdateManyWithoutReviewerNestedInput
     sessionsAsAdvisor?: AdvisorSessionUncheckedUpdateManyWithoutAdvisorNestedInput
     sessionsAsClient?: AdvisorSessionUncheckedUpdateManyWithoutClientNestedInput
     bookingsAsAdvisor?: BookingRequestUncheckedUpdateManyWithoutAdvisorNestedInput
@@ -75714,6 +78335,8 @@ export namespace Prisma {
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -75732,6 +78355,8 @@ export namespace Prisma {
     state?: string | null
     accounts?: AccountCreateNestedManyWithoutUserInput
     advisorAvailability?: AdvisorAvailabilityCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationCreateNestedManyWithoutReviewerInput
     sessionsAsAdvisor?: AdvisorSessionCreateNestedManyWithoutAdvisorInput
     sessionsAsClient?: AdvisorSessionCreateNestedManyWithoutClientInput
     bookingsAsAdvisor?: BookingRequestCreateNestedManyWithoutAdvisorInput
@@ -75768,6 +78393,8 @@ export namespace Prisma {
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -75786,6 +78413,8 @@ export namespace Prisma {
     state?: string | null
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     advisorAvailability?: AdvisorAvailabilityUncheckedCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationUncheckedCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationUncheckedCreateNestedManyWithoutReviewerInput
     sessionsAsAdvisor?: AdvisorSessionUncheckedCreateNestedManyWithoutAdvisorInput
     sessionsAsClient?: AdvisorSessionUncheckedCreateNestedManyWithoutClientInput
     bookingsAsAdvisor?: BookingRequestUncheckedCreateNestedManyWithoutAdvisorInput
@@ -75838,6 +78467,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -75856,6 +78487,8 @@ export namespace Prisma {
     state?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUpdateManyWithoutUserNestedInput
     advisorAvailability?: AdvisorAvailabilityUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUpdateManyWithoutReviewerNestedInput
     sessionsAsAdvisor?: AdvisorSessionUpdateManyWithoutAdvisorNestedInput
     sessionsAsClient?: AdvisorSessionUpdateManyWithoutClientNestedInput
     bookingsAsAdvisor?: BookingRequestUpdateManyWithoutAdvisorNestedInput
@@ -75892,6 +78525,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -75910,6 +78545,8 @@ export namespace Prisma {
     state?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     advisorAvailability?: AdvisorAvailabilityUncheckedUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUncheckedUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUncheckedUpdateManyWithoutReviewerNestedInput
     sessionsAsAdvisor?: AdvisorSessionUncheckedUpdateManyWithoutAdvisorNestedInput
     sessionsAsClient?: AdvisorSessionUncheckedUpdateManyWithoutClientNestedInput
     bookingsAsAdvisor?: BookingRequestUncheckedUpdateManyWithoutAdvisorNestedInput
@@ -75946,6 +78583,8 @@ export namespace Prisma {
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -75964,6 +78603,8 @@ export namespace Prisma {
     state?: string | null
     accounts?: AccountCreateNestedManyWithoutUserInput
     advisorAvailability?: AdvisorAvailabilityCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationCreateNestedManyWithoutReviewerInput
     sessionsAsAdvisor?: AdvisorSessionCreateNestedManyWithoutAdvisorInput
     sessionsAsClient?: AdvisorSessionCreateNestedManyWithoutClientInput
     bookingsAsAdvisor?: BookingRequestCreateNestedManyWithoutAdvisorInput
@@ -76000,6 +78641,8 @@ export namespace Prisma {
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -76018,6 +78661,8 @@ export namespace Prisma {
     state?: string | null
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     advisorAvailability?: AdvisorAvailabilityUncheckedCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationUncheckedCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationUncheckedCreateNestedManyWithoutReviewerInput
     sessionsAsAdvisor?: AdvisorSessionUncheckedCreateNestedManyWithoutAdvisorInput
     sessionsAsClient?: AdvisorSessionUncheckedCreateNestedManyWithoutClientInput
     bookingsAsAdvisor?: BookingRequestUncheckedCreateNestedManyWithoutAdvisorInput
@@ -76109,6 +78754,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -76127,6 +78774,8 @@ export namespace Prisma {
     state?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUpdateManyWithoutUserNestedInput
     advisorAvailability?: AdvisorAvailabilityUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUpdateManyWithoutReviewerNestedInput
     sessionsAsAdvisor?: AdvisorSessionUpdateManyWithoutAdvisorNestedInput
     sessionsAsClient?: AdvisorSessionUpdateManyWithoutClientNestedInput
     bookingsAsAdvisor?: BookingRequestUpdateManyWithoutAdvisorNestedInput
@@ -76163,6 +78812,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -76181,6 +78832,8 @@ export namespace Prisma {
     state?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     advisorAvailability?: AdvisorAvailabilityUncheckedUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUncheckedUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUncheckedUpdateManyWithoutReviewerNestedInput
     sessionsAsAdvisor?: AdvisorSessionUncheckedUpdateManyWithoutAdvisorNestedInput
     sessionsAsClient?: AdvisorSessionUncheckedUpdateManyWithoutClientNestedInput
     bookingsAsAdvisor?: BookingRequestUncheckedUpdateManyWithoutAdvisorNestedInput
@@ -76262,6 +78915,8 @@ export namespace Prisma {
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -76280,6 +78935,8 @@ export namespace Prisma {
     state?: string | null
     accounts?: AccountCreateNestedManyWithoutUserInput
     advisorAvailability?: AdvisorAvailabilityCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationCreateNestedManyWithoutReviewerInput
     sessionsAsAdvisor?: AdvisorSessionCreateNestedManyWithoutAdvisorInput
     sessionsAsClient?: AdvisorSessionCreateNestedManyWithoutClientInput
     bookingsAsAdvisor?: BookingRequestCreateNestedManyWithoutAdvisorInput
@@ -76316,6 +78973,8 @@ export namespace Prisma {
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -76334,6 +78993,8 @@ export namespace Prisma {
     state?: string | null
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     advisorAvailability?: AdvisorAvailabilityUncheckedCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationUncheckedCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationUncheckedCreateNestedManyWithoutReviewerInput
     sessionsAsAdvisor?: AdvisorSessionUncheckedCreateNestedManyWithoutAdvisorInput
     sessionsAsClient?: AdvisorSessionUncheckedCreateNestedManyWithoutClientInput
     bookingsAsAdvisor?: BookingRequestUncheckedCreateNestedManyWithoutAdvisorInput
@@ -76386,6 +79047,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -76404,6 +79067,8 @@ export namespace Prisma {
     state?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUpdateManyWithoutUserNestedInput
     advisorAvailability?: AdvisorAvailabilityUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUpdateManyWithoutReviewerNestedInput
     sessionsAsAdvisor?: AdvisorSessionUpdateManyWithoutAdvisorNestedInput
     sessionsAsClient?: AdvisorSessionUpdateManyWithoutClientNestedInput
     bookingsAsAdvisor?: BookingRequestUpdateManyWithoutAdvisorNestedInput
@@ -76440,6 +79105,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -76458,6 +79125,8 @@ export namespace Prisma {
     state?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     advisorAvailability?: AdvisorAvailabilityUncheckedUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUncheckedUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUncheckedUpdateManyWithoutReviewerNestedInput
     sessionsAsAdvisor?: AdvisorSessionUncheckedUpdateManyWithoutAdvisorNestedInput
     sessionsAsClient?: AdvisorSessionUncheckedUpdateManyWithoutClientNestedInput
     bookingsAsAdvisor?: BookingRequestUncheckedUpdateManyWithoutAdvisorNestedInput
@@ -76494,6 +79163,8 @@ export namespace Prisma {
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -76512,6 +79183,8 @@ export namespace Prisma {
     state?: string | null
     accounts?: AccountCreateNestedManyWithoutUserInput
     advisorAvailability?: AdvisorAvailabilityCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationCreateNestedManyWithoutReviewerInput
     sessionsAsAdvisor?: AdvisorSessionCreateNestedManyWithoutAdvisorInput
     sessionsAsClient?: AdvisorSessionCreateNestedManyWithoutClientInput
     bookingsAsAdvisor?: BookingRequestCreateNestedManyWithoutAdvisorInput
@@ -76548,6 +79221,8 @@ export namespace Prisma {
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -76566,6 +79241,8 @@ export namespace Prisma {
     state?: string | null
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     advisorAvailability?: AdvisorAvailabilityUncheckedCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationUncheckedCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationUncheckedCreateNestedManyWithoutReviewerInput
     sessionsAsAdvisor?: AdvisorSessionUncheckedCreateNestedManyWithoutAdvisorInput
     sessionsAsClient?: AdvisorSessionUncheckedCreateNestedManyWithoutClientInput
     bookingsAsAdvisor?: BookingRequestUncheckedCreateNestedManyWithoutAdvisorInput
@@ -76618,6 +79295,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -76636,6 +79315,8 @@ export namespace Prisma {
     state?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUpdateManyWithoutUserNestedInput
     advisorAvailability?: AdvisorAvailabilityUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUpdateManyWithoutReviewerNestedInput
     sessionsAsAdvisor?: AdvisorSessionUpdateManyWithoutAdvisorNestedInput
     sessionsAsClient?: AdvisorSessionUpdateManyWithoutClientNestedInput
     bookingsAsAdvisor?: BookingRequestUpdateManyWithoutAdvisorNestedInput
@@ -76672,6 +79353,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -76690,6 +79373,8 @@ export namespace Prisma {
     state?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     advisorAvailability?: AdvisorAvailabilityUncheckedUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUncheckedUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUncheckedUpdateManyWithoutReviewerNestedInput
     sessionsAsAdvisor?: AdvisorSessionUncheckedUpdateManyWithoutAdvisorNestedInput
     sessionsAsClient?: AdvisorSessionUncheckedUpdateManyWithoutClientNestedInput
     bookingsAsAdvisor?: BookingRequestUncheckedUpdateManyWithoutAdvisorNestedInput
@@ -76726,6 +79411,8 @@ export namespace Prisma {
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -76744,6 +79431,8 @@ export namespace Prisma {
     state?: string | null
     accounts?: AccountCreateNestedManyWithoutUserInput
     advisorAvailability?: AdvisorAvailabilityCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationCreateNestedManyWithoutReviewerInput
     sessionsAsAdvisor?: AdvisorSessionCreateNestedManyWithoutAdvisorInput
     sessionsAsClient?: AdvisorSessionCreateNestedManyWithoutClientInput
     bookingsAsAdvisor?: BookingRequestCreateNestedManyWithoutAdvisorInput
@@ -76780,6 +79469,8 @@ export namespace Prisma {
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -76798,6 +79489,8 @@ export namespace Prisma {
     state?: string | null
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     advisorAvailability?: AdvisorAvailabilityUncheckedCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationUncheckedCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationUncheckedCreateNestedManyWithoutReviewerInput
     sessionsAsAdvisor?: AdvisorSessionUncheckedCreateNestedManyWithoutAdvisorInput
     sessionsAsClient?: AdvisorSessionUncheckedCreateNestedManyWithoutClientInput
     bookingsAsAdvisor?: BookingRequestUncheckedCreateNestedManyWithoutAdvisorInput
@@ -76850,6 +79543,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -76868,6 +79563,8 @@ export namespace Prisma {
     state?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUpdateManyWithoutUserNestedInput
     advisorAvailability?: AdvisorAvailabilityUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUpdateManyWithoutReviewerNestedInput
     sessionsAsAdvisor?: AdvisorSessionUpdateManyWithoutAdvisorNestedInput
     sessionsAsClient?: AdvisorSessionUpdateManyWithoutClientNestedInput
     bookingsAsAdvisor?: BookingRequestUpdateManyWithoutAdvisorNestedInput
@@ -76904,6 +79601,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -76922,6 +79621,8 @@ export namespace Prisma {
     state?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     advisorAvailability?: AdvisorAvailabilityUncheckedUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUncheckedUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUncheckedUpdateManyWithoutReviewerNestedInput
     sessionsAsAdvisor?: AdvisorSessionUncheckedUpdateManyWithoutAdvisorNestedInput
     sessionsAsClient?: AdvisorSessionUncheckedUpdateManyWithoutClientNestedInput
     bookingsAsAdvisor?: BookingRequestUncheckedUpdateManyWithoutAdvisorNestedInput
@@ -76958,6 +79659,8 @@ export namespace Prisma {
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -76976,6 +79679,8 @@ export namespace Prisma {
     state?: string | null
     accounts?: AccountCreateNestedManyWithoutUserInput
     advisorAvailability?: AdvisorAvailabilityCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationCreateNestedManyWithoutReviewerInput
     sessionsAsAdvisor?: AdvisorSessionCreateNestedManyWithoutAdvisorInput
     sessionsAsClient?: AdvisorSessionCreateNestedManyWithoutClientInput
     bookingsAsAdvisor?: BookingRequestCreateNestedManyWithoutAdvisorInput
@@ -77012,6 +79717,8 @@ export namespace Prisma {
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -77030,6 +79737,8 @@ export namespace Prisma {
     state?: string | null
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     advisorAvailability?: AdvisorAvailabilityUncheckedCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationUncheckedCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationUncheckedCreateNestedManyWithoutReviewerInput
     sessionsAsAdvisor?: AdvisorSessionUncheckedCreateNestedManyWithoutAdvisorInput
     sessionsAsClient?: AdvisorSessionUncheckedCreateNestedManyWithoutClientInput
     bookingsAsAdvisor?: BookingRequestUncheckedCreateNestedManyWithoutAdvisorInput
@@ -77118,6 +79827,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -77136,6 +79847,8 @@ export namespace Prisma {
     state?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUpdateManyWithoutUserNestedInput
     advisorAvailability?: AdvisorAvailabilityUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUpdateManyWithoutReviewerNestedInput
     sessionsAsAdvisor?: AdvisorSessionUpdateManyWithoutAdvisorNestedInput
     sessionsAsClient?: AdvisorSessionUpdateManyWithoutClientNestedInput
     bookingsAsAdvisor?: BookingRequestUpdateManyWithoutAdvisorNestedInput
@@ -77172,6 +79885,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -77190,6 +79905,8 @@ export namespace Prisma {
     state?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     advisorAvailability?: AdvisorAvailabilityUncheckedUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUncheckedUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUncheckedUpdateManyWithoutReviewerNestedInput
     sessionsAsAdvisor?: AdvisorSessionUncheckedUpdateManyWithoutAdvisorNestedInput
     sessionsAsClient?: AdvisorSessionUncheckedUpdateManyWithoutClientNestedInput
     bookingsAsAdvisor?: BookingRequestUncheckedUpdateManyWithoutAdvisorNestedInput
@@ -77328,6 +80045,8 @@ export namespace Prisma {
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -77346,6 +80065,8 @@ export namespace Prisma {
     state?: string | null
     accounts?: AccountCreateNestedManyWithoutUserInput
     advisorAvailability?: AdvisorAvailabilityCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationCreateNestedManyWithoutReviewerInput
     sessionsAsAdvisor?: AdvisorSessionCreateNestedManyWithoutAdvisorInput
     sessionsAsClient?: AdvisorSessionCreateNestedManyWithoutClientInput
     bookingsAsAdvisor?: BookingRequestCreateNestedManyWithoutAdvisorInput
@@ -77382,6 +80103,8 @@ export namespace Prisma {
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -77400,6 +80123,8 @@ export namespace Prisma {
     state?: string | null
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     advisorAvailability?: AdvisorAvailabilityUncheckedCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationUncheckedCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationUncheckedCreateNestedManyWithoutReviewerInput
     sessionsAsAdvisor?: AdvisorSessionUncheckedCreateNestedManyWithoutAdvisorInput
     sessionsAsClient?: AdvisorSessionUncheckedCreateNestedManyWithoutClientInput
     bookingsAsAdvisor?: BookingRequestUncheckedCreateNestedManyWithoutAdvisorInput
@@ -77550,6 +80275,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -77568,6 +80295,8 @@ export namespace Prisma {
     state?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUpdateManyWithoutUserNestedInput
     advisorAvailability?: AdvisorAvailabilityUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUpdateManyWithoutReviewerNestedInput
     sessionsAsAdvisor?: AdvisorSessionUpdateManyWithoutAdvisorNestedInput
     sessionsAsClient?: AdvisorSessionUpdateManyWithoutClientNestedInput
     bookingsAsAdvisor?: BookingRequestUpdateManyWithoutAdvisorNestedInput
@@ -77604,6 +80333,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -77622,6 +80353,8 @@ export namespace Prisma {
     state?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     advisorAvailability?: AdvisorAvailabilityUncheckedUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUncheckedUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUncheckedUpdateManyWithoutReviewerNestedInput
     sessionsAsAdvisor?: AdvisorSessionUncheckedUpdateManyWithoutAdvisorNestedInput
     sessionsAsClient?: AdvisorSessionUncheckedUpdateManyWithoutClientNestedInput
     bookingsAsAdvisor?: BookingRequestUncheckedUpdateManyWithoutAdvisorNestedInput
@@ -77658,6 +80391,8 @@ export namespace Prisma {
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -77676,6 +80411,8 @@ export namespace Prisma {
     state?: string | null
     accounts?: AccountCreateNestedManyWithoutUserInput
     advisorAvailability?: AdvisorAvailabilityCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationCreateNestedManyWithoutReviewerInput
     sessionsAsAdvisor?: AdvisorSessionCreateNestedManyWithoutAdvisorInput
     sessionsAsClient?: AdvisorSessionCreateNestedManyWithoutClientInput
     bookingsAsAdvisor?: BookingRequestCreateNestedManyWithoutAdvisorInput
@@ -77712,6 +80449,8 @@ export namespace Prisma {
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -77730,6 +80469,8 @@ export namespace Prisma {
     state?: string | null
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     advisorAvailability?: AdvisorAvailabilityUncheckedCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationUncheckedCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationUncheckedCreateNestedManyWithoutReviewerInput
     sessionsAsAdvisor?: AdvisorSessionUncheckedCreateNestedManyWithoutAdvisorInput
     sessionsAsClient?: AdvisorSessionUncheckedCreateNestedManyWithoutClientInput
     bookingsAsAdvisor?: BookingRequestUncheckedCreateNestedManyWithoutAdvisorInput
@@ -77782,6 +80523,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -77800,6 +80543,8 @@ export namespace Prisma {
     state?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUpdateManyWithoutUserNestedInput
     advisorAvailability?: AdvisorAvailabilityUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUpdateManyWithoutReviewerNestedInput
     sessionsAsAdvisor?: AdvisorSessionUpdateManyWithoutAdvisorNestedInput
     sessionsAsClient?: AdvisorSessionUpdateManyWithoutClientNestedInput
     bookingsAsAdvisor?: BookingRequestUpdateManyWithoutAdvisorNestedInput
@@ -77836,6 +80581,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -77854,6 +80601,8 @@ export namespace Prisma {
     state?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     advisorAvailability?: AdvisorAvailabilityUncheckedUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUncheckedUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUncheckedUpdateManyWithoutReviewerNestedInput
     sessionsAsAdvisor?: AdvisorSessionUncheckedUpdateManyWithoutAdvisorNestedInput
     sessionsAsClient?: AdvisorSessionUncheckedUpdateManyWithoutClientNestedInput
     bookingsAsAdvisor?: BookingRequestUncheckedUpdateManyWithoutAdvisorNestedInput
@@ -77890,6 +80639,8 @@ export namespace Prisma {
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -77908,6 +80659,8 @@ export namespace Prisma {
     state?: string | null
     accounts?: AccountCreateNestedManyWithoutUserInput
     advisorAvailability?: AdvisorAvailabilityCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationCreateNestedManyWithoutReviewerInput
     sessionsAsAdvisor?: AdvisorSessionCreateNestedManyWithoutAdvisorInput
     sessionsAsClient?: AdvisorSessionCreateNestedManyWithoutClientInput
     bookingsAsAdvisor?: BookingRequestCreateNestedManyWithoutAdvisorInput
@@ -77944,6 +80697,8 @@ export namespace Prisma {
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -77962,6 +80717,8 @@ export namespace Prisma {
     state?: string | null
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     advisorAvailability?: AdvisorAvailabilityUncheckedCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationUncheckedCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationUncheckedCreateNestedManyWithoutReviewerInput
     sessionsAsAdvisor?: AdvisorSessionUncheckedCreateNestedManyWithoutAdvisorInput
     sessionsAsClient?: AdvisorSessionUncheckedCreateNestedManyWithoutClientInput
     bookingsAsAdvisor?: BookingRequestUncheckedCreateNestedManyWithoutAdvisorInput
@@ -78014,6 +80771,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -78032,6 +80791,8 @@ export namespace Prisma {
     state?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUpdateManyWithoutUserNestedInput
     advisorAvailability?: AdvisorAvailabilityUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUpdateManyWithoutReviewerNestedInput
     sessionsAsAdvisor?: AdvisorSessionUpdateManyWithoutAdvisorNestedInput
     sessionsAsClient?: AdvisorSessionUpdateManyWithoutClientNestedInput
     bookingsAsAdvisor?: BookingRequestUpdateManyWithoutAdvisorNestedInput
@@ -78068,6 +80829,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -78086,6 +80849,8 @@ export namespace Prisma {
     state?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     advisorAvailability?: AdvisorAvailabilityUncheckedUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUncheckedUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUncheckedUpdateManyWithoutReviewerNestedInput
     sessionsAsAdvisor?: AdvisorSessionUncheckedUpdateManyWithoutAdvisorNestedInput
     sessionsAsClient?: AdvisorSessionUncheckedUpdateManyWithoutClientNestedInput
     bookingsAsAdvisor?: BookingRequestUncheckedUpdateManyWithoutAdvisorNestedInput
@@ -78122,6 +80887,8 @@ export namespace Prisma {
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -78140,6 +80907,8 @@ export namespace Prisma {
     state?: string | null
     accounts?: AccountCreateNestedManyWithoutUserInput
     advisorAvailability?: AdvisorAvailabilityCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationCreateNestedManyWithoutReviewerInput
     sessionsAsAdvisor?: AdvisorSessionCreateNestedManyWithoutAdvisorInput
     sessionsAsClient?: AdvisorSessionCreateNestedManyWithoutClientInput
     bookingsAsAdvisor?: BookingRequestCreateNestedManyWithoutAdvisorInput
@@ -78176,6 +80945,8 @@ export namespace Prisma {
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -78194,6 +80965,8 @@ export namespace Prisma {
     state?: string | null
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     advisorAvailability?: AdvisorAvailabilityUncheckedCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationUncheckedCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationUncheckedCreateNestedManyWithoutReviewerInput
     sessionsAsAdvisor?: AdvisorSessionUncheckedCreateNestedManyWithoutAdvisorInput
     sessionsAsClient?: AdvisorSessionUncheckedCreateNestedManyWithoutClientInput
     bookingsAsAdvisor?: BookingRequestUncheckedCreateNestedManyWithoutAdvisorInput
@@ -78276,6 +81049,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -78294,6 +81069,8 @@ export namespace Prisma {
     state?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUpdateManyWithoutUserNestedInput
     advisorAvailability?: AdvisorAvailabilityUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUpdateManyWithoutReviewerNestedInput
     sessionsAsAdvisor?: AdvisorSessionUpdateManyWithoutAdvisorNestedInput
     sessionsAsClient?: AdvisorSessionUpdateManyWithoutClientNestedInput
     bookingsAsAdvisor?: BookingRequestUpdateManyWithoutAdvisorNestedInput
@@ -78330,6 +81107,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -78348,6 +81127,8 @@ export namespace Prisma {
     state?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     advisorAvailability?: AdvisorAvailabilityUncheckedUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUncheckedUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUncheckedUpdateManyWithoutReviewerNestedInput
     sessionsAsAdvisor?: AdvisorSessionUncheckedUpdateManyWithoutAdvisorNestedInput
     sessionsAsClient?: AdvisorSessionUncheckedUpdateManyWithoutClientNestedInput
     bookingsAsAdvisor?: BookingRequestUncheckedUpdateManyWithoutAdvisorNestedInput
@@ -78514,6 +81295,8 @@ export namespace Prisma {
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -78532,6 +81315,8 @@ export namespace Prisma {
     state?: string | null
     accounts?: AccountCreateNestedManyWithoutUserInput
     advisorAvailability?: AdvisorAvailabilityCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationCreateNestedManyWithoutReviewerInput
     sessionsAsAdvisor?: AdvisorSessionCreateNestedManyWithoutAdvisorInput
     sessionsAsClient?: AdvisorSessionCreateNestedManyWithoutClientInput
     bookingsAsAdvisor?: BookingRequestCreateNestedManyWithoutAdvisorInput
@@ -78568,6 +81353,8 @@ export namespace Prisma {
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -78586,6 +81373,8 @@ export namespace Prisma {
     state?: string | null
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     advisorAvailability?: AdvisorAvailabilityUncheckedCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationUncheckedCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationUncheckedCreateNestedManyWithoutReviewerInput
     sessionsAsAdvisor?: AdvisorSessionUncheckedCreateNestedManyWithoutAdvisorInput
     sessionsAsClient?: AdvisorSessionUncheckedCreateNestedManyWithoutClientInput
     bookingsAsAdvisor?: BookingRequestUncheckedCreateNestedManyWithoutAdvisorInput
@@ -78638,6 +81427,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -78656,6 +81447,8 @@ export namespace Prisma {
     state?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUpdateManyWithoutUserNestedInput
     advisorAvailability?: AdvisorAvailabilityUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUpdateManyWithoutReviewerNestedInput
     sessionsAsAdvisor?: AdvisorSessionUpdateManyWithoutAdvisorNestedInput
     sessionsAsClient?: AdvisorSessionUpdateManyWithoutClientNestedInput
     bookingsAsAdvisor?: BookingRequestUpdateManyWithoutAdvisorNestedInput
@@ -78692,6 +81485,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -78710,6 +81505,8 @@ export namespace Prisma {
     state?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     advisorAvailability?: AdvisorAvailabilityUncheckedUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUncheckedUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUncheckedUpdateManyWithoutReviewerNestedInput
     sessionsAsAdvisor?: AdvisorSessionUncheckedUpdateManyWithoutAdvisorNestedInput
     sessionsAsClient?: AdvisorSessionUncheckedUpdateManyWithoutClientNestedInput
     bookingsAsAdvisor?: BookingRequestUncheckedUpdateManyWithoutAdvisorNestedInput
@@ -78746,6 +81543,8 @@ export namespace Prisma {
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -78764,6 +81563,8 @@ export namespace Prisma {
     state?: string | null
     accounts?: AccountCreateNestedManyWithoutUserInput
     advisorAvailability?: AdvisorAvailabilityCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationCreateNestedManyWithoutReviewerInput
     sessionsAsAdvisor?: AdvisorSessionCreateNestedManyWithoutAdvisorInput
     sessionsAsClient?: AdvisorSessionCreateNestedManyWithoutClientInput
     bookingsAsAdvisor?: BookingRequestCreateNestedManyWithoutAdvisorInput
@@ -78800,6 +81601,8 @@ export namespace Prisma {
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -78818,6 +81621,8 @@ export namespace Prisma {
     state?: string | null
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     advisorAvailability?: AdvisorAvailabilityUncheckedCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationUncheckedCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationUncheckedCreateNestedManyWithoutReviewerInput
     sessionsAsAdvisor?: AdvisorSessionUncheckedCreateNestedManyWithoutAdvisorInput
     sessionsAsClient?: AdvisorSessionUncheckedCreateNestedManyWithoutClientInput
     bookingsAsAdvisor?: BookingRequestUncheckedCreateNestedManyWithoutAdvisorInput
@@ -78859,6 +81664,8 @@ export namespace Prisma {
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -78877,6 +81684,8 @@ export namespace Prisma {
     state?: string | null
     accounts?: AccountCreateNestedManyWithoutUserInput
     advisorAvailability?: AdvisorAvailabilityCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationCreateNestedManyWithoutReviewerInput
     sessionsAsAdvisor?: AdvisorSessionCreateNestedManyWithoutAdvisorInput
     sessionsAsClient?: AdvisorSessionCreateNestedManyWithoutClientInput
     bookingsAsAdvisor?: BookingRequestCreateNestedManyWithoutAdvisorInput
@@ -78913,6 +81722,8 @@ export namespace Prisma {
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -78931,6 +81742,8 @@ export namespace Prisma {
     state?: string | null
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     advisorAvailability?: AdvisorAvailabilityUncheckedCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationUncheckedCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationUncheckedCreateNestedManyWithoutReviewerInput
     sessionsAsAdvisor?: AdvisorSessionUncheckedCreateNestedManyWithoutAdvisorInput
     sessionsAsClient?: AdvisorSessionUncheckedCreateNestedManyWithoutClientInput
     bookingsAsAdvisor?: BookingRequestUncheckedCreateNestedManyWithoutAdvisorInput
@@ -79022,6 +81835,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -79040,6 +81855,8 @@ export namespace Prisma {
     state?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUpdateManyWithoutUserNestedInput
     advisorAvailability?: AdvisorAvailabilityUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUpdateManyWithoutReviewerNestedInput
     sessionsAsAdvisor?: AdvisorSessionUpdateManyWithoutAdvisorNestedInput
     sessionsAsClient?: AdvisorSessionUpdateManyWithoutClientNestedInput
     bookingsAsAdvisor?: BookingRequestUpdateManyWithoutAdvisorNestedInput
@@ -79076,6 +81893,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -79094,6 +81913,8 @@ export namespace Prisma {
     state?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     advisorAvailability?: AdvisorAvailabilityUncheckedUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUncheckedUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUncheckedUpdateManyWithoutReviewerNestedInput
     sessionsAsAdvisor?: AdvisorSessionUncheckedUpdateManyWithoutAdvisorNestedInput
     sessionsAsClient?: AdvisorSessionUncheckedUpdateManyWithoutClientNestedInput
     bookingsAsAdvisor?: BookingRequestUncheckedUpdateManyWithoutAdvisorNestedInput
@@ -79141,6 +81962,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -79159,6 +81982,8 @@ export namespace Prisma {
     state?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUpdateManyWithoutUserNestedInput
     advisorAvailability?: AdvisorAvailabilityUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUpdateManyWithoutReviewerNestedInput
     sessionsAsAdvisor?: AdvisorSessionUpdateManyWithoutAdvisorNestedInput
     sessionsAsClient?: AdvisorSessionUpdateManyWithoutClientNestedInput
     bookingsAsAdvisor?: BookingRequestUpdateManyWithoutAdvisorNestedInput
@@ -79195,6 +82020,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -79213,6 +82040,8 @@ export namespace Prisma {
     state?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     advisorAvailability?: AdvisorAvailabilityUncheckedUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUncheckedUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUncheckedUpdateManyWithoutReviewerNestedInput
     sessionsAsAdvisor?: AdvisorSessionUncheckedUpdateManyWithoutAdvisorNestedInput
     sessionsAsClient?: AdvisorSessionUncheckedUpdateManyWithoutClientNestedInput
     bookingsAsAdvisor?: BookingRequestUncheckedUpdateManyWithoutAdvisorNestedInput
@@ -79294,6 +82123,8 @@ export namespace Prisma {
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -79312,6 +82143,8 @@ export namespace Prisma {
     state?: string | null
     accounts?: AccountCreateNestedManyWithoutUserInput
     advisorAvailability?: AdvisorAvailabilityCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationCreateNestedManyWithoutReviewerInput
     sessionsAsAdvisor?: AdvisorSessionCreateNestedManyWithoutAdvisorInput
     sessionsAsClient?: AdvisorSessionCreateNestedManyWithoutClientInput
     bookingsAsAdvisor?: BookingRequestCreateNestedManyWithoutAdvisorInput
@@ -79348,6 +82181,8 @@ export namespace Prisma {
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -79366,6 +82201,8 @@ export namespace Prisma {
     state?: string | null
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     advisorAvailability?: AdvisorAvailabilityUncheckedCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationUncheckedCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationUncheckedCreateNestedManyWithoutReviewerInput
     sessionsAsAdvisor?: AdvisorSessionUncheckedCreateNestedManyWithoutAdvisorInput
     sessionsAsClient?: AdvisorSessionUncheckedCreateNestedManyWithoutClientInput
     bookingsAsAdvisor?: BookingRequestUncheckedCreateNestedManyWithoutAdvisorInput
@@ -79418,6 +82255,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -79436,6 +82275,8 @@ export namespace Prisma {
     state?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUpdateManyWithoutUserNestedInput
     advisorAvailability?: AdvisorAvailabilityUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUpdateManyWithoutReviewerNestedInput
     sessionsAsAdvisor?: AdvisorSessionUpdateManyWithoutAdvisorNestedInput
     sessionsAsClient?: AdvisorSessionUpdateManyWithoutClientNestedInput
     bookingsAsAdvisor?: BookingRequestUpdateManyWithoutAdvisorNestedInput
@@ -79472,6 +82313,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -79490,6 +82333,8 @@ export namespace Prisma {
     state?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     advisorAvailability?: AdvisorAvailabilityUncheckedUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUncheckedUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUncheckedUpdateManyWithoutReviewerNestedInput
     sessionsAsAdvisor?: AdvisorSessionUncheckedUpdateManyWithoutAdvisorNestedInput
     sessionsAsClient?: AdvisorSessionUncheckedUpdateManyWithoutClientNestedInput
     bookingsAsAdvisor?: BookingRequestUncheckedUpdateManyWithoutAdvisorNestedInput
@@ -79526,6 +82371,8 @@ export namespace Prisma {
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -79544,6 +82391,8 @@ export namespace Prisma {
     state?: string | null
     accounts?: AccountCreateNestedManyWithoutUserInput
     advisorAvailability?: AdvisorAvailabilityCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationCreateNestedManyWithoutReviewerInput
     sessionsAsAdvisor?: AdvisorSessionCreateNestedManyWithoutAdvisorInput
     sessionsAsClient?: AdvisorSessionCreateNestedManyWithoutClientInput
     bookingsAsAdvisor?: BookingRequestCreateNestedManyWithoutAdvisorInput
@@ -79580,6 +82429,8 @@ export namespace Prisma {
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -79598,6 +82449,8 @@ export namespace Prisma {
     state?: string | null
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     advisorAvailability?: AdvisorAvailabilityUncheckedCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationUncheckedCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationUncheckedCreateNestedManyWithoutReviewerInput
     sessionsAsAdvisor?: AdvisorSessionUncheckedCreateNestedManyWithoutAdvisorInput
     sessionsAsClient?: AdvisorSessionUncheckedCreateNestedManyWithoutClientInput
     bookingsAsAdvisor?: BookingRequestUncheckedCreateNestedManyWithoutAdvisorInput
@@ -79650,6 +82503,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -79668,6 +82523,8 @@ export namespace Prisma {
     state?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUpdateManyWithoutUserNestedInput
     advisorAvailability?: AdvisorAvailabilityUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUpdateManyWithoutReviewerNestedInput
     sessionsAsAdvisor?: AdvisorSessionUpdateManyWithoutAdvisorNestedInput
     sessionsAsClient?: AdvisorSessionUpdateManyWithoutClientNestedInput
     bookingsAsAdvisor?: BookingRequestUpdateManyWithoutAdvisorNestedInput
@@ -79704,6 +82561,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -79722,6 +82581,8 @@ export namespace Prisma {
     state?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     advisorAvailability?: AdvisorAvailabilityUncheckedUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUncheckedUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUncheckedUpdateManyWithoutReviewerNestedInput
     sessionsAsAdvisor?: AdvisorSessionUncheckedUpdateManyWithoutAdvisorNestedInput
     sessionsAsClient?: AdvisorSessionUncheckedUpdateManyWithoutClientNestedInput
     bookingsAsAdvisor?: BookingRequestUncheckedUpdateManyWithoutAdvisorNestedInput
@@ -79862,6 +82723,8 @@ export namespace Prisma {
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -79880,6 +82743,8 @@ export namespace Prisma {
     state?: string | null
     accounts?: AccountCreateNestedManyWithoutUserInput
     advisorAvailability?: AdvisorAvailabilityCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationCreateNestedManyWithoutReviewerInput
     sessionsAsAdvisor?: AdvisorSessionCreateNestedManyWithoutAdvisorInput
     sessionsAsClient?: AdvisorSessionCreateNestedManyWithoutClientInput
     bookingsAsAdvisor?: BookingRequestCreateNestedManyWithoutAdvisorInput
@@ -79916,6 +82781,8 @@ export namespace Prisma {
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -79934,6 +82801,8 @@ export namespace Prisma {
     state?: string | null
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     advisorAvailability?: AdvisorAvailabilityUncheckedCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationUncheckedCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationUncheckedCreateNestedManyWithoutReviewerInput
     sessionsAsAdvisor?: AdvisorSessionUncheckedCreateNestedManyWithoutAdvisorInput
     sessionsAsClient?: AdvisorSessionUncheckedCreateNestedManyWithoutClientInput
     bookingsAsAdvisor?: BookingRequestUncheckedCreateNestedManyWithoutAdvisorInput
@@ -80102,6 +82971,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -80120,6 +82991,8 @@ export namespace Prisma {
     state?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUpdateManyWithoutUserNestedInput
     advisorAvailability?: AdvisorAvailabilityUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUpdateManyWithoutReviewerNestedInput
     sessionsAsAdvisor?: AdvisorSessionUpdateManyWithoutAdvisorNestedInput
     sessionsAsClient?: AdvisorSessionUpdateManyWithoutClientNestedInput
     bookingsAsAdvisor?: BookingRequestUpdateManyWithoutAdvisorNestedInput
@@ -80156,6 +83029,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -80174,6 +83049,8 @@ export namespace Prisma {
     state?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     advisorAvailability?: AdvisorAvailabilityUncheckedUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUncheckedUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUncheckedUpdateManyWithoutReviewerNestedInput
     sessionsAsAdvisor?: AdvisorSessionUncheckedUpdateManyWithoutAdvisorNestedInput
     sessionsAsClient?: AdvisorSessionUncheckedUpdateManyWithoutClientNestedInput
     bookingsAsAdvisor?: BookingRequestUncheckedUpdateManyWithoutAdvisorNestedInput
@@ -80281,6 +83158,105 @@ export namespace Prisma {
 
   export type AdvisorAvailabilityCreateManyAdvisorInputEnvelope = {
     data: AdvisorAvailabilityCreateManyAdvisorInput | AdvisorAvailabilityCreateManyAdvisorInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type AdvisorApplicationCreateWithoutUserInput = {
+    id?: string
+    fullName: string
+    email: string
+    phone: string
+    experienceYears: number
+    expertise: string
+    organizationName?: string | null
+    bio: string
+    panDocumentPath?: string | null
+    aadhaarDocumentPath?: string | null
+    certDocumentPath?: string | null
+    status?: string
+    rejectionReason?: string | null
+    reviewedAt?: Date | string | null
+    submittedAt?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    reviewer?: UserCreateNestedOneWithoutReviewedApplicationsInput
+  }
+
+  export type AdvisorApplicationUncheckedCreateWithoutUserInput = {
+    id?: string
+    fullName: string
+    email: string
+    phone: string
+    experienceYears: number
+    expertise: string
+    organizationName?: string | null
+    bio: string
+    panDocumentPath?: string | null
+    aadhaarDocumentPath?: string | null
+    certDocumentPath?: string | null
+    status?: string
+    rejectionReason?: string | null
+    reviewedBy?: string | null
+    reviewedAt?: Date | string | null
+    submittedAt?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type AdvisorApplicationCreateOrConnectWithoutUserInput = {
+    where: AdvisorApplicationWhereUniqueInput
+    create: XOR<AdvisorApplicationCreateWithoutUserInput, AdvisorApplicationUncheckedCreateWithoutUserInput>
+  }
+
+  export type AdvisorApplicationCreateWithoutReviewerInput = {
+    id?: string
+    fullName: string
+    email: string
+    phone: string
+    experienceYears: number
+    expertise: string
+    organizationName?: string | null
+    bio: string
+    panDocumentPath?: string | null
+    aadhaarDocumentPath?: string | null
+    certDocumentPath?: string | null
+    status?: string
+    rejectionReason?: string | null
+    reviewedAt?: Date | string | null
+    submittedAt?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutAdvisorApplicationInput
+  }
+
+  export type AdvisorApplicationUncheckedCreateWithoutReviewerInput = {
+    id?: string
+    userId: string
+    fullName: string
+    email: string
+    phone: string
+    experienceYears: number
+    expertise: string
+    organizationName?: string | null
+    bio: string
+    panDocumentPath?: string | null
+    aadhaarDocumentPath?: string | null
+    certDocumentPath?: string | null
+    status?: string
+    rejectionReason?: string | null
+    reviewedAt?: Date | string | null
+    submittedAt?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type AdvisorApplicationCreateOrConnectWithoutReviewerInput = {
+    where: AdvisorApplicationWhereUniqueInput
+    create: XOR<AdvisorApplicationCreateWithoutReviewerInput, AdvisorApplicationUncheckedCreateWithoutReviewerInput>
+  }
+
+  export type AdvisorApplicationCreateManyReviewerInputEnvelope = {
+    data: AdvisorApplicationCreateManyReviewerInput | AdvisorApplicationCreateManyReviewerInput[]
     skipDuplicates?: boolean
   }
 
@@ -81573,6 +84549,100 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"AdvisorAvailability"> | Date | string
   }
 
+  export type AdvisorApplicationUpsertWithoutUserInput = {
+    update: XOR<AdvisorApplicationUpdateWithoutUserInput, AdvisorApplicationUncheckedUpdateWithoutUserInput>
+    create: XOR<AdvisorApplicationCreateWithoutUserInput, AdvisorApplicationUncheckedCreateWithoutUserInput>
+    where?: AdvisorApplicationWhereInput
+  }
+
+  export type AdvisorApplicationUpdateToOneWithWhereWithoutUserInput = {
+    where?: AdvisorApplicationWhereInput
+    data: XOR<AdvisorApplicationUpdateWithoutUserInput, AdvisorApplicationUncheckedUpdateWithoutUserInput>
+  }
+
+  export type AdvisorApplicationUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    fullName?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: StringFieldUpdateOperationsInput | string
+    experienceYears?: IntFieldUpdateOperationsInput | number
+    expertise?: StringFieldUpdateOperationsInput | string
+    organizationName?: NullableStringFieldUpdateOperationsInput | string | null
+    bio?: StringFieldUpdateOperationsInput | string
+    panDocumentPath?: NullableStringFieldUpdateOperationsInput | string | null
+    aadhaarDocumentPath?: NullableStringFieldUpdateOperationsInput | string | null
+    certDocumentPath?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    submittedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    reviewer?: UserUpdateOneWithoutReviewedApplicationsNestedInput
+  }
+
+  export type AdvisorApplicationUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    fullName?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: StringFieldUpdateOperationsInput | string
+    experienceYears?: IntFieldUpdateOperationsInput | number
+    expertise?: StringFieldUpdateOperationsInput | string
+    organizationName?: NullableStringFieldUpdateOperationsInput | string | null
+    bio?: StringFieldUpdateOperationsInput | string
+    panDocumentPath?: NullableStringFieldUpdateOperationsInput | string | null
+    aadhaarDocumentPath?: NullableStringFieldUpdateOperationsInput | string | null
+    certDocumentPath?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    submittedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AdvisorApplicationUpsertWithWhereUniqueWithoutReviewerInput = {
+    where: AdvisorApplicationWhereUniqueInput
+    update: XOR<AdvisorApplicationUpdateWithoutReviewerInput, AdvisorApplicationUncheckedUpdateWithoutReviewerInput>
+    create: XOR<AdvisorApplicationCreateWithoutReviewerInput, AdvisorApplicationUncheckedCreateWithoutReviewerInput>
+  }
+
+  export type AdvisorApplicationUpdateWithWhereUniqueWithoutReviewerInput = {
+    where: AdvisorApplicationWhereUniqueInput
+    data: XOR<AdvisorApplicationUpdateWithoutReviewerInput, AdvisorApplicationUncheckedUpdateWithoutReviewerInput>
+  }
+
+  export type AdvisorApplicationUpdateManyWithWhereWithoutReviewerInput = {
+    where: AdvisorApplicationScalarWhereInput
+    data: XOR<AdvisorApplicationUpdateManyMutationInput, AdvisorApplicationUncheckedUpdateManyWithoutReviewerInput>
+  }
+
+  export type AdvisorApplicationScalarWhereInput = {
+    AND?: AdvisorApplicationScalarWhereInput | AdvisorApplicationScalarWhereInput[]
+    OR?: AdvisorApplicationScalarWhereInput[]
+    NOT?: AdvisorApplicationScalarWhereInput | AdvisorApplicationScalarWhereInput[]
+    id?: StringFilter<"AdvisorApplication"> | string
+    userId?: StringFilter<"AdvisorApplication"> | string
+    fullName?: StringFilter<"AdvisorApplication"> | string
+    email?: StringFilter<"AdvisorApplication"> | string
+    phone?: StringFilter<"AdvisorApplication"> | string
+    experienceYears?: IntFilter<"AdvisorApplication"> | number
+    expertise?: StringFilter<"AdvisorApplication"> | string
+    organizationName?: StringNullableFilter<"AdvisorApplication"> | string | null
+    bio?: StringFilter<"AdvisorApplication"> | string
+    panDocumentPath?: StringNullableFilter<"AdvisorApplication"> | string | null
+    aadhaarDocumentPath?: StringNullableFilter<"AdvisorApplication"> | string | null
+    certDocumentPath?: StringNullableFilter<"AdvisorApplication"> | string | null
+    status?: StringFilter<"AdvisorApplication"> | string
+    rejectionReason?: StringNullableFilter<"AdvisorApplication"> | string | null
+    reviewedBy?: StringNullableFilter<"AdvisorApplication"> | string | null
+    reviewedAt?: DateTimeNullableFilter<"AdvisorApplication"> | Date | string | null
+    submittedAt?: DateTimeFilter<"AdvisorApplication"> | Date | string
+    createdAt?: DateTimeFilter<"AdvisorApplication"> | Date | string
+    updatedAt?: DateTimeFilter<"AdvisorApplication"> | Date | string
+  }
+
   export type AdvisorSessionUpsertWithWhereUniqueWithoutAdvisorInput = {
     where: AdvisorSessionWhereUniqueInput
     update: XOR<AdvisorSessionUpdateWithoutAdvisorInput, AdvisorSessionUncheckedUpdateWithoutAdvisorInput>
@@ -82476,6 +85546,8 @@ export namespace Prisma {
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -82494,6 +85566,8 @@ export namespace Prisma {
     state?: string | null
     accounts?: AccountCreateNestedManyWithoutUserInput
     advisorAvailability?: AdvisorAvailabilityCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationCreateNestedManyWithoutReviewerInput
     sessionsAsAdvisor?: AdvisorSessionCreateNestedManyWithoutAdvisorInput
     sessionsAsClient?: AdvisorSessionCreateNestedManyWithoutClientInput
     bookingsAsAdvisor?: BookingRequestCreateNestedManyWithoutAdvisorInput
@@ -82530,6 +85604,8 @@ export namespace Prisma {
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -82548,6 +85624,8 @@ export namespace Prisma {
     state?: string | null
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     advisorAvailability?: AdvisorAvailabilityUncheckedCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationUncheckedCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationUncheckedCreateNestedManyWithoutReviewerInput
     sessionsAsAdvisor?: AdvisorSessionUncheckedCreateNestedManyWithoutAdvisorInput
     sessionsAsClient?: AdvisorSessionUncheckedCreateNestedManyWithoutClientInput
     bookingsAsAdvisor?: BookingRequestUncheckedCreateNestedManyWithoutAdvisorInput
@@ -82600,6 +85678,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -82618,6 +85698,8 @@ export namespace Prisma {
     state?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUpdateManyWithoutUserNestedInput
     advisorAvailability?: AdvisorAvailabilityUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUpdateManyWithoutReviewerNestedInput
     sessionsAsAdvisor?: AdvisorSessionUpdateManyWithoutAdvisorNestedInput
     sessionsAsClient?: AdvisorSessionUpdateManyWithoutClientNestedInput
     bookingsAsAdvisor?: BookingRequestUpdateManyWithoutAdvisorNestedInput
@@ -82654,6 +85736,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -82672,6 +85756,8 @@ export namespace Prisma {
     state?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     advisorAvailability?: AdvisorAvailabilityUncheckedUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUncheckedUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUncheckedUpdateManyWithoutReviewerNestedInput
     sessionsAsAdvisor?: AdvisorSessionUncheckedUpdateManyWithoutAdvisorNestedInput
     sessionsAsClient?: AdvisorSessionUncheckedUpdateManyWithoutClientNestedInput
     bookingsAsAdvisor?: BookingRequestUncheckedUpdateManyWithoutAdvisorNestedInput
@@ -82708,6 +85794,8 @@ export namespace Prisma {
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -82726,6 +85814,8 @@ export namespace Prisma {
     state?: string | null
     accounts?: AccountCreateNestedManyWithoutUserInput
     advisorAvailability?: AdvisorAvailabilityCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationCreateNestedManyWithoutReviewerInput
     sessionsAsAdvisor?: AdvisorSessionCreateNestedManyWithoutAdvisorInput
     sessionsAsClient?: AdvisorSessionCreateNestedManyWithoutClientInput
     bookingsAsAdvisor?: BookingRequestCreateNestedManyWithoutAdvisorInput
@@ -82762,6 +85852,8 @@ export namespace Prisma {
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -82780,6 +85872,8 @@ export namespace Prisma {
     state?: string | null
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     advisorAvailability?: AdvisorAvailabilityUncheckedCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationUncheckedCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationUncheckedCreateNestedManyWithoutReviewerInput
     sessionsAsAdvisor?: AdvisorSessionUncheckedCreateNestedManyWithoutAdvisorInput
     sessionsAsClient?: AdvisorSessionUncheckedCreateNestedManyWithoutClientInput
     bookingsAsAdvisor?: BookingRequestUncheckedCreateNestedManyWithoutAdvisorInput
@@ -82832,6 +85926,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -82850,6 +85946,8 @@ export namespace Prisma {
     state?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUpdateManyWithoutUserNestedInput
     advisorAvailability?: AdvisorAvailabilityUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUpdateManyWithoutReviewerNestedInput
     sessionsAsAdvisor?: AdvisorSessionUpdateManyWithoutAdvisorNestedInput
     sessionsAsClient?: AdvisorSessionUpdateManyWithoutClientNestedInput
     bookingsAsAdvisor?: BookingRequestUpdateManyWithoutAdvisorNestedInput
@@ -82886,6 +85984,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -82904,6 +86004,8 @@ export namespace Prisma {
     state?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     advisorAvailability?: AdvisorAvailabilityUncheckedUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUncheckedUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUncheckedUpdateManyWithoutReviewerNestedInput
     sessionsAsAdvisor?: AdvisorSessionUncheckedUpdateManyWithoutAdvisorNestedInput
     sessionsAsClient?: AdvisorSessionUncheckedUpdateManyWithoutClientNestedInput
     bookingsAsAdvisor?: BookingRequestUncheckedUpdateManyWithoutAdvisorNestedInput
@@ -82940,6 +86042,8 @@ export namespace Prisma {
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -82958,6 +86062,8 @@ export namespace Prisma {
     state?: string | null
     accounts?: AccountCreateNestedManyWithoutUserInput
     advisorAvailability?: AdvisorAvailabilityCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationCreateNestedManyWithoutReviewerInput
     sessionsAsAdvisor?: AdvisorSessionCreateNestedManyWithoutAdvisorInput
     sessionsAsClient?: AdvisorSessionCreateNestedManyWithoutClientInput
     bookingsAsAdvisor?: BookingRequestCreateNestedManyWithoutAdvisorInput
@@ -82994,6 +86100,8 @@ export namespace Prisma {
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -83012,6 +86120,8 @@ export namespace Prisma {
     state?: string | null
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     advisorAvailability?: AdvisorAvailabilityUncheckedCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationUncheckedCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationUncheckedCreateNestedManyWithoutReviewerInput
     sessionsAsAdvisor?: AdvisorSessionUncheckedCreateNestedManyWithoutAdvisorInput
     sessionsAsClient?: AdvisorSessionUncheckedCreateNestedManyWithoutClientInput
     bookingsAsAdvisor?: BookingRequestUncheckedCreateNestedManyWithoutAdvisorInput
@@ -83064,6 +86174,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -83082,6 +86194,8 @@ export namespace Prisma {
     state?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUpdateManyWithoutUserNestedInput
     advisorAvailability?: AdvisorAvailabilityUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUpdateManyWithoutReviewerNestedInput
     sessionsAsAdvisor?: AdvisorSessionUpdateManyWithoutAdvisorNestedInput
     sessionsAsClient?: AdvisorSessionUpdateManyWithoutClientNestedInput
     bookingsAsAdvisor?: BookingRequestUpdateManyWithoutAdvisorNestedInput
@@ -83118,6 +86232,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -83136,6 +86252,8 @@ export namespace Prisma {
     state?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     advisorAvailability?: AdvisorAvailabilityUncheckedUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUncheckedUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUncheckedUpdateManyWithoutReviewerNestedInput
     sessionsAsAdvisor?: AdvisorSessionUncheckedUpdateManyWithoutAdvisorNestedInput
     sessionsAsClient?: AdvisorSessionUncheckedUpdateManyWithoutClientNestedInput
     bookingsAsAdvisor?: BookingRequestUncheckedUpdateManyWithoutAdvisorNestedInput
@@ -83172,6 +86290,8 @@ export namespace Prisma {
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -83190,6 +86310,8 @@ export namespace Prisma {
     state?: string | null
     accounts?: AccountCreateNestedManyWithoutUserInput
     advisorAvailability?: AdvisorAvailabilityCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationCreateNestedManyWithoutReviewerInput
     sessionsAsAdvisor?: AdvisorSessionCreateNestedManyWithoutAdvisorInput
     sessionsAsClient?: AdvisorSessionCreateNestedManyWithoutClientInput
     bookingsAsAdvisor?: BookingRequestCreateNestedManyWithoutAdvisorInput
@@ -83226,6 +86348,8 @@ export namespace Prisma {
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -83244,6 +86368,8 @@ export namespace Prisma {
     state?: string | null
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     advisorAvailability?: AdvisorAvailabilityUncheckedCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationUncheckedCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationUncheckedCreateNestedManyWithoutReviewerInput
     sessionsAsAdvisor?: AdvisorSessionUncheckedCreateNestedManyWithoutAdvisorInput
     sessionsAsClient?: AdvisorSessionUncheckedCreateNestedManyWithoutClientInput
     bookingsAsAdvisor?: BookingRequestUncheckedCreateNestedManyWithoutAdvisorInput
@@ -83296,6 +86422,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -83314,6 +86442,8 @@ export namespace Prisma {
     state?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUpdateManyWithoutUserNestedInput
     advisorAvailability?: AdvisorAvailabilityUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUpdateManyWithoutReviewerNestedInput
     sessionsAsAdvisor?: AdvisorSessionUpdateManyWithoutAdvisorNestedInput
     sessionsAsClient?: AdvisorSessionUpdateManyWithoutClientNestedInput
     bookingsAsAdvisor?: BookingRequestUpdateManyWithoutAdvisorNestedInput
@@ -83350,6 +86480,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -83368,6 +86500,8 @@ export namespace Prisma {
     state?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     advisorAvailability?: AdvisorAvailabilityUncheckedUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUncheckedUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUncheckedUpdateManyWithoutReviewerNestedInput
     sessionsAsAdvisor?: AdvisorSessionUncheckedUpdateManyWithoutAdvisorNestedInput
     sessionsAsClient?: AdvisorSessionUncheckedUpdateManyWithoutClientNestedInput
     bookingsAsAdvisor?: BookingRequestUncheckedUpdateManyWithoutAdvisorNestedInput
@@ -83523,6 +86657,8 @@ export namespace Prisma {
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -83541,6 +86677,8 @@ export namespace Prisma {
     state?: string | null
     accounts?: AccountCreateNestedManyWithoutUserInput
     advisorAvailability?: AdvisorAvailabilityCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationCreateNestedManyWithoutReviewerInput
     sessionsAsAdvisor?: AdvisorSessionCreateNestedManyWithoutAdvisorInput
     sessionsAsClient?: AdvisorSessionCreateNestedManyWithoutClientInput
     bookingsAsAdvisor?: BookingRequestCreateNestedManyWithoutAdvisorInput
@@ -83577,6 +86715,8 @@ export namespace Prisma {
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -83595,6 +86735,8 @@ export namespace Prisma {
     state?: string | null
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     advisorAvailability?: AdvisorAvailabilityUncheckedCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationUncheckedCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationUncheckedCreateNestedManyWithoutReviewerInput
     sessionsAsAdvisor?: AdvisorSessionUncheckedCreateNestedManyWithoutAdvisorInput
     sessionsAsClient?: AdvisorSessionUncheckedCreateNestedManyWithoutClientInput
     bookingsAsAdvisor?: BookingRequestUncheckedCreateNestedManyWithoutAdvisorInput
@@ -83752,6 +86894,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -83770,6 +86914,8 @@ export namespace Prisma {
     state?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUpdateManyWithoutUserNestedInput
     advisorAvailability?: AdvisorAvailabilityUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUpdateManyWithoutReviewerNestedInput
     sessionsAsAdvisor?: AdvisorSessionUpdateManyWithoutAdvisorNestedInput
     sessionsAsClient?: AdvisorSessionUpdateManyWithoutClientNestedInput
     bookingsAsAdvisor?: BookingRequestUpdateManyWithoutAdvisorNestedInput
@@ -83806,6 +86952,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -83824,6 +86972,8 @@ export namespace Prisma {
     state?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     advisorAvailability?: AdvisorAvailabilityUncheckedUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUncheckedUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUncheckedUpdateManyWithoutReviewerNestedInput
     sessionsAsAdvisor?: AdvisorSessionUncheckedUpdateManyWithoutAdvisorNestedInput
     sessionsAsClient?: AdvisorSessionUncheckedUpdateManyWithoutClientNestedInput
     bookingsAsAdvisor?: BookingRequestUncheckedUpdateManyWithoutAdvisorNestedInput
@@ -84018,6 +87168,8 @@ export namespace Prisma {
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -84036,6 +87188,8 @@ export namespace Prisma {
     state?: string | null
     accounts?: AccountCreateNestedManyWithoutUserInput
     advisorAvailability?: AdvisorAvailabilityCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationCreateNestedManyWithoutReviewerInput
     sessionsAsAdvisor?: AdvisorSessionCreateNestedManyWithoutAdvisorInput
     sessionsAsClient?: AdvisorSessionCreateNestedManyWithoutClientInput
     bookingsAsAdvisor?: BookingRequestCreateNestedManyWithoutAdvisorInput
@@ -84072,6 +87226,8 @@ export namespace Prisma {
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -84090,6 +87246,8 @@ export namespace Prisma {
     state?: string | null
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     advisorAvailability?: AdvisorAvailabilityUncheckedCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationUncheckedCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationUncheckedCreateNestedManyWithoutReviewerInput
     sessionsAsAdvisor?: AdvisorSessionUncheckedCreateNestedManyWithoutAdvisorInput
     sessionsAsClient?: AdvisorSessionUncheckedCreateNestedManyWithoutClientInput
     bookingsAsAdvisor?: BookingRequestUncheckedCreateNestedManyWithoutAdvisorInput
@@ -84142,6 +87300,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -84160,6 +87320,8 @@ export namespace Prisma {
     state?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUpdateManyWithoutUserNestedInput
     advisorAvailability?: AdvisorAvailabilityUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUpdateManyWithoutReviewerNestedInput
     sessionsAsAdvisor?: AdvisorSessionUpdateManyWithoutAdvisorNestedInput
     sessionsAsClient?: AdvisorSessionUpdateManyWithoutClientNestedInput
     bookingsAsAdvisor?: BookingRequestUpdateManyWithoutAdvisorNestedInput
@@ -84196,6 +87358,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -84214,6 +87378,8 @@ export namespace Prisma {
     state?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     advisorAvailability?: AdvisorAvailabilityUncheckedUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUncheckedUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUncheckedUpdateManyWithoutReviewerNestedInput
     sessionsAsAdvisor?: AdvisorSessionUncheckedUpdateManyWithoutAdvisorNestedInput
     sessionsAsClient?: AdvisorSessionUncheckedUpdateManyWithoutClientNestedInput
     bookingsAsAdvisor?: BookingRequestUncheckedUpdateManyWithoutAdvisorNestedInput
@@ -84250,6 +87416,8 @@ export namespace Prisma {
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -84268,6 +87436,8 @@ export namespace Prisma {
     state?: string | null
     accounts?: AccountCreateNestedManyWithoutUserInput
     advisorAvailability?: AdvisorAvailabilityCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationCreateNestedManyWithoutReviewerInput
     sessionsAsAdvisor?: AdvisorSessionCreateNestedManyWithoutAdvisorInput
     sessionsAsClient?: AdvisorSessionCreateNestedManyWithoutClientInput
     bookingsAsAdvisor?: BookingRequestCreateNestedManyWithoutAdvisorInput
@@ -84304,6 +87474,8 @@ export namespace Prisma {
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -84322,6 +87494,8 @@ export namespace Prisma {
     state?: string | null
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     advisorAvailability?: AdvisorAvailabilityUncheckedCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationUncheckedCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationUncheckedCreateNestedManyWithoutReviewerInput
     sessionsAsAdvisor?: AdvisorSessionUncheckedCreateNestedManyWithoutAdvisorInput
     sessionsAsClient?: AdvisorSessionUncheckedCreateNestedManyWithoutClientInput
     bookingsAsAdvisor?: BookingRequestUncheckedCreateNestedManyWithoutAdvisorInput
@@ -84374,6 +87548,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -84392,6 +87568,8 @@ export namespace Prisma {
     state?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUpdateManyWithoutUserNestedInput
     advisorAvailability?: AdvisorAvailabilityUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUpdateManyWithoutReviewerNestedInput
     sessionsAsAdvisor?: AdvisorSessionUpdateManyWithoutAdvisorNestedInput
     sessionsAsClient?: AdvisorSessionUpdateManyWithoutClientNestedInput
     bookingsAsAdvisor?: BookingRequestUpdateManyWithoutAdvisorNestedInput
@@ -84428,6 +87606,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -84446,6 +87626,8 @@ export namespace Prisma {
     state?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     advisorAvailability?: AdvisorAvailabilityUncheckedUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUncheckedUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUncheckedUpdateManyWithoutReviewerNestedInput
     sessionsAsAdvisor?: AdvisorSessionUncheckedUpdateManyWithoutAdvisorNestedInput
     sessionsAsClient?: AdvisorSessionUncheckedUpdateManyWithoutClientNestedInput
     bookingsAsAdvisor?: BookingRequestUncheckedUpdateManyWithoutAdvisorNestedInput
@@ -84482,6 +87664,8 @@ export namespace Prisma {
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -84500,6 +87684,8 @@ export namespace Prisma {
     state?: string | null
     accounts?: AccountCreateNestedManyWithoutUserInput
     advisorAvailability?: AdvisorAvailabilityCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationCreateNestedManyWithoutReviewerInput
     sessionsAsAdvisor?: AdvisorSessionCreateNestedManyWithoutAdvisorInput
     sessionsAsClient?: AdvisorSessionCreateNestedManyWithoutClientInput
     bookingsAsAdvisor?: BookingRequestCreateNestedManyWithoutAdvisorInput
@@ -84536,6 +87722,8 @@ export namespace Prisma {
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -84554,6 +87742,8 @@ export namespace Prisma {
     state?: string | null
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     advisorAvailability?: AdvisorAvailabilityUncheckedCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationUncheckedCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationUncheckedCreateNestedManyWithoutReviewerInput
     sessionsAsAdvisor?: AdvisorSessionUncheckedCreateNestedManyWithoutAdvisorInput
     sessionsAsClient?: AdvisorSessionUncheckedCreateNestedManyWithoutClientInput
     bookingsAsAdvisor?: BookingRequestUncheckedCreateNestedManyWithoutAdvisorInput
@@ -84606,6 +87796,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -84624,6 +87816,8 @@ export namespace Prisma {
     state?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUpdateManyWithoutUserNestedInput
     advisorAvailability?: AdvisorAvailabilityUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUpdateManyWithoutReviewerNestedInput
     sessionsAsAdvisor?: AdvisorSessionUpdateManyWithoutAdvisorNestedInput
     sessionsAsClient?: AdvisorSessionUpdateManyWithoutClientNestedInput
     bookingsAsAdvisor?: BookingRequestUpdateManyWithoutAdvisorNestedInput
@@ -84660,6 +87854,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -84678,6 +87874,8 @@ export namespace Prisma {
     state?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     advisorAvailability?: AdvisorAvailabilityUncheckedUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUncheckedUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUncheckedUpdateManyWithoutReviewerNestedInput
     sessionsAsAdvisor?: AdvisorSessionUncheckedUpdateManyWithoutAdvisorNestedInput
     sessionsAsClient?: AdvisorSessionUncheckedUpdateManyWithoutClientNestedInput
     bookingsAsAdvisor?: BookingRequestUncheckedUpdateManyWithoutAdvisorNestedInput
@@ -84714,6 +87912,8 @@ export namespace Prisma {
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -84732,6 +87932,8 @@ export namespace Prisma {
     state?: string | null
     accounts?: AccountCreateNestedManyWithoutUserInput
     advisorAvailability?: AdvisorAvailabilityCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationCreateNestedManyWithoutReviewerInput
     sessionsAsAdvisor?: AdvisorSessionCreateNestedManyWithoutAdvisorInput
     sessionsAsClient?: AdvisorSessionCreateNestedManyWithoutClientInput
     bookingsAsAdvisor?: BookingRequestCreateNestedManyWithoutAdvisorInput
@@ -84768,6 +87970,8 @@ export namespace Prisma {
     name: string
     password: string
     role?: string
+    roleMode?: string
+    advisorStatus?: string
     status?: string
     isApproved?: boolean
     firstName?: string | null
@@ -84786,6 +87990,8 @@ export namespace Prisma {
     state?: string | null
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     advisorAvailability?: AdvisorAvailabilityUncheckedCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationUncheckedCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationUncheckedCreateNestedManyWithoutReviewerInput
     sessionsAsAdvisor?: AdvisorSessionUncheckedCreateNestedManyWithoutAdvisorInput
     sessionsAsClient?: AdvisorSessionUncheckedCreateNestedManyWithoutClientInput
     bookingsAsAdvisor?: BookingRequestUncheckedCreateNestedManyWithoutAdvisorInput
@@ -84838,6 +88044,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -84856,6 +88064,8 @@ export namespace Prisma {
     state?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUpdateManyWithoutUserNestedInput
     advisorAvailability?: AdvisorAvailabilityUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUpdateManyWithoutReviewerNestedInput
     sessionsAsAdvisor?: AdvisorSessionUpdateManyWithoutAdvisorNestedInput
     sessionsAsClient?: AdvisorSessionUpdateManyWithoutClientNestedInput
     bookingsAsAdvisor?: BookingRequestUpdateManyWithoutAdvisorNestedInput
@@ -84892,6 +88102,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -84910,6 +88122,8 @@ export namespace Prisma {
     state?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     advisorAvailability?: AdvisorAvailabilityUncheckedUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUncheckedUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUncheckedUpdateManyWithoutReviewerNestedInput
     sessionsAsAdvisor?: AdvisorSessionUncheckedUpdateManyWithoutAdvisorNestedInput
     sessionsAsClient?: AdvisorSessionUncheckedUpdateManyWithoutClientNestedInput
     bookingsAsAdvisor?: BookingRequestUncheckedUpdateManyWithoutAdvisorNestedInput
@@ -85367,6 +88581,27 @@ export namespace Prisma {
     startTime: string
     endTime: string
     isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type AdvisorApplicationCreateManyReviewerInput = {
+    id?: string
+    userId: string
+    fullName: string
+    email: string
+    phone: string
+    experienceYears: number
+    expertise: string
+    organizationName?: string | null
+    bio: string
+    panDocumentPath?: string | null
+    aadhaarDocumentPath?: string | null
+    certDocumentPath?: string | null
+    status?: string
+    rejectionReason?: string | null
+    reviewedAt?: Date | string | null
+    submittedAt?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -85892,6 +89127,69 @@ export namespace Prisma {
     startTime?: StringFieldUpdateOperationsInput | string
     endTime?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AdvisorApplicationUpdateWithoutReviewerInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    fullName?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: StringFieldUpdateOperationsInput | string
+    experienceYears?: IntFieldUpdateOperationsInput | number
+    expertise?: StringFieldUpdateOperationsInput | string
+    organizationName?: NullableStringFieldUpdateOperationsInput | string | null
+    bio?: StringFieldUpdateOperationsInput | string
+    panDocumentPath?: NullableStringFieldUpdateOperationsInput | string | null
+    aadhaarDocumentPath?: NullableStringFieldUpdateOperationsInput | string | null
+    certDocumentPath?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    submittedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutAdvisorApplicationNestedInput
+  }
+
+  export type AdvisorApplicationUncheckedUpdateWithoutReviewerInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    fullName?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: StringFieldUpdateOperationsInput | string
+    experienceYears?: IntFieldUpdateOperationsInput | number
+    expertise?: StringFieldUpdateOperationsInput | string
+    organizationName?: NullableStringFieldUpdateOperationsInput | string | null
+    bio?: StringFieldUpdateOperationsInput | string
+    panDocumentPath?: NullableStringFieldUpdateOperationsInput | string | null
+    aadhaarDocumentPath?: NullableStringFieldUpdateOperationsInput | string | null
+    certDocumentPath?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    submittedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AdvisorApplicationUncheckedUpdateManyWithoutReviewerInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    fullName?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: StringFieldUpdateOperationsInput | string
+    experienceYears?: IntFieldUpdateOperationsInput | number
+    expertise?: StringFieldUpdateOperationsInput | string
+    organizationName?: NullableStringFieldUpdateOperationsInput | string | null
+    bio?: StringFieldUpdateOperationsInput | string
+    panDocumentPath?: NullableStringFieldUpdateOperationsInput | string | null
+    aadhaarDocumentPath?: NullableStringFieldUpdateOperationsInput | string | null
+    certDocumentPath?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    submittedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

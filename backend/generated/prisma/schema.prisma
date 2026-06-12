@@ -40,6 +40,34 @@ model Account {
   @@schema("public")
 }
 
+model AdvisorApplication {
+  id                  String    @id @default(uuid())
+  userId              String    @unique
+  fullName            String
+  email               String
+  phone               String
+  experienceYears     Int
+  expertise           String
+  organizationName    String?
+  bio                 String
+  panDocumentPath     String?
+  aadhaarDocumentPath String?
+  certDocumentPath    String?
+  status              String    @default("PENDING")
+  rejectionReason     String?
+  reviewedBy          String?
+  reviewedAt          DateTime?
+  submittedAt         DateTime  @default(now())
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  user                User      @relation("AdvisorApplication_user", fields: [userId], references: [id], onDelete: Cascade)
+  reviewer            User?     @relation("AdvisorApplication_reviewer", fields: [reviewedBy], references: [id])
+
+  @@index([status])
+  @@index([userId])
+  @@schema("public")
+}
+
 model AdvisorAvailability {
   id        String   @id @default(uuid())
   advisorId String
@@ -528,6 +556,8 @@ model User {
   name                  String
   password              String
   role                  String                 @default("user")
+  roleMode              String                 @default("user")
+  advisorStatus         String                 @default("NOT_AVAILABLE")
   status                String                 @default("verified")
   isApproved            Boolean                @default(false)
   firstName             String?
@@ -546,6 +576,8 @@ model User {
   state                 String?
   accounts              Account[]
   advisorAvailability   AdvisorAvailability[]
+  advisorApplication    AdvisorApplication?    @relation("AdvisorApplication_user")
+  reviewedApplications  AdvisorApplication[]   @relation("AdvisorApplication_reviewer")
   sessionsAsAdvisor     AdvisorSession[]       @relation("AdvisorSession_advisorIdToUser")
   sessionsAsClient      AdvisorSession[]       @relation("AdvisorSession_clientIdToUser")
   bookingsAsAdvisor     BookingRequest[]       @relation("BookingRequest_advisorIdToUser")

@@ -139,6 +139,28 @@ exports.Prisma.AccountScalarFieldEnum = {
   deletedAt: 'deletedAt'
 };
 
+exports.Prisma.AdvisorApplicationScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  fullName: 'fullName',
+  email: 'email',
+  phone: 'phone',
+  experienceYears: 'experienceYears',
+  expertise: 'expertise',
+  organizationName: 'organizationName',
+  bio: 'bio',
+  panDocumentPath: 'panDocumentPath',
+  aadhaarDocumentPath: 'aadhaarDocumentPath',
+  certDocumentPath: 'certDocumentPath',
+  status: 'status',
+  rejectionReason: 'rejectionReason',
+  reviewedBy: 'reviewedBy',
+  reviewedAt: 'reviewedAt',
+  submittedAt: 'submittedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.AdvisorAvailabilityScalarFieldEnum = {
   id: 'id',
   advisorId: 'advisorId',
@@ -471,6 +493,8 @@ exports.Prisma.UserScalarFieldEnum = {
   name: 'name',
   password: 'password',
   role: 'role',
+  roleMode: 'roleMode',
+  advisorStatus: 'advisorStatus',
   status: 'status',
   isApproved: 'isApproved',
   firstName: 'firstName',
@@ -844,6 +868,7 @@ exports.Prisma.JsonNullValueFilter = {
 
 exports.Prisma.ModelName = {
   Account: 'Account',
+  AdvisorApplication: 'AdvisorApplication',
   AdvisorAvailability: 'AdvisorAvailability',
   AdvisorSession: 'AdvisorSession',
   BookingRequest: 'BookingRequest',

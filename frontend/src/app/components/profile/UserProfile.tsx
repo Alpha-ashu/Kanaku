@@ -18,6 +18,7 @@ import { api } from '@/lib/api';
 import { shouldSkipOptionalBackendRequests } from '@/lib/apiBase';
 import { format, parseISO } from 'date-fns';
 import { pinService } from '@/services/pinService';
+import { AdvisorRoleSection } from './AdvisorRoleSection';
 
 interface ProfileData {
  firstName: string;
@@ -179,7 +180,7 @@ const ProfileSkeleton: React.FC = () => {
 };
 
 export const UserProfile: React.FC = () => {
- const { user, signOut } = useAuth();
+ const { user, signOut, role } = useAuth();
  const { setCurrentPage, currency, setCurrency, visibleFeatures } = useApp();
  const [isSigningOut, setIsSigningOut] = useState(false);
 
@@ -1428,14 +1429,15 @@ export const UserProfile: React.FC = () => {
 
  {/* Currency Section */}
  <div className="pt-4 border-t border-gray-100">
- <label className="block text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide flex items-center gap-1.5">
+ <label htmlFor="currency-select" className="block text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide flex items-center gap-1.5">
  <DollarSign size={12} className="text-gray-400" /> Currency Settings
  </label>
  <select
+ id="currency-select"
+ title="Currency Settings"
  value={currency}
  onChange={(e) => setCurrency(e.target.value)}
  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm bg-white"
- id="currency-select"
  >
  <option value="USD">USD - US Dollar</option>
  <option value="EUR">EUR - Euro</option>
@@ -1816,7 +1818,18 @@ export const UserProfile: React.FC = () => {
  </Card>
  </motion.div>
 
-
+ {/* Advisor Role Section */}
+ <motion.div
+ initial={{ opacity: 0, y: 20 }}
+ animate={{ opacity: 1, y: 0 }}
+ transition={{ delay: 0.35 }}
+ >
+ <AdvisorRoleSection
+ userRole={role}
+ userName={`${profileData.firstName} ${profileData.lastName}`.trim() || user?.email || ''}
+ userEmail={profileData.email || user?.email || ''}
+ />
+ </motion.div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-stretch">
  {/* Sign Out */}
@@ -1956,14 +1969,7 @@ export const UserProfile: React.FC = () => {
     className="fixed bottom-[calc(72px+env(safe-area-inset-bottom,0px)+16px)] left-0 right-0 z-50 flex justify-center px-4 pointer-events-none"
    >
     <div
-     className="pointer-events-auto w-full max-w-sm flex items-center gap-3 px-4 py-3 rounded-[20px] shadow-2xl"
-     style={{
-      background: 'rgba(255, 255, 255, 0.88)',
-      backdropFilter: 'blur(20px)',
-      WebkitBackdropFilter: 'blur(20px)',
-      border: '1px solid rgba(255,255,255,0.6)',
-      boxShadow: '0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06)',
-     }}
+     className="pointer-events-auto w-full max-w-sm flex items-center gap-3 px-4 py-3 rounded-[20px] shadow-2xl bg-white/[0.88] backdrop-blur-[20px] border border-white/60"
     >
      {/* Unsaved changes indicator */}
      <div className="flex-1 flex items-center gap-2 min-w-0">
@@ -1998,13 +2004,7 @@ export const UserProfile: React.FC = () => {
       id="floating-save-btn"
       onClick={handleSaveProfile}
       disabled={isLoading}
-      className="flex items-center gap-1.5 px-5 py-2.5 rounded-[14px] text-xs font-bold text-white active:scale-95 transition-all disabled:opacity-60 flex-shrink-0"
-      style={{
-       background: isLoading
-        ? 'rgba(59, 130, 246, 0.6)'
-        : 'linear-gradient(135deg, #3b82f6 0%, #4f46e5 100%)',
-       boxShadow: '0 4px 12px rgba(79, 70, 229, 0.35)',
-      }}
+      className={`flex items-center gap-1.5 px-5 py-2.5 rounded-[14px] text-xs font-bold text-white active:scale-95 transition-all disabled:opacity-60 flex-shrink-0 shadow-[0_4px_12px_rgba(79,70,229,0.35)] ${isLoading ? 'bg-blue-400/60' : 'bg-gradient-to-br from-blue-500 to-indigo-600'}`}
      >
       {isLoading ? (
        <div className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
