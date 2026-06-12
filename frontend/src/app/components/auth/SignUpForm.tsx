@@ -1,292 +1,668 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { api } from '@/lib/api';
-import { Eye, EyeOff, Mail, Lock, User, Phone } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, User, Phone, Check, AlertCircle, Sparkles } from 'lucide-react';
 
 interface SignUpFormProps {
- onSwitchToSignIn: () => void;
- onSubmit?: (data: { firstName: string; lastName: string; email: string; mobile: string; password: string }) => Promise<void>;
- onViewTerms?: () => void;
- onViewPrivacy?: () => void;
+  onSwitchToSignIn: () => void;
+  onSubmit?: (data: { firstName: string; lastName: string; email: string; mobile: string; password: string }) => Promise<void>;
+  onViewTerms?: () => void;
+  onViewPrivacy?: () => void;
 }
 
 export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubmit, onViewTerms, onViewPrivacy }) => {
- const [formData, setFormData] = useState({
- firstName: '',
- lastName: '',
- email: '',
- mobile: '',
- password: '',
- confirmPassword: '',
- });
- const [errors, setErrors] = useState<Record<string, string>>({});
- const [isLoading, setIsLoading] = useState(false);
- const [showPassword, setShowPassword] = useState(false);
- const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    mobile: '',
+    password: '',
+    confirmPassword: '',
+  });
 
- const calculateStrength = (password: string) => {
- if (!password) return 0;
- let score = 0;
- if (password.length >= 8) score += 1;
- if (/[a-z]/.test(password) && /[A-Z]/.test(password)) score += 1;
- if (/\d/.test(password)) score += 1;
- if (/[^a-zA-Z\d]/.test(password)) score += 1;
- return Math.max(1, score);
- };
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [emailFocused, setEmailFocused] = useState(false);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [countryCode, setCountryCode] = useState('+91');
 
- const strengthScore = calculateStrength(formData.password);
+  const countryCodes = [
+    { code: '+91', label: '🇮🇳 +91' },
+    { code: '+1', label: '🇺🇸 +1' },
+    { code: '+44', label: '🇬🇧 +44' },
+    { code: '+971', label: '🇦🇪 +971' },
+    { code: '+65', label: '🇸🇬 +65' },
+    { code: '+61', label: '🇦🇺 +61' },
+  ];
 
- const getStrengthColor = (index: number) => {
- if (!formData.password) return 'bg-gray-200';
- if (index > strengthScore) return 'bg-gray-200';
- switch (strengthScore) {
- case 1: return 'bg-red-500';
- case 2: return 'bg-yellow-500';
- case 3: return 'bg-blue-500';
- case 4: return 'bg-emerald-500';
- default: return 'bg-gray-200';
- }
- };
+  // Dynamic Validation States (calculated on the fly for real-time reactivity)
+  const isFirstNameValid = formData.firstName.trim().length > 0;
+  const isLastNameValid = formData.lastName.trim().length > 0;
+  const isEmailValid = /\S+@\S+\.\S+/.test(formData.email);
+  const isMobileValid = (() => {
+    const digits = formData.mobile.replace(/\D/g, '');
+    if (countryCode === '+65') return digits.length === 8;
+    if (countryCode === '+91' || countryCode === '+1') return digits.length === 10;
+    return digits.length >= 8 && digits.length <= 11;
+  })();
 
- const getStrengthLabel = () => {
- if (!formData.password) return '';
- const labels = ['', 'Weak', 'Fair', 'Good', 'Strong'];
- const colors = ['', 'text-red-500', 'text-yellow-600', 'text-blue-600', 'text-emerald-600'];
- return <span className={`text-xs font-semibold ${colors[strengthScore]}`}>{labels[strengthScore]}</span>;
- };
+  // Password requirements checks
+  const hasMinLength = formData.password.length >= 8;
+  const hasUppercase = /[A-Z]/.test(formData.password);
+  const hasLowercase = /[a-z]/.test(formData.password);
+  const hasNumber = /\d/.test(formData.password);
+  const hasSpecial = /[^a-zA-Z\d]/.test(formData.password);
+  const isPasswordValid = hasMinLength && hasUppercase && hasLowercase && hasNumber && hasSpecial;
 
- const validateForm = () => {
- const newErrors: Record<string, string> = {};
- if (!formData.firstName.trim()) newErrors.firstName = 'Required';
- if (!formData.lastName.trim()) newErrors.lastName = 'Required';
- if (!formData.email) {
- newErrors.email = 'Required';
- } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
- newErrors.email = 'Invalid email address';
- }
- if (!formData.mobile.trim()) {
- newErrors.mobile = 'Required';
- } else if (!/^\+?[\d\s\-()]{10,}$/.test(formData.mobile)) {
- newErrors.mobile = 'Invalid mobile number';
- }
- if (!formData.password) {
- newErrors.password = 'Required';
- } else if (formData.password.length < 8) {
- newErrors.password = 'Minimum 8 characters';
- }
- if (!formData.confirmPassword) {
- newErrors.confirmPassword = 'Required';
- } else if (formData.password !== formData.confirmPassword) {
- newErrors.confirmPassword = 'Passwords do not match';
- }
- setErrors(newErrors);
- return Object.keys(newErrors).length === 0;
- };
+  const isConfirmPasswordValid = formData.confirmPassword.length > 0 && formData.password === formData.confirmPassword;
 
- const handleSubmit = async (e: React.FormEvent) => {
- e.preventDefault();
- if (!validateForm()) return;
- setIsLoading(true);
- try {
- if (onSubmit) {
- await onSubmit({
- firstName: formData.firstName,
- lastName: formData.lastName,
- email: formData.email,
- mobile: formData.mobile,
- password: formData.password,
- });
- return;
- }
- const response = await api.auth.register({
- name: `${formData.firstName} ${formData.lastName}`,
- email: formData.email,
- password: formData.password,
- });
- if (response.data && typeof response.data === 'object' && 'accessToken' in response.data) {
- const tokens = response.data as any;
- localStorage.setItem('auth_token', tokens.accessToken);
- localStorage.setItem('refresh_token', tokens.refreshToken);
- localStorage.setItem('user_email', formData.email);
- localStorage.setItem('user_name', `${formData.firstName} ${formData.lastName}`);
- window.location.href = '/onboarding';
- }
- } catch (error: any) {
- const codeMap: Record<string, string> = {
- EMAIL_EXISTS: 'This email is already registered. Please sign in instead.',
- PHONE_EXISTS: 'This phone number is already registered to another account. Please use a different phone number.',
- MISSING_FIELDS: 'Please fill in all required fields.',
- INVALID_EMAIL: 'Please enter a valid email address.',
- PASSWORD_TOO_SHORT: 'Password must be at least 8 characters long.',
- DATABASE_ERROR: 'Database error occurred. Please try again later.',
- };
- setErrors({ general: codeMap[error.code] || error.message || 'Registration failed. Please try again.' });
- } finally {
- setIsLoading(false);
- }
- };
+  // Calculate fields remaining for button state
+  let fieldsRemaining = 5;
+  if (isFirstNameValid && isLastNameValid) fieldsRemaining -= 1;
+  if (isEmailValid) fieldsRemaining -= 1;
+  if (isMobileValid) fieldsRemaining -= 1;
+  if (isPasswordValid) fieldsRemaining -= 1;
+  if (isConfirmPasswordValid) fieldsRemaining -= 1;
 
- const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
- const { name, value } = e.target;
- setFormData(prev => ({ ...prev, [name]: value }));
- if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }));
- };
+  const isFormReady = fieldsRemaining === 0 && agreedToTerms;
+  const progressPercentage = (5 - fieldsRemaining) * 20;
 
- const inputBase = (hasError: boolean) =>
- `w-full pl-10 pr-4 py-3 bg-white border rounded-xl text-gray-900 placeholder-gray-400 text-sm focus:outline-none focus:ring-2 transition-all duration-200 ${
- hasError
- ? 'border-red-300 focus:ring-red-500/20 focus:border-red-400 bg-red-50/30'
- : 'border-gray-200 hover:border-gray-300 focus:ring-blue-500/20 focus:border-blue-400 focus:bg-white'
- }`;
+  // Email suggestions logic
+  const emailDomains = ['gmail.com', 'yahoo.com', 'outlook.com', 'icloud.com'];
+  const atIndex = formData.email.indexOf('@');
+  const typedDomain = atIndex !== -1 ? formData.email.slice(atIndex + 1) : '';
+  const filteredDomains = formData.email.includes('@')
+    ? emailDomains.filter(d => d.startsWith(typedDomain))
+    : [];
 
- return (
- <form onSubmit={handleSubmit} className="space-y-4">
- {errors.general && (
- <div className="bg-red-50 border border-red-200 rounded-xl p-3">
- <p className="text-sm text-red-600 text-center">{errors.general}</p>
- </div>
- )}
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const { name } = e.target;
+    setTouched(prev => ({ ...prev, [name]: true }));
+    if (name === 'email') {
+      // Small delay so click on suggestion goes through before focus is lost
+      setTimeout(() => setEmailFocused(false), 200);
+    }
+  };
 
- {/* Name row */}
- <div className="grid grid-cols-2 gap-3">
- {(['firstName', 'lastName'] as const).map((field, idx) => (
- <div key={field}>
- <label htmlFor={field} className="block text-sm font-medium text-gray-700 mb-1">
- {idx === 0 ? 'First Name' : 'Last Name'}
- </label>
- <div className="relative">
- <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
- <User size={16} />
- </div>
- <input
- type="text"
- id={field}
- name={field}
- value={formData[field]}
- onChange={handleInputChange}
- disabled={isLoading}
- placeholder={idx === 0 ? 'John' : 'Doe'}
- className={inputBase(!!errors[field])}
- />
- </div>
- {errors[field] && <p className="mt-1 text-xs text-red-500">{errors[field]}</p>}
- </div>
- ))}
- </div>
+  const handleNameBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    const formatted = value
+      .replace(/\s+/g, ' ')
+      .replace(/(?:^|\s|-|')\S/g, (match) => match.toUpperCase());
+    setFormData(prev => ({ ...prev, [name]: formatted.trim() }));
+    setTouched(prev => ({ ...prev, [name]: true }));
+  };
 
- {/* Email */}
- <div>
- <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
- <div className="relative">
- <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
- <Mail size={16} />
- </div>
- <input
- type="email" id="email" name="email"
- value={formData.email} onChange={handleInputChange}
- disabled={isLoading} placeholder="you@example.com"
- className={inputBase(!!errors.email)}
- />
- </div>
- {errors.email && <p className="mt-1 text-xs text-red-500">{errors.email}</p>}
- </div>
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let val = e.target.value;
+    // Allow numbers, spaces, hyphens, and parentheses
+    val = val.replace(/[^\d\s\-()]/g, '');
 
- {/* Mobile */}
- <div>
- <label htmlFor="mobile" className="block text-sm font-medium text-gray-700 mb-1">Mobile Number</label>
- <div className="relative">
- <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
- <Phone size={16} />
- </div>
- <input
- type="tel" id="mobile" name="mobile"
- value={formData.mobile} onChange={handleInputChange}
- disabled={isLoading} placeholder="+91 9876543210"
- className={inputBase(!!errors.mobile)}
- />
- </div>
- {errors.mobile && <p className="mt-1 text-xs text-red-500">{errors.mobile}</p>}
- </div>
+    // Formatting based on country code
+    if (countryCode === '+91') {
+      const digits = val.replace(/\D/g, '');
+      if (digits.length > 5) {
+        val = `${digits.slice(0, 5)} ${digits.slice(5, 10)}`;
+      } else {
+        val = digits;
+      }
+    } else if (countryCode === '+1') {
+      const digits = val.replace(/\D/g, '');
+      if (digits.length > 6) {
+        val = `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6, 10)}`;
+      } else if (digits.length > 3) {
+        val = `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+      } else {
+        val = digits;
+      }
+    } else {
+      // General format
+      val = val.replace(/\D/g, '');
+    }
 
- {/* Password */}
- <div>
- <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">Password</label>
- <div className="relative">
- <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
- <Lock size={16} />
- </div>
- <input
- type={showPassword ? 'text' : 'password'} id="password" name="password"
- value={formData.password} onChange={handleInputChange}
- disabled={isLoading} placeholder="--------"
- className={`${inputBase(!!errors.password)} pr-10`}
- />
- <button type="button" onClick={() => setShowPassword(!showPassword)}
- className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors">
- {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
- </button>
- </div>
- {formData.password && (
- <div className="mt-2">
- <div className="flex gap-1 h-1.5 w-full mb-1">
- {[1, 2, 3, 4].map((i) => (
- <div key={i} className={`h-full flex-1 rounded-full transition-all duration-300 ${getStrengthColor(i)}`} />
- ))}
- </div>
- <div className="flex justify-end">{getStrengthLabel()}</div>
- </div>
- )}
- {errors.password && <p className="mt-1 text-xs text-red-500">{errors.password}</p>}
- </div>
+    setFormData(prev => ({ ...prev, mobile: val }));
+    setTouched(prev => ({ ...prev, mobile: true }));
+    if (errors.mobile) setErrors(prev => ({ ...prev, mobile: '' }));
+  };
 
- {/* Confirm Password */}
- <div>
- <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
- <div className="relative">
- <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
- <Lock size={16} />
- </div>
- <input
- type={showConfirmPassword ? 'text' : 'password'} id="confirmPassword" name="confirmPassword"
- value={formData.confirmPassword} onChange={handleInputChange}
- disabled={isLoading} placeholder="--------"
- className={`${inputBase(!!errors.confirmPassword)} pr-10`}
- />
- <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)}
- className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors">
- {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
- </button>
- </div>
- {errors.confirmPassword && <p className="mt-1 text-xs text-red-500">{errors.confirmPassword}</p>}
- </div>
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+    setTouched(prev => ({ ...prev, [name]: true }));
+    if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }));
+  };
 
- {/* Terms */}
- <div className="bg-blue-50 border border-blue-100 rounded-xl p-3">
- <p className="text-xs text-blue-700 text-center leading-relaxed">
- By creating an account, you agree to our{' '}
- <button type="button" onClick={onViewTerms} className="font-semibold underline hover:text-blue-900 transition-colors">Terms of Service</button>
- {' '}and{' '}
- <button type="button" onClick={onViewPrivacy} className="font-semibold underline hover:text-blue-900 transition-colors">Privacy Policy</button>.
- </p>
- </div>
+  const generateStrongPassword = () => {
+    const length = 14;
+    const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+";
+    let password = "";
 
- {/* Submit */}
- <button
- type="submit"
- disabled={isLoading}
- className="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold py-3 px-4 rounded-xl transition-all duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
- >
- {isLoading ? (
- <><div className="animate-spin rounded-full h-4 w-4 border-2 border-white/30 border-t-white mr-2" />Creating account...</>
- ) : 'Create Account'}
- </button>
+    const uppers = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const lowers = "abcdefghijklmnopqrstuvwxyz";
+    const digits = "0123456789";
+    const specials = "!@#$%^&*()_+";
 
- <p className="text-center text-sm text-gray-500 pt-1">
- Already have an account?{' '}
- <button type="button" onClick={onSwitchToSignIn}
- className="text-blue-600 hover:text-blue-700 font-semibold transition-colors">
- Sign in
- </button>
- </p>
- </form>
- );
+    password += uppers[Math.floor(Math.random() * uppers.length)];
+    password += lowers[Math.floor(Math.random() * lowers.length)];
+    password += digits[Math.floor(Math.random() * digits.length)];
+    password += specials[Math.floor(Math.random() * specials.length)];
+
+    for (let i = 4; i < length; i++) {
+      password += charset[Math.floor(Math.random() * charset.length)];
+    }
+
+    const shuffled = password.split('').sort(() => 0.5 - Math.random()).join('');
+
+    setFormData(prev => ({
+      ...prev,
+      password: shuffled,
+      confirmPassword: shuffled,
+    }));
+
+    setTouched(prev => ({
+      ...prev,
+      password: true,
+      confirmPassword: true,
+    }));
+
+    setErrors(prev => ({
+      ...prev,
+      password: '',
+      confirmPassword: '',
+    }));
+  };
+
+  const calculateStrength = () => {
+    if (!formData.password) return 0;
+    let score = 0;
+    if (hasMinLength) score += 1;
+    if (hasUppercase && hasLowercase) score += 1;
+    if (hasNumber) score += 1;
+    if (hasSpecial) score += 1;
+    return Math.max(1, score);
+  };
+
+  const strengthScore = calculateStrength();
+
+  const getStrengthColor = (index: number) => {
+    if (!formData.password) return 'bg-gray-200';
+    if (index > strengthScore) return 'bg-gray-200';
+    switch (strengthScore) {
+      case 1: return 'bg-red-500';
+      case 2: return 'bg-yellow-500';
+      case 3: return 'bg-blue-500';
+      case 4: return 'bg-emerald-500';
+      default: return 'bg-gray-200';
+    }
+  };
+
+  const getStrengthLabel = () => {
+    if (!formData.password) return '';
+    const labels = ['', 'Weak', 'Fair', 'Good', 'Strong'];
+    const colors = ['', 'text-red-500', 'text-yellow-600', 'text-blue-600', 'text-emerald-600'];
+    return <span className={`text-xs font-semibold ${colors[strengthScore]}`}>{labels[strengthScore]}</span>;
+  };
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+    if (!isFirstNameValid) newErrors.firstName = 'Required';
+    if (!isLastNameValid) newErrors.lastName = 'Required';
+    if (!isEmailValid) newErrors.email = 'Invalid email address';
+    if (!isMobileValid) newErrors.mobile = 'Invalid mobile number';
+    if (!isPasswordValid) newErrors.password = 'Password does not meet requirements';
+    if (!isConfirmPasswordValid) newErrors.confirmPassword = 'Passwords do not match';
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    // Mark all as touched to show validations
+    setTouched({
+      firstName: true,
+      lastName: true,
+      email: true,
+      mobile: true,
+      password: true,
+      confirmPassword: true,
+    });
+
+    if (!validateForm()) return;
+    setIsLoading(true);
+    const fullMobile = `${countryCode} ${formData.mobile.trim()}`;
+    try {
+      if (onSubmit) {
+        await onSubmit({
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          mobile: fullMobile,
+          password: formData.password,
+        });
+        setIsSuccess(true);
+        return;
+      }
+      const response = await api.auth.register({
+        name: `${formData.firstName} ${formData.lastName}`,
+        email: formData.email,
+        password: formData.password,
+      });
+      if (response.data && typeof response.data === 'object' && 'accessToken' in response.data) {
+        const tokens = response.data as any;
+        localStorage.setItem('auth_token', tokens.accessToken);
+        localStorage.setItem('refresh_token', tokens.refreshToken);
+        localStorage.setItem('user_email', formData.email);
+        localStorage.setItem('user_name', `${formData.firstName} ${formData.lastName}`);
+
+        setIsSuccess(true);
+        setTimeout(() => {
+          window.location.href = '/onboarding';
+        }, 1500);
+      }
+    } catch (error: any) {
+      const codeMap: Record<string, string> = {
+        EMAIL_EXISTS: 'This email is already registered. Please sign in instead.',
+        PHONE_EXISTS: 'This phone number is already registered to another account. Please use a different phone number.',
+        MISSING_FIELDS: 'Please fill in all required fields.',
+        INVALID_EMAIL: 'Please enter a valid email address.',
+        PASSWORD_TOO_SHORT: 'Password must be at least 8 characters long.',
+        DATABASE_ERROR: 'Database error occurred. Please try again later.',
+      };
+      setErrors({ general: codeMap[error.code] || error.message || 'Registration failed. Please try again.' });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const inputBase = (hasError: boolean) =>
+    `w-full pl-10 pr-10 pt-5 pb-1.5 bg-white border rounded-xl text-gray-900 placeholder-transparent text-sm focus:outline-none focus:ring-2 transition-all duration-200 ${
+      hasError
+        ? 'border-red-300 focus:ring-red-500/20 focus:border-red-400 bg-red-50/30'
+        : 'border-gray-200 hover:border-gray-300 focus:ring-blue-500/20 focus:border-blue-400 focus:bg-white'
+    }`;
+
+  const labelBase = `absolute left-10 top-1.5 text-[10px] font-medium text-gray-400 transition-all duration-200 pointer-events-none
+    peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400
+    peer-focus:top-1.5 peer-focus:text-[10px] peer-focus:text-blue-500 peer-focus:font-semibold`;
+
+  if (isSuccess) {
+    return (
+      <div className="text-center py-12 px-6 flex flex-col items-center justify-center space-y-4 animate-fade-in bg-white/80 backdrop-blur-md rounded-2xl border border-gray-100 shadow-xl">
+        <div className="w-16 h-16 bg-emerald-50 border border-emerald-200 rounded-full flex items-center justify-center text-emerald-500 shadow-md">
+          <Check size={36} className="animate-bounce" />
+        </div>
+        <h2 className="text-xl font-bold text-gray-900">Account Created Successfully!</h2>
+        <p className="text-sm text-gray-500 animate-pulse">Preparing your financial dashboard...</p>
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {errors.general && (
+        <div className="bg-red-50 border border-red-200 rounded-xl p-3">
+          <p className="text-sm text-red-600 text-center">{errors.general}</p>
+        </div>
+      )}
+
+      {/* Progress Bar */}
+      <div className="bg-gray-50 border border-gray-100 rounded-xl p-3">
+        <div className="flex justify-between items-center mb-1.5">
+          <span className="text-xs font-semibold text-gray-500">Account Setup</span>
+          <span className="text-xs font-bold text-blue-600">{progressPercentage}%</span>
+        </div>
+        <div className="h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-gradient-to-r from-blue-500 to-emerald-500 rounded-full transition-all duration-500 ease-out"
+            style={{ width: `${progressPercentage}%` }}
+          />
+        </div>
+      </div>
+
+      {/* Name row */}
+      <div className="grid grid-cols-2 gap-3">
+        {(['firstName', 'lastName'] as const).map((field, idx) => {
+          const isValid = field === 'firstName' ? isFirstNameValid : isLastNameValid;
+          const hasError = touched[field] && !isValid;
+          return (
+            <div key={field} className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                <User size={16} />
+              </div>
+              <input
+                type="text"
+                id={field}
+                name={field}
+                value={formData[field]}
+                onChange={handleInputChange}
+                onBlur={handleNameBlur}
+                disabled={isLoading}
+                placeholder=" "
+                className={`${inputBase(hasError)} peer`}
+                autoComplete={field === 'firstName' ? 'given-name' : 'family-name'}
+              />
+              <label htmlFor={field} className={labelBase}>
+                {idx === 0 ? 'First Name' : 'Last Name'}
+              </label>
+
+              {/* Real-time Status Icon */}
+              {touched[field] && (
+                <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+                  {isValid ? (
+                    <Check className="text-emerald-500" size={16} />
+                  ) : (
+                    <AlertCircle className="text-red-500" size={16} />
+                  )}
+                </div>
+              )}
+              {hasError && errors[field] && <p className="mt-1 text-xs text-red-500 pl-1">{errors[field]}</p>}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Email */}
+      <div className="relative">
+        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+          <Mail size={16} />
+        </div>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          value={formData.email}
+          onChange={handleInputChange}
+          onBlur={handleBlur}
+          onFocus={() => setEmailFocused(true)}
+          disabled={isLoading}
+          placeholder=" "
+          className={`${inputBase(touched.email && !isEmailValid)} peer`}
+          autoComplete="email"
+        />
+        <label htmlFor="email" className={labelBase}>
+          Email Address
+        </label>
+
+        {/* Real-time Status Icon */}
+        {touched.email && (
+          <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+            {isEmailValid ? (
+              <Check className="text-emerald-500" size={16} />
+            ) : (
+              <AlertCircle className="text-red-500" size={16} />
+            )}
+          </div>
+        )}
+
+        {/* Email domain autocomplete suggestions */}
+        {emailFocused && filteredDomains.length > 0 && (
+          <div className="absolute z-20 w-full mt-1 bg-white border border-gray-100 rounded-xl shadow-lg overflow-hidden py-1">
+            {filteredDomains.map(domain => {
+              const prefix = formData.email.split('@')[0];
+              const suggestion = `${prefix}@${domain}`;
+              return (
+                <button
+                  key={domain}
+                  type="button"
+                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors"
+                  onMouseDown={(e) => {
+                    // Prevent blur from firing before suggestion selection completes
+                    e.preventDefault();
+                  }}
+                  onClick={() => {
+                    setFormData(prev => ({ ...prev, email: suggestion }));
+                    setTouched(prev => ({ ...prev, email: true }));
+                    setEmailFocused(false);
+                  }}
+                >
+                  Use <span className="font-semibold text-blue-600">{suggestion}</span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+        {touched.email && !isEmailValid && <p className="mt-1 text-xs text-red-500 pl-1">Please enter a valid email address</p>}
+      </div>
+
+      {/* Mobile */}
+      <div className="relative">
+        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 z-10">
+          <Phone size={16} />
+        </div>
+
+        {/* Country Code Select Dropdown */}
+        <div className="absolute inset-y-0 left-8 flex items-center z-10">
+          <select
+            value={countryCode}
+            onChange={(e) => {
+              setCountryCode(e.target.value);
+              setFormData(prev => ({ ...prev, mobile: '' }));
+            }}
+            disabled={isLoading}
+            className="bg-transparent border-0 outline-none text-xs font-bold text-gray-700 cursor-pointer pr-1 py-1 focus:ring-0 focus:ring-offset-0"
+          >
+            {countryCodes.map(c => (
+              <option key={c.code} value={c.code} className="text-gray-900 font-medium">
+                {c.label}
+              </option>
+            ))}
+          </select>
+          <div className="h-5 w-px bg-gray-200 mx-1" />
+        </div>
+
+        <input
+          type="tel"
+          id="mobile"
+          name="mobile"
+          value={formData.mobile}
+          onChange={handlePhoneChange}
+          onBlur={handleBlur}
+          disabled={isLoading}
+          placeholder=" "
+          className={`${inputBase(touched.mobile && !isMobileValid)} peer !pl-28`}
+          autoComplete="tel"
+        />
+        <label htmlFor="mobile" className={`${labelBase} !left-28`}>
+          Mobile Number
+        </label>
+
+        {/* Real-time Status Icon */}
+        {touched.mobile && (
+          <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+            {isMobileValid ? (
+              <Check className="text-emerald-500" size={16} />
+            ) : (
+              <AlertCircle className="text-red-500" size={16} />
+            )}
+          </div>
+        )}
+        {touched.mobile && !isMobileValid && <p className="mt-1 text-xs text-red-500 pl-1">Please enter a valid mobile number</p>}
+      </div>
+
+      {/* Password */}
+      <div>
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+            <Lock size={16} />
+          </div>
+          <input
+            type={showPassword ? 'text' : 'password'}
+            id="password"
+            name="password"
+            value={formData.password}
+            onChange={handleInputChange}
+            onBlur={handleBlur}
+            disabled={isLoading}
+            placeholder=" "
+            className={`${inputBase(touched.password && !isPasswordValid)} peer pr-12`}
+            autoComplete="new-password"
+          />
+          <label htmlFor="password" className={labelBase}>
+            Password
+          </label>
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+          </button>
+        </div>
+
+        {/* Password suggestion generator & strength meter */}
+        <div className="mt-2 flex justify-between items-center">
+          <button
+            type="button"
+            onClick={generateStrongPassword}
+            className="text-xs text-blue-600 hover:text-blue-700 font-semibold flex items-center gap-1 transition-colors"
+          >
+            <Sparkles size={12} /> Suggest a strong password
+          </button>
+          {formData.password && getStrengthLabel()}
+        </div>
+
+        {formData.password && (
+          <div className="mt-1.5 flex gap-1 h-1 w-full">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className={`h-full flex-1 rounded-full transition-all duration-300 ${getStrengthColor(i)}`} />
+            ))}
+          </div>
+        )}
+
+        {/* Requirements Checklist */}
+        {formData.password && (
+          <div className="mt-3 bg-gray-50 border border-gray-100 rounded-xl p-3 space-y-1.5">
+            <span className="text-xs font-semibold text-gray-500 block mb-1">Password Check</span>
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="flex items-center gap-1.5 text-gray-500">
+                <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center transition-colors ${hasMinLength ? 'bg-emerald-100 text-emerald-600' : 'bg-gray-200 text-gray-400'}`}>
+                  <Check size={10} />
+                </div>
+                <span className={hasMinLength ? 'text-emerald-700 font-medium' : ''}>Min 8 characters</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-gray-500">
+                <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center transition-colors ${hasUppercase ? 'bg-emerald-100 text-emerald-600' : 'bg-gray-200 text-gray-400'}`}>
+                  <Check size={10} />
+                </div>
+                <span className={hasUppercase ? 'text-emerald-700 font-medium' : ''}>Uppercase letter</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-gray-500">
+                <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center transition-colors ${hasLowercase ? 'bg-emerald-100 text-emerald-600' : 'bg-gray-200 text-gray-400'}`}>
+                  <Check size={10} />
+                </div>
+                <span className={hasLowercase ? 'text-emerald-700 font-medium' : ''}>Lowercase letter</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-gray-500">
+                <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center transition-colors ${hasNumber ? 'bg-emerald-100 text-emerald-600' : 'bg-gray-200 text-gray-400'}`}>
+                  <Check size={10} />
+                </div>
+                <span className={hasNumber ? 'text-emerald-700 font-medium' : ''}>Number (0-9)</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-gray-500 col-span-2">
+                <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center transition-colors ${hasSpecial ? 'bg-emerald-100 text-emerald-600' : 'bg-gray-200 text-gray-400'}`}>
+                  <Check size={10} />
+                </div>
+                <span className={hasSpecial ? 'text-emerald-700 font-medium' : ''}>Special character (!@#$ etc.)</span>
+              </div>
+            </div>
+          </div>
+        )}
+        {touched.password && !isPasswordValid && <p className="mt-1 text-xs text-red-500 pl-1">Password must meet all requirements</p>}
+      </div>
+
+      {/* Confirm Password */}
+      <div className="relative">
+        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+          <Lock size={16} />
+        </div>
+        <input
+          type={showConfirmPassword ? 'text' : 'password'}
+          id="confirmPassword"
+          name="confirmPassword"
+          value={formData.confirmPassword}
+          onChange={handleInputChange}
+          onBlur={handleBlur}
+          disabled={isLoading}
+          placeholder=" "
+          className={`${inputBase(touched.confirmPassword && !isConfirmPasswordValid)} peer pr-16`}
+          autoComplete="new-password"
+        />
+        <label htmlFor="confirmPassword" className={labelBase}>
+          Confirm Password
+        </label>
+
+        {/* Verification indicator */}
+        <div className="absolute inset-y-0 right-10 flex items-center pointer-events-none">
+          {touched.confirmPassword && (
+            isConfirmPasswordValid ? (
+              <Check className="text-emerald-500" size={16} />
+            ) : (
+              <AlertCircle className="text-red-500" size={16} />
+            )
+          )}
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+          className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
+        >
+          {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+        </button>
+        {touched.confirmPassword && !isConfirmPasswordValid && (
+          <p className="mt-1 text-xs text-red-500 pl-1">Passwords do not match</p>
+        )}
+      </div>
+
+      {/* Terms */}
+      <div className="bg-blue-50 border border-blue-100 rounded-xl p-2.5 flex items-center justify-center gap-2">
+        <input
+          type="checkbox"
+          id="agreeToTerms"
+          name="agreeToTerms"
+          checked={agreedToTerms}
+          onChange={(e) => setAgreedToTerms(e.target.checked)}
+          disabled={isLoading}
+          className="h-3.5 w-3.5 rounded border-gray-300 text-blue-600 focus:ring-blue-500/20 cursor-pointer"
+        />
+        <label htmlFor="agreeToTerms" className="text-[11px] font-bold text-blue-700 cursor-pointer select-none whitespace-nowrap flex items-center gap-1">
+          I agree to the
+          <button type="button" onClick={onViewTerms} className="font-bold underline hover:text-blue-900 transition-colors">Terms of Service</button>
+          and
+          <button type="button" onClick={onViewPrivacy} className="font-bold underline hover:text-blue-900 transition-colors">Privacy Policy</button>
+        </label>
+      </div>
+
+      {/* Submit Button */}
+      <button
+        type="submit"
+        disabled={isLoading || !isFormReady}
+        className="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold py-3 px-4 rounded-xl transition-all duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
+      >
+        {isLoading ? (
+          <>
+            <div className="animate-spin rounded-full h-4 w-4 border-2 border-white/30 border-t-white mr-2" />
+            Creating account...
+          </>
+        ) : fieldsRemaining > 0 ? (
+          `Complete ${fieldsRemaining} more field${fieldsRemaining > 1 ? 's' : ''}`
+        ) : !agreedToTerms ? (
+          'Agree to terms to continue'
+        ) : (
+          'Create Account ✓ Ready'
+        )}
+      </button>
+
+      <p className="text-center text-sm text-gray-500 pt-1">
+        Already have an account?{' '}
+        <button type="button" onClick={onSwitchToSignIn} className="text-blue-600 hover:text-blue-700 font-semibold transition-colors">
+          Sign in
+        </button>
+      </p>
+    </form>
+  );
 };

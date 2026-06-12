@@ -268,14 +268,21 @@ const ensureDatabaseReady = async () => {
     return;
   }
 
+  // Never run db push against a remote database from local dev — it would prompt
+  // about data loss and potentially wipe production columns/tables.
+  const isLocalDb = host === 'localhost' || host === '127.0.0.1' || host === '::1';
+  if (!isLocalDb) {
+    console.log(`[dev-full] Skipping prisma db push — database is remote (${host}). Schema is managed via manual migrations.`);
+    return;
+  }
+
   try {
     console.log('[dev-full] Synchronizing database schema...');
-    // Add a short timeout to prevent hanging the whole dev stack
     const dbPushPromise = runCommand('npx', ['prisma@6.19.2', 'db', 'push', '--skip-generate'], {
       cwd: backendDir,
       label: 'prisma db push',
     });
-    
+
     await Promise.race([
       dbPushPromise,
       new Promise((_, reject) => setTimeout(() => reject(new Error('Database sync timed out')), 15000))

@@ -32,6 +32,8 @@ function createRedisClient(): Redis {
     db:                  parseInt(process.env.REDIS_DB || "0"),
     maxRetriesPerRequest: null,
     enableReadyCheck:    false,
+    commandTimeout:      2000,
+    retryStrategy:       (times) => Math.min(times * 500, 10_000),
   });
 }
 
@@ -54,8 +56,11 @@ export function initializeQueues() {
   const pushQueue  = new Queue("push-notifications",  { connection: redisConnection as any });
   const syncQueue  = new Queue("sync-operations",     { connection: redisConnection as any });
 
+  const isProd = process.env.NODE_ENV === "production";
   [emailQueue, pushQueue, syncQueue].forEach(q =>
-    q.on("error", (err) => console.error(`[Queue:${q.name}] Error:`, err.message))
+    q.on("error", (err) => {
+      if (isProd) console.error(`[Queue:${q.name}] Error:`, err.message);
+    })
   );
 
   console.log("✓ Job queues initialized (email, push, sync)");
