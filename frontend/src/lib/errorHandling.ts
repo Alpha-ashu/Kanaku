@@ -244,6 +244,7 @@ const HTTP_STATUS_MESSAGES: Record<number, string> = {
 const API_CODE_MESSAGES: Record<string, string> = {
   INVALID_CREDENTIALS: 'Incorrect email or password. Please try again.',
   EMAIL_EXISTS: 'An account with this email already exists. Try signing in instead.',
+  PHONE_EXISTS: 'This phone number is already registered to another account. Please use a different phone number.',
   MISSING_FIELDS: 'Please fill in all required fields.',
   INVALID_EMAIL: 'Please enter a valid email address.',
   PASSWORD_TOO_SHORT: 'Your password must be at least 8 characters long.',

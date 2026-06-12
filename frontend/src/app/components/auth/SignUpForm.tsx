@@ -113,6 +113,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
  } catch (error: any) {
  const codeMap: Record<string, string> = {
  EMAIL_EXISTS: 'This email is already registered. Please sign in instead.',
+ PHONE_EXISTS: 'This phone number is already registered to another account. Please use a different phone number.',
  MISSING_FIELDS: 'Please fill in all required fields.',
  INVALID_EMAIL: 'Please enter a valid email address.',
  PASSWORD_TOO_SHORT: 'Password must be at least 8 characters long.',

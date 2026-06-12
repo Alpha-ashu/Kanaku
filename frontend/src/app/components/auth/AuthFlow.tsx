@@ -247,12 +247,15 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
         error?.status === 422 ||
         error?.code === 'EMAIL_EXISTS' ||
         error?.message?.toLowerCase().includes('already registered');
+      const isDuplicatePhone = error?.code === 'PHONE_EXISTS';
 
       let errMsg = error.message || 'Failed to create account';
       if (isNetworkError) {
         errMsg = 'Cannot connect to server. Please try again later.';
       } else if (isDuplicateUser) {
         errMsg = 'This email is already registered. Sign in instead or use a different email.';
+      } else if (isDuplicatePhone) {
+        errMsg = 'This phone number is already registered to another account. Please use a different phone number.';
       } else if (isServerError) {
         errMsg = 'Signup is temporarily unavailable (server error). Please try again in a moment.';
       }
