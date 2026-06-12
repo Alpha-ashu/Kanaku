@@ -532,8 +532,18 @@ export const api = {
         challengeResponse = await doChallenge(passwordPayload, pwEncoding);
       } catch (err: any) {
         if (err?.code === 'TIMEOUT_ERROR') {
-          await new Promise(resolve => setTimeout(resolve, 3000));
-          challengeResponse = await doChallenge(passwordPayload, pwEncoding);
+          try {
+            await new Promise(resolve => setTimeout(resolve, 3000));
+            challengeResponse = await doChallenge(passwordPayload, pwEncoding);
+          } catch (retryErr: any) {
+            if (retryErr?.code === 'INVALID_CREDENTIALS' && pwEncoding === 'sha256') {
+              // Swallow so we fallback to plain below
+            } else {
+              throw retryErr;
+            }
+          }
+        } else if (err?.code === 'INVALID_CREDENTIALS' && pwEncoding === 'sha256') {
+          // Swallow so we fallback to plain below
         } else {
           throw err;
         }
