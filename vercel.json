@@ -3,7 +3,7 @@
   "name": "kanaku",
   "buildCommand": "npm run build:frontend",
   "outputDirectory": "dist",
-  "regions": ["sin1", "iad1"],
+  "regions": ["sin1"],
   "routes": [
     {
       "src": "/assets/(.*)",
