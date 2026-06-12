@@ -28,10 +28,10 @@ To deliver a privacy-respecting financial companion that combines offline-first 
 
 | Component | Technologies |
 |---|---|
-| **Frontend Core** | React 18.3.1, TypeScript 5.3.3, Vite 6.3.5 |
+| **Frontend Core** | React 18.3.1, TypeScript 5.9.3, Vite 6.3.5 |
 | **Frontend Storage** | Dexie.js (IndexedDB local replica) |
 | **Mobile Wrapper** | Capacitor 8.0.2 (iOS & Android platforms) |
-| **Backend API** | Express 4.22.1, TypeScript, Ts-Node-Dev |
+| **Backend API** | Express 4.22.1, TypeScript 6.0.3, Ts-Node-Dev |
 | **Database ORM** | Prisma 6.19.2 |
 | **Database Cloud** | PostgreSQL hosted on Supabase |
 | **Real-Time Gateway** | Socket.IO 4.7.4 |
@@ -115,7 +115,7 @@ For new feature development and refactoring, the backend must use a decoupled **
 
 ---
 
-## 6. Backend Test Suite Status (as of 2026-06-11)
+## 6. Backend Test Suite Status (as of 2026-06-12)
 
 All **30 integration test suites / 561 tests pass** against the production-configured backend (Supabase DB at `aws-1-ap-southeast-2.pooler.supabase.com`). Tests also pass in offline mode (DB at `localhost:5434` unreachable) — all assertions are guarded to accept `503 DATABASE_UNAVAILABLE` as a valid response.
 
@@ -204,6 +204,115 @@ Weak passwords return `HTTP 400` with code `PASSWORD_TOO_WEAK`.
 ---
 
 ##  Change Log & Evolution
+
+### **2026-06-12 — Login Hang Fix (Redis commandTimeout), Rate-Limiter Hardening & TypeScript 6 Upgrade**
+
+#### Root Cause: Why Login Was Broken in Production
+
+**Symptom**: Users clicked Sign In → button spun indefinitely → no error appeared, no redirect happened.
+
+**Diagnosis path**:
+1. `/health` endpoint confirmed `redis: "connected"` — TCP connection to Redis was alive.
+2. POST `/auth/login/challenge` with an *invalid* body (missing password) should return `400` in milliseconds — but it timed out at ~35 seconds. This proved the hang was in **middleware** running before the route handler, not in email/password validation logic.
+3. The auth rate-limiter (`rateLimit` middleware) ran first. It called `redis.incr()` on every request. ioredis has **no default `commandTimeout`** — so if Redis accepted the TCP connection but stopped responding to commands (common after long idle on managed Redis), `incr()` queued and waited forever.
+4. Every auth request — valid or not — hung at the rate-limiter and never reached the handler.
+
+#### Fix 1 — `commandTimeout` + connection hardening (`backend/src/cache/redis.ts`)
+
+Added three ioredis options to the client constructor:
+
+```typescript
+const redis = new Redis(env.REDIS_URL, {
+  lazyConnect: true,
+  maxRetriesPerRequest: 0,      // was: 1 — don't retry commands that time out
+  enableReadyCheck: true,
+  connectTimeout: 3000,          // NEW — abort TCP connect after 3 s
+  commandTimeout: 2000,          // NEW — abort any Redis command after 2 s (the critical fix)
+  tls: env.REDIS_TLS ? {} : undefined,
+});
+```
+
+- **`commandTimeout: 2000`** — the primary fix. Any `incr`, `pexpire`, `pttl`, `get`, `set` call that gets no reply within 2 s throws an error instead of hanging.
+- **`connectTimeout: 3000`** — prevents the initial connection from blocking startup for more than 3 s.
+- **`maxRetriesPerRequest: 0`** — on command failure, throw immediately; don't re-queue the same command (which would double the hang time).
+
+#### Fix 2 — `getRedisStatus()` guard in rate-limiter (`backend/src/middleware/rateLimit.ts`)
+
+Added an early-return guard at the top of `redisIncrement()`:
+
+```typescript
+async function redisIncrement(key, windowMs) {
+  const redis = getRedisClient();
+  if (!redis) return null;
+  if (getRedisStatus() !== 'connected') return null;  // NEW — skip Redis if not ready
+  // ... redis.incr(), redis.pexpire(), redis.pttl() ...
+}
+```
+
+When Redis is in `'error'` or `'connecting'` state, the rate-limiter now falls back to the in-memory `Map<string, bucket>` immediately without even attempting a Redis command. Combined with `commandTimeout`, this gives two independent layers of protection: state check (fast path) + timeout (safety net).
+
+#### Fix 3 — Backend TypeScript upgraded to 6.0.3 (`backend/package.json`)
+
+**Problem**: `backend/tsconfig.json` had `"moduleResolution": "node"` (deprecated as `node10` in TS 6) and `"ignoreDeprecations": "6.0"` to silence the warning. But `package.json` had `"typescript": "^5.3.3"` which resolved to `5.9.3` in the lock file. TypeScript 5.9.3 rejects `"ignoreDeprecations": "6.0"` with:
+
+```
+error TS5103: Option '--ignoreDeprecations' value '6.0' is invalid.
+```
+
+Meanwhile VS Code's bundled TypeScript server (6.0.x) showed the deprecation warning and *required* `"6.0"` to suppress it — causing a split reality where the IDE showed errors and the build showed different errors.
+
+**Fix**: Upgraded backend TypeScript from `^5.3.3` → `6.0.3` in `package.json`. Lock file updated. `"ignoreDeprecations": "6.0"` now accepted by both the CLI compiler and the IDE. Build exits 0.
+
+#### Fix 4 — Root `tsconfig.json` `baseUrl` deprecation removed
+
+**Problem**: Root `tsconfig.json` (used by the frontend/Vite) had `"baseUrl": "."` which is deprecated in TypeScript 7.0, triggering a TS6.0 IDE warning.
+
+**Fix**: Removed `"baseUrl": "."` entirely. Updated the `paths` entry to use an explicit relative path:
+
+```jsonc
+// BEFORE:
+"baseUrl": ".",
+"paths": { "@/*": ["frontend/src/*"] }
+
+// AFTER (no baseUrl needed with moduleResolution: "bundler"):
+"paths": { "@/*": ["./frontend/src/*"] }
+```
+
+Vite's alias resolution (`vite.config.ts` line 237, `path.resolve(__dirname, './frontend/src')`) is independent of `tsconfig.json` paths, so this change has no runtime effect.
+
+#### Files Changed
+
+| File | Change |
+|------|--------|
+| `backend/src/cache/redis.ts` | Added `commandTimeout: 2000`, `connectTimeout: 3000`; `maxRetriesPerRequest: 0` |
+| `backend/src/middleware/rateLimit.ts` | Added `getRedisStatus() !== 'connected'` guard before any Redis command |
+| `backend/package.json` | `"typescript": "^5.3.3"` → `"6.0.3"` |
+| `backend/package-lock.json` | Updated TypeScript resolution to 6.0.3 |
+| `backend/tsconfig.json` | `"ignoreDeprecations": "6.0"` restored (was reverted to `"5.0"` as intermediate workaround) |
+| `tsconfig.json` (root) | Removed `"baseUrl": "."`, paths updated to `"./frontend/src/*"` |
+
+#### Auth Flow (unchanged — for reference)
+
+```
+POST /auth/login/challenge
+  → rateLimit middleware (now falls back to in-memory if Redis unresponsive)
+  → validate body (email + password)
+  → bcrypt.compare (or Supabase fallback for legacy accounts)
+  → store 6-digit challenge code in Redis (60 s TTL) or in-memory map
+  → return { challengeCode } to frontend
+
+POST /auth/login
+  → rateLimit middleware
+  → validate challengeCode against Redis (or in-memory) entry
+  → issue JWT accessToken + refreshToken
+  → return tokens to frontend → stored in TokenManager + localStorage
+```
+
+#### Deployment Note
+
+The rate-limiter + Redis fixes are committed (commits `0ab1294`, `d8eebc4`). Run `fly deploy` from the project root to push to the `kanaku` Fly.io app (Singapore, auto_stop=off).
+
+---
 
 ### **2026-06-11 — Full Test Suite (30/30 Suites), Password Hardening & Admin Seeding**
 
@@ -5103,7 +5212,8 @@ erDiagram
 | OTP | SHA-256 hashed in `OtpRequest`; plaintext sent via SendGrid only |
 | Device trust | `Device.isTrusted` flag; OTP required for all new devices |
 | PIN | bcrypt hash in `UserPin`; lockout after `failedAttempts`; PIN in backend, never client-only |
-| Rate limiting | 5 req/min auth; 3/min destructive ops; 8-10/min receipt scan |
+| Rate limiting | 5 req/min auth; 3/min destructive ops; 8-10/min receipt scan; falls back to in-memory when Redis is not `'connected'` |
+| Redis resilience | `commandTimeout: 2000 ms`, `connectTimeout: 3000 ms`, `maxRetriesPerRequest: 0`; status checked before every command |
 | CORS | Allowlist built from `FRONTEND_URL`/`CORS_ORIGIN` env var |
 | Socket.IO auth | JWT verified on every `connection` event |
 | SVG sanitization | Avatar proxy sanitizes all Dicebear SVG output before serving |
