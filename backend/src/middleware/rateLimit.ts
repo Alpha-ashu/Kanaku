@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { audit } from '../utils/auditLogger';
-import { getRedisClient } from '../cache/redis';
+import { getRedisClient, getRedisStatus } from '../cache/redis';
 
 type RateLimitOptions = {
   windowMs: number;
@@ -26,6 +26,7 @@ setInterval(() => {
 async function redisIncrement(key: string, windowMs: number): Promise<{ count: number; resetAt: number } | null> {
   const redis = getRedisClient();
   if (!redis) return null;
+  if (getRedisStatus() !== 'connected') return null;
 
   try {
     const count = await redis.incr(key);
