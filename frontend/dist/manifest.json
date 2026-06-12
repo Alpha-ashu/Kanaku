@@ -1,6 +1,6 @@
 {
-  "name": "KANKU",
-  "short_name": "KANKU",
+  "name": "KANAKU",
+  "short_name": "KANAKU",
   "description": "Privacy-first financial life management platform. Track expenses, loans, goals, investments, and shared bills in one unified system.",
   "start_url": "/",
   "scope": "/",
@@ -46,7 +46,7 @@
   },
   "protocol_handlers": [
     {
-      "protocol": "web+KANKU",
+      "protocol": "web+KANAKU",
       "url": "/?action=%s"
     }
   ],
