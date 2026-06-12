@@ -16,10 +16,13 @@ import { rateLimit } from '../../middleware/rateLimit';
 
 const router = Router();
 
-// Strict rate limiting on auth endpoints - prevents brute-force attacks
+// Rate limiting on auth endpoints - prevents brute-force attacks
+// Default: 20 per minute per IP. Override via AUTH_RATE_LIMIT env var.
+// 20 allows normal usage (register + wrong pwd + login + challenge) without locking out real users.
+// For tighter production hardening, set AUTH_RATE_LIMIT=10 in Fly.io secrets.
 const authLimiter = rateLimit({
   windowMs: 60_000,          // 1 minute
-  max: Number(process.env.AUTH_RATE_LIMIT || 5),
+  max: Number(process.env.AUTH_RATE_LIMIT || 20),
   scope: 'auth-route',
   message: 'Too many authentication attempts. Please try again later.',
   keyGenerator: (req) => req.ip || 'unknown',
