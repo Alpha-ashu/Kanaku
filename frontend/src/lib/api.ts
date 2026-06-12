@@ -501,23 +501,55 @@ export const api = {
   // Authentication
   auth: {
     login: async (credentials: { email: string; password: string }) => {
-      const doChallenge = () => apiClient.post<any>(
+      // Hash the password with SHA-256 before sending over the wire.
+      // This prevents the raw password from appearing in DevTools Network tab.
+      // The backend verifies the SHA-256 digest; if it can't (legacy accounts),
+      // we automatically fall back to sending the plain password.
+      let passwordPayload: string = credentials.password;
+      let pwEncoding = 'plain';
+      try {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(credentials.password);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        passwordPayload = hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
+        pwEncoding = 'sha256';
+      } catch {
+        // SubtleCrypto unavailable (very old browser) — fall back to plain
+      }
+
+      const doChallenge = (password: string, encoding: string) => apiClient.post<any>(
         '/auth/login/challenge',
-        { email: credentials.email, password: credentials.password },
-        { showErrorToast: false }
+        { email: credentials.email, password },
+        { showErrorToast: false, headers: { 'x-pw-encoding': encoding } }
       );
 
       // If the backend is waking from suspension the first call may time out.
       // Retry once after a short pause so the user never sees a dead-end error.
       let challengeResponse;
       try {
-        challengeResponse = await doChallenge();
+        challengeResponse = await doChallenge(passwordPayload, pwEncoding);
       } catch (err: any) {
         if (err?.code === 'TIMEOUT_ERROR') {
           await new Promise(resolve => setTimeout(resolve, 3000));
-          challengeResponse = await doChallenge();
+          challengeResponse = await doChallenge(passwordPayload, pwEncoding);
         } else {
           throw err;
+        }
+      }
+
+      // If SHA-256 challenge failed (INVALID_CREDENTIALS) and we tried the hashed form,
+      // fall back to the plain password so legacy/Supabase-managed accounts still work.
+      if ((!challengeResponse?.success || !challengeResponse?.data?.code) && pwEncoding === 'sha256') {
+        try {
+          challengeResponse = await doChallenge(credentials.password, 'plain');
+        } catch (fallbackErr: any) {
+          if (fallbackErr?.code === 'TIMEOUT_ERROR') {
+            await new Promise(resolve => setTimeout(resolve, 3000));
+            challengeResponse = await doChallenge(credentials.password, 'plain');
+          } else {
+            throw fallbackErr;
+          }
         }
       }
 

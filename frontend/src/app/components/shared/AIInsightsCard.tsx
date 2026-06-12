@@ -76,7 +76,7 @@ export const AIInsightsCard: React.FC<{ compact?: boolean }> = ({ compact = fals
         setData(result);
         setRetryCount(0); // Reset retry count on success
       } catch (err: any) {
-        console.error('[AIInsightsCard] Failed to fetch insights:', err?.status, err?.message);
+        console.warn('[AIInsightsCard] Failed to fetch insights (non-critical):', err?.status, err?.message);
         setError(true);
         setData(null);
       } finally {

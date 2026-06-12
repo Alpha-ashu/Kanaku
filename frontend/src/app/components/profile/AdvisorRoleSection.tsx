@@ -45,7 +45,7 @@ const ONLINE_STATUS_CONFIG = {
 type OnlineStatus = 'AVAILABLE' | 'BUSY' | 'NOT_AVAILABLE';
 
 export const AdvisorRoleSection: React.FC<Props> = ({ userRole, userName, userEmail }) => {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(true);
   const [application, setApplication] = useState<ApplicationState | null>(null);
   const [roleMode, setRoleMode] = useState<'user' | 'advisor'>('user');
   const [onlineStatus, setOnlineStatus] = useState<OnlineStatus>('NOT_AVAILABLE');

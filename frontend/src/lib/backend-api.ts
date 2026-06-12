@@ -299,47 +299,17 @@ class BackendService {
   }
    public api: AxiosInstance;
   private token: string | null = null;
+  private _inflightGets: Map<string, Promise<any>>;
 
   constructor() {
-    const inflightRequests = new Map<string, Promise<any>>();
+    this._inflightGets = new Map<string, Promise<any>>();
 
-    // Axios v1.x stores adapter as string[] (['xhr','http']), not a function.
-    // Resolve to the actual HTTP adapter for this environment before creating the instance,
-    // so our custom adapter can call it directly without risking infinite recursion.
-    const rawAdapter = axios.defaults.adapter;
-    let defaultAdapter: (config: any) => Promise<any>;
-    if (typeof rawAdapter === 'function') {
-      defaultAdapter = rawAdapter;
-    } else if ((axios as any).getAdapter) {
-      const name = typeof XMLHttpRequest !== 'undefined' ? 'xhr' : 'http';
-      defaultAdapter = (axios as any).getAdapter(rawAdapter ?? name);
-    } else {
-      // Last-resort: create a plain instance (no custom adapter) to delegate to
-      const plain = axios.create({ baseURL: API_BASE_URL });
-      defaultAdapter = (config: any) => plain.request(config);
-    }
-
+    // Use a plain axios instance — no custom adapter.
+    // Custom adapters that try to re-invoke the resolved axios default adapter are fragile
+    // in production Vite bundles (mangled names cause "a is not a function" errors).
+    // GET deduplication is handled via the overridden get() method below.
     this.api = axios.create({
       baseURL: API_BASE_URL,
-      adapter: (config) => {
-        const method = (config.method || 'get').toLowerCase();
-        if (method === 'get') {
-          const key = JSON.stringify({ url: config.url, params: config.params });
-          if (inflightRequests.has(key)) {
-            console.info(`[BackendService] Deduplicating concurrent GET request: ${config.url}`);
-            return inflightRequests.get(key)!;
-          }
-
-          const promise = Promise.resolve(defaultAdapter(config)).finally(() => {
-            inflightRequests.delete(key);
-          });
-
-          inflightRequests.set(key, promise);
-          return promise;
-        }
-
-        return defaultAdapter(config);
-      }
     });
 
     // Add token to every request
@@ -444,8 +414,18 @@ class BackendService {
   
   // Generic HTTP Methods
   async get<T = any>(url: string, config?: any): Promise<T> {
-    const response = await this.api.get<T>(url, config);
-    return response.data;
+    // Deduplicate concurrent identical GET requests to avoid redundant network calls.
+    const key = JSON.stringify({ url, params: config?.params });
+    const inflight = this._inflightGets.get(key);
+    if (inflight) {
+      console.info(`[BackendService] Deduplicating concurrent GET request: ${url}`);
+      return inflight;
+    }
+    const promise = this.api.get<T>(url, config)
+      .then((response) => response.data)
+      .finally(() => { this._inflightGets.delete(key); });
+    this._inflightGets.set(key, promise);
+    return promise;
   }
 
   async post<T = any>(url: string, data?: any, config?: any): Promise<T> {
@@ -699,9 +679,10 @@ class BackendService {
   async getGlobalFeatureFlags() {
     try {
       const response = await this.api.get('/admin/features');
-      return response.data;
-    } catch (error) {
-      console.warn('Failed to fetch global feature flags from backend:', error);
+      return response.data ?? null;
+    } catch {
+      // Non-critical: fall back to hardcoded defaults. Errors are intentionally swallowed
+      // here so a failed feature-flag fetch never disrupts the app startup.
       return null;
     }
   }
@@ -715,9 +696,9 @@ class BackendService {
   async getAIFeatureFlags() {
     try {
       const response = await this.api.get('/admin/ai-features');
-      return response.data;
-    } catch (error) {
-      console.warn('Failed to fetch AI feature flags from backend:', error);
+      return response.data ?? null;
+    } catch {
+      // Non-critical: fall back to hardcoded defaults.
       return null;
     }
   }
