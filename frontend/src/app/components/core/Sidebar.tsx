@@ -34,6 +34,9 @@ const DraggableSidebarItem: React.FC<DraggableSidebarItemProps> = ({
  <Tooltip>
  <TooltipTrigger asChild>
  <motion.div
+ role="button"
+ aria-label={item.label}
+ data-nav-id={item.id}
  className={cn(
  "w-10 h-10 flex items-center justify-center rounded-xl transition-all relative group cursor-pointer",
  isActive

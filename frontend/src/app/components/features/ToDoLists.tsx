@@ -156,6 +156,7 @@ export const ToDoLists: React.FC = () => {
  </label>
  <input
  type="text"
+ name="name"
  value={newListName}
  onChange={(e) => setNewListName(e.target.value)}
  placeholder="e.g., Weekly Tasks"

@@ -1306,6 +1306,7 @@ export function AddTransaction() {
  <div className="shrink-0 flex justify-center max-w-[60%]">
  <input
  type="number"
+ name="amount"
  value={amountStr}
  onChange={e => { setAmountStr(e.target.value); setFormData(prev => ({ ...prev, amount: parseFloat(e.target.value) || 0 })); }}
  className="bg-transparent text-4xl min-[400px]:text-5xl sm:text-6xl font-black text-slate-900 outline-none w-full text-center tracking-tighter placeholder:text-slate-100 p-0 m-0"

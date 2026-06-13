@@ -379,11 +379,12 @@ export const AddGroup: React.FC = () => {
  </div>
  
  {/* Center: Input */}
- <input 
- type="number" 
- value={amountStr} 
+ <input
+ type="number"
+ name="totalAmount"
+ value={amountStr}
  onChange={e => { setAmountStr(e.target.value); setFormData(prev => ({ ...prev, totalAmount: parseFloat(e.target.value) || 0 })); }}
- className="bg-transparent text-5xl sm:text-6xl font-black text-slate-900 outline-none w-[160px] sm:w-[220px] text-center tracking-tighter placeholder:text-slate-100 p-0 m-0" 
+ className="bg-transparent text-5xl sm:text-6xl font-black text-slate-900 outline-none w-[160px] sm:w-[220px] text-center tracking-tighter placeholder:text-slate-100 p-0 m-0"
  placeholder="0"
  autoFocus
  />

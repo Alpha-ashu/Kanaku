@@ -1,11 +1,40 @@
 import { randomUUID } from 'crypto';
 import { Response } from 'express';
+import { Queue } from 'bullmq';
 import { AuthRequest, getUserId } from '../../middleware/auth';
 import { prisma } from '../../db/prisma';
 import { logger } from '../../config/logger';
 import { isDatabaseUnavailableError } from '../../utils/databaseAvailability';
 import { getSocketManager } from '../../sockets';
 import { sanitize } from '../../utils/sanitize';
+import { redisConnection } from '../../config/queue';
+
+let _emailQueue: Queue | null = null;
+function getEmailQueue(): Queue {
+  if (!_emailQueue) {
+    _emailQueue = new Queue('email-notifications', { connection: redisConnection as any });
+  }
+  return _emailQueue;
+}
+
+async function queueGroupExpenseEmail(notificationId: string, userId: string, title: string, message: string): Promise<void> {
+  try {
+    await getEmailQueue().add('send-notification-email', {
+      notificationId,
+      userId,
+      title,
+      message,
+      category: 'group_expense',
+      deepLink: '/groups',
+    }, {
+      priority: 1,
+      attempts: 3,
+      backoff: { type: 'exponential', delay: 2000 },
+    });
+  } catch (err) {
+    logger.warn('Failed to queue group expense email notification', err);
+  }
+}
 
 // Helper to convert internal Prisma model to the response format dynamically
 const buildGroupResponse = async (group: any, requestingUserId: string) => {
@@ -208,18 +237,22 @@ export const createGroup = async (req: AuthRequest, res: Response) => {
       });
 
       if (targetUser) {
+        const notifTitle = 'New Group Expense';
+        const notifMsg = `${currentUser?.name || 'Someone'} added you to a split expense "${group.name}". Total: ₹${Number(group.totalAmount).toFixed(0)}, Your share: ₹${m.share.toFixed(0)}.`;
         const notification = await prisma.notification.create({
           data: {
             userId: targetUser.id,
             sourceUserId: userId,
-            title: 'New Group Expense',
-            message: `${currentUser?.name || 'Someone'} added you to a split expense "${group.name}".`,
+            title: notifTitle,
+            message: notifMsg,
             type: 'group_expense',
             priority: 'high',
-            channels: '["app"]',
-            deliveryStatus: '{}',
+            channels: '["app","email"]',
+            deliveryStatus: '{"app":"sent","email":"queued"}',
           }
         });
+
+        await queueGroupExpenseEmail(notification.id, targetUser.id, notifTitle, notifMsg);
 
         try {
           const socketManager = getSocketManager();
@@ -346,18 +379,22 @@ export const updateGroup = async (req: AuthRequest, res: Response) => {
 
           // Send update notifications
           if (targetUser) {
+            const updNotifTitle = 'Group Expense Updated';
+            const updNotifMsg = `${currentUser.name} updated the split expense "${updated.name}".`;
             const notification = await prisma.notification.create({
               data: {
                 userId: targetUser.id,
                 sourceUserId: userId,
-                title: 'Group Expense Updated',
-                message: `${currentUser.name} updated the split expense "${updated.name}".`,
+                title: updNotifTitle,
+                message: updNotifMsg,
                 type: 'group_expense',
                 priority: 'normal',
-                channels: '["app"]',
-                deliveryStatus: '{}',
+                channels: '["app","email"]',
+                deliveryStatus: '{"app":"sent","email":"queued"}',
               }
             });
+
+            await queueGroupExpenseEmail(notification.id, targetUser.id, updNotifTitle, updNotifMsg);
 
             try {
               getSocketManager().notifyUser(targetUser.id, 'notification', notification);
@@ -393,19 +430,22 @@ export const updateGroup = async (req: AuthRequest, res: Response) => {
             }
           });
 
-          // Notify creator B
+          // Notify creator
+          const settleNotifTitle = 'Split Expense Settled';
+          const settleNotifMsg = `${currentUser.name} marked their share as paid for "${existing.name}".`;
           const notificationCreator = await prisma.notification.create({
             data: {
               userId: existing.userId,
               sourceUserId: userId,
-              title: 'Split Expense Settled',
-              message: `${currentUser.name} marked their share as paid for "${existing.name}".`,
+              title: settleNotifTitle,
+              message: settleNotifMsg,
               type: 'group_expense',
               priority: 'normal',
-              channels: '["app"]',
-              deliveryStatus: '{}',
+              channels: '["app","email"]',
+              deliveryStatus: '{"app":"sent","email":"queued"}',
             }
           });
+          await queueGroupExpenseEmail(notificationCreator.id, existing.userId, settleNotifTitle, settleNotifMsg);
 
           try {
             getSocketManager().notifyUser(existing.userId, 'notification', notificationCreator);

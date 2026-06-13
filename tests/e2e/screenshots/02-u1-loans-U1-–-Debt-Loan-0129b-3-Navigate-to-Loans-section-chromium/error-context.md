@@ -1,0 +1,259 @@
+# Instructions
+
+- Following Playwright test failed.
+- Explain why, be concise, respect Playwright best practices.
+- Provide a snippet of code with the fix, if possible.
+
+# Test info
+
+- Name: 02-u1-loans.spec.ts >> U1 – Debt / Loan Manager (Arjun) >> U1-03: Navigate to Loans section
+- Location: tests\e2e\02-u1-loans.spec.ts:74:3
+
+# Error details
+
+```
+Error: Loans page should load with relevant content
+
+expect(received).toBe(expected) // Object.is equality
+
+Expected: true
+Received: false
+```
+
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - generic:
+      - textbox: arjun.test@finora.app
+      - textbox [active]
+    - generic [ref=e4]:
+      - generic [ref=e5]:
+        - img [ref=e7]
+        - heading "KANAKU" [level=1] [ref=e13]
+        - paragraph [ref=e14]: Choose a 6-digit PIN to secure your account
+      - generic [ref=e15]:
+        - generic [ref=e16]:
+          - paragraph [ref=e17]: Step 1 of 2
+          - heading "Create your PIN" [level=2] [ref=e18]
+        - button "SHOW PIN" [ref=e28]:
+          - img [ref=e29]
+          - text: SHOW PIN
+        - generic [ref=e32]:
+          - button "1" [ref=e33]
+          - button "2" [ref=e34]
+          - button "3" [ref=e35]
+          - button "4" [ref=e36]
+          - button "5" [ref=e37]
+          - button "6" [ref=e38]
+          - button "7" [ref=e39]
+          - button "8" [ref=e40]
+          - button "9" [ref=e41]
+          - button "0" [ref=e43]
+          - button "⌫" [ref=e44]
+        - generic [ref=e45]:
+          - img [ref=e46]
+          - generic [ref=e49]:
+            - paragraph [ref=e50]: Secure Encryption
+            - paragraph [ref=e51]: Your financial data stays encrypted on this device. Only PIN verification metadata is stored securely.
+  - region "Notifications alt+T"
+```
+
+# Test source
+
+```ts
+  1   | /**
+  2   |  * Sprint 1 – Test 02: U1 Arjun Sharma – Debt / Loan Manager
+  3   |  * Tests: Add account → Add loan → Log EMI → Partial repayment → Dashboard totals
+  4   |  */
+  5   | import { test, expect } from '@playwright/test';
+  6   | import { USERS, loginUser, skipOnboardingIfPresent, screenshot, clickNav } from './helpers';
+  7   | 
+  8   | const U1 = USERS.U1;
+  9   | 
+  10  | test.describe('U1 – Debt / Loan Manager (Arjun)', () => {
+  11  |   test.setTimeout(120_000);
+  12  |   test.use({ storageState: undefined });
+  13  | 
+  14  |   test('U1-01: Login and reach dashboard', async ({ page }) => {
+  15  |     await loginUser(page, U1);
+  16  |     await skipOnboardingIfPresent(page);
+  17  |     await screenshot(page, '02_u1_01_dashboard');
+  18  | 
+  19  |     const isNotOnAuth = !(await page.locator('input[name="email"]').isVisible({ timeout: 2000 }).catch(() => false));
+  20  |     expect(isNotOnAuth, 'U1 should be logged in and past auth').toBe(true);
+  21  |   });
+  22  | 
+  23  |   test('U1-02: Add primary savings account', async ({ page }) => {
+  24  |     await loginUser(page, U1);
+  25  |     await skipOnboardingIfPresent(page);
+  26  | 
+  27  |     // Navigate to accounts
+  28  |     const navClicked = await clickNav(page, 'account');
+  29  |     if (!navClicked) {
+  30  |       // Try bottom nav or sidebar
+  31  |       await page.locator('[class*="nav"] button, nav button').filter({ hasText: /account/i }).first().click().catch(() => {});
+  32  |     }
+  33  |     await page.waitForTimeout(1000);
+  34  |     await screenshot(page, '02_u1_02_accounts_page');
+  35  | 
+  36  |     // Look for Add Account button
+  37  |     const addBtn = page.getByRole('button', { name: /add account|new account|\+ account/i }).first();
+  38  |     const addBtnVisible = await addBtn.isVisible({ timeout: 5000 }).catch(() => false);
+  39  |     if (addBtnVisible) {
+  40  |       await addBtn.click();
+  41  |       await page.waitForTimeout(800);
+  42  |       await screenshot(page, '02_u1_02_add_account_modal');
+  43  | 
+  44  |       // Fill account name
+  45  |       const nameInput = page.locator('input[placeholder*="name" i], input[name="name"], input[placeholder*="account" i]').first();
+  46  |       if (await nameInput.isVisible({ timeout: 3000 }).catch(() => false)) {
+  47  |         await nameInput.fill('SBI Savings Account');
+  48  |       }
+  49  | 
+  50  |       // Fill balance
+  51  |       const balanceInput = page.locator('input[placeholder*="balance" i], input[name="balance"], input[placeholder*="amount" i], input[type="number"]').first();
+  52  |       if (await balanceInput.isVisible({ timeout: 3000 }).catch(() => false)) {
+  53  |         await balanceInput.fill('45000');
+  54  |       }
+  55  | 
+  56  |       await screenshot(page, '02_u1_02_add_account_filled');
+  57  | 
+  58  |       // Submit
+  59  |       const saveBtn = page.getByRole('button', { name: /save|add|create|confirm/i }).last();
+  60  |       await saveBtn.click();
+  61  |       await page.waitForTimeout(2000);
+  62  |       await screenshot(page, '02_u1_02_add_account_result');
+  63  | 
+  64  |       // Check success
+  65  |       const pageText = await page.textContent('body');
+  66  |       const hasAccount = pageText?.includes('SBI') || pageText?.includes('45,000') || pageText?.includes('45000');
+  67  |       expect(hasAccount, 'SBI Savings account should appear after creation').toBe(true);
+  68  |     } else {
+  69  |       console.warn('  ⚠️  Add Account button not found – capturing page state');
+  70  |       await screenshot(page, '02_u1_02_no_add_button');
+  71  |     }
+  72  |   });
+  73  | 
+  74  |   test('U1-03: Navigate to Loans section', async ({ page }) => {
+  75  |     await loginUser(page, U1);
+  76  |     await skipOnboardingIfPresent(page);
+  77  | 
+  78  |     const navClicked = await clickNav(page, 'loan');
+  79  |     await page.waitForTimeout(1000);
+  80  |     await screenshot(page, '02_u1_03_loans_page');
+  81  | 
+  82  |     // Use getByText for AnimatePresence safety — h1/h2 locator picks outgoing page element
+  83  |     const hasLoansContent = await page.getByText('Loans & EMIs', { exact: false }).first()
+  84  |       .waitFor({ state: 'visible', timeout: 12000 })
+  85  |       .then(() => true)
+  86  |       .catch(() => false);
+  87  | 
+  88  |     if (!hasLoansContent) {
+  89  |       await screenshot(page, '02_u1_03_loans_NOT_FOUND');
+  90  |       console.warn('  ⚠️  Loans section not clearly visible');
+  91  |     }
+> 92  |     expect(hasLoansContent, 'Loans page should load with relevant content').toBe(true);
+      |                                                                             ^ Error: Loans page should load with relevant content
+  93  |   });
+  94  | 
+  95  |   test('U1-04: Add Home Loan', async ({ page }) => {
+  96  |     await loginUser(page, U1);
+  97  |     await skipOnboardingIfPresent(page);
+  98  |     await clickNav(page, 'loan');
+  99  |     await page.waitForTimeout(800);
+  100 | 
+  101 |     const addLoanBtn = page.getByRole('button', { name: /add loan|new loan|\+ loan|add debt/i }).first();
+  102 |     const visible = await addLoanBtn.isVisible({ timeout: 5000 }).catch(() => false);
+  103 | 
+  104 |     if (visible) {
+  105 |       await addLoanBtn.click();
+  106 |       await page.waitForTimeout(600);
+  107 |       await screenshot(page, '02_u1_04_add_loan_modal');
+  108 | 
+  109 |       // Fill loan name/description
+  110 |       const nameInput = page.locator('input[name="name"], input[placeholder*="name" i], input[placeholder*="loan" i]').first();
+  111 |       if (await nameInput.isVisible({ timeout: 3000 }).catch(() => false)) await nameInput.fill('Home Loan – HDFC');
+  112 | 
+  113 |       // Fill amount / principal
+  114 |       const amountInput = page.locator('input[name="amount"], input[name="principal"], input[name="loanAmount"], input[placeholder*="amount" i], input[placeholder*="principal" i]').first();
+  115 |       if (await amountInput.isVisible({ timeout: 3000 }).catch(() => false)) await amountInput.fill('3500000');
+  116 | 
+  117 |       // Fill interest rate
+  118 |       const rateInput = page.locator('input[name="interest"], input[name="rate"], input[name="interestRate"], input[placeholder*="interest" i], input[placeholder*="rate" i]').first();
+  119 |       if (await rateInput.isVisible({ timeout: 2000 }).catch(() => false)) await rateInput.fill('8.5');
+  120 | 
+  121 |       // Fill EMI
+  122 |       const emiInput = page.locator('input[name="emi"], input[name="monthlyPayment"], input[placeholder*="emi" i], input[placeholder*="monthly" i]').first();
+  123 |       if (await emiInput.isVisible({ timeout: 2000 }).catch(() => false)) await emiInput.fill('30415');
+  124 | 
+  125 |       await screenshot(page, '02_u1_04_loan_filled');
+  126 | 
+  127 |       const saveBtn = page.getByRole('button', { name: /save|add|create|confirm/i }).last();
+  128 |       await saveBtn.click();
+  129 |       await page.waitForTimeout(2500);
+  130 |       await screenshot(page, '02_u1_04_loan_saved');
+  131 | 
+  132 |       const body = await page.textContent('body');
+  133 |       const loanSaved = body?.includes('HDFC') || body?.includes('Home Loan') || body?.includes('3,500,000') || body?.includes('35,00,000');
+  134 |       expect(loanSaved, 'Home Loan should appear in the loans list').toBe(true);
+  135 |     } else {
+  136 |       await screenshot(page, '02_u1_04_add_loan_btn_NOT_FOUND');
+  137 |       console.warn('  ⚠️  Add Loan button not found');
+  138 |     }
+  139 |   });
+  140 | 
+  141 |   test('U1-05: Add informal personal loan (Borrowed from Priya)', async ({ page }) => {
+  142 |     await loginUser(page, U1);
+  143 |     await skipOnboardingIfPresent(page);
+  144 |     await clickNav(page, 'loan');
+  145 |     await page.waitForTimeout(800);
+  146 | 
+  147 |     const addLoanBtn = page.getByRole('button', { name: /add loan|new loan|\+ loan/i }).first();
+  148 |     if (await addLoanBtn.isVisible({ timeout: 4000 }).catch(() => false)) {
+  149 |       await addLoanBtn.click();
+  150 |       await page.waitForTimeout(600);
+  151 | 
+  152 |       const nameInput = page.locator('input[name="name"], input[placeholder*="name" i]').first();
+  153 |       if (await nameInput.isVisible({ timeout: 3000 }).catch(() => false)) await nameInput.fill('Borrowed from Priya for trip');
+  154 | 
+  155 |       const amountInput = page.locator('input[name="amount"], input[placeholder*="amount" i]').first();
+  156 |       if (await amountInput.isVisible({ timeout: 3000 }).catch(() => false)) await amountInput.fill('8500');
+  157 | 
+  158 |       await screenshot(page, '02_u1_05_informal_loan_filled');
+  159 | 
+  160 |       const saveBtn = page.getByRole('button', { name: /save|add|create|confirm/i }).last();
+  161 |       await saveBtn.click();
+  162 |       await page.waitForTimeout(2000);
+  163 |       await screenshot(page, '02_u1_05_informal_loan_saved');
+  164 | 
+  165 |       const body = await page.textContent('body');
+  166 |       const saved = body?.includes('Priya') || body?.includes('8,500') || body?.includes('8500') || body?.includes('trip');
+  167 |       // BUG: "Add Loan" navigates to add-transaction page with localStorage mode flags;
+  168 |       // the form fields don't match the test's selectors — this is a known test limitation.
+  169 |       if (!saved) console.warn('  ⚠️  Informal loan not found — Add Loan likely uses add-transaction page with different field names');
+  170 |     }
+  171 |   });
+  172 | 
+  173 |   test('U1-06: Dashboard shows total debt figure', async ({ page }) => {
+  174 |     await loginUser(page, U1);
+  175 |     await skipOnboardingIfPresent(page);
+  176 | 
+  177 |     // Go to dashboard
+  178 |     await clickNav(page, 'dashboard');
+  179 |     await page.waitForTimeout(1500);
+  180 |     await screenshot(page, '02_u1_06_dashboard_with_loans');
+  181 | 
+  182 |     // Debt/loan summary should appear somewhere
+  183 |     const hasDebtSummary = await page.getByText(/total.*debt|loan.*balance|outstanding|you owe|borrowed/i)
+  184 |       .first().isVisible({ timeout: 5000 }).catch(() => false);
+  185 | 
+  186 |     if (!hasDebtSummary) {
+  187 |       await screenshot(page, '02_u1_06_no_debt_summary');
+  188 |       console.warn('  ⚠️  Total debt summary not visible on dashboard');
+  189 |     }
+  190 |     // Soft assert — log but don't fail since UI layout varies
+  191 |     console.log(`  Debt summary on dashboard: ${hasDebtSummary}`);
+  192 |   });
+```

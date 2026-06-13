@@ -326,11 +326,12 @@ export const AddGoal: React.FC = () => {
  <span className="text-[9px] font-black text-slate-300 uppercase tracking-[0.2em] mb-2">Target Goal Amount</span>
  <div className="flex items-center gap-3">
  <span className="text-2xl font-black text-slate-200 uppercase">{currency}</span>
- <input 
- type="number" 
- value={amountStr} 
+ <input
+ type="number"
+ name="targetAmount"
+ value={amountStr}
  onChange={e => { setAmountStr(e.target.value); setFormData(prev => ({ ...prev, targetAmount: parseFloat(e.target.value) || 0 })); }}
- className="bg-transparent text-4xl font-black text-slate-900 outline-none w-[160px] text-center tracking-tighter" 
+ className="bg-transparent text-4xl font-black text-slate-900 outline-none w-[160px] text-center tracking-tighter"
  placeholder="0.00"
  />
  </div>
