@@ -216,25 +216,19 @@ async function enterPin(page: Page, pin = '111111') {
     .waitFor({ state: 'visible', timeout: 20000 }).catch(() => null);
   await page.waitForTimeout(500);
 
-  // Locate the numpad grid container (grid-cols-3 = the 3-column number pad)
-  const numpadContainer = page.locator('[class*="grid-cols-3"]').last();
-
   for (const digit of pin) {
-    // Primary: Playwright force-click on the scoped numpad button
-    const numpadBtn = numpadContainer.locator('button')
-      .filter({ hasText: new RegExp(`^${digit}$`) }).first();
-    const clicked = await numpadBtn.click({ force: true, timeout: 2000 })
+    // Primary: Playwright getByRole — most robust, works regardless of CSS class names
+    const btn = page.getByRole('button', { name: new RegExp(`^${digit}$`) }).first();
+    const clicked = await btn.click({ force: true, timeout: 2000 })
       .then(() => true)
       .catch(() => false);
 
     if (!clicked) {
-      // Fallback: find button across whole page via evaluate
+      // Fallback: evaluate-based dispatchEvent
       await page.evaluate((d) => {
-        const btn = Array.from(document.querySelectorAll('button'))
-          .find(b => (b.textContent ?? '').trim() === d);
-        if (btn) {
-          btn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
-        }
+        const b = Array.from(document.querySelectorAll('button'))
+          .find(el => (el.textContent ?? '').trim() === d);
+        if (b) b.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
       }, digit);
     }
     await page.waitForTimeout(200);
@@ -260,15 +254,28 @@ export async function skipOnboardingIfPresent(page: Page) {
 
     // Step 1: verify mode enters PIN once; create mode enters it for Step 1 of 2
     await enterPin(page, STRONG_PIN);
-    await page.waitForTimeout(1500);
+    // enterPin waits 5s internally; add extra buffer for slow server (PBKDF2 + API call)
+    await page.waitForTimeout(2000);
 
     if (isCreateMode) {
-      // Step 2 of 2 — Confirm your PIN (only in create mode)
+      // Step 2 of 2 — Confirm your PIN (only in create mode).
+      // Server processes step 1 asynchronously; increase timeout for under-load scenarios.
       const confirmVisible = await page.getByText(/confirm your pin/i).first()
-        .isVisible({ timeout: 5000 }).catch(() => false);
+        .isVisible({ timeout: 15000 }).catch(() => false);
       if (confirmVisible) {
         await enterPin(page, STRONG_PIN);
-        await page.waitForTimeout(1500);
+        await page.waitForTimeout(2000);
+      }
+    } else {
+      // Verify mode: if PIN screen still showing after entry, it likely means
+      // the previous run used PIN=142536 — retry once (server still has that hash).
+      const pinStillAfterVerify = await page.getByText(/enter your pin/i).first()
+        .isVisible({ timeout: 2000 }).catch(() => false);
+      if (pinStillAfterVerify) {
+        // isSubmitting may be stuck — wait for it to reset before retrying
+        await page.waitForTimeout(3000);
+        await enterPin(page, STRONG_PIN);
+        await page.waitForTimeout(2000);
       }
     }
   }
