@@ -121,6 +121,7 @@ export const ExportReports: React.FC = () => {
  filename,
  mimeType: 'text/csv;charset=utf-8',
  data: csvContent,
+ preferShare: false,
  shareTitle: 'Export data',
  });
 
@@ -161,6 +162,7 @@ export const ExportReports: React.FC = () => {
  filename,
  mimeType: 'application/json',
  data: jsonString,
+ preferShare: false,
  shareTitle: 'Export data',
  });
 

@@ -843,61 +843,65 @@ export const Transactions: React.FC = () => {
  );
  })()}
 
- {/* Transaction Type Modal */}
- {showTransactionTypeModal && (
- <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
- <motion.div
- initial={{ scale: 0.95, opacity: 0, y: 20 }}
- animate={{ scale: 1, opacity: 1, y: 0 }}
- className="bg-white/95 backdrop-blur-2xl rounded-[32px] p-6 sm:p-8 w-full max-w-md shadow-2xl border border-white/50"
- >
- <h3 className="text-2xl font-black text-slate-900 tracking-tight mb-1">New Transaction</h3>
- <p className="text-slate-500 font-medium mb-8">What kind of transaction is this?</p>
+  {/* Transaction Type Modal */}
+  {showTransactionTypeModal && (
+    <div className="fixed inset-0 flex items-center justify-center z-[60] p-4">
+      <div 
+        className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" 
+        onClick={() => setShowTransactionTypeModal(false)} 
+      />
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0, y: 20 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        className="relative bg-white/95 backdrop-blur-2xl rounded-[32px] p-6 sm:p-8 w-full max-w-md shadow-2xl border border-white/50 z-10 max-h-[calc(100vh-2rem)] overflow-y-auto"
+      >
+        <h3 className="text-2xl font-black text-slate-900 tracking-tight mb-1">New Transaction</h3>
+        <p className="text-slate-500 font-medium mb-8">What kind of transaction is this?</p>
 
- <div className="space-y-3">
- {[
- { type: 'expense', label: 'Expense', desc: 'Money spent', color: 'bg-rose-50 text-rose-700 hover:bg-rose-100', icon: ArrowDownLeft },
- { type: 'income', label: 'Income', desc: 'Money received', color: 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100', icon: ArrowUpRight },
- { type: 'transfer', label: 'Transfer', desc: 'Move between accounts', color: 'bg-blue-50 text-blue-700 hover:bg-blue-100', icon: Repeat2 },
- ].map((opt) => (
- <button
- key={opt.type}
- onClick={() => {
- setShowTransactionTypeModal(false);
- if (opt.type === 'transfer') {
- // Always open the Transfer page
- setCurrentPage('transfer');
- } else {
- localStorage.setItem('quickFormType', opt.type);
- setCurrentPage('add-transaction');
- }
- }}
- className={cn(
-"w-full p-4 flex items-center gap-4 rounded-2xl transition-all border border-transparent hover:scale-[1.02] active:scale-[0.98]",
- opt.color
- )}
- >
- <div className="w-12 h-12 bg-white/80 rounded-xl flex items-center justify-center shadow-sm shrink-0">
- <opt.icon size={22} />
- </div>
- <div className="text-left">
- <p className="font-bold text-lg leading-tight">{opt.label}</p>
- <p className="text-sm opacity-80 font-medium leading-tight">{opt.desc}</p>
- </div>
- </button>
- ))}
- </div>
+        <div className="space-y-3">
+          {[
+            { type: 'expense', label: 'Expense', desc: 'Money spent', color: 'bg-rose-50 text-rose-700 hover:bg-rose-100', icon: ArrowDownLeft },
+            { type: 'income', label: 'Income', desc: 'Money received', color: 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100', icon: ArrowUpRight },
+            { type: 'transfer', label: 'Transfer', desc: 'Move between accounts', color: 'bg-blue-50 text-blue-700 hover:bg-blue-100', icon: Repeat2 },
+          ].map((opt) => (
+            <button
+              key={opt.type}
+              onClick={() => {
+                setShowTransactionTypeModal(false);
+                if (opt.type === 'transfer') {
+                  // Always open the Transfer page
+                  setCurrentPage('transfer');
+                } else {
+                  localStorage.setItem('quickFormType', opt.type);
+                  setCurrentPage('add-transaction');
+                }
+              }}
+              className={cn(
+                "w-full p-4 flex items-center gap-4 rounded-2xl transition-all border border-transparent hover:scale-[1.02] active:scale-[0.98]",
+                opt.color
+              )}
+            >
+              <div className="w-12 h-12 bg-white/80 rounded-xl flex items-center justify-center shadow-sm shrink-0">
+                <opt.icon size={22} />
+              </div>
+              <div className="text-left">
+                <p className="font-bold text-lg leading-tight">{opt.label}</p>
+                <p className="text-sm opacity-80 font-medium leading-tight">{opt.desc}</p>
+              </div>
+            </button>
+          ))}
+        </div>
 
- <Button
- variant="ghost"
- className="w-full mt-6 rounded-xl hover:bg-slate-100 text-slate-500 font-bold"
- onClick={() => setShowTransactionTypeModal(false)}
- >
- Cancel
- </Button>
- </motion.div>
- </div>
- )}
+        <Button
+          variant="ghost"
+          className="w-full mt-6 rounded-xl hover:bg-slate-100 text-slate-500 font-bold"
+          onClick={() => setShowTransactionTypeModal(false)}
+        >
+          Cancel
+        </Button>
+      </motion.div>
+    </div>
+  )}
 
  <DeleteConfirmModal
  isOpen={deleteModalOpen}

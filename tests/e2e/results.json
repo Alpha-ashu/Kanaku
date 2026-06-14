@@ -1,0 +1,3248 @@
+{
+  "config": {
+    "configFile": "K:\\Project\\kenku\\Finora\\playwright.config.ts",
+    "rootDir": "K:/Project/kenku/Finora/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "K:/Project/kenku/Finora/tests/e2e/screenshots",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "K:/Project/kenku/Finora/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "html",
+        {
+          "outputFolder": "tests/e2e/report",
+          "open": "never"
+        }
+      ],
+      [
+        "json",
+        {
+          "outputFile": "tests/e2e/results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "01-registration.spec.ts",
+      "file": "01-registration.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "User Registration – All 7 Personas",
+          "file": "01-registration.spec.ts",
+          "line": 8,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Register U1: Arjun Sharma (Debt Manager)",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 20689,
+                      "error": {
+                        "message": "Error: Page should not show a hard error after registration\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m",
+                        "stack": "Error: Page should not show a hard error after registration\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:25:80",
+                        "location": {
+                          "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts",
+                          "column": 80,
+                          "line": 25
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 23 |\u001b[39m       \u001b[36mconst\u001b[39m content \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mcontent()\u001b[33m;\u001b[39m\n \u001b[90m 24 |\u001b[39m       \u001b[36mconst\u001b[39m hasError \u001b[33m=\u001b[39m content\u001b[33m.\u001b[39mincludes(\u001b[32m'error'\u001b[39m) \u001b[33m&&\u001b[39m \u001b[33m!\u001b[39mcontent\u001b[33m.\u001b[39mincludes(\u001b[32m'Error Boundary'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 25 |\u001b[39m       expect(hasError\u001b[33m,\u001b[39m \u001b[32m'Page should not show a hard error after registration'\u001b[39m)\u001b[33m.\u001b[39mtoBe(\u001b[36mfalse\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                                                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 26 |\u001b[39m\n \u001b[90m 27 |\u001b[39m       \u001b[90m// Should see some welcome/onboarding/dashboard element\u001b[39m\n \u001b[90m 28 |\u001b[39m       \u001b[36mawait\u001b[39m skipOnboardingIfPresent(page)\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts",
+                            "column": 80,
+                            "line": 25
+                          },
+                          "message": "Error: Page should not show a hard error after registration\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n\n  23 |       const content = await page.content();\n  24 |       const hasError = content.includes('error') && !content.includes('Error Boundary');\n> 25 |       expect(hasError, 'Page should not show a hard error after registration').toBe(false);\n     |                                                                                ^\n  26 |\n  27 |       // Should see some welcome/onboarding/dashboard element\n  28 |       await skipOnboardingIfPresent(page);\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:25:80"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-14T17:27:04.962Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-68f44--Arjun-Sharma-Debt-Manager--chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-68f44--Arjun-Sharma-Debt-Manager--chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-68f44--Arjun-Sharma-Debt-Manager--chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-68f44--Arjun-Sharma-Debt-Manager--chromium\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts",
+                        "column": 80,
+                        "line": 25
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "180cc0718174fb543e11-de044b99cce50d3afdd3",
+              "file": "01-registration.spec.ts",
+              "line": 12,
+              "column": 5
+            },
+            {
+              "title": "Register U2: Priya Mehta (Group Splitter)",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 19153,
+                      "error": {
+                        "message": "Error: Page should not show a hard error after registration\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m",
+                        "stack": "Error: Page should not show a hard error after registration\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:25:80",
+                        "location": {
+                          "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts",
+                          "column": 80,
+                          "line": 25
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 23 |\u001b[39m       \u001b[36mconst\u001b[39m content \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mcontent()\u001b[33m;\u001b[39m\n \u001b[90m 24 |\u001b[39m       \u001b[36mconst\u001b[39m hasError \u001b[33m=\u001b[39m content\u001b[33m.\u001b[39mincludes(\u001b[32m'error'\u001b[39m) \u001b[33m&&\u001b[39m \u001b[33m!\u001b[39mcontent\u001b[33m.\u001b[39mincludes(\u001b[32m'Error Boundary'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 25 |\u001b[39m       expect(hasError\u001b[33m,\u001b[39m \u001b[32m'Page should not show a hard error after registration'\u001b[39m)\u001b[33m.\u001b[39mtoBe(\u001b[36mfalse\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                                                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 26 |\u001b[39m\n \u001b[90m 27 |\u001b[39m       \u001b[90m// Should see some welcome/onboarding/dashboard element\u001b[39m\n \u001b[90m 28 |\u001b[39m       \u001b[36mawait\u001b[39m skipOnboardingIfPresent(page)\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts",
+                            "column": 80,
+                            "line": 25
+                          },
+                          "message": "Error: Page should not show a hard error after registration\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n\n  23 |       const content = await page.content();\n  24 |       const hasError = content.includes('error') && !content.includes('Error Boundary');\n> 25 |       expect(hasError, 'Page should not show a hard error after registration').toBe(false);\n     |                                                                                ^\n  26 |\n  27 |       // Should see some welcome/onboarding/dashboard element\n  28 |       await skipOnboardingIfPresent(page);\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:25:80"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-14T17:27:29.430Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-86b22-Priya-Mehta-Group-Splitter--chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-86b22-Priya-Mehta-Group-Splitter--chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-86b22-Priya-Mehta-Group-Splitter--chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-86b22-Priya-Mehta-Group-Splitter--chromium\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts",
+                        "column": 80,
+                        "line": 25
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "180cc0718174fb543e11-21510b2fa9920e7bfc8a",
+              "file": "01-registration.spec.ts",
+              "line": 12,
+              "column": 5
+            },
+            {
+              "title": "Register U3: Rohan Verma (Investor)",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 18930,
+                      "error": {
+                        "message": "Error: Page should not show a hard error after registration\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m",
+                        "stack": "Error: Page should not show a hard error after registration\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:25:80",
+                        "location": {
+                          "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts",
+                          "column": 80,
+                          "line": 25
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 23 |\u001b[39m       \u001b[36mconst\u001b[39m content \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mcontent()\u001b[33m;\u001b[39m\n \u001b[90m 24 |\u001b[39m       \u001b[36mconst\u001b[39m hasError \u001b[33m=\u001b[39m content\u001b[33m.\u001b[39mincludes(\u001b[32m'error'\u001b[39m) \u001b[33m&&\u001b[39m \u001b[33m!\u001b[39mcontent\u001b[33m.\u001b[39mincludes(\u001b[32m'Error Boundary'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 25 |\u001b[39m       expect(hasError\u001b[33m,\u001b[39m \u001b[32m'Page should not show a hard error after registration'\u001b[39m)\u001b[33m.\u001b[39mtoBe(\u001b[36mfalse\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                                                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 26 |\u001b[39m\n \u001b[90m 27 |\u001b[39m       \u001b[90m// Should see some welcome/onboarding/dashboard element\u001b[39m\n \u001b[90m 28 |\u001b[39m       \u001b[36mawait\u001b[39m skipOnboardingIfPresent(page)\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts",
+                            "column": 80,
+                            "line": 25
+                          },
+                          "message": "Error: Page should not show a hard error after registration\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n\n  23 |       const content = await page.content();\n  24 |       const hasError = content.includes('error') && !content.includes('Error Boundary');\n> 25 |       expect(hasError, 'Page should not show a hard error after registration').toBe(false);\n     |                                                                                ^\n  26 |\n  27 |       // Should see some welcome/onboarding/dashboard element\n  28 |       await skipOnboardingIfPresent(page);\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:25:80"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-14T17:27:52.404Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-cbb8e-er-U3-Rohan-Verma-Investor--chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-cbb8e-er-U3-Rohan-Verma-Investor--chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-cbb8e-er-U3-Rohan-Verma-Investor--chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-cbb8e-er-U3-Rohan-Verma-Investor--chromium\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts",
+                        "column": 80,
+                        "line": 25
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "180cc0718174fb543e11-80b6dadee4719c17c9d6",
+              "file": "01-registration.spec.ts",
+              "line": 12,
+              "column": 5
+            },
+            {
+              "title": "Register U4: Sneha Kapoor (Goal Setter)",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 19094,
+                      "error": {
+                        "message": "Error: Page should not show a hard error after registration\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m",
+                        "stack": "Error: Page should not show a hard error after registration\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:25:80",
+                        "location": {
+                          "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts",
+                          "column": 80,
+                          "line": 25
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 23 |\u001b[39m       \u001b[36mconst\u001b[39m content \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mcontent()\u001b[33m;\u001b[39m\n \u001b[90m 24 |\u001b[39m       \u001b[36mconst\u001b[39m hasError \u001b[33m=\u001b[39m content\u001b[33m.\u001b[39mincludes(\u001b[32m'error'\u001b[39m) \u001b[33m&&\u001b[39m \u001b[33m!\u001b[39mcontent\u001b[33m.\u001b[39mincludes(\u001b[32m'Error Boundary'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 25 |\u001b[39m       expect(hasError\u001b[33m,\u001b[39m \u001b[32m'Page should not show a hard error after registration'\u001b[39m)\u001b[33m.\u001b[39mtoBe(\u001b[36mfalse\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                                                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 26 |\u001b[39m\n \u001b[90m 27 |\u001b[39m       \u001b[90m// Should see some welcome/onboarding/dashboard element\u001b[39m\n \u001b[90m 28 |\u001b[39m       \u001b[36mawait\u001b[39m skipOnboardingIfPresent(page)\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts",
+                            "column": 80,
+                            "line": 25
+                          },
+                          "message": "Error: Page should not show a hard error after registration\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n\n  23 |       const content = await page.content();\n  24 |       const hasError = content.includes('error') && !content.includes('Error Boundary');\n> 25 |       expect(hasError, 'Page should not show a hard error after registration').toBe(false);\n     |                                                                                ^\n  26 |\n  27 |       // Should see some welcome/onboarding/dashboard element\n  28 |       await skipOnboardingIfPresent(page);\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:25:80"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-14T17:28:14.981Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-072dd-4-Sneha-Kapoor-Goal-Setter--chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-072dd-4-Sneha-Kapoor-Goal-Setter--chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-072dd-4-Sneha-Kapoor-Goal-Setter--chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-072dd-4-Sneha-Kapoor-Goal-Setter--chromium\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts",
+                        "column": 80,
+                        "line": 25
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "180cc0718174fb543e11-b9233d0375095f555a66",
+              "file": "01-registration.spec.ts",
+              "line": 12,
+              "column": 5
+            },
+            {
+              "title": "Register U5: Dev Nair (Portfolio Builder)",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 18829,
+                      "error": {
+                        "message": "Error: Page should not show a hard error after registration\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m",
+                        "stack": "Error: Page should not show a hard error after registration\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:25:80",
+                        "location": {
+                          "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts",
+                          "column": 80,
+                          "line": 25
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 23 |\u001b[39m       \u001b[36mconst\u001b[39m content \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mcontent()\u001b[33m;\u001b[39m\n \u001b[90m 24 |\u001b[39m       \u001b[36mconst\u001b[39m hasError \u001b[33m=\u001b[39m content\u001b[33m.\u001b[39mincludes(\u001b[32m'error'\u001b[39m) \u001b[33m&&\u001b[39m \u001b[33m!\u001b[39mcontent\u001b[33m.\u001b[39mincludes(\u001b[32m'Error Boundary'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 25 |\u001b[39m       expect(hasError\u001b[33m,\u001b[39m \u001b[32m'Page should not show a hard error after registration'\u001b[39m)\u001b[33m.\u001b[39mtoBe(\u001b[36mfalse\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                                                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 26 |\u001b[39m\n \u001b[90m 27 |\u001b[39m       \u001b[90m// Should see some welcome/onboarding/dashboard element\u001b[39m\n \u001b[90m 28 |\u001b[39m       \u001b[36mawait\u001b[39m skipOnboardingIfPresent(page)\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts",
+                            "column": 80,
+                            "line": 25
+                          },
+                          "message": "Error: Page should not show a hard error after registration\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n\n  23 |       const content = await page.content();\n  24 |       const hasError = content.includes('error') && !content.includes('Error Boundary');\n> 25 |       expect(hasError, 'Page should not show a hard error after registration').toBe(false);\n     |                                                                                ^\n  26 |\n  27 |       // Should see some welcome/onboarding/dashboard element\n  28 |       await skipOnboardingIfPresent(page);\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:25:80"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-14T17:28:37.540Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-a249b-Dev-Nair-Portfolio-Builder--chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-a249b-Dev-Nair-Portfolio-Builder--chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-a249b-Dev-Nair-Portfolio-Builder--chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-a249b-Dev-Nair-Portfolio-Builder--chromium\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts",
+                        "column": 80,
+                        "line": 25
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "180cc0718174fb543e11-b8c4e63d383cb3a2aa0f",
+              "file": "01-registration.spec.ts",
+              "line": 12,
+              "column": 5
+            },
+            {
+              "title": "Register U6: Isha Patel (Planner)",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 18681,
+                      "error": {
+                        "message": "Error: Page should not show a hard error after registration\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m",
+                        "stack": "Error: Page should not show a hard error after registration\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:25:80",
+                        "location": {
+                          "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts",
+                          "column": 80,
+                          "line": 25
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 23 |\u001b[39m       \u001b[36mconst\u001b[39m content \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mcontent()\u001b[33m;\u001b[39m\n \u001b[90m 24 |\u001b[39m       \u001b[36mconst\u001b[39m hasError \u001b[33m=\u001b[39m content\u001b[33m.\u001b[39mincludes(\u001b[32m'error'\u001b[39m) \u001b[33m&&\u001b[39m \u001b[33m!\u001b[39mcontent\u001b[33m.\u001b[39mincludes(\u001b[32m'Error Boundary'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 25 |\u001b[39m       expect(hasError\u001b[33m,\u001b[39m \u001b[32m'Page should not show a hard error after registration'\u001b[39m)\u001b[33m.\u001b[39mtoBe(\u001b[36mfalse\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                                                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 26 |\u001b[39m\n \u001b[90m 27 |\u001b[39m       \u001b[90m// Should see some welcome/onboarding/dashboard element\u001b[39m\n \u001b[90m 28 |\u001b[39m       \u001b[36mawait\u001b[39m skipOnboardingIfPresent(page)\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts",
+                            "column": 80,
+                            "line": 25
+                          },
+                          "message": "Error: Page should not show a hard error after registration\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n\n  23 |       const content = await page.content();\n  24 |       const hasError = content.includes('error') && !content.includes('Error Boundary');\n> 25 |       expect(hasError, 'Page should not show a hard error after registration').toBe(false);\n     |                                                                                ^\n  26 |\n  27 |       // Should see some welcome/onboarding/dashboard element\n  28 |       await skipOnboardingIfPresent(page);\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:25:80"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-14T17:28:59.957Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-f3f5a-ster-U6-Isha-Patel-Planner--chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-f3f5a-ster-U6-Isha-Patel-Planner--chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-f3f5a-ster-U6-Isha-Patel-Planner--chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-f3f5a-ster-U6-Isha-Patel-Planner--chromium\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts",
+                        "column": 80,
+                        "line": 25
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "180cc0718174fb543e11-4f0c395bd55e21c05e84",
+              "file": "01-registration.spec.ts",
+              "line": 12,
+              "column": 5
+            },
+            {
+              "title": "Register U7: Power User (Power User)",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 19302,
+                      "error": {
+                        "message": "Error: Page should not show a hard error after registration\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m",
+                        "stack": "Error: Page should not show a hard error after registration\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:25:80",
+                        "location": {
+                          "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts",
+                          "column": 80,
+                          "line": 25
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 23 |\u001b[39m       \u001b[36mconst\u001b[39m content \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mcontent()\u001b[33m;\u001b[39m\n \u001b[90m 24 |\u001b[39m       \u001b[36mconst\u001b[39m hasError \u001b[33m=\u001b[39m content\u001b[33m.\u001b[39mincludes(\u001b[32m'error'\u001b[39m) \u001b[33m&&\u001b[39m \u001b[33m!\u001b[39mcontent\u001b[33m.\u001b[39mincludes(\u001b[32m'Error Boundary'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 25 |\u001b[39m       expect(hasError\u001b[33m,\u001b[39m \u001b[32m'Page should not show a hard error after registration'\u001b[39m)\u001b[33m.\u001b[39mtoBe(\u001b[36mfalse\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                                                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 26 |\u001b[39m\n \u001b[90m 27 |\u001b[39m       \u001b[90m// Should see some welcome/onboarding/dashboard element\u001b[39m\n \u001b[90m 28 |\u001b[39m       \u001b[36mawait\u001b[39m skipOnboardingIfPresent(page)\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts",
+                            "column": 80,
+                            "line": 25
+                          },
+                          "message": "Error: Page should not show a hard error after registration\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n\n  23 |       const content = await page.content();\n  24 |       const hasError = content.includes('error') && !content.includes('Error Boundary');\n> 25 |       expect(hasError, 'Page should not show a hard error after registration').toBe(false);\n     |                                                                                ^\n  26 |\n  27 |       // Should see some welcome/onboarding/dashboard element\n  28 |       await skipOnboardingIfPresent(page);\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:25:80"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-14T17:29:22.116Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-af66e-r-U7-Power-User-Power-User--chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-af66e-r-U7-Power-User-Power-User--chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-af66e-r-U7-Power-User-Power-User--chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-af66e-r-U7-Power-User-Power-User--chromium\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts",
+                        "column": 80,
+                        "line": 25
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "180cc0718174fb543e11-7ead62567899ae25bb2a",
+              "file": "01-registration.spec.ts",
+              "line": 12,
+              "column": 5
+            }
+          ]
+        },
+        {
+          "title": "Login – Verify All Accounts Work",
+          "file": "01-registration.spec.ts",
+          "line": 38,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Login U1: arjun.test@finora.app",
+              "ok": true,
+              "tags": [
+                "finora.app"
+              ],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 27719,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-14T17:29:45.123Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-51622-in-U1-arjun-test-finora-app-chromium\\test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "180cc0718174fb543e11-ed9820c72e29bfeff042",
+              "file": "01-registration.spec.ts",
+              "line": 42,
+              "column": 5
+            },
+            {
+              "title": "Login U2: priya.test@finora.app",
+              "ok": true,
+              "tags": [
+                "finora.app"
+              ],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 34523,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-14T17:30:13.491Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-ee13b-in-U2-priya-test-finora-app-chromium\\test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "180cc0718174fb543e11-4e1628b4864b88cbfcf1",
+              "file": "01-registration.spec.ts",
+              "line": 42,
+              "column": 5
+            },
+            {
+              "title": "Login U3: rohan.test@finora.app",
+              "ok": true,
+              "tags": [
+                "finora.app"
+              ],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 43830,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-14T17:30:48.104Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-c071e-in-U3-rohan-test-finora-app-chromium\\test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "180cc0718174fb543e11-df73d86de58ecbc6ff0f",
+              "file": "01-registration.spec.ts",
+              "line": 42,
+              "column": 5
+            },
+            {
+              "title": "Login U4: sneha.test@finora.app",
+              "ok": true,
+              "tags": [
+                "finora.app"
+              ],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 53631,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-14T17:31:32.043Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-73e38-in-U4-sneha-test-finora-app-chromium\\test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "180cc0718174fb543e11-a51f5640aac0ecdf735d",
+              "file": "01-registration.spec.ts",
+              "line": 42,
+              "column": 5
+            },
+            {
+              "title": "Login U5: dev.test@finora.app",
+              "ok": false,
+              "tags": [
+                "finora.app"
+              ],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 0,
+                      "status": "timedOut",
+                      "duration": 62214,
+                      "error": {
+                        "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                      },
+                      "errors": [
+                        {
+                          "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-14T17:32:25.758Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-3fcc2-ogin-U5-dev-test-finora-app-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-3fcc2-ogin-U5-dev-test-finora-app-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-3fcc2-ogin-U5-dev-test-finora-app-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-3fcc2-ogin-U5-dev-test-finora-app-chromium\\trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "180cc0718174fb543e11-f5da7b2ebceb99b759db",
+              "file": "01-registration.spec.ts",
+              "line": 42,
+              "column": 5
+            },
+            {
+              "title": "Login U6: isha.test@finora.app",
+              "ok": true,
+              "tags": [
+                "finora.app"
+              ],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 27185,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-14T17:33:33.011Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-c0c09-gin-U6-isha-test-finora-app-chromium\\test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "180cc0718174fb543e11-f743da14697c7b0e2511",
+              "file": "01-registration.spec.ts",
+              "line": 42,
+              "column": 5
+            },
+            {
+              "title": "Login U7: admin.test@finora.app",
+              "ok": true,
+              "tags": [
+                "finora.app"
+              ],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 34141,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-14T17:34:00.837Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-f6526-in-U7-admin-test-finora-app-chromium\\test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "180cc0718174fb543e11-4b4b22e7e7c7ce03e953",
+              "file": "01-registration.spec.ts",
+              "line": 42,
+              "column": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "02-u1-loans.spec.ts",
+      "file": "02-u1-loans.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "U1 – Debt / Loan Manager (Arjun)",
+          "file": "02-u1-loans.spec.ts",
+          "line": 10,
+          "column": 6,
+          "specs": [
+            {
+              "title": "U1-01: Login and reach dashboard",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 40290,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-14T17:34:35.134Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\02-u1-loans-U1-–-Debt-Loan-3f39e-1-Login-and-reach-dashboard-chromium\\test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "df3ffe9eb53c935f3bb6-38dc0def0c677aa83184",
+              "file": "02-u1-loans.spec.ts",
+              "line": 14,
+              "column": 3
+            },
+            {
+              "title": "U1-02: Add primary savings account",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 62834,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [
+                        {
+                          "text": "  ⚠️  Add Account button not found – capturing page state\n"
+                        }
+                      ],
+                      "retry": 0,
+                      "startTime": "2026-06-14T17:35:15.508Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\02-u1-loans-U1-–-Debt-Loan-de794-Add-primary-savings-account-chromium\\test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "df3ffe9eb53c935f3bb6-8442aae48d0da96a0bde",
+              "file": "02-u1-loans.spec.ts",
+              "line": 23,
+              "column": 3
+            },
+            {
+              "title": "U1-03: Navigate to Loans section",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 74508,
+                      "error": {
+                        "message": "Error: Loans page should load with relevant content\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m",
+                        "stack": "Error: Loans page should load with relevant content\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\02-u1-loans.spec.ts:92:77",
+                        "location": {
+                          "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\02-u1-loans.spec.ts",
+                          "column": 77,
+                          "line": 92
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 90 |\u001b[39m       console\u001b[33m.\u001b[39mwarn(\u001b[32m'  ⚠️  Loans section not clearly visible'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 91 |\u001b[39m     }\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 92 |\u001b[39m     expect(hasLoansContent\u001b[33m,\u001b[39m \u001b[32m'Loans page should load with relevant content'\u001b[39m)\u001b[33m.\u001b[39mtoBe(\u001b[36mtrue\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                                             \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 93 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 94 |\u001b[39m\n \u001b[90m 95 |\u001b[39m   test(\u001b[32m'U1-04: Add Home Loan'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\02-u1-loans.spec.ts",
+                            "column": 77,
+                            "line": 92
+                          },
+                          "message": "Error: Loans page should load with relevant content\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n\n  90 |       console.warn('  ⚠️  Loans section not clearly visible');\n  91 |     }\n> 92 |     expect(hasLoansContent, 'Loans page should load with relevant content').toBe(true);\n     |                                                                             ^\n  93 |   });\n  94 |\n  95 |   test('U1-04: Add Home Loan', async ({ page }) => {\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\02-u1-loans.spec.ts:92:77"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [
+                        {
+                          "text": "  ⚠️  Loans section not clearly visible\n"
+                        }
+                      ],
+                      "retry": 0,
+                      "startTime": "2026-06-14T17:36:18.431Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\02-u1-loans-U1-–-Debt-Loan-0129b-3-Navigate-to-Loans-section-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\02-u1-loans-U1-–-Debt-Loan-0129b-3-Navigate-to-Loans-section-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\02-u1-loans-U1-–-Debt-Loan-0129b-3-Navigate-to-Loans-section-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\02-u1-loans-U1-–-Debt-Loan-0129b-3-Navigate-to-Loans-section-chromium\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\02-u1-loans.spec.ts",
+                        "column": 77,
+                        "line": 92
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "df3ffe9eb53c935f3bb6-ce33e7b2ecaa140a8aac",
+              "file": "02-u1-loans.spec.ts",
+              "line": 74,
+              "column": 3
+            },
+            {
+              "title": "U1-04: Add Home Loan",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 9,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 28617,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [
+                        {
+                          "text": "  ⚠️  Add Loan button not found\n"
+                        }
+                      ],
+                      "retry": 0,
+                      "startTime": "2026-06-14T17:37:38.802Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\02-u1-loans-U1-–-Debt-Loan-Manager-Arjun-U1-04-Add-Home-Loan-chromium\\test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "df3ffe9eb53c935f3bb6-386fc5b4421606c2122e",
+              "file": "02-u1-loans.spec.ts",
+              "line": 95,
+              "column": 3
+            },
+            {
+              "title": "U1-05: Add informal personal loan (Borrowed from Priya)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 9,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 35224,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-14T17:38:08.028Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\02-u1-loans-U1-–-Debt-Loan-0846d-l-loan-Borrowed-from-Priya--chromium\\test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "df3ffe9eb53c935f3bb6-07daf35fcece4e4579ed",
+              "file": "02-u1-loans.spec.ts",
+              "line": 141,
+              "column": 3
+            },
+            {
+              "title": "U1-06: Dashboard shows total debt figure",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 9,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 37675,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "  Debt summary on dashboard: false\n"
+                        }
+                      ],
+                      "stderr": [
+                        {
+                          "text": "  ⚠️  Total debt summary not visible on dashboard\n"
+                        }
+                      ],
+                      "retry": 0,
+                      "startTime": "2026-06-14T17:38:43.329Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\02-u1-loans-U1-–-Debt-Loan-42a03-ard-shows-total-debt-figure-chromium\\test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "df3ffe9eb53c935f3bb6-449ece1c2679e70ea74a",
+              "file": "02-u1-loans.spec.ts",
+              "line": 173,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "03-u2-groups.spec.ts",
+      "file": "03-u2-groups.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "U2 – Group Expense Splitter (Priya)",
+          "file": "03-u2-groups.spec.ts",
+          "line": 10,
+          "column": 6,
+          "specs": [
+            {
+              "title": "U2-01: Navigate to Friends section",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 9,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 49099,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "  Friends section visible: false\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-14T17:39:21.130Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\03-u2-groups-U2-–-Group-Ex-2d843-Navigate-to-Friends-section-chromium\\test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "fb3f1ff657affca8201f-b398470b2ad2cb8c2714",
+              "file": "03-u2-groups.spec.ts",
+              "line": 13,
+              "column": 3
+            },
+            {
+              "title": "U2-02: Add Arjun (U1) as friend",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 9,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 36314,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [
+                        {
+                          "text": "  ⚠️  Add Friend button not found\n"
+                        }
+                      ],
+                      "retry": 0,
+                      "startTime": "2026-06-14T17:40:10.282Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\03-u2-groups-U2-–-Group-Ex-595b7-2-02-Add-Arjun-U1-as-friend-chromium\\test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "fb3f1ff657affca8201f-15afc6b67fdcab0c81dd",
+              "file": "03-u2-groups.spec.ts",
+              "line": 27,
+              "column": 3
+            },
+            {
+              "title": "U2-03: Navigate to Groups / Split section",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 9,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 49930,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "  Groups section visible: false\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-14T17:40:46.638Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\03-u2-groups-U2-–-Group-Ex-9f43e-ate-to-Groups-Split-section-chromium\\test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "fb3f1ff657affca8201f-28caa38692575adeb190",
+              "file": "03-u2-groups.spec.ts",
+              "line": 70,
+              "column": 3
+            },
+            {
+              "title": "U2-04: Create \"Goa Trip 2026\" group",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 9,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 46826,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [
+                        {
+                          "text": "  ⚠️  Expense/Create Group button not found\n"
+                        }
+                      ],
+                      "retry": 0,
+                      "startTime": "2026-06-14T17:41:36.603Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\03-u2-groups-U2-–-Group-Ex-ecd2a--Create-Goa-Trip-2026-group-chromium\\test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "fb3f1ff657affca8201f-6aa53f80ef332b9af806",
+              "file": "03-u2-groups.spec.ts",
+              "line": 86,
+              "column": 3
+            },
+            {
+              "title": "U2-05: Add group expense – Hotel booking",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 9,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 51298,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [
+                        {
+                          "text": "  ⚠️  Add Expense button not found\n"
+                        }
+                      ],
+                      "retry": 0,
+                      "startTime": "2026-06-14T17:42:23.470Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\03-u2-groups-U2-–-Group-Ex-b6bfa-oup-expense-–-Hotel-booking-chromium\\test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "fb3f1ff657affca8201f-5eb47ed4832d7e2049d4",
+              "file": "03-u2-groups.spec.ts",
+              "line": 147,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "04-u3-investments.spec.ts",
+      "file": "04-u3-investments.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "U3 – Investor (Rohan)",
+          "file": "04-u3-investments.spec.ts",
+          "line": 10,
+          "column": 6,
+          "specs": [
+            {
+              "title": "U3-01: Navigate to Investments",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 9,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 91602,
+                      "error": {
+                        "message": "Error: Investments page should load\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m",
+                        "stack": "Error: Investments page should load\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\04-u3-investments.spec.ts:27:62",
+                        "location": {
+                          "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\04-u3-investments.spec.ts",
+                          "column": 62,
+                          "line": 27
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 25 |\u001b[39m     \u001b[36mconst\u001b[39m hasInvestContent \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m heading\u001b[33m.\u001b[39misVisible() \u001b[33m||\u001b[39m \u001b[36mawait\u001b[39m text\u001b[33m.\u001b[39misVisible()\u001b[33m;\u001b[39m\n \u001b[90m 26 |\u001b[39m     console\u001b[33m.\u001b[39mlog(\u001b[32m`  Investments section visible: ${hasInvestContent}`\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 27 |\u001b[39m     expect(hasInvestContent\u001b[33m,\u001b[39m \u001b[32m'Investments page should load'\u001b[39m)\u001b[33m.\u001b[39mtoBe(\u001b[36mtrue\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                              \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 28 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 29 |\u001b[39m\n \u001b[90m 30 |\u001b[39m   test(\u001b[32m'U3-02: Add stock – Reliance Industries'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\04-u3-investments.spec.ts",
+                            "column": 62,
+                            "line": 27
+                          },
+                          "message": "Error: Investments page should load\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n\n  25 |     const hasInvestContent = await heading.isVisible() || await text.isVisible();\n  26 |     console.log(`  Investments section visible: ${hasInvestContent}`);\n> 27 |     expect(hasInvestContent, 'Investments page should load').toBe(true);\n     |                                                              ^\n  28 |   });\n  29 |\n  30 |   test('U3-02: Add stock – Reliance Industries', async ({ page }) => {\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\04-u3-investments.spec.ts:27:62"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "  Investments section visible: false\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-14T17:43:14.858Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\04-u3-investments-U3-–-Inv-a7a13--01-Navigate-to-Investments-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\04-u3-investments-U3-–-Inv-a7a13--01-Navigate-to-Investments-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\04-u3-investments-U3-–-Inv-a7a13--01-Navigate-to-Investments-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\04-u3-investments-U3-–-Inv-a7a13--01-Navigate-to-Investments-chromium\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\04-u3-investments.spec.ts",
+                        "column": 62,
+                        "line": 27
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "1d2f66b7baeb5e5ca452-d95643c874f142a6c1af",
+              "file": "04-u3-investments.spec.ts",
+              "line": 13,
+              "column": 3
+            },
+            {
+              "title": "U3-02: Add stock – Reliance Industries",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 10,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 31355,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "  ✅ Reliance stock added to portfolio\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-14T17:44:52.539Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\04-u3-investments-U3-–-Inv-52e60-stock-–-Reliance-Industries-chromium\\test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1d2f66b7baeb5e5ca452-11789eeff6499fd965c2",
+              "file": "04-u3-investments.spec.ts",
+              "line": 30,
+              "column": 3
+            },
+            {
+              "title": "U3-03: Add Mutual Fund – HDFC Midcap",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 10,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 33051,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "  HDFC Midcap MF saved: false\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-14T17:45:24.863Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\04-u3-investments-U3-–-Inv-a4fe0-d-Mutual-Fund-–-HDFC-Midcap-chromium\\test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1d2f66b7baeb5e5ca452-d8755bbaa95dd8b3917c",
+              "file": "04-u3-investments.spec.ts",
+              "line": 81,
+              "column": 3
+            },
+            {
+              "title": "U3-04: Add Gold investment",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 10,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 43358,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "  Gold investment visible: false\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-14T17:45:57.969Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\04-u3-investments-U3-–-Inv-15e47-n-U3-04-Add-Gold-investment-chromium\\test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1d2f66b7baeb5e5ca452-3891159d55ac0886ff7e",
+              "file": "04-u3-investments.spec.ts",
+              "line": 117,
+              "column": 3
+            },
+            {
+              "title": "U3-05: Verify portfolio summary loads",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 10,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 50371,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "  Portfolio summary visible: false\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-14T17:46:41.374Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\04-u3-investments-U3-–-Inv-1aca1-ify-portfolio-summary-loads-chromium\\test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1d2f66b7baeb5e5ca452-9571b59ceec600cb7c7c",
+              "file": "04-u3-investments.spec.ts",
+              "line": 164,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "05-u4-goals.spec.ts",
+      "file": "05-u4-goals.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "U4 – Goal Setter (Sneha)",
+          "file": "05-u4-goals.spec.ts",
+          "line": 10,
+          "column": 6,
+          "specs": [
+            {
+              "title": "U4-01: Navigate to Goals",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 10,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 61166,
+                      "error": {
+                        "message": "Error: Goals page should load\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m",
+                        "stack": "Error: Goals page should load\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\05-u4-goals.spec.ts:23:55",
+                        "location": {
+                          "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\05-u4-goals.spec.ts",
+                          "column": 55,
+                          "line": 23
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 21 |\u001b[39m       \u001b[33m.\u001b[39m\u001b[36mcatch\u001b[39m(() \u001b[33m=>\u001b[39m \u001b[36mfalse\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 22 |\u001b[39m     \u001b[36mawait\u001b[39m screenshot(page\u001b[33m,\u001b[39m \u001b[32m'05_u4_01_goals_page'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 23 |\u001b[39m     expect(hasGoalsContent\u001b[33m,\u001b[39m \u001b[32m'Goals page should load'\u001b[39m)\u001b[33m.\u001b[39mtoBe(\u001b[36mtrue\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                       \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 24 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 25 |\u001b[39m\n \u001b[90m 26 |\u001b[39m   test(\u001b[32m'U4-02: Create Emergency Fund goal'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\05-u4-goals.spec.ts",
+                            "column": 55,
+                            "line": 23
+                          },
+                          "message": "Error: Goals page should load\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n\n  21 |       .catch(() => false);\n  22 |     await screenshot(page, '05_u4_01_goals_page');\n> 23 |     expect(hasGoalsContent, 'Goals page should load').toBe(true);\n     |                                                       ^\n  24 |   });\n  25 |\n  26 |   test('U4-02: Create Emergency Fund goal', async ({ page }) => {\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\05-u4-goals.spec.ts:23:55"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-14T17:47:31.840Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\05-u4-goals-U4-–-Goal-Setter-Sneha-U4-01-Navigate-to-Goals-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\05-u4-goals-U4-–-Goal-Setter-Sneha-U4-01-Navigate-to-Goals-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\05-u4-goals-U4-–-Goal-Setter-Sneha-U4-01-Navigate-to-Goals-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\05-u4-goals-U4-–-Goal-Setter-Sneha-U4-01-Navigate-to-Goals-chromium\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\05-u4-goals.spec.ts",
+                        "column": 55,
+                        "line": 23
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "0ca37c8c36dc1a9066e3-79dd358a3bb9d079b2fd",
+              "file": "05-u4-goals.spec.ts",
+              "line": 13,
+              "column": 3
+            },
+            {
+              "title": "U4-02: Create Emergency Fund goal",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 30293,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "  ✅ Emergency Fund goal saved\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-14T17:48:37.716Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\05-u4-goals-U4-–-Goal-Sett-7582b--Create-Emergency-Fund-goal-chromium\\test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0ca37c8c36dc1a9066e3-323cf439e81f55a9e5c2",
+              "file": "05-u4-goals.spec.ts",
+              "line": 26,
+              "column": 3
+            },
+            {
+              "title": "U4-03: Create Europe Vacation goal",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 31787,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "  Europe Vacation goal saved: false\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-14T17:49:08.658Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\05-u4-goals-U4-–-Goal-Sett-8b37e-Create-Europe-Vacation-goal-chromium\\test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0ca37c8c36dc1a9066e3-e5a1412a3497d2adfe38",
+              "file": "05-u4-goals.spec.ts",
+              "line": 75,
+              "column": 3
+            },
+            {
+              "title": "U4-04: Add contribution to Emergency Fund",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 37411,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [
+                        {
+                          "text": "  ⚠️  Emergency Fund goal not found in list\n"
+                        }
+                      ],
+                      "retry": 0,
+                      "startTime": "2026-06-14T17:49:40.489Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\05-u4-goals-U4-–-Goal-Sett-cb202-tribution-to-Emergency-Fund-chromium\\test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0ca37c8c36dc1a9066e3-641051651ad887e133d0",
+              "file": "05-u4-goals.spec.ts",
+              "line": 108,
+              "column": 3
+            },
+            {
+              "title": "U4-05: Create New Laptop goal and complete it",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 50764,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-14T17:50:17.950Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\05-u4-goals-U4-–-Goal-Sett-e652a-Laptop-goal-and-complete-it-chromium\\test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0ca37c8c36dc1a9066e3-72d38e845318dc882ce6",
+              "file": "05-u4-goals.spec.ts",
+              "line": 152,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "06-u5-transactions.spec.ts",
+      "file": "06-u5-transactions.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "U5 – Portfolio Builder / Transaction Tester (Dev)",
+          "file": "06-u5-transactions.spec.ts",
+          "line": 20,
+          "column": 6,
+          "specs": [
+            {
+              "title": "U5-01: Add ICICI Savings account",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 50308,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [
+                        {
+                          "text": "  ⚠️  Add Account button not found\n"
+                        }
+                      ],
+                      "retry": 0,
+                      "startTime": "2026-06-14T17:51:08.815Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\06-u5-transactions-U5-–-Po-dab46-1-Add-ICICI-Savings-account-chromium\\test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "be4eba95bde432e77c84-8029b8f31e14e7b2f99a",
+              "file": "06-u5-transactions.spec.ts",
+              "line": 23,
+              "column": 3
+            },
+            {
+              "title": "U5-02: Add Paytm Wallet account",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 52318,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-14T17:51:59.160Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\06-u5-transactions-U5-–-Po-c789f-02-Add-Paytm-Wallet-account-chromium\\test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "be4eba95bde432e77c84-adebfb17b6a9df2593a6",
+              "file": "06-u5-transactions.spec.ts",
+              "line": 56,
+              "column": 3
+            },
+            {
+              "title": "U5-03: Add income transaction – Salary",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 69994,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [
+                        {
+                          "text": "  ⚠️  Add Transaction button not found\n"
+                        }
+                      ],
+                      "retry": 0,
+                      "startTime": "2026-06-14T17:52:51.516Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\06-u5-transactions-U5-–-Po-f2644-income-transaction-–-Salary-chromium\\test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "be4eba95bde432e77c84-eaa22d15b113f43cd161",
+              "file": "06-u5-transactions.spec.ts",
+              "line": 89,
+              "column": 3
+            },
+            {
+              "title": "U5-04: Add 5 expense transactions across categories",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 109075,
+                      "error": {
+                        "message": "Error: Should add at least 3 expense transactions\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m3\u001b[39m\nReceived:    \u001b[31m0\u001b[39m",
+                        "stack": "Error: Should add at least 3 expense transactions\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m3\u001b[39m\nReceived:    \u001b[31m0\u001b[39m\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\06-u5-transactions.spec.ts:200:70",
+                        "location": {
+                          "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\06-u5-transactions.spec.ts",
+                          "column": 70,
+                          "line": 200
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 198 |\u001b[39m     \u001b[36mawait\u001b[39m screenshot(page\u001b[33m,\u001b[39m \u001b[32m'06_u5_04_expenses_added'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 199 |\u001b[39m     console\u001b[33m.\u001b[39mlog(\u001b[32m`  Added ${addedCount} of ${expenses.length} expense transactions`\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 200 |\u001b[39m     expect(addedCount\u001b[33m,\u001b[39m \u001b[32m'Should add at least 3 expense transactions'\u001b[39m)\u001b[33m.\u001b[39mtoBeGreaterThanOrEqual(\u001b[35m3\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                                                                      \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 201 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 202 |\u001b[39m\n \u001b[90m 203 |\u001b[39m   test(\u001b[32m'U5-05: Transfer between accounts – ICICI to Paytm'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\06-u5-transactions.spec.ts",
+                            "column": 70,
+                            "line": 200
+                          },
+                          "message": "Error: Should add at least 3 expense transactions\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m3\u001b[39m\nReceived:    \u001b[31m0\u001b[39m\n\n  198 |     await screenshot(page, '06_u5_04_expenses_added');\n  199 |     console.log(`  Added ${addedCount} of ${expenses.length} expense transactions`);\n> 200 |     expect(addedCount, 'Should add at least 3 expense transactions').toBeGreaterThanOrEqual(3);\n      |                                                                      ^\n  201 |   });\n  202 |\n  203 |   test('U5-05: Transfer between accounts – ICICI to Paytm', async ({ page }) => {\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\06-u5-transactions.spec.ts:200:70"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "  Added 0 of 5 expense transactions\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-14T17:54:01.549Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\06-u5-transactions-U5-–-Po-1eecb-nsactions-across-categories-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\06-u5-transactions-U5-–-Po-1eecb-nsactions-across-categories-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\06-u5-transactions-U5-–-Po-1eecb-nsactions-across-categories-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\06-u5-transactions-U5-–-Po-1eecb-nsactions-across-categories-chromium\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\06-u5-transactions.spec.ts",
+                        "column": 70,
+                        "line": 200
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "be4eba95bde432e77c84-c16d3676e40c088477b3",
+              "file": "06-u5-transactions.spec.ts",
+              "line": 143,
+              "column": 3
+            },
+            {
+              "title": "U5-05: Transfer between accounts – ICICI to Paytm",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 12,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 30405,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [
+                        {
+                          "text": "  ⚠️  Transfer button not found — checking for it in Add Transaction flow\n"
+                        }
+                      ],
+                      "retry": 0,
+                      "startTime": "2026-06-14T17:55:57.826Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\06-u5-transactions-U5-–-Po-e5a59-n-accounts-–-ICICI-to-Paytm-chromium\\test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "be4eba95bde432e77c84-97453da2ef999df0e872",
+              "file": "06-u5-transactions.spec.ts",
+              "line": 203,
+              "column": 3
+            },
+            {
+              "title": "U5-06: Set budget for Food category",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 12,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 32399,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [
+                        {
+                          "text": "  ⚠️  Add Budget button not found\n"
+                        }
+                      ],
+                      "retry": 0,
+                      "startTime": "2026-06-14T17:56:29.167Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\06-u5-transactions-U5-–-Po-e267e-et-budget-for-Food-category-chromium\\test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "be4eba95bde432e77c84-df796df0e279ced2a083",
+              "file": "06-u5-transactions.spec.ts",
+              "line": 236,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "07-u6-todos.spec.ts",
+      "file": "07-u6-todos.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "U6 – Collaborative Planner (Isha)",
+          "file": "07-u6-todos.spec.ts",
+          "line": 10,
+          "column": 6,
+          "specs": [
+            {
+              "title": "U6-01: Navigate to To-Do section",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 12,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 31239,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "  To-Do section visible: true\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-14T17:57:01.630Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\07-u6-todos-U6-–-Collabora-6ab3c-1-Navigate-to-To-Do-section-chromium\\test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "6f3a7005a4cf918cb5e0-f795556d184db1ed7693",
+              "file": "07-u6-todos.spec.ts",
+              "line": 13,
+              "column": 3
+            },
+            {
+              "title": "U6-02: Create personal list \"Daily Finance Tasks\"",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 12,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 36832,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [
+                        {
+                          "text": "  ⚠️  Create List button not found\n"
+                        }
+                      ],
+                      "retry": 0,
+                      "startTime": "2026-06-14T17:57:32.902Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\07-u6-todos-U6-–-Collabora-fa49f-l-list-Daily-Finance-Tasks--chromium\\test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "6f3a7005a4cf918cb5e0-7c41c6e7d88f9629ed49",
+              "file": "07-u6-todos.spec.ts",
+              "line": 33,
+              "column": 3
+            },
+            {
+              "title": "U6-03: Add tasks to Daily Finance Tasks list",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 12,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 56331,
+                      "error": {
+                        "message": "Error: Should add at least 1 task\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m1\u001b[39m\nReceived:    \u001b[31m0\u001b[39m",
+                        "stack": "Error: Should add at least 1 task\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m1\u001b[39m\nReceived:    \u001b[31m0\u001b[39m\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\07-u6-todos.spec.ts:126:54",
+                        "location": {
+                          "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\07-u6-todos.spec.ts",
+                          "column": 54,
+                          "line": 126
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 124 |\u001b[39m     \u001b[36mawait\u001b[39m screenshot(page\u001b[33m,\u001b[39m \u001b[32m'07_u6_03_tasks_added'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 125 |\u001b[39m     console\u001b[33m.\u001b[39mlog(\u001b[32m`  Added ${addedCount} tasks`\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 126 |\u001b[39m     expect(addedCount\u001b[33m,\u001b[39m \u001b[32m'Should add at least 1 task'\u001b[39m)\u001b[33m.\u001b[39mtoBeGreaterThanOrEqual(\u001b[35m1\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                                                      \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 127 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 128 |\u001b[39m\n \u001b[90m 129 |\u001b[39m   test(\u001b[32m'U6-04: Mark a task as complete'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\07-u6-todos.spec.ts",
+                            "column": 54,
+                            "line": 126
+                          },
+                          "message": "Error: Should add at least 1 task\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m1\u001b[39m\nReceived:    \u001b[31m0\u001b[39m\n\n  124 |     await screenshot(page, '07_u6_03_tasks_added');\n  125 |     console.log(`  Added ${addedCount} tasks`);\n> 126 |     expect(addedCount, 'Should add at least 1 task').toBeGreaterThanOrEqual(1);\n      |                                                      ^\n  127 |   });\n  128 |\n  129 |   test('U6-04: Mark a task as complete', async ({ page }) => {\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\07-u6-todos.spec.ts:126:54"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "  Added 0 tasks\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-14T17:58:09.780Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\07-u6-todos-U6-–-Collabora-1d44d-to-Daily-Finance-Tasks-list-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\07-u6-todos-U6-–-Collabora-1d44d-to-Daily-Finance-Tasks-list-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\07-u6-todos-U6-–-Collabora-1d44d-to-Daily-Finance-Tasks-list-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\07-u6-todos-U6-–-Collabora-1d44d-to-Daily-Finance-Tasks-list-chromium\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\07-u6-todos.spec.ts",
+                        "column": 54,
+                        "line": 126
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "6f3a7005a4cf918cb5e0-ad9c608ebb35767dc929",
+              "file": "07-u6-todos.spec.ts",
+              "line": 77,
+              "column": 3
+            },
+            {
+              "title": "U6-04: Mark a task as complete",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 13,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 26306,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [
+                        {
+                          "text": "  ⚠️  No checkbox/complete button found for tasks\n"
+                        }
+                      ],
+                      "retry": 0,
+                      "startTime": "2026-06-14T17:59:10.691Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\07-u6-todos-U6-–-Collabora-e06ad--04-Mark-a-task-as-complete-chromium\\test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "6f3a7005a4cf918cb5e0-4cd2f95a4fcb99036bd5",
+              "file": "07-u6-todos.spec.ts",
+              "line": 129,
+              "column": 3
+            },
+            {
+              "title": "U6-05: Create shared To-Do list with Arjun",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 13,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 30549,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "  Shared To-Do list \"Goa Trip Planning\" created: true\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-14T17:59:37.795Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\07-u6-todos-U6-–-Collabora-e28f9-hared-To-Do-list-with-Arjun-chromium\\test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "6f3a7005a4cf918cb5e0-46ccc78fca733797eabc",
+              "file": "07-u6-todos.spec.ts",
+              "line": 162,
+              "column": 3
+            },
+            {
+              "title": "U6-06: Add tasks to shared Goa Trip list",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 13,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 44024,
+                      "error": {
+                        "message": "Error: Should add at least 1 task to shared list\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m1\u001b[39m\nReceived:    \u001b[31m0\u001b[39m",
+                        "stack": "Error: Should add at least 1 task to shared list\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m1\u001b[39m\nReceived:    \u001b[31m0\u001b[39m\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\07-u6-todos.spec.ts:246:69",
+                        "location": {
+                          "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\07-u6-todos.spec.ts",
+                          "column": 69,
+                          "line": 246
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 244 |\u001b[39m     \u001b[36mawait\u001b[39m screenshot(page\u001b[33m,\u001b[39m \u001b[32m'07_u6_06_shared_tasks_added'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 245 |\u001b[39m     console\u001b[33m.\u001b[39mlog(\u001b[32m`  Added ${addedCount} tasks to shared list`\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 246 |\u001b[39m     expect(addedCount\u001b[33m,\u001b[39m \u001b[32m'Should add at least 1 task to shared list'\u001b[39m)\u001b[33m.\u001b[39mtoBeGreaterThanOrEqual(\u001b[35m1\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                                                                     \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 247 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 248 |\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m 249 |\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\07-u6-todos.spec.ts",
+                            "column": 69,
+                            "line": 246
+                          },
+                          "message": "Error: Should add at least 1 task to shared list\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m1\u001b[39m\nReceived:    \u001b[31m0\u001b[39m\n\n  244 |     await screenshot(page, '07_u6_06_shared_tasks_added');\n  245 |     console.log(`  Added ${addedCount} tasks to shared list`);\n> 246 |     expect(addedCount, 'Should add at least 1 task to shared list').toBeGreaterThanOrEqual(1);\n      |                                                                     ^\n  247 |   });\n  248 | });\n  249 |\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\07-u6-todos.spec.ts:246:69"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "  Added 0 tasks to shared list\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-14T18:00:08.374Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\07-u6-todos-U6-–-Collabora-c66f6-sks-to-shared-Goa-Trip-list-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\07-u6-todos-U6-–-Collabora-c66f6-sks-to-shared-Goa-Trip-list-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\07-u6-todos-U6-–-Collabora-c66f6-sks-to-shared-Goa-Trip-list-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\07-u6-todos-U6-–-Collabora-c66f6-sks-to-shared-Goa-Trip-list-chromium\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\07-u6-todos.spec.ts",
+                        "column": 69,
+                        "line": 246
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "6f3a7005a4cf918cb5e0-b03128680251e6eed382",
+              "file": "07-u6-todos.spec.ts",
+              "line": 206,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "08-u7-power-user.spec.ts",
+      "file": "08-u7-power-user.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "U7 – Power User Full Regression",
+          "file": "08-u7-power-user.spec.ts",
+          "line": 11,
+          "column": 6,
+          "specs": [
+            {
+              "title": "U7-01: Login and dashboard loads",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 300000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 14,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 26975,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-14T18:00:56.150Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\08-u7-power-user-U7-–-Powe-4caff-1-Login-and-dashboard-loads-chromium\\test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9276b0e5ec5ab489ee9d-a839c30f475f56917dfd",
+              "file": "08-u7-power-user.spec.ts",
+              "line": 14,
+              "column": 3
+            },
+            {
+              "title": "U7-02: Add account → Add income transaction → Verify balance",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 300000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 14,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 38739,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "  Account + income transaction flow done\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-14T18:01:23.757Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\08-u7-power-user-U7-–-Powe-0e827-ransaction-→-Verify-balance-chromium\\test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9276b0e5ec5ab489ee9d-8a5f85e6a5d00dae6d4c",
+              "file": "08-u7-power-user.spec.ts",
+              "line": 25,
+              "column": 3
+            },
+            {
+              "title": "U7-03: Add expense → Add transfer",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 300000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 14,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 38763,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "  Expense transaction done\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-14T18:02:02.549Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\08-u7-power-user-U7-–-Powe-44ca9--Add-expense-→-Add-transfer-chromium\\test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9276b0e5ec5ab489ee9d-14a1cafd3597df44d3d2",
+              "file": "08-u7-power-user.spec.ts",
+              "line": 95,
+              "column": 3
+            },
+            {
+              "title": "U7-04: Voice logging – speak an expense",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 300000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 14,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 44067,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "  Voice logging page accessible: false\n"
+                        },
+                        {
+                          "text": "  Voice button present: false\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-14T18:02:41.372Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\08-u7-power-user-U7-–-Powe-e18d4--logging-–-speak-an-expense-chromium\\test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9276b0e5ec5ab489ee9d-fcdb6da878ca43338d5f",
+              "file": "08-u7-power-user.spec.ts",
+              "line": 140,
+              "column": 3
+            },
+            {
+              "title": "U7-05: Receipt scanner page loads",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 300000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 14,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 47567,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "  Receipt scanner UI visible: false\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-14T18:03:25.486Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\08-u7-power-user-U7-–-Powe-f52e8--Receipt-scanner-page-loads-chromium\\test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9276b0e5ec5ab489ee9d-0ad5d0eb81b05f889acf",
+              "file": "08-u7-power-user.spec.ts",
+              "line": 160,
+              "column": 3
+            },
+            {
+              "title": "U7-06: Create goal → Add contribution",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 300000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 14,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 47799,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "  Goal creation done\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-14T18:04:13.094Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\08-u7-power-user-U7-–-Powe-4ad16-ate-goal-→-Add-contribution-chromium\\test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9276b0e5ec5ab489ee9d-7300f0e7d1d48970671f",
+              "file": "08-u7-power-user.spec.ts",
+              "line": 173,
+              "column": 3
+            },
+            {
+              "title": "U7-07: Add investment",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 300000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 14,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 56065,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "  Investment addition done\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-14T18:05:00.934Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\08-u7-power-user-U7-–-Powe-837f5-ession-U7-07-Add-investment-chromium\\test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9276b0e5ec5ab489ee9d-7c6eb1fd2f025e12a4de",
+              "file": "08-u7-power-user.spec.ts",
+              "line": 222,
+              "column": 3
+            },
+            {
+              "title": "U7-08: Add loan and log EMI payment",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 300000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 14,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 73092,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "  Loan addition done\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-14T18:05:57.049Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\08-u7-power-user-U7-–-Powe-0b37b-dd-loan-and-log-EMI-payment-chromium\\test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9276b0e5ec5ab489ee9d-682412f75053c2868407",
+              "file": "08-u7-power-user.spec.ts",
+              "line": 244,
+              "column": 3
+            },
+            {
+              "title": "U7-09: Notification center loads",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 300000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 14,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 137991,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "  Notifications section visible: false\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-14T18:07:10.180Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\08-u7-power-user-U7-–-Powe-dbe97-9-Notification-center-loads-chromium\\test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9276b0e5ec5ab489ee9d-9d2e38863da867e593fe",
+              "file": "08-u7-power-user.spec.ts",
+              "line": 266,
+              "column": 3
+            },
+            {
+              "title": "U7-10: Dashboard summary is coherent after all data entry",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 300000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 14,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 103720,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "  Dashboard shows financial data: false\n"
+                        },
+                        {
+                          "text": "  JS errors: none\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-14T18:09:28.229Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\08-u7-power-user-U7-–-Powe-9a9b6-herent-after-all-data-entry-chromium\\test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9276b0e5ec5ab489ee9d-2d91840ae02444ab3854",
+              "file": "08-u7-power-user.spec.ts",
+              "line": 280,
+              "column": 3
+            },
+            {
+              "title": "U7-11: Export transactions as CSV",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 300000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 14,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 114230,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [
+                        {
+                          "text": "  ⚠️  Export CSV button not found\n"
+                        }
+                      ],
+                      "retry": 0,
+                      "startTime": "2026-06-14T18:11:12.001Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\08-u7-power-user-U7-–-Powe-19ac6--Export-transactions-as-CSV-chromium\\test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9276b0e5ec5ab489ee9d-dad97ab8bd28b50c70f4",
+              "file": "08-u7-power-user.spec.ts",
+              "line": 302,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-06-14T17:27:03.294Z",
+    "duration": 2768779.759,
+    "expected": 44,
+    "skipped": 0,
+    "unexpected": 14,
+    "flaky": 0
+  }
+}

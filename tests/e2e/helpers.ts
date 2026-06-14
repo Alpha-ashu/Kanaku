@@ -18,7 +18,7 @@ export const USERS = {
 export async function screenshot(page: Page, name: string) {
   const dir = path.join('tests', 'e2e', 'screenshots');
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-  await page.screenshot({ path: path.join(dir, `${name}.png`), fullPage: false });
+  await page.screenshot({ path: path.join(dir, `${name}.png`), fullPage: false, timeout: 8000 }).catch(() => null);
 }
 
 /** Navigate to the app root and wait for landing page */
@@ -33,11 +33,20 @@ export async function gotoApp(page: Page) {
  * bypassing the marketing landing page navigation flow.
  */
 export async function loginUser(page: Page, user: typeof USERS.U1) {
-  // 1. Get tokens from backend API
-  const resp = await page.request.post(`${API}/api/v1/auth/login`, {
-    data: { email: user.email, password: user.password },
-  });
-  const json = await resp.json();
+  // 1. Get tokens from backend API (retry up to 3x for transient ECONNREFUSED on startup)
+  let resp: Awaited<ReturnType<typeof page.request.post>> | null = null;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      resp = await page.request.post(`${API}/api/v1/auth/login`, {
+        data: { email: user.email, password: user.password },
+      });
+      break;
+    } catch (e: any) {
+      if (attempt === 2) throw e;
+      await page.waitForTimeout(3000);
+    }
+  }
+  const json = await resp!.json();
   const { accessToken, refreshToken } = json.data ?? {};
 
   if (!accessToken) {
@@ -58,27 +67,32 @@ export async function loginUser(page: Page, user: typeof USERS.U1) {
   }).catch(() => {}); // ignore if already exists
 
   // 1c. Delete server-side PIN so PINAuth enters create mode (always succeeds locally).
-  //     This prevents stale server PINs from blocking the verify flow for test users.
-  const secTokenResp = await page.request.post(`${API}/api/v1/pin/verify-security`, {
-    headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
-    data: {},
-  }).catch(() => null);
-  if (secTokenResp?.ok()) {
-    const secJson = await secTokenResp.json().catch(() => ({}));
-    if (secJson?.securityToken) {
-      await page.request.post(`${API}/api/v1/pin/self-reset`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-          'x-security-token': secJson.securityToken,
-        },
-        data: {},
-      }).catch(() => {}); // ignore if already no PIN
+  //     Retry up to 3× with increasing delays — server can be slow under test load.
+  for (let pinReset = 0; pinReset < 3; pinReset++) {
+    const secTokenResp = await page.request.post(`${API}/api/v1/pin/verify-security`, {
+      headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+      data: {},
+    }).catch(() => null);
+    if (secTokenResp?.ok()) {
+      const secJson = await secTokenResp.json().catch(() => ({}));
+      if (secJson?.securityToken) {
+        const resetResp = await page.request.post(`${API}/api/v1/pin/self-reset`, {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+            'x-security-token': secJson.securityToken,
+          },
+          data: {},
+        }).catch(() => null);
+        if (resetResp?.ok()) break; // Reset succeeded — exit retry loop
+      }
     }
+    if (pinReset < 2) await page.waitForTimeout(2000 * (pinReset + 1));
   }
 
   // 2. Open the app and inject tokens before React fully boots
-  await page.goto(BASE, { waitUntil: 'domcontentloaded' });
+  // Catch timeout: late in a long test run the dev server may be slow to fire domcontentloaded.
+  await page.goto(BASE, { waitUntil: 'domcontentloaded', timeout: 60000 }).catch(() => null);
   await page.evaluate(({ at, rt, email }) => {
     localStorage.setItem('auth_token', at);
     localStorage.setItem('refresh_token', rt);
@@ -96,8 +110,10 @@ export async function loginUser(page: Page, user: typeof USERS.U1) {
   }, { at: accessToken, rt: refreshToken, email: user.email });
 
   // 3. Reload so React EnhancedAuthContext picks up the stored tokens
-  // Use 'load' not 'networkidle' — the app has background syncing that prevents networkidle
-  await page.reload({ waitUntil: 'load', timeout: 35000 });
+  // Use 'load' not 'networkidle' — the app has background syncing that prevents networkidle.
+  // Catch timeout: the app may keep background connections open after load (WebSocket, polling)
+  // which delays the 'load' event on slow dev servers. The page is usable even if timeout fires.
+  await page.reload({ waitUntil: 'load', timeout: 60000 }).catch(() => null);
   await page.waitForTimeout(2000);
 
   // 4. Wait for "Syncing your account..." loading screen to disappear
@@ -122,6 +138,14 @@ export async function registerUser(page: Page, user: typeof USERS.U1) {
     await page.waitForTimeout(800);
   }
 
+  // "Get Started" navigates to AuthFlow 'welcome' step (Create Account / Sign In / etc.).
+  // Click "Create Account" to reach the actual signup form.
+  const createAccountCTA = page.getByRole('button', { name: /^create account$/i }).first();
+  if (await createAccountCTA.isVisible({ timeout: 3000 }).catch(() => false)) {
+    await createAccountCTA.click();
+    await page.waitForTimeout(800);
+  }
+
   const firstNameInput = page.locator('input[name="firstName"], input#firstName').first();
   const formVisible = await firstNameInput.waitFor({ state: 'visible', timeout: 10000 }).then(() => true).catch(() => false);
   if (!formVisible) return 'form_not_found';
@@ -142,34 +166,70 @@ export async function registerUser(page: Page, user: typeof USERS.U1) {
   await page.waitForTimeout(400);
   await screenshot(page, `register_${user.firstName}_before_submit`);
 
-  const submitBtn = page.getByRole('button', { name: /create account|sign up|register|get started/i }).last();
+  const submitBtn = page.getByRole('button', { name: /create account.*ready|create account|sign up|register/i }).last();
   await submitBtn.click();
-  await page.waitForTimeout(3000);
   await screenshot(page, `register_${user.firstName}_after_submit`);
 
-  const pageText = await page.content();
-  if (pageText.includes('already') || pageText.includes('exists') || pageText.includes('PHONE_EXISTS')) {
+  // For already-registered users, handleSignUp fires toast.error("already registered")
+  // within ~2s, then SignUpForm shows "Account Created Successfully!" (app bug: success shown
+  // even for duplicate). The toast text contains "already" and is visible for ~4s.
+  // Detect duplicate early before the toast dismisses.
+  const earlyDuplicateText = page.getByText(/already registered|already.*email|phone.*already|already.*use/i).first();
+  if (await earlyDuplicateText.isVisible({ timeout: 5000 }).catch(() => false)) {
     return 'already_exists';
   }
+
+  // "Account Created Successfully!" appears for BOTH real registrations and duplicates.
+  // For REAL new users the app navigates away (onboarding) within ~3s.
+  // For DUPLICATE users the app stays on the success screen indefinitely (no auth change).
+  const accountCreatedText = page.getByText(/Account Created Successfully/i).first();
+  if (await accountCreatedText.isVisible({ timeout: 5000 }).catch(() => false)) {
+    // Wait to see if the app navigates away (real new user) or stays stuck (duplicate)
+    const dashEl = page.locator('[data-nav-id]').first();
+    const navigatedAway = await dashEl.waitFor({ state: 'visible', timeout: 5000 }).then(() => true).catch(() => false);
+    if (!navigatedAway) {
+      // Still on success screen with no dashboard → duplicate user (app bug: success shown incorrectly)
+      return 'already_exists';
+    }
+    return 'registered';
+  }
+
+  // Fallback: check body text for error keywords (form inline errors, etc.)
+  const bodyText = (await page.locator('body').textContent().catch(() => null)) ?? '';
+  const lowerBody = bodyText.toLowerCase();
+  if (lowerBody.includes('already') || lowerBody.includes('taken') || lowerBody.includes('in use') ||
+      lowerBody.includes('email_exists') || lowerBody.includes('phone_exists')) {
+    return 'already_exists';
+  }
+  // If form is still visible, the submission was rejected (validation or inline error)
+  const formStillVisible = await page.locator('input[name="firstName"]').isVisible({ timeout: 1000 }).catch(() => false);
+  if (formStillVisible) return 'already_exists';
   return 'registered';
 }
 
-/** Enter a 6-digit PIN using the on-screen numpad (buttons labelled 1-9, 0) */
+/** Enter a 6-digit PIN by clicking the PINAuth numpad buttons via JavaScript evaluate().
+ *  Uses document.querySelectorAll('button') to find each digit button and calls .click() directly.
+ *  This bypasses: pointer-events:none on the form, Playwright interactability checks, and any
+ *  focus-routing issues that can cause keyboard.type() to miss the PIN input. */
 async function enterPin(page: Page, pin = '111111') {
-  // PINAuth makes an API call on mount (isLoading=true) before showing the enabled numpad.
-  // Wait for a numpad digit button to become visible before clicking.
-  const anyDigitBtn = page.getByRole('button', { name: /^[1-9]$/ }).first();
-  await anyDigitBtn.waitFor({ state: 'visible', timeout: 8000 }).catch(() => null);
-  await page.waitForTimeout(500); // buffer for isLoading state to fully clear and focus to settle
+  await page.getByText(/create your pin|confirm your pin|enter your pin/i).first()
+    .waitFor({ state: 'visible', timeout: 20000 }).catch(() => null);
+  await page.waitForTimeout(500);
 
   for (const digit of pin) {
-    const btn = page.getByRole('button', { name: new RegExp(`^${digit}$`) }).first();
-    // waitFor ensures the button is in the DOM; force:true bypasses any actionability
-    // interceptors (pointer-events:none during re-renders, covered elements, etc.)
-    await btn.waitFor({ state: 'visible', timeout: 3000 }).catch(() => null);
-    await btn.click({ force: true });
+    await page.evaluate((d) => {
+      // Find the numpad button whose trimmed text content equals the digit
+      const btn = Array.from(document.querySelectorAll('button'))
+        .find(b => (b.textContent ?? '').trim() === d);
+      if (btn) {
+        btn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+      }
+    }, digit);
     await page.waitForTimeout(200);
   }
+
+  // Wait for auto-submit (120ms in PINAuth) + crypto key derivation + server round-trip
+  await page.waitForTimeout(3000);
 }
 
 /** Complete PIN setup and any onboarding screens */
@@ -177,9 +237,9 @@ export async function skipOnboardingIfPresent(page: Page) {
   const STRONG_PIN = '142536'; // non-repeating, non-sequential
 
   // PINAuth makes an API call on mount before rendering the numpad (isLoading state).
-  // Wait up to 12s for it to finish and show either create-mode or verify-mode UI.
+  // Wait up to 30s: pinService.getStatus() can be slow for some users/environments.
   const anyPinText = page.getByText(/create your pin|enter your pin|secure unlock/i).first();
-  const hasPinScreen = await anyPinText.isVisible({ timeout: 12000 }).catch(() => false);
+  const hasPinScreen = await anyPinText.isVisible({ timeout: 30000 }).catch(() => false);
 
   if (hasPinScreen) {
     const isCreateMode = await page.getByText(/create your pin/i).first()

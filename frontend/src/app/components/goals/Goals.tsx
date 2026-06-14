@@ -485,11 +485,11 @@ export const Goals: React.FC = () => {
  <Button
  onClick={() => setCurrentPage('add-goal')}
  className="rounded-full h-11 px-6 shadow-lg bg-black text-white hover:bg-gray-900 transition-transform active:scale-95"
- aria-label="Create your first goal"
- title="Create your first goal"
+ aria-label="Add Goal"
+ title="Add Goal"
  >
  <Plus size={18} className="mr-2" />
- Create Your First Goal
+ Add Goal
  </Button>
  </motion.div>
  </Card>

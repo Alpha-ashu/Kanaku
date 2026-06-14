@@ -184,6 +184,23 @@ export const ClientManagementPage: React.FC = () => {
  </div>
 
  {/* Client cards */}
+ {filteredClients.length === 0 && (
+   <div className="flex flex-col items-center justify-center py-20 text-center">
+     <div className="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mb-4">
+       <Users size={28} className="text-slate-300" />
+     </div>
+     <h3 className="font-black text-slate-700 text-base uppercase tracking-tight mb-1">
+       {searchQuery ? 'No matching clients' : role !== 'advisor' ? 'Advisor sessions only' : 'No clients yet'}
+     </h3>
+     <p className="text-slate-400 text-xs font-medium max-w-xs leading-relaxed">
+       {searchQuery
+         ? 'Try a different search term.'
+         : role !== 'advisor'
+           ? 'Client data is derived from advisor sessions. Switch to advisor mode or log in as an approved advisor.'
+           : 'Your clients will appear here once you have completed advisory sessions.'}
+     </p>
+   </div>
+ )}
  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
  {filteredClients.map(client => (
  <Card key={client.id} variant="glass" className="p-6 border-white/40 shadow-sm flex flex-col justify-between">

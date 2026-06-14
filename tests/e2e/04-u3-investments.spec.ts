@@ -18,9 +18,11 @@ test.describe('U3 – Investor (Rohan)', () => {
     await page.waitForTimeout(1000);
     await screenshot(page, '04_u3_01_investments_page');
 
-    const hasInvestContent =
-      await page.getByRole('heading', { name: /invest/i }).first().isVisible({ timeout: 6000 }).catch(() => false)
-      || await page.getByText(/my portfolio|total invest/i).first().isVisible({ timeout: 4000 }).catch(() => false);
+    const heading = page.getByRole('heading', { name: /invest/i }).first();
+    const text = page.getByText(/my portfolio|total invest/i).first();
+    await heading.waitFor({ state: 'visible', timeout: 6000 }).catch(() => null);
+    await text.waitFor({ state: 'visible', timeout: 4000 }).catch(() => null);
+    const hasInvestContent = await heading.isVisible() || await text.isVisible();
     console.log(`  Investments section visible: ${hasInvestContent}`);
     expect(hasInvestContent, 'Investments page should load').toBe(true);
   });
@@ -33,7 +35,8 @@ test.describe('U3 – Investor (Rohan)', () => {
 
     // Look for Add Investment button
     const addBtn = page.getByRole('button', { name: /add investment|new investment|\+ invest|add stock|buy/i }).first();
-    const visible = await addBtn.isVisible({ timeout: 5000 }).catch(() => false);
+    await addBtn.waitFor({ state: 'visible', timeout: 5000 }).catch(() => null);
+    const visible = await addBtn.isVisible();
 
     if (visible) {
       await addBtn.click();
@@ -82,7 +85,8 @@ test.describe('U3 – Investor (Rohan)', () => {
     await page.waitForTimeout(800);
 
     const addBtn = page.getByRole('button', { name: /add investment|new investment|\+ invest/i }).first();
-    if (await addBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
+    await addBtn.waitFor({ state: 'visible', timeout: 5000 }).catch(() => null);
+    if (await addBtn.isVisible()) {
       await addBtn.click();
       await page.waitForTimeout(600);
 
@@ -122,13 +126,18 @@ test.describe('U3 – Investor (Rohan)', () => {
 
     const addBtn = page.getByRole('button', { name: /add investment|\+ invest/i }).first();
 
-    if (await goldBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
+    await goldBtn.waitFor({ state: 'visible', timeout: 3000 }).catch(() => null);
+    if (await goldBtn.isVisible()) {
       await goldBtn.click();
-    } else if (await addBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await addBtn.click();
-      await page.waitForTimeout(400);
-      const goldType = page.locator('button, [role="option"]').filter({ hasText: /gold/i }).first();
-      if (await goldType.isVisible({ timeout: 2000 }).catch(() => false)) await goldType.click();
+    } else {
+      await addBtn.waitFor({ state: 'visible', timeout: 3000 }).catch(() => null);
+      if (await addBtn.isVisible()) {
+        await addBtn.click();
+        await page.waitForTimeout(400);
+        const goldType = page.locator('button, [role="option"]').filter({ hasText: /gold/i }).first();
+        await goldType.waitFor({ state: 'visible', timeout: 2000 }).catch(() => null);
+        if (await goldType.isVisible()) await goldType.click();
+      }
     }
 
     await page.waitForTimeout(600);
@@ -160,8 +169,9 @@ test.describe('U3 – Investor (Rohan)', () => {
     await screenshot(page, '04_u3_05_portfolio_summary');
 
     // Should show total invested / portfolio value somewhere
-    const hasSummary = await page.getByText(/total|invested|portfolio|value/i).first()
-      .isVisible({ timeout: 5000 }).catch(() => false);
+    const summaryText = page.getByText(/total|invested|portfolio|value/i).first();
+    await summaryText.waitFor({ state: 'visible', timeout: 5000 }).catch(() => null);
+    const hasSummary = await summaryText.isVisible();
     console.log(`  Portfolio summary visible: ${hasSummary}`);
   });
 });

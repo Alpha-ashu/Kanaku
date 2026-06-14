@@ -194,7 +194,7 @@ export const Loans: React.FC = () => {
  localStorage.setItem('quickFormType', 'expense');
  localStorage.setItem('quickExpenseMode', 'loan');
  localStorage.setItem('quickBackPage', 'loans');
- setCurrentPage('add-transaction');
+ setCurrentPage('add-loan');
  }}
  className="shadow-lg bg-gray-900 hover:bg-gray-800 text-white h-12 px-6 rounded-2xl font-bold flex items-center gap-2"
  >

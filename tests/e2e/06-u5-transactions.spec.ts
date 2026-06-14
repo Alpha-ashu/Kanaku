@@ -27,7 +27,8 @@ test.describe('U5 – Portfolio Builder / Transaction Tester (Dev)', () => {
     await page.waitForTimeout(800);
 
     const addBtn = page.getByRole('button', { name: /add account|new account|\+ account/i }).first();
-    if (await addBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
+    await addBtn.waitFor({ state: 'visible', timeout: 5000 }).catch(() => null);
+    if (await addBtn.isVisible()) {
       await addBtn.click();
       await page.waitForTimeout(600);
       await screenshot(page, '06_u5_01_add_account_modal');
@@ -59,7 +60,8 @@ test.describe('U5 – Portfolio Builder / Transaction Tester (Dev)', () => {
     await page.waitForTimeout(800);
 
     const addBtn = page.getByRole('button', { name: /add account|new account|\+ account/i }).first();
-    if (await addBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
+    await addBtn.waitFor({ state: 'visible', timeout: 5000 }).catch(() => null);
+    if (await addBtn.isVisible()) {
       await addBtn.click();
       await page.waitForTimeout(600);
 
@@ -91,10 +93,12 @@ test.describe('U5 – Portfolio Builder / Transaction Tester (Dev)', () => {
     await page.waitForTimeout(800);
 
     const addBtn = page.getByRole('button', { name: /add transaction|new transaction|\+ transaction|add income|record/i }).first();
+    await addBtn.waitFor({ state: 'visible', timeout: 3000 }).catch(() => null);
     const floatBtn = page.locator('[class*="fab"], [class*="float"]').first();
-    const btn = await addBtn.isVisible({ timeout: 3000 }).catch(() => false) ? addBtn : floatBtn;
+    const btn = await addBtn.isVisible() ? addBtn : floatBtn;
 
-    if (await btn.isVisible({ timeout: 4000 }).catch(() => false)) {
+    await btn.waitFor({ state: 'visible', timeout: 4000 }).catch(() => null);
+    if (await btn.isVisible()) {
       await btn.click();
       await page.waitForTimeout(800);
       await screenshot(page, '06_u5_03_add_txn_modal');
@@ -146,10 +150,14 @@ test.describe('U5 – Portfolio Builder / Transaction Tester (Dev)', () => {
     let addedCount = 0;
 
     for (const txn of expenses) {
-      const addBtn = page.getByRole('button', { name: /add transaction|new transaction|\+ transaction|add/i }).first()
-        .or(page.locator('[class*="fab"], [class*="float"]').first());
+      // Same split-fallback pattern as U5-03 — avoids .or() picking wrong elements in DOM order
+      const addBtnRole = page.getByRole('button', { name: /add transaction|new transaction|\+ transaction|add income/i }).first();
+      await addBtnRole.waitFor({ state: 'visible', timeout: 4000 }).catch(() => null);
+      const floatBtn = page.locator('[class*="fab"], [class*="float"]').first();
+      const addBtn = await addBtnRole.isVisible() ? addBtnRole : floatBtn;
 
-      if (await addBtn.isVisible({ timeout: 4000 }).catch(() => false)) {
+      await addBtn.waitFor({ state: 'visible', timeout: 2000 }).catch(() => null);
+      if (await addBtn.isVisible()) {
         await addBtn.click();
         await page.waitForTimeout(800);
 
@@ -204,7 +212,8 @@ test.describe('U5 – Portfolio Builder / Transaction Tester (Dev)', () => {
     await page.waitForTimeout(800);
 
     const transfer = page.getByRole('button', { name: /transfer/i }).first();
-    if (await transfer.isVisible({ timeout: 4000 }).catch(() => false)) {
+    await transfer.waitFor({ state: 'visible', timeout: 4000 }).catch(() => null);
+    if (await transfer.isVisible()) {
       await transfer.click();
       await page.waitForTimeout(600);
       await screenshot(page, '06_u5_05_transfer_modal');
@@ -232,7 +241,8 @@ test.describe('U5 – Portfolio Builder / Transaction Tester (Dev)', () => {
     await screenshot(page, '06_u5_06_budget_page');
 
     const addBudgetBtn = page.getByRole('button', { name: /add budget|new budget|\+ budget|set budget/i }).first();
-    if (await addBudgetBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
+    await addBudgetBtn.waitFor({ state: 'visible', timeout: 5000 }).catch(() => null);
+    if (await addBudgetBtn.isVisible()) {
       await addBudgetBtn.click();
       await page.waitForTimeout(600);
 

@@ -191,6 +191,7 @@ export const AddLoan: React.FC = () => {
  <CreditCard className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
  <input 
  type="text" 
+ name="name"
  value={formData.lenderName} 
  onChange={e => handleFieldChange('lenderName', e.target.value)} 
  className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-900 text-xs" 
@@ -224,6 +225,7 @@ export const AddLoan: React.FC = () => {
  <TrendingDown className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
  <input 
  type="number" 
+ name="rate"
  value={formData.interestRate || ''} 
  onChange={e => handleFieldChange('interestRate', parseFloat(e.target.value) || 0)} 
  className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-xs text-center" 
@@ -302,6 +304,7 @@ export const AddLoan: React.FC = () => {
  <span className="text-3xl font-black text-slate-200 uppercase">{currency}</span>
  <input 
  type="number" 
+ name="amount"
  value={amountStr} 
  onChange={e => { setAmountStr(e.target.value); handleFieldChange('principalAmount', parseFloat(e.target.value) || 0); }}
  className="bg-transparent text-5xl font-black text-slate-900 outline-none w-[200px] text-center tracking-tighter" 

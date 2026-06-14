@@ -594,7 +594,9 @@ export const AddInvestment: React.FC = () => {
     if (isPhysicalMetal) {
       if (physicalMeta.weightValue <= 0) { toast.error('Enter weight for physical metal'); return; }
     } else {
-      if (formData.quantity <= 0) { toast.error('Enter quantity'); return; }
+      if (formData.quantity <= 0 && formData.type !== 'mutual-funds') {
+        toast.error('Enter quantity'); return;
+      }
     }
     if (formData.purchasePrice <= 0 && !isPhysicalMetal) {
       toast.error('Enter purchase price'); return;
@@ -634,7 +636,7 @@ export const AddInvestment: React.FC = () => {
       // For physical metals: quantity = weight in grams, purchasePrice = per-gram price
       const quantity = isPhysicalMetal
         ? toGrams(physicalMeta.weightValue, physicalMeta.weightUnit)
-        : formData.quantity;
+        : (formData.type === 'mutual-funds' && formData.quantity <= 0 ? 1 : formData.quantity);
       const purchasePrice = formData.purchasePrice;
       const totalPurchaseCost = (purchasePrice * quantity * buyFxRate) + formData.purchaseFees;
 
@@ -720,6 +722,7 @@ export const AddInvestment: React.FC = () => {
                 <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
                 <input
                   type="text"
+                  name="name"
                   value={formData.name}
                   onChange={e => { setFormData(prev => ({ ...prev, name: e.target.value })); if (isMarketAsset) setShowSuggestions(true); }}
                   className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-900 text-xs"
@@ -835,6 +838,7 @@ export const AddInvestment: React.FC = () => {
                 {isPhysicalMetal ? (
                   <input
                     type="number"
+                    name="quantity"
                     value={physicalMeta.weightValue || ''}
                     onChange={e => setPhysicalMeta(prev => ({ ...prev, weightValue: parseFloat(e.target.value) || 0 }))}
                     className="bg-transparent text-3xl font-black text-slate-900 outline-none w-full text-center tracking-tighter"
@@ -843,6 +847,7 @@ export const AddInvestment: React.FC = () => {
                 ) : (
                   <input
                     type="number"
+                    name="quantity"
                     value={formData.quantity || ''}
                     onChange={e => setFormData(prev => ({ ...prev, quantity: parseFloat(e.target.value) || 0 }))}
                     className="bg-transparent text-3xl font-black text-slate-900 outline-none w-full text-center tracking-tighter"
@@ -856,6 +861,7 @@ export const AddInvestment: React.FC = () => {
                 </span>
                 <input
                   type="number"
+                  name={isPhysicalMetal ? "pricePerGram" : (formData.type === 'mutual-funds' ? "amount" : "purchasePrice")}
                   value={formData.purchasePrice || ''}
                   onChange={e => setFormData(prev => ({ ...prev, purchasePrice: parseFloat(e.target.value) || 0 }))}
                   className="bg-transparent text-3xl font-black text-slate-900 outline-none w-full text-center tracking-tighter"

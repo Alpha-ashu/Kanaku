@@ -85,6 +85,7 @@ const AIInsightsPage = lazy(() => import('@/app/components/features/AIInsightsPa
 const RecurringTransactions = lazy(() => import('@/app/components/features/RecurringTransactions').then(m => ({ default: m.RecurringTransactions })));
 const BudgetAlertsPage = lazy(() => import('@/app/components/features/BudgetAlertsPage').then(m => ({ default: m.BudgetAlertsPage })));
 const ClientManagementPage = lazy(() => import('@/app/components/features/ClientManagementPage').then(m => ({ default: m.ClientManagementPage })));
+const ReceiptScannerPage = lazy(() => import('@/app/components/features/ReceiptScannerPage').then(m => ({ default: m.ReceiptScannerPage })));
 
 //  Capacitor (native only) 
 import { App as CapacitorApp } from '@capacitor/app';
@@ -193,6 +194,8 @@ const PAGE_REQUIRED_TABLES: Record<string, SyncedTableName[]> = {
   transactions: ['transactions', 'accounts'],
   'add-transaction': ['transactions', 'accounts'],
   transfer: ['transactions', 'accounts'],
+  'voice-input': ['transactions', 'accounts'],
+  'receipt-scanner': ['transactions', 'accounts'],
   'pay-emi': ['transactions', 'accounts', 'loans'],
   'recurring-transactions': ['transactions', 'accounts'],
   'tax-calculator': ['transactions', 'accounts'],
@@ -779,6 +782,7 @@ const AppContent: React.FC = () => {
       case 'edit-account': return <EditAccount />;
       case 'book-advisor': return <BookAdvisor />;
       case 'add-transaction': return <AddTransaction />;
+      case 'receipt-scanner': return <ReceiptScannerPage />;
       case 'loans': return <Loans />;
       case 'add-loan': return <AddLoan />;
       case 'goals': return <Goals />;
@@ -816,7 +820,7 @@ const AppContent: React.FC = () => {
       case 'auth-callback': return <AuthCallback />;
       case 'admin-feature-panel': return <AdminFeaturePanel />;
       case 'admin': return <AdminDashboard />;
-      case 'advisor-panel': return <AdvisorPanel />;
+      case 'advisor-panel': return <AdvisorWorkspace />;
       case 'ai-management':
       case 'admin-ai': return <AdminAIDashboard />;
       case 'sync-monitor': return <SyncMonitorDashboard />;

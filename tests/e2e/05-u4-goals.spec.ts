@@ -30,7 +30,8 @@ test.describe('U4 – Goal Setter (Sneha)', () => {
     await page.waitForTimeout(800);
 
     const addBtn = page.getByRole('button', { name: /add goal|new goal|\+ goal|create goal/i }).first();
-    const visible = await addBtn.isVisible({ timeout: 5000 }).catch(() => false);
+    await addBtn.waitFor({ state: 'visible', timeout: 5000 }).catch(() => null);
+    const visible = await addBtn.isVisible();
 
     if (visible) {
       await addBtn.click();
@@ -78,7 +79,8 @@ test.describe('U4 – Goal Setter (Sneha)', () => {
     await page.waitForTimeout(800);
 
     const addBtn = page.getByRole('button', { name: /add goal|new goal|\+ goal|create goal/i }).first();
-    if (await addBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
+    await addBtn.waitFor({ state: 'visible', timeout: 5000 }).catch(() => null);
+    if (await addBtn.isVisible()) {
       await addBtn.click();
       await page.waitForTimeout(600);
 
@@ -111,14 +113,16 @@ test.describe('U4 – Goal Setter (Sneha)', () => {
 
     // Click into Emergency Fund goal
     const efGoal = page.getByText(/Emergency Fund/i).first();
-    if (await efGoal.isVisible({ timeout: 5000 }).catch(() => false)) {
+    await efGoal.waitFor({ state: 'visible', timeout: 5000 }).catch(() => null);
+    if (await efGoal.isVisible()) {
       await efGoal.click();
       await page.waitForTimeout(800);
       await screenshot(page, '05_u4_04_goal_detail');
 
       // Add contribution
       const addContribBtn = page.getByRole('button', { name: /add contribution|contribute|add savings|deposit/i }).first();
-      if (await addContribBtn.isVisible({ timeout: 4000 }).catch(() => false)) {
+      await addContribBtn.waitFor({ state: 'visible', timeout: 4000 }).catch(() => null);
+      if (await addContribBtn.isVisible()) {
         await addContribBtn.click();
         await page.waitForTimeout(500);
 
@@ -153,7 +157,8 @@ test.describe('U4 – Goal Setter (Sneha)', () => {
 
     // Create Laptop goal
     const addBtn = page.getByRole('button', { name: /add goal|new goal|\+ goal|create goal/i }).first();
-    if (await addBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
+    await addBtn.waitFor({ state: 'visible', timeout: 5000 }).catch(() => null);
+    if (await addBtn.isVisible()) {
       await addBtn.click();
       await page.waitForTimeout(600);
 
@@ -182,12 +187,14 @@ test.describe('U4 – Goal Setter (Sneha)', () => {
 
       // Now add full contribution to complete it
       const laptopGoal = page.getByText(/New Laptop/i).first();
-      if (await laptopGoal.isVisible({ timeout: 4000 }).catch(() => false)) {
+      await laptopGoal.waitFor({ state: 'visible', timeout: 4000 }).catch(() => null);
+      if (await laptopGoal.isVisible()) {
         await laptopGoal.click();
         await page.waitForTimeout(600);
 
         const addContribBtn = page.getByRole('button', { name: /add contribution|contribute|add|deposit/i }).first();
-        if (await addContribBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
+        await addContribBtn.waitFor({ state: 'visible', timeout: 3000 }).catch(() => null);
+        if (await addContribBtn.isVisible()) {
           await addContribBtn.click();
           await page.waitForTimeout(400);
           const amtInput = page.locator('input[name="amount"], input[type="number"]').first();

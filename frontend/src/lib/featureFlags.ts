@@ -252,6 +252,8 @@ export const PAGE_TO_FEATURE_MAPPING: Record<string, FeatureKey> = {
   'recurring-transactions': 'recurringTransactions',
   'budget-alerts': 'budgetAlerts',
   'client-management': 'clientManagement',
+  'voice-input': 'transactions',
+  'receipt-scanner': 'transactions',
 };
 
 export function canAccessPage(page: string, features: FeatureVisibility): boolean {

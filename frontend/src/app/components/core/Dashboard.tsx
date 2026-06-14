@@ -251,7 +251,7 @@ export function Dashboard({ setCurrentPage }: DashboardProps) {
  return { totalInvested, currentValue, totalReturns, returnsPercent, count: openInvestments.length };
  }, [getDashboardInvestmentMetrics, openInvestments]);
 
- const totalNetWorth = stats.totalBalance + investmentStats.currentValue;
+ const totalNetWorth = stats.totalBalance + investmentStats.currentValue - groupStats.borrowed;
  const stockSetupHint = getStockDataSetupHint();
 
  const formatCurrency = (amount: number) => formatCurrencyAmount(amount, currency, {
@@ -362,15 +362,31 @@ export function Dashboard({ setCurrentPage }: DashboardProps) {
  <p className="text-white font-bold text-sm lg:text-base">{formatCurrency(stats.monthlyExpense)}</p>
  </div>
  </div>
- {stats.monthlyIncome > 0 && (
- <div className="mt-4 bg-white/20 backdrop-blur-md rounded-2xl p-3">
- <div className="flex items-center gap-2 mb-1 opacity-80">
- <Target size={14} className="text-white" />
- <span className="text-xs font-bold text-white">Savings Rate</span>
- </div>
- <p className="text-white font-bold text-sm lg:text-base">{stats.savingsRate.toFixed(1)}%</p>
- </div>
- )}
+  {(stats.monthlyIncome > 0 || groupStats.borrowed > 0) && (
+    <div className={cn(
+      "mt-4 grid gap-3",
+      stats.monthlyIncome > 0 && groupStats.borrowed > 0 ? "grid-cols-2" : "grid-cols-1"
+    )}>
+      {stats.monthlyIncome > 0 && (
+        <div className="bg-white/20 backdrop-blur-md rounded-2xl p-3">
+          <div className="flex items-center gap-2 mb-1 opacity-80">
+            <Target size={14} className="text-white" />
+            <span className="text-xs font-bold text-white">Savings Rate</span>
+          </div>
+          <p className="text-white font-bold text-sm lg:text-base">{stats.savingsRate.toFixed(1)}%</p>
+        </div>
+      )}
+      {groupStats.borrowed > 0 && (
+        <div className="bg-white/20 backdrop-blur-md rounded-2xl p-3">
+          <div className="flex items-center gap-2 mb-1 opacity-80">
+            <AlertTriangle size={14} className="text-white" />
+            <span className="text-xs font-bold text-white">Total Outstanding Debt</span>
+          </div>
+          <p className="text-white font-bold text-sm lg:text-base">{formatCurrency(groupStats.borrowed)}</p>
+        </div>
+      )}
+    </div>
+  )}
  </div>
 
  </Card>

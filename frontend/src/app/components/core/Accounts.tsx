@@ -1214,16 +1214,16 @@ export const Accounts: React.FC = () => {
 
             {/* Transaction Type Picker Modal */}
             {showTransactionTypeModal && (
-                <div
-                    className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[60] p-4 sm:p-6"
-                    onClick={() => setShowTransactionTypeModal(false)}
-                >
+                <div className="fixed inset-0 flex items-center justify-center z-[60] p-4 sm:p-6">
+                    <div
+                        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                        onClick={() => setShowTransactionTypeModal(false)}
+                    />
                     <motion.div
                         initial={{ scale: 0.95, opacity: 0, y: 20 }}
                         animate={{ scale: 1, opacity: 1, y: 0 }}
                         exit={{ scale: 0.95, opacity: 0, y: 20 }}
-                        onClick={(event) => event.stopPropagation()}
-                        className="bg-white/95 backdrop-blur-2xl rounded-[32px] p-6 sm:p-8 w-full max-w-md shadow-2xl border border-white/50 max-h-[calc(100vh-2rem)] overflow-y-auto"
+                        className="relative bg-white/95 backdrop-blur-2xl rounded-[32px] p-6 sm:p-8 w-full max-w-md shadow-2xl border border-white/50 z-10 max-h-[calc(100vh-2rem)] overflow-y-auto"
                     >
                         <h3 className="text-2xl font-black text-slate-900 tracking-tight mb-1">New Transaction</h3>
                         <p className="text-slate-500 font-medium mb-8">What kind of transaction is this?</p>

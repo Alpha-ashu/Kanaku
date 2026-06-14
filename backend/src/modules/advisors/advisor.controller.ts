@@ -18,9 +18,17 @@ export const listAdvisors = async (req: AuthRequest, res: Response) => {
         advisorStatus: true,
         advisorAvailability: true,
         advisorApplication: { select: { expertise: true, experienceYears: true, bio: true, organizationName: true } },
+        sessionsAsAdvisor: { where: { status: 'completed' }, select: { rating: true } },
       },
     });
-    res.json(advisors);
+    const enriched = advisors.map((a) => {
+      const { sessionsAsAdvisor, ...rest } = a;
+      const ratings = sessionsAsAdvisor.map((s: any) => s.rating).filter(Boolean);
+      const averageRating = ratings.length > 0 ? ratings.reduce((x: number, y: number) => x + y, 0) / ratings.length : 0;
+      const availability = rest.advisorAvailability.some((slot: any) => slot.isActive);
+      return { ...rest, averageRating, reviewCount: ratings.length, availability };
+    });
+    res.json(enriched);
   } catch (error: any) {
     if (isDatabaseUnavailableError(error)) {
       return res.status(503).json({ error: 'Database is temporarily offline', code: 'DB_OFFLINE' });

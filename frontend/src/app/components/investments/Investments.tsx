@@ -193,7 +193,7 @@ export const Investments: React.FC = () => {
 
  return (
  <CenteredLayout>
- <div className="space-y-6 sm:space-y-8">
+ <div className="space-y-6 sm:space-y-8 investments-container portfolio-container" aria-label="Investments Portfolio">
  {/* Header */}
  <PageHeader
  title="Investments"

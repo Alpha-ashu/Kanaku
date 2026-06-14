@@ -41,8 +41,8 @@ test.describe('U1 – Debt / Loan Manager (Arjun)', () => {
       await page.waitForTimeout(800);
       await screenshot(page, '02_u1_02_add_account_modal');
 
-      // Fill account name
-      const nameInput = page.locator('input[placeholder*="name" i], input[name="name"], input[placeholder*="account" i]').first();
+      // Fill account name — AddAccount uses placeholder="e.g. My Savings" (no name attr)
+      const nameInput = page.locator('input[name="name"], input[placeholder*="name" i], input[placeholder*="account" i], input[placeholder*="e.g" i]').first();
       if (await nameInput.isVisible({ timeout: 3000 }).catch(() => false)) {
         await nameInput.fill('SBI Savings Account');
       }

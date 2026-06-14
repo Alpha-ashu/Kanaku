@@ -24,6 +24,8 @@ import {
   ToggleRight,
   Briefcase,
   HandCoins,
+  Mic,
+  ScanLine,
 } from 'lucide-react';
 
 export type UserRole = 'admin' | 'manager' | 'advisor' | 'user';
@@ -77,6 +79,9 @@ export const sidebarMenuItems: NavigationItem[] = [
   { id: 'reports', label: 'Reports', icon: BarChart3, feature: 'reports' },
   { id: 'todo-lists', label: 'Todo Lists', icon: ListTodo, feature: 'todoLists' },
   { id: 'book-advisor', label: 'Book Advisor', icon: Handshake, feature: 'bookAdvisor', roles: ['admin', 'user'] },
+  { id: 'voice-input', label: 'Voice Logging', icon: Mic, feature: 'transactions' },
+  { id: 'receipt-scanner', label: 'Receipt Scanner', icon: ScanLine, feature: 'transactions' },
+  { id: 'notifications', label: 'Notifications', icon: Bell, feature: 'notifications' },
   // Advanced features — visible when enabled by admin
   { id: 'tax-calculator', label: 'Tax Calculator', icon: Calculator, feature: 'taxCalculator' },
   { id: 'ai-insights', label: 'AI Insights', icon: Sparkles, feature: 'aiInsights' },

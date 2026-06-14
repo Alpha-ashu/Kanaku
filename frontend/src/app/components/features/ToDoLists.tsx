@@ -144,55 +144,59 @@ export const ToDoLists: React.FC = () => {
  </button>
  </PageHeader>
 
- {/* Create Modal */}
- {showCreateModal && (
- <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
- <div className="bg-white rounded-2xl p-8 w-full max-w-md border border-gray-200 shadow-lg">
- <h3 className="text-xl font-bold text-gray-900 mb-6">Create New List</h3>
- <div className="space-y-4">
- <div>
- <label className="block text-sm font-medium text-gray-700 mb-2">
- List Name *
- </label>
- <input
- type="text"
- name="name"
- value={newListName}
- onChange={(e) => setNewListName(e.target.value)}
- placeholder="e.g., Weekly Tasks"
- className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-gray-300 focus:bg-white"
- />
- </div>
- <div>
- <label className="block text-sm font-medium text-gray-700 mb-2">
- Description (Optional)
- </label>
- <textarea
- value={newListDescription}
- onChange={(e) => setNewListDescription(e.target.value)}
- placeholder="Add a description for this list"
- className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-gray-300 focus:bg-white"
- rows={3}
- />
- </div>
- <div className="flex gap-3 pt-4">
- <button
- onClick={() => setShowCreateModal(false)}
- className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl hover:bg-gray-50 transition-colors font-medium text-gray-700"
- >
- Cancel
- </button>
- <button
- onClick={handleCreateList}
- className="flex-1 px-4 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition-colors font-medium"
- >
- Create List
- </button>
- </div>
- </div>
- </div>
- </div>
- )}
+  {/* Create Modal */}
+  {showCreateModal && (
+    <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
+      <div 
+        className="absolute inset-0 bg-black/50" 
+        onClick={() => setShowCreateModal(false)} 
+      />
+      <div className="relative bg-white rounded-2xl p-8 w-full max-w-md border border-gray-200 shadow-lg z-10 max-h-[calc(100vh-2rem)] overflow-y-auto">
+        <h3 className="text-xl font-bold text-gray-900 mb-6">Create New List</h3>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              List Name *
+            </label>
+            <input
+              type="text"
+              name="name"
+              value={newListName}
+              onChange={(e) => setNewListName(e.target.value)}
+              placeholder="e.g., Weekly Tasks"
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-gray-300 focus:bg-white"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Description (Optional)
+            </label>
+            <textarea
+              value={newListDescription}
+              onChange={(e) => setNewListDescription(e.target.value)}
+              placeholder="Add a description for this list"
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-gray-300 focus:bg-white"
+              rows={3}
+            />
+          </div>
+          <div className="flex gap-3 pt-4">
+            <button
+              onClick={() => setShowCreateModal(false)}
+              className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl hover:bg-gray-50 transition-colors font-medium text-gray-700"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleCreateList}
+              className="flex-1 px-4 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition-colors font-medium"
+            >
+              Create List
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )}
 
  {/* Lists Grid */}
  {toDoLists.length === 0 ? (

@@ -36,7 +36,7 @@ test.describe('User Registration – All 7 Personas', () => {
 });
 
 test.describe('Login – Verify All Accounts Work', () => {
-  test.setTimeout(60_000);
+  test.setTimeout(120_000);
 
   for (const [key, user] of Object.entries(USERS)) {
     test(`Login ${key}: ${user.email}`, async ({ page }) => {

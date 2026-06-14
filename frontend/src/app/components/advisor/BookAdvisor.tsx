@@ -22,6 +22,12 @@ interface Advisor {
  reviewCount: number;
  availability: boolean;
  advisorAvailability: Array<{ dayOfWeek: number; startTime: string; endTime: string; isActive: boolean }>;
+ advisorApplication?: {
+   expertise: string | null;
+   experienceYears: number | null;
+   bio: string | null;
+   organizationName: string | null;
+ } | null;
 }
 
 interface Booking {
@@ -76,7 +82,14 @@ export const BookAdvisor: React.FC = () => {
  const [isSubmitting, setIsSubmitting] = useState(false);
  const [applyingAsAdvisor, setApplyingAsAdvisor] = useState(false);
  const [isOffline, setIsOffline] = useState(false);
- 
+ const [showApplyModal, setShowApplyModal] = useState(false);
+ const [applyForm, setApplyForm] = useState({
+   fullName: '', phone: '', experienceYears: '', expertise: '', bio: '', organizationName: '',
+ });
+ const [applyFiles, setApplyFiles] = useState<{
+   panDocument: File | null; aadhaarDocument: File | null; certDocument: File | null;
+ }>({ panDocument: null, aadhaarDocument: null, certDocument: null });
+
  const [form, setForm] = useState({
  sessionType: 'video' as SessionType,
  topic: '',
@@ -114,9 +127,13 @@ export const BookAdvisor: React.FC = () => {
 
  useEffect(() => { fetchData(); }, [fetchData]);
 
- const filteredAdvisors = advisors.filter(a =>
- !searchQuery || a.name.toLowerCase().includes(searchQuery.toLowerCase())
- );
+ const filteredAdvisors = advisors.filter(a => {
+   if (!searchQuery) return true;
+   const q = searchQuery.toLowerCase();
+   return a.name.toLowerCase().includes(q) ||
+     (a.advisorApplication?.expertise?.toLowerCase().includes(q) ?? false) ||
+     (a.advisorApplication?.bio?.toLowerCase().includes(q) ?? false);
+ });
 
  const handleSelectAdvisor = (advisor: Advisor) => {
  setSelectedAdvisor(advisor);
@@ -149,16 +166,37 @@ export const BookAdvisor: React.FC = () => {
  }
  };
 
- const handleApplyAsAdvisor = async () => {
- setApplyingAsAdvisor(true);
- try {
- await backendService.api.post('/advisors/apply', {});
- toast.success('Application submitted!');
- } catch (err: any) {
- toast.error(err?.response?.data?.error || 'Failed to submit application');
- } finally {
- setApplyingAsAdvisor(false);
- }
+ const handleApplyAsAdvisor = () => {
+   setApplyForm(f => ({ ...f, fullName: user?.name || f.fullName }));
+   setShowApplyModal(true);
+ };
+
+ const handleSubmitApplication = async () => {
+   if (!applyFiles.panDocument || !applyFiles.aadhaarDocument) {
+     toast.error('PAN card and Aadhaar card documents are required');
+     return;
+   }
+   if (!applyForm.fullName || !applyForm.phone || !applyForm.experienceYears || !applyForm.expertise || !applyForm.bio) {
+     toast.error('Please fill all required fields');
+     return;
+   }
+   const panDoc = applyFiles.panDocument;
+   const aadhaarDoc = applyFiles.aadhaarDocument;
+   setApplyingAsAdvisor(true);
+   try {
+     const fd = new FormData();
+     Object.entries(applyForm).forEach(([k, v]) => { if (v) fd.append(k, v); });
+     fd.append('panDocument', panDoc);
+     fd.append('aadhaarDocument', aadhaarDoc);
+     if (applyFiles.certDocument) fd.append('certDocument', applyFiles.certDocument);
+     await backendService.api.post('/advisors/apply', fd);
+     toast.success('Application submitted! We will review it within 24–48 hours.');
+     setShowApplyModal(false);
+   } catch (err: any) {
+     toast.error(err?.response?.data?.error || 'Failed to submit application');
+   } finally {
+     setApplyingAsAdvisor(false);
+   }
  };
 
  const clientBookings = myBookings.filter(b => !b.advisorId || b.advisorId !== user?.id);
@@ -272,14 +310,20 @@ export const BookAdvisor: React.FC = () => {
  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-700 flex items-center justify-center text-white text-xl font-black shadow-lg">
  {advisor.name.charAt(0)}
  </div>
- <div>
- <h3 className="font-bold text-slate-900 text-sm">{advisor.name}</h3>
- <div className="flex items-center gap-2 mt-1">
+ <div className="min-w-0">
+ <h3 className="font-bold text-slate-900 text-sm truncate">{advisor.name}</h3>
+ {advisor.advisorApplication?.expertise && (
+   <p className="text-[9px] font-black text-indigo-600 uppercase tracking-widest truncate mt-0.5">{advisor.advisorApplication.expertise}</p>
+ )}
+ <div className="flex items-center gap-2 mt-1 flex-wrap">
  <div className="flex items-center gap-0.5 text-amber-500">
  <Star size={10} className="fill-current" />
  <span className="text-[10px] font-black">{advisor.averageRating > 0 ? advisor.averageRating.toFixed(1) : 'New'}</span>
  </div>
  <span className="text-[10px] font-bold text-slate-400">({advisor.reviewCount} reviews)</span>
+ {advisor.advisorApplication?.experienceYears != null && (
+   <span className="text-[9px] font-bold text-slate-400">· {advisor.advisorApplication.experienceYears}y exp</span>
+ )}
  </div>
  </div>
  </div>
@@ -304,6 +348,10 @@ export const BookAdvisor: React.FC = () => {
  );
  })}
  </div>
+
+ {advisor.advisorApplication?.bio && (
+   <p className="text-[10px] text-slate-500 line-clamp-2 mb-3 leading-relaxed">{advisor.advisorApplication.bio}</p>
+ )}
 
  <button className="w-full py-2.5 bg-slate-900 text-white rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 group">
  Select Advisor <ArrowRight size={12} className="group-hover:translate-x-1 transition-transform" />
@@ -497,6 +545,108 @@ export const BookAdvisor: React.FC = () => {
  </aside>
 
  </main>
+
+ {/* Apply as Advisor Modal */}
+ <AnimatePresence>
+ {showApplyModal && (
+   <motion.div
+     initial={{ opacity: 0 }}
+     animate={{ opacity: 1 }}
+     exit={{ opacity: 0 }}
+     className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm"
+     onClick={e => { if (e.target === e.currentTarget) setShowApplyModal(false); }}
+   >
+     <motion.div
+       initial={{ scale: 0.95, y: 10 }}
+       animate={{ scale: 1, y: 0 }}
+       exit={{ scale: 0.95, y: 10 }}
+       className="bg-white rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden"
+     >
+       <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-indigo-600 text-white">
+         <div>
+           <p className="text-[8px] font-black uppercase tracking-widest text-white/60">Join Our Network</p>
+           <h3 className="font-black text-lg tracking-tight">Become an Advisor</h3>
+         </div>
+         <button onClick={() => setShowApplyModal(false)} className="p-2 hover:bg-white/10 rounded-xl transition-colors">
+           <X size={18} />
+         </button>
+       </div>
+
+       <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+         {/* Text fields */}
+         {([
+           { key: 'fullName', label: 'Full Name *', type: 'text', placeholder: 'Your legal name' },
+           { key: 'phone', label: 'Phone Number *', type: 'tel', placeholder: '+91 98765 43210' },
+           { key: 'expertise', label: 'Area of Expertise *', type: 'text', placeholder: 'e.g. Mutual Funds, Tax Planning' },
+           { key: 'experienceYears', label: 'Years of Experience *', type: 'number', placeholder: '5' },
+           { key: 'organizationName', label: 'Organization (optional)', type: 'text', placeholder: 'e.g. XYZ Financial Advisors' },
+         ] as { key: keyof typeof applyForm; label: string; type: string; placeholder: string }[]).map(f => (
+           <div key={f.key} className="space-y-1">
+             <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{f.label}</label>
+             <input
+               type={f.type}
+               value={applyForm[f.key]}
+               onChange={e => setApplyForm(p => ({ ...p, [f.key]: e.target.value }))}
+               placeholder={f.placeholder}
+               className="w-full bg-slate-50 rounded-xl py-2.5 px-4 text-sm font-medium text-slate-900 border-none focus:outline-none focus:ring-2 focus:ring-indigo-500"
+             />
+           </div>
+         ))}
+         <div className="space-y-1">
+           <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Bio *</label>
+           <textarea
+             rows={3}
+             value={applyForm.bio}
+             onChange={e => setApplyForm(p => ({ ...p, bio: e.target.value }))}
+             placeholder="Briefly describe your background and what clients can expect..."
+             className="w-full bg-slate-50 rounded-xl py-2.5 px-4 text-sm font-medium text-slate-900 border-none resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500"
+           />
+         </div>
+
+         {/* Document uploads */}
+         <div className="pt-2 border-t border-slate-100 space-y-3">
+           <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Identity Documents</p>
+           {([
+             { key: 'panDocument', label: 'PAN Card *', accept: 'image/*,.pdf' },
+             { key: 'aadhaarDocument', label: 'Aadhaar Card *', accept: 'image/*,.pdf' },
+             { key: 'certDocument', label: 'Professional Certificate (optional)', accept: 'image/*,.pdf' },
+           ] as { key: keyof typeof applyFiles; label: string; accept: string }[]).map(f => (
+             <div key={f.key} className="space-y-1">
+               <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{f.label}</label>
+               <div className={cn('flex items-center gap-3 p-3 rounded-xl border-2 border-dashed transition-colors', applyFiles[f.key] ? 'border-indigo-400 bg-indigo-50' : 'border-slate-200 bg-slate-50')}>
+                 <Award size={16} className={applyFiles[f.key] ? 'text-indigo-600' : 'text-slate-300'} />
+                 <label className="flex-1 cursor-pointer">
+                   <span className="text-[10px] font-bold text-slate-600">{applyFiles[f.key] ? applyFiles[f.key]!.name : 'Click to upload (JPEG, PNG, PDF)'}</span>
+                   <input
+                     type="file"
+                     accept={f.accept}
+                     className="hidden"
+                     onChange={e => setApplyFiles(p => ({ ...p, [f.key]: e.target.files?.[0] || null }))}
+                   />
+                 </label>
+               </div>
+             </div>
+           ))}
+         </div>
+       </div>
+
+       <div className="p-6 border-t border-slate-100 flex gap-3">
+         <button onClick={() => setShowApplyModal(false)} className="flex-1 py-3 rounded-xl bg-slate-100 text-slate-700 font-black text-[10px] uppercase tracking-widest hover:bg-slate-200 transition-colors">
+           Cancel
+         </button>
+         <button
+           onClick={handleSubmitApplication}
+           disabled={applyingAsAdvisor}
+           className="flex-1 py-3 rounded-xl bg-indigo-600 text-white font-black text-[10px] uppercase tracking-widest hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+         >
+           {applyingAsAdvisor ? <Loader2 size={14} className="animate-spin" /> : <Shield size={14} />}
+           Submit Application
+         </button>
+       </div>
+     </motion.div>
+   </motion.div>
+ )}
+ </AnimatePresence>
  </div>
  );
 };
