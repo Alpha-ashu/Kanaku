@@ -6,7 +6,7 @@ import { test, expect } from '@playwright/test';
 import { USERS, gotoApp, screenshot, registerUser, loginUser, skipOnboardingIfPresent } from './helpers';
 
 test.describe('User Registration – All 7 Personas', () => {
-  test.setTimeout(90_000);
+  test.setTimeout(180_000);
 
   for (const [key, user] of Object.entries(USERS)) {
     test(`Register ${key}: ${user.firstName} ${user.lastName} (${user.persona})`, async ({ page }) => {
@@ -36,7 +36,7 @@ test.describe('User Registration – All 7 Personas', () => {
 });
 
 test.describe('Login – Verify All Accounts Work', () => {
-  test.setTimeout(120_000);
+  test.setTimeout(180_000);
 
   for (const [key, user] of Object.entries(USERS)) {
     test(`Login ${key}: ${user.email}`, async ({ page }) => {

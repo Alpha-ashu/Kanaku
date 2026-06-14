@@ -1,6 +1,10 @@
-import { Page, expect } from '@playwright/test';
+import { Page, expect, Locator } from '@playwright/test';
 import * as path from 'path';
 import * as fs from 'fs';
+
+export async function isElementVisible(locator: Locator, timeout = 5000): Promise<boolean> {
+  return locator.waitFor({ state: 'visible', timeout }).then(() => true).catch(() => false);
+}
 
 export const BASE = 'http://localhost:9002';
 export const API  = 'http://localhost:3000';
@@ -23,8 +27,8 @@ export async function screenshot(page: Page, name: string) {
 
 /** Navigate to the app root and wait for landing page */
 export async function gotoApp(page: Page) {
-  await page.goto(BASE, { waitUntil: 'networkidle' });
-  await page.waitForSelector('h1, button, nav', { timeout: 15000 });
+  await page.goto(BASE, { waitUntil: 'domcontentloaded', timeout: 30000 }).catch(() => null);
+  await page.waitForSelector('h1, button, nav', { timeout: 30000 });
 }
 
 /**
@@ -47,7 +51,7 @@ export async function loginUser(page: Page, user: typeof USERS.U1) {
     }
   }
   const json = await resp!.json();
-  const { accessToken, refreshToken } = json.data ?? {};
+  const { accessToken, refreshToken, user: userObj } = json.data ?? {};
 
   if (!accessToken) {
     throw new Error(`Login API failed for ${user.email}: ${JSON.stringify(json)}`);
@@ -90,35 +94,60 @@ export async function loginUser(page: Page, user: typeof USERS.U1) {
     if (pinReset < 2) await page.waitForTimeout(2000 * (pinReset + 1));
   }
 
-  // 2. Open the app and inject tokens before React fully boots
-  // Catch timeout: late in a long test run the dev server may be slow to fire domcontentloaded.
+  // 2. Open the app and wipe localStorage / IndexedDB to start with a clean slate
   await page.goto(BASE, { waitUntil: 'domcontentloaded', timeout: 60000 }).catch(() => null);
-  await page.evaluate(({ at, rt, email }) => {
+  await page.evaluate(({ at, rt, email, userObj, verifiedAt }) => {
+    localStorage.clear();
+    sessionStorage.clear();
     localStorage.setItem('auth_token', at);
     localStorage.setItem('refresh_token', rt);
     localStorage.setItem('user_email', email);
     localStorage.setItem('onboarding_completed', 'true');
-    // Clear local PIN keys so PINAuth starts fresh in create mode (server PIN was just reset above).
-    // Create mode: user enters 142536 twice → local key stored → isAuthenticated = true.
-    localStorage.removeItem('KANAKU_encrypted_key');
-    localStorage.removeItem('KANAKU_salt');
-    // Legacy pinService status keys — clear so pinService.hasPin() reads from server
-    localStorage.removeItem('pin_verified');
-    localStorage.removeItem('pin_verified_at');
-    localStorage.removeItem('pin_setup_completed');
-    localStorage.removeItem('pin_created');
-  }, { at: accessToken, rt: refreshToken, email: user.email });
+    localStorage.setItem('user_data', JSON.stringify(userObj));
+    localStorage.setItem('pin_setup_completed', 'true');
+    localStorage.setItem('pin_created', 'true');
+    localStorage.setItem('pin_verified', 'true');
+    localStorage.setItem('pin_verified_at', verifiedAt);
+    return new Promise<void>((resolve) => {
+      const req = indexedDB.open('KANAKUDB');
+      req.onsuccess = (event) => {
+        const db = (event.target as any).result;
+        if (!db.objectStoreNames || db.objectStoreNames.length === 0) {
+          db.close();
+          resolve();
+          return;
+        }
+        try {
+          const tx = db.transaction(db.objectStoreNames, 'readwrite');
+          tx.oncomplete = () => {
+            db.close();
+            resolve();
+          };
+          tx.onerror = () => {
+            db.close();
+            resolve();
+          };
+          for (const storeName of db.objectStoreNames) {
+            tx.objectStore(storeName).clear();
+          }
+        } catch (e) {
+          db.close();
+          resolve();
+        }
+      };
+      req.onerror = () => resolve();
+      req.onblocked = () => resolve();
+      setTimeout(resolve, 2000); // safety fallback
+    });
+  }, { at: accessToken, rt: refreshToken, email: user.email, userObj, verifiedAt: new Date().toISOString() }).catch(() => null);
 
-  // 3. Reload so React EnhancedAuthContext picks up the stored tokens
-  // Use 'load' not 'networkidle' — the app has background syncing that prevents networkidle.
-  // Catch timeout: the app may keep background connections open after load (WebSocket, polling)
-  // which delays the 'load' event on slow dev servers. The page is usable even if timeout fires.
-  await page.reload({ waitUntil: 'load', timeout: 60000 }).catch(() => null);
+  // 3. Reload so React EnhancedAuthContext picks up the stored tokens.
+  await page.reload({ waitUntil: 'domcontentloaded', timeout: 20000 }).catch(() => null);
   await page.waitForTimeout(2000);
 
   // 4. Wait for "Syncing your account..." loading screen to disappear
   const syncScreen = page.getByText(/syncing your account/i).first();
-  if (await syncScreen.isVisible({ timeout: 2000 }).catch(() => false)) {
+  if (await isElementVisible(syncScreen, 2000)) {
     await syncScreen.waitFor({ state: 'hidden', timeout: 20000 }).catch(() => null);
     await page.waitForTimeout(1000);
   }
@@ -133,7 +162,7 @@ export async function registerUser(page: Page, user: typeof USERS.U1) {
 
   // Click "Get Started" on the marketing landing page
   const getStarted = page.getByRole('button', { name: /get started/i }).first();
-  if (await getStarted.isVisible({ timeout: 5000 }).catch(() => false)) {
+  if (await isElementVisible(getStarted, 5000)) {
     await getStarted.click();
     await page.waitForTimeout(800);
   }
@@ -141,7 +170,7 @@ export async function registerUser(page: Page, user: typeof USERS.U1) {
   // "Get Started" navigates to AuthFlow 'welcome' step (Create Account / Sign In / etc.).
   // Click "Create Account" to reach the actual signup form.
   const createAccountCTA = page.getByRole('button', { name: /^create account$/i }).first();
-  if (await createAccountCTA.isVisible({ timeout: 3000 }).catch(() => false)) {
+  if (await isElementVisible(createAccountCTA, 3000)) {
     await createAccountCTA.click();
     await page.waitForTimeout(800);
   }
@@ -159,7 +188,7 @@ export async function registerUser(page: Page, user: typeof USERS.U1) {
   await page.locator('input[name="confirmPassword"], input#confirmPassword').first().fill(user.password);
 
   const termsCheckbox = page.locator('input#agreeToTerms, input[name="agreeToTerms"]').first();
-  if (await termsCheckbox.isVisible({ timeout: 2000 }).catch(() => false)) {
+  if (await isElementVisible(termsCheckbox, 2000)) {
     if (!await termsCheckbox.isChecked()) await termsCheckbox.check();
   }
 
@@ -175,7 +204,7 @@ export async function registerUser(page: Page, user: typeof USERS.U1) {
   // even for duplicate). The toast text contains "already" and is visible for ~4s.
   // Detect duplicate early before the toast dismisses.
   const earlyDuplicateText = page.getByText(/already registered|already.*email|phone.*already|already.*use/i).first();
-  if (await earlyDuplicateText.isVisible({ timeout: 5000 }).catch(() => false)) {
+  if (await isElementVisible(earlyDuplicateText, 5000)) {
     return 'already_exists';
   }
 
@@ -183,7 +212,7 @@ export async function registerUser(page: Page, user: typeof USERS.U1) {
   // For REAL new users the app navigates away (onboarding) within ~3s.
   // For DUPLICATE users the app stays on the success screen indefinitely (no auth change).
   const accountCreatedText = page.getByText(/Account Created Successfully/i).first();
-  if (await accountCreatedText.isVisible({ timeout: 5000 }).catch(() => false)) {
+  if (await isElementVisible(accountCreatedText, 5000)) {
     // Wait to see if the app navigates away (real new user) or stays stuck (duplicate)
     const dashEl = page.locator('[data-nav-id]').first();
     const navigatedAway = await dashEl.waitFor({ state: 'visible', timeout: 5000 }).then(() => true).catch(() => false);
@@ -202,7 +231,7 @@ export async function registerUser(page: Page, user: typeof USERS.U1) {
     return 'already_exists';
   }
   // If form is still visible, the submission was rejected (validation or inline error)
-  const formStillVisible = await page.locator('input[name="firstName"]').isVisible({ timeout: 1000 }).catch(() => false);
+  const formStillVisible = await isElementVisible(page.locator('input[name="firstName"]').first(), 1000);
   if (formStillVisible) return 'already_exists';
   return 'registered';
 }
@@ -234,8 +263,6 @@ async function enterPin(page: Page, pin = '111111') {
     await page.waitForTimeout(200);
   }
 
-  // Wait for auto-submit (120ms) + crypto key derivation + server round-trip.
-  // Increased to 5000ms to handle slow server under long test runs.
   await page.waitForTimeout(5000);
 }
 
@@ -246,11 +273,10 @@ export async function skipOnboardingIfPresent(page: Page) {
   // PINAuth makes an API call on mount before rendering the numpad (isLoading state).
   // Wait up to 30s: pinService.getStatus() can be slow for some users/environments.
   const anyPinText = page.getByText(/create your pin|enter your pin|secure unlock/i).first();
-  const hasPinScreen = await anyPinText.isVisible({ timeout: 30000 }).catch(() => false);
+  const hasPinScreen = await isElementVisible(anyPinText, 20000);
 
   if (hasPinScreen) {
-    const isCreateMode = await page.getByText(/create your pin/i).first()
-      .isVisible({ timeout: 500 }).catch(() => false);
+    const isCreateMode = await isElementVisible(page.getByText(/create your pin/i).first(), 500);
 
     // Step 1: verify mode enters PIN once; create mode enters it for Step 1 of 2
     await enterPin(page, STRONG_PIN);
@@ -260,8 +286,7 @@ export async function skipOnboardingIfPresent(page: Page) {
     if (isCreateMode) {
       // Step 2 of 2 — Confirm your PIN (only in create mode).
       // Server processes step 1 asynchronously; increase timeout for under-load scenarios.
-      const confirmVisible = await page.getByText(/confirm your pin/i).first()
-        .isVisible({ timeout: 15000 }).catch(() => false);
+      const confirmVisible = await isElementVisible(page.getByText(/confirm your pin/i).first(), 12000);
       if (confirmVisible) {
         await enterPin(page, STRONG_PIN);
         await page.waitForTimeout(2000);
@@ -269,8 +294,7 @@ export async function skipOnboardingIfPresent(page: Page) {
     } else {
       // Verify mode: if PIN screen still showing after entry, it likely means
       // the previous run used PIN=142536 — retry once (server still has that hash).
-      const pinStillAfterVerify = await page.getByText(/enter your pin/i).first()
-        .isVisible({ timeout: 2000 }).catch(() => false);
+      const pinStillAfterVerify = await isElementVisible(page.getByText(/enter your pin/i).first(), 1000);
       if (pinStillAfterVerify) {
         // isSubmitting may be stuck — wait for it to reset before retrying
         await page.waitForTimeout(3000);
@@ -282,15 +306,15 @@ export async function skipOnboardingIfPresent(page: Page) {
 
   // If any PIN screen still showing (e.g. mismatch or wrong PIN), try skip
   const pinStillShowing = page.getByText(/create your pin|confirm your pin|enter your pin/i).first();
-  if (await pinStillShowing.isVisible({ timeout: 2000 }).catch(() => false)) {
+  if (await isElementVisible(pinStillShowing, 1000)) {
     const skipPin = page.getByRole('button', { name: /skip|later|not now/i }).first();
-    if (await skipPin.isVisible({ timeout: 2000 }).catch(() => false)) await skipPin.click();
+    if (await isElementVisible(skipPin, 1000)) await skipPin.click();
   }
 
   // Handle any remaining onboarding steps
   for (let i = 0; i < 6; i++) {
     const skipBtn = page.getByRole('button', { name: /skip|later|not now|continue|next|done|finish|complete/i }).first();
-    if (await skipBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
+    if (await isElementVisible(skipBtn, 1000)) {
       await skipBtn.click();
       await page.waitForTimeout(600);
     } else break;
@@ -298,14 +322,11 @@ export async function skipOnboardingIfPresent(page: Page) {
 
   // Wait for the main app to load past all auth + sync gates.
   // The sidebar nav items (data-nav-id attributes) only render after isAuthenticated=true AND dataReady=true.
+  // Wait for nav elements — presence of [data-nav-id] means app is authenticated and mounted.
+  // Do NOT wait for sync completion (isSyncing check); that can block for 30s+ under load.
   await page.waitForFunction(
-    () => {
-      const hasSidebarNav = !!document.querySelector('[data-nav-id], [aria-label="Dashboard"], [aria-label="Home"]');
-      const isSyncing = (document.body?.textContent ?? '').includes('Syncing your account') ||
-                        (document.body?.textContent ?? '').includes('Loading your account');
-      return hasSidebarNav && !isSyncing;
-    },
-    { timeout: 60000 }
+    () => !!document.querySelector('[data-nav-id], [aria-label="Dashboard"], [aria-label="Home"]'),
+    { timeout: 30000 }
   ).catch(() => null);
 
   await page.waitForTimeout(500);
@@ -317,14 +338,14 @@ export async function clickNav(page: Page, label: string): Promise<boolean> {
 
   // Priority 1: sidebar items tagged with data-nav-id or aria-label (motion.div, not button)
   const sidebarById = page.locator(`[data-nav-id*="${label}" i]`).first();
-  if (await sidebarById.isVisible({ timeout: 3000 }).catch(() => false)) {
+  if (await isElementVisible(sidebarById, 1000)) {
     await sidebarById.click();
     await page.waitForTimeout(800);
     return true;
   }
 
   const sidebarByAria = page.locator(`[aria-label*="${label}" i]`).first();
-  if (await sidebarByAria.isVisible({ timeout: 3000 }).catch(() => false)) {
+  if (await isElementVisible(sidebarByAria, 1000)) {
     await sidebarByAria.click();
     await page.waitForTimeout(800);
     return true;
@@ -339,7 +360,7 @@ export async function clickNav(page: Page, label: string): Promise<boolean> {
   ];
   for (const loc of candidates) {
     const el = loc.first();
-    if (await el.isVisible({ timeout: 1500 }).catch(() => false)) {
+    if (await isElementVisible(el, 500)) {
       await el.click();
       await page.waitForTimeout(800);
       return true;

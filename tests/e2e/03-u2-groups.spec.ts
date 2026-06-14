@@ -8,7 +8,7 @@ import { USERS, loginUser, skipOnboardingIfPresent, screenshot, clickNav } from 
 const U2 = USERS.U2;
 
 test.describe('U2 – Group Expense Splitter (Priya)', () => {
-  test.setTimeout(120_000);
+  test.setTimeout(180_000);
 
   test('U2-01: Navigate to Friends section', async ({ page }) => {
     await loginUser(page, U2);

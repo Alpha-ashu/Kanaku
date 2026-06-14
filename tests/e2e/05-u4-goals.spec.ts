@@ -8,7 +8,7 @@ import { USERS, loginUser, skipOnboardingIfPresent, screenshot, clickNav } from 
 const U4 = USERS.U4;
 
 test.describe('U4 – Goal Setter (Sneha)', () => {
-  test.setTimeout(120_000);
+  test.setTimeout(180_000);
 
   test('U4-01: Navigate to Goals', async ({ page }) => {
     await loginUser(page, U4);

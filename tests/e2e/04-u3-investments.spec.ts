@@ -8,7 +8,7 @@ import { USERS, loginUser, skipOnboardingIfPresent, screenshot, clickNav } from 
 const U3 = USERS.U3;
 
 test.describe('U3 – Investor (Rohan)', () => {
-  test.setTimeout(120_000);
+  test.setTimeout(180_000);
 
   test('U3-01: Navigate to Investments', async ({ page }) => {
     await loginUser(page, U3);

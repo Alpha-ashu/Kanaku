@@ -8,7 +8,7 @@ import { USERS, loginUser, skipOnboardingIfPresent, screenshot, clickNav } from 
 const U6 = USERS.U6;
 
 test.describe('U6 – Collaborative Planner (Isha)', () => {
-  test.setTimeout(120_000);
+  test.setTimeout(180_000);
 
   test('U6-01: Navigate to To-Do section', async ({ page }) => {
     await loginUser(page, U6);

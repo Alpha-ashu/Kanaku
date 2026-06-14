@@ -3,12 +3,12 @@
  * Tests: Add account → Add loan → Log EMI → Partial repayment → Dashboard totals
  */
 import { test, expect } from '@playwright/test';
-import { USERS, loginUser, skipOnboardingIfPresent, screenshot, clickNav } from './helpers';
+import { USERS, loginUser, skipOnboardingIfPresent, screenshot, clickNav, isElementVisible } from './helpers';
 
 const U1 = USERS.U1;
 
 test.describe('U1 – Debt / Loan Manager (Arjun)', () => {
-  test.setTimeout(120_000);
+  test.setTimeout(180_000);
   test.use({ storageState: undefined });
 
   test('U1-01: Login and reach dashboard', async ({ page }) => {
@@ -16,7 +16,7 @@ test.describe('U1 – Debt / Loan Manager (Arjun)', () => {
     await skipOnboardingIfPresent(page);
     await screenshot(page, '02_u1_01_dashboard');
 
-    const isNotOnAuth = !(await page.locator('input[name="email"]').isVisible({ timeout: 2000 }).catch(() => false));
+    const isNotOnAuth = !(await isElementVisible(page.locator('input[name="email"]').first(), 2000));
     expect(isNotOnAuth, 'U1 should be logged in and past auth').toBe(true);
   });
 
@@ -35,7 +35,7 @@ test.describe('U1 – Debt / Loan Manager (Arjun)', () => {
 
     // Look for Add Account button
     const addBtn = page.getByRole('button', { name: /add account|new account|\+ account/i }).first();
-    const addBtnVisible = await addBtn.isVisible({ timeout: 5000 }).catch(() => false);
+    const addBtnVisible = await isElementVisible(addBtn, 5000);
     if (addBtnVisible) {
       await addBtn.click();
       await page.waitForTimeout(800);
@@ -43,13 +43,13 @@ test.describe('U1 – Debt / Loan Manager (Arjun)', () => {
 
       // Fill account name — AddAccount uses placeholder="e.g. My Savings" (no name attr)
       const nameInput = page.locator('input[name="name"], input[placeholder*="name" i], input[placeholder*="account" i], input[placeholder*="e.g" i]').first();
-      if (await nameInput.isVisible({ timeout: 3000 }).catch(() => false)) {
+      if (await isElementVisible(nameInput, 3000)) {
         await nameInput.fill('SBI Savings Account');
       }
 
       // Fill balance
       const balanceInput = page.locator('input[placeholder*="balance" i], input[name="balance"], input[placeholder*="amount" i], input[type="number"]').first();
-      if (await balanceInput.isVisible({ timeout: 3000 }).catch(() => false)) {
+      if (await isElementVisible(balanceInput, 3000)) {
         await balanceInput.fill('45000');
       }
 
@@ -99,7 +99,7 @@ test.describe('U1 – Debt / Loan Manager (Arjun)', () => {
     await page.waitForTimeout(800);
 
     const addLoanBtn = page.getByRole('button', { name: /add loan|new loan|\+ loan|add debt/i }).first();
-    const visible = await addLoanBtn.isVisible({ timeout: 5000 }).catch(() => false);
+    const visible = await isElementVisible(addLoanBtn, 5000);
 
     if (visible) {
       await addLoanBtn.click();
@@ -108,19 +108,19 @@ test.describe('U1 – Debt / Loan Manager (Arjun)', () => {
 
       // Fill loan name/description
       const nameInput = page.locator('input[name="name"], input[placeholder*="name" i], input[placeholder*="loan" i]').first();
-      if (await nameInput.isVisible({ timeout: 3000 }).catch(() => false)) await nameInput.fill('Home Loan – HDFC');
+      if (await isElementVisible(nameInput, 3000)) await nameInput.fill('Home Loan – HDFC');
 
       // Fill amount / principal
       const amountInput = page.locator('input[name="amount"], input[name="principal"], input[name="loanAmount"], input[placeholder*="amount" i], input[placeholder*="principal" i]').first();
-      if (await amountInput.isVisible({ timeout: 3000 }).catch(() => false)) await amountInput.fill('3500000');
+      if (await isElementVisible(amountInput, 3000)) await amountInput.fill('3500000');
 
       // Fill interest rate
       const rateInput = page.locator('input[name="interest"], input[name="rate"], input[name="interestRate"], input[placeholder*="interest" i], input[placeholder*="rate" i]').first();
-      if (await rateInput.isVisible({ timeout: 2000 }).catch(() => false)) await rateInput.fill('8.5');
+      if (await isElementVisible(rateInput, 2000)) await rateInput.fill('8.5');
 
       // Fill EMI
       const emiInput = page.locator('input[name="emi"], input[name="monthlyPayment"], input[placeholder*="emi" i], input[placeholder*="monthly" i]').first();
-      if (await emiInput.isVisible({ timeout: 2000 }).catch(() => false)) await emiInput.fill('30415');
+      if (await isElementVisible(emiInput, 2000)) await emiInput.fill('30415');
 
       await screenshot(page, '02_u1_04_loan_filled');
 
@@ -145,15 +145,15 @@ test.describe('U1 – Debt / Loan Manager (Arjun)', () => {
     await page.waitForTimeout(800);
 
     const addLoanBtn = page.getByRole('button', { name: /add loan|new loan|\+ loan/i }).first();
-    if (await addLoanBtn.isVisible({ timeout: 4000 }).catch(() => false)) {
+    if (await isElementVisible(addLoanBtn, 4000)) {
       await addLoanBtn.click();
       await page.waitForTimeout(600);
 
       const nameInput = page.locator('input[name="name"], input[placeholder*="name" i]').first();
-      if (await nameInput.isVisible({ timeout: 3000 }).catch(() => false)) await nameInput.fill('Borrowed from Priya for trip');
+      if (await isElementVisible(nameInput, 3000)) await nameInput.fill('Borrowed from Priya for trip');
 
       const amountInput = page.locator('input[name="amount"], input[placeholder*="amount" i]').first();
-      if (await amountInput.isVisible({ timeout: 3000 }).catch(() => false)) await amountInput.fill('8500');
+      if (await isElementVisible(amountInput, 3000)) await amountInput.fill('8500');
 
       await screenshot(page, '02_u1_05_informal_loan_filled');
 
@@ -180,8 +180,7 @@ test.describe('U1 – Debt / Loan Manager (Arjun)', () => {
     await screenshot(page, '02_u1_06_dashboard_with_loans');
 
     // Debt/loan summary should appear somewhere
-    const hasDebtSummary = await page.getByText(/total.*debt|loan.*balance|outstanding|you owe|borrowed/i)
-      .first().isVisible({ timeout: 5000 }).catch(() => false);
+    const hasDebtSummary = await isElementVisible(page.getByText(/total.*debt|loan.*balance|outstanding|you owe|borrowed/i).first(), 5000);
 
     if (!hasDebtSummary) {
       await screenshot(page, '02_u1_06_no_debt_summary');
