@@ -207,29 +207,42 @@ export async function registerUser(page: Page, user: typeof USERS.U1) {
   return 'registered';
 }
 
-/** Enter a 6-digit PIN by clicking the PINAuth numpad buttons via JavaScript evaluate().
- *  Uses document.querySelectorAll('button') to find each digit button and calls .click() directly.
- *  This bypasses: pointer-events:none on the form, Playwright interactability checks, and any
- *  focus-routing issues that can cause keyboard.type() to miss the PIN input. */
+/** Enter a 6-digit PIN by clicking the PINAuth numpad buttons.
+ *  Primary: Playwright .click({ force: true }) on the numpad container buttons.
+ *  Fallback: evaluate-based dispatchEvent.
+ *  Both bypass pointer-events and focus requirements. */
 async function enterPin(page: Page, pin = '111111') {
   await page.getByText(/create your pin|confirm your pin|enter your pin/i).first()
     .waitFor({ state: 'visible', timeout: 20000 }).catch(() => null);
   await page.waitForTimeout(500);
 
+  // Locate the numpad grid container (grid-cols-3 = the 3-column number pad)
+  const numpadContainer = page.locator('[class*="grid-cols-3"]').last();
+
   for (const digit of pin) {
-    await page.evaluate((d) => {
-      // Find the numpad button whose trimmed text content equals the digit
-      const btn = Array.from(document.querySelectorAll('button'))
-        .find(b => (b.textContent ?? '').trim() === d);
-      if (btn) {
-        btn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
-      }
-    }, digit);
+    // Primary: Playwright force-click on the scoped numpad button
+    const numpadBtn = numpadContainer.locator('button')
+      .filter({ hasText: new RegExp(`^${digit}$`) }).first();
+    const clicked = await numpadBtn.click({ force: true, timeout: 2000 })
+      .then(() => true)
+      .catch(() => false);
+
+    if (!clicked) {
+      // Fallback: find button across whole page via evaluate
+      await page.evaluate((d) => {
+        const btn = Array.from(document.querySelectorAll('button'))
+          .find(b => (b.textContent ?? '').trim() === d);
+        if (btn) {
+          btn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+        }
+      }, digit);
+    }
     await page.waitForTimeout(200);
   }
 
-  // Wait for auto-submit (120ms in PINAuth) + crypto key derivation + server round-trip
-  await page.waitForTimeout(3000);
+  // Wait for auto-submit (120ms) + crypto key derivation + server round-trip.
+  // Increased to 5000ms to handle slow server under long test runs.
+  await page.waitForTimeout(5000);
 }
 
 /** Complete PIN setup and any onboarding screens */
