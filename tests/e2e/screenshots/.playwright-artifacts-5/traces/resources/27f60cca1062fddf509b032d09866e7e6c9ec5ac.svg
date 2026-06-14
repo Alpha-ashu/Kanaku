@@ -1,0 +1,26 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <linearGradient id="KANAKU-top" x1="0%" y1="100%" x2="0%" y2="0%">
+            <stop offset="0%" stop-color="#f97316" />
+            <stop offset="100%" stop-color="#e11d48" />
+        </linearGradient>
+        <linearGradient id="KANAKU-right" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#f43f5e" />
+            <stop offset="100%" stop-color="#f59e0b" />
+        </linearGradient>
+        <linearGradient id="KANAKU-bottom" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#34d399" />
+            <stop offset="100%" stop-color="#0ea5e9" />
+        </linearGradient>
+        <linearGradient id="KANAKU-left" x1="100%" y1="0%" x2="0%" y2="0%">
+            <stop offset="0%" stop-color="#06b6d4" />
+            <stop offset="100%" stop-color="#8b5cf6" />
+        </linearGradient>
+    </defs>
+    <g>
+        <path d="M 50 65 Q 95 35, 50 0 Q 5 35, 50 65 Z" fill="url(#KANAKU-top)" opacity="0.9" />
+        <path d="M 35 50 Q 65 5, 100 50 Q 65 95, 35 50 Z" fill="url(#KANAKU-right)" opacity="0.9" />
+        <path d="M 50 35 Q 5 65, 50 100 Q 95 65, 50 35 Z" fill="url(#KANAKU-bottom)" opacity="0.9" />
+        <path d="M 65 50 Q 35 95, 0 50 Q 35 5, 65 50 Z" fill="url(#KANAKU-left)" opacity="0.9" />
+    </g>
+</svg>
