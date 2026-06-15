@@ -327,12 +327,14 @@ html {
 /* PIN auth: offscreen hidden form so mobile keyboard stays open after each digit */
 .pin-hidden-input-container {
   position: fixed;
-  top: -200px;
-  left: -200px;
-  opacity: 0;
-  pointer-events: none;
+  top: -9999px;
+  left: -9999px;
   width: 1px;
   height: 1px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  z-index: -1;
 }
 
 /* Reduced motion support */
