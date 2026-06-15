@@ -491,7 +491,8 @@ export interface ToDoList {
   cloudId?: string;
   name: string;
   description?: string;
-  ownerId: string; // Could be userId or identifier
+  ownerId: string;
+  listType?: 'individual' | 'together';
   createdAt: Date;
   updatedAt?: Date;
   archived: boolean;
@@ -512,6 +513,9 @@ export interface ToDoItem {
   createdAt: Date;
   updatedAt?: Date;
   completedAt?: Date;
+  assignedTo?: string;
+  assignedToName?: string;
+  completedByName?: string;
   syncStatus?: SyncStatus;
   version?: number;
 }
@@ -1112,6 +1116,12 @@ export class OfflineSyncDB extends ProductionDB {
       smsTransactions: '++id, &sourceSmsId, userId, status, transactionType, date, matchedAccountId, linkedTransactionId, detectedAt',
       syncQueue:     '++id, userId, table, status, createdAt',
       syncEventLogs: '++id, userId, eventType, timestamp',
+    });
+
+    // Version 13: Add listType index for Together/Individual todo lists
+    this.version(13).stores({
+      toDoLists: '++id, cloudId, ownerId, listType, createdAt, archived, syncStatus',
+      toDoItems: '++id, cloudId, listId, completed, dueDate, priority, assignedTo, syncStatus',
     });
   }
 }

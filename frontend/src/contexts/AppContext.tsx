@@ -537,7 +537,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
       try {
         const parsed = JSON.parse(adminSettings);
-        const merged: Record<string, boolean> = { ...roleFeatures };
+
+        // DENY-BY-DEFAULT: Admin is the root configurator and always starts from
+        // code defaults. Non-admin roles start DENIED — they only receive access
+        // for feature keys that are explicitly present in the admin's saved DB
+        // settings. Any feature key absent from the DB (e.g. a newly-deployed
+        // feature not yet configured by admin) remains BLOCKED for non-admins.
+        const merged: Record<string, boolean> = role === 'admin'
+          ? { ...roleFeatures }
+          : {};
 
         Object.entries(parsed).forEach(([key, value]: [string, any]) => {
           const readiness = value?.readiness;
@@ -556,18 +564,24 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
               isVisible = false;
               break;
             default:
-              isVisible = (roleFeatures as unknown as Record<string, boolean>)[key] ?? true;
+              // Non-admin: start denied; only grant if code defaults explicitly allow
+              isVisible = role === 'admin'
+                ? ((roleFeatures as unknown as Record<string, boolean>)[key] ?? false)
+                : false;
           }
 
-          // Explicit role-specific override if present. We must ensure we safely fallback if the object exists but lacks the role key
+          // Explicit role-specific override always wins (this is the admin DB decision)
           if (value?.roleAccess && typeof value.roleAccess[role] === 'boolean') {
             isVisible = value.roleAccess[role];
           } else if (value?.roleAccess) {
-            // The object exists, but this role is missing (older saved state). Use the baseline features.
-            isVisible = (roleFeatures as unknown as Record<string, boolean>)[key] ?? isVisible;
+            // roleAccess object exists but is missing this role key (old saved state).
+            // For admin keep code default; non-admin stays denied.
+            isVisible = role === 'admin'
+              ? ((roleFeatures as unknown as Record<string, boolean>)[key] ?? false)
+              : false;
           }
 
-          // If the feature is globally disabled, set visibility to false
+          // Global enabled flag overrides everything — disabled = no one can see it
           if (value && typeof value.enabled === 'boolean') {
             isVisible = value.enabled && isVisible;
           }
@@ -964,17 +978,18 @@ export const useOptionalApp = () => useContext(AppContext);
  */
 export function useSubFeature(moduleKey: string, childKey: string): boolean {
   const ctx = useContext(AppContext);
-  if (!ctx) return true; // outside provider → allow (fail-open)
-  return ctx.subFeatures?.[moduleKey]?.[childKey] ?? true;
+  // DENY-BY-DEFAULT: unknown sub-feature or missing context → blocked
+  if (!ctx) return false;
+  return ctx.subFeatures?.[moduleKey]?.[childKey] ?? false;
 }
 
 export function useAICapability(moduleKey: AIModuleKey, capabilityKey?: string): boolean {
   const ctx = useContext(AppContext);
-  if (!ctx) return true; // outside provider → allow (fail-open)
-  
+  // DENY-BY-DEFAULT: unknown AI capability → blocked
+  if (!ctx) return false;
+
   if (!capabilityKey) {
-    // Check master toggle
-    return ctx.aiCapabilities?.[moduleKey]?.enabled ?? true;
+    return ctx.aiCapabilities?.[moduleKey]?.enabled ?? false;
   }
-  return ctx.aiCapabilities?.[moduleKey]?.[capabilityKey] ?? true;
+  return ctx.aiCapabilities?.[moduleKey]?.[capabilityKey] ?? false;
 }

@@ -5,10 +5,10 @@ import { db } from '@/lib/database';
 import { useLiveQuery } from 'dexie-react-hooks';
 import {
   Plus, Trash2, CheckCircle, Circle, ListTodo, Share2, ArrowLeft,
-  X, Pencil, Check, Calendar, Flag, AlignLeft
+  X, Pencil, Check, Calendar, Flag, AlignLeft, Users, UserCheck
 } from 'lucide-react';
 import { toast } from 'sonner';
-import type { ToDoItem } from '@/lib/database';
+import type { ToDoItem, ToDoListShare } from '@/lib/database';
 import {
   saveToDoItemWithBackendSync,
   updateToDoItemWithBackendSync,
@@ -23,6 +23,11 @@ const PRIORITY_CONFIG = {
   medium: { label: 'Medium', bg: 'bg-amber-50',    text: 'text-amber-700',    dot: 'bg-amber-400'   },
   high:   { label: 'High',   bg: 'bg-rose-50',     text: 'text-rose-700',     dot: 'bg-rose-400'    },
 };
+
+interface CollaboratorOption {
+  userId?: string;
+  name: string;
+}
 
 export const ToDoListDetail: React.FC = () => {
   const { setCurrentPage } = useApp();
@@ -39,14 +44,19 @@ export const ToDoListDetail: React.FC = () => {
   const [newDescription, setNewDescription] = useState('');
   const [newPriority, setNewPriority] = useState<'low' | 'medium' | 'high'>('medium');
   const [newDueDate, setNewDueDate] = useState('');
+  const [newAssignedTo, setNewAssignedTo] = useState('');
+  const [newAssignedToName, setNewAssignedToName] = useState('');
 
   // Edit form state
   const [editTitle, setEditTitle] = useState('');
   const [editDescription, setEditDescription] = useState('');
   const [editPriority, setEditPriority] = useState<'low' | 'medium' | 'high'>('medium');
   const [editDueDate, setEditDueDate] = useState('');
+  const [editAssignedTo, setEditAssignedTo] = useState('');
+  const [editAssignedToName, setEditAssignedToName] = useState('');
 
   const currentUserId = user?.id ?? null;
+  const currentUserName = user?.user_metadata?.display_name || user?.email?.split('@')[0] || 'You';
 
   useEffect(() => {
     const id = localStorage.getItem('viewingToDoListId');
@@ -59,9 +69,28 @@ export const ToDoListDetail: React.FC = () => {
     [listId]
   ) || []) as ToDoItem[];
 
+  // Shares for collaborator list (Together lists)
+  const shares: ToDoListShare[] = (useLiveQuery(
+    () => listId ? db.toDoListShares.where('listId').equals(listId).toArray() : Promise.resolve([]),
+    [listId]
+  ) || []) as ToDoListShare[];
+
   useEffect(() => {
     if (listId) db.toDoLists.get(listId).then(list => list && setToDoList(list));
   }, [listId]);
+
+  const isTogether = toDoList?.listType === 'together';
+
+  // Build collaborator options from friends matching shares
+  const collaboratorOptions = useLiveQuery(async (): Promise<CollaboratorOption[]> => {
+    if (!isTogether || shares.length === 0) return [];
+    const allFriends = await db.friends.filter(f => !f.deletedAt).toArray();
+    const options: CollaboratorOption[] = shares.map(s => {
+      const matched = allFriends.find(f => f.email && s.sharedWithUserId && f.email === s.sharedWithUserId);
+      return { userId: s.sharedWithUserId, name: matched?.name || s.sharedWithUserId };
+    });
+    return options;
+  }, [isTogether, shares]) || [];
 
   const filteredItems = items.filter(item => {
     if (filter === 'active') return !item.completed;
@@ -82,6 +111,8 @@ export const ToDoListDetail: React.FC = () => {
     setNewDescription('');
     setNewPriority('medium');
     setNewDueDate('');
+    setNewAssignedTo('');
+    setNewAssignedToName('');
   };
 
   const handleAddItem = async () => {
@@ -98,6 +129,8 @@ export const ToDoListDetail: React.FC = () => {
         dueDate: newDueDate ? new Date(newDueDate) : undefined,
         createdBy: currentUserId || 'local',
         createdAt: new Date(),
+        assignedTo: newAssignedTo || undefined,
+        assignedToName: newAssignedToName || undefined,
       });
       toast.success('Task added');
       resetAddForm();
@@ -114,6 +147,7 @@ export const ToDoListDetail: React.FC = () => {
       await updateToDoItemWithBackendSync(item.id!, {
         completed: !item.completed,
         completedAt: !item.completed ? new Date() : undefined,
+        completedByName: !item.completed ? currentUserName : undefined,
       });
     } catch {
       toast.error('Failed to update task');
@@ -135,6 +169,8 @@ export const ToDoListDetail: React.FC = () => {
     setEditDescription(item.description || '');
     setEditPriority(item.priority as 'low' | 'medium' | 'high');
     setEditDueDate(item.dueDate ? new Date(item.dueDate).toISOString().split('T')[0] : '');
+    setEditAssignedTo(item.assignedTo || '');
+    setEditAssignedToName(item.assignedToName || '');
   };
 
   const handleSaveEdit = async (itemId: number) => {
@@ -145,6 +181,8 @@ export const ToDoListDetail: React.FC = () => {
         description: editDescription.trim() || undefined,
         priority: editPriority,
         dueDate: editDueDate ? new Date(editDueDate) : undefined,
+        assignedTo: editAssignedTo || undefined,
+        assignedToName: editAssignedToName || undefined,
       });
       toast.success('Task updated');
       setEditingItemId(null);
@@ -158,6 +196,35 @@ export const ToDoListDetail: React.FC = () => {
     localStorage.setItem('sharingToDoListId', listId.toString());
     setCurrentPage('todo-list-share');
   };
+
+  const AssigneeSelect = ({
+    value, onChangeName, onChangeId, className,
+  }: {
+    value: string;
+    onChangeName: (name: string) => void;
+    onChangeId: (id: string) => void;
+    className?: string;
+  }) => (
+    <select
+      aria-label="Assign to"
+      value={value}
+      onChange={e => {
+        const opt = collaboratorOptions.find(c => c.userId === e.target.value || c.name === e.target.value);
+        onChangeId(e.target.value);
+        onChangeName(opt?.name || '');
+      }}
+      className={cn(
+        'w-full bg-slate-50 border-none rounded-xl py-2 px-3 font-bold text-slate-900 text-xs focus:ring-2 focus:ring-violet-200 outline-none',
+        className
+      )}
+    >
+      <option value="">Everyone</option>
+      <option value={currentUserId || 'me'}>{currentUserName} (You)</option>
+      {collaboratorOptions.map(c => (
+        <option key={c.userId || c.name} value={c.userId || c.name}>{c.name}</option>
+      ))}
+    </select>
+  );
 
   if (!toDoList) {
     return (
@@ -178,6 +245,7 @@ export const ToDoListDetail: React.FC = () => {
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <button
+              type="button"
               onClick={() => setCurrentPage('todo-lists')}
               className="lg:!hidden p-2 text-slate-600 hover:bg-slate-50 rounded-xl transition-all"
               title="Back"
@@ -185,23 +253,40 @@ export const ToDoListDetail: React.FC = () => {
               <ArrowLeft size={18} />
             </button>
             <div>
-              <h1 className="text-base font-black text-slate-900 leading-none">{toDoList.name}</h1>
+              <div className="flex items-center gap-2">
+                <h1 className="text-base font-black text-slate-900 leading-none">{toDoList.name}</h1>
+                {isTogether && (
+                  <span className="text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-md bg-violet-50 text-violet-600 border border-violet-100 flex items-center gap-0.5">
+                    <Users size={8} />Together
+                  </span>
+                )}
+              </div>
               <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
                 {completedCount}/{items.length} done · {progress}%
+                {isTogether && shares.length > 0 && ` · ${shares.length + 1} members`}
               </p>
             </div>
           </div>
           <div className="flex items-center gap-2">
+            {isTogether && (
+              <button
+                type="button"
+                onClick={handleShare}
+                className="p-2.5 text-slate-500 hover:text-violet-600 hover:bg-violet-50 rounded-xl transition-all"
+                title="Manage collaborators"
+              >
+                <Share2 size={18} />
+              </button>
+            )}
             <button
-              onClick={handleShare}
-              className="p-2.5 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all"
-              title="Share list"
-            >
-              <Share2 size={18} />
-            </button>
-            <button
+              type="button"
               onClick={() => { setShowAddForm(true); setEditingItemId(null); }}
-              className="bg-indigo-600 text-white px-4 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-indigo-100 hover:bg-indigo-700 active:scale-95 transition-all flex items-center gap-2"
+              className={cn(
+                'text-white px-4 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg hover:opacity-90 active:scale-95 transition-all flex items-center gap-2',
+                isTogether
+                  ? 'bg-violet-600 shadow-violet-100'
+                  : 'bg-indigo-600 shadow-indigo-100'
+              )}
             >
               <Plus size={14} />
               Add Task
@@ -214,7 +299,12 @@ export const ToDoListDetail: React.FC = () => {
           <div className="mt-3 h-1.5 bg-slate-100 rounded-full overflow-hidden">
             <div
               ref={progressBarRef}
-              className="h-full bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-full transition-all duration-500"
+              className={cn(
+                'h-full rounded-full transition-all duration-500',
+                isTogether
+                  ? 'bg-gradient-to-r from-violet-500 to-violet-600'
+                  : 'bg-gradient-to-r from-indigo-500 to-indigo-600'
+              )}
             />
           </div>
         )}
@@ -226,7 +316,7 @@ export const ToDoListDetail: React.FC = () => {
           <div className="p-4 lg:p-6 space-y-3">
             <div className="flex items-center justify-between mb-1">
               <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">New Task</p>
-              <button onClick={() => { setShowAddForm(false); resetAddForm(); }} title="Close" className="p-1 text-slate-400 hover:text-slate-600 rounded">
+              <button type="button" onClick={() => { setShowAddForm(false); resetAddForm(); }} title="Close" className="p-1 text-slate-400 hover:text-slate-600 rounded">
                 <X size={14} />
               </button>
             </div>
@@ -252,6 +342,7 @@ export const ToDoListDetail: React.FC = () => {
                     return (
                       <button
                         key={p}
+                        type="button"
                         onClick={() => setNewPriority(p)}
                         className={cn(
                           'flex-1 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all',
@@ -278,6 +369,20 @@ export const ToDoListDetail: React.FC = () => {
               </div>
             </div>
 
+            {/* Assign To — Together lists only */}
+            {isTogether && (
+              <div className="space-y-1">
+                <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1">
+                  <UserCheck size={9} />Assign To
+                </label>
+                <AssigneeSelect
+                  value={newAssignedTo}
+                  onChangeId={setNewAssignedTo}
+                  onChangeName={setNewAssignedToName}
+                />
+              </div>
+            )}
+
             {/* Description */}
             <div className="space-y-1">
               <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1"><AlignLeft size={9} />Notes</label>
@@ -293,15 +398,20 @@ export const ToDoListDetail: React.FC = () => {
 
             <div className="flex gap-3 pt-1">
               <button
+                type="button"
                 onClick={() => { setShowAddForm(false); resetAddForm(); }}
                 className="px-5 py-2.5 border-2 border-slate-200 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-50 transition-all"
               >
                 Cancel
               </button>
               <button
+                type="button"
                 onClick={handleAddItem}
                 disabled={isAdding || !newTitle.trim()}
-                className="flex-1 py-2.5 bg-indigo-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-700 active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                className={cn(
+                  'flex-1 py-2.5 text-white rounded-xl text-[10px] font-black uppercase tracking-widest active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2',
+                  isTogether ? 'bg-violet-600 hover:bg-violet-700' : 'bg-indigo-600 hover:bg-indigo-700'
+                )}
               >
                 {isAdding ? 'Adding…' : <><Plus size={12} />Add Task</>}
               </button>
@@ -315,10 +425,13 @@ export const ToDoListDetail: React.FC = () => {
         {(['all', 'active', 'done'] as const).map(f => (
           <button
             key={f}
+            type="button"
             onClick={() => setFilter(f)}
             className={cn(
               'px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all',
-              filter === f ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'
+              filter === f
+                ? isTogether ? 'bg-violet-600 text-white shadow-sm' : 'bg-indigo-600 text-white shadow-sm'
+                : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'
             )}
           >
             {f === 'all' ? `All (${items.length})` : f === 'active' ? `Active (${items.filter(i => !i.completed).length})` : `Done (${completedCount})`}
@@ -338,8 +451,12 @@ export const ToDoListDetail: React.FC = () => {
             </p>
             {filter === 'all' && (
               <button
+                type="button"
                 onClick={() => setShowAddForm(true)}
-                className="mt-4 px-5 py-2.5 bg-indigo-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-indigo-700 active:scale-95 transition-all flex items-center gap-2"
+                className={cn(
+                  'mt-4 px-5 py-2.5 text-white rounded-xl font-black text-[10px] uppercase tracking-widest active:scale-95 transition-all flex items-center gap-2',
+                  isTogether ? 'bg-violet-600 hover:bg-violet-700' : 'bg-indigo-600 hover:bg-indigo-700'
+                )}
               >
                 <Plus size={12} />Add First Task
               </button>
@@ -352,7 +469,7 @@ export const ToDoListDetail: React.FC = () => {
 
             if (isEditing) {
               return (
-                <div key={item.id} className="premium-glass-card p-4 space-y-3 border-2 border-indigo-200">
+                <div key={item.id} className={cn('premium-glass-card p-4 space-y-3 border-2', isTogether ? 'border-violet-200' : 'border-indigo-200')}>
                   <input
                     type="text"
                     value={editTitle}
@@ -366,7 +483,7 @@ export const ToDoListDetail: React.FC = () => {
                       {(['low', 'medium', 'high'] as const).map(p => {
                         const cfg = PRIORITY_CONFIG[p];
                         return (
-                          <button key={p} onClick={() => setEditPriority(p)}
+                          <button key={p} type="button" onClick={() => setEditPriority(p)}
                             className={cn('flex-1 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-tight transition-all', editPriority === p ? `${cfg.bg} ${cfg.text}` : 'bg-slate-100 text-slate-400 hover:bg-slate-200')}
                           >{cfg.label}</button>
                         );
@@ -376,16 +493,28 @@ export const ToDoListDetail: React.FC = () => {
                       aria-label="Due date"
                       className="bg-slate-50 border-none rounded-xl py-1.5 px-3 font-bold text-slate-900 text-xs outline-none" />
                   </div>
+                  {isTogether && (
+                    <div className="space-y-1">
+                      <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1">
+                        <UserCheck size={9} />Assign To
+                      </label>
+                      <AssigneeSelect
+                        value={editAssignedTo}
+                        onChangeId={setEditAssignedTo}
+                        onChangeName={setEditAssignedToName}
+                      />
+                    </div>
+                  )}
                   <textarea value={editDescription} onChange={e => setEditDescription(e.target.value)}
                     placeholder="Notes…" aria-label="Notes" rows={2}
                     className="w-full bg-slate-50 border-none rounded-xl py-2 px-3 text-xs font-semibold text-slate-700 resize-none outline-none" />
                   <div className="flex gap-2">
-                    <button onClick={() => setEditingItemId(null)}
+                    <button type="button" onClick={() => setEditingItemId(null)}
                       className="flex-1 py-2 border border-slate-200 rounded-lg text-[9px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-50 transition-all">
                       Cancel
                     </button>
-                    <button onClick={() => handleSaveEdit(item.id!)}
-                      className="flex-1 py-2 bg-indigo-600 text-white rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-indigo-700 transition-all flex items-center justify-center gap-1">
+                    <button type="button" onClick={() => handleSaveEdit(item.id!)}
+                      className={cn('flex-1 py-2 text-white rounded-lg text-[9px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-1', isTogether ? 'bg-violet-600 hover:bg-violet-700' : 'bg-indigo-600 hover:bg-indigo-700')}>
                       <Check size={11} />Save
                     </button>
                   </div>
@@ -402,13 +531,14 @@ export const ToDoListDetail: React.FC = () => {
                 )}
               >
                 <button
+                  type="button"
                   onClick={() => handleToggleItem(item)}
                   className="mt-0.5 shrink-0 transition-all active:scale-90"
                   title={item.completed ? 'Mark as active' : 'Mark as done'}
                 >
                   {item.completed
                     ? <CheckCircle size={22} className="text-emerald-500" />
-                    : <Circle size={22} className="text-slate-300 hover:text-indigo-400" />
+                    : <Circle size={22} className={isTogether ? 'text-slate-300 hover:text-violet-400' : 'text-slate-300 hover:text-indigo-400'} />
                   }
                 </button>
 
@@ -429,11 +559,31 @@ export const ToDoListDetail: React.FC = () => {
                         {new Date(item.dueDate).toLocaleDateString('en', { day: 'numeric', month: 'short' })}
                       </span>
                     )}
+                    {/* Together-specific metadata */}
+                    {isTogether && item.assignedToName && (
+                      <span className="text-[9px] font-bold text-violet-500 flex items-center gap-0.5 bg-violet-50 px-1.5 py-0.5 rounded-md">
+                        <UserCheck size={9} />
+                        {item.assignedToName}
+                      </span>
+                    )}
+                    {isTogether && !item.assignedToName && (
+                      <span className="text-[9px] font-bold text-slate-300 flex items-center gap-0.5">
+                        <Users size={9} />Everyone
+                      </span>
+                    )}
                   </div>
+                  {/* Completed-by info */}
+                  {isTogether && item.completed && item.completedByName && (
+                    <p className="text-[9px] text-emerald-600 font-semibold mt-1">
+                      ✓ Completed by {item.completedByName}
+                      {item.completedAt && ` · ${new Date(item.completedAt).toLocaleString('en', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' })}`}
+                    </p>
+                  )}
                 </div>
 
                 <div className="flex items-center gap-1 shrink-0">
                   <button
+                    type="button"
                     onClick={() => startEdit(item)}
                     className="p-1.5 text-slate-300 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
                     title="Edit task"
@@ -441,6 +591,7 @@ export const ToDoListDetail: React.FC = () => {
                     <Pencil size={13} />
                   </button>
                   <button
+                    type="button"
                     onClick={() => handleDeleteItem(item.id!)}
                     className="p-1.5 text-slate-300 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
                     title="Delete task"

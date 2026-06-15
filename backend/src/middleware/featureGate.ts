@@ -90,6 +90,7 @@ export const requireFeature = (moduleKey: string, childKey?: string) => {
       const features = await getGlobalFeatures();
 
       const moduleSettings = features[moduleKey];
+      const hasSavedSettings = Object.keys(features).length > 0;
 
       // 1. Check Module-Level access
       if (moduleSettings) {
@@ -113,9 +114,17 @@ export const requireFeature = (moduleKey: string, childKey?: string) => {
             return res.status(403).json({ error: `You do not have access to feature module '${moduleKey}'.` });
           }
         }
+      } else if (hasSavedSettings) {
+        // DENY-BY-DEFAULT: DB has admin-configured settings but this module is
+        // not present — it is a newly-deployed feature that admin has not yet
+        // enabled. Block non-admin users; admin can always access new features.
+        if (userRole !== 'admin') {
+          return res.status(403).json({ error: `Feature module '${moduleKey}' has not been enabled by admin.` });
+        }
       } else {
-        // Fallback to hardcoded module role access defaults
-        const defaultRoleAllowed = DEFAULT_MODULE_ACCESS[moduleKey]?.[userRole] ?? true;
+        // No DB settings at all (fresh install). Fall back to hardcoded defaults
+        // using a conservative deny-by-default: unknown modules → admin only.
+        const defaultRoleAllowed = DEFAULT_MODULE_ACCESS[moduleKey]?.[userRole] ?? (userRole === 'admin');
         if (!defaultRoleAllowed) {
           return res.status(403).json({ error: `You do not have access to feature module '${moduleKey}'.` });
         }
@@ -252,10 +261,12 @@ export const requireAIFeature = (moduleKey: string, capabilityKey?: string) => {
       const features = await getAIGlobalFeatures();
 
       const moduleSettings = features[moduleKey];
-      
-      let moduleEnabled = true;
-      let moduleRoleAllowed = true;
-      
+      const hasAISavedSettings = Object.keys(features).length > 0;
+
+      // DENY-BY-DEFAULT: start denied for non-admin; DB settings grant access.
+      let moduleEnabled = hasAISavedSettings ? false : true; // fresh install: open; DB exists: deny until granted
+      let moduleRoleAllowed = hasAISavedSettings ? (userRole === 'admin') : true;
+
       if (moduleSettings) {
         if (typeof moduleSettings.enabled === 'boolean') {
           moduleEnabled = moduleSettings.enabled;

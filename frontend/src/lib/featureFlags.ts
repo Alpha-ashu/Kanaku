@@ -83,8 +83,18 @@ const DEFAULT_FEATURES: FeatureVisibility = {
   budgetAlerts: true,
 };
 
+// DENY-BY-DEFAULT: These are the code-level baseline used ONLY when no admin DB
+// settings exist at all (true fresh install / first boot). Once the admin saves
+// any configuration via the Feature Panel, the DB becomes the single source of
+// truth and these values are IGNORED for non-admin roles — any feature key
+// absent from the DB is automatically denied for non-admin users.
+//
+// Admin is always allowed in code (they are the root configurator).
+// For all other roles only structural/shell features are enabled here so
+// the app shell renders; everything else is DENIED until admin grants it.
 export const ROLE_FEATURES: Record<UserRole, FeatureVisibility> = {
   admin: {
+    // Admin: full access — always the root configurator
     accounts: true,
     transactions: true,
     loans: true,
@@ -111,86 +121,90 @@ export const ROLE_FEATURES: Record<UserRole, FeatureVisibility> = {
     recurringTransactions: true,
     budgetAlerts: true,
   },
+  // DENY-BY-DEFAULT for all non-admin roles.
+  // Structural shell features (dashboard, profile, settings, notifications,
+  // role-specific panels) remain on so the app is usable before admin
+  // configures. All feature modules start DISABLED.
   manager: {
-    accounts: true,
-    transactions: true,
-    loans: true,
-    goals: true,
-    groups: true,
-    investments: true,
-    reports: true,
-    calendar: true,
-    todoLists: true,
-    transfer: true,
+    accounts: false,
+    transactions: false,
+    loans: false,
+    goals: false,
+    groups: false,
+    investments: false,
+    reports: false,
+    calendar: false,
+    todoLists: false,
+    transfer: false,
     taxCalculator: false,
     bookAdvisor: false,
     adminPanel: false,
-    managerPanel: true,
+    managerPanel: true,   // structural — manager workspace
     advisorPanel: false,
-    notifications: true,
-    userProfile: true,
-    settings: true,
-    clientManagement: true,
+    notifications: true,  // structural
+    userProfile: true,    // structural
+    settings: true,       // structural
+    clientManagement: false,
     aiManagement: false,
-    dashboard: true,
+    dashboard: true,      // structural
     aiInsights: false,
-    dataExport: true,
+    dataExport: false,
     recurringTransactions: false,
-    budgetAlerts: true,
+    budgetAlerts: false,
   },
   advisor: {
-    accounts: true,
-    transactions: true,
-    loans: true,
-    goals: true,
-    groups: true,
-    investments: true,
-    reports: true,
-    calendar: true,
-    todoLists: true,
-    transfer: true,
-    taxCalculator: true,
+    accounts: false,
+    transactions: false,
+    loans: false,
+    goals: false,
+    groups: false,
+    investments: false,
+    reports: false,
+    calendar: false,
+    todoLists: false,
+    transfer: false,
+    taxCalculator: false,
     bookAdvisor: false,
     adminPanel: false,
     managerPanel: false,
-    advisorPanel: true,
-    notifications: true,
-    userProfile: true,
-    settings: true,
-    clientManagement: true,
+    advisorPanel: true,   // structural — advisor workspace
+    notifications: true,  // structural
+    userProfile: true,    // structural
+    settings: true,       // structural
+    clientManagement: false,
     aiManagement: false,
-    dashboard: true,
-    aiInsights: true,
-    dataExport: true,
-    recurringTransactions: true,
-    budgetAlerts: true,
+    dashboard: true,      // structural
+    aiInsights: false,
+    dataExport: false,
+    recurringTransactions: false,
+    budgetAlerts: false,
   },
   user: {
-    accounts: true,
-    transactions: true,
-    loans: true,
-    goals: true,
-    groups: true,
-    investments: true,
-    reports: true,
-    calendar: true,
-    todoLists: true,
-    transfer: true,
-    taxCalculator: true,
-    bookAdvisor: true,
+    accounts: false,
+    transactions: false,
+    loans: false,
+    goals: false,
+    groups: false,
+    investments: false,
+    reports: false,
+    calendar: false,
+    todoLists: false,
+    transfer: false,
+    taxCalculator: false,
+    bookAdvisor: false,
     adminPanel: false,
     managerPanel: false,
     advisorPanel: false,
-    notifications: true,
-    userProfile: true,
-    settings: true,
+    notifications: true,  // structural
+    userProfile: true,    // structural
+    settings: true,       // structural
     clientManagement: false,
     aiManagement: false,
-    dashboard: true,
-    aiInsights: true,
-    dataExport: true,
-    recurringTransactions: true,
-    budgetAlerts: true,
+    dashboard: true,      // structural
+    aiInsights: false,
+    dataExport: false,
+    recurringTransactions: false,
+    budgetAlerts: false,
   },
 };
 
@@ -233,10 +247,13 @@ export const PAGE_TO_FEATURE_MAPPING: Record<string, FeatureKey> = {
   'reports': 'reports',
   'calendar': 'calendar',
   'todo-lists': 'todoLists',
+  'todo-list-detail': 'todoLists',
+  'todo-list-share': 'todoLists',
   'book-advisor': 'bookAdvisor',
   'admin-feature-panel': 'adminPanel',
   'admin': 'adminPanel',
   'advisor-panel': 'advisorPanel',
+  'advisor-workspace': 'advisorPanel',
   'settings': 'settings',
   'notifications': 'notifications',
   'user-profile': 'userProfile',
@@ -256,10 +273,12 @@ export const PAGE_TO_FEATURE_MAPPING: Record<string, FeatureKey> = {
   'receipt-scanner': 'transactions',
 };
 
+// DENY-BY-DEFAULT: unmapped pages are blocked, not silently allowed.
+// Every new page/route added to the app MUST have an entry in PAGE_TO_FEATURE_MAPPING.
 export function canAccessPage(page: string, features: FeatureVisibility): boolean {
   const featureKey = PAGE_TO_FEATURE_MAPPING[page];
-  if (!featureKey) return true;
-  return features[featureKey] !== false;
+  if (!featureKey) return false;
+  return features[featureKey] === true;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -388,10 +407,11 @@ export function isSubFeatureEnabled(
   }
 
   // Step 2: look up the child definition
+  // DENY-BY-DEFAULT: unknown sub-features are blocked, not silently allowed
   const moduleDefs = SUB_FEATURE_DEFINITIONS[moduleKey];
-  if (!moduleDefs) return true;
+  if (!moduleDefs) return false;
   const childDef = moduleDefs[childKey];
-  if (!childDef) return true;
+  if (!childDef) return false;
 
   // Step 3: overlay saved child settings
   let childEnabled = childDef.enabled;
@@ -405,7 +425,8 @@ export function isSubFeatureEnabled(
     }
   }
 
-  return childEnabled && (childRoleAccess[role] ?? true);
+  // DENY-BY-DEFAULT: role not in access map means denied
+  return childEnabled && (childRoleAccess[role] ?? false);
 }
 
 /**

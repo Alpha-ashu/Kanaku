@@ -47,32 +47,41 @@ interface FeatureControlBase {
   description: string;
 }
 
+// DENY-BY-DEFAULT: Admin is the single source of truth.
+// All feature modules start as admin-only. Admin must explicitly grant access
+// to manager/advisor/user roles via this panel.
+//
+// Structural shell features (panels, profile, settings, notifications,
+// dashboard) retain role-appropriate access so the app shell is usable
+// before admin configures application features.
 const FEATURE_DEFAULT_ROLE_ACCESS: Record<string, Record<UserRole, boolean>> = {
+  // ── Structural (shell) features — role-appropriate access maintained ──
   dashboard:              { admin: true, manager: true,  advisor: true,  user: true  },
-  accounts:               { admin: true, manager: true,  advisor: true,  user: true  },
-  transactions:           { admin: true, manager: true,  advisor: true,  user: true  },
-  loans:                  { admin: true, manager: true,  advisor: true,  user: true  },
-  goals:                  { admin: true, manager: true,  advisor: true,  user: true  },
-  groups:                 { admin: true, manager: true,  advisor: true,  user: true  },
-  calendar:               { admin: true, manager: true,  advisor: true,  user: true  },
-  reports:                { admin: true, manager: true,  advisor: true,  user: true  },
-  todoLists:              { admin: true, manager: true,  advisor: true,  user: true  },
-  investments:            { admin: true, manager: true,  advisor: true,  user: true  },
-  transfer:               { admin: true, manager: true,  advisor: true,  user: true  },
-  bookAdvisor:            { admin: true, manager: false, advisor: false, user: true  },
-  notifications:          { admin: true, manager: true,  advisor: true,  user: true  },
   userProfile:            { admin: true, manager: true,  advisor: true,  user: true  },
   settings:               { admin: true, manager: true,  advisor: true,  user: true  },
-  clientManagement:       { admin: true, manager: true,  advisor: true,  user: false },
-  managerPanel:           { admin: true, manager: true,  advisor: false, user: false },
+  notifications:          { admin: true, manager: true,  advisor: true,  user: true  },
   adminPanel:             { admin: true, manager: false, advisor: false, user: false },
-  aiManagement:           { admin: true, manager: false, advisor: false, user: false },
+  managerPanel:           { admin: true, manager: true,  advisor: false, user: false },
   advisorPanel:           { admin: true, manager: false, advisor: true,  user: false },
-  taxCalculator:          { admin: true, manager: true,  advisor: true,  user: true  },
-  aiInsights:             { admin: true, manager: false, advisor: true,  user: true  },
-  dataExport:             { admin: true, manager: true,  advisor: true,  user: true  },
-  recurringTransactions:  { admin: true, manager: true,  advisor: true,  user: true  },
-  budgetAlerts:           { admin: true, manager: true,  advisor: true,  user: true  },
+  aiManagement:           { admin: true, manager: false, advisor: false, user: false },
+  // ── Application features — DENY-BY-DEFAULT for non-admin ──
+  accounts:               { admin: true, manager: false, advisor: false, user: false },
+  transactions:           { admin: true, manager: false, advisor: false, user: false },
+  loans:                  { admin: true, manager: false, advisor: false, user: false },
+  goals:                  { admin: true, manager: false, advisor: false, user: false },
+  groups:                 { admin: true, manager: false, advisor: false, user: false },
+  calendar:               { admin: true, manager: false, advisor: false, user: false },
+  reports:                { admin: true, manager: false, advisor: false, user: false },
+  todoLists:              { admin: true, manager: false, advisor: false, user: false },
+  investments:            { admin: true, manager: false, advisor: false, user: false },
+  transfer:               { admin: true, manager: false, advisor: false, user: false },
+  bookAdvisor:            { admin: true, manager: false, advisor: false, user: false },
+  clientManagement:       { admin: true, manager: false, advisor: false, user: false },
+  taxCalculator:          { admin: true, manager: false, advisor: false, user: false },
+  aiInsights:             { admin: true, manager: false, advisor: false, user: false },
+  dataExport:             { admin: true, manager: false, advisor: false, user: false },
+  recurringTransactions:  { admin: true, manager: false, advisor: false, user: false },
+  budgetAlerts:           { admin: true, manager: false, advisor: false, user: false },
 };
 
 const FEATURES_BASE: FeatureControlBase[] = [
@@ -450,6 +459,7 @@ export const AdminFeaturePanel: React.FC = () => {
         {/* Tab Switcher */}
         <div className="flex items-center gap-1.5 bg-slate-100 p-1.5 rounded-3xl w-fit mb-8 border border-slate-200/50 shadow-sm shrink-0">
           <button
+            type="button"
             onClick={() => setActiveTab('app')}
             className={cn(
               "px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2",
@@ -462,6 +472,7 @@ export const AdminFeaturePanel: React.FC = () => {
             Application Features
           </button>
           <button
+            type="button"
             onClick={() => setActiveTab('ai')}
             className={cn(
               "px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2",
@@ -514,6 +525,7 @@ export const AdminFeaturePanel: React.FC = () => {
                       <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Gating Status</span>
                       <button
                         type="button"
+                        title={f.enabled ? `Disable ${f.name}` : `Enable ${f.name}`}
                         onClick={() => handleToggleFeatureEnabled(f.key, !f.enabled)}
                         className={cn(
                           "w-11 h-6 rounded-full relative transition-all duration-200",
@@ -541,6 +553,7 @@ export const AdminFeaturePanel: React.FC = () => {
                             <span className="text-[9px] font-bold text-slate-500 capitalize">{role}</span>
                             <button
                               type="button"
+                              title={`${f.roleAccess[role] ? 'Revoke' : 'Grant'} ${role} access to ${f.name}`}
                               onClick={() => handleToggleRoleAccess(f.key, role, !f.roleAccess[role])}
                               disabled={!f.enabled}
                               className={cn(
@@ -616,6 +629,8 @@ export const AdminFeaturePanel: React.FC = () => {
                   </p>
                 </div>
                 <button
+                  type="button"
+                  title="Close sub-features panel"
                   onClick={() => setSelectedSubFeatureModule(null)}
                   className="rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 w-9 h-9 flex items-center justify-center transition-all"
                 >
@@ -652,6 +667,7 @@ export const AdminFeaturePanel: React.FC = () => {
                         </div>
                         <button
                           type="button"
+                          title={child.enabled ? `Disable ${child.name}` : `Enable ${child.name}`}
                           onClick={() => handleToggleSubFeatureEnabled(currentModule!.key, child.key, !child.enabled)}
                           disabled={!currentModule?.enabled}
                           className={cn(
@@ -675,6 +691,7 @@ export const AdminFeaturePanel: React.FC = () => {
                             <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">{r}</span>
                             <button
                               type="button"
+                              title={`${child.roleAccess[r] ? 'Revoke' : 'Grant'} ${r} access to ${child.name}`}
                               onClick={() => handleToggleSubFeatureRoleAccess(currentModule!.key, child.key, r, !child.roleAccess[r])}
                               disabled={!child.enabled || !currentModule?.enabled}
                               className={cn(

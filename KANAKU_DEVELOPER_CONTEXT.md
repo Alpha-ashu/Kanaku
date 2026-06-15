@@ -5223,3 +5223,640 @@ erDiagram
 | Content-Security-Policy | HTTP headers on all responses |
 | Stripe webhook | Signature verified before any payment state mutation |
 
+# Kanaku / Finora — Developer Context
+
+> Living reference document. Update this file whenever a significant feature, bug fix, or architectural decision is made.
+> Last updated: 2026-06-15
+
+---
+
+## Table of Contents
+
+1. [Project Overview](#1-project-overview)
+2. [Tech Stack](#2-tech-stack)
+3. [Role System](#3-role-system)
+4. [Feature Flag Architecture](#4-feature-flag-architecture)
+5. [Deny-by-Default Security Model](#5-deny-by-default-security-model)
+6. [Key Files Reference](#6-key-files-reference)
+7. [Authentication & Onboarding](#7-authentication--onboarding)
+8. [Session & Token Management](#8-session--token-management)
+9. [Offline-First Database (Dexie)](#9-offline-first-database-dexie)
+10. [Together (Collaborative) To-Do Lists](#10-together-collaborative-to-do-lists)
+11. [Quick Action Navigation](#11-quick-action-navigation)
+12. [Advisor Feature](#12-advisor-feature)
+13. [Backend API Conventions](#13-backend-api-conventions)
+14. [Developer Rules](#14-developer-rules)
+15. [Change Log](#15-change-log)
+
+---
+
+## 1. Project Overview
+
+**Kanaku** (frontend brand name: **Finora**) is a personal and collaborative finance management application. It is an offline-first Progressive Web App with a Node.js/Express backend and Supabase for auth and cloud sync.
+
+**Core features:** accounts, transactions, loans, goals, group expenses, investments, reports, calendar, to-do lists, AI insights, advisor booking, tax calculator, budget alerts, recurring transactions.
+
+**Roles:** `admin`, `manager`, `advisor`, `user` — each with different feature visibility and permission levels.
+
+---
+
+## 2. Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | React 18 + TypeScript + Vite |
+| Styling | Tailwind CSS + `cn()` utility |
+| Local DB | Dexie (IndexedDB) with `useLiveQuery` |
+| State | React Context (`AppContext`, `AuthContext`, `SecurityContext`) |
+| Backend | Node.js + Express + TypeScript |
+| ORM | Prisma (PostgreSQL) |
+| Auth | Supabase Auth (JWT + refresh tokens) |
+| Real-time | Socket.IO (WebSocket) + BroadcastChannel API |
+| Animations | Framer Motion |
+| Notifications | Sonner (toast) |
+| Icons | Lucide React |
+| Mobile | Capacitor (Android) |
+
+---
+
+## 3. Role System
+
+### Role Hierarchy
+
+```
+admin  >  manager  >  advisor  >  user
+```
+
+| Role | Description |
+|---|---|
+| `admin` | Root configurator. Full access. Controls feature flags, role permissions, user management. |
+| `manager` | Manages advisors and clients. Has manager workspace. Cannot configure system settings. |
+| `advisor` | Financial advisor. Has advisor workspace. Subject to approval by manager/admin. |
+| `user` | End-user. Access only to features explicitly enabled by admin. |
+
+### Role Resolution (frontend)
+
+Resolved in `AuthContext.tsx` via `resolveUserRole()`:
+
+1. JWT `user.user_metadata.role`
+2. `localStorage.getItem('user_profile')?.role`
+3. Email-pattern fallback (`getRoleFromEmail()`)
+4. Default: `'user'`
+
+### Role Resolution (backend)
+
+Set on the `User` table `role` column (Prisma). Enforced via `requireRole()` middleware in `backend/src/middleware/rbac.ts`.
+
+### Advisor Approval
+
+Advisors must be approved (`isApproved = true`) before accessing advisor features. Unapproved advisors are treated as `user` role for feature access. Approved by manager via `manager-advisor-verification` page.
+
+---
+
+## 4. Feature Flag Architecture
+
+The system has **three levels** of feature control, all admin-configurable via the Feature Panel (`/admin-feature-panel`).
+
+### Level 1 — Module Features
+
+Defined in `frontend/src/lib/featureFlags.ts` → `ROLE_FEATURES`.
+
+Each of the ~25 feature keys (`accounts`, `transactions`, `todoLists`, etc.) can be enabled/disabled per role. Stored in `UserSettings.settings.admin_global_feature_settings` (backend DB), synced to `localStorage` key `admin_global_feature_settings`.
+
+### Level 2 — Sub-Features (Child Features)
+
+Defined in `featureFlags.ts` → `SUB_FEATURE_DEFINITIONS`.
+
+Each module has child features (e.g., `accounts.deleteAccount`, `transactions.deleteTransaction`). Configurable per role. Accessed via `useSubFeature(moduleKey, childKey)` hook.
+
+### Level 3 — AI Capabilities
+
+Defined in `featureFlags.ts` → `AI_MODULE_DEFINITIONS`.
+
+AI modules (`ocrEngine`, `voiceAssistant`, `aiAutomation`) with nested capabilities. Stored under `admin_ai_feature_settings`. Accessed via `useAICapability(moduleKey, capabilityKey)` hook.
+
+### How Flags Flow
+
+```
+Backend DB (UserSettings.settings)
+  → fetched by AppContext.fetchGlobalFlags() on login + every 30s
+  → stored in localStorage (admin_global_feature_settings)
+  → recomputed by computeVisibleFeatures() → visibleFeatures state
+  → consumed by Sidebar, BottomNav, useSharedMenu, canAccessPage
+  → App.tsx route guard blocks direct URL access
+  → Backend requireFeature() middleware validates API calls
+```
+
+### Real-time Updates
+
+When admin saves flags:
+1. Saved to `localStorage` immediately
+2. `BroadcastChannel` notifies other browser tabs
+3. Socket `feature_flags_updated` event notifies all connected clients
+4. Backend cache (`CACHE_TTL_MS = 30000`) invalidated via `invalidateFeatureCache()`
+
+### Page-to-Feature Mapping
+
+All pages/routes must be registered in `PAGE_TO_FEATURE_MAPPING` in `featureFlags.ts`. Unmapped pages are **denied** (see Section 5). Currently registered:
+
+| Page | Feature Key |
+|---|---|
+| `dashboard` | `dashboard` |
+| `accounts` | `accounts` |
+| `transactions` | `transactions` |
+| `loans` | `loans` |
+| `goals` | `goals` |
+| `groups` | `groups` |
+| `investments` | `investments` |
+| `reports` | `reports` |
+| `calendar` | `calendar` |
+| `todo-lists` | `todoLists` |
+| `todo-list-detail` | `todoLists` |
+| `todo-list-share` | `todoLists` |
+| `book-advisor` | `bookAdvisor` |
+| `admin` / `admin-feature-panel` | `adminPanel` |
+| `advisor-panel` / `advisor-workspace` | `advisorPanel` |
+| `manager-advisor-verification` / `advisor-verification` | `managerPanel` |
+| `settings` | `settings` |
+| `notifications` | `notifications` |
+| `user-profile` | `userProfile` |
+| `transfer` | `transfer` |
+| `tax-calculator` | `taxCalculator` |
+| `admin-ai` / `ai-management` | `aiManagement` |
+| `ai-insights` | `aiInsights` |
+| `export-reports` / `data-export` | `dataExport` |
+| `recurring-transactions` | `recurringTransactions` |
+| `budget-alerts` | `budgetAlerts` |
+| `client-management` | `clientManagement` |
+| `voice-input` / `receipt-scanner` | `transactions` |
+
+> **Rule:** Every new page added to the app MUST have an entry added here. Failure to do so blocks everyone including admin (deny-by-default).
+
+---
+
+## 5. Deny-by-Default Security Model
+
+> Implemented: 2026-06-15
+
+### The Problem (Before)
+
+Feature flags had a layered vulnerability: hardcoded `ROLE_FEATURES` defaults were `true` for most roles on most features. When a developer deployed a new feature and included it in `ROLE_FEATURES`, non-admin users immediately got access — bypassing all admin configuration.
+
+Additionally:
+- `canAccessPage()` returned `true` for unmapped pages
+- `isSubFeatureEnabled()` returned `true` for unknown children
+- `useSubFeature()` / `useAICapability()` returned `true` on undefined
+- Backend `requireFeature()` fallback was `?? true` — any unknown module was allowed
+
+### The Fix (After)
+
+**Three-condition access rule:**
+
+```
+feature_exists = true
+AND feature_enabled_by_admin = true
+AND role_has_permission = true
+→ allow_access = true
+otherwise → deny
+```
+
+### Changes Made
+
+#### `frontend/src/lib/featureFlags.ts`
+
+- **`ROLE_FEATURES`**: Non-admin roles (manager/advisor/user) now default to `false` for all application feature modules. Only structural shell features (dashboard, userProfile, settings, notifications, role-specific panels) are enabled by default. These values are only used when NO admin DB settings exist (fresh install).
+
+- **`canAccessPage()`**: Returns `false` (was `true`) for pages not in `PAGE_TO_FEATURE_MAPPING`.
+
+- **`isSubFeatureEnabled()`**: Returns `false` (was `true`) for unknown modules and unknown child keys. Role access map missing a role key defaults to `false` (was `true`).
+
+- **`PAGE_TO_FEATURE_MAPPING`**: Added `todo-list-detail`, `todo-list-share`, `advisor-workspace`.
+
+#### `frontend/src/contexts/AppContext.tsx`
+
+- **`computeVisibleFeatures()`**: When admin DB settings exist (`admin_global_feature_settings` in localStorage), non-admin roles now START from an empty object `{}` (denied). Only feature keys explicitly present in the admin's saved DB settings grant access. Admin always starts from `ROLE_FEATURES` code defaults.
+
+  ```ts
+  // Before
+  const merged = { ...roleFeatures };  // hardcoded defaults for all features
+
+  // After
+  const merged = role === 'admin' ? { ...roleFeatures } : {};
+  ```
+
+  This means: if a developer deploys a new feature (`newFeature: true` in ROLE_FEATURES), it will be BLOCKED for non-admin until admin explicitly enables it via the Feature Panel.
+
+- **`useSubFeature()`**: Returns `false` (was `true`) when sub-feature is undefined or context is missing.
+
+- **`useAICapability()`**: Returns `false` (was `true`) for undefined AI capabilities.
+
+#### `backend/src/middleware/featureGate.ts`
+
+- **`requireFeature()`**: When DB has saved settings (`Object.keys(features).length > 0`) but the requested module is absent → returns `403` for non-admin. When DB has no settings at all (fresh install) → falls back to code defaults with `?? (userRole === 'admin')` (was `?? true`).
+
+- **`requireAIFeature()`**: When DB has AI settings, starts with `moduleEnabled = false` and `moduleRoleAllowed = (userRole === 'admin')`. DB values override upward. Previously defaulted to `true` for everything.
+
+#### `frontend/src/app/components/admin/AdminFeaturePanel.tsx`
+
+- **`FEATURE_DEFAULT_ROLE_ACCESS`**: All application feature modules changed to `{ admin: true, manager: false, advisor: false, user: false }`. Structural shell features retain appropriate role access. This is the value saved to DB when admin configures a feature for the first time.
+
+- **Fallback for new features**: Line 121 fallback changed from `{ admin: true, manager: true, advisor: true, user: true }` to `{ admin: true, manager: false, advisor: false, user: false }`.
+
+- Fixed all button accessibility issues (added `type="button"` and `title` attributes to all toggle buttons).
+
+### Fresh Install Behavior
+
+On a completely fresh installation before admin has saved any configuration:
+- Admin sees and can access everything (code defaults apply)
+- Manager sees: dashboard, managerPanel, userProfile, settings, notifications
+- Advisor sees: dashboard, advisorPanel, userProfile, settings, notifications
+- User sees: dashboard, userProfile, settings, notifications
+
+Admin must open the Feature Panel and enable features for each role before non-admin users can access them.
+
+### Deploying New Features — Mandatory Checklist
+
+When a developer adds a new feature:
+
+- [ ] Add the feature key to `FeatureKey` type in `featureFlags.ts`
+- [ ] Add it to `FeatureVisibility` interface
+- [ ] Add it to `DEFAULT_FEATURES` (use `false` for default)
+- [ ] Add it to `ROLE_FEATURES` for all roles (admin `true`, others `false`)
+- [ ] Add page-to-feature entry in `PAGE_TO_FEATURE_MAPPING`
+- [ ] Add to `FEATURES_BASE` in `AdminFeaturePanel.tsx`
+- [ ] Add to `FEATURE_DEFAULT_ROLE_ACCESS` with deny-by-default
+- [ ] Add backend `requireFeature('newFeature')` middleware to all API routes
+- [ ] Notify admin to enable the feature for appropriate roles via Feature Panel
+
+---
+
+## 6. Key Files Reference
+
+### Frontend
+
+| File | Purpose |
+|---|---|
+| `frontend/src/lib/featureFlags.ts` | All feature flag types, defaults, access functions |
+| `frontend/src/contexts/AppContext.tsx` | App state, `visibleFeatures`, `computeVisibleFeatures` |
+| `frontend/src/contexts/AuthContext.tsx` | Auth, role resolution, onboarding state |
+| `frontend/src/contexts/SecurityContext.tsx` | PIN auth, session security |
+| `frontend/src/lib/database.ts` | Dexie schema (IndexedDB), all table interfaces |
+| `frontend/src/lib/auth-sync-integration.ts` | Dexie → backend sync functions |
+| `frontend/src/lib/api.ts` | HTTP client, 401 refresh-then-retry logic |
+| `frontend/src/lib/backend-api.ts` | Feature flag backend service calls |
+| `frontend/src/hooks/useFeatureFlags.ts` | Legacy per-role flag hook (`featureFlagsOverride`) |
+| `frontend/src/hooks/useSharedMenu.ts` | Sidebar menu filtering by role + feature |
+| `frontend/src/app/App.tsx` | Routing, Gate 1 (onboarding), route guard |
+| `frontend/src/app/constants/navigation.ts` | All sidebar/nav menu items |
+| `frontend/src/app/components/core/Sidebar.tsx` | Desktop sidebar |
+| `frontend/src/app/components/core/BottomNav.tsx` | Mobile bottom navigation |
+| `frontend/src/app/components/admin/AdminFeaturePanel.tsx` | Admin feature flag control UI |
+| `frontend/src/app/components/admin/AdminDashboard.tsx` | User management, system stats |
+| `frontend/src/app/components/features/ToDoLists.tsx` | To-do list dashboard + Together lists |
+| `frontend/src/app/components/features/ToDoListDetail.tsx` | Task view with Together list support |
+| `frontend/src/services/permissionService.ts` | Permission resolution + caching |
+
+### Backend
+
+| File | Purpose |
+|---|---|
+| `backend/src/middleware/rbac.ts` | `requireRole()`, `requireFeature()`, `ownerOnly()`, audit log |
+| `backend/src/middleware/featureGate.ts` | `requireFeature()`, `requireAIFeature()`, 30s cache |
+| `backend/src/middleware/auth.ts` | JWT verification, user attachment |
+| `backend/src/utils/roleBasedFeatures.ts` | Backend role-to-feature matrix |
+| `backend/src/utils/featureHelpers.ts` | `reconstructFeatures()`, `reconstructAIFeatures()` |
+| `backend/src/modules/admin/admin.controller.ts` | Admin user management endpoints |
+| `backend/prisma/schema.prisma` | Database schema |
+
+---
+
+## 7. Authentication & Onboarding
+
+### Onboarding Flow
+
+New users go through `NewUserOnboarding` in `App.tsx` Gate 1.
+
+**Gate 1 condition** (shows onboarding):
+```ts
+if (user && !onboardingCompleted && isNewUser && !hasProfileData)
+```
+
+`onboardingCompleted` is `true` when ANY of:
+- `localStorage.getItem('onboarding_completed') === 'true'`
+- `user.user_metadata.onboarding_completed === true`
+- `localStorage.getItem('user_profile')` exists
+- `localStorage.getItem('user_settings')` exists
+
+`hasProfileData` = any of the above localStorage keys exist.
+
+This dual-check prevents reload loops for users who have profile data but whose `onboarding_completed` flag was cleared.
+
+### AuthContext Onboarding Completed Check
+
+`AuthContext.tsx` previously cleared `onboarding_completed` from localStorage when the remote profile lacked `dateOfBirth`/`jobType`. This caused redirect loops. Fixed by changing the check to `hasAnyLocalProfile` (any name field or email present).
+
+### Profile Setup — Salary Field
+
+In `ProfileSetupStep.tsx`, annual salary is **optional** for: `Student`, `Retired`, `Unemployed`, `Other` job types. Required for all other types. The label shows "(Optional)" dynamically.
+
+---
+
+## 8. Session & Token Management
+
+### Token Refresh
+
+In `frontend/src/lib/api.ts`:
+
+- `_refreshInFlight` singleton promise prevents concurrent 401s from each triggering a separate Supabase token refresh
+- On 401 response: try `refreshAccessToken()` → retry the original request with new token → only sign out if both fail
+- Prevents "session expiry crash" where adding a todo caused the entire app to navigate to `/login`
+
+### Session Expiry Recovery
+
+```
+401 response received
+  → refreshAccessToken() called (singleton — only one refresh at a time)
+  → retry original request with new token
+  → if retry succeeds: continue normally
+  → if retry fails: clearTokens() + supabase.signOut() + navigate to /login
+```
+
+---
+
+## 9. Offline-First Database (Dexie)
+
+### Schema Version History
+
+| Version | Key Change |
+|---|---|
+| 1–12 | Previous schema iterations |
+| 13 | Added `toDoLists.listType`, `toDoItems.assignedTo`, `toDoItems.assignedToName`, `toDoItems.completedByName` |
+
+### Important Tables
+
+| Table | Purpose |
+|---|---|
+| `db.accounts` | Bank/wallet accounts |
+| `db.transactions` | Income/expense/transfer entries |
+| `db.loans` | Loan tracking |
+| `db.goals` | Financial goals |
+| `db.investments` | Portfolio entries |
+| `db.groupExpenses` | Shared expense groups |
+| `db.friends` | Friend/contact list (reused for collaborators) |
+| `db.toDoLists` | To-do lists (individual + together) |
+| `db.toDoItems` | To-do tasks |
+| `db.toDoListShares` | Collaborator records for Together lists |
+| `db.notifications` | In-app notifications |
+
+### Sync Pattern
+
+All data changes go through `auth-sync-integration.ts` functions (e.g., `saveToDoItemWithBackendSync`). These:
+1. Write to local Dexie immediately (offline-first)
+2. Attempt backend sync
+3. If offline: mark `syncStatus: 'pending'`
+4. `offlineSyncEngine` retries on reconnect
+
+---
+
+## 10. Together (Collaborative) To-Do Lists
+
+### Feature Overview
+
+To-do lists have two types:
+- `individual` — owned by one user, private
+- `together` — shared with collaborators, all can view/create/edit/complete tasks
+
+### Database Changes (Dexie v13)
+
+```ts
+// ToDoList interface additions
+listType?: 'individual' | 'together'
+
+// ToDoItem interface additions
+assignedTo?: string       // userId or name
+assignedToName?: string   // display name
+completedByName?: string  // who completed the task
+```
+
+### Collaborator System
+
+Reuses existing `Friend` system and `ToDoListShare` table:
+- Collaborators are selected from the user's friends list
+- New friends can be added inline (name + email)
+- Stored in `db.toDoListShares` per list
+
+### UI Components
+
+**`ToDoLists.tsx`** (dashboard):
+- Create modal has radio-style list type selector (Individual / Together)
+- When "Together" selected: shows collaborator picker with friend search + add new friend
+- Dashboard splits into "My Lists" (owned) and "Shared With Me" (shared) sections
+- List cards show "Together" badge (violet) and "Shared" badge
+
+**`ToDoListDetail.tsx`** (task view):
+- Together lists show a violet color scheme
+- Add/Edit task forms include "Assign To" dropdown (members of the list)
+- Task cards show `UserCheck` badge with assignee name (violet) or "Everyone" indicator
+- Completed tasks show "✓ Completed by [name] · [timestamp]" for Together lists
+- Header shows member count and a "Manage collaborators" share button
+
+### Access Control
+
+`todo-list-detail` and `todo-list-share` pages are both mapped to the `todoLists` feature key. If admin disables `todoLists`, all three pages are blocked.
+
+---
+
+## 11. Quick Action Navigation
+
+The QuickAction floating button (`+`) opens a quick-action menu. Menu items like Income and Transfer need to open `AddTransaction` with the correct form type pre-selected.
+
+### The Problem
+
+`AddTransaction` uses `useState` initializers that only run once on mount. If the component is already mounted when a quick action changes the localStorage `quickExpenseMode` key, the component doesn't re-read it.
+
+### The Fix
+
+In `App.tsx`, a `quickActionKey` counter is incremented on each quick action trigger. `<AddTransaction key={quickActionKey} />` forces a full remount, re-running all `useState` initializers.
+
+```ts
+// Income quick action
+setQuickActionKey(k => k + 1);
+localStorage.removeItem('quickExpenseMode');
+// → AddTransaction remounts in Income mode
+
+// Transfer quick action
+setQuickActionKey(k => k + 1);
+localStorage.removeItem('quickExpenseMode');
+// → AddTransaction remounts in Transfer mode
+```
+
+---
+
+## 12. Advisor Feature
+
+### Routing Fix
+
+The advisor panel page ID was `advisor-panel` in navigation but the component rendered `AdvisorWorkspace`. Fixed by ensuring both `advisor-panel` and `advisor-workspace` map to the `advisorPanel` feature key.
+
+### BookAdvisor Apply Modal
+
+Advisors can apply through the `BookAdvisor` page. The apply modal uses controlled form state and posts to the backend advisor registration endpoint.
+
+### Client Empty State
+
+When a manager/advisor has no clients, the `ClientManagement` page shows an empty state with guidance, not an error.
+
+### Backend Ratings
+
+Advisor rating endpoints require the session to be completed before a rating can be submitted. `requireApproved()` middleware ensures unapproved advisors can't access advisor-only routes.
+
+---
+
+## 13. Backend API Conventions
+
+### Auth Headers
+
+All protected routes require: `Authorization: Bearer <JWT>`
+
+### Role Middleware
+
+```ts
+// Role check
+router.get('/admin/users', authMiddleware, requireRole('admin'), handler);
+
+// Feature check (reads from DB feature flags)
+router.get('/todo-lists', authMiddleware, requireFeature('todoLists'), handler);
+
+// Sub-feature check
+router.delete('/accounts/:id', authMiddleware, requireFeature('accounts', 'deleteAccount'), handler);
+
+// AI feature check
+router.post('/ocr', authMiddleware, requireAIFeature('ocrEngine', 'transactionOCR'), handler);
+```
+
+### Error Codes
+
+| HTTP | Meaning |
+|---|---|
+| 401 | No token / expired token |
+| 403 | Valid token but insufficient role or feature disabled |
+| 404 | Resource not found |
+| 503 | Feature gate error (DB unavailable) |
+
+### Feature Gate Cache
+
+Backend holds a 30-second in-memory cache of admin feature settings. Invalidated by:
+- `invalidateFeatureCache()` called when admin saves flags
+- Socket broadcast to all clients triggers re-fetch
+
+---
+
+## 14. Developer Rules
+
+### Access Control
+
+1. **Never use `?? true` as a fallback for permission checks.** Always default to deny (`?? false` or `?? (role === 'admin')`).
+2. **Every new page must be added to `PAGE_TO_FEATURE_MAPPING`** in `featureFlags.ts` before merging.
+3. **Every new API route must have `requireFeature()` or `requireRole()` middleware.** No unprotected routes except auth endpoints.
+4. **Never hardcode role checks in UI components.** Use `visibleFeatures`, `useSubFeature()`, or `useAICapability()` from context.
+5. **Feature deployments must not reset admin configuration.** ROLE_FEATURES code defaults are only used when DB has no admin settings. Never overwrite DB settings in migrations or seeds.
+
+### Database
+
+6. **Always increment Dexie version when changing schema.** Add a `.version(N).stores({...})` block — never modify existing version blocks.
+7. **All data writes go through `auth-sync-integration.ts` functions.** Never write directly to Dexie outside of these wrappers in feature components.
+
+### UI
+
+8. **All `<button>` elements must have `type="button"`** unless inside a `<form>` where they submit. IDE diagnostics enforce this.
+9. **Toggle buttons (icon-only) must have `title` attribute** for accessibility.
+10. **Use `cn()` for conditional class merging.** Never string-concatenate Tailwind classes.
+
+### React
+
+11. **When a component needs to re-run `useState` initializers** (e.g., reading changed localStorage), use a `key` prop counter to force remount — do not use `useEffect` to copy state.
+12. **`useLiveQuery` for all Dexie reads in components.** Direct Dexie `.get()` / `.toArray()` calls in components are not reactive.
+
+---
+
+## 15. Change Log
+
+### 2026-06-15 — Admin Role Security & Deny-by-Default RBAC
+
+**Problem:** New features deployed in code were automatically visible to roles that should not have access, bypassing admin configuration. Six separate "fail-open" vulnerabilities were identified.
+
+**Files changed:**
+- `frontend/src/lib/featureFlags.ts`
+- `frontend/src/contexts/AppContext.tsx`
+- `frontend/src/app/components/admin/AdminFeaturePanel.tsx`
+- `backend/src/middleware/featureGate.ts`
+
+**Summary of changes:**
+- `ROLE_FEATURES`: Non-admin roles default to `false` for all application features (only structural shell features enabled)
+- `computeVisibleFeatures()`: Non-admin roles start from `{}` (deny) when DB settings exist — only features explicitly in DB settings are granted
+- `canAccessPage()`: Returns `false` for unmapped pages (was `true`)
+- `isSubFeatureEnabled()`: Returns `false` for unknown children and unknown roles (was `true`)
+- `useSubFeature()` / `useAICapability()`: Return `false` for undefined values (was `true`)
+- Backend `requireFeature()`: Denies non-admin when module absent from DB but DB has other settings
+- Backend `requireAIFeature()`: Starts from deny-by-default; DB values grant access
+- `FEATURE_DEFAULT_ROLE_ACCESS` in AdminFeaturePanel: All application features default to `{ admin: true, manager: false, advisor: false, user: false }`
+- `PAGE_TO_FEATURE_MAPPING`: Added `todo-list-detail`, `todo-list-share`, `advisor-workspace`
+- AdminFeaturePanel: Fixed all button accessibility issues (`type="button"` + `title` attributes)
+
+---
+
+### 2026-06-15 — Together (Collaborative) To-Do Lists
+
+**Files changed:**
+- `frontend/src/lib/database.ts` (Dexie v13)
+- `frontend/src/app/components/features/ToDoLists.tsx` (full rewrite)
+- `frontend/src/app/components/features/ToDoListDetail.tsx` (full rewrite)
+
+**Summary of changes:**
+- New `listType: 'individual' | 'together'` field on `ToDoList`
+- New fields on `ToDoItem`: `assignedTo`, `assignedToName`, `completedByName`
+- Together lists support multi-user collaboration via `ToDoListShare` table
+- Dashboard split into My Lists / Shared With Me sections
+- Task detail view shows assignment, completion attribution, and member count for Together lists
+
+---
+
+### 2026-06-14 — Onboarding Redirect Loop Fix
+
+**Files changed:**
+- `frontend/src/contexts/AuthContext.tsx`
+- `frontend/src/app/App.tsx`
+
+**Summary:** `AuthContext` was clearing `onboarding_completed` when remote profile lacked `dateOfBirth`/`jobType`. App.tsx Gate 1 was also gated on `dataReady` unnecessarily. Fixed by:
+- Using `hasAnyLocalProfile` (any name field) instead of strict profile check
+- Auto-recovering `onboardingCompleted` from existence of `user_profile` or `user_settings` in localStorage
+- Gate 1 simplified: checks `!hasProfileData` (not waiting for `dataReady`)
+
+---
+
+### 2026-06-14 — Onboarding: Salary Optional for Non-Employed Roles
+
+**Files changed:**
+- `frontend/src/app/components/auth/onboarding/ProfileSetupStep.tsx`
+
+**Summary:** Annual salary field is now optional for `Student`, `Retired`, `Unemployed`, `Other` job types. Label shows "(Optional)" dynamically.
+
+---
+
+### 2026-06-14 — Session Expiry: Refresh-then-Retry (No Crash)
+
+**Files changed:**
+- `frontend/src/lib/api.ts`
+
+**Summary:** 401 responses now trigger a single token refresh (singleton promise prevents duplicate refreshes), then retry the original request. Only navigates to `/login` if the retry also fails.
+
+---
+
+### 2026-06-14 — Quick Action Menu: Income/Transfer Navigation Fix
+
+**Files changed:**
+- `frontend/src/app/App.tsx`
+
+**Summary:** Added `quickActionKey` counter. `<AddTransaction key={quickActionKey} />` forces remount on each quick action so `useState` initializers re-run and read the correct form type from localStorage.
+
+---
