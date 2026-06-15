@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
 import '@/styles/premium-transactions.css';
+import { FloatingSaveBar } from '@/app/components/ui/FloatingSaveBar';
 import { db } from '@/lib/database';
 import { formatCurrencyAmount } from '@/lib/currencyUtils';
 
@@ -477,6 +478,14 @@ export const AddGroup: React.FC = () => {
  </div>
  </div>
  </main>
+ <FloatingSaveBar
+   onSave={handleSubmit}
+   onDiscard={() => setCurrentPage('groups')}
+   isSaving={isSubmitting}
+   disabled={!formData.totalAmount}
+   saveLabel="Create Group"
+   accentClass="from-violet-500 to-violet-600"
+ />
  </div>
  );
 };

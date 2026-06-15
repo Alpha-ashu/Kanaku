@@ -31,6 +31,7 @@ import { cn } from '@/lib/utils';
 import { parseDateInputValue, toLocalDateKey } from '@/lib/dateUtils';
 
 import '@/styles/premium-transactions.css';
+import { FloatingSaveBar } from '@/app/components/ui/FloatingSaveBar';
 
 // --- Types ---
 type TransactionType = 'expense' | 'income' | 'transfer' | 'withdrawal';
@@ -1616,6 +1617,13 @@ export function AddTransaction() {
  initialMode={scannerMode}
  />
  )}
+ <FloatingSaveBar
+   onSave={handleSubmit}
+   onDiscard={() => { clearQuickStorage(); setCurrentPage(returnPage); }}
+   isSaving={isSubmitting}
+   disabled={!formData.amount}
+   saveLabel="Save Transaction"
+ />
  </div>
  );
 }

@@ -11,6 +11,7 @@ import { BANKS_BY_COUNTRY } from '@/constants/banks';
 import { cn } from '@/lib/utils';
 
 import '@/styles/premium-transactions.css';
+import { FloatingSaveBar } from '@/app/components/ui/FloatingSaveBar';
 
 // --- Constants ---
 const accountTypes = [
@@ -561,6 +562,12 @@ export const AddAccount: React.FC = () => {
  </div>
  </div>
  </main>
+ <FloatingSaveBar
+   onSave={handleSubmit}
+   onDiscard={() => setCurrentPage('accounts')}
+   isSaving={isSubmitting}
+   saveLabel="Create Account"
+ />
  </div>
  );
 };

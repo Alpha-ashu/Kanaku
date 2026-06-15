@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import { takeVoiceDraft, VOICE_INVESTMENT_DRAFT_KEY, type VoiceInvestmentDraft } from '@/lib/voiceDrafts';
 
 import '@/styles/premium-transactions.css';
+import { FloatingSaveBar } from '@/app/components/ui/FloatingSaveBar';
 
 // --- Constants ---
 const GOLD_TYPES = [
@@ -251,6 +252,13 @@ export const AddGold: React.FC = () => {
  </div>
  </div>
  </main>
+ <FloatingSaveBar
+   onSave={handleSubmit}
+   onDiscard={() => setCurrentPage('investments')}
+   isSaving={isSubmitting}
+   saveLabel="Add Gold Asset"
+   accentClass="from-amber-500 to-amber-600"
+ />
  </div>
  );
 };

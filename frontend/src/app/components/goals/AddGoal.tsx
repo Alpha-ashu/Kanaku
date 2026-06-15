@@ -18,6 +18,7 @@ import { SearchableDropdown } from '@/app/components/ui/SearchableDropdown';
 import { formatCurrencyAmount } from '@/lib/currencyUtils';
 
 import '@/styles/premium-transactions.css';
+import { FloatingSaveBar } from '@/app/components/ui/FloatingSaveBar';
 
 // --- Helpers ---
 const formatCurrency = (v: number, currency: string) =>
@@ -397,6 +398,12 @@ export const AddGoal: React.FC = () => {
  </div>
  </div>
  </main>
+ <FloatingSaveBar
+   onSave={handleSubmit}
+   onDiscard={() => setCurrentPage('goals')}
+   isSaving={isSubmitting}
+   saveLabel="Create Goal"
+ />
  </div>
  );
 };

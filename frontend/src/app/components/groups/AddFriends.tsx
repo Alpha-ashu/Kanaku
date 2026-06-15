@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
 import '@/styles/premium-transactions.css';
+import { FloatingSaveBar } from '@/app/components/ui/FloatingSaveBar';
 
 // --- Constants ---
 const RELATIONSHIP_TYPES = [
@@ -195,6 +196,14 @@ export const AddFriends: React.FC = () => {
  )}
  </div>
  </main>
+ <FloatingSaveBar
+   onSave={handleSaveAll}
+   onDiscard={() => setCurrentPage('friends')}
+   isSaving={isSubmitting}
+   disabled={queue.length === 0}
+   saveLabel={queue.length > 0 ? `Save ${queue.length} Friend${queue.length > 1 ? 's' : ''}` : 'Save Friends'}
+   accentClass="from-indigo-500 to-indigo-600"
+ />
  </div>
  );
 };

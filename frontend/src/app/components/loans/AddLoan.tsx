@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
 import '@/styles/premium-transactions.css';
+import { FloatingSaveBar } from '@/app/components/ui/FloatingSaveBar';
 
 export const AddLoan: React.FC = () => {
  const { setCurrentPage, currency, accounts, friends, refreshData } = useApp();
@@ -368,6 +369,14 @@ export const AddLoan: React.FC = () => {
  </div>
  </div>
  </main>
+ <FloatingSaveBar
+   onSave={handleSubmit}
+   onDiscard={() => setCurrentPage('loans')}
+   isSaving={isSubmitting}
+   disabled={!formData.principalAmount}
+   saveLabel="Create Loan"
+   accentClass="from-sky-500 to-sky-600"
+ />
  </div>
  );
 };

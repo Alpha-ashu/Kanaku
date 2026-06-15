@@ -10,6 +10,7 @@ import {
 } from '@/lib/auth-sync-integration';
 import { db } from '@/lib/database';
 import { TrendingUp } from 'lucide-react';
+import { FloatingSaveBar } from '@/app/components/ui/FloatingSaveBar';
 import { toast } from 'sonner';
 import { formatNativeMoney, getCurrencySymbol, normalizeCurrencyCode } from '@/lib/currencyUtils';
 import {
@@ -86,9 +87,9 @@ export const EditInvestment: React.FC = () => {
  }));
  }, [activeAccounts, formData.fundingAccountId]);
 
- const handleSubmit = async (e: React.FormEvent) => {
- e.preventDefault();
+ const [isSaving, setIsSaving] = React.useState(false);
 
+ const performUpdate = async () => {
  if (!selectedId || !selectedInvestment) {
  toast.error('No investment selected');
  return;
@@ -117,6 +118,7 @@ export const EditInvestment: React.FC = () => {
  const currentValue = currentValueNative * currentFxRate;
  const profitLoss = currentValue - totalInvested;
 
+ setIsSaving(true);
  try {
  const transactionDate = new Date(formData.purchaseDate);
  const now = new Date();
@@ -358,7 +360,14 @@ export const EditInvestment: React.FC = () => {
 
  toast.error('Failed to update investment');
  console.error(error);
+ } finally {
+ setIsSaving(false);
  }
+ };
+
+ const handleSubmit = (e: React.FormEvent) => {
+ e.preventDefault();
+ performUpdate();
  };
 
  return (
@@ -663,6 +672,12 @@ export const EditInvestment: React.FC = () => {
  </form>
  </div>
  </div>
+ <FloatingSaveBar
+   onSave={performUpdate}
+   onDiscard={() => { localStorage.removeItem('editingInvestmentId'); setCurrentPage('investments'); }}
+   isSaving={isSaving}
+   saveLabel="Update Investment"
+ />
  </CenteredLayout>
  );
 };

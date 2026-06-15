@@ -22,6 +22,7 @@ import { takeVoiceDraft, VOICE_INVESTMENT_DRAFT_KEY, type VoiceInvestmentDraft }
 import { extractAssetMetadata, ExtractedAssetMetadata } from '@/lib/assetOcrParser';
 
 import '@/styles/premium-transactions.css';
+import { FloatingSaveBar } from '@/app/components/ui/FloatingSaveBar';
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
 type InvestmentFormType =
@@ -942,6 +943,12 @@ export const AddInvestment: React.FC = () => {
           </div>
         </div>
       </main>
+      <FloatingSaveBar
+        onSave={handleSubmit}
+        onDiscard={() => setCurrentPage('investments')}
+        isSaving={isSubmitting}
+        saveLabel="Add to Portfolio"
+      />
     </div>
   );
 };
