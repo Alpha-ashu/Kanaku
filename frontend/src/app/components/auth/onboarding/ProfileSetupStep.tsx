@@ -28,12 +28,15 @@ const JOB_TYPES = [
  'Other',
 ];
 
+const SALARY_OPTIONAL_TYPES = ['Student', 'Retired', 'Unemployed', 'Other'];
+
 export const ProfileSetupStep: React.FC<ProfileSetupStepProps> = ({
  data,
  onUpdate,
  onNext,
 }) => {
  const [errors, setErrors] = useState<Record<string, string>>({});
+ const isSalaryOptional = SALARY_OPTIONAL_TYPES.includes(data.jobType);
  const resolvedAvatar = useMemo(
  () => resolveAvatarSelection({ avatarId: data.avatarId, avatarUrl: data.avatarUrl }),
  [data.avatarId, data.avatarUrl],
@@ -70,9 +73,13 @@ export const ProfileSetupStep: React.FC<ProfileSetupStepProps> = ({
  newErrors.jobType = 'Job type is required';
  }
 
+ if (!SALARY_OPTIONAL_TYPES.includes(data.jobType)) {
  if (!data.salary) {
  newErrors.salary = 'Salary is required';
  } else if (isNaN(Number(data.salary)) || Number(data.salary) < 0) {
+ newErrors.salary = 'Please enter a valid salary amount';
+ }
+ } else if (data.salary && (isNaN(Number(data.salary)) || Number(data.salary) < 0)) {
  newErrors.salary = 'Please enter a valid salary amount';
  }
 
@@ -254,16 +261,19 @@ export const ProfileSetupStep: React.FC<ProfileSetupStepProps> = ({
           <div>
             <label htmlFor="salary" className="block text-sm font-medium text-gray-700 mb-1">
               Annual Salary (INR)
+              {isSalaryOptional && (
+                <span className="ml-1 text-xs font-normal text-gray-400">(Optional)</span>
+              )}
             </label>
             <input
               type="number"
               id="salary"
               value={data.salary}
               onChange={(e) => onUpdate({ salary: e.target.value })}
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white ${
                 errors.salary ? 'border-red-500' : 'border-gray-300'
               }`}
-              placeholder="50000"
+              placeholder={isSalaryOptional ? 'Not applicable' : '50000'}
             />
             {errors.salary && (
               <p className="mt-1 text-sm text-red-600">{errors.salary}</p>
