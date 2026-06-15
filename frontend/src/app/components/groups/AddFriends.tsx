@@ -80,17 +80,6 @@ export const AddFriends: React.FC = () => {
  </button>
  <h1 className="text-xl font-black text-slate-900 tracking-tight leading-none">Add Friends</h1>
  </div>
- <div className="flex items-center gap-3">
- <button onClick={() => setCurrentPage('friends')} className="hidden sm:block text-[10px] font-black uppercase text-slate-400 hover:text-slate-600 tracking-widest px-4">Cancel</button>
- <button 
- onClick={handleSaveAll}
- disabled={isSubmitting || queue.length === 0}
- className="bg-indigo-600 text-white px-6 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-indigo-100 hover:bg-indigo-700 active:scale-95 transition-all flex items-center gap-2 disabled:opacity-50"
- >
- {isSubmitting ? <Loader2 className="animate-spin" size={14} /> : <Check size={14} />}
- Save {queue.length > 0 ? `${queue.length} ` : ''}Contacts
- </button>
- </div>
  </div>
  </header>
 
@@ -168,7 +157,7 @@ export const AddFriends: React.FC = () => {
  <p className="text-[8px] font-bold text-slate-400 uppercase tracking-tight">{f.relationship} {f.phone || f.email || 'No contact'}</p>
  </div>
  </div>
- <button onClick={() => removeFromQueue(i)} className="text-slate-300 hover:text-rose-500 transition-colors">
+ <button type="button" onClick={() => removeFromQueue(i)} title="Remove" className="text-slate-300 hover:text-rose-500 transition-colors">
  <X size={14} />
  </button>
  </div>

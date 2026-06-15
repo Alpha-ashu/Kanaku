@@ -864,14 +864,8 @@ export const Accounts: React.FC = () => {
                             )}
 
                             {/* Transaction History - Subscribed to Carousel Scroll */}
-                            <AnimatePresence mode="wait">
-                                {selectedAccount && (
-                                    <motion.div
-                                        initial={{ opacity: 0, y: 20 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        exit={{ opacity: 0, y: 20 }}
-                                        className="mt-4 w-full px-2 sm:px-0"
-                                    >
+                            {selectedAccount && (
+                                    <div className="mt-4 w-full px-2 sm:px-0">
                                         <Card className="bg-white/80 backdrop-blur-xl border-white/60 overflow-hidden shadow-2xl">
                                             <div className="max-h-[400px] sm:max-h-[500px] overflow-y-auto">
                                                 <table className="w-full">
@@ -947,9 +941,8 @@ export const Accounts: React.FC = () => {
                                                 </table>
                                             </div>
                                         </Card>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
+                                    </div>
+                            )}
                         </div>
                     </>
                 )}

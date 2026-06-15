@@ -11,6 +11,7 @@ import {
   getDevices,
   revokeDevice,
   deleteAccount,
+  checkEmailAvailability,
 } from './auth.controller';
 import { rateLimit } from '../../middleware/rateLimit';
 
@@ -37,6 +38,7 @@ const destructiveLimiter = rateLimit({
   keyGenerator: (req) => req.ip || 'unknown',
 });
 
+router.post('/check-email', authLimiter, checkEmailAvailability);
 router.post('/register', authLimiter, register);
 router.post('/login/challenge', authLimiter, loginChallenge);
 router.post('/login', authLimiter, login);

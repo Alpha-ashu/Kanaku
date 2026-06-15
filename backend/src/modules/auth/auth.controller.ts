@@ -165,6 +165,23 @@ const buildProfilePayload = (
   return payload;
 };
 
+export const checkEmailAvailability = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { email } = req.body;
+    if (!email || typeof email !== 'string') {
+      return res.status(200).json({ available: false, code: 'INVALID_EMAIL' });
+    }
+    const normalized = email.toLowerCase().trim();
+    if (!EMAIL_REGEX.test(normalized)) {
+      return res.status(200).json({ available: false, code: 'INVALID_EMAIL' });
+    }
+    const existing = await prisma.user.findUnique({ where: { email: normalized }, select: { id: true } });
+    return res.status(200).json({ available: !existing });
+  } catch (error) {
+    return next(error);
+  }
+};
+
 export const register = async (req: Request, res: Response, next: NextFunction) => {
   logger.info(`[AuthController] Register request received for email: ${req.body?.email}`);
   try {

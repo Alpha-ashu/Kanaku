@@ -358,9 +358,9 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  className="fixed inset-0 z-50 overflow-y-auto bg-white flex items-center justify-center p-4"
  onClick={() => hiddenInputRef.current?.focus()}
  >
- {/* Hidden form - captures keyboard input, visually invisible, no aria-hidden (would block focus/keyboard) */}
+ {/* Hidden form - offscreen (not zero-size) so mobile browsers keep keyboard open after each digit */}
  <form
- style={{ position: 'absolute', opacity: 0, pointerEvents: 'none', width: 0, height: 0, overflow: 'hidden' }}
+ style={{ position: 'fixed', top: '-200px', left: '-200px', opacity: 0, pointerEvents: 'none', width: '1px', height: '1px' }}
  autoComplete="off"
  onSubmit={e => e.preventDefault()}
  >

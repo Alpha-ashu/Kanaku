@@ -577,6 +577,9 @@ export const api = {
       });
     },
 
+    checkEmail: (email: string): Promise<{ data: { available: boolean; code?: string } }> =>
+      apiClient.post('/auth/check-email', { email }),
+
     register: (data: { name: string; email: string; password: string; firstName?: string; lastName?: string; mobile?: string }) =>
       apiClient.post('/auth/register', data, {
         showSuccessToast: true,

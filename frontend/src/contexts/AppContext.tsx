@@ -88,14 +88,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       }
     }
     
-    // Fallback if no history
-    if (location.pathname !== '/') {
-      navigate('/');
-    } else {
-      // If already at root, maybe we came from a sub-page that wasn't tracked
-      window.history.back();
-    }
-  }, [navigate, location.pathname]);
+    // Fallback: use browser history so back works after page refresh (historyStack is in-memory only)
+    navigate(-1);
+  }, [navigate]);
 
   const initialPreferences = readStoredAppPreferences();
   const [currency, setCurrency] = useState(() => initialPreferences.currency);

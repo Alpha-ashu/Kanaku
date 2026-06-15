@@ -225,17 +225,6 @@ export const AddGoal: React.FC = () => {
  <h1 className="text-xl font-black text-slate-900 tracking-tight leading-none">New Saving Goal</h1>
  </div>
  
- <div className="flex items-center gap-3">
- <button onClick={() => setCurrentPage('goals')} className="hidden sm:block text-[10px] font-black uppercase text-slate-400 hover:text-slate-600 tracking-widest px-4">Cancel</button>
- <button 
- onClick={handleSubmit}
- disabled={isSubmitting}
- className="bg-indigo-600 text-white px-6 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-indigo-100 hover:bg-indigo-700 active:scale-95 transition-all flex items-center gap-2 disabled:opacity-50"
- >
- {isSubmitting ? <Loader2 className="animate-spin" size={14} /> : <Check size={14} />}
- Create Goal
- </button>
- </div>
  </div>
  </header>
 

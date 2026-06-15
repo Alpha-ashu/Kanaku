@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '@/lib/api';
-import { Eye, EyeOff, Mail, Lock, User, Phone, Check, AlertCircle, Sparkles } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, User, Phone, Check, AlertCircle, Sparkles, Loader2 } from 'lucide-react';
 
 interface SignUpFormProps {
   onSwitchToSignIn: () => void;
@@ -28,6 +28,8 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
   const [emailFocused, setEmailFocused] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [countryCode, setCountryCode] = useState('+91');
+  const [emailTaken, setEmailTaken] = useState<boolean | null>(null);
+  const [isCheckingEmail, setIsCheckingEmail] = useState(false);
 
   const countryCodes = [
     { code: '+91', label: '🇮🇳 +91' },
@@ -41,7 +43,8 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
   // Dynamic Validation States (calculated on the fly for real-time reactivity)
   const isFirstNameValid = formData.firstName.trim().length > 0;
   const isLastNameValid = formData.lastName.trim().length > 0;
-  const isEmailValid = /\S+@\S+\.\S+/.test(formData.email);
+  const isEmailFormatValid = /\S+@\S+\.\S+/.test(formData.email);
+  const isEmailValid = isEmailFormatValid && emailTaken !== true;
   const isMobileValid = (() => {
     const digits = formData.mobile.replace(/\D/g, '');
     if (countryCode === '+65') return digits.length === 8;
@@ -82,8 +85,16 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
     const { name } = e.target;
     setTouched(prev => ({ ...prev, [name]: true }));
     if (name === 'email') {
-      // Small delay so click on suggestion goes through before focus is lost
       setTimeout(() => setEmailFocused(false), 200);
+      const email = e.target.value.trim();
+      if (/\S+@\S+\.\S+/.test(email)) {
+        setIsCheckingEmail(true);
+        setEmailTaken(null);
+        api.auth.checkEmail(email)
+          .then(res => setEmailTaken(res.data?.available === false))
+          .catch(() => setEmailTaken(null))
+          .finally(() => setIsCheckingEmail(false));
+      }
     }
   };
 
@@ -133,6 +144,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
     setFormData(prev => ({ ...prev, [name]: value }));
     setTouched(prev => ({ ...prev, [name]: true }));
     if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }));
+    if (name === 'email') setEmailTaken(null);
   };
 
   const generateStrongPassword = () => {
@@ -210,7 +222,8 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
     const newErrors: Record<string, string> = {};
     if (!isFirstNameValid) newErrors.firstName = 'Required';
     if (!isLastNameValid) newErrors.lastName = 'Required';
-    if (!isEmailValid) newErrors.email = 'Invalid email address';
+    if (!isEmailFormatValid) newErrors.email = 'Invalid email address';
+    else if (emailTaken === true) newErrors.email = 'This email is already registered';
     if (!isMobileValid) newErrors.mobile = 'Invalid mobile number';
     if (!isPasswordValid) newErrors.password = 'Password does not meet requirements';
     if (!isConfirmPasswordValid) newErrors.confirmPassword = 'Passwords do not match';
@@ -390,7 +403,9 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
         {/* Real-time Status Icon */}
         {touched.email && (
           <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
-            {isEmailValid ? (
+            {isCheckingEmail ? (
+              <Loader2 className="text-gray-400 animate-spin" size={16} />
+            ) : isEmailValid ? (
               <Check className="text-emerald-500" size={16} />
             ) : (
               <AlertCircle className="text-red-500" size={16} />
@@ -425,7 +440,10 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
             })}
           </div>
         )}
-        {touched.email && !isEmailValid && <p className="mt-1 text-xs text-red-500 pl-1">Please enter a valid email address</p>}
+        {touched.email && emailTaken === true && (
+          <p className="mt-1 text-xs text-red-500 pl-1">This email is already registered. <button type="button" className="underline font-semibold" onClick={onSwitchToSignIn}>Sign in instead</button></p>
+        )}
+        {touched.email && !isEmailFormatValid && emailTaken !== true && <p className="mt-1 text-xs text-red-500 pl-1">Please enter a valid email address</p>}
       </div>
 
       {/* Mobile */}
@@ -437,6 +455,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
         {/* Country Code Select Dropdown */}
         <div className="absolute inset-y-0 left-8 flex items-center z-10">
           <select
+            aria-label="Country code"
             value={countryCode}
             onChange={(e) => {
               setCountryCode(e.target.value);

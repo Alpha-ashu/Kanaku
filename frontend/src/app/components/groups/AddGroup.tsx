@@ -171,17 +171,6 @@ export const AddGroup: React.FC = () => {
  <h1 className="text-xl font-black text-slate-900 tracking-tight leading-none">New Group Expense</h1>
  </div>
  
- <div className="flex items-center gap-3">
- <button onClick={() => setCurrentPage('groups')} className="hidden sm:block text-[10px] font-black uppercase text-slate-400 hover:text-slate-600 tracking-widest px-4">Cancel</button>
- <button 
- onClick={handleSubmit}
- disabled={isSubmitting || !formData.totalAmount}
- className="bg-violet-600 text-white px-6 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-violet-100 hover:bg-violet-700 active:scale-95 transition-all flex items-center gap-2 disabled:opacity-50"
- >
- {isSubmitting ? <Loader2 className="animate-spin" size={14} /> : <Check size={14} />}
- Create Group
- </button>
- </div>
  </div>
  </header>
 
@@ -367,8 +356,8 @@ export const AddGroup: React.FC = () => {
  
  {/* Total Amount Input Card */}
  <div className="premium-glass-card p-8 bg-white relative overflow-hidden flex flex-col items-center">
- <div className="absolute -top-24 -left-24 w-64 h-64 bg-violet-500/5 blur-[80px] rounded-full animate-pulse pointer-events-none z-0" />
- <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-indigo-500/5 blur-[80px] rounded-full animate-pulse pointer-events-none z-0" style={{ animationDelay: '1s' }} />
+ <div className="absolute -top-24 -left-24 w-64 h-64 bg-violet-500/5 blur-[80px] rounded-full pointer-events-none z-0" />
+ <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-indigo-500/5 blur-[80px] rounded-full pointer-events-none z-0" />
  
  <div className="relative z-10 flex flex-col items-center w-full">
  <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4">Total Group Bill</span>

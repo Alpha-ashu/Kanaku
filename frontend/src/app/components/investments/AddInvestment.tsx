@@ -687,17 +687,6 @@ export const AddInvestment: React.FC = () => {
             <h1 className="text-xl font-black text-slate-900 tracking-tight leading-none">Add Investment</h1>
           </div>
 
-          <div className="flex items-center gap-3">
-            <button onClick={() => setCurrentPage('investments')} className="hidden sm:block text-[10px] font-black uppercase text-slate-400 hover:text-slate-600 tracking-widest px-4">Cancel</button>
-            <button
-              onClick={handleSubmit}
-              disabled={isSubmitting}
-              className="bg-slate-900 text-white px-6 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-slate-200 hover:bg-slate-800 active:scale-95 transition-all flex items-center gap-2 disabled:opacity-50"
-            >
-              {isSubmitting ? <Loader2 className="animate-spin" size={14} /> : <Check size={14} />}
-              Add to Portfolio
-            </button>
-          </div>
         </div>
       </header>
 

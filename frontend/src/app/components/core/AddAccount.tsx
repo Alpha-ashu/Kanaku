@@ -208,16 +208,6 @@ export const AddAccount: React.FC = () => {
  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1 hidden sm:block">Configuration & Setup</p>
  </div>
  </div>
- <div className="flex items-center gap-3">
- <button
- onClick={handleSubmit}
- disabled={isSubmitting}
- className="bg-indigo-600 text-white px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-indigo-100 hover:bg-indigo-700 active:scale-95 transition-all flex items-center gap-2 disabled:opacity-50"
- >
- {isSubmitting ? <Loader2 className="animate-spin" size={14} /> : <Check size={14} />}
- Create Account
- </button>
- </div>
  </div>
  </header>
 

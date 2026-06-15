@@ -647,7 +647,10 @@ const AppContent: React.FC = () => {
   }
 
   // Gate 1: Onboarding
-  if (user && !onboardingCompleted && isNewUser) {
+  // For returning users (hasProfileData), wait for dataReady before concluding onboarding is needed.
+  // Without this guard, a page refresh redirects authenticated users to onboarding because
+  // onboardingCompleted briefly reads false while profile data is still loading from the cloud.
+  if (user && !onboardingCompleted && isNewUser && (dataReady || !hasProfileData)) {
     return (
       <Suspense fallback={<PageLoader />}>
         <NewUserOnboarding />
