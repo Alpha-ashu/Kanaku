@@ -196,20 +196,10 @@ const normalizeRemoteProfile = (profile: any): RemoteProfileSnapshot => {
     currency,
     language,
     hasRealProfile: Boolean(
-      // firstName or lastName are the most reliable indicators of a real profile
-      firstName ||
-      lastName ||
-      phone ||
-      gender ||
-      dateOfBirth ||
-      jobType ||
-      (monthlyIncome && monthlyIncome > 0) ||
-      (annualIncome && annualIncome > 0) ||
-      avatarUrl ||
-      avatarId ||
-      country ||
-      state ||
-      city
+      // A completed onboarding profile must have at least date of birth and job type in addition to name
+      (firstName || lastName || displayName) &&
+      dateOfBirth &&
+      jobType
     ),
   };
 };
@@ -513,6 +503,17 @@ const syncProfileFromBackend = async (user: User) => {
         writeLocalFromRemote();
         localStorage.removeItem('profile_sync_pending');
         return;
+      }
+    } else {
+      // Remote profile is incomplete (e.g. newly registered user).
+      // If there is no local profile or it is also incomplete, clear onboarding_completed to force onboarding.
+      const localHasRealProfile = localProfile && 
+        (localProfile.firstName || localProfile.lastName || localProfile.displayName) &&
+        localProfile.dateOfBirth &&
+        localProfile.jobType;
+
+      if (!localHasRealProfile) {
+        localStorage.removeItem('onboarding_completed');
       }
     }
 

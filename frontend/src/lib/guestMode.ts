@@ -31,6 +31,7 @@ export const disableGuestMode = (): void => {
   localStorage.removeItem(GUEST_MODE_KEY);
   localStorage.removeItem(GUEST_CREATED_KEY);
   localStorage.removeItem('guest_session_active');
+  localStorage.removeItem('onboarding_completed');
 };
 
 export const getGuestCreatedAt = (): string | null =>

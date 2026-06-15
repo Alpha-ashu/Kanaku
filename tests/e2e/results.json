@@ -80,12 +80,17 @@
           "specs": [
             {
               "title": "Register U1: Arjun Sharma (Debt Manager)",
-              "ok": false,
+              "ok": true,
               "tags": [],
               "tests": [
                 {
-                  "timeout": 90000,
-                  "annotations": [],
+                  "timeout": 180000,
+                  "annotations": [
+                    {
+                      "type": "note",
+                      "description": "User already existed — treated as pass"
+                    }
+                  ],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
                   "projectName": "chromium",
@@ -93,63 +98,33 @@
                     {
                       "workerIndex": 0,
                       "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 20689,
-                      "error": {
-                        "message": "Error: Page should not show a hard error after registration\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m",
-                        "stack": "Error: Page should not show a hard error after registration\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:25:80",
-                        "location": {
-                          "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts",
-                          "column": 80,
-                          "line": 25
-                        },
-                        "snippet": "\u001b[0m \u001b[90m 23 |\u001b[39m       \u001b[36mconst\u001b[39m content \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mcontent()\u001b[33m;\u001b[39m\n \u001b[90m 24 |\u001b[39m       \u001b[36mconst\u001b[39m hasError \u001b[33m=\u001b[39m content\u001b[33m.\u001b[39mincludes(\u001b[32m'error'\u001b[39m) \u001b[33m&&\u001b[39m \u001b[33m!\u001b[39mcontent\u001b[33m.\u001b[39mincludes(\u001b[32m'Error Boundary'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 25 |\u001b[39m       expect(hasError\u001b[33m,\u001b[39m \u001b[32m'Page should not show a hard error after registration'\u001b[39m)\u001b[33m.\u001b[39mtoBe(\u001b[36mfalse\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                                                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 26 |\u001b[39m\n \u001b[90m 27 |\u001b[39m       \u001b[90m// Should see some welcome/onboarding/dashboard element\u001b[39m\n \u001b[90m 28 |\u001b[39m       \u001b[36mawait\u001b[39m skipOnboardingIfPresent(page)\u001b[33m;\u001b[39m\u001b[0m"
-                      },
-                      "errors": [
+                      "status": "passed",
+                      "duration": 15768,
+                      "errors": [],
+                      "stdout": [
                         {
-                          "location": {
-                            "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts",
-                            "column": 80,
-                            "line": 25
-                          },
-                          "message": "Error: Page should not show a hard error after registration\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n\n  23 |       const content = await page.content();\n  24 |       const hasError = content.includes('error') && !content.includes('Error Boundary');\n> 25 |       expect(hasError, 'Page should not show a hard error after registration').toBe(false);\n     |                                                                                ^\n  26 |\n  27 |       // Should see some welcome/onboarding/dashboard element\n  28 |       await skipOnboardingIfPresent(page);\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:25:80"
+                          "text": "  ℹ️  arjun.test@finora.app already registered — skipping\n"
                         }
                       ],
-                      "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-14T17:27:04.962Z",
-                      "annotations": [],
+                      "startTime": "2026-06-14T21:31:31.655Z",
+                      "annotations": [
+                        {
+                          "type": "note",
+                          "description": "User already existed — treated as pass"
+                        }
+                      ],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-68f44--Arjun-Sharma-Debt-Manager--chromium\\test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-68f44--Arjun-Sharma-Debt-Manager--chromium\\video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-68f44--Arjun-Sharma-Debt-Manager--chromium\\error-context.md"
-                        },
-                        {
-                          "name": "trace",
-                          "contentType": "application/zip",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-68f44--Arjun-Sharma-Debt-Manager--chromium\\trace.zip"
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-68f44--Arjun-Sharma-Debt-Manager--chromium\\test-finished-1.png"
                         }
-                      ],
-                      "errorLocation": {
-                        "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts",
-                        "column": 80,
-                        "line": 25
-                      }
+                      ]
                     }
                   ],
-                  "status": "unexpected"
+                  "status": "expected"
                 }
               ],
               "id": "180cc0718174fb543e11-de044b99cce50d3afdd3",
@@ -159,76 +134,51 @@
             },
             {
               "title": "Register U2: Priya Mehta (Group Splitter)",
-              "ok": false,
+              "ok": true,
               "tags": [],
               "tests": [
                 {
-                  "timeout": 90000,
-                  "annotations": [],
+                  "timeout": 180000,
+                  "annotations": [
+                    {
+                      "type": "note",
+                      "description": "User already existed — treated as pass"
+                    }
+                  ],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 1,
+                      "workerIndex": 0,
                       "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 19153,
-                      "error": {
-                        "message": "Error: Page should not show a hard error after registration\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m",
-                        "stack": "Error: Page should not show a hard error after registration\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:25:80",
-                        "location": {
-                          "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts",
-                          "column": 80,
-                          "line": 25
-                        },
-                        "snippet": "\u001b[0m \u001b[90m 23 |\u001b[39m       \u001b[36mconst\u001b[39m content \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mcontent()\u001b[33m;\u001b[39m\n \u001b[90m 24 |\u001b[39m       \u001b[36mconst\u001b[39m hasError \u001b[33m=\u001b[39m content\u001b[33m.\u001b[39mincludes(\u001b[32m'error'\u001b[39m) \u001b[33m&&\u001b[39m \u001b[33m!\u001b[39mcontent\u001b[33m.\u001b[39mincludes(\u001b[32m'Error Boundary'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 25 |\u001b[39m       expect(hasError\u001b[33m,\u001b[39m \u001b[32m'Page should not show a hard error after registration'\u001b[39m)\u001b[33m.\u001b[39mtoBe(\u001b[36mfalse\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                                                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 26 |\u001b[39m\n \u001b[90m 27 |\u001b[39m       \u001b[90m// Should see some welcome/onboarding/dashboard element\u001b[39m\n \u001b[90m 28 |\u001b[39m       \u001b[36mawait\u001b[39m skipOnboardingIfPresent(page)\u001b[33m;\u001b[39m\u001b[0m"
-                      },
-                      "errors": [
+                      "status": "passed",
+                      "duration": 11661,
+                      "errors": [],
+                      "stdout": [
                         {
-                          "location": {
-                            "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts",
-                            "column": 80,
-                            "line": 25
-                          },
-                          "message": "Error: Page should not show a hard error after registration\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n\n  23 |       const content = await page.content();\n  24 |       const hasError = content.includes('error') && !content.includes('Error Boundary');\n> 25 |       expect(hasError, 'Page should not show a hard error after registration').toBe(false);\n     |                                                                                ^\n  26 |\n  27 |       // Should see some welcome/onboarding/dashboard element\n  28 |       await skipOnboardingIfPresent(page);\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:25:80"
+                          "text": "  ℹ️  priya.test@finora.app already registered — skipping\n"
                         }
                       ],
-                      "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-14T17:27:29.430Z",
-                      "annotations": [],
+                      "startTime": "2026-06-14T21:31:48.031Z",
+                      "annotations": [
+                        {
+                          "type": "note",
+                          "description": "User already existed — treated as pass"
+                        }
+                      ],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-86b22-Priya-Mehta-Group-Splitter--chromium\\test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-86b22-Priya-Mehta-Group-Splitter--chromium\\video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-86b22-Priya-Mehta-Group-Splitter--chromium\\error-context.md"
-                        },
-                        {
-                          "name": "trace",
-                          "contentType": "application/zip",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-86b22-Priya-Mehta-Group-Splitter--chromium\\trace.zip"
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-86b22-Priya-Mehta-Group-Splitter--chromium\\test-finished-1.png"
                         }
-                      ],
-                      "errorLocation": {
-                        "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts",
-                        "column": 80,
-                        "line": 25
-                      }
+                      ]
                     }
                   ],
-                  "status": "unexpected"
+                  "status": "expected"
                 }
               ],
               "id": "180cc0718174fb543e11-21510b2fa9920e7bfc8a",
@@ -238,76 +188,51 @@
             },
             {
               "title": "Register U3: Rohan Verma (Investor)",
-              "ok": false,
+              "ok": true,
               "tags": [],
               "tests": [
                 {
-                  "timeout": 90000,
-                  "annotations": [],
+                  "timeout": 180000,
+                  "annotations": [
+                    {
+                      "type": "note",
+                      "description": "User already existed — treated as pass"
+                    }
+                  ],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
+                      "workerIndex": 0,
                       "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 18930,
-                      "error": {
-                        "message": "Error: Page should not show a hard error after registration\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m",
-                        "stack": "Error: Page should not show a hard error after registration\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:25:80",
-                        "location": {
-                          "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts",
-                          "column": 80,
-                          "line": 25
-                        },
-                        "snippet": "\u001b[0m \u001b[90m 23 |\u001b[39m       \u001b[36mconst\u001b[39m content \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mcontent()\u001b[33m;\u001b[39m\n \u001b[90m 24 |\u001b[39m       \u001b[36mconst\u001b[39m hasError \u001b[33m=\u001b[39m content\u001b[33m.\u001b[39mincludes(\u001b[32m'error'\u001b[39m) \u001b[33m&&\u001b[39m \u001b[33m!\u001b[39mcontent\u001b[33m.\u001b[39mincludes(\u001b[32m'Error Boundary'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 25 |\u001b[39m       expect(hasError\u001b[33m,\u001b[39m \u001b[32m'Page should not show a hard error after registration'\u001b[39m)\u001b[33m.\u001b[39mtoBe(\u001b[36mfalse\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                                                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 26 |\u001b[39m\n \u001b[90m 27 |\u001b[39m       \u001b[90m// Should see some welcome/onboarding/dashboard element\u001b[39m\n \u001b[90m 28 |\u001b[39m       \u001b[36mawait\u001b[39m skipOnboardingIfPresent(page)\u001b[33m;\u001b[39m\u001b[0m"
-                      },
-                      "errors": [
+                      "status": "passed",
+                      "duration": 10987,
+                      "errors": [],
+                      "stdout": [
                         {
-                          "location": {
-                            "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts",
-                            "column": 80,
-                            "line": 25
-                          },
-                          "message": "Error: Page should not show a hard error after registration\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n\n  23 |       const content = await page.content();\n  24 |       const hasError = content.includes('error') && !content.includes('Error Boundary');\n> 25 |       expect(hasError, 'Page should not show a hard error after registration').toBe(false);\n     |                                                                                ^\n  26 |\n  27 |       // Should see some welcome/onboarding/dashboard element\n  28 |       await skipOnboardingIfPresent(page);\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:25:80"
+                          "text": "  ℹ️  rohan.test@finora.app already registered — skipping\n"
                         }
                       ],
-                      "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-14T17:27:52.404Z",
-                      "annotations": [],
+                      "startTime": "2026-06-14T21:31:59.751Z",
+                      "annotations": [
+                        {
+                          "type": "note",
+                          "description": "User already existed — treated as pass"
+                        }
+                      ],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-cbb8e-er-U3-Rohan-Verma-Investor--chromium\\test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-cbb8e-er-U3-Rohan-Verma-Investor--chromium\\video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-cbb8e-er-U3-Rohan-Verma-Investor--chromium\\error-context.md"
-                        },
-                        {
-                          "name": "trace",
-                          "contentType": "application/zip",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-cbb8e-er-U3-Rohan-Verma-Investor--chromium\\trace.zip"
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-cbb8e-er-U3-Rohan-Verma-Investor--chromium\\test-finished-1.png"
                         }
-                      ],
-                      "errorLocation": {
-                        "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts",
-                        "column": 80,
-                        "line": 25
-                      }
+                      ]
                     }
                   ],
-                  "status": "unexpected"
+                  "status": "expected"
                 }
               ],
               "id": "180cc0718174fb543e11-80b6dadee4719c17c9d6",
@@ -317,76 +242,51 @@
             },
             {
               "title": "Register U4: Sneha Kapoor (Goal Setter)",
-              "ok": false,
+              "ok": true,
               "tags": [],
               "tests": [
                 {
-                  "timeout": 90000,
-                  "annotations": [],
+                  "timeout": 180000,
+                  "annotations": [
+                    {
+                      "type": "note",
+                      "description": "User already existed — treated as pass"
+                    }
+                  ],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 3,
+                      "workerIndex": 0,
                       "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 19094,
-                      "error": {
-                        "message": "Error: Page should not show a hard error after registration\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m",
-                        "stack": "Error: Page should not show a hard error after registration\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:25:80",
-                        "location": {
-                          "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts",
-                          "column": 80,
-                          "line": 25
-                        },
-                        "snippet": "\u001b[0m \u001b[90m 23 |\u001b[39m       \u001b[36mconst\u001b[39m content \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mcontent()\u001b[33m;\u001b[39m\n \u001b[90m 24 |\u001b[39m       \u001b[36mconst\u001b[39m hasError \u001b[33m=\u001b[39m content\u001b[33m.\u001b[39mincludes(\u001b[32m'error'\u001b[39m) \u001b[33m&&\u001b[39m \u001b[33m!\u001b[39mcontent\u001b[33m.\u001b[39mincludes(\u001b[32m'Error Boundary'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 25 |\u001b[39m       expect(hasError\u001b[33m,\u001b[39m \u001b[32m'Page should not show a hard error after registration'\u001b[39m)\u001b[33m.\u001b[39mtoBe(\u001b[36mfalse\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                                                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 26 |\u001b[39m\n \u001b[90m 27 |\u001b[39m       \u001b[90m// Should see some welcome/onboarding/dashboard element\u001b[39m\n \u001b[90m 28 |\u001b[39m       \u001b[36mawait\u001b[39m skipOnboardingIfPresent(page)\u001b[33m;\u001b[39m\u001b[0m"
-                      },
-                      "errors": [
+                      "status": "passed",
+                      "duration": 9659,
+                      "errors": [],
+                      "stdout": [
                         {
-                          "location": {
-                            "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts",
-                            "column": 80,
-                            "line": 25
-                          },
-                          "message": "Error: Page should not show a hard error after registration\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n\n  23 |       const content = await page.content();\n  24 |       const hasError = content.includes('error') && !content.includes('Error Boundary');\n> 25 |       expect(hasError, 'Page should not show a hard error after registration').toBe(false);\n     |                                                                                ^\n  26 |\n  27 |       // Should see some welcome/onboarding/dashboard element\n  28 |       await skipOnboardingIfPresent(page);\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:25:80"
+                          "text": "  ℹ️  sneha.test@finora.app already registered — skipping\n"
                         }
                       ],
-                      "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-14T17:28:14.981Z",
-                      "annotations": [],
+                      "startTime": "2026-06-14T21:32:10.792Z",
+                      "annotations": [
+                        {
+                          "type": "note",
+                          "description": "User already existed — treated as pass"
+                        }
+                      ],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-072dd-4-Sneha-Kapoor-Goal-Setter--chromium\\test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-072dd-4-Sneha-Kapoor-Goal-Setter--chromium\\video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-072dd-4-Sneha-Kapoor-Goal-Setter--chromium\\error-context.md"
-                        },
-                        {
-                          "name": "trace",
-                          "contentType": "application/zip",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-072dd-4-Sneha-Kapoor-Goal-Setter--chromium\\trace.zip"
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-072dd-4-Sneha-Kapoor-Goal-Setter--chromium\\test-finished-1.png"
                         }
-                      ],
-                      "errorLocation": {
-                        "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts",
-                        "column": 80,
-                        "line": 25
-                      }
+                      ]
                     }
                   ],
-                  "status": "unexpected"
+                  "status": "expected"
                 }
               ],
               "id": "180cc0718174fb543e11-b9233d0375095f555a66",
@@ -396,76 +296,51 @@
             },
             {
               "title": "Register U5: Dev Nair (Portfolio Builder)",
-              "ok": false,
+              "ok": true,
               "tags": [],
               "tests": [
                 {
-                  "timeout": 90000,
-                  "annotations": [],
+                  "timeout": 180000,
+                  "annotations": [
+                    {
+                      "type": "note",
+                      "description": "User already existed — treated as pass"
+                    }
+                  ],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 4,
+                      "workerIndex": 0,
                       "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 18829,
-                      "error": {
-                        "message": "Error: Page should not show a hard error after registration\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m",
-                        "stack": "Error: Page should not show a hard error after registration\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:25:80",
-                        "location": {
-                          "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts",
-                          "column": 80,
-                          "line": 25
-                        },
-                        "snippet": "\u001b[0m \u001b[90m 23 |\u001b[39m       \u001b[36mconst\u001b[39m content \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mcontent()\u001b[33m;\u001b[39m\n \u001b[90m 24 |\u001b[39m       \u001b[36mconst\u001b[39m hasError \u001b[33m=\u001b[39m content\u001b[33m.\u001b[39mincludes(\u001b[32m'error'\u001b[39m) \u001b[33m&&\u001b[39m \u001b[33m!\u001b[39mcontent\u001b[33m.\u001b[39mincludes(\u001b[32m'Error Boundary'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 25 |\u001b[39m       expect(hasError\u001b[33m,\u001b[39m \u001b[32m'Page should not show a hard error after registration'\u001b[39m)\u001b[33m.\u001b[39mtoBe(\u001b[36mfalse\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                                                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 26 |\u001b[39m\n \u001b[90m 27 |\u001b[39m       \u001b[90m// Should see some welcome/onboarding/dashboard element\u001b[39m\n \u001b[90m 28 |\u001b[39m       \u001b[36mawait\u001b[39m skipOnboardingIfPresent(page)\u001b[33m;\u001b[39m\u001b[0m"
-                      },
-                      "errors": [
+                      "status": "passed",
+                      "duration": 17952,
+                      "errors": [],
+                      "stdout": [
                         {
-                          "location": {
-                            "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts",
-                            "column": 80,
-                            "line": 25
-                          },
-                          "message": "Error: Page should not show a hard error after registration\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n\n  23 |       const content = await page.content();\n  24 |       const hasError = content.includes('error') && !content.includes('Error Boundary');\n> 25 |       expect(hasError, 'Page should not show a hard error after registration').toBe(false);\n     |                                                                                ^\n  26 |\n  27 |       // Should see some welcome/onboarding/dashboard element\n  28 |       await skipOnboardingIfPresent(page);\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:25:80"
+                          "text": "  ℹ️  dev.test@finora.app already registered — skipping\n"
                         }
                       ],
-                      "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-14T17:28:37.540Z",
-                      "annotations": [],
+                      "startTime": "2026-06-14T21:32:20.497Z",
+                      "annotations": [
+                        {
+                          "type": "note",
+                          "description": "User already existed — treated as pass"
+                        }
+                      ],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-a249b-Dev-Nair-Portfolio-Builder--chromium\\test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-a249b-Dev-Nair-Portfolio-Builder--chromium\\video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-a249b-Dev-Nair-Portfolio-Builder--chromium\\error-context.md"
-                        },
-                        {
-                          "name": "trace",
-                          "contentType": "application/zip",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-a249b-Dev-Nair-Portfolio-Builder--chromium\\trace.zip"
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-a249b-Dev-Nair-Portfolio-Builder--chromium\\test-finished-1.png"
                         }
-                      ],
-                      "errorLocation": {
-                        "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts",
-                        "column": 80,
-                        "line": 25
-                      }
+                      ]
                     }
                   ],
-                  "status": "unexpected"
+                  "status": "expected"
                 }
               ],
               "id": "180cc0718174fb543e11-b8c4e63d383cb3a2aa0f",
@@ -475,76 +350,51 @@
             },
             {
               "title": "Register U6: Isha Patel (Planner)",
-              "ok": false,
+              "ok": true,
               "tags": [],
               "tests": [
                 {
-                  "timeout": 90000,
-                  "annotations": [],
+                  "timeout": 180000,
+                  "annotations": [
+                    {
+                      "type": "note",
+                      "description": "User already existed — treated as pass"
+                    }
+                  ],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 5,
+                      "workerIndex": 0,
                       "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 18681,
-                      "error": {
-                        "message": "Error: Page should not show a hard error after registration\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m",
-                        "stack": "Error: Page should not show a hard error after registration\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:25:80",
-                        "location": {
-                          "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts",
-                          "column": 80,
-                          "line": 25
-                        },
-                        "snippet": "\u001b[0m \u001b[90m 23 |\u001b[39m       \u001b[36mconst\u001b[39m content \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mcontent()\u001b[33m;\u001b[39m\n \u001b[90m 24 |\u001b[39m       \u001b[36mconst\u001b[39m hasError \u001b[33m=\u001b[39m content\u001b[33m.\u001b[39mincludes(\u001b[32m'error'\u001b[39m) \u001b[33m&&\u001b[39m \u001b[33m!\u001b[39mcontent\u001b[33m.\u001b[39mincludes(\u001b[32m'Error Boundary'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 25 |\u001b[39m       expect(hasError\u001b[33m,\u001b[39m \u001b[32m'Page should not show a hard error after registration'\u001b[39m)\u001b[33m.\u001b[39mtoBe(\u001b[36mfalse\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                                                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 26 |\u001b[39m\n \u001b[90m 27 |\u001b[39m       \u001b[90m// Should see some welcome/onboarding/dashboard element\u001b[39m\n \u001b[90m 28 |\u001b[39m       \u001b[36mawait\u001b[39m skipOnboardingIfPresent(page)\u001b[33m;\u001b[39m\u001b[0m"
-                      },
-                      "errors": [
+                      "status": "passed",
+                      "duration": 27902,
+                      "errors": [],
+                      "stdout": [
                         {
-                          "location": {
-                            "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts",
-                            "column": 80,
-                            "line": 25
-                          },
-                          "message": "Error: Page should not show a hard error after registration\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n\n  23 |       const content = await page.content();\n  24 |       const hasError = content.includes('error') && !content.includes('Error Boundary');\n> 25 |       expect(hasError, 'Page should not show a hard error after registration').toBe(false);\n     |                                                                                ^\n  26 |\n  27 |       // Should see some welcome/onboarding/dashboard element\n  28 |       await skipOnboardingIfPresent(page);\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:25:80"
+                          "text": "  ℹ️  isha.test@finora.app already registered — skipping\n"
                         }
                       ],
-                      "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-14T17:28:59.957Z",
-                      "annotations": [],
+                      "startTime": "2026-06-14T21:32:38.562Z",
+                      "annotations": [
+                        {
+                          "type": "note",
+                          "description": "User already existed — treated as pass"
+                        }
+                      ],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-f3f5a-ster-U6-Isha-Patel-Planner--chromium\\test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-f3f5a-ster-U6-Isha-Patel-Planner--chromium\\video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-f3f5a-ster-U6-Isha-Patel-Planner--chromium\\error-context.md"
-                        },
-                        {
-                          "name": "trace",
-                          "contentType": "application/zip",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-f3f5a-ster-U6-Isha-Patel-Planner--chromium\\trace.zip"
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-f3f5a-ster-U6-Isha-Patel-Planner--chromium\\test-finished-1.png"
                         }
-                      ],
-                      "errorLocation": {
-                        "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts",
-                        "column": 80,
-                        "line": 25
-                      }
+                      ]
                     }
                   ],
-                  "status": "unexpected"
+                  "status": "expected"
                 }
               ],
               "id": "180cc0718174fb543e11-4f0c395bd55e21c05e84",
@@ -554,76 +404,51 @@
             },
             {
               "title": "Register U7: Power User (Power User)",
-              "ok": false,
+              "ok": true,
               "tags": [],
               "tests": [
                 {
-                  "timeout": 90000,
-                  "annotations": [],
+                  "timeout": 180000,
+                  "annotations": [
+                    {
+                      "type": "note",
+                      "description": "User already existed — treated as pass"
+                    }
+                  ],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 6,
+                      "workerIndex": 0,
                       "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 19302,
-                      "error": {
-                        "message": "Error: Page should not show a hard error after registration\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m",
-                        "stack": "Error: Page should not show a hard error after registration\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:25:80",
-                        "location": {
-                          "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts",
-                          "column": 80,
-                          "line": 25
-                        },
-                        "snippet": "\u001b[0m \u001b[90m 23 |\u001b[39m       \u001b[36mconst\u001b[39m content \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mcontent()\u001b[33m;\u001b[39m\n \u001b[90m 24 |\u001b[39m       \u001b[36mconst\u001b[39m hasError \u001b[33m=\u001b[39m content\u001b[33m.\u001b[39mincludes(\u001b[32m'error'\u001b[39m) \u001b[33m&&\u001b[39m \u001b[33m!\u001b[39mcontent\u001b[33m.\u001b[39mincludes(\u001b[32m'Error Boundary'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 25 |\u001b[39m       expect(hasError\u001b[33m,\u001b[39m \u001b[32m'Page should not show a hard error after registration'\u001b[39m)\u001b[33m.\u001b[39mtoBe(\u001b[36mfalse\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                                                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 26 |\u001b[39m\n \u001b[90m 27 |\u001b[39m       \u001b[90m// Should see some welcome/onboarding/dashboard element\u001b[39m\n \u001b[90m 28 |\u001b[39m       \u001b[36mawait\u001b[39m skipOnboardingIfPresent(page)\u001b[33m;\u001b[39m\u001b[0m"
-                      },
-                      "errors": [
+                      "status": "passed",
+                      "duration": 51706,
+                      "errors": [],
+                      "stdout": [
                         {
-                          "location": {
-                            "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts",
-                            "column": 80,
-                            "line": 25
-                          },
-                          "message": "Error: Page should not show a hard error after registration\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n\n  23 |       const content = await page.content();\n  24 |       const hasError = content.includes('error') && !content.includes('Error Boundary');\n> 25 |       expect(hasError, 'Page should not show a hard error after registration').toBe(false);\n     |                                                                                ^\n  26 |\n  27 |       // Should see some welcome/onboarding/dashboard element\n  28 |       await skipOnboardingIfPresent(page);\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:25:80"
+                          "text": "  ℹ️  admin.test@finora.app already registered — skipping\n"
                         }
                       ],
-                      "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-14T17:29:22.116Z",
-                      "annotations": [],
+                      "startTime": "2026-06-14T21:33:06.556Z",
+                      "annotations": [
+                        {
+                          "type": "note",
+                          "description": "User already existed — treated as pass"
+                        }
+                      ],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-af66e-r-U7-Power-User-Power-User--chromium\\test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-af66e-r-U7-Power-User-Power-User--chromium\\video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-af66e-r-U7-Power-User-Power-User--chromium\\error-context.md"
-                        },
-                        {
-                          "name": "trace",
-                          "contentType": "application/zip",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-af66e-r-U7-Power-User-Power-User--chromium\\trace.zip"
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-af66e-r-U7-Power-User-Power-User--chromium\\test-finished-1.png"
                         }
-                      ],
-                      "errorLocation": {
-                        "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts",
-                        "column": 80,
-                        "line": 25
-                      }
+                      ]
                     }
                   ],
-                  "status": "unexpected"
+                  "status": "expected"
                 }
               ],
               "id": "180cc0718174fb543e11-7ead62567899ae25bb2a",
@@ -647,22 +472,22 @@
               ],
               "tests": [
                 {
-                  "timeout": 60000,
+                  "timeout": 180000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 7,
+                      "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 27719,
+                      "duration": 115655,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-14T17:29:45.123Z",
+                      "startTime": "2026-06-14T21:33:58.371Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -689,22 +514,22 @@
               ],
               "tests": [
                 {
-                  "timeout": 60000,
+                  "timeout": 180000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 7,
+                      "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 34523,
+                      "duration": 54971,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-14T17:30:13.491Z",
+                      "startTime": "2026-06-14T21:35:54.115Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -731,22 +556,22 @@
               ],
               "tests": [
                 {
-                  "timeout": 60000,
+                  "timeout": 180000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 7,
+                      "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 43830,
+                      "duration": 40995,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-14T17:30:48.104Z",
+                      "startTime": "2026-06-14T21:36:49.137Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -773,22 +598,22 @@
               ],
               "tests": [
                 {
-                  "timeout": 60000,
+                  "timeout": 180000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 7,
+                      "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 53631,
+                      "duration": 104763,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-14T17:31:32.043Z",
+                      "startTime": "2026-06-14T21:37:30.197Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -809,62 +634,39 @@
             },
             {
               "title": "Login U5: dev.test@finora.app",
-              "ok": false,
+              "ok": true,
               "tags": [
                 "finora.app"
               ],
               "tests": [
                 {
-                  "timeout": 60000,
+                  "timeout": 180000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 7,
+                      "workerIndex": 0,
                       "parallelIndex": 0,
-                      "status": "timedOut",
-                      "duration": 62214,
-                      "error": {
-                        "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
-                        "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
-                      },
-                      "errors": [
-                        {
-                          "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
-                        }
-                      ],
+                      "status": "passed",
+                      "duration": 39570,
+                      "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-14T17:32:25.758Z",
+                      "startTime": "2026-06-14T21:39:15.089Z",
                       "annotations": [],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-3fcc2-ogin-U5-dev-test-finora-app-chromium\\test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-3fcc2-ogin-U5-dev-test-finora-app-chromium\\video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-3fcc2-ogin-U5-dev-test-finora-app-chromium\\error-context.md"
-                        },
-                        {
-                          "name": "trace",
-                          "contentType": "application/zip",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-3fcc2-ogin-U5-dev-test-finora-app-chromium\\trace.zip"
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-3fcc2-ogin-U5-dev-test-finora-app-chromium\\test-finished-1.png"
                         }
                       ]
                     }
                   ],
-                  "status": "unexpected"
+                  "status": "expected"
                 }
               ],
               "id": "180cc0718174fb543e11-f5da7b2ebceb99b759db",
@@ -880,22 +682,22 @@
               ],
               "tests": [
                 {
-                  "timeout": 60000,
+                  "timeout": 180000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 8,
+                      "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 27185,
+                      "duration": 43622,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-14T17:33:33.011Z",
+                      "startTime": "2026-06-14T21:39:54.727Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -922,22 +724,22 @@
               ],
               "tests": [
                 {
-                  "timeout": 60000,
+                  "timeout": 180000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 8,
+                      "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 34141,
+                      "duration": 73905,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-14T17:34:00.837Z",
+                      "startTime": "2026-06-14T21:40:38.471Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -979,22 +781,22 @@
               "tags": [],
               "tests": [
                 {
-                  "timeout": 120000,
+                  "timeout": 180000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 8,
+                      "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 40290,
+                      "duration": 109046,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-14T17:34:35.134Z",
+                      "startTime": "2026-06-14T21:41:52.564Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -1019,17 +821,17 @@
               "tags": [],
               "tests": [
                 {
-                  "timeout": 120000,
+                  "timeout": 180000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 8,
+                      "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 62834,
+                      "duration": 167008,
                       "errors": [],
                       "stdout": [],
                       "stderr": [
@@ -1038,7 +840,7 @@
                         }
                       ],
                       "retry": 0,
-                      "startTime": "2026-06-14T17:35:15.508Z",
+                      "startTime": "2026-06-14T21:43:41.673Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -1059,80 +861,37 @@
             },
             {
               "title": "U1-03: Navigate to Loans section",
-              "ok": false,
+              "ok": true,
               "tags": [],
               "tests": [
                 {
-                  "timeout": 120000,
+                  "timeout": 180000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 8,
+                      "workerIndex": 0,
                       "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 74508,
-                      "error": {
-                        "message": "Error: Loans page should load with relevant content\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m",
-                        "stack": "Error: Loans page should load with relevant content\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\02-u1-loans.spec.ts:92:77",
-                        "location": {
-                          "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\02-u1-loans.spec.ts",
-                          "column": 77,
-                          "line": 92
-                        },
-                        "snippet": "\u001b[0m \u001b[90m 90 |\u001b[39m       console\u001b[33m.\u001b[39mwarn(\u001b[32m'  ⚠️  Loans section not clearly visible'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 91 |\u001b[39m     }\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 92 |\u001b[39m     expect(hasLoansContent\u001b[33m,\u001b[39m \u001b[32m'Loans page should load with relevant content'\u001b[39m)\u001b[33m.\u001b[39mtoBe(\u001b[36mtrue\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                                             \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 93 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 94 |\u001b[39m\n \u001b[90m 95 |\u001b[39m   test(\u001b[32m'U1-04: Add Home Loan'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\u001b[0m"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\02-u1-loans.spec.ts",
-                            "column": 77,
-                            "line": 92
-                          },
-                          "message": "Error: Loans page should load with relevant content\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n\n  90 |       console.warn('  ⚠️  Loans section not clearly visible');\n  91 |     }\n> 92 |     expect(hasLoansContent, 'Loans page should load with relevant content').toBe(true);\n     |                                                                             ^\n  93 |   });\n  94 |\n  95 |   test('U1-04: Add Home Loan', async ({ page }) => {\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\02-u1-loans.spec.ts:92:77"
-                        }
-                      ],
+                      "status": "passed",
+                      "duration": 53362,
+                      "errors": [],
                       "stdout": [],
-                      "stderr": [
-                        {
-                          "text": "  ⚠️  Loans section not clearly visible\n"
-                        }
-                      ],
+                      "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-14T17:36:18.431Z",
+                      "startTime": "2026-06-14T21:46:28.761Z",
                       "annotations": [],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\02-u1-loans-U1-–-Debt-Loan-0129b-3-Navigate-to-Loans-section-chromium\\test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\02-u1-loans-U1-–-Debt-Loan-0129b-3-Navigate-to-Loans-section-chromium\\video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\02-u1-loans-U1-–-Debt-Loan-0129b-3-Navigate-to-Loans-section-chromium\\error-context.md"
-                        },
-                        {
-                          "name": "trace",
-                          "contentType": "application/zip",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\02-u1-loans-U1-–-Debt-Loan-0129b-3-Navigate-to-Loans-section-chromium\\trace.zip"
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\02-u1-loans-U1-–-Debt-Loan-0129b-3-Navigate-to-Loans-section-chromium\\test-finished-1.png"
                         }
-                      ],
-                      "errorLocation": {
-                        "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\02-u1-loans.spec.ts",
-                        "column": 77,
-                        "line": 92
-                      }
+                      ]
                     }
                   ],
-                  "status": "unexpected"
+                  "status": "expected"
                 }
               ],
               "id": "df3ffe9eb53c935f3bb6-ce33e7b2ecaa140a8aac",
@@ -1146,26 +905,22 @@
               "tags": [],
               "tests": [
                 {
-                  "timeout": 120000,
+                  "timeout": 180000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 9,
+                      "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 28617,
+                      "duration": 41603,
                       "errors": [],
                       "stdout": [],
-                      "stderr": [
-                        {
-                          "text": "  ⚠️  Add Loan button not found\n"
-                        }
-                      ],
+                      "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-14T17:37:38.802Z",
+                      "startTime": "2026-06-14T21:47:22.218Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -1190,22 +945,22 @@
               "tags": [],
               "tests": [
                 {
-                  "timeout": 120000,
+                  "timeout": 180000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 9,
+                      "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 35224,
+                      "duration": 50769,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-14T17:38:08.028Z",
+                      "startTime": "2026-06-14T21:48:03.855Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -1230,17 +985,17 @@
               "tags": [],
               "tests": [
                 {
-                  "timeout": 120000,
+                  "timeout": 180000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 9,
+                      "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 37675,
+                      "duration": 113156,
                       "errors": [],
                       "stdout": [
                         {
@@ -1253,7 +1008,7 @@
                         }
                       ],
                       "retry": 0,
-                      "startTime": "2026-06-14T17:38:43.329Z",
+                      "startTime": "2026-06-14T21:48:54.686Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -1295,17 +1050,17 @@
               "tags": [],
               "tests": [
                 {
-                  "timeout": 120000,
+                  "timeout": 180000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 9,
+                      "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 49099,
+                      "duration": 139319,
                       "errors": [],
                       "stdout": [
                         {
@@ -1314,15 +1069,9 @@
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-14T17:39:21.130Z",
+                      "startTime": "2026-06-14T21:50:48.016Z",
                       "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\03-u2-groups-U2-–-Group-Ex-2d843-Navigate-to-Friends-section-chromium\\test-finished-1.png"
-                        }
-                      ]
+                      "attachments": []
                     }
                   ],
                   "status": "expected"
@@ -1339,17 +1088,17 @@
               "tags": [],
               "tests": [
                 {
-                  "timeout": 120000,
+                  "timeout": 180000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 9,
+                      "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 36314,
+                      "duration": 153634,
                       "errors": [],
                       "stdout": [],
                       "stderr": [
@@ -1358,15 +1107,9 @@
                         }
                       ],
                       "retry": 0,
-                      "startTime": "2026-06-14T17:40:10.282Z",
+                      "startTime": "2026-06-14T21:53:07.400Z",
                       "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\03-u2-groups-U2-–-Group-Ex-595b7-2-02-Add-Arjun-U1-as-friend-chromium\\test-finished-1.png"
-                        }
-                      ]
+                      "attachments": []
                     }
                   ],
                   "status": "expected"
@@ -1383,17 +1126,17 @@
               "tags": [],
               "tests": [
                 {
-                  "timeout": 120000,
+                  "timeout": 180000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 9,
+                      "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 49930,
+                      "duration": 161160,
                       "errors": [],
                       "stdout": [
                         {
@@ -1402,15 +1145,9 @@
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-14T17:40:46.638Z",
+                      "startTime": "2026-06-14T21:55:41.083Z",
                       "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\03-u2-groups-U2-–-Group-Ex-9f43e-ate-to-Groups-Split-section-chromium\\test-finished-1.png"
-                        }
-                      ]
+                      "attachments": []
                     }
                   ],
                   "status": "expected"
@@ -1427,26 +1164,26 @@
               "tags": [],
               "tests": [
                 {
-                  "timeout": 120000,
+                  "timeout": 180000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 9,
+                      "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 46826,
+                      "duration": 82584,
                       "errors": [],
-                      "stdout": [],
-                      "stderr": [
+                      "stdout": [
                         {
-                          "text": "  ⚠️  Expense/Create Group button not found\n"
+                          "text": "  Goa Trip group created: true\n"
                         }
                       ],
+                      "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-14T17:41:36.603Z",
+                      "startTime": "2026-06-14T21:58:22.300Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -1471,17 +1208,17 @@
               "tags": [],
               "tests": [
                 {
-                  "timeout": 120000,
+                  "timeout": 180000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 9,
+                      "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 51298,
+                      "duration": 42805,
                       "errors": [],
                       "stdout": [],
                       "stderr": [
@@ -1490,7 +1227,7 @@
                         }
                       ],
                       "retry": 0,
-                      "startTime": "2026-06-14T17:42:23.470Z",
+                      "startTime": "2026-06-14T21:59:44.940Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -1528,80 +1265,41 @@
           "specs": [
             {
               "title": "U3-01: Navigate to Investments",
-              "ok": false,
+              "ok": true,
               "tags": [],
               "tests": [
                 {
-                  "timeout": 120000,
+                  "timeout": 180000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 9,
+                      "workerIndex": 0,
                       "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 91602,
-                      "error": {
-                        "message": "Error: Investments page should load\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m",
-                        "stack": "Error: Investments page should load\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\04-u3-investments.spec.ts:27:62",
-                        "location": {
-                          "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\04-u3-investments.spec.ts",
-                          "column": 62,
-                          "line": 27
-                        },
-                        "snippet": "\u001b[0m \u001b[90m 25 |\u001b[39m     \u001b[36mconst\u001b[39m hasInvestContent \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m heading\u001b[33m.\u001b[39misVisible() \u001b[33m||\u001b[39m \u001b[36mawait\u001b[39m text\u001b[33m.\u001b[39misVisible()\u001b[33m;\u001b[39m\n \u001b[90m 26 |\u001b[39m     console\u001b[33m.\u001b[39mlog(\u001b[32m`  Investments section visible: ${hasInvestContent}`\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 27 |\u001b[39m     expect(hasInvestContent\u001b[33m,\u001b[39m \u001b[32m'Investments page should load'\u001b[39m)\u001b[33m.\u001b[39mtoBe(\u001b[36mtrue\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                              \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 28 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 29 |\u001b[39m\n \u001b[90m 30 |\u001b[39m   test(\u001b[32m'U3-02: Add stock – Reliance Industries'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\u001b[0m"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\04-u3-investments.spec.ts",
-                            "column": 62,
-                            "line": 27
-                          },
-                          "message": "Error: Investments page should load\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n\n  25 |     const hasInvestContent = await heading.isVisible() || await text.isVisible();\n  26 |     console.log(`  Investments section visible: ${hasInvestContent}`);\n> 27 |     expect(hasInvestContent, 'Investments page should load').toBe(true);\n     |                                                              ^\n  28 |   });\n  29 |\n  30 |   test('U3-02: Add stock – Reliance Industries', async ({ page }) => {\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\04-u3-investments.spec.ts:27:62"
-                        }
-                      ],
+                      "status": "passed",
+                      "duration": 85056,
+                      "errors": [],
                       "stdout": [
                         {
-                          "text": "  Investments section visible: false\n"
+                          "text": "  Investments section visible: true\n"
                         }
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-14T17:43:14.858Z",
+                      "startTime": "2026-06-14T22:00:27.904Z",
                       "annotations": [],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\04-u3-investments-U3-–-Inv-a7a13--01-Navigate-to-Investments-chromium\\test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\04-u3-investments-U3-–-Inv-a7a13--01-Navigate-to-Investments-chromium\\video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\04-u3-investments-U3-–-Inv-a7a13--01-Navigate-to-Investments-chromium\\error-context.md"
-                        },
-                        {
-                          "name": "trace",
-                          "contentType": "application/zip",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\04-u3-investments-U3-–-Inv-a7a13--01-Navigate-to-Investments-chromium\\trace.zip"
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\04-u3-investments-U3-–-Inv-a7a13--01-Navigate-to-Investments-chromium\\test-finished-1.png"
                         }
-                      ],
-                      "errorLocation": {
-                        "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\04-u3-investments.spec.ts",
-                        "column": 62,
-                        "line": 27
-                      }
+                      ]
                     }
                   ],
-                  "status": "unexpected"
+                  "status": "expected"
                 }
               ],
               "id": "1d2f66b7baeb5e5ca452-d95643c874f142a6c1af",
@@ -1615,17 +1313,17 @@
               "tags": [],
               "tests": [
                 {
-                  "timeout": 120000,
+                  "timeout": 180000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 10,
+                      "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 31355,
+                      "duration": 89990,
                       "errors": [],
                       "stdout": [
                         {
@@ -1634,7 +1332,7 @@
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-14T17:44:52.539Z",
+                      "startTime": "2026-06-14T22:01:53.012Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -1659,17 +1357,17 @@
               "tags": [],
               "tests": [
                 {
-                  "timeout": 120000,
+                  "timeout": 180000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 10,
+                      "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 33051,
+                      "duration": 41031,
                       "errors": [],
                       "stdout": [
                         {
@@ -1678,7 +1376,7 @@
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-14T17:45:24.863Z",
+                      "startTime": "2026-06-14T22:03:23.048Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -1703,26 +1401,26 @@
               "tags": [],
               "tests": [
                 {
-                  "timeout": 120000,
+                  "timeout": 180000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 10,
+                      "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 43358,
+                      "duration": 42421,
                       "errors": [],
                       "stdout": [
                         {
-                          "text": "  Gold investment visible: false\n"
+                          "text": "  Gold investment visible: true\n"
                         }
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-14T17:45:57.969Z",
+                      "startTime": "2026-06-14T22:04:04.117Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -1747,26 +1445,26 @@
               "tags": [],
               "tests": [
                 {
-                  "timeout": 120000,
+                  "timeout": 180000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 10,
+                      "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 50371,
+                      "duration": 41436,
                       "errors": [],
                       "stdout": [
                         {
-                          "text": "  Portfolio summary visible: false\n"
+                          "text": "  Portfolio summary visible: true\n"
                         }
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-14T17:46:41.374Z",
+                      "startTime": "2026-06-14T22:04:46.581Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -1804,76 +1502,37 @@
           "specs": [
             {
               "title": "U4-01: Navigate to Goals",
-              "ok": false,
+              "ok": true,
               "tags": [],
               "tests": [
                 {
-                  "timeout": 120000,
+                  "timeout": 180000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 10,
+                      "workerIndex": 0,
                       "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 61166,
-                      "error": {
-                        "message": "Error: Goals page should load\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m",
-                        "stack": "Error: Goals page should load\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\05-u4-goals.spec.ts:23:55",
-                        "location": {
-                          "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\05-u4-goals.spec.ts",
-                          "column": 55,
-                          "line": 23
-                        },
-                        "snippet": "\u001b[0m \u001b[90m 21 |\u001b[39m       \u001b[33m.\u001b[39m\u001b[36mcatch\u001b[39m(() \u001b[33m=>\u001b[39m \u001b[36mfalse\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 22 |\u001b[39m     \u001b[36mawait\u001b[39m screenshot(page\u001b[33m,\u001b[39m \u001b[32m'05_u4_01_goals_page'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 23 |\u001b[39m     expect(hasGoalsContent\u001b[33m,\u001b[39m \u001b[32m'Goals page should load'\u001b[39m)\u001b[33m.\u001b[39mtoBe(\u001b[36mtrue\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                       \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 24 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 25 |\u001b[39m\n \u001b[90m 26 |\u001b[39m   test(\u001b[32m'U4-02: Create Emergency Fund goal'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\u001b[0m"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\05-u4-goals.spec.ts",
-                            "column": 55,
-                            "line": 23
-                          },
-                          "message": "Error: Goals page should load\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n\n  21 |       .catch(() => false);\n  22 |     await screenshot(page, '05_u4_01_goals_page');\n> 23 |     expect(hasGoalsContent, 'Goals page should load').toBe(true);\n     |                                                       ^\n  24 |   });\n  25 |\n  26 |   test('U4-02: Create Emergency Fund goal', async ({ page }) => {\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\05-u4-goals.spec.ts:23:55"
-                        }
-                      ],
+                      "status": "passed",
+                      "duration": 69483,
+                      "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-14T17:47:31.840Z",
+                      "startTime": "2026-06-14T22:05:28.119Z",
                       "annotations": [],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\05-u4-goals-U4-–-Goal-Setter-Sneha-U4-01-Navigate-to-Goals-chromium\\test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\05-u4-goals-U4-–-Goal-Setter-Sneha-U4-01-Navigate-to-Goals-chromium\\video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\05-u4-goals-U4-–-Goal-Setter-Sneha-U4-01-Navigate-to-Goals-chromium\\error-context.md"
-                        },
-                        {
-                          "name": "trace",
-                          "contentType": "application/zip",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\05-u4-goals-U4-–-Goal-Setter-Sneha-U4-01-Navigate-to-Goals-chromium\\trace.zip"
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\05-u4-goals-U4-–-Goal-Setter-Sneha-U4-01-Navigate-to-Goals-chromium\\test-finished-1.png"
                         }
-                      ],
-                      "errorLocation": {
-                        "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\05-u4-goals.spec.ts",
-                        "column": 55,
-                        "line": 23
-                      }
+                      ]
                     }
                   ],
-                  "status": "unexpected"
+                  "status": "expected"
                 }
               ],
               "id": "0ca37c8c36dc1a9066e3-79dd358a3bb9d079b2fd",
@@ -1887,17 +1546,17 @@
               "tags": [],
               "tests": [
                 {
-                  "timeout": 120000,
+                  "timeout": 180000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 11,
+                      "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 30293,
+                      "duration": 118084,
                       "errors": [],
                       "stdout": [
                         {
@@ -1906,7 +1565,7 @@
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-14T17:48:37.716Z",
+                      "startTime": "2026-06-14T22:06:37.654Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -1931,17 +1590,17 @@
               "tags": [],
               "tests": [
                 {
-                  "timeout": 120000,
+                  "timeout": 180000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 11,
+                      "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 31787,
+                      "duration": 38351,
                       "errors": [],
                       "stdout": [
                         {
@@ -1950,7 +1609,7 @@
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-14T17:49:08.658Z",
+                      "startTime": "2026-06-14T22:08:35.783Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -1975,17 +1634,17 @@
               "tags": [],
               "tests": [
                 {
-                  "timeout": 120000,
+                  "timeout": 180000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 11,
+                      "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 37411,
+                      "duration": 40365,
                       "errors": [],
                       "stdout": [],
                       "stderr": [
@@ -1994,7 +1653,7 @@
                         }
                       ],
                       "retry": 0,
-                      "startTime": "2026-06-14T17:49:40.489Z",
+                      "startTime": "2026-06-14T22:09:14.166Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -2019,22 +1678,22 @@
               "tags": [],
               "tests": [
                 {
-                  "timeout": 120000,
+                  "timeout": 180000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 11,
+                      "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 50764,
+                      "duration": 46878,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-14T17:50:17.950Z",
+                      "startTime": "2026-06-14T22:09:54.558Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -2083,10 +1742,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 11,
+                      "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 50308,
+                      "duration": 66511,
                       "errors": [],
                       "stdout": [],
                       "stderr": [
@@ -2095,7 +1754,7 @@
                         }
                       ],
                       "retry": 0,
-                      "startTime": "2026-06-14T17:51:08.815Z",
+                      "startTime": "2026-06-14T22:10:41.554Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -2127,23 +1786,17 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 11,
+                      "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 52318,
+                      "duration": 119168,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-14T17:51:59.160Z",
+                      "startTime": "2026-06-14T22:11:48.151Z",
                       "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\06-u5-transactions-U5-–-Po-c789f-02-Add-Paytm-Wallet-account-chromium\\test-finished-1.png"
-                        }
-                      ]
+                      "attachments": []
                     }
                   ],
                   "status": "expected"
@@ -2167,10 +1820,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 11,
+                      "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 69994,
+                      "duration": 159484,
                       "errors": [],
                       "stdout": [],
                       "stderr": [
@@ -2179,15 +1832,9 @@
                         }
                       ],
                       "retry": 0,
-                      "startTime": "2026-06-14T17:52:51.516Z",
+                      "startTime": "2026-06-14T22:13:47.383Z",
                       "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\06-u5-transactions-U5-–-Po-f2644-income-transaction-–-Salary-chromium\\test-finished-1.png"
-                        }
-                      ]
+                      "attachments": []
                     }
                   ],
                   "status": "expected"
@@ -2211,10 +1858,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 11,
+                      "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "failed",
-                      "duration": 109075,
+                      "duration": 178569,
                       "error": {
                         "message": "Error: Should add at least 3 expense transactions\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m3\u001b[39m\nReceived:    \u001b[31m0\u001b[39m",
                         "stack": "Error: Should add at least 3 expense transactions\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m3\u001b[39m\nReceived:    \u001b[31m0\u001b[39m\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\06-u5-transactions.spec.ts:200:70",
@@ -2242,14 +1889,9 @@
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-14T17:54:01.549Z",
+                      "startTime": "2026-06-14T22:16:26.917Z",
                       "annotations": [],
                       "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\06-u5-transactions-U5-–-Po-1eecb-nsactions-across-categories-chromium\\test-failed-1.png"
-                        },
                         {
                           "name": "video",
                           "contentType": "video/webm",
@@ -2294,10 +1936,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 12,
+                      "workerIndex": 1,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 30405,
+                      "duration": 44376,
                       "errors": [],
                       "stdout": [],
                       "stderr": [
@@ -2306,7 +1948,7 @@
                         }
                       ],
                       "retry": 0,
-                      "startTime": "2026-06-14T17:55:57.826Z",
+                      "startTime": "2026-06-14T22:19:37.631Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -2338,10 +1980,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 12,
+                      "workerIndex": 1,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 32399,
+                      "duration": 45902,
                       "errors": [],
                       "stdout": [],
                       "stderr": [
@@ -2350,7 +1992,7 @@
                         }
                       ],
                       "retry": 0,
-                      "startTime": "2026-06-14T17:56:29.167Z",
+                      "startTime": "2026-06-14T22:20:22.733Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -2392,17 +2034,17 @@
               "tags": [],
               "tests": [
                 {
-                  "timeout": 120000,
+                  "timeout": 180000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 12,
+                      "workerIndex": 1,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 31239,
+                      "duration": 126098,
                       "errors": [],
                       "stdout": [
                         {
@@ -2411,7 +2053,7 @@
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-14T17:57:01.630Z",
+                      "startTime": "2026-06-14T22:21:08.792Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -2436,17 +2078,17 @@
               "tags": [],
               "tests": [
                 {
-                  "timeout": 120000,
+                  "timeout": 180000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 12,
+                      "workerIndex": 1,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 36832,
+                      "duration": 113768,
                       "errors": [],
                       "stdout": [],
                       "stderr": [
@@ -2455,7 +2097,7 @@
                         }
                       ],
                       "retry": 0,
-                      "startTime": "2026-06-14T17:57:32.902Z",
+                      "startTime": "2026-06-14T22:23:14.958Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -2480,17 +2122,17 @@
               "tags": [],
               "tests": [
                 {
-                  "timeout": 120000,
+                  "timeout": 180000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 12,
+                      "workerIndex": 1,
                       "parallelIndex": 0,
                       "status": "failed",
-                      "duration": 56331,
+                      "duration": 171280,
                       "error": {
                         "message": "Error: Should add at least 1 task\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m1\u001b[39m\nReceived:    \u001b[31m0\u001b[39m",
                         "stack": "Error: Should add at least 1 task\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m1\u001b[39m\nReceived:    \u001b[31m0\u001b[39m\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\07-u6-todos.spec.ts:126:54",
@@ -2518,7 +2160,7 @@
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-14T17:58:09.780Z",
+                      "startTime": "2026-06-14T22:25:08.840Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -2563,17 +2205,17 @@
               "tags": [],
               "tests": [
                 {
-                  "timeout": 120000,
+                  "timeout": 180000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 13,
+                      "workerIndex": 2,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 26306,
+                      "duration": 133796,
                       "errors": [],
                       "stdout": [],
                       "stderr": [
@@ -2582,7 +2224,7 @@
                         }
                       ],
                       "retry": 0,
-                      "startTime": "2026-06-14T17:59:10.691Z",
+                      "startTime": "2026-06-14T22:28:11.438Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -2607,26 +2249,26 @@
               "tags": [],
               "tests": [
                 {
-                  "timeout": 120000,
+                  "timeout": 180000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 13,
+                      "workerIndex": 2,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 30549,
+                      "duration": 141098,
                       "errors": [],
-                      "stdout": [
+                      "stdout": [],
+                      "stderr": [
                         {
-                          "text": "  Shared To-Do list \"Goa Trip Planning\" created: true\n"
+                          "text": "  ⚠️  Create List button not found for shared list\n"
                         }
                       ],
-                      "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-14T17:59:37.795Z",
+                      "startTime": "2026-06-14T22:30:26.576Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -2647,80 +2289,41 @@
             },
             {
               "title": "U6-06: Add tasks to shared Goa Trip list",
-              "ok": false,
+              "ok": true,
               "tags": [],
               "tests": [
                 {
-                  "timeout": 120000,
+                  "timeout": 180000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 13,
+                      "workerIndex": 2,
                       "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 44024,
-                      "error": {
-                        "message": "Error: Should add at least 1 task to shared list\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m1\u001b[39m\nReceived:    \u001b[31m0\u001b[39m",
-                        "stack": "Error: Should add at least 1 task to shared list\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m1\u001b[39m\nReceived:    \u001b[31m0\u001b[39m\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\07-u6-todos.spec.ts:246:69",
-                        "location": {
-                          "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\07-u6-todos.spec.ts",
-                          "column": 69,
-                          "line": 246
-                        },
-                        "snippet": "\u001b[0m \u001b[90m 244 |\u001b[39m     \u001b[36mawait\u001b[39m screenshot(page\u001b[33m,\u001b[39m \u001b[32m'07_u6_06_shared_tasks_added'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 245 |\u001b[39m     console\u001b[33m.\u001b[39mlog(\u001b[32m`  Added ${addedCount} tasks to shared list`\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 246 |\u001b[39m     expect(addedCount\u001b[33m,\u001b[39m \u001b[32m'Should add at least 1 task to shared list'\u001b[39m)\u001b[33m.\u001b[39mtoBeGreaterThanOrEqual(\u001b[35m1\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                                                                     \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 247 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 248 |\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m 249 |\u001b[39m\u001b[0m"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\07-u6-todos.spec.ts",
-                            "column": 69,
-                            "line": 246
-                          },
-                          "message": "Error: Should add at least 1 task to shared list\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m1\u001b[39m\nReceived:    \u001b[31m0\u001b[39m\n\n  244 |     await screenshot(page, '07_u6_06_shared_tasks_added');\n  245 |     console.log(`  Added ${addedCount} tasks to shared list`);\n> 246 |     expect(addedCount, 'Should add at least 1 task to shared list').toBeGreaterThanOrEqual(1);\n      |                                                                     ^\n  247 |   });\n  248 | });\n  249 |\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\07-u6-todos.spec.ts:246:69"
-                        }
-                      ],
+                      "status": "passed",
+                      "duration": 66612,
+                      "errors": [],
                       "stdout": [
                         {
-                          "text": "  Added 0 tasks to shared list\n"
+                          "text": "  Added 3 tasks to shared list\n"
                         }
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-14T18:00:08.374Z",
+                      "startTime": "2026-06-14T22:32:47.733Z",
                       "annotations": [],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\07-u6-todos-U6-–-Collabora-c66f6-sks-to-shared-Goa-Trip-list-chromium\\test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\07-u6-todos-U6-–-Collabora-c66f6-sks-to-shared-Goa-Trip-list-chromium\\video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\07-u6-todos-U6-–-Collabora-c66f6-sks-to-shared-Goa-Trip-list-chromium\\error-context.md"
-                        },
-                        {
-                          "name": "trace",
-                          "contentType": "application/zip",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\07-u6-todos-U6-–-Collabora-c66f6-sks-to-shared-Goa-Trip-list-chromium\\trace.zip"
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\07-u6-todos-U6-–-Collabora-c66f6-sks-to-shared-Goa-Trip-list-chromium\\test-finished-1.png"
                         }
-                      ],
-                      "errorLocation": {
-                        "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\07-u6-todos.spec.ts",
-                        "column": 69,
-                        "line": 246
-                      }
+                      ]
                     }
                   ],
-                  "status": "unexpected"
+                  "status": "expected"
                 }
               ],
               "id": "6f3a7005a4cf918cb5e0-b03128680251e6eed382",
@@ -2758,15 +2361,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 14,
+                      "workerIndex": 2,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 26975,
+                      "duration": 39141,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-14T18:00:56.150Z",
+                      "startTime": "2026-06-14T22:33:54.439Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -2798,10 +2401,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 14,
+                      "workerIndex": 2,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 38739,
+                      "duration": 61659,
                       "errors": [],
                       "stdout": [
                         {
@@ -2810,7 +2413,7 @@
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-14T18:01:23.757Z",
+                      "startTime": "2026-06-14T22:34:33.618Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -2842,10 +2445,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 14,
+                      "workerIndex": 2,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 38763,
+                      "duration": 112084,
                       "errors": [],
                       "stdout": [
                         {
@@ -2854,7 +2457,7 @@
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-14T18:02:02.549Z",
+                      "startTime": "2026-06-14T22:35:35.325Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -2886,10 +2489,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 14,
+                      "workerIndex": 2,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 44067,
+                      "duration": 148152,
                       "errors": [],
                       "stdout": [
                         {
@@ -2901,7 +2504,7 @@
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-14T18:02:41.372Z",
+                      "startTime": "2026-06-14T22:37:27.467Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -2933,19 +2536,19 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 14,
+                      "workerIndex": 2,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 47567,
+                      "duration": 52374,
                       "errors": [],
                       "stdout": [
                         {
-                          "text": "  Receipt scanner UI visible: false\n"
+                          "text": "  Receipt scanner UI visible: true\n"
                         }
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-14T18:03:25.486Z",
+                      "startTime": "2026-06-14T22:39:55.728Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -2977,10 +2580,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 14,
+                      "workerIndex": 2,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 47799,
+                      "duration": 93974,
                       "errors": [],
                       "stdout": [
                         {
@@ -2989,15 +2592,9 @@
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-14T18:04:13.094Z",
+                      "startTime": "2026-06-14T22:40:48.195Z",
                       "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\08-u7-power-user-U7-–-Powe-4ad16-ate-goal-→-Add-contribution-chromium\\test-finished-1.png"
-                        }
-                      ]
+                      "attachments": []
                     }
                   ],
                   "status": "expected"
@@ -3021,10 +2618,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 14,
+                      "workerIndex": 2,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 56065,
+                      "duration": 123807,
                       "errors": [],
                       "stdout": [
                         {
@@ -3033,7 +2630,7 @@
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-14T18:05:00.934Z",
+                      "startTime": "2026-06-14T22:42:22.259Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -3065,10 +2662,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 14,
+                      "workerIndex": 2,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 73092,
+                      "duration": 141276,
                       "errors": [],
                       "stdout": [
                         {
@@ -3077,15 +2674,9 @@
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-14T18:05:57.049Z",
+                      "startTime": "2026-06-14T22:44:26.164Z",
                       "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\08-u7-power-user-U7-–-Powe-0b37b-dd-loan-and-log-EMI-payment-chromium\\test-finished-1.png"
-                        }
-                      ]
+                      "attachments": []
                     }
                   ],
                   "status": "expected"
@@ -3109,10 +2700,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 14,
+                      "workerIndex": 2,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 137991,
+                      "duration": 155860,
                       "errors": [],
                       "stdout": [
                         {
@@ -3121,15 +2712,9 @@
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-14T18:07:10.180Z",
+                      "startTime": "2026-06-14T22:46:47.563Z",
                       "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\08-u7-power-user-U7-–-Powe-dbe97-9-Notification-center-loads-chromium\\test-finished-1.png"
-                        }
-                      ]
+                      "attachments": []
                     }
                   ],
                   "status": "expected"
@@ -3153,14 +2738,14 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 14,
+                      "workerIndex": 2,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 103720,
+                      "duration": 52452,
                       "errors": [],
                       "stdout": [
                         {
-                          "text": "  Dashboard shows financial data: false\n"
+                          "text": "  Dashboard shows financial data: true\n"
                         },
                         {
                           "text": "  JS errors: none\n"
@@ -3168,7 +2753,7 @@
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-14T18:09:28.229Z",
+                      "startTime": "2026-06-14T22:49:23.505Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -3200,19 +2785,19 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 14,
+                      "workerIndex": 2,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 114230,
+                      "duration": 93650,
                       "errors": [],
-                      "stdout": [],
-                      "stderr": [
+                      "stdout": [
                         {
-                          "text": "  ⚠️  Export CSV button not found\n"
+                          "text": "  ⚠️  No download event — export may open in new tab or show inline\n"
                         }
                       ],
+                      "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-14T18:11:12.001Z",
+                      "startTime": "2026-06-14T22:50:16.059Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -3238,11 +2823,11 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-06-14T17:27:03.294Z",
-    "duration": 2768779.759,
-    "expected": 44,
+    "startTime": "2026-06-14T21:31:09.752Z",
+    "duration": 4842140.682,
+    "expected": 56,
     "skipped": 0,
-    "unexpected": 14,
+    "unexpected": 2,
     "flaky": 0
   }
 }

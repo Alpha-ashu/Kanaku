@@ -237,6 +237,7 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
 
       localStorage.removeItem('auth_flow_step');
       localStorage.removeItem('pending_auth_email');
+      localStorage.removeItem('onboarding_completed');
       window.dispatchEvent(new CustomEvent('KANAKU_AUTH_CHANGE'));
       toast.success("Account created! Let's set up your profile.");
     } catch (error: any) {

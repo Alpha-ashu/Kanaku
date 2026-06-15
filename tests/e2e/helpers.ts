@@ -70,29 +70,6 @@ export async function loginUser(page: Page, user: typeof USERS.U1) {
     },
   }).catch(() => {}); // ignore if already exists
 
-  // 1c. Delete server-side PIN so PINAuth enters create mode (always succeeds locally).
-  //     Retry up to 3× with increasing delays — server can be slow under test load.
-  for (let pinReset = 0; pinReset < 3; pinReset++) {
-    const secTokenResp = await page.request.post(`${API}/api/v1/pin/verify-security`, {
-      headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
-      data: {},
-    }).catch(() => null);
-    if (secTokenResp?.ok()) {
-      const secJson = await secTokenResp.json().catch(() => ({}));
-      if (secJson?.securityToken) {
-        const resetResp = await page.request.post(`${API}/api/v1/pin/self-reset`, {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            'Content-Type': 'application/json',
-            'x-security-token': secJson.securityToken,
-          },
-          data: {},
-        }).catch(() => null);
-        if (resetResp?.ok()) break; // Reset succeeded — exit retry loop
-      }
-    }
-    if (pinReset < 2) await page.waitForTimeout(2000 * (pinReset + 1));
-  }
 
   // 2. Open the app and wipe localStorage / IndexedDB to start with a clean slate
   await page.goto(BASE, { waitUntil: 'domcontentloaded', timeout: 60000 }).catch(() => null);
@@ -268,6 +245,10 @@ async function enterPin(page: Page, pin = '111111') {
 
 /** Complete PIN setup and any onboarding screens */
 export async function skipOnboardingIfPresent(page: Page) {
+  const isDashboardVisible = await page.locator('[data-nav-id], [aria-label="Dashboard"], [aria-label="Home"]').first()
+    .isVisible().catch(() => false);
+  if (isDashboardVisible) return;
+
   const STRONG_PIN = '142536'; // non-repeating, non-sequential
 
   // PINAuth makes an API call on mount before rendering the numpad (isLoading state).
