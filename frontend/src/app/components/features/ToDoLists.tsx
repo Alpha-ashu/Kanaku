@@ -263,6 +263,7 @@ export const ToDoLists: React.FC = () => {
               type="button"
               onClick={e => handleArchiveList(e, list)}
               title={list.archived ? 'Restore list' : 'Archive list'}
+              data-testid={`todo-list-${list.id}-archive-button`}
               className="p-2 text-slate-300 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-all"
             >
               {list.archived ? <ArchiveRestore size={15} /> : <Archive size={15} />}
@@ -273,6 +274,7 @@ export const ToDoLists: React.FC = () => {
               type="button"
               onClick={e => { e.stopPropagation(); handleDeleteList(list.id!, list.name); }}
               title="Delete list"
+              data-testid={`todo-list-${list.id}-delete-button`}
               className="p-2 text-slate-300 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
             >
               <Trash2 size={15} />
@@ -307,6 +309,7 @@ export const ToDoLists: React.FC = () => {
           <button
             type="button"
             onClick={() => setShowCreateModal(true)}
+            data-testid="todo-new-list-button"
             className="bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-indigo-100 hover:bg-indigo-700 active:scale-95 transition-all flex items-center gap-2"
           >
             <Plus size={14} />
@@ -321,6 +324,7 @@ export const ToDoLists: React.FC = () => {
               key={tab}
               type="button"
               onClick={() => setActiveTab(tab)}
+              data-testid={`todo-tab-${tab}-button`}
               className={cn(
                 'flex-1 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all',
                 activeTab === tab
@@ -341,7 +345,7 @@ export const ToDoLists: React.FC = () => {
           <div className="relative bg-white rounded-2xl w-full max-w-md shadow-2xl z-10 overflow-hidden max-h-[90vh] flex flex-col">
             <div className="flex items-center justify-between p-5 border-b border-slate-100 shrink-0">
               <h3 className="text-base font-black text-slate-900">Create New List</h3>
-              <button onClick={() => { setShowCreateModal(false); resetModal(); }} title="Close" className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-all">
+              <button onClick={() => { setShowCreateModal(false); resetModal(); }} title="Close" data-testid="todo-create-modal-close-button" className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-all">
                 <X size={16} />
               </button>
             </div>
@@ -354,6 +358,7 @@ export const ToDoLists: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setListType('individual')}
+                    data-testid="todo-list-type-individual-button"
                     className={cn(
                       'flex items-center gap-2.5 p-3 rounded-xl border-2 transition-all text-left',
                       listType === 'individual'
@@ -376,6 +381,7 @@ export const ToDoLists: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setListType('together')}
+                    data-testid="todo-list-type-together-button"
                     className={cn(
                       'flex items-center gap-2.5 p-3 rounded-xl border-2 transition-all text-left',
                       listType === 'together'
@@ -407,6 +413,7 @@ export const ToDoLists: React.FC = () => {
                   onKeyDown={e => e.key === 'Enter' && !e.shiftKey && listType === 'individual' && handleCreateList()}
                   placeholder="e.g., Weekly Tasks"
                   autoFocus
+                  data-testid="todo-create-name-input"
                   className="w-full bg-slate-50 border-none rounded-xl py-3 px-4 font-bold text-slate-900 text-sm focus:ring-2 focus:ring-indigo-200 outline-none"
                 />
               </div>
@@ -419,6 +426,7 @@ export const ToDoLists: React.FC = () => {
                   onChange={e => setNewListDescription(e.target.value)}
                   placeholder="Optional description"
                   rows={2}
+                  data-testid="todo-create-description-textarea"
                   className="w-full bg-slate-50 border-none rounded-xl py-3 px-4 font-bold text-slate-900 text-sm resize-none focus:ring-2 focus:ring-indigo-200 outline-none"
                 />
               </div>
@@ -450,6 +458,7 @@ export const ToDoLists: React.FC = () => {
                             type="button"
                             onClick={() => removeCollaborator(c.id)}
                             title={`Remove ${c.name}`}
+                            data-testid={`todo-remove-collaborator-${c.id}-button`}
                             className="text-violet-300 hover:text-violet-600 transition-colors"
                           >
                             <X size={10} />
@@ -469,6 +478,7 @@ export const ToDoLists: React.FC = () => {
                           value={friendSearch}
                           onChange={e => setFriendSearch(e.target.value)}
                           placeholder="Search friends…"
+                          data-testid="todo-collaborator-search-input"
                           className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-8 pr-4 font-semibold text-slate-900 text-xs focus:ring-2 focus:ring-violet-200 outline-none"
                         />
                       </div>
@@ -481,6 +491,7 @@ export const ToDoLists: React.FC = () => {
                               type="button"
                               onClick={() => addCollaboratorFromFriend(f)}
                               disabled={added}
+                              data-testid={`todo-add-friend-${f.id}-button`}
                               className={cn(
                                 'w-full flex items-center gap-2.5 px-3 py-2 rounded-lg transition-all text-left',
                                 added
@@ -518,6 +529,7 @@ export const ToDoLists: React.FC = () => {
                         onChange={e => setNewCollaboratorName(e.target.value)}
                         placeholder="Name *"
                         autoFocus
+                        data-testid="todo-new-collaborator-name-input"
                         className="w-full bg-white border border-violet-100 rounded-lg py-2 px-3 text-xs font-bold text-slate-900 focus:ring-2 focus:ring-violet-200 outline-none"
                       />
                       <input
@@ -525,12 +537,14 @@ export const ToDoLists: React.FC = () => {
                         value={newCollaboratorEmail}
                         onChange={e => setNewCollaboratorEmail(e.target.value)}
                         placeholder="Email (needed to share)"
+                        data-testid="todo-new-collaborator-email-input"
                         className="w-full bg-white border border-violet-100 rounded-lg py-2 px-3 text-xs font-bold text-slate-900 focus:ring-2 focus:ring-violet-200 outline-none"
                       />
                       <div className="flex gap-2">
                         <button
                           type="button"
                           onClick={() => { setShowNewCollaboratorInput(false); setNewCollaboratorName(''); setNewCollaboratorEmail(''); }}
+                          data-testid="todo-new-collaborator-cancel-button"
                           className="flex-1 py-1.5 border border-slate-200 rounded-lg text-[9px] font-black uppercase tracking-widest text-slate-600"
                         >
                           Cancel
@@ -539,6 +553,7 @@ export const ToDoLists: React.FC = () => {
                           type="button"
                           onClick={addNewCollaborator}
                           disabled={!newCollaboratorName.trim()}
+                          data-testid="todo-new-collaborator-add-button"
                           className="flex-1 py-1.5 bg-violet-600 text-white rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-violet-700 transition-all disabled:opacity-50"
                         >
                           Add
@@ -549,6 +564,7 @@ export const ToDoLists: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setShowNewCollaboratorInput(true)}
+                      data-testid="todo-add-new-collaborator-toggle-button"
                       className="w-full flex items-center justify-center gap-2 py-2.5 border-2 border-dashed border-violet-200 rounded-xl text-[10px] font-black uppercase tracking-widest text-violet-500 hover:bg-violet-50 hover:border-violet-300 transition-all"
                     >
                       <UserPlus size={13} />
@@ -564,6 +580,7 @@ export const ToDoLists: React.FC = () => {
               <button
                 type="button"
                 onClick={() => { setShowCreateModal(false); resetModal(); }}
+                data-testid="todo-create-cancel-button"
                 className="flex-1 py-3 border-2 border-slate-200 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-50 transition-all"
               >
                 Cancel
@@ -572,6 +589,7 @@ export const ToDoLists: React.FC = () => {
                 type="button"
                 onClick={handleCreateList}
                 disabled={isCreating || !newListName.trim()}
+                data-testid="todo-create-submit-button"
                 className={cn(
                   'flex-1 py-3 text-white rounded-xl text-[10px] font-black uppercase tracking-widest active:scale-95 transition-all disabled:opacity-50',
                   listType === 'together'
@@ -609,6 +627,7 @@ export const ToDoLists: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(true)}
+                  data-testid="todo-create-first-list-button"
                   className="mt-4 px-5 py-2.5 bg-indigo-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-indigo-700 active:scale-95 transition-all flex items-center gap-2"
                 >
                   <Plus size={12} />Create First List

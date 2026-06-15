@@ -90,6 +90,7 @@ export const SignInForm: React.FC<SignInFormProps> = ({ onSwitchToSignUp, onSubm
  value={formData.email} onChange={handleInputChange}
  disabled={isLoading} placeholder="you@example.com"
  autoComplete="email"
+ data-testid="auth-signin-email-input"
  className={inputBase(!!errors.email)}
  />
  </div>
@@ -108,9 +109,11 @@ export const SignInForm: React.FC<SignInFormProps> = ({ onSwitchToSignUp, onSubm
  value={formData.password} onChange={handleInputChange}
  disabled={isLoading} placeholder="--------"
  autoComplete="current-password"
+ data-testid="auth-signin-password-input"
  className={`${inputBase(!!errors.password)} pr-10`}
  />
  <button type="button" onClick={() => setShowPassword(!showPassword)}
+ data-testid="auth-signin-password-toggle"
  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors">
  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
  </button>
@@ -122,6 +125,7 @@ export const SignInForm: React.FC<SignInFormProps> = ({ onSwitchToSignUp, onSubm
  <div className="flex items-center justify-between">
  <label htmlFor="rememberMe" className="flex items-center gap-2 cursor-pointer">
  <input type="checkbox" id="rememberMe" name="rememberMe"
+ data-testid="auth-signin-remember-checkbox"
  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 accent-blue-600"
  />
  <span className="text-sm text-gray-600">Remember me</span>
@@ -135,6 +139,7 @@ export const SignInForm: React.FC<SignInFormProps> = ({ onSwitchToSignUp, onSubm
  <button
  type="submit"
  disabled={isLoading}
+ data-testid="auth-signin-submit-button"
  className="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold py-3 px-4 rounded-xl transition-all duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
  >
  {isLoading ? (
@@ -145,6 +150,7 @@ export const SignInForm: React.FC<SignInFormProps> = ({ onSwitchToSignUp, onSubm
  <p className="text-center text-sm text-gray-500 pt-1">
  Don't have an account?{' '}
  <button type="button" onClick={onSwitchToSignUp}
+ data-testid="auth-signin-switch-signup-button"
  className="text-blue-600 hover:text-blue-700 font-semibold transition-colors">
  Sign up
  </button>

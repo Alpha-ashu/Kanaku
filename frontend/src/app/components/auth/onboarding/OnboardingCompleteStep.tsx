@@ -111,9 +111,9 @@ export const OnboardingCompleteStep: React.FC<OnboardingCompleteStepProps> = ({
  localStorage.setItem('onboarding_completed', 'true');
  localStorage.setItem('user_setup_date', new Date().toISOString());
  localStorage.setItem('pin_setup_required', 'true'); // Flag to trigger PIN setup
- // Also persist to Supabase user_metadata so it survives across devices/cache clears.
- // Non-blocking - localStorage remains the local-first fallback.
- supabase.auth.updateUser({ data: { onboarding_completed: true } }).catch(() => {});
+ // Persist to Supabase user_metadata so it survives across devices/cache clears.
+ // Awaited here with silent failure — localStorage is the local-first fallback.
+ await supabase.auth.updateUser({ data: { onboarding_completed: true } }).catch(() => {});
  window.dispatchEvent(new CustomEvent('APP_SETTINGS_UPDATED', {
  detail: userSettings,
  }));
@@ -293,8 +293,8 @@ export const OnboardingCompleteStep: React.FC<OnboardingCompleteStepProps> = ({
  <li> Profile: {data.displayName}</li>
  <li> Location: {data.country} ({data.language})</li>
  <li> Job: {data.jobType}</li>
- <li> Salary: INR{parseFloat(data.salary).toLocaleString()}/year</li>
- <li> Bank: {data.bankName} account</li>
+ <li> Salary: {data.salary && !isNaN(parseFloat(data.salary)) ? `INR${parseFloat(data.salary).toLocaleString()}/year` : 'Not provided'}</li>
+ <li> Bank: {data.bankName ? `${data.bankName} account` : 'No bank selected'}</li>
  {data.currentBalance && (
  <li> Current Balance: INR{parseFloat(data.currentBalance).toLocaleString()}</li>
  )}

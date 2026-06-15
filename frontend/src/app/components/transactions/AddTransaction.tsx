@@ -652,6 +652,7 @@ export function AddTransaction() {
  <button
  onClick={() => { clearQuickStorage(); setCurrentPage(returnPage); }}
  title="Back"
+ data-testid="transaction-back-button"
  className="p-2 text-slate-600 hover:bg-slate-50 rounded-xl transition-all shrink-0"
  >
  <ArrowLeft size={18} />
@@ -683,6 +684,7 @@ export function AddTransaction() {
  setExpenseMode('individual');
  }
  }}
+ data-testid={`transaction-type-${tab.id}-tab`}
  className={cn(
  'flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all',
  formData.type === tab.id
@@ -713,14 +715,14 @@ export function AddTransaction() {
  { id: 'group', label: 'Split', icon: <Users size={12} /> },
  { id: 'loan', label: 'Loan', icon: <Banknote size={12} /> }
  ].map(m => (
- <button key={m.id} onClick={() => setExpenseMode(m.id as any)} className={cn("flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg font-black text-[8px] uppercase tracking-wider transition-all", expenseMode === m.id ?"bg-white text-slate-900 shadow-sm" :"text-slate-400 hover:text-slate-600")}>
+ <button key={m.id} onClick={() => setExpenseMode(m.id as any)} data-testid={`transaction-expense-mode-${m.id}-button`} className={cn("flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg font-black text-[8px] uppercase tracking-wider transition-all", expenseMode === m.id ?"bg-white text-slate-900 shadow-sm" :"text-slate-400 hover:text-slate-600")}>
  {m.icon} {m.label}
  </button>
  )) : [
  { id: 'self', label: 'Self', icon: <Wallet size={12} /> },
  { id: 'others', label: 'Others', icon: <UserPlus size={12} /> }
  ].map(m => (
- <button key={m.id} onClick={() => setTransferSubType(m.id as any)} className={cn("flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg font-black text-[8px] uppercase tracking-wider transition-all", transferSubType === m.id ?"bg-white text-slate-900 shadow-sm" :"text-slate-400 hover:text-slate-600")}>
+ <button key={m.id} onClick={() => setTransferSubType(m.id as any)} data-testid={`transaction-transfer-subtype-${m.id}-button`} className={cn("flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg font-black text-[8px] uppercase tracking-wider transition-all", transferSubType === m.id ?"bg-white text-slate-900 shadow-sm" :"text-slate-400 hover:text-slate-600")}>
  {m.icon} {m.label}
  </button>
  ))}
@@ -737,6 +739,7 @@ export function AddTransaction() {
  <button
  key={m.id}
  onClick={() => setTransferMethod(m.id)}
+ data-testid={`transaction-transfer-method-${m.id}-button`}
  className={cn(
  'flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg font-black text-[8px] uppercase tracking-wider transition-all',
  transferMethod === m.id ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-600'
@@ -770,7 +773,7 @@ export function AddTransaction() {
  <div className="col-span-1 sm:col-span-2">
  <div className="flex gap-2 p-1 bg-white rounded-xl border border-slate-100">
  {['borrowed', 'lent'].map(t => (
- <button key={t} type="button" onClick={() => setLoanType(t as any)} className={cn("flex-1 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all", loanType === t ?"bg-slate-900 text-white shadow-md" :"text-slate-400 hover:text-slate-600")}>
+ <button key={t} type="button" onClick={() => setLoanType(t as any)} data-testid={`transaction-loan-type-${t}-button`} className={cn("flex-1 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all", loanType === t ?"bg-slate-900 text-white shadow-md" :"text-slate-400 hover:text-slate-600")}>
  {t === 'borrowed' ? 'Borrowed' : 'Lent'}
  </button>
  ))}
@@ -804,7 +807,7 @@ export function AddTransaction() {
  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Description / Reason</label>
  <div className="relative">
  <AlignLeft className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
- <input type="text" value={formData.description} onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))} aria-label="Description" className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-900 text-xs focus:ring-2 focus:ring-indigo-500/20" placeholder=" Loan EMI / Friends / ATM Withdrawal" />
+ <input type="text" value={formData.description} onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))} aria-label="Description" data-testid="transaction-description-input" className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-900 text-xs focus:ring-2 focus:ring-indigo-500/20" placeholder=" Loan EMI / Friends / ATM Withdrawal" />
  </div>
  </div>
  </div>
@@ -853,6 +856,7 @@ export function AddTransaction() {
  <button
  type="button"
  onClick={() => { setShowFriendPicker(p => !p); setShowNewPersonInput(false); }}
+ data-testid="transaction-friends-picker-button"
  className="flex items-center gap-1 text-[9px] font-black text-violet-600 bg-violet-50 px-2.5 py-1.5 rounded-lg uppercase tracking-wide"
  >
  <Users size={11} /> Friends
@@ -861,6 +865,7 @@ export function AddTransaction() {
  <button
  type="button"
  onClick={() => { setShowNewPersonInput(p => !p); setShowFriendPicker(false); }}
+ data-testid="transaction-add-person-toggle-button"
  className="flex items-center gap-1 text-[9px] font-black text-indigo-600 bg-indigo-50 px-2.5 py-1.5 rounded-lg uppercase tracking-wide"
  >
  <UserPlus size={11} /> New
@@ -872,9 +877,10 @@ export function AddTransaction() {
  {expenseMode !== 'group' && (
  <div className="space-y-4">
  <div className="relative">
- <button 
- type="button" 
- onClick={() => setShowFriendPicker(p => !p)} 
+ <button
+ type="button"
+ onClick={() => setShowFriendPicker(p => !p)}
+ data-testid="transaction-person-picker-button"
  className="w-full flex items-center justify-between bg-slate-50 border border-slate-100 rounded-xl py-3 px-4 font-bold text-xs text-slate-700 hover:bg-slate-100 transition-all"
  >
  <div className="flex items-center gap-2">
@@ -952,6 +958,7 @@ export function AddTransaction() {
  }
  }}
  aria-label="New person name"
+ data-testid="transaction-new-person-input"
  className="flex-1 bg-transparent border-none p-0 text-xs font-bold text-slate-900 focus:ring-0 placeholder:text-slate-300"
  placeholder="Enter name & press Enter"
  autoFocus
@@ -966,7 +973,8 @@ export function AddTransaction() {
  setLoanDraft(prev => ({ ...prev, contactName: newPersonName }));
  setShowNewPersonInput(false);
  }
- }} 
+ }}
+ data-testid="transaction-new-person-confirm-button"
  className="p-1.5 bg-indigo-600 text-white rounded-lg"
  >
  <Check size={12} strokeWidth={3} />
@@ -1309,6 +1317,7 @@ export function AddTransaction() {
  value={amountStr}
  onChange={e => { setAmountStr(e.target.value); setFormData(prev => ({ ...prev, amount: parseFloat(e.target.value) || 0 })); }}
  aria-label="Transaction amount"
+ data-testid="transaction-amount-input"
  className="bg-transparent text-4xl min-[400px]:text-5xl sm:text-6xl font-black text-slate-900 outline-none w-full text-center tracking-tighter placeholder:text-slate-100 p-0 m-0"
  placeholder="0"
  autoFocus
@@ -1321,6 +1330,7 @@ export function AddTransaction() {
  <button
  onClick={() => { setAmountStr(''); setFormData(prev => ({ ...prev, amount: 0 })); }}
  title="Clear amount"
+ data-testid="transaction-amount-clear-button"
  className="p-1 sm:p-2 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-full transition-all animate-in fade-in zoom-in-50"
  >
  <X size={20} className="sm:w-7 sm:h-7" strokeWidth={3} />
@@ -1340,6 +1350,7 @@ export function AddTransaction() {
  setAmountStr(String(next));
  setFormData(prev => ({ ...prev, amount: next }));
  }}
+ data-testid={`transaction-preset-${amt}-button`}
  className="px-6 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-[11px] font-black text-slate-500 hover:bg-slate-900 hover:text-white hover:border-slate-900 hover:shadow-2xl hover:shadow-slate-200 transition-all active:scale-90 select-none"
  >
  +{currency}{amt}
@@ -1471,6 +1482,7 @@ export function AddTransaction() {
  value={transferRecipient}
  onChange={e => setTransferRecipient(e.target.value)}
  aria-label="Recipient name or UPI"
+ data-testid="transaction-recipient-input"
  className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-xs"
  placeholder="Name / UPI / Account"
  />
@@ -1479,6 +1491,7 @@ export function AddTransaction() {
  type="button"
  title="Clear recipient"
  onClick={() => setTransferRecipient('')}
+ data-testid="transaction-recipient-clear-button"
  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 hover:text-rose-500"
  >
  <X size={13} strokeWidth={3} />
@@ -1511,6 +1524,7 @@ export function AddTransaction() {
  value={formData.date}
  onChange={e => setFormData(prev => ({ ...prev, date: e.target.value }))}
  aria-label="Transaction date"
+ data-testid="transaction-date-input"
  className="absolute inset-0 opacity-0 cursor-pointer z-20"
  />
  </div>
@@ -1522,6 +1536,7 @@ export function AddTransaction() {
  value={formData.notes}
  onChange={e => setFormData(prev => ({ ...prev, notes: e.target.value }))}
  aria-label="Notes"
+ data-testid="transaction-notes-textarea"
  className="w-full bg-slate-50 border-none rounded-xl p-3 font-bold text-xs min-h-[60px] resize-none"
  placeholder="ATM Withdrawal / Friend Transfer / etc..."
  />
@@ -1545,6 +1560,7 @@ export function AddTransaction() {
      <button
        type="button"
        onClick={() => { setScannerMode('scan'); setShowScanner(true); }}
+       data-testid="transaction-scan-receipt-button"
        className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-slate-900 text-white hover:bg-slate-800 active:scale-[0.97] transition-all shadow-lg shadow-slate-200"
      >
        <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center">
@@ -1560,6 +1576,7 @@ export function AddTransaction() {
    <button
      type="button"
      onClick={() => { setScannerMode('attachment'); setShowScanner(true); }}
+     data-testid="transaction-add-attachment-button"
      className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-slate-50 text-slate-900 hover:bg-slate-100 active:scale-[0.97] transition-all border border-slate-100"
    >
      <div className="w-9 h-9 rounded-xl bg-slate-200 flex items-center justify-center">
@@ -1592,6 +1609,7 @@ export function AddTransaction() {
  <button
  type="button"
  onClick={() => { setScanDocumentId(null); setAttachmentDocumentId(null); }}
+ data-testid="transaction-remove-attachment-button"
  className="p-1.5 text-emerald-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
  title="Remove attachment"
  >

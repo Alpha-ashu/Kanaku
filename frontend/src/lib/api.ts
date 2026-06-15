@@ -353,6 +353,62 @@ class HTTPClient {
               continue;
             }
 
+            // ── 401 handling ────────────────────────────────────────────────
+            // Credentials errors (wrong password, locked account) are not
+            // recoverable by a token refresh — fall through to standard error
+            // logging below. For all other 401s (session expired / JWT stale),
+            // silently attempt a token refresh and retry the request BEFORE
+            // logging anything. If the retry succeeds the caller sees a
+            // successful response with zero console noise or toast.
+            if (response.status === 401) {
+              const rawCode = data.code || 'HTTP_401';
+              const isCredentialsError = [
+                'INVALID_CREDENTIALS',
+                'EMAIL_NOT_FOUND',
+                'ACCOUNT_LOCKED',
+                'ACCOUNT_DISABLED',
+              ].includes(rawCode);
+
+              if (!isCredentialsError) {
+                const newToken = await refreshAccessToken();
+                if (newToken) {
+                  const retryHeaders = { ...headers, Authorization: `Bearer ${newToken}` };
+                  const retryController = new AbortController();
+                  const retryTimeout = setTimeout(() => retryController.abort(), timeout);
+                  try {
+                    const retryResponse = await fetch(buildApiUrl(apiBase, endpoint), {
+                      ...fetchConfig,
+                      headers: retryHeaders,
+                      signal: retryController.signal,
+                    });
+                    clearTimeout(retryTimeout);
+                    if (retryResponse.ok) {
+                      // Silently recovered — no console error, no toast
+                      clearOptionalBackendUnavailable();
+                      const retryData = (await this.parseResponseBody(retryResponse)) as T;
+                      return { success: true, data: retryData };
+                    }
+                  } catch {
+                    clearTimeout(retryTimeout);
+                  }
+                }
+                // Refresh failed or retry returned non-ok — clear session and redirect
+                TokenManager.clearTokens();
+                try {
+                  await supabase.auth.signOut({ scope: 'local' });
+                } catch {
+                  // Ignore sign out errors
+                }
+                await new Promise(resolve => setTimeout(resolve, 100));
+                if (window.location.pathname !== '/login') {
+                  window.location.href = '/login';
+                }
+                throw new APIError('UNAUTHORIZED', 'Your session has expired. Please sign in again.', 401);
+              }
+              // isCredentialsError: fall through to standard error logging below
+            }
+            // ── End 401 handling ────────────────────────────────────────────
+
             const serverCode = data.code || `HTTP_${response.status}`;
             const technicalMessage = data.message || data.error || response.statusText;
             const userMessage = getUserMessage(response.status, serverCode, technicalMessage);
@@ -364,50 +420,10 @@ class HTTPClient {
             };
 
             if (showErrorToast) {
-              // Use ErrorHandler for consistent, user-friendly toast messages
               ErrorHandler.handle(
                 ErrorFactory.fromHTTPStatus(response.status, userMessage),
                 true,
               );
-            }
-
-            // Handle 401 Unauthorized — try to refresh the session before signing out
-            if (response.status === 401) {
-              const newToken = await refreshAccessToken();
-              if (newToken) {
-                // Session refreshed — retry this request once with the new token
-                const retryHeaders = { ...headers, Authorization: `Bearer ${newToken}` };
-                const retryController = new AbortController();
-                const retryTimeout = setTimeout(() => retryController.abort(), timeout);
-                try {
-                  const retryResponse = await fetch(buildApiUrl(apiBase, endpoint), {
-                    ...fetchConfig,
-                    headers: retryHeaders,
-                    signal: retryController.signal,
-                  });
-                  clearTimeout(retryTimeout);
-                  if (retryResponse.ok) {
-                    clearOptionalBackendUnavailable();
-                    const retryData = (await this.parseResponseBody(retryResponse)) as T;
-                    return { success: true, data: retryData };
-                  }
-                } catch {
-                  clearTimeout(retryTimeout);
-                }
-                // Retry also failed — fall through to sign out
-              }
-
-              // Refresh failed or retry failed — clear session and redirect
-              TokenManager.clearTokens();
-              try {
-                await supabase.auth.signOut({ scope: 'local' });
-              } catch {
-                // Ignore sign out errors
-              }
-              await new Promise(resolve => setTimeout(resolve, 100));
-              if (window.location.pathname !== '/login') {
-                window.location.href = '/login';
-              }
             }
 
             throw new APIError(error.code, error.message, response.status, error.details);

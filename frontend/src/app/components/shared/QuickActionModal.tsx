@@ -102,6 +102,7 @@ export const QuickActionModal: React.FC<QuickActionModalProps> = ({
  className="rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 w-9 h-9"
  aria-label="Close quick actions"
  title="Close quick actions"
+ data-testid="quickaction-close-button"
  >
  <X size={18} />
  </Button>
@@ -118,6 +119,7 @@ export const QuickActionModal: React.FC<QuickActionModalProps> = ({
  <motion.button
  key={action.id}
  onClick={() => handleAction(action.id)}
+ data-testid={`quickaction-${action.id}-button`}
  initial={{ opacity: 0, y: 16 }}
  animate={{ opacity: 1, y: 0 }}
  transition={{ delay: i * 0.03, type: 'spring', stiffness: 300, damping: 22 }}

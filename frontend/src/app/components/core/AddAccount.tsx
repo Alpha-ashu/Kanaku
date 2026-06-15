@@ -200,7 +200,7 @@ export const AddAccount: React.FC = () => {
  <header className="flex-shrink-0 px-4 lg:px-10 py-5 bg-white/80 backdrop-blur-2xl border-b border-slate-100/50 z-30 sticky top-0 shadow-sm shadow-slate-200/30">
  <div className="flex flex-row flex-wrap items-center justify-between gap-4 w-full">
  <div className="flex items-center gap-3">
- <button onClick={() => setCurrentPage('accounts')} title="Back" className="lg:!hidden p-2 text-slate-600 hover:bg-slate-50 rounded-xl transition-all">
+ <button onClick={() => setCurrentPage('accounts')} title="Back" data-testid="account-create-back-button" className="lg:!hidden p-2 text-slate-600 hover:bg-slate-50 rounded-xl transition-all">
  <ArrowLeft size={20} />
  </button>
  <div className="flex flex-col">
@@ -222,7 +222,7 @@ export const AddAccount: React.FC = () => {
  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest shrink-0">1. Asset Type</label>
  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 w-full md:w-auto">
  {accountTypes.map(t => (
- <button key={t.id} onClick={() => setFormData(prev => ({ ...prev, type: t.id as any }))} className={cn("flex flex-col items-center gap-2 p-3 rounded-xl transition-all", formData.type === t.id ?"bg-indigo-600 text-white shadow-lg shadow-indigo-100" :"bg-slate-50 text-slate-400 hover:bg-slate-100")}>
+ <button key={t.id} onClick={() => setFormData(prev => ({ ...prev, type: t.id as any }))} data-testid={`account-create-type-${t.id}-button`} className={cn("flex flex-col items-center gap-2 p-3 rounded-xl transition-all", formData.type === t.id ?"bg-indigo-600 text-white shadow-lg shadow-indigo-100" :"bg-slate-50 text-slate-400 hover:bg-slate-100")}>
  <t.icon size={20} />
  <span className="text-[9px] font-black uppercase">{t.label}</span>
  </button>
@@ -271,6 +271,7 @@ export const AddAccount: React.FC = () => {
  type="text"
  value={provider}
  onChange={e => setProvider(e.target.value)}
+ data-testid="account-create-provider-input"
  className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-900 text-xs"
  placeholder="Bank or Wallet Name"
  />
@@ -284,7 +285,7 @@ export const AddAccount: React.FC = () => {
  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest shrink-0">3. Custom Label (Optional)</label>
  <div className="relative w-full md:max-w-md">
  <Wallet className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300" size={12} />
- <input type="text" value={formData.name} onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))} className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-900 text-xs" placeholder="e.g. My Savings" />
+ <input type="text" value={formData.name} onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))} data-testid="account-create-name-input" className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-900 text-xs" placeholder="e.g. My Savings" />
  </div>
  </div>
 
@@ -304,6 +305,7 @@ export const AddAccount: React.FC = () => {
  else setProvider(w.name);
  setFormData(prev => ({ ...prev, subType: w.name.toLowerCase() }));
  }}
+ data-testid={`account-create-wallet-${w.name.toLowerCase().replace(/\s+/g, '-')}-button`}
  className={cn(
 "aspect-[4/3] flex flex-col items-center justify-center gap-2 rounded-2xl border-1 transition-all p-1",
  provider === w.name || (w.name === 'Others' && !provider)
@@ -324,6 +326,7 @@ export const AddAccount: React.FC = () => {
  <button
  key={net.id}
  onClick={() => setFormData(prev => ({ ...prev, subType: net.id }))}
+ data-testid={`account-create-network-${net.id}-button`}
  className={cn(
 "flex items-center gap-3 px-4 py-3 rounded-xl text-[10px] font-black transition-all border",
  formData.subType === net.id
@@ -346,6 +349,7 @@ export const AddAccount: React.FC = () => {
  <button
  key={st.id}
  onClick={() => setFormData(prev => ({ ...prev, subType: st.id }))}
+ data-testid={`account-create-subtype-${st.id}-button`}
  className={cn(
 "px-3 py-2 rounded-xl text-[10px] font-bold transition-all border",
  formData.subType === st.id
@@ -448,6 +452,7 @@ export const AddAccount: React.FC = () => {
  type="button"
  onClick={() => setSelectedColor(color)}
  ref={el => { if (el) el.style.backgroundColor = color.color; }}
+ data-testid={`account-create-color-${color.id}-button`}
  className={cn(
 "w-10 h-10 md:w-12 md:h-12 rounded-full border-2 transition-all relative flex items-center justify-center shadow-sm hover:scale-105 active:scale-90",
  selectedColor.id === color.id ?"border-indigo-500 scale-110 shadow-lg shadow-indigo-500/20" :"border-white hover:border-slate-100"
@@ -475,6 +480,7 @@ export const AddAccount: React.FC = () => {
  min="0"
  max="360"
  aria-label="Color hue"
+ data-testid="account-create-hue-slider"
  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
  onChange={(e) => {
  const hue = e.target.value;
@@ -523,6 +529,7 @@ export const AddAccount: React.FC = () => {
  type="number"
  value={formData.balance}
  onChange={e => setFormData(prev => ({ ...prev, balance: e.target.value }))}
+ data-testid="account-create-balance-input"
  className="bg-transparent text-4xl md:text-5xl lg:text-6xl font-black text-slate-900 outline-none w-full min-w-0 text-center tracking-tighter placeholder:text-slate-200"
  placeholder="0.00"
  autoFocus
@@ -542,6 +549,7 @@ export const AddAccount: React.FC = () => {
  <button
  key={amt}
  onClick={() => setFormData(prev => ({ ...prev, balance: String((Number(prev.balance) || 0) + amt) }))}
+ data-testid={`account-create-preset-${amt}-button`}
  className="flex-1 px-4 py-3 bg-white border border-slate-100 rounded-2xl text-xs font-black text-slate-500 hover:border-indigo-200 hover:text-indigo-600 hover:shadow-md hover:shadow-indigo-500/5 transition-all active:scale-95"
  >
  +{amt.toLocaleString()}

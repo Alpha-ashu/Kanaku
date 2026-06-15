@@ -71,17 +71,32 @@ export const NewUserOnboarding: React.FC = () => {
            : `${user.user_metadata?.firstName || ''} ${user.user_metadata?.lastName || ''}`.trim());
      }
 
-     // 3. Try backend API profile as the authoritative source
-     if (!metaName) {
-       try {
-         const profileRes = await api.auth.getProfile();
-         if (profileRes.success && profileRes.data) {
-           const p = profileRes.data;
+     // 3. Always check backend — it's the cross-device source of truth.
+     // If the profile has dateOfBirth set, the user already completed onboarding
+     // on another device. Restore minimum local state and skip the form entirely.
+     try {
+       const profileRes = await api.auth.getProfile();
+       if (profileRes.success && profileRes.data) {
+         const p = profileRes.data;
+         if (!metaName) {
            metaName = p.fullName || p.name || `${p.firstName || ''} ${p.lastName || ''}`.trim();
          }
-       } catch (e) {
-         console.warn('Failed to fetch profile during onboarding init:', e);
+         if (p.dateOfBirth && (p.firstName || p.name || p.fullName)) {
+           localStorage.setItem('onboarding_completed', 'true');
+           localStorage.setItem('user_profile', JSON.stringify({
+             displayName: metaName || p.firstName || '',
+             firstName: p.firstName || '',
+             lastName: p.lastName || '',
+             avatarUrl: p.avatarUrl || '',
+             avatarId: p.avatarId || '',
+           }));
+           if (p.currency) localStorage.setItem('currency', p.currency);
+           window.dispatchEvent(new CustomEvent('ONBOARDING_COMPLETED'));
+           return;
+         }
        }
+     } catch (e) {
+       console.warn('Failed to fetch profile during onboarding init:', e);
      }
 
      if (metaName) {

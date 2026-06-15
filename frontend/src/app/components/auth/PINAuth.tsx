@@ -385,6 +385,7 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  onKeyDown={handleHiddenKeyDown}
  tabIndex={0}
  aria-label="PIN entry"
+ data-testid="pin-auth-hidden-input"
  />
  </form>
 
@@ -410,6 +411,7 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  <button
  type="button"
  onClick={() => { setCreateStage('enter'); setPin(''); setFirstPin(''); setErrorMsg(''); }}
+ data-testid="pin-auth-confirm-back-button"
  className="flex items-center gap-1 text-gray-500 hover:text-gray-900 text-sm font-medium transition-colors mt-2"
  >
  <ChevronLeft size={16} /> Back
@@ -449,6 +451,7 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  <button
  type="button"
  onClick={() => setShowReveal(r => !r)}
+ data-testid="pin-auth-reveal-toggle"
  className="flex items-center gap-1.5 text-gray-400 hover:text-gray-900 text-[10px] font-bold transition-colors"
  >
  {showReveal ? <EyeOff size={14} /> : <Eye size={14} />}
@@ -471,6 +474,7 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  type="button"
  onClick={() => appendDigit(String(n))}
  disabled={isSubmitting}
+ data-testid={`pin-auth-digit-${n}`}
  className="h-14 rounded-2xl bg-white hover:bg-gray-100 active:bg-gray-200 active:scale-95 transition-all text-xl font-semibold text-gray-900 flex items-center justify-center disabled:opacity-50 disabled:pointer-events-none"
  >
  {n}
@@ -483,6 +487,7 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  onClick={handleForgotPin}
  disabled={isSubmitting}
  title="Forgot PIN"
+ data-testid="pin-auth-forgot-pin-button"
  className="h-14 rounded-2xl bg-transparent hover:bg-gray-50 active:bg-gray-100 transition-all text-gray-500 hover:text-gray-900 flex items-center justify-center disabled:opacity-50 disabled:pointer-events-none"
  >
  <KeyRound size={20} />
@@ -494,6 +499,7 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  type="button"
  onClick={() => appendDigit('0')}
  disabled={isSubmitting}
+ data-testid="pin-auth-digit-0"
  className="h-14 rounded-2xl bg-white hover:bg-gray-100 active:bg-gray-200 active:scale-95 transition-all text-xl font-semibold text-gray-900 flex items-center justify-center disabled:opacity-50 disabled:pointer-events-none"
  >
  0
@@ -502,6 +508,7 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  type="button"
  onClick={deleteDigit}
  disabled={isSubmitting}
+ data-testid="pin-auth-delete-button"
  className="h-14 rounded-2xl bg-transparent hover:bg-gray-50 active:bg-gray-100 transition-all text-gray-500 hover:text-gray-900 flex items-center justify-center disabled:opacity-50 disabled:pointer-events-none"
  >
  {isSubmitting ? (
@@ -518,6 +525,7 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  type="button"
  onClick={handleSignOut}
  disabled={isLoggingOut || isSubmitting}
+ data-testid="pin-auth-signout-button"
  className="flex items-center justify-center gap-2 text-gray-500 hover:text-gray-900 text-sm font-medium transition-colors py-1"
  >
  <LogOut size={15} />
@@ -565,6 +573,7 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  value={resetOtp}
  onChange={(e) => setResetOtp(e.target.value.replace(/\D/g, ''))}
  placeholder="Enter 6-digit code"
+ data-testid="pin-reset-otp-input"
  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-center tracking-widest text-lg font-bold focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white"
  autoFocus
  />
@@ -575,6 +584,7 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  <button
  type="button"
  onClick={() => setShowResetModal(false)}
+ data-testid="pin-reset-cancel-button"
  className="flex-1 py-3 rounded-xl bg-gray-100 text-gray-700 font-semibold hover:bg-gray-200 transition-colors"
  >
  Cancel
@@ -584,6 +594,7 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  type="button"
  onClick={handleVerifyOtpAndReset}
  disabled={isResettingPin || resetOtp.length < 6}
+ data-testid="pin-reset-verify-button"
  className="flex-1 py-3 rounded-xl bg-amber-500 text-white font-semibold hover:bg-amber-600 transition-colors disabled:opacity-60"
  >
  {isResettingPin ? 'Verifying...' : 'Verify & Reset'}
@@ -593,6 +604,7 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  type="button"
  onClick={handleSendOtp}
  disabled={isResettingPin}
+ data-testid="pin-reset-send-button"
  className="flex-1 py-3 rounded-xl bg-amber-500 text-white font-semibold hover:bg-amber-600 transition-colors disabled:opacity-60"
  >
  {isResettingPin ? 'Sending...' : 'Send Code'}

@@ -222,6 +222,7 @@ export const PINSetup: React.FC<PINSetupProps> = ({
           value={currentPinVal}
           onChange={handleInputChange}
           tabIndex={0}
+          data-testid="pin-setup-hidden-input"
         />
       </form>
 
@@ -248,6 +249,7 @@ export const PINSetup: React.FC<PINSetupProps> = ({
               <button
                 type="button"
                 onClick={() => { setStep('create'); setPin(''); setConfirmPin(''); setError(null); }}
+                data-testid="pin-setup-confirm-back-button"
                 className="flex items-center gap-1 text-gray-500 hover:text-gray-900 text-sm font-medium transition-colors mt-2"
               >
                 <ChevronLeft size={16} /> Back
@@ -285,6 +287,7 @@ export const PINSetup: React.FC<PINSetupProps> = ({
             <button
               type="button"
               onClick={() => setShowPin(r => !r)}
+              data-testid="pin-setup-reveal-toggle"
               className="flex items-center gap-1.5 text-gray-400 hover:text-gray-900 text-[10px] font-bold transition-colors"
             >
               {showPin ? <EyeOff size={14} /> : <Eye size={14} />}
@@ -307,6 +310,7 @@ export const PINSetup: React.FC<PINSetupProps> = ({
                 type="button"
                 onClick={() => appendDigit(String(n))}
                 disabled={isLoading}
+                data-testid={`pin-setup-digit-${n}`}
                 className="h-14 rounded-2xl bg-white hover:bg-gray-100 active:bg-gray-200 active:scale-95 transition-all text-xl font-semibold text-gray-900 flex items-center justify-center disabled:opacity-50 disabled:pointer-events-none"
               >
                 {n}
@@ -317,6 +321,7 @@ export const PINSetup: React.FC<PINSetupProps> = ({
                 type="button"
                 onClick={onBack}
                 disabled={isLoading}
+                data-testid="pin-setup-back-nav-button"
                 className="h-14 rounded-2xl bg-transparent hover:bg-gray-50 active:bg-gray-100 transition-all text-gray-500 hover:text-gray-900 flex items-center justify-center disabled:opacity-50 disabled:pointer-events-none"
               >
                 <ChevronLeft size={20} />
@@ -328,6 +333,7 @@ export const PINSetup: React.FC<PINSetupProps> = ({
               type="button"
               onClick={() => appendDigit('0')}
               disabled={isLoading}
+              data-testid="pin-setup-digit-0"
               className="h-14 rounded-2xl bg-white hover:bg-gray-100 active:bg-gray-200 active:scale-95 transition-all text-xl font-semibold text-gray-900 flex items-center justify-center disabled:opacity-50 disabled:pointer-events-none"
             >
               0
@@ -336,6 +342,7 @@ export const PINSetup: React.FC<PINSetupProps> = ({
               type="button"
               onClick={deleteDigit}
               disabled={isLoading}
+              data-testid="pin-setup-delete-button"
               className="h-14 rounded-2xl bg-transparent hover:bg-gray-50 active:bg-gray-100 transition-all text-gray-500 hover:text-gray-900 flex items-center justify-center disabled:opacity-50 disabled:pointer-events-none animate-none"
             >
               {isLoading ? (

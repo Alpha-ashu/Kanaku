@@ -461,6 +461,7 @@ export const AdminFeaturePanel: React.FC = () => {
           <button
             type="button"
             onClick={() => setActiveTab('app')}
+            data-testid="admin-tab-app-button"
             className={cn(
               "px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2",
               activeTab === 'app'
@@ -474,6 +475,7 @@ export const AdminFeaturePanel: React.FC = () => {
           <button
             type="button"
             onClick={() => setActiveTab('ai')}
+            data-testid="admin-tab-ai-button"
             className={cn(
               "px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2",
               activeTab === 'ai'
@@ -496,6 +498,7 @@ export const AdminFeaturePanel: React.FC = () => {
                 placeholder="Search application modules..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
+                data-testid="admin-feature-search-input"
                 className="w-full bg-white border border-slate-200 rounded-2xl pl-12 pr-4 py-3 text-sm font-medium outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 transition-all duration-200 shadow-sm"
               />
             </div>
@@ -527,6 +530,7 @@ export const AdminFeaturePanel: React.FC = () => {
                         type="button"
                         title={f.enabled ? `Disable ${f.name}` : `Enable ${f.name}`}
                         onClick={() => handleToggleFeatureEnabled(f.key, !f.enabled)}
+                        data-testid={`admin-feature-${f.key}-toggle-button`}
                         className={cn(
                           "w-11 h-6 rounded-full relative transition-all duration-200",
                           f.enabled ? "bg-indigo-600" : "bg-slate-200"
@@ -556,6 +560,7 @@ export const AdminFeaturePanel: React.FC = () => {
                               title={`${f.roleAccess[role] ? 'Revoke' : 'Grant'} ${role} access to ${f.name}`}
                               onClick={() => handleToggleRoleAccess(f.key, role, !f.roleAccess[role])}
                               disabled={!f.enabled}
+                              data-testid={`admin-feature-${f.key}-role-${role}-button`}
                               className={cn(
                                 "w-8 h-4.5 rounded-full relative transition-all duration-200",
                                 f.roleAccess[role] && f.enabled ? "bg-indigo-600" : "bg-slate-200",
@@ -580,6 +585,7 @@ export const AdminFeaturePanel: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => setSelectedSubFeatureModule(f)}
+                          data-testid={`admin-feature-${f.key}-subfeatures-button`}
                           className="w-full flex items-center justify-center gap-2 text-indigo-600 hover:text-indigo-700 bg-indigo-50/50 hover:bg-indigo-100/70 active:scale-[0.98] transition-all font-black text-[10px] uppercase tracking-widest py-3.5 rounded-2xl border border-indigo-100/50"
                         >
                           <Layers size={13} />
@@ -632,6 +638,7 @@ export const AdminFeaturePanel: React.FC = () => {
                   type="button"
                   title="Close sub-features panel"
                   onClick={() => setSelectedSubFeatureModule(null)}
+                  data-testid="admin-subfeature-modal-close-button"
                   className="rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 w-9 h-9 flex items-center justify-center transition-all"
                 >
                   <X size={18} />
@@ -670,6 +677,7 @@ export const AdminFeaturePanel: React.FC = () => {
                           title={child.enabled ? `Disable ${child.name}` : `Enable ${child.name}`}
                           onClick={() => handleToggleSubFeatureEnabled(currentModule!.key, child.key, !child.enabled)}
                           disabled={!currentModule?.enabled}
+                          data-testid={`admin-subfeature-${child.key}-toggle-button`}
                           className={cn(
                             "w-11 h-6 rounded-full relative transition-all duration-200",
                             child.enabled && currentModule?.enabled ? "bg-indigo-600" : "bg-slate-200",
@@ -694,6 +702,7 @@ export const AdminFeaturePanel: React.FC = () => {
                               title={`${child.roleAccess[r] ? 'Revoke' : 'Grant'} ${r} access to ${child.name}`}
                               onClick={() => handleToggleSubFeatureRoleAccess(currentModule!.key, child.key, r, !child.roleAccess[r])}
                               disabled={!child.enabled || !currentModule?.enabled}
+                              data-testid={`admin-subfeature-${child.key}-role-${r}-button`}
                               className={cn(
                                 "w-9 h-5 rounded-full relative transition-all duration-200",
                                 child.roleAccess[r] && child.enabled && currentModule?.enabled ? "bg-indigo-600" : "bg-slate-200",
@@ -720,6 +729,7 @@ export const AdminFeaturePanel: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setSelectedSubFeatureModule(null)}
+                  data-testid="admin-subfeature-modal-done-button"
                   className="px-6 py-3 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-800 transition-all shadow-md shadow-slate-200"
                 >
                   Close

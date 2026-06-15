@@ -360,6 +360,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
                 onBlur={handleNameBlur}
                 disabled={isLoading}
                 placeholder=" "
+                data-testid={`auth-signup-${field === 'firstName' ? 'firstname' : 'lastname'}-input`}
                 className={`${inputBase(hasError)} peer`}
                 autoComplete={field === 'firstName' ? 'given-name' : 'family-name'}
               />
@@ -398,6 +399,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
           onFocus={() => setEmailFocused(true)}
           disabled={isLoading}
           placeholder=" "
+          data-testid="auth-signup-email-input"
           className={`${inputBase(touched.email && !isEmailValid)} peer`}
           autoComplete="email"
         />
@@ -467,6 +469,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
               setFormData(prev => ({ ...prev, mobile: '' }));
             }}
             disabled={isLoading}
+            data-testid="auth-signup-country-code-select"
             className="bg-transparent border-0 outline-none text-xs font-bold text-gray-700 cursor-pointer pr-1 py-1 focus:ring-0 focus:ring-offset-0"
           >
             {countryCodes.map(c => (
@@ -487,6 +490,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
           onBlur={handleBlur}
           disabled={isLoading}
           placeholder=" "
+          data-testid="auth-signup-mobile-input"
           className={`${inputBase(touched.mobile && !isMobileValid)} peer !pl-28`}
           autoComplete="tel"
         />
@@ -522,6 +526,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
             onBlur={handleBlur}
             disabled={isLoading}
             placeholder=" "
+            data-testid="auth-signup-password-input"
             className={`${inputBase(touched.password && !isPasswordValid)} peer pr-12`}
             autoComplete="new-password"
           />
@@ -531,6 +536,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
+            data-testid="auth-signup-password-toggle"
             className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
           >
             {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -542,6 +548,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
           <button
             type="button"
             onClick={generateStrongPassword}
+            data-testid="auth-signup-suggest-password-button"
             className="text-xs text-blue-600 hover:text-blue-700 font-semibold flex items-center gap-1 transition-colors"
           >
             <Sparkles size={12} /> Suggest a strong password
@@ -614,6 +621,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
           placeholder=" "
           className={`${inputBase(touched.confirmPassword && !isConfirmPasswordValid)} peer pr-16`}
           autoComplete="new-password"
+          data-testid="auth-signup-confirm-password-input"
         />
         <label htmlFor="confirmPassword" className={labelBase}>
           Confirm Password
@@ -633,6 +641,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
         <button
           type="button"
           onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+          data-testid="auth-signup-confirm-password-toggle"
           className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
         >
           {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -651,13 +660,14 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
           checked={agreedToTerms}
           onChange={(e) => setAgreedToTerms(e.target.checked)}
           disabled={isLoading}
+          data-testid="auth-signup-terms-checkbox"
           className="h-3.5 w-3.5 rounded border-gray-300 text-blue-600 focus:ring-blue-500/20 cursor-pointer"
         />
         <label htmlFor="agreeToTerms" className="text-[11px] font-bold text-blue-700 cursor-pointer select-none whitespace-nowrap flex items-center gap-1">
           I agree to the
-          <button type="button" onClick={onViewTerms} className="font-bold underline hover:text-blue-900 transition-colors">Terms of Service</button>
+          <button type="button" onClick={onViewTerms} data-testid="auth-signup-view-terms-button" className="font-bold underline hover:text-blue-900 transition-colors">Terms of Service</button>
           and
-          <button type="button" onClick={onViewPrivacy} className="font-bold underline hover:text-blue-900 transition-colors">Privacy Policy</button>
+          <button type="button" onClick={onViewPrivacy} data-testid="auth-signup-view-privacy-button" className="font-bold underline hover:text-blue-900 transition-colors">Privacy Policy</button>
         </label>
       </div>
 
@@ -665,6 +675,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
       <button
         type="submit"
         disabled={isLoading || !isFormReady}
+        data-testid="auth-signup-submit-button"
         className="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold py-3 px-4 rounded-xl transition-all duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
       >
         {isLoading ? (
@@ -683,7 +694,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
 
       <p className="text-center text-sm text-gray-500 pt-1">
         Already have an account?{' '}
-        <button type="button" onClick={onSwitchToSignIn} className="text-blue-600 hover:text-blue-700 font-semibold transition-colors">
+        <button type="button" onClick={onSwitchToSignIn} data-testid="auth-signup-switch-signin-button" className="text-blue-600 hover:text-blue-700 font-semibold transition-colors">
           Sign in
         </button>
       </p>

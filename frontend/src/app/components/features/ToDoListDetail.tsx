@@ -198,12 +198,13 @@ export const ToDoListDetail: React.FC = () => {
   };
 
   const AssigneeSelect = ({
-    value, onChangeName, onChangeId, className,
+    value, onChangeName, onChangeId, className, testId,
   }: {
     value: string;
     onChangeName: (name: string) => void;
     onChangeId: (id: string) => void;
     className?: string;
+    testId?: string;
   }) => (
     <select
       aria-label="Assign to"
@@ -213,6 +214,7 @@ export const ToDoListDetail: React.FC = () => {
         onChangeId(e.target.value);
         onChangeName(opt?.name || '');
       }}
+      data-testid={testId}
       className={cn(
         'w-full bg-slate-50 border-none rounded-xl py-2 px-3 font-bold text-slate-900 text-xs focus:ring-2 focus:ring-violet-200 outline-none',
         className
@@ -249,6 +251,7 @@ export const ToDoListDetail: React.FC = () => {
               onClick={() => setCurrentPage('todo-lists')}
               className="lg:!hidden p-2 text-slate-600 hover:bg-slate-50 rounded-xl transition-all"
               title="Back"
+              data-testid="tododetail-back-button"
             >
               <ArrowLeft size={18} />
             </button>
@@ -274,6 +277,7 @@ export const ToDoListDetail: React.FC = () => {
                 onClick={handleShare}
                 className="p-2.5 text-slate-500 hover:text-violet-600 hover:bg-violet-50 rounded-xl transition-all"
                 title="Manage collaborators"
+                data-testid="tododetail-share-button"
               >
                 <Share2 size={18} />
               </button>
@@ -281,6 +285,7 @@ export const ToDoListDetail: React.FC = () => {
             <button
               type="button"
               onClick={() => { setShowAddForm(true); setEditingItemId(null); }}
+              data-testid="tododetail-add-task-button"
               className={cn(
                 'text-white px-4 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg hover:opacity-90 active:scale-95 transition-all flex items-center gap-2',
                 isTogether
@@ -316,7 +321,7 @@ export const ToDoListDetail: React.FC = () => {
           <div className="p-4 lg:p-6 space-y-3">
             <div className="flex items-center justify-between mb-1">
               <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">New Task</p>
-              <button type="button" onClick={() => { setShowAddForm(false); resetAddForm(); }} title="Close" className="p-1 text-slate-400 hover:text-slate-600 rounded">
+              <button type="button" onClick={() => { setShowAddForm(false); resetAddForm(); }} title="Close" data-testid="tododetail-add-form-close-button" className="p-1 text-slate-400 hover:text-slate-600 rounded">
                 <X size={14} />
               </button>
             </div>
@@ -329,6 +334,7 @@ export const ToDoListDetail: React.FC = () => {
               placeholder="What needs to be done?"
               aria-label="Task title"
               autoFocus
+              data-testid="tododetail-new-title-input"
               className="w-full bg-white border border-slate-200 rounded-xl py-3 px-4 font-bold text-slate-900 text-sm focus:ring-2 focus:ring-indigo-200 outline-none placeholder:text-slate-300"
             />
 
@@ -344,6 +350,7 @@ export const ToDoListDetail: React.FC = () => {
                         key={p}
                         type="button"
                         onClick={() => setNewPriority(p)}
+                        data-testid={`tododetail-new-priority-${p}-button`}
                         className={cn(
                           'flex-1 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all',
                           newPriority === p ? `${cfg.bg} ${cfg.text}` : 'bg-white border border-slate-200 text-slate-400 hover:border-slate-300'
@@ -364,6 +371,7 @@ export const ToDoListDetail: React.FC = () => {
                   value={newDueDate}
                   onChange={e => setNewDueDate(e.target.value)}
                   aria-label="Due date"
+                  data-testid="tododetail-new-due-date-input"
                   className="w-full bg-white border border-slate-200 rounded-xl py-2 px-3 font-bold text-slate-900 text-xs focus:ring-2 focus:ring-indigo-200 outline-none"
                 />
               </div>
@@ -379,6 +387,7 @@ export const ToDoListDetail: React.FC = () => {
                   value={newAssignedTo}
                   onChangeId={setNewAssignedTo}
                   onChangeName={setNewAssignedToName}
+                  testId="tododetail-new-assignee-select"
                 />
               </div>
             )}
@@ -392,6 +401,7 @@ export const ToDoListDetail: React.FC = () => {
                 placeholder="Optional notes…"
                 aria-label="Notes"
                 rows={2}
+                data-testid="tododetail-new-notes-textarea"
                 className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-3 font-bold text-slate-900 text-xs resize-none focus:ring-2 focus:ring-indigo-200 outline-none placeholder:text-slate-300"
               />
             </div>
@@ -400,6 +410,7 @@ export const ToDoListDetail: React.FC = () => {
               <button
                 type="button"
                 onClick={() => { setShowAddForm(false); resetAddForm(); }}
+                data-testid="tododetail-add-form-cancel-button"
                 className="px-5 py-2.5 border-2 border-slate-200 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-50 transition-all"
               >
                 Cancel
@@ -408,6 +419,7 @@ export const ToDoListDetail: React.FC = () => {
                 type="button"
                 onClick={handleAddItem}
                 disabled={isAdding || !newTitle.trim()}
+                data-testid="tododetail-add-task-submit-button"
                 className={cn(
                   'flex-1 py-2.5 text-white rounded-xl text-[10px] font-black uppercase tracking-widest active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2',
                   isTogether ? 'bg-violet-600 hover:bg-violet-700' : 'bg-indigo-600 hover:bg-indigo-700'
@@ -427,6 +439,7 @@ export const ToDoListDetail: React.FC = () => {
             key={f}
             type="button"
             onClick={() => setFilter(f)}
+            data-testid={`tododetail-filter-${f}-button`}
             className={cn(
               'px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all',
               filter === f
@@ -453,6 +466,7 @@ export const ToDoListDetail: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowAddForm(true)}
+                data-testid="tododetail-add-first-task-button"
                 className={cn(
                   'mt-4 px-5 py-2.5 text-white rounded-xl font-black text-[10px] uppercase tracking-widest active:scale-95 transition-all flex items-center gap-2',
                   isTogether ? 'bg-violet-600 hover:bg-violet-700' : 'bg-indigo-600 hover:bg-indigo-700'
@@ -475,6 +489,7 @@ export const ToDoListDetail: React.FC = () => {
                     value={editTitle}
                     onChange={e => setEditTitle(e.target.value)}
                     aria-label="Task title"
+                    data-testid="tododetail-edit-title-input"
                     className="w-full bg-slate-50 border-none rounded-xl py-2.5 px-3 font-bold text-slate-900 text-sm focus:ring-2 focus:ring-indigo-200 outline-none"
                     autoFocus
                   />
@@ -484,6 +499,7 @@ export const ToDoListDetail: React.FC = () => {
                         const cfg = PRIORITY_CONFIG[p];
                         return (
                           <button key={p} type="button" onClick={() => setEditPriority(p)}
+                            data-testid={`tododetail-edit-priority-${p}-button`}
                             className={cn('flex-1 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-tight transition-all', editPriority === p ? `${cfg.bg} ${cfg.text}` : 'bg-slate-100 text-slate-400 hover:bg-slate-200')}
                           >{cfg.label}</button>
                         );
@@ -491,6 +507,7 @@ export const ToDoListDetail: React.FC = () => {
                     </div>
                     <input type="date" value={editDueDate} onChange={e => setEditDueDate(e.target.value)}
                       aria-label="Due date"
+                      data-testid="tododetail-edit-due-date-input"
                       className="bg-slate-50 border-none rounded-xl py-1.5 px-3 font-bold text-slate-900 text-xs outline-none" />
                   </div>
                   {isTogether && (
@@ -502,18 +519,22 @@ export const ToDoListDetail: React.FC = () => {
                         value={editAssignedTo}
                         onChangeId={setEditAssignedTo}
                         onChangeName={setEditAssignedToName}
+                        testId="tododetail-edit-assignee-select"
                       />
                     </div>
                   )}
                   <textarea value={editDescription} onChange={e => setEditDescription(e.target.value)}
                     placeholder="Notes…" aria-label="Notes" rows={2}
+                    data-testid="tododetail-edit-notes-textarea"
                     className="w-full bg-slate-50 border-none rounded-xl py-2 px-3 text-xs font-semibold text-slate-700 resize-none outline-none" />
                   <div className="flex gap-2">
                     <button type="button" onClick={() => setEditingItemId(null)}
+                      data-testid="tododetail-edit-cancel-button"
                       className="flex-1 py-2 border border-slate-200 rounded-lg text-[9px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-50 transition-all">
                       Cancel
                     </button>
                     <button type="button" onClick={() => handleSaveEdit(item.id!)}
+                      data-testid="tododetail-edit-save-button"
                       className={cn('flex-1 py-2 text-white rounded-lg text-[9px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-1', isTogether ? 'bg-violet-600 hover:bg-violet-700' : 'bg-indigo-600 hover:bg-indigo-700')}>
                       <Check size={11} />Save
                     </button>
@@ -535,6 +556,7 @@ export const ToDoListDetail: React.FC = () => {
                   onClick={() => handleToggleItem(item)}
                   className="mt-0.5 shrink-0 transition-all active:scale-90"
                   title={item.completed ? 'Mark as active' : 'Mark as done'}
+                  data-testid={`tododetail-item-${item.id}-toggle-button`}
                 >
                   {item.completed
                     ? <CheckCircle size={22} className="text-emerald-500" />
@@ -587,6 +609,7 @@ export const ToDoListDetail: React.FC = () => {
                     onClick={() => startEdit(item)}
                     className="p-1.5 text-slate-300 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
                     title="Edit task"
+                    data-testid={`tododetail-item-${item.id}-edit-button`}
                   >
                     <Pencil size={13} />
                   </button>
@@ -595,6 +618,7 @@ export const ToDoListDetail: React.FC = () => {
                     onClick={() => handleDeleteItem(item.id!)}
                     className="p-1.5 text-slate-300 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
                     title="Delete task"
+                    data-testid={`tododetail-item-${item.id}-delete-button`}
                   >
                     <Trash2 size={13} />
                   </button>
