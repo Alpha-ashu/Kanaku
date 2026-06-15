@@ -390,11 +390,7 @@ export const TopBar: React.FC = () => {
         </div>
         <div className="flex flex-col">
           <h1 className="text-base font-black font-display tracking-tight text-slate-900 leading-none">KANAKU</h1>
-          <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-1">Fintech Suite</span>
         </div>
-      </div>
-      <div className="px-2 py-0.5 rounded-full bg-indigo-50 border border-indigo-100 text-[9px] font-bold text-indigo-600">
-        v1.2.0
       </div>
     </div>
 

@@ -1018,7 +1018,7 @@ export const Accounts: React.FC = () => {
             <AnimatePresence>
                 {editModalOpen && editingAccount && (
                     <motion.div
-                        className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4"
+                        className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 pb-[var(--bottom-nav-height)] sm:pb-0 sm:p-4"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}

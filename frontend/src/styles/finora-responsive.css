@@ -35,7 +35,6 @@
   overflow-y: auto;
   overflow-x: hidden;
   padding-bottom: clamp(5rem, 12vh, 8rem); /* Space for bottom nav */
-  -webkit-overflow-scrolling: touch;
 }
 
 /* ─── Auto-Sizing Grid System ─── */
@@ -243,6 +242,17 @@
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
+/* ─── PIN Auth: offscreen hidden form (keeps mobile keyboard open) ─── */
+.pin-hidden-input-container {
+  position: fixed;
+  top: -200px;
+  left: -200px;
+  opacity: 0;
+  pointer-events: none;
+  width: 1px;
+  height: 1px;
+}
+
 /* ─── Breakpoint: Extra Small (320px and below) ─── */
 @media (max-width: 320px) {
   .auto-grid, .auto-grid-compact, .auto-grid-spacious, .auto-grid-stats {
@@ -291,7 +301,6 @@
   .overflow-x-auto {
     max-width: 100%;
     overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
   }
 
   /* Grids: single column on mobile */

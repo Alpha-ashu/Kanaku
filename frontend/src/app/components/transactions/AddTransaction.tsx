@@ -658,14 +658,6 @@ export function AddTransaction() {
  </button>
  <h1 className="text-base font-black text-slate-900 tracking-tight leading-none uppercase">Add Transaction</h1>
  </div>
- <button
- onClick={handleSubmit}
- disabled={isSubmitting || !formData.amount}
- className="bg-slate-400 text-white px-5 py-2.5 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-900 active:scale-95 transition-all flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
- >
- {isSubmitting ? <Loader2 className="animate-spin" size={13} /> : <Check size={13} />}
- Save
- </button>
  </div>
 
  {/* Row 2: Type Tabs full width pill */}
