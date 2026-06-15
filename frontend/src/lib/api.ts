@@ -226,6 +226,37 @@ function handleAPIError(error: any): never {
   }
 }
 
+// ==================== Token Refresh ====================
+
+// Shared in-flight refresh promise so concurrent 401s only trigger one refresh
+let _refreshInFlight: Promise<string | null> | null = null;
+
+const refreshAccessToken = async (): Promise<string | null> => {
+  if (_refreshInFlight) return _refreshInFlight;
+
+  _refreshInFlight = (async () => {
+    try {
+      const { data, error } = await supabase.auth.refreshSession();
+      if (!error && data.session?.access_token) {
+        TokenManager.setAccessToken(data.session.access_token);
+        if (data.session.refresh_token) {
+          TokenManager.setRefreshToken(data.session.refresh_token);
+        }
+        return data.session.access_token;
+      }
+    } catch {
+      // Refresh failed
+    }
+    return null;
+  })();
+
+  try {
+    return await _refreshInFlight;
+  } finally {
+    _refreshInFlight = null;
+  }
+};
+
 // ==================== HTTP Client ====================
 
 interface RequestConfig extends RequestInit {
@@ -340,16 +371,39 @@ class HTTPClient {
               );
             }
 
-            // Handle 401 Unauthorized
+            // Handle 401 Unauthorized — try to refresh the session before signing out
             if (response.status === 401) {
+              const newToken = await refreshAccessToken();
+              if (newToken) {
+                // Session refreshed — retry this request once with the new token
+                const retryHeaders = { ...headers, Authorization: `Bearer ${newToken}` };
+                const retryController = new AbortController();
+                const retryTimeout = setTimeout(() => retryController.abort(), timeout);
+                try {
+                  const retryResponse = await fetch(buildApiUrl(apiBase, endpoint), {
+                    ...fetchConfig,
+                    headers: retryHeaders,
+                    signal: retryController.signal,
+                  });
+                  clearTimeout(retryTimeout);
+                  if (retryResponse.ok) {
+                    clearOptionalBackendUnavailable();
+                    const retryData = (await this.parseResponseBody(retryResponse)) as T;
+                    return { success: true, data: retryData };
+                  }
+                } catch {
+                  clearTimeout(retryTimeout);
+                }
+                // Retry also failed — fall through to sign out
+              }
+
+              // Refresh failed or retry failed — clear session and redirect
               TokenManager.clearTokens();
               try {
-                // Force local sign out to clear stale local storage sessions without triggering a 403 network call
                 await supabase.auth.signOut({ scope: 'local' });
-              } catch (e) {
+              } catch {
                 // Ignore sign out errors
               }
-              // Wait a tiny bit for local storage to actually clear before redirecting
               await new Promise(resolve => setTimeout(resolve, 100));
               if (window.location.pathname !== '/login') {
                 window.location.href = '/login';

@@ -244,6 +244,7 @@ const AppContent: React.FC = () => {
   const [authInitialStep, setAuthInitialStep] = useState<'welcome' | 'signin' | 'signup'>('welcome');
   const [criticalPagesPrefetched, setCriticalPagesPrefetched] = useState(false);
   const hasModuleReloaded = useRef(false);
+  const [quickActionKey, setQuickActionKey] = useState(0);
 
   const [onboardingCompleted, setOnboardingCompleted] = useState(() => {
     return localStorage.getItem('onboarding_completed') === 'true' ||
@@ -504,11 +505,14 @@ const AppContent: React.FC = () => {
         localStorage.setItem('quickExpenseMode', 'individual');
         localStorage.setItem('quickBackPage', 'transactions');
         setCurrentPage('add-transaction');
+        setQuickActionKey(k => k + 1);
         break;
       case 'add-income':
         localStorage.setItem('quickFormType', 'income');
+        localStorage.removeItem('quickExpenseMode');
         localStorage.setItem('quickBackPage', 'transactions');
         setCurrentPage('add-transaction');
+        setQuickActionKey(k => k + 1);
         break;
       case 'pay-emi': setCurrentPage('pay-emi'); break;
       case 'split-bill':
@@ -516,19 +520,23 @@ const AppContent: React.FC = () => {
         localStorage.setItem('quickExpenseMode', 'group');
         localStorage.setItem('quickBackPage', 'groups');
         setCurrentPage('add-transaction');
+        setQuickActionKey(k => k + 1);
         break;
       case 'add-loan':
         localStorage.setItem('quickFormType', 'expense');
         localStorage.setItem('quickExpenseMode', 'loan');
         localStorage.setItem('quickBackPage', 'loans');
         setCurrentPage('add-transaction');
+        setQuickActionKey(k => k + 1);
         break;
       case 'add-account': setCurrentPage('add-account'); break;
       case 'add-goal': setCurrentPage('add-goal'); break;
       case 'transfer':
         localStorage.setItem('quickFormType', 'transfer');
+        localStorage.removeItem('quickExpenseMode');
         localStorage.setItem('quickBackPage', 'transactions');
         setCurrentPage('add-transaction');
+        setQuickActionKey(k => k + 1);
         break;
       case 'todo-lists': setCurrentPage('todo-lists'); break;
       case 'voice-entry': setCurrentPage('voice-input'); break;
@@ -787,7 +795,7 @@ const AppContent: React.FC = () => {
       case 'add-account': return <AddAccount />;
       case 'edit-account': return <EditAccount />;
       case 'book-advisor': return <BookAdvisor />;
-      case 'add-transaction': return <AddTransaction />;
+      case 'add-transaction': return <AddTransaction key={quickActionKey} />;
       case 'receipt-scanner': return <ReceiptScannerPage />;
       case 'loans': return <Loans />;
       case 'add-loan': return <AddLoan />;

@@ -16,8 +16,12 @@ interface SecurityContextType {
 const SecurityContext = createContext<SecurityContextType | undefined>(undefined);
 
 export const SecurityProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [encryptionKey, setEncryptionKey] = useState<string | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return sessionStorage.getItem('session_active') === 'true';
+  });
+  const [encryptionKey, setEncryptionKey] = useState<string | null>(() => {
+    return sessionStorage.getItem('session_encryption_key');
+  });
   const [lockTimeout, setLockTimeout] = useState(0); // 0 means disabled (only locks on close)
   const isNativePlatform = Capacitor.isNativePlatform();
 
@@ -64,12 +68,14 @@ export const SecurityProvider: React.FC<{ children: ReactNode }> = ({ children }
 
     // Store in session
     sessionStorage.setItem('session_active', 'true');
+    sessionStorage.setItem('session_encryption_key', key);
   };
 
   const handleLock = () => {
     setIsAuthenticated(false);
     setEncryptionKey(null);
     sessionStorage.removeItem('session_active');
+    sessionStorage.removeItem('session_encryption_key');
   };
 
   const logout = async () => {
