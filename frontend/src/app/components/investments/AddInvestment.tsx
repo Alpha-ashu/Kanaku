@@ -72,7 +72,7 @@ const AssetTypeGrid = ({
       { label: 'Other Assets', keys: ['real-estate', 'business', 'other'] as InvestmentFormType[] },
     ].map(group => (
       <div key={group.label}>
-        <p style={{ fontSize: 8, fontWeight: 800, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#94a3b8', marginBottom: 6 }}>
+        <p className="text-[8px] font-extrabold tracking-[0.15em] uppercase text-slate-400 mb-1.5">
           {group.label}
         </p>
         <div className="flex flex-wrap gap-2">
@@ -85,21 +85,14 @@ const AssetTypeGrid = ({
               <button
                 key={key}
                 onClick={() => onSelect(key)}
-                className={cn(
-                  'flex items-center gap-1.5 px-3 py-2 rounded-xl transition-all text-[10px] font-black',
-                  isSelected ? 'shadow-lg' : 'hover:opacity-80'
-                )}
-                style={{
-                  background: isSelected
-                    ? (accentColor ? `${accentColor}22` : '#4f46e5')
-                    : 'rgba(248,250,252,1)',
-                  border: isSelected
-                    ? `1.5px solid ${accentColor ?? '#4f46e5'}`
-                    : '1.5px solid transparent',
-                  color: isSelected
-                    ? (accentColor ?? '#4f46e5')
-                    : '#64748b',
+                ref={el => {
+                  if (el) {
+                    el.style.background = isSelected ? (accentColor ? `${accentColor}22` : '#4f46e5') : 'rgba(248,250,252,1)';
+                    el.style.border = isSelected ? `1.5px solid ${accentColor ?? '#4f46e5'}` : '1.5px solid transparent';
+                    el.style.color = isSelected ? (accentColor ?? '#4f46e5') : '#64748b';
+                  }
                 }}
+                className={cn('flex items-center gap-1.5 px-3 py-2 rounded-xl transition-all text-[10px] font-black', isSelected ? 'shadow-lg' : 'hover:opacity-80')}
               >
                 <span>{type.icon}</span>
                 <span>{type.label}</span>
@@ -121,8 +114,8 @@ const PhysicalAssetForm: React.FC<{
   const accent = METAL_ACCENT[metalType] ?? '#94a3b8';
   return (
     <div className="space-y-3 pt-2">
-      <div style={{ height: 1, background: `linear-gradient(to right, ${accent}40, transparent)` }} />
-      <p style={{ fontSize: 9, fontWeight: 900, letterSpacing: '0.18em', textTransform: 'uppercase', color: accent }}>
+      <div ref={el => { if (el) el.style.background = `linear-gradient(to right, ${accent}40, transparent)`; }} className="h-px" />
+      <p ref={el => { if (el) el.style.color = accent; }} className="text-[9px] font-black tracking-[0.18em] uppercase">
         Physical Asset Details
       </p>
 
@@ -141,6 +134,7 @@ const PhysicalAssetForm: React.FC<{
             <select
               value={metadata.weightUnit || 'g'}
               onChange={e => onChange('weightUnit', e.target.value)}
+              aria-label="Weight unit"
               className="w-1/3 bg-slate-50 border-none rounded-xl py-2 px-2 font-bold text-xs text-slate-700"
             >
               <option value="g">g</option>
@@ -169,6 +163,7 @@ const PhysicalAssetForm: React.FC<{
           <select
             value={metadata.form || ''}
             onChange={e => onChange('form', e.target.value)}
+            aria-label="Gold form"
             className="w-full bg-slate-50 border-none rounded-xl py-2 px-3 font-bold text-xs text-slate-700"
           >
             <option value="">Select form</option>
@@ -230,12 +225,14 @@ const PhysicalAssetForm: React.FC<{
               <button
                 key={tag}
                 onClick={() => onChange('ownershipTag', tag)}
-                className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-[9px] font-black transition-all"
-                style={{
-                  background: isActive ? `${accent}18` : 'rgba(248,250,252,1)',
-                  border: `1.5px solid ${isActive ? accent : 'transparent'}`,
-                  color: isActive ? accent : '#64748b',
+                ref={el => {
+                  if (el) {
+                    el.style.background = isActive ? `${accent}18` : 'rgba(248,250,252,1)';
+                    el.style.border = `1.5px solid ${isActive ? accent : 'transparent'}`;
+                    el.style.color = isActive ? accent : '#64748b';
+                  }
                 }}
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-[9px] font-black transition-all"
               >
                 {icons[tag]} {labels[tag]}
               </button>
@@ -253,8 +250,8 @@ const RealEstateForm: React.FC<{
   onChange: (key: keyof RealEstateMeta, val: any) => void;
 }> = ({ metadata, onChange }) => (
   <div className="space-y-3 pt-2">
-    <div style={{ height: 1, background: 'linear-gradient(to right, rgba(99,102,241,0.4), transparent)' }} />
-    <p style={{ fontSize: 9, fontWeight: 900, letterSpacing: '0.18em', textTransform: 'uppercase', color: '#818CF8' }}>
+    <div className="invest-divider-indigo" />
+    <p className="text-[9px] font-black tracking-[0.18em] uppercase text-[#818CF8]">
       Property Details
     </p>
     <div className="grid grid-cols-2 gap-3">
@@ -263,6 +260,7 @@ const RealEstateForm: React.FC<{
         <select
           value={metadata.propertyType || ''}
           onChange={e => onChange('propertyType', e.target.value)}
+          aria-label="Property type"
           className="w-full bg-slate-50 border-none rounded-xl py-2 px-3 font-bold text-xs text-slate-700"
         >
           <option value="">Select type</option>
@@ -323,8 +321,8 @@ const BusinessForm: React.FC<{
   onChange: (key: keyof BusinessMeta, val: any) => void;
 }> = ({ metadata, onChange }) => (
   <div className="space-y-3 pt-2">
-    <div style={{ height: 1, background: 'linear-gradient(to right, rgba(16,185,129,0.4), transparent)' }} />
-    <p style={{ fontSize: 9, fontWeight: 900, letterSpacing: '0.18em', textTransform: 'uppercase', color: '#34D399' }}>
+    <div className="invest-divider-emerald" />
+    <p className="text-[9px] font-black tracking-[0.18em] uppercase text-[#34D399]">
       Business Details
     </p>
     <div className="grid grid-cols-2 gap-3">
@@ -406,35 +404,45 @@ const OcrBillScanner: React.FC<{
         ref={fileRef}
         type="file"
         accept="image/*,.pdf"
+        aria-label="Upload bill or document"
         className="hidden"
         onChange={e => { if (e.target.files?.[0]) handleFile(e.target.files[0]); }}
       />
       <button
         onClick={() => fileRef.current?.click()}
         disabled={scanning}
-        className="w-full flex items-center gap-3 p-3 rounded-xl transition-all active:scale-98"
-        style={{
-          background: `${accentColor}0F`,
-          border: `1.5px dashed ${accentColor}50`,
-          color: accentColor,
+        ref={el => {
+          if (el) {
+            el.style.background = `${accentColor}0F`;
+            el.style.border = `1.5px dashed ${accentColor}50`;
+            el.style.color = accentColor;
+          }
         }}
+        className="w-full flex items-center gap-3 p-3 rounded-xl transition-all active:scale-98"
       >
         {scanning
           ? <Loader2 size={16} className="animate-spin shrink-0" />
           : <Scan size={16} className="shrink-0" />}
         <div className="text-left">
-          <p style={{ fontSize: 11, fontWeight: 900 }}>
+          <p className="text-[11px] font-black">
             {scanning ? 'Scanning bill…' : 'Scan Jeweller Bill (AI)'}
           </p>
-          <p style={{ fontSize: 9, color: '#94a3b8', fontWeight: 600 }}>
+          <p className="text-[9px] text-slate-400 font-semibold">
             Upload invoice image or PDF to auto-fill fields
           </p>
         </div>
       </button>
 
       {result && (
-        <div className="p-2.5 rounded-xl text-[9px] font-bold"
-          style={{ background: result.confidenceScore >= 50 ? 'rgba(74,222,128,0.08)' : 'rgba(251,191,36,0.08)', border: `1px solid ${result.confidenceScore >= 50 ? 'rgba(74,222,128,0.2)' : 'rgba(251,191,36,0.2)'}` }}
+        <div
+          ref={el => {
+            if (el) {
+              const ok = result.confidenceScore >= 50;
+              el.style.background = ok ? 'rgba(74,222,128,0.08)' : 'rgba(251,191,36,0.08)';
+              el.style.border = `1px solid ${ok ? 'rgba(74,222,128,0.2)' : 'rgba(251,191,36,0.2)'}`;
+            }
+          }}
+          className="p-2.5 rounded-xl text-[9px] font-bold"
         >
           {result.confidenceScore >= 50
             ? <CheckCircle2 size={12} className="inline mr-1 text-green-500" />
@@ -681,7 +689,7 @@ export const AddInvestment: React.FC = () => {
       <header className="px-4 lg:px-6 py-4 bg-white border-b border-slate-100">
         <div className="flex flex-row flex-wrap items-center justify-between gap-4 w-full">
           <div className="flex items-center gap-3">
-            <button onClick={() => setCurrentPage('investments')} className="lg:!hidden p-2 text-slate-600 hover:bg-slate-50 rounded-xl transition-all">
+            <button onClick={() => setCurrentPage('investments')} title="Back" className="lg:!hidden p-2 text-slate-600 hover:bg-slate-50 rounded-xl transition-all">
               <ChevronLeft size={20} />
             </button>
             <h1 className="text-xl font-black text-slate-900 tracking-tight leading-none">Add Investment</h1>
@@ -785,7 +793,7 @@ export const AddInvestment: React.FC = () => {
                 <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Date</label>
                 <div className="relative">
                   <Calendar className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
-                  <input type="date" value={formData.date} onChange={e => setFormData(prev => ({ ...prev, date: e.target.value }))} className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-xs" />
+                  <input type="date" value={formData.date} onChange={e => setFormData(prev => ({ ...prev, date: e.target.value }))} aria-label="Investment date" className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-xs" />
                 </div>
               </div>
             </div>
@@ -903,13 +911,15 @@ export const AddInvestment: React.FC = () => {
 
           {/* Total Summary Footer */}
           <div
-            className="mt-auto p-4 rounded-2xl text-white flex items-center justify-between shadow-xl"
-            style={{
-              background: isPhysicalMetal
-                ? `linear-gradient(135deg, ${accentColor}CC, ${accentColor}88)`
-                : 'linear-gradient(135deg, #4f46e5, #7c3aed)',
-              boxShadow: isPhysicalMetal ? `0 8px 32px ${accentColor}33` : '0 8px 32px rgba(79,70,229,0.25)',
+            ref={el => {
+              if (el) {
+                el.style.background = isPhysicalMetal
+                  ? `linear-gradient(135deg, ${accentColor}CC, ${accentColor}88)`
+                  : 'linear-gradient(135deg, #4f46e5, #7c3aed)';
+                el.style.boxShadow = isPhysicalMetal ? `0 8px 32px ${accentColor}33` : '0 8px 32px rgba(79,70,229,0.25)';
+              }
             }}
+            className="mt-auto p-4 rounded-2xl text-white flex items-center justify-between shadow-xl"
           >
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center"><TrendingUp size={16} className="text-white" /></div>

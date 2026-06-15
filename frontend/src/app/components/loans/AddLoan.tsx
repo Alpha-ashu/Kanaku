@@ -159,7 +159,7 @@ export const AddLoan: React.FC = () => {
  <header className="px-4 lg:px-6 py-4 bg-white border-b border-slate-100">
  <div className="flex flex-row flex-wrap items-center justify-between gap-4 w-full">
  <div className="flex items-center gap-3">
- <button onClick={() => setCurrentPage('loans')} className="lg:!hidden p-2 text-slate-600 hover:bg-slate-50 rounded-xl transition-all">
+ <button onClick={() => setCurrentPage('loans')} title="Back" className="lg:!hidden p-2 text-slate-600 hover:bg-slate-50 rounded-xl transition-all">
  <ArrowLeft size={20} />
  </button>
  <h1 className="text-xl font-black text-slate-900 tracking-tight leading-none">New Borrowed Loan</h1>
@@ -241,11 +241,12 @@ export const AddLoan: React.FC = () => {
  <div className="grid grid-cols-2 gap-4">
  <div className="space-y-1">
  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Start Date</label>
- <input 
- type="date" 
- value={formData.startDate} 
- onChange={e => handleFieldChange('startDate', e.target.value)} 
- className="w-full bg-slate-50 border-none rounded-xl py-2.5 px-3 font-bold text-xs" 
+ <input
+ type="date"
+ value={formData.startDate}
+ onChange={e => handleFieldChange('startDate', e.target.value)}
+ aria-label="Loan start date"
+ className="w-full bg-slate-50 border-none rounded-xl py-2.5 px-3 font-bold text-xs"
  />
  </div>
  <div className="space-y-1">

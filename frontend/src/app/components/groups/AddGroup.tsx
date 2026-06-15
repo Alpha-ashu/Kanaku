@@ -165,7 +165,7 @@ export const AddGroup: React.FC = () => {
  <header className="px-4 lg:px-6 py-4 bg-white border-b border-slate-100">
  <div className="flex flex-row flex-wrap items-center justify-between gap-4 w-full">
  <div className="flex items-center gap-3">
- <button onClick={() => setCurrentPage('groups')} className="lg:!hidden p-2 text-slate-600 hover:bg-slate-50 rounded-xl transition-all">
+ <button onClick={() => setCurrentPage('groups')} title="Back" className="lg:!hidden p-2 text-slate-600 hover:bg-slate-50 rounded-xl transition-all">
  <ArrowLeft size={20} />
  </button>
  <h1 className="text-xl font-black text-slate-900 tracking-tight leading-none">New Group Expense</h1>
@@ -219,11 +219,12 @@ export const AddGroup: React.FC = () => {
  return `${day}-${months[date.getMonth()]}-${date.getFullYear()}`;
  })()}
  </div>
- <input 
- type="date" 
- value={formData.date} 
- onChange={e => setFormData(prev => ({ ...prev, date: e.target.value }))} 
- className="absolute inset-0 opacity-0 cursor-pointer z-20" 
+ <input
+ type="date"
+ value={formData.date}
+ onChange={e => setFormData(prev => ({ ...prev, date: e.target.value }))}
+ aria-label="Expense date"
+ className="absolute inset-0 opacity-0 cursor-pointer z-20"
  />
  </div>
  </div>
@@ -309,10 +310,10 @@ export const AddGroup: React.FC = () => {
  placeholder="Type name & press Enter"
  autoFocus
  />
- <button type="button" onClick={confirmNewPerson} className="p-1.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all">
+ <button type="button" onClick={confirmNewPerson} title="Confirm" className="p-1.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all">
  <Check size={12} strokeWidth={3} />
  </button>
- <button type="button" onClick={() => { setShowNewPersonInput(false); setNewPersonInput(''); }} className="p-1.5 text-slate-400 hover:text-slate-600 transition-all">
+ <button type="button" onClick={() => { setShowNewPersonInput(false); setNewPersonInput(''); }} title="Cancel" className="p-1.5 text-slate-400 hover:text-slate-600 transition-all">
  <X size={12} strokeWidth={3} />
  </button>
  </div>
@@ -341,7 +342,7 @@ export const AddGroup: React.FC = () => {
  className="flex-1 bg-transparent border-none p-0 text-[11px] font-bold text-slate-900 focus:ring-0" 
  placeholder={`Person ${i + 1}`} 
  />
- <button type="button" onClick={() => removeParticipant(i)} className="text-slate-300 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-all">
+ <button type="button" onClick={() => removeParticipant(i)} title="Remove participant" className="text-slate-300 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-all">
  <Trash2 size={14} />
  </button>
  </div>
@@ -382,8 +383,9 @@ export const AddGroup: React.FC = () => {
  {/* Right Side: Clear Button */}
  <div className="w-20 sm:w-28 flex justify-start pl-2 sm:pl-4">
  {amountStr && (
- <button 
- onClick={() => { setAmountStr(''); setFormData(prev => ({ ...prev, totalAmount: 0 })); }} 
+ <button
+ onClick={() => { setAmountStr(''); setFormData(prev => ({ ...prev, totalAmount: 0 })); }}
+ title="Clear amount"
  className="p-2 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-full transition-all animate-in fade-in zoom-in-50"
  >
  <X size={28} strokeWidth={3} />

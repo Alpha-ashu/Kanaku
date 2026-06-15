@@ -167,7 +167,6 @@ const CategoryGrid = ({
         ref={containerRef}
         onScroll={handleScroll}
         className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar w-full p-1 gap-0"
-        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         {pages.map((pageItems, pageIdx) => (
           <div 
@@ -652,6 +651,7 @@ export function AddTransaction() {
  <div className="flex items-center gap-2 min-w-0">
  <button
  onClick={() => { clearQuickStorage(); setCurrentPage(returnPage); }}
+ title="Back"
  className="p-2 text-slate-600 hover:bg-slate-50 rounded-xl transition-all shrink-0"
  >
  <ArrowLeft size={18} />
@@ -812,7 +812,7 @@ export function AddTransaction() {
  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Description / Reason</label>
  <div className="relative">
  <AlignLeft className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
- <input type="text" value={formData.description} onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))} className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-900 text-xs focus:ring-2 focus:ring-indigo-500/20" placeholder=" Loan EMI / Friends / ATM Withdrawal" />
+ <input type="text" value={formData.description} onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))} aria-label="Description" className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-900 text-xs focus:ring-2 focus:ring-indigo-500/20" placeholder=" Loan EMI / Friends / ATM Withdrawal" />
  </div>
  </div>
  </div>
@@ -959,12 +959,14 @@ export function AddTransaction() {
  }
  }
  }}
+ aria-label="New person name"
  className="flex-1 bg-transparent border-none p-0 text-xs font-bold text-slate-900 focus:ring-0 placeholder:text-slate-300"
  placeholder="Enter name & press Enter"
  autoFocus
  />
- <button 
- type="button" 
+ <button
+ type="button"
+ title="Confirm"
  onClick={() => {
  if (expenseMode === 'group') confirmNewSplitPerson();
  else {
@@ -990,14 +992,16 @@ export function AddTransaction() {
  {groupParticipants.map(p => (
  <div key={p.id} className="flex items-center gap-2 p-2 bg-slate-50 rounded-lg border border-slate-100 group">
  <div className="w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center text-[10px] font-black text-indigo-600 uppercase">{p.name?.[0] || '?'}</div>
- <input 
- type="text" 
- value={p.name} 
- onChange={e => setGroupParticipants(prev => prev.map(i => i.id === p.id ? { ...i, name: e.target.value } : i))} 
- className="flex-1 bg-transparent border-none p-0 text-xs font-bold text-slate-900 focus:ring-0" 
+ <input
+ type="text"
+ value={p.name}
+ onChange={e => setGroupParticipants(prev => prev.map(i => i.id === p.id ? { ...i, name: e.target.value } : i))}
+ aria-label="Participant name"
+ className="flex-1 bg-transparent border-none p-0 text-xs font-bold text-slate-900 focus:ring-0"
  />
- <button 
- type="button" 
+ <button
+ type="button"
+ title="Remove participant"
  onClick={() => setGroupParticipants(prev => prev.filter(i => i.id !== p.id))}
  className="p-1 text-slate-300 hover:text-rose-500 transition-colors opacity-0 group-hover:opacity-100"
  >
@@ -1054,8 +1058,8 @@ export function AddTransaction() {
  {showNewLoanPersonInput ? (
  <div className="flex items-center gap-2 p-2 bg-indigo-50 rounded-lg">
  <input type="text" value={newLoanPersonName} onChange={e => setNewLoanPersonName(e.target.value)} onKeyDown={e => e.key === 'Enter' && confirmNewLoanPerson()} className="flex-1 bg-transparent border-none p-0 text-xs font-bold text-slate-900 focus:ring-0 placeholder:text-slate-300" placeholder="Enter name" autoFocus />
- <button type="button" onClick={confirmNewLoanPerson} className="p-1 bg-indigo-600 text-white rounded-md"><Check size={11} strokeWidth={3} /></button>
- <button type="button" onClick={() => { setShowNewLoanPersonInput(false); setNewLoanPersonName(''); }} className="p-1 text-slate-400"><X size={11} strokeWidth={3} /></button>
+ <button type="button" title="Confirm" onClick={confirmNewLoanPerson} className="p-1 bg-indigo-600 text-white rounded-md"><Check size={11} strokeWidth={3} /></button>
+ <button type="button" title="Cancel" onClick={() => { setShowNewLoanPersonInput(false); setNewLoanPersonName(''); }} className="p-1 text-slate-400"><X size={11} strokeWidth={3} /></button>
  </div>
  ) : (
  <button type="button" onClick={() => setShowNewLoanPersonInput(true)} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold text-indigo-600 hover:bg-indigo-50 transition-all">
@@ -1075,22 +1079,22 @@ export function AddTransaction() {
  <div className="grid grid-cols-2 gap-4">
  <div className="space-y-1">
  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Interest (%)</label>
- <input type="number" value={loanDraft.interestRate} onChange={e => setLoanDraft(prev => ({ ...prev, interestRate: parseFloat(e.target.value) || 0 }))} className="w-full bg-slate-50 border-none rounded-xl py-2.5 px-3 font-bold text-sm text-center" />
+ <input type="number" value={loanDraft.interestRate} onChange={e => setLoanDraft(prev => ({ ...prev, interestRate: parseFloat(e.target.value) || 0 }))} aria-label="Interest rate" className="w-full bg-slate-50 border-none rounded-xl py-2.5 px-3 font-bold text-sm text-center" />
  </div>
  <div className="space-y-1">
  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Tenure (Months)</label>
- <input type="number" value={loanDraft.tenureMonths} onChange={e => setLoanDraft(prev => ({ ...prev, tenureMonths: parseInt(e.target.value) || 0 }))} className="w-full bg-slate-50 border-none rounded-xl py-2.5 px-3 font-bold text-sm text-center" />
+ <input type="number" value={loanDraft.tenureMonths} onChange={e => setLoanDraft(prev => ({ ...prev, tenureMonths: parseInt(e.target.value) || 0 }))} aria-label="Tenure in months" className="w-full bg-slate-50 border-none rounded-xl py-2.5 px-3 font-bold text-sm text-center" />
  </div>
  </div>
 
  <div className="grid grid-cols-2 gap-4">
  <div className="space-y-1">
  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">EMI Amount</label>
- <input type="number" value={loanDraft.emiAmount} onChange={e => setLoanDraft(prev => ({ ...prev, emiAmount: parseFloat(e.target.value) || 0 }))} className="w-full bg-slate-50 border-none rounded-xl py-2.5 px-3 font-bold text-sm text-center" />
+ <input type="number" value={loanDraft.emiAmount} onChange={e => setLoanDraft(prev => ({ ...prev, emiAmount: parseFloat(e.target.value) || 0 }))} aria-label="EMI amount" className="w-full bg-slate-50 border-none rounded-xl py-2.5 px-3 font-bold text-sm text-center" />
  </div>
  <div className="space-y-1">
  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Down Payment</label>
- <input type="number" value={loanDraft.downPayment} onChange={e => setLoanDraft(prev => ({ ...prev, downPayment: parseFloat(e.target.value) || 0 }))} className="w-full bg-slate-50 border-none rounded-xl py-2.5 px-3 font-bold text-sm text-center" />
+ <input type="number" value={loanDraft.downPayment} onChange={e => setLoanDraft(prev => ({ ...prev, downPayment: parseFloat(e.target.value) || 0 }))} aria-label="Down payment" className="w-full bg-slate-50 border-none rounded-xl py-2.5 px-3 font-bold text-sm text-center" />
  </div>
  </div>
 
@@ -1190,11 +1194,12 @@ export function AddTransaction() {
  return `${day}-${months[date.getMonth()]}-${date.getFullYear()}`;
  })()}
  </div>
- <input 
- type="date" 
- value={loanDraft.dueDate} 
- onChange={e => setLoanDraft(prev => ({ ...prev, dueDate: e.target.value }))} 
- className="absolute inset-0 opacity-0 cursor-pointer z-20" 
+ <input
+ type="date"
+ value={loanDraft.dueDate}
+ onChange={e => setLoanDraft(prev => ({ ...prev, dueDate: e.target.value }))}
+ aria-label="Return date"
+ className="absolute inset-0 opacity-0 cursor-pointer z-20"
  />
  </div>
  </div>
@@ -1238,6 +1243,7 @@ export function AddTransaction() {
  type="date"
  value={loanDraft.dueDate}
  onChange={e => setLoanDraft(prev => ({ ...prev, dueDate: e.target.value }))}
+ aria-label="Due date"
  className="absolute inset-0 opacity-0 cursor-pointer z-20"
  />
  </div>
@@ -1267,8 +1273,8 @@ export function AddTransaction() {
  {showNewLoanPersonInput ? (
  <div className="flex items-center gap-2 p-2 bg-indigo-50 rounded-lg">
  <input type="text" value={newLoanPersonName} onChange={e => setNewLoanPersonName(e.target.value)} onKeyDown={e => e.key === 'Enter' && confirmNewLoanPerson()} className="flex-1 bg-transparent border-none p-0 text-xs font-bold text-slate-900 focus:ring-0 placeholder:text-slate-300" placeholder="Enter name" autoFocus />
- <button type="button" onClick={confirmNewLoanPerson} className="p-1 bg-indigo-600 text-white rounded-md"><Check size={11} strokeWidth={3} /></button>
- <button type="button" onClick={() => { setShowNewLoanPersonInput(false); setNewLoanPersonName(''); }} className="p-1 text-slate-400"><X size={11} strokeWidth={3} /></button>
+ <button type="button" title="Confirm" onClick={confirmNewLoanPerson} className="p-1 bg-indigo-600 text-white rounded-md"><Check size={11} strokeWidth={3} /></button>
+ <button type="button" title="Cancel" onClick={() => { setShowNewLoanPersonInput(false); setNewLoanPersonName(''); }} className="p-1 text-slate-400"><X size={11} strokeWidth={3} /></button>
  </div>
  ) : (
  <button type="button" onClick={() => setShowNewLoanPersonInput(true)} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold text-indigo-600 hover:bg-indigo-50 transition-all">
@@ -1285,14 +1291,14 @@ export function AddTransaction() {
  </div>
  )}
  </div>
- 
+
  {/* Right Column: Financials & Action (lg:col-5) */}
  <div className="lg:col-span-5 flex flex-col gap-4">
 
  {/* Amount Display - Premium & High Density */}
  <div className="premium-glass-card p-8 bg-white relative overflow-hidden flex flex-col items-center">
  <div className="absolute -top-24 -left-24 w-64 h-64 bg-indigo-500/5 blur-[80px] rounded-full animate-pulse pointer-events-none z-0" />
- <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-violet-500/5 blur-[80px] rounded-full animate-pulse pointer-events-none z-0" style={{ animationDelay: '1s' }} />
+ <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-violet-500/5 blur-[80px] rounded-full animate-pulse pointer-events-none z-0 [animation-delay:1s]" />
 
  <div className="relative z-10 flex flex-col items-center w-full">
  <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4">Transaction Amount</span>
@@ -1310,6 +1316,7 @@ export function AddTransaction() {
  name="amount"
  value={amountStr}
  onChange={e => { setAmountStr(e.target.value); setFormData(prev => ({ ...prev, amount: parseFloat(e.target.value) || 0 })); }}
+ aria-label="Transaction amount"
  className="bg-transparent text-4xl min-[400px]:text-5xl sm:text-6xl font-black text-slate-900 outline-none w-full text-center tracking-tighter placeholder:text-slate-100 p-0 m-0"
  placeholder="0"
  autoFocus
@@ -1321,6 +1328,7 @@ export function AddTransaction() {
  {amountStr && (
  <button
  onClick={() => { setAmountStr(''); setFormData(prev => ({ ...prev, amount: 0 })); }}
+ title="Clear amount"
  className="p-1 sm:p-2 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-full transition-all animate-in fade-in zoom-in-50"
  >
  <X size={20} className="sm:w-7 sm:h-7" strokeWidth={3} />
@@ -1470,12 +1478,14 @@ export function AddTransaction() {
  type="text"
  value={transferRecipient}
  onChange={e => setTransferRecipient(e.target.value)}
+ aria-label="Recipient name or UPI"
  className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-xs"
  placeholder="Name / UPI / Account"
  />
  {transferRecipient && (
  <button
  type="button"
+ title="Clear recipient"
  onClick={() => setTransferRecipient('')}
  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 hover:text-rose-500"
  >
@@ -1508,6 +1518,7 @@ export function AddTransaction() {
  type="date"
  value={formData.date}
  onChange={e => setFormData(prev => ({ ...prev, date: e.target.value }))}
+ aria-label="Transaction date"
  className="absolute inset-0 opacity-0 cursor-pointer z-20"
  />
  </div>
@@ -1518,6 +1529,7 @@ export function AddTransaction() {
  <textarea
  value={formData.notes}
  onChange={e => setFormData(prev => ({ ...prev, notes: e.target.value }))}
+ aria-label="Notes"
  className="w-full bg-slate-50 border-none rounded-xl p-3 font-bold text-xs min-h-[60px] resize-none"
  placeholder="ATM Withdrawal / Friend Transfer / etc..."
  />

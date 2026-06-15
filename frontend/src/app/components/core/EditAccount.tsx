@@ -119,8 +119,9 @@ export const EditAccount: React.FC<{ accountId?: number }> = ({ accountId: propA
  {/* Header Section */}
  <div className="px-4 sm:px-6 lg:px-8 xl:px-12 pt-6 lg:pt-8 pb-4">
  <div className="flex items-center gap-4 mb-2">
- <button 
+ <button
  onClick={() => setCurrentPage('accounts')}
+ title="Back"
  className="lg:!hidden p-2.5 hover:bg-white rounded-xl transition-all border border-transparent hover:border-slate-200 text-slate-600"
  >
  <ArrowLeft size={20} />
@@ -254,6 +255,7 @@ export const EditAccount: React.FC<{ accountId?: number }> = ({ accountId: propA
  step="0.01"
  value={account.openingBalance || ''}
  onChange={(e) => setAccount({ ...account, openingBalance: parseFloat(e.target.value) || 0 })}
+ aria-label="Opening balance"
  className="w-full pl-16 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-slate-900/5 focus:border-slate-900 transition-all font-bold text-slate-900"
  />
  </div>
@@ -273,6 +275,7 @@ export const EditAccount: React.FC<{ accountId?: number }> = ({ accountId: propA
  step="0.01"
  value={account.balance || ''}
  onChange={(e) => setAccount({ ...account, balance: parseFloat(e.target.value) || 0 })}
+ aria-label="Current balance"
  className="w-full pl-16 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-slate-900/5 focus:border-slate-900 transition-all font-bold text-slate-900"
  />
  </div>

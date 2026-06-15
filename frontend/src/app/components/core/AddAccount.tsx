@@ -200,7 +200,7 @@ export const AddAccount: React.FC = () => {
  <header className="flex-shrink-0 px-4 lg:px-10 py-5 bg-white/80 backdrop-blur-2xl border-b border-slate-100/50 z-30 sticky top-0 shadow-sm shadow-slate-200/30">
  <div className="flex flex-row flex-wrap items-center justify-between gap-4 w-full">
  <div className="flex items-center gap-3">
- <button onClick={() => setCurrentPage('accounts')} className="lg:!hidden p-2 text-slate-600 hover:bg-slate-50 rounded-xl transition-all">
+ <button onClick={() => setCurrentPage('accounts')} title="Back" className="lg:!hidden p-2 text-slate-600 hover:bg-slate-50 rounded-xl transition-all">
  <ArrowLeft size={20} />
  </button>
  <div className="flex flex-col">
@@ -298,6 +298,7 @@ export const AddAccount: React.FC = () => {
  {INDIAN_WALLETS.map(w => (
  <button
  key={w.name}
+ title={w.name}
  onClick={() => {
  if (w.name === 'Others') setProvider('');
  else setProvider(w.name);
@@ -372,15 +373,15 @@ export const AddAccount: React.FC = () => {
  <div className="order-1 lg:order-2 flex flex-col gap-3">
  {/* Large Preview Card */}
  <div
- className={cn("p-8 rounded-[2.5rem] text-white relative overflow-hidden flex flex-col justify-between min-h-[240px] shadow-2xl shadow-indigo-500/20 group border border-white/5 transition-all duration-500", selectedColor.bg !== 'custom' ? selectedColor.bg :"")}
- style={selectedColor.bg === 'custom' ? { backgroundColor: selectedColor.color } : {}}
+ ref={el => { if (el && selectedColor.bg === 'custom') el.style.backgroundColor = selectedColor.color; else if (el) el.style.backgroundColor = ''; }}
+ className={cn("p-8 rounded-[2.5rem] text-white relative overflow-hidden flex flex-col justify-between min-h-[240px] shadow-2xl shadow-indigo-500/20 group border border-white/5 transition-all duration-500", selectedColor.bg !== 'custom' ? selectedColor.bg : '')}
  >
  {/* Decorative Elements */}
  <div className={cn("absolute top-0 right-0 w-64 h-64 blur-[80px] rounded-full -mr-20 -mt-20 group-hover:opacity-100 transition-all duration-700 opacity-60", selectedColor.glow)} />
  <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 blur-[60px] rounded-full -ml-20 -mb-20" />
 
  {/* Card Pattern Overlay */}
- <div className="absolute inset-0 opacity-[0.05] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '32px 32px' }} />
+ <div className="absolute inset-0 opacity-[0.05] pointer-events-none card-dot-pattern" />
 
  <div className="flex justify-between items-start relative z-10">
  <div className="flex flex-col gap-1.5">
@@ -446,11 +447,11 @@ export const AddAccount: React.FC = () => {
  key={color.id}
  type="button"
  onClick={() => setSelectedColor(color)}
+ ref={el => { if (el) el.style.backgroundColor = color.color; }}
  className={cn(
 "w-10 h-10 md:w-12 md:h-12 rounded-full border-2 transition-all relative flex items-center justify-center shadow-sm hover:scale-105 active:scale-90",
  selectedColor.id === color.id ?"border-indigo-500 scale-110 shadow-lg shadow-indigo-500/20" :"border-white hover:border-slate-100"
  )}
- style={{ backgroundColor: color.color }}
  >
  {selectedColor.id === color.id && (
  <div className="w-2.5 h-2.5 bg-white rounded-full shadow-md z-10" />
@@ -464,8 +465,8 @@ export const AddAccount: React.FC = () => {
  <div className="flex items-center justify-between w-full md:w-auto gap-4">
  <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">Custom Spectrum</span>
  <div
+ ref={el => { if (el) el.style.backgroundColor = selectedColor.id === 'custom' ? selectedColor.color : '#6366f1'; }}
  className="w-4 h-4 rounded-full shadow-sm border border-white shrink-0"
- style={{ backgroundColor: selectedColor.id === 'custom' ? selectedColor.color : '#6366f1' }}
  />
  </div>
  <div className="relative h-2 w-full max-w-md rounded-full bg-slate-100 group cursor-pointer">
@@ -473,6 +474,7 @@ export const AddAccount: React.FC = () => {
  type="range"
  min="0"
  max="360"
+ aria-label="Color hue"
  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
  onChange={(e) => {
  const hue = e.target.value;
@@ -488,8 +490,8 @@ export const AddAccount: React.FC = () => {
  {/* Slider Thumb Replacement */}
  {selectedColor.id === 'custom' && (
  <div
+ ref={el => { if (el) el.style.left = `calc(${(parseInt(selectedColor.color?.match(/\d+/)?.[0] || '0') / 360) * 100}% - 8px)`; }}
  className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full border-2 border-indigo-500 shadow-lg z-30 pointer-events-none transition-all"
- style={{ left: `calc(${(parseInt(selectedColor.color?.match(/\d+/)?.[0] || '0') / 360) * 100}% - 8px)` }}
  />
  )}
  </div>

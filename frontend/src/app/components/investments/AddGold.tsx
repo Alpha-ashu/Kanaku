@@ -89,7 +89,7 @@ export const AddGold: React.FC = () => {
  <header className="px-4 lg:px-6 py-4 bg-white border-b border-slate-100">
  <div className="flex flex-row flex-wrap items-center justify-between gap-4 w-full">
  <div className="flex items-center gap-3">
- <button onClick={() => setCurrentPage('investments')} className="lg:!hidden p-2 text-slate-600 hover:bg-slate-50 rounded-xl transition-all">
+ <button onClick={() => setCurrentPage('investments')} title="Back" className="lg:!hidden p-2 text-slate-600 hover:bg-slate-50 rounded-xl transition-all">
  <ArrowLeft size={20} />
  </button>
  <h1 className="text-xl font-black text-slate-900 tracking-tight leading-none">Add Gold Asset</h1>
@@ -126,7 +126,7 @@ export const AddGold: React.FC = () => {
  ))}
  </div>
  <div className="w-20 relative">
- <input type="number" value={formData.purityPercentage} onChange={e => setFormData(prev => ({ ...prev, purityPercentage: parseFloat(e.target.value) || 0 }))} className="w-full h-full bg-slate-50 border-none rounded-lg text-center font-black text-[10px]" />
+ <input type="number" value={formData.purityPercentage} onChange={e => setFormData(prev => ({ ...prev, purityPercentage: parseFloat(e.target.value) || 0 }))} aria-label="Purity percentage" className="w-full h-full bg-slate-50 border-none rounded-lg text-center font-black text-[10px]" />
  <span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-[8px] font-black text-slate-300">%</span>
  </div>
  </div>
@@ -144,7 +144,7 @@ export const AddGold: React.FC = () => {
  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Purchase Date</label>
  <div className="relative">
  <Calendar className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
- <input type="date" value={formData.purchaseDate} onChange={e => setFormData(prev => ({ ...prev, purchaseDate: e.target.value }))} className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-xs" />
+ <input type="date" value={formData.purchaseDate} onChange={e => setFormData(prev => ({ ...prev, purchaseDate: e.target.value }))} aria-label="Purchase date" className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-xs" />
  </div>
  </div>
  </div>
@@ -193,14 +193,14 @@ export const AddGold: React.FC = () => {
  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Buy Price / {formData.unit}</label>
  <div className="relative">
  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-300">{currency}</span>
- <input type="number" value={formData.purchasePrice || ''} onChange={e => setFormData(prev => ({ ...prev, purchasePrice: parseFloat(e.target.value) || 0 }))} className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-8 pr-3 font-bold text-xs" />
+ <input type="number" value={formData.purchasePrice || ''} onChange={e => setFormData(prev => ({ ...prev, purchasePrice: parseFloat(e.target.value) || 0 }))} aria-label="Buy price per unit" className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-8 pr-3 font-bold text-xs" />
  </div>
  </div>
  <div className="space-y-1">
  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Live Price / {formData.unit}</label>
  <div className="relative">
  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-300">{currency}</span>
- <input type="number" value={formData.currentPrice || ''} onChange={e => setFormData(prev => ({ ...prev, currentPrice: parseFloat(e.target.value) || 0 }))} className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-8 pr-3 font-bold text-xs" />
+ <input type="number" value={formData.currentPrice || ''} onChange={e => setFormData(prev => ({ ...prev, currentPrice: parseFloat(e.target.value) || 0 }))} aria-label="Live price per unit" className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-8 pr-3 font-bold text-xs" />
  </div>
  </div>
  </div>

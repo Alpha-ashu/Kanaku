@@ -61,7 +61,6 @@ const GoalCategoryGrid = ({
         ref={containerRef}
         onScroll={handleScroll}
         className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar w-full p-1 gap-0"
-        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         {pages.map((pageItems, pageIdx) => (
           <div 
@@ -219,7 +218,7 @@ export const AddGoal: React.FC = () => {
  <header className="px-4 lg:px-6 py-4 bg-white border-b border-slate-100">
  <div className="flex flex-row flex-wrap items-center justify-between gap-4 w-full">
  <div className="flex items-center gap-3">
- <button onClick={() => setCurrentPage('goals')} className="lg:!hidden p-2 text-slate-600 hover:bg-slate-50 rounded-xl transition-all">
+ <button onClick={() => setCurrentPage('goals')} title="Back" className="lg:!hidden p-2 text-slate-600 hover:bg-slate-50 rounded-xl transition-all">
  <ArrowLeft size={20} />
  </button>
  <h1 className="text-xl font-black text-slate-900 tracking-tight leading-none">New Saving Goal</h1>
@@ -280,7 +279,7 @@ export const AddGoal: React.FC = () => {
  <div className="flex flex-col gap-2 p-3 bg-slate-50 rounded-xl">
  <input type="text" value={memberInput.name} onChange={e => setMemberInput(prev => ({ ...prev, name: e.target.value }))} className="bg-white border-none rounded-lg px-3 py-2 text-xs font-bold" placeholder="Friend Name" />
  <div className="flex gap-2">
- <select value={memberInput.contactType} onChange={e => setMemberInput(prev => ({ ...prev, contactType: e.target.value as any }))} className="bg-white border-none rounded-lg px-2 text-[10px] font-black uppercase">
+ <select value={memberInput.contactType} onChange={e => setMemberInput(prev => ({ ...prev, contactType: e.target.value as any }))} aria-label="Contact type" className="bg-white border-none rounded-lg px-2 text-[10px] font-black uppercase">
  <option value="email">Email</option>
  <option value="phone">Phone</option>
  </select>
@@ -296,7 +295,7 @@ export const AddGoal: React.FC = () => {
  <div className="w-7 h-7 rounded-full bg-indigo-50 flex items-center justify-center text-[10px] font-black text-indigo-500">{m.name[0]}</div>
  <span className="text-[10px] font-bold text-slate-700">{m.name}</span>
  </div>
- <button onClick={() => setMembers(prev => prev.filter((_, i) => i !== idx))} className="text-slate-300 hover:text-rose-500"><Trash2 size={12} /></button>
+ <button onClick={() => setMembers(prev => prev.filter((_, i) => i !== idx))} title="Remove member" className="text-slate-300 hover:text-rose-500"><Trash2 size={12} /></button>
  </div>
  ))}
  {members.length === 0 && <div className="h-full flex items-center justify-center border-2 border-dashed border-slate-100 rounded-xl text-[9px] font-black text-slate-300 uppercase">No members added</div>}
@@ -340,7 +339,7 @@ export const AddGoal: React.FC = () => {
  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Target Date</label>
  <div className="relative">
  <Calendar className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
- <input type="date" value={formData.deadline} onChange={e => setFormData(prev => ({ ...prev, deadline: e.target.value }))} onClick={(e) => (e.target as HTMLInputElement).showPicker?.()} className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-xs" />
+ <input type="date" value={formData.deadline} onChange={e => setFormData(prev => ({ ...prev, deadline: e.target.value }))} onClick={(e) => (e.target as HTMLInputElement).showPicker?.()} aria-label="Target date" className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-xs" />
  </div>
  </div>
  </div>
@@ -350,7 +349,7 @@ export const AddGoal: React.FC = () => {
  <div className="flex gap-3">
  <div className="flex-1 relative">
  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300 text-[10px] font-black">{currency}</span>
- <input type="number" value={formData.monthlySavingPlan} onChange={e => setFormData(prev => ({ ...prev, monthlySavingPlan: parseFloat(e.target.value) || 0 }))} className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-7 pr-3 font-bold text-xs" />
+ <input type="number" value={formData.monthlySavingPlan} onChange={e => setFormData(prev => ({ ...prev, monthlySavingPlan: parseFloat(e.target.value) || 0 }))} aria-label="Monthly saving plan" className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-7 pr-3 font-bold text-xs" />
  </div>
  {suggestion && (
  <button onClick={() => setFormData(prev => ({ ...prev, monthlySavingPlan: Math.ceil(suggestion.monthlyAmount) }))} className="px-3 bg-indigo-50 text-indigo-600 rounded-xl text-[9px] font-black uppercase tracking-wider hover:bg-indigo-100 transition-colors">

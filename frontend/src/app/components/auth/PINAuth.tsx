@@ -360,7 +360,7 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  >
  {/* Hidden form - offscreen (not zero-size) so mobile browsers keep keyboard open after each digit */}
  <form
- style={{ position: 'fixed', top: '-200px', left: '-200px', opacity: 0, pointerEvents: 'none', width: '1px', height: '1px' }}
+ className="pin-hidden-input-container"
  autoComplete="off"
  onSubmit={e => e.preventDefault()}
  >
@@ -371,6 +371,8 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  readOnly
  autoComplete="username"
  tabIndex={-1}
+ aria-label="Username"
+ aria-hidden="true"
  />
  <input
  ref={hiddenInputRef}
@@ -382,6 +384,7 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  onChange={handleInputChange}
  onKeyDown={handleHiddenKeyDown}
  tabIndex={0}
+ aria-label="PIN entry"
  />
  </form>
 
@@ -479,6 +482,7 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  type="button"
  onClick={handleForgotPin}
  disabled={isSubmitting}
+ title="Forgot PIN"
  className="h-14 rounded-2xl bg-transparent hover:bg-gray-50 active:bg-gray-100 transition-all text-gray-500 hover:text-gray-900 flex items-center justify-center disabled:opacity-50 disabled:pointer-events-none"
  >
  <KeyRound size={20} />

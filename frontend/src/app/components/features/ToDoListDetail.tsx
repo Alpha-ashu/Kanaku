@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useApp } from '@/contexts/AppContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { db } from '@/lib/database';
@@ -71,6 +71,11 @@ export const ToDoListDetail: React.FC = () => {
 
   const completedCount = items.filter(i => i.completed).length;
   const progress = items.length > 0 ? Math.round((completedCount / items.length) * 100) : 0;
+
+  const progressBarRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (progressBarRef.current) progressBarRef.current.style.width = `${progress}%`;
+  }, [progress]);
 
   const resetAddForm = () => {
     setNewTitle('');
@@ -208,8 +213,8 @@ export const ToDoListDetail: React.FC = () => {
         {items.length > 0 && (
           <div className="mt-3 h-1.5 bg-slate-100 rounded-full overflow-hidden">
             <div
+              ref={progressBarRef}
               className="h-full bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-full transition-all duration-500"
-              style={{ width: `${progress}%` }}
             />
           </div>
         )}
@@ -221,7 +226,7 @@ export const ToDoListDetail: React.FC = () => {
           <div className="p-4 lg:p-6 space-y-3">
             <div className="flex items-center justify-between mb-1">
               <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">New Task</p>
-              <button onClick={() => { setShowAddForm(false); resetAddForm(); }} className="p-1 text-slate-400 hover:text-slate-600 rounded">
+              <button onClick={() => { setShowAddForm(false); resetAddForm(); }} title="Close" className="p-1 text-slate-400 hover:text-slate-600 rounded">
                 <X size={14} />
               </button>
             </div>
@@ -232,6 +237,7 @@ export const ToDoListDetail: React.FC = () => {
               onChange={e => setNewTitle(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleAddItem()}
               placeholder="What needs to be done?"
+              aria-label="Task title"
               autoFocus
               className="w-full bg-white border border-slate-200 rounded-xl py-3 px-4 font-bold text-slate-900 text-sm focus:ring-2 focus:ring-indigo-200 outline-none placeholder:text-slate-300"
             />
@@ -266,6 +272,7 @@ export const ToDoListDetail: React.FC = () => {
                   type="date"
                   value={newDueDate}
                   onChange={e => setNewDueDate(e.target.value)}
+                  aria-label="Due date"
                   className="w-full bg-white border border-slate-200 rounded-xl py-2 px-3 font-bold text-slate-900 text-xs focus:ring-2 focus:ring-indigo-200 outline-none"
                 />
               </div>
@@ -278,6 +285,7 @@ export const ToDoListDetail: React.FC = () => {
                 value={newDescription}
                 onChange={e => setNewDescription(e.target.value)}
                 placeholder="Optional notes…"
+                aria-label="Notes"
                 rows={2}
                 className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-3 font-bold text-slate-900 text-xs resize-none focus:ring-2 focus:ring-indigo-200 outline-none placeholder:text-slate-300"
               />
@@ -349,6 +357,7 @@ export const ToDoListDetail: React.FC = () => {
                     type="text"
                     value={editTitle}
                     onChange={e => setEditTitle(e.target.value)}
+                    aria-label="Task title"
                     className="w-full bg-slate-50 border-none rounded-xl py-2.5 px-3 font-bold text-slate-900 text-sm focus:ring-2 focus:ring-indigo-200 outline-none"
                     autoFocus
                   />
@@ -364,10 +373,11 @@ export const ToDoListDetail: React.FC = () => {
                       })}
                     </div>
                     <input type="date" value={editDueDate} onChange={e => setEditDueDate(e.target.value)}
+                      aria-label="Due date"
                       className="bg-slate-50 border-none rounded-xl py-1.5 px-3 font-bold text-slate-900 text-xs outline-none" />
                   </div>
                   <textarea value={editDescription} onChange={e => setEditDescription(e.target.value)}
-                    placeholder="Notes…" rows={2}
+                    placeholder="Notes…" aria-label="Notes" rows={2}
                     className="w-full bg-slate-50 border-none rounded-xl py-2 px-3 text-xs font-semibold text-slate-700 resize-none outline-none" />
                   <div className="flex gap-2">
                     <button onClick={() => setEditingItemId(null)}

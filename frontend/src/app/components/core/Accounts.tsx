@@ -495,11 +495,8 @@ export const Accounts: React.FC = () => {
                                                 {isActive && (
                                                     <div className="absolute inset-0">
                                                         <div
-                                                            className={cn(
-                                                                "absolute inset-0 transition-colors duration-500",
-                                                                getCardStyle(account).bgClass
-                                                            )}
-                                                            style={getCardStyle(account).background ? { backgroundColor: getCardStyle(account).background } : {}}
+                                                            ref={el => { if (el) el.style.backgroundColor = getCardStyle(account).background || ''; }}
+                                                            className={cn("absolute inset-0 transition-colors duration-500", getCardStyle(account).bgClass)}
                                                         />
                                                         {/* Shimmer diagonal lines */}
                                                         <svg className="absolute inset-0 w-full h-full" viewBox="0 0 400 210" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
@@ -694,11 +691,8 @@ export const Accounts: React.FC = () => {
                                                     {isActive && (
                                                         <div className="absolute inset-0">
                                                             <div
-                                                                className={cn(
-                                                                    "absolute inset-0 transition-colors duration-500",
-                                                                    getCardStyle(account).bgClass
-                                                                )}
-                                                                style={getCardStyle(account).background ? { backgroundColor: getCardStyle(account).background } : {}}
+                                                                ref={el => { if (el) el.style.backgroundColor = getCardStyle(account).background || ''; }}
+                                                                className={cn("absolute inset-0 transition-colors duration-500", getCardStyle(account).bgClass)}
                                                             />
                                                             <svg className="absolute inset-0 w-full h-full" viewBox="0 0 420 230" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
                                                                 <line x1="-60" y1="330" x2="400" y2="-100" stroke="white" strokeOpacity="0.04" strokeWidth="50" />

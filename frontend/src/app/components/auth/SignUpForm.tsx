@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { api } from '@/lib/api';
 import { Eye, EyeOff, Mail, Lock, User, Phone, Check, AlertCircle, Sparkles, Loader2 } from 'lucide-react';
 
@@ -72,6 +72,11 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
 
   const isFormReady = fieldsRemaining === 0 && agreedToTerms;
   const progressPercentage = (5 - fieldsRemaining) * 20;
+
+  const signupProgressRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (signupProgressRef.current) signupProgressRef.current.style.width = `${progressPercentage}%`;
+  }, [progressPercentage]);
 
   // Email suggestions logic
   const emailDomains = ['gmail.com', 'yahoo.com', 'outlook.com', 'icloud.com'];
@@ -330,8 +335,8 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
         </div>
         <div className="h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
           <div
+            ref={signupProgressRef}
             className="h-full bg-gradient-to-r from-blue-500 to-emerald-500 rounded-full transition-all duration-500 ease-out"
-            style={{ width: `${progressPercentage}%` }}
           />
         </div>
       </div>

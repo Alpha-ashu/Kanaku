@@ -329,8 +329,8 @@ export const Groups: React.FC = () => {
  >
  <div className="flex gap-4">
  <div
+ ref={el => { if (el) el.style.backgroundColor = coverColor || ''; }}
  className="relative flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-[26px] shadow-sm"
- style={{ backgroundColor: coverColor }}
  >
  <div className="absolute inset-0 bg-gradient-to-br from-black/20 to-black/60" />
  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.4),transparent_60%)]" />
