@@ -505,14 +505,13 @@ const syncProfileFromBackend = async (user: User) => {
         return;
       }
     } else {
-      // Remote profile is incomplete (e.g. newly registered user).
-      // If there is no local profile or it is also incomplete, clear onboarding_completed to force onboarding.
-      const localHasRealProfile = localProfile && 
-        (localProfile.firstName || localProfile.lastName || localProfile.displayName) &&
-        localProfile.dateOfBirth &&
-        localProfile.jobType;
+      // Remote profile is incomplete. Only force onboarding for truly new users
+      // who have no local profile data at all — do not clear the flag just because
+      // optional fields (dateOfBirth, jobType) were skipped during onboarding.
+      const hasAnyLocalProfile = localProfile &&
+        (localProfile.firstName || localProfile.lastName || localProfile.displayName || localProfile.email);
 
-      if (!localHasRealProfile) {
+      if (!hasAnyLocalProfile) {
         localStorage.removeItem('onboarding_completed');
       }
     }
