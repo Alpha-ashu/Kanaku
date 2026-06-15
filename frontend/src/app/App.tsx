@@ -247,13 +247,16 @@ const AppContent: React.FC = () => {
 
   const [onboardingCompleted, setOnboardingCompleted] = useState(() => {
     return localStorage.getItem('onboarding_completed') === 'true' ||
-           user?.user_metadata?.onboarding_completed === true;
+           user?.user_metadata?.onboarding_completed === true ||
+           !!(localStorage.getItem('user_profile') || localStorage.getItem('user_settings'));
   });
 
   useEffect(() => {
+    const hasLocalProfile = !!(localStorage.getItem('user_profile') || localStorage.getItem('user_settings'));
     setOnboardingCompleted(
       localStorage.getItem('onboarding_completed') === 'true' ||
-      user?.user_metadata?.onboarding_completed === true
+      user?.user_metadata?.onboarding_completed === true ||
+      hasLocalProfile
     );
   }, [user]);
 
@@ -647,10 +650,10 @@ const AppContent: React.FC = () => {
   }
 
   // Gate 1: Onboarding
-  // For returning users (hasProfileData), wait for dataReady before concluding onboarding is needed.
-  // Without this guard, a page refresh redirects authenticated users to onboarding because
-  // onboardingCompleted briefly reads false while profile data is still loading from the cloud.
-  if (user && !onboardingCompleted && isNewUser && (dataReady || !hasProfileData)) {
+  // Only redirect to onboarding if user has no local profile data at all.
+  // hasProfileData is a synchronous localStorage read, so it's always accurate —
+  // no need to wait for dataReady which caused redirect loops for returning users.
+  if (user && !onboardingCompleted && isNewUser && !hasProfileData) {
     return (
       <Suspense fallback={<PageLoader />}>
         <NewUserOnboarding />
