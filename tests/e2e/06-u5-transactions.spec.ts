@@ -125,8 +125,8 @@ test.describe('U5 – Portfolio Builder / Transaction Tester (Dev)', () => {
       if (await amtInput.isVisible({ timeout: 2000 }).catch(() => false)) await amtInput.fill('110000');
 
       await screenshot(page, '06_u5_03_income_filled');
-      // AddTransaction header Save button — exact text "Save"
-      const saveBtn = page.locator('button').filter({ hasText: /^save$/i }).first();
+      // AddTransaction header Save button — match case-insensitive "Save"
+      const saveBtn = page.getByRole('button', { name: /save/i }).first();
       if (await saveBtn.isVisible({ timeout: 5000 }).catch(() => false)) await saveBtn.click();
       await page.waitForTimeout(2500);
       await screenshot(page, '06_u5_03_income_saved');
@@ -185,8 +185,8 @@ test.describe('U5 – Portfolio Builder / Transaction Tester (Dev)', () => {
         const amtInput = page.locator('input[name="amount"]').first();
         if (await amtInput.isVisible({ timeout: 2000 }).catch(() => false)) await amtInput.fill(txn.amount);
 
-        // AddTransaction header Save button — exact text "Save"
-        const saveBtn = page.locator('button').filter({ hasText: /^save$/i }).first();
+        // AddTransaction header Save button — match case-insensitive "Save"
+        const saveBtn = page.getByRole('button', { name: /save/i }).first();
         if (await saveBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
           await saveBtn.click();
           await page.waitForTimeout(1500);

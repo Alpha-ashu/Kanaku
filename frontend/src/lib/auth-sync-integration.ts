@@ -3165,12 +3165,18 @@ export async function updateToDoItemWithBackendSync(itemId: number, updates: any
 
     if (existing.cloudId) {
       try {
+        const titleVal = updates.title !== undefined ? updates.title : existing.title;
+        const descVal = updates.description !== undefined ? updates.description : existing.description;
+        const completedVal = updates.completed !== undefined ? updates.completed : existing.completed;
+        const priorityVal = updates.priority !== undefined ? updates.priority : existing.priority;
+        const rawDueDate = updates.dueDate !== undefined ? updates.dueDate : existing.dueDate;
+        
         const response = await apiClient.put<any>(`/todos/items/${existing.cloudId}`, {
-          title: updates.title,
-          description: updates.description,
-          completed: updates.completed,
-          priority: updates.priority,
-          dueDate: updates.dueDate ? toIsoString(updates.dueDate) : undefined,
+          title: titleVal,
+          description: descVal,
+          completed: completedVal,
+          priority: priorityVal,
+          dueDate: rawDueDate ? toIsoString(rawDueDate) : undefined,
         }, {
           showErrorToast: false,
         });

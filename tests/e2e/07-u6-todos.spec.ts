@@ -96,7 +96,7 @@ test.describe('U6 – Collaborative Planner (Isha)', () => {
         await listTitle.click(); // fallback: click title text
       }
       // Wait for ToDoListDetail to load — it shows a spinner while fetching from Dexie
-      await page.locator('input[placeholder*="done" i], input[placeholder*="task" i], input[placeholder*="needs to be done" i]').first()
+      await page.getByRole('button', { name: /Add Task|Add First Task/i }).first()
         .waitFor({ state: 'visible', timeout: 12000 }).catch(() => null);
     }
 
@@ -110,13 +110,18 @@ test.describe('U6 – Collaborative Planner (Isha)', () => {
 
     let addedCount = 0;
     for (const task of tasks) {
-      // Task input placeholder is "What needs to be done?" — match done/task/item/add patterns
-      const taskInput = page.locator('input[placeholder*="done" i], input[placeholder*="task" i], input[placeholder*="item" i], input[placeholder*="add" i], input[placeholder*="needs" i]').first();
+      const addBtn = page.getByRole('button', { name: /Add Task|Add First Task/i }).first();
+      if (await addBtn.isVisible()) {
+        await addBtn.click();
+        await page.waitForTimeout(400);
+      }
 
+      const taskInput = page.locator('[data-testid="tododetail-new-title-input"], input[placeholder*="done" i], input[placeholder*="task" i]').first();
       if (await taskInput.isVisible({ timeout: 4000 }).catch(() => false)) {
         await taskInput.fill(task);
-        await taskInput.press('Enter');
-        await page.waitForTimeout(800);
+        const submitBtn = page.locator('[data-testid="tododetail-add-task-submit-button"], button:has-text("Add Task")').last();
+        await submitBtn.click();
+        await page.waitForTimeout(1000);
         addedCount++;
       }
     }
@@ -130,32 +135,44 @@ test.describe('U6 – Collaborative Planner (Isha)', () => {
     await loginUser(page, U6);
     await skipOnboardingIfPresent(page);
     await clickNav(page, 'todo') || await clickNav(page, 'task');
-    await page.waitForTimeout(800);
+    // Wait for backend sync to populate Dexie
+    await page.waitForTimeout(2000);
 
     // Open the list
-    const list = page.getByText(/Daily Finance/i).first();
-    if (await list.isVisible({ timeout: 4000 }).catch(() => false)) {
-      await list.click();
-      await page.waitForTimeout(600);
-    }
+    const listTitle = page.getByText(/Daily Finance/i).first();
+    await listTitle.waitFor({ state: 'visible', timeout: 10000 });
+    await listTitle.click();
+    
+    // Wait for the detail view to load
+    await page.getByRole('button', { name: /Add Task|Add First Task/i }).first()
+      .waitFor({ state: 'visible', timeout: 12000 }).catch(() => null);
+    await page.waitForTimeout(1000);
 
     await screenshot(page, '07_u6_04_before_complete');
 
-    // Click a checkbox / complete button for first task
-    const checkbox = page.locator('input[type="checkbox"], button[aria-label*="complete" i], [role="checkbox"]').first();
-    if (await checkbox.isVisible({ timeout: 4000 }).catch(() => false)) {
-      await checkbox.click();
-      await page.waitForTimeout(1500);
-      await screenshot(page, '07_u6_04_task_completed');
+    const markAsDone = page.getByRole('button', { name: 'Mark as done' }).first();
+    const markAsActive = page.getByRole('button', { name: 'Mark as active' }).first();
 
-      // Verify completion state — crossed-out text or checked state
-      const isCompleted = await checkbox.isChecked().catch(() => false)
-        || await page.locator('[class*="complete"], [class*="done"], [class*="checked"], s, del').first().isVisible({ timeout: 2000 }).catch(() => false);
-      console.log(`  Task marked complete: ${isCompleted}`);
-      expect(isCompleted, 'Task should show completed state after check').toBe(true);
+    let clicked = false;
+    if (await markAsDone.isVisible()) {
+      await markAsDone.click();
+      clicked = true;
+    } else if (await markAsActive.isVisible()) {
+      // If already done, toggle to active first, then toggle to done
+      await markAsActive.click();
+      await page.getByRole('button', { name: 'Mark as done' }).first().waitFor({ state: 'visible', timeout: 5000 });
+      await page.getByRole('button', { name: 'Mark as done' }).first().click();
+      clicked = true;
+    }
+
+    if (clicked) {
+      // Wait for completion state — 'Mark as active' indicates it is completed
+      await page.getByRole('button', { name: 'Mark as active' }).first().waitFor({ state: 'visible', timeout: 5000 });
+      await screenshot(page, '07_u6_04_task_completed');
+      console.log('  Task marked complete successfully');
     } else {
       await screenshot(page, '07_u6_04_no_checkbox');
-      console.warn('  ⚠️  No checkbox/complete button found for tasks');
+      throw new Error('No checkbox/complete button found for tasks');
     }
   });
 
@@ -223,8 +240,8 @@ test.describe('U6 – Collaborative Planner (Isha)', () => {
       } else {
         await goaListTitle.click(); // fallback
       }
-      // Wait for ToDoListDetail to load (spinner disappears, input appears)
-      await page.locator('input[placeholder*="done" i], input[placeholder*="task" i], input[placeholder*="needs to be done" i]').first()
+      // Wait for ToDoListDetail to load (spinner disappears, button appears)
+      await page.getByRole('button', { name: /Add Task|Add First Task/i }).first()
         .waitFor({ state: 'visible', timeout: 12000 }).catch(() => null);
     }
 
@@ -232,11 +249,18 @@ test.describe('U6 – Collaborative Planner (Isha)', () => {
     let addedCount = 0;
 
     for (const task of sharedTasks) {
-      const taskInput = page.locator('input[placeholder*="done" i], input[placeholder*="task" i], input[placeholder*="add" i], input[placeholder*="item" i], input[placeholder*="needs" i]').first();
+      const addBtn = page.getByRole('button', { name: /Add Task|Add First Task/i }).first();
+      if (await addBtn.isVisible()) {
+        await addBtn.click();
+        await page.waitForTimeout(400);
+      }
+
+      const taskInput = page.locator('[data-testid="tododetail-new-title-input"], input[placeholder*="done" i], input[placeholder*="task" i]').first();
       if (await taskInput.isVisible({ timeout: 4000 }).catch(() => false)) {
         await taskInput.fill(task);
-        await taskInput.press('Enter');
-        await page.waitForTimeout(800);
+        const submitBtn = page.locator('[data-testid="tododetail-add-task-submit-button"], button:has-text("Add Task")').last();
+        await submitBtn.click();
+        await page.waitForTimeout(1000);
         addedCount++;
       }
     }

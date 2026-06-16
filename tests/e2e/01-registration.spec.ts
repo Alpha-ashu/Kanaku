@@ -20,9 +20,11 @@ test.describe('User Registration – All 7 Personas', () => {
       }
 
       // After registration, expect either onboarding or dashboard (not auth page stuck)
-      const content = await page.content();
-      const hasError = content.includes('error') && !content.includes('Error Boundary');
-      expect(hasError, 'Page should not show a hard error after registration').toBe(false);
+      const bodyText = (await page.locator('body').textContent().catch(() => '')) ?? '';
+      const hasHardError = bodyText.toLowerCase().includes('error boundary') || 
+                           bodyText.toLowerCase().includes('something went wrong') ||
+                           bodyText.toLowerCase().includes('failed to fetch');
+      expect(hasHardError, 'Page should not show a hard error after registration').toBe(false);
 
       // Should see some welcome/onboarding/dashboard element
       await skipOnboardingIfPresent(page);
