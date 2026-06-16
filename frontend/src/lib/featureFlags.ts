@@ -238,12 +238,26 @@ export function mergeVisibleFeatures(
 
 export const PAGE_TO_FEATURE_MAPPING: Record<string, FeatureKey> = {
   'dashboard': 'dashboard',
+  'auto-sizing-test': 'dashboard',
   'accounts': 'accounts',
+  'add-account': 'accounts',
+  'edit-account': 'accounts',
   'transactions': 'transactions',
+  'add-transaction': 'transactions',
+  'voice-review': 'transactions',
   'loans': 'loans',
+  'add-loan': 'loans',
+  'pay-emi': 'loans',
   'goals': 'goals',
+  'add-goal': 'goals',
+  'goal-detail': 'goals',
   'groups': 'groups',
+  'add-group': 'groups',
+  'add-friends': 'groups',
   'investments': 'investments',
+  'add-investment': 'investments',
+  'add-gold': 'investments',
+  'edit-investment': 'investments',
   'reports': 'reports',
   'calendar': 'calendar',
   'todo-lists': 'todoLists',
@@ -392,6 +406,15 @@ export function isSubFeatureEnabled(
   role: UserRole,
   savedSettings?: Record<string, any> | null,
 ): boolean {
+  // If role is not admin and we have settings, trust the backend's pre-filtered values
+  if (role !== 'admin' && savedSettings) {
+    const parent = savedSettings[moduleKey];
+    if (!parent) return false;
+    if (parent.enabled !== true) return false;
+    const child = parent.children?.[childKey];
+    if (child) return child.enabled === true;
+  }
+
   // Step 1: check if parent module is enabled for this role
   if (savedSettings) {
     const mod = savedSettings[moduleKey];
@@ -518,6 +541,14 @@ export function isAICapabilityEnabled(
   role: UserRole,
   savedSettings?: Record<string, any> | null,
 ): boolean {
+  if (role !== 'admin' && savedSettings) {
+    const parent = savedSettings[moduleKey];
+    if (!parent) return false;
+    if (parent.enabled !== true) return false;
+    const cap = parent.capabilities?.[capabilityKey];
+    if (cap) return cap.enabled === true;
+  }
+
   const defaultDef = AI_MODULE_DEFINITIONS[moduleKey];
   let moduleEnabled = defaultDef ? defaultDef.enabled : true;
   let moduleRoleAccess = defaultDef ? { ...defaultDef.roleAccess } : { admin: true, manager: true, advisor: true, user: true };
@@ -552,6 +583,23 @@ export function computeAICapabilityMap(
   savedSettings?: Record<string, any> | null,
 ): Record<string, Record<string, boolean>> {
   const result: Record<string, Record<string, boolean>> = {};
+
+  if (role !== 'admin' && savedSettings) {
+    for (const moduleKey of Object.keys(AI_MODULE_DEFINITIONS) as AIModuleKey[]) {
+      result[moduleKey] = {};
+      const savedMod = savedSettings[moduleKey];
+      const isMasterEnabled = savedMod?.enabled === true;
+      result[moduleKey]['enabled'] = isMasterEnabled;
+
+      const defaultDef = AI_MODULE_DEFINITIONS[moduleKey];
+      for (const capabilityKey of Object.keys(defaultDef.capabilities)) {
+        const savedCap = savedMod?.capabilities?.[capabilityKey];
+        result[moduleKey][capabilityKey] = isMasterEnabled && (savedCap?.enabled === true);
+      }
+    }
+    return result;
+  }
+
   for (const moduleKey of Object.keys(AI_MODULE_DEFINITIONS) as AIModuleKey[]) {
     result[moduleKey] = {};
     
