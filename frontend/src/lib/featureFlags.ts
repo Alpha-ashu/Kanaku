@@ -254,6 +254,8 @@ export const PAGE_TO_FEATURE_MAPPING: Record<string, FeatureKey> = {
   'groups': 'groups',
   'add-group': 'groups',
   'add-friends': 'groups',
+  'friends': 'groups',
+  'friend-profile': 'groups',
   'investments': 'investments',
   'add-investment': 'investments',
   'add-gold': 'investments',
