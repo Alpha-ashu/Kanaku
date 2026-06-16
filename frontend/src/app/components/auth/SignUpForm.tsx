@@ -303,8 +303,8 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
         : 'border-gray-200 hover:border-gray-300 focus:ring-blue-500/20 focus:border-blue-400 focus:bg-white'
     }`;
 
-  const labelBase = `absolute left-10 top-1.5 text-[10px] font-medium text-gray-400 transition-all duration-200 pointer-events-none
-    peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400
+  const labelBase = `absolute left-10 top-1.5 text-[10px] font-semibold text-gray-400 transition-all duration-200 pointer-events-none
+    peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 peer-placeholder-shown:font-normal
     peer-focus:top-1.5 peer-focus:text-[10px] peer-focus:text-blue-500 peer-focus:font-semibold`;
 
   if (isSuccess) {
@@ -455,30 +455,34 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
 
       {/* Mobile */}
       <div className="relative">
-        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 z-10">
-          <Phone size={16} />
-        </div>
-
-        {/* Country Code Select Dropdown */}
-        <div className="absolute inset-y-0 left-8 flex items-center z-10">
-          <select
-            aria-label="Country code"
-            value={countryCode}
-            onChange={(e) => {
-              setCountryCode(e.target.value);
-              setFormData(prev => ({ ...prev, mobile: '' }));
-            }}
-            disabled={isLoading}
-            data-testid="auth-signup-country-code-select"
-            className="bg-transparent border-0 outline-none text-xs font-bold text-gray-700 cursor-pointer pr-1 py-1 focus:ring-0 focus:ring-offset-0"
-          >
-            {countryCodes.map(c => (
-              <option key={c.code} value={c.code} className="text-gray-900 font-medium">
-                {c.label}
-              </option>
-            ))}
-          </select>
-          <div className="h-5 w-px bg-gray-200 mx-1" />
+        {/* Aligned Country Code Selector prefix */}
+        <div className="absolute inset-y-0 left-3 flex items-center gap-1.5 z-10 pointer-events-none">
+          <Phone size={16} className="text-gray-400 flex-shrink-0" />
+          <div className="pointer-events-auto flex items-center">
+            <select
+              aria-label="Country code"
+              value={countryCode}
+              onChange={(e) => {
+                setCountryCode(e.target.value);
+                setFormData(prev => ({ ...prev, mobile: '' }));
+              }}
+              disabled={isLoading}
+              data-testid="auth-signup-country-code-select"
+              className="bg-transparent border-0 outline-none text-xs font-bold text-gray-700 cursor-pointer py-1 pl-0.5 pr-3.5 focus:ring-0 focus:ring-offset-0 appearance-none bg-[right_center] bg-no-repeat"
+              style={{
+                backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`,
+                backgroundSize: '8px',
+                paddingRight: '12px'
+              }}
+            >
+              {countryCodes.map(c => (
+                <option key={c.code} value={c.code} className="text-gray-900 font-medium">
+                  {c.code}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="h-5 w-px bg-gray-200" />
         </div>
 
         <input
@@ -491,10 +495,10 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
           disabled={isLoading}
           placeholder=" "
           data-testid="auth-signup-mobile-input"
-          className={`${inputBase(touched.mobile && !isMobileValid)} peer !pl-28`}
+          className={`${inputBase(touched.mobile && !isMobileValid)} peer !pl-[6.2rem] pr-10`}
           autoComplete="tel"
         />
-        <label htmlFor="mobile" className={`${labelBase} !left-28`}>
+        <label htmlFor="mobile" className={`${labelBase} !left-[6.2rem]`}>
           Mobile Number
         </label>
 
@@ -676,7 +680,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
         type="submit"
         disabled={isLoading || !isFormReady}
         data-testid="auth-signup-submit-button"
-        className="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold py-3 px-4 rounded-xl transition-all duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
+        className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:scale-[0.98] text-white font-bold py-3.5 px-4 rounded-xl transition-all duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_4px_14px_rgba(37,99,235,0.25)] hover:shadow-[0_6px_20px_rgba(37,99,235,0.35)]"
       >
         {isLoading ? (
           <>
@@ -692,9 +696,14 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
         )}
       </button>
 
-      <p className="text-center text-sm text-gray-500 pt-1">
+      <p className="text-center text-sm text-gray-500 pt-1 font-medium">
         Already have an account?{' '}
-        <button type="button" onClick={onSwitchToSignIn} data-testid="auth-signup-switch-signin-button" className="text-blue-600 hover:text-blue-700 font-semibold transition-colors">
+        <button
+          type="button"
+          onClick={onSwitchToSignIn}
+          data-testid="auth-signup-switch-signin-button"
+          className="text-blue-600 hover:text-blue-700 font-bold transition-colors"
+        >
           Sign in
         </button>
       </p>

@@ -66,413 +66,25 @@
   },
   "suites": [
     {
-      "title": "01-registration.spec.ts",
-      "file": "01-registration.spec.ts",
+      "title": "test-refresh-redirect.spec.ts",
+      "file": "test-refresh-redirect.spec.ts",
       "column": 0,
       "line": 0,
       "specs": [],
       "suites": [
         {
-          "title": "User Registration – All 7 Personas",
-          "file": "01-registration.spec.ts",
-          "line": 8,
+          "title": "P1 Bug: Page Refresh State Persistence",
+          "file": "test-refresh-redirect.spec.ts",
+          "line": 14,
           "column": 6,
           "specs": [
             {
-              "title": "Register U1: Arjun Sharma (Debt Manager)",
-              "ok": true,
+              "title": "Scenario 1: Dashboard refresh should stay on Dashboard",
+              "ok": false,
               "tags": [],
               "tests": [
                 {
-                  "timeout": 180000,
-                  "annotations": [
-                    {
-                      "type": "note",
-                      "description": "User already existed — treated as pass"
-                    }
-                  ],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 11691,
-                      "errors": [],
-                      "stdout": [
-                        {
-                          "text": "  ℹ️  arjun.test@finora.app already registered — skipping\n"
-                        }
-                      ],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-06-15T06:14:29.175Z",
-                      "annotations": [
-                        {
-                          "type": "note",
-                          "description": "User already existed — treated as pass"
-                        }
-                      ],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-68f44--Arjun-Sharma-Debt-Manager--chromium\\test-finished-1.png"
-                        }
-                      ]
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "180cc0718174fb543e11-de044b99cce50d3afdd3",
-              "file": "01-registration.spec.ts",
-              "line": 12,
-              "column": 5
-            },
-            {
-              "title": "Register U2: Priya Mehta (Group Splitter)",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 180000,
-                  "annotations": [
-                    {
-                      "type": "note",
-                      "description": "User already existed — treated as pass"
-                    }
-                  ],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 10421,
-                      "errors": [],
-                      "stdout": [
-                        {
-                          "text": "  ℹ️  priya.test@finora.app already registered — skipping\n"
-                        }
-                      ],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-06-15T06:14:41.392Z",
-                      "annotations": [
-                        {
-                          "type": "note",
-                          "description": "User already existed — treated as pass"
-                        }
-                      ],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-86b22-Priya-Mehta-Group-Splitter--chromium\\test-finished-1.png"
-                        }
-                      ]
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "180cc0718174fb543e11-21510b2fa9920e7bfc8a",
-              "file": "01-registration.spec.ts",
-              "line": 12,
-              "column": 5
-            },
-            {
-              "title": "Register U3: Rohan Verma (Investor)",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 180000,
-                  "annotations": [
-                    {
-                      "type": "note",
-                      "description": "User already existed — treated as pass"
-                    }
-                  ],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 11402,
-                      "errors": [],
-                      "stdout": [
-                        {
-                          "text": "  ℹ️  rohan.test@finora.app already registered — skipping\n"
-                        }
-                      ],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-06-15T06:14:51.858Z",
-                      "annotations": [
-                        {
-                          "type": "note",
-                          "description": "User already existed — treated as pass"
-                        }
-                      ],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-cbb8e-er-U3-Rohan-Verma-Investor--chromium\\test-finished-1.png"
-                        }
-                      ]
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "180cc0718174fb543e11-80b6dadee4719c17c9d6",
-              "file": "01-registration.spec.ts",
-              "line": 12,
-              "column": 5
-            },
-            {
-              "title": "Register U4: Sneha Kapoor (Goal Setter)",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 180000,
-                  "annotations": [
-                    {
-                      "type": "note",
-                      "description": "User already existed — treated as pass"
-                    }
-                  ],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 16796,
-                      "errors": [],
-                      "stdout": [
-                        {
-                          "text": "  ℹ️  sneha.test@finora.app already registered — skipping\n"
-                        }
-                      ],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-06-15T06:15:03.328Z",
-                      "annotations": [
-                        {
-                          "type": "note",
-                          "description": "User already existed — treated as pass"
-                        }
-                      ],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-072dd-4-Sneha-Kapoor-Goal-Setter--chromium\\test-finished-1.png"
-                        }
-                      ]
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "180cc0718174fb543e11-b9233d0375095f555a66",
-              "file": "01-registration.spec.ts",
-              "line": 12,
-              "column": 5
-            },
-            {
-              "title": "Register U5: Dev Nair (Portfolio Builder)",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 180000,
-                  "annotations": [
-                    {
-                      "type": "note",
-                      "description": "User already existed — treated as pass"
-                    }
-                  ],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 15936,
-                      "errors": [],
-                      "stdout": [
-                        {
-                          "text": "  ℹ️  dev.test@finora.app already registered — skipping\n"
-                        }
-                      ],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-06-15T06:15:20.215Z",
-                      "annotations": [
-                        {
-                          "type": "note",
-                          "description": "User already existed — treated as pass"
-                        }
-                      ],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-a249b-Dev-Nair-Portfolio-Builder--chromium\\test-finished-1.png"
-                        }
-                      ]
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "180cc0718174fb543e11-b8c4e63d383cb3a2aa0f",
-              "file": "01-registration.spec.ts",
-              "line": 12,
-              "column": 5
-            },
-            {
-              "title": "Register U6: Isha Patel (Planner)",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 180000,
-                  "annotations": [
-                    {
-                      "type": "note",
-                      "description": "User already existed — treated as pass"
-                    }
-                  ],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 15280,
-                      "errors": [],
-                      "stdout": [
-                        {
-                          "text": "  ℹ️  isha.test@finora.app already registered — skipping\n"
-                        }
-                      ],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-06-15T06:15:36.207Z",
-                      "annotations": [
-                        {
-                          "type": "note",
-                          "description": "User already existed — treated as pass"
-                        }
-                      ],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-f3f5a-ster-U6-Isha-Patel-Planner--chromium\\test-finished-1.png"
-                        }
-                      ]
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "180cc0718174fb543e11-4f0c395bd55e21c05e84",
-              "file": "01-registration.spec.ts",
-              "line": 12,
-              "column": 5
-            },
-            {
-              "title": "Register U7: Power User (Power User)",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 180000,
-                  "annotations": [
-                    {
-                      "type": "note",
-                      "description": "User already existed — treated as pass"
-                    }
-                  ],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 15505,
-                      "errors": [],
-                      "stdout": [
-                        {
-                          "text": "  ℹ️  admin.test@finora.app already registered — skipping\n"
-                        }
-                      ],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-06-15T06:15:51.534Z",
-                      "annotations": [
-                        {
-                          "type": "note",
-                          "description": "User already existed — treated as pass"
-                        }
-                      ],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-af66e-r-U7-Power-User-Power-User--chromium\\test-finished-1.png"
-                        }
-                      ]
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "180cc0718174fb543e11-7ead62567899ae25bb2a",
-              "file": "01-registration.spec.ts",
-              "line": 12,
-              "column": 5
-            }
-          ]
-        },
-        {
-          "title": "Login – Verify All Accounts Work",
-          "file": "01-registration.spec.ts",
-          "line": 38,
-          "column": 6,
-          "specs": [
-            {
-              "title": "Login U1: arjun.test@finora.app",
-              "ok": true,
-              "tags": [
-                "finora.app"
-              ],
-              "tests": [
-                {
-                  "timeout": 180000,
+                  "timeout": 120000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
@@ -481,270 +93,227 @@
                     {
                       "workerIndex": 0,
                       "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 73669,
-                      "errors": [],
+                      "status": "failed",
+                      "duration": 5149,
+                      "error": {
+                        "message": "Error: Login API failed for arjun.test@finora.app: {\"success\":false,\"error\":\"Incorrect email or password. Please check your credentials and try again.\",\"code\":\"INVALID_CREDENTIALS\"}",
+                        "stack": "Error: Login API failed for arjun.test@finora.app: {\"success\":false,\"error\":\"Incorrect email or password. Please check your credentials and try again.\",\"code\":\"INVALID_CREDENTIALS\"}\n    at loginUser (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:57:11)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\test-refresh-redirect.spec.ts:19:5",
+                        "location": {
+                          "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts",
+                          "column": 11,
+                          "line": 57
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mhelpers.ts:57\n\n\u001b[0m \u001b[90m 55 |\u001b[39m\n \u001b[90m 56 |\u001b[39m   \u001b[36mif\u001b[39m (\u001b[33m!\u001b[39maccessToken) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 57 |\u001b[39m     \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\u001b[32m`Login API failed for ${user.email}: ${JSON.stringify(json)}`\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m           \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 58 |\u001b[39m   }\n \u001b[90m 59 |\u001b[39m\n \u001b[90m 60 |\u001b[39m   \u001b[90m// 1b. Pre-create a default cash account so AddTransaction/group expense flows work\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts",
+                            "column": 11,
+                            "line": 57
+                          },
+                          "message": "Error: Login API failed for arjun.test@finora.app: {\"success\":false,\"error\":\"Incorrect email or password. Please check your credentials and try again.\",\"code\":\"INVALID_CREDENTIALS\"}\n\n   at helpers.ts:57\n\n  55 |\n  56 |   if (!accessToken) {\n> 57 |     throw new Error(`Login API failed for ${user.email}: ${JSON.stringify(json)}`);\n     |           ^\n  58 |   }\n  59 |\n  60 |   // 1b. Pre-create a default cash account so AddTransaction/group expense flows work\n    at loginUser (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:57:11)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\test-refresh-redirect.spec.ts:19:5"
+                        }
+                      ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-15T06:16:07.091Z",
+                      "startTime": "2026-06-16T14:48:04.466Z",
                       "annotations": [],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-51622-in-U1-arjun-test-finora-app-chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\test-refresh-redirect-P1-B-72c6e-sh-should-stay-on-Dashboard-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\test-refresh-redirect-P1-B-72c6e-sh-should-stay-on-Dashboard-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\test-refresh-redirect-P1-B-72c6e-sh-should-stay-on-Dashboard-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\test-refresh-redirect-P1-B-72c6e-sh-should-stay-on-Dashboard-chromium\\trace.zip"
                         }
-                      ]
+                      ],
+                      "errorLocation": {
+                        "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts",
+                        "column": 11,
+                        "line": 57
+                      }
                     }
                   ],
-                  "status": "expected"
+                  "status": "unexpected"
                 }
               ],
-              "id": "180cc0718174fb543e11-ed9820c72e29bfeff042",
-              "file": "01-registration.spec.ts",
-              "line": 42,
-              "column": 5
+              "id": "d0850ec52babccab3503-275946c8d14e7a33db8a",
+              "file": "test-refresh-redirect.spec.ts",
+              "line": 17,
+              "column": 3
             },
             {
-              "title": "Login U2: priya.test@finora.app",
-              "ok": true,
-              "tags": [
-                "finora.app"
-              ],
+              "title": "Scenario 2: Navigate to Accounts → Refresh → should stay on Accounts",
+              "ok": false,
+              "tags": [],
               "tests": [
                 {
-                  "timeout": 180000,
+                  "timeout": 120000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 0,
+                      "workerIndex": 1,
                       "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 78169,
-                      "errors": [],
+                      "status": "failed",
+                      "duration": 2667,
+                      "error": {
+                        "message": "Error: Login API failed for arjun.test@finora.app: {\"success\":false,\"error\":\"Incorrect email or password. Please check your credentials and try again.\",\"code\":\"INVALID_CREDENTIALS\"}",
+                        "stack": "Error: Login API failed for arjun.test@finora.app: {\"success\":false,\"error\":\"Incorrect email or password. Please check your credentials and try again.\",\"code\":\"INVALID_CREDENTIALS\"}\n    at loginUser (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:57:11)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\test-refresh-redirect.spec.ts:58:5",
+                        "location": {
+                          "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts",
+                          "column": 11,
+                          "line": 57
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mhelpers.ts:57\n\n\u001b[0m \u001b[90m 55 |\u001b[39m\n \u001b[90m 56 |\u001b[39m   \u001b[36mif\u001b[39m (\u001b[33m!\u001b[39maccessToken) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 57 |\u001b[39m     \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\u001b[32m`Login API failed for ${user.email}: ${JSON.stringify(json)}`\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m           \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 58 |\u001b[39m   }\n \u001b[90m 59 |\u001b[39m\n \u001b[90m 60 |\u001b[39m   \u001b[90m// 1b. Pre-create a default cash account so AddTransaction/group expense flows work\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts",
+                            "column": 11,
+                            "line": 57
+                          },
+                          "message": "Error: Login API failed for arjun.test@finora.app: {\"success\":false,\"error\":\"Incorrect email or password. Please check your credentials and try again.\",\"code\":\"INVALID_CREDENTIALS\"}\n\n   at helpers.ts:57\n\n  55 |\n  56 |   if (!accessToken) {\n> 57 |     throw new Error(`Login API failed for ${user.email}: ${JSON.stringify(json)}`);\n     |           ^\n  58 |   }\n  59 |\n  60 |   // 1b. Pre-create a default cash account so AddTransaction/group expense flows work\n    at loginUser (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:57:11)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\test-refresh-redirect.spec.ts:58:5"
+                        }
+                      ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-15T06:17:20.825Z",
+                      "startTime": "2026-06-16T14:48:15.224Z",
                       "annotations": [],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-ee13b-in-U2-priya-test-finora-app-chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\test-refresh-redirect-P1-B-71971-h-→-should-stay-on-Accounts-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\test-refresh-redirect-P1-B-71971-h-→-should-stay-on-Accounts-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\test-refresh-redirect-P1-B-71971-h-→-should-stay-on-Accounts-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\test-refresh-redirect-P1-B-71971-h-→-should-stay-on-Accounts-chromium\\trace.zip"
                         }
-                      ]
+                      ],
+                      "errorLocation": {
+                        "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts",
+                        "column": 11,
+                        "line": 57
+                      }
                     }
                   ],
-                  "status": "expected"
+                  "status": "unexpected"
                 }
               ],
-              "id": "180cc0718174fb543e11-4e1628b4864b88cbfcf1",
-              "file": "01-registration.spec.ts",
-              "line": 42,
-              "column": 5
+              "id": "d0850ec52babccab3503-7f1fc42e2f1226437a46",
+              "file": "test-refresh-redirect.spec.ts",
+              "line": 56,
+              "column": 3
             },
             {
-              "title": "Login U3: rohan.test@finora.app",
-              "ok": true,
-              "tags": [
-                "finora.app"
-              ],
+              "title": "Scenario 3: Login + PIN screen refresh should stay on PIN screen (NOT Create Profile)",
+              "ok": false,
+              "tags": [],
               "tests": [
                 {
-                  "timeout": 180000,
+                  "timeout": 120000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 0,
+                      "workerIndex": 2,
                       "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 97794,
-                      "errors": [],
+                      "status": "failed",
+                      "duration": 2576,
+                      "error": {
+                        "message": "Error: Login API failed for arjun.test@finora.app: {\"success\":false,\"error\":\"Incorrect email or password. Please check your credentials and try again.\",\"code\":\"INVALID_CREDENTIALS\"}",
+                        "stack": "Error: Login API failed for arjun.test@finora.app: {\"success\":false,\"error\":\"Incorrect email or password. Please check your credentials and try again.\",\"code\":\"INVALID_CREDENTIALS\"}\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\test-refresh-redirect.spec.ts:101:13",
+                        "location": {
+                          "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\test-refresh-redirect.spec.ts",
+                          "column": 13,
+                          "line": 101
+                        },
+                        "snippet": "\u001b[0m \u001b[90m  99 |\u001b[39m     \n \u001b[90m 100 |\u001b[39m     \u001b[36mif\u001b[39m (\u001b[33m!\u001b[39maccessToken) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 101 |\u001b[39m       \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\u001b[32m`Login API failed for ${user.email}: ${JSON.stringify(json)}`\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m             \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 102 |\u001b[39m     }\n \u001b[90m 103 |\u001b[39m\n \u001b[90m 104 |\u001b[39m     \u001b[90m// Set tokens in localStorage but do NOT set onboarding_completed or pin_verified\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\test-refresh-redirect.spec.ts",
+                            "column": 13,
+                            "line": 101
+                          },
+                          "message": "Error: Login API failed for arjun.test@finora.app: {\"success\":false,\"error\":\"Incorrect email or password. Please check your credentials and try again.\",\"code\":\"INVALID_CREDENTIALS\"}\n\n   99 |     \n  100 |     if (!accessToken) {\n> 101 |       throw new Error(`Login API failed for ${user.email}: ${JSON.stringify(json)}`);\n      |             ^\n  102 |     }\n  103 |\n  104 |     // Set tokens in localStorage but do NOT set onboarding_completed or pin_verified\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\test-refresh-redirect.spec.ts:101:13"
+                        }
+                      ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-15T06:18:39.093Z",
+                      "startTime": "2026-06-16T14:48:22.238Z",
                       "annotations": [],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-c071e-in-U3-rohan-test-finora-app-chromium\\test-finished-1.png"
-                        }
-                      ]
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "180cc0718174fb543e11-df73d86de58ecbc6ff0f",
-              "file": "01-registration.spec.ts",
-              "line": 42,
-              "column": 5
-            },
-            {
-              "title": "Login U4: sneha.test@finora.app",
-              "ok": true,
-              "tags": [
-                "finora.app"
-              ],
-              "tests": [
-                {
-                  "timeout": 180000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 108012,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-06-15T06:20:16.957Z",
-                      "annotations": [],
-                      "attachments": [
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\test-refresh-redirect-P1-B-d17c8--screen-NOT-Create-Profile--chromium\\test-failed-1.png"
+                        },
                         {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-73e38-in-U4-sneha-test-finora-app-chromium\\test-finished-1.png"
-                        }
-                      ]
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "180cc0718174fb543e11-a51f5640aac0ecdf735d",
-              "file": "01-registration.spec.ts",
-              "line": 42,
-              "column": 5
-            },
-            {
-              "title": "Login U5: dev.test@finora.app",
-              "ok": true,
-              "tags": [
-                "finora.app"
-              ],
-              "tests": [
-                {
-                  "timeout": 180000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 131418,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-06-15T06:22:05.022Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "180cc0718174fb543e11-f5da7b2ebceb99b759db",
-              "file": "01-registration.spec.ts",
-              "line": 42,
-              "column": 5
-            },
-            {
-              "title": "Login U6: isha.test@finora.app",
-              "ok": true,
-              "tags": [
-                "finora.app"
-              ],
-              "tests": [
-                {
-                  "timeout": 180000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 154816,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-06-15T06:24:16.511Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "180cc0718174fb543e11-f743da14697c7b0e2511",
-              "file": "01-registration.spec.ts",
-              "line": 42,
-              "column": 5
-            },
-            {
-              "title": "Login U7: admin.test@finora.app",
-              "ok": true,
-              "tags": [
-                "finora.app"
-              ],
-              "tests": [
-                {
-                  "timeout": 180000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 130187,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-06-15T06:26:51.450Z",
-                      "annotations": [],
-                      "attachments": [
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\test-refresh-redirect-P1-B-d17c8--screen-NOT-Create-Profile--chromium\\video.webm"
+                        },
                         {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-f6526-in-U7-admin-test-finora-app-chromium\\test-finished-1.png"
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\test-refresh-redirect-P1-B-d17c8--screen-NOT-Create-Profile--chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\test-refresh-redirect-P1-B-d17c8--screen-NOT-Create-Profile--chromium\\trace.zip"
                         }
-                      ]
+                      ],
+                      "errorLocation": {
+                        "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\test-refresh-redirect.spec.ts",
+                        "column": 13,
+                        "line": 101
+                      }
                     }
                   ],
-                  "status": "expected"
+                  "status": "unexpected"
                 }
               ],
-              "id": "180cc0718174fb543e11-4b4b22e7e7c7ce03e953",
-              "file": "01-registration.spec.ts",
-              "line": 42,
-              "column": 5
+              "id": "d0850ec52babccab3503-2c37ed46aad4bbd66d7b",
+              "file": "test-refresh-redirect.spec.ts",
+              "line": 88,
+              "column": 3
             }
           ]
         }
@@ -753,11 +322,11 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-06-15T06:14:28.051Z",
-    "duration": 880916.898,
-    "expected": 14,
+    "startTime": "2026-06-16T14:48:01.513Z",
+    "duration": 25244.306,
+    "expected": 0,
     "skipped": 0,
-    "unexpected": 0,
+    "unexpected": 3,
     "flaky": 0
   }
 }

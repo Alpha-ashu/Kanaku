@@ -751,7 +751,8 @@ async function cleanupUser(userId) {
   await prisma.advisorApplication.deleteMany({ where: { userId } }).catch(() => {});
   await prisma.todo.deleteMany({ where: { userId } }).catch(() => {});
   // Real to-do feature tables (raw SQL, not Prisma-managed) — cascades to items/shares.
-  await prisma.$executeRaw`DELETE FROM public.todo_lists WHERE user_id = ${userId}::uuid`.catch(() => {});
+  await prisma.$executeRaw`DELETE FROM public.todo_lists WHERE user_id = ${userId}::uuid`
+    .catch((err) => console.warn(`[mock-data] todo_lists cleanup failed for ${userId}:`, err.message));
   await prisma.notification.deleteMany({ where: { userId } }).catch(() => {});
   await prisma.taxCalculation.deleteMany({ where: { userId } }).catch(() => {});
   await prisma.goldAsset.deleteMany({ where: { userId } }).catch(() => {});

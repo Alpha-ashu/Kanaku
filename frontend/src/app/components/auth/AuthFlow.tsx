@@ -901,7 +901,49 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
  return renderWelcome();
  case 'signin':
  return (
- <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50/50 flex items-center justify-center p-4 pt-24">
+ <div className="relative min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50/50 flex items-center justify-center p-4 pt-24 select-none overflow-hidden">
+ {/* Premium animated decorative blobs */}
+ <div className="absolute inset-0 pointer-events-none overflow-hidden">
+ <motion.div
+ animate={{
+ x: [0, 40, -20, 0],
+ y: [0, -40, 20, 0],
+ scale: [1, 1.1, 0.9, 1],
+ }}
+ transition={{
+ duration: 20,
+ repeat: Infinity,
+ ease: "easeInOut",
+ }}
+ className="absolute -top-[15%] -left-[10%] w-[60vw] h-[60vw] md:w-[40vw] md:h-[40vw] bg-blue-200/30 rounded-full blur-[80px]"
+ />
+ <motion.div
+ animate={{
+ x: [0, -30, 40, 0],
+ y: [0, 50, -30, 0],
+ scale: [1, 0.9, 1.1, 1],
+ }}
+ transition={{
+ duration: 25,
+ repeat: Infinity,
+ ease: "easeInOut",
+ }}
+ className="absolute top-[40%] -right-[10%] w-[50vw] h-[50vw] md:w-[35vw] md:h-[35vw] bg-indigo-200/25 rounded-full blur-[80px]"
+ />
+ <motion.div
+ animate={{
+ x: [0, 30, -30, 0],
+ y: [0, 30, -40, 0],
+ }}
+ transition={{
+ duration: 22,
+ repeat: Infinity,
+ ease: "easeInOut",
+ }}
+ className="absolute -bottom-[10%] left-[20%] w-[40vw] h-[40vw] bg-purple-200/20 rounded-full blur-[80px]"
+ />
+ </div>
+
  {onNavigate && onLogin && onGetStarted && (
  <PublicNavbar
  onNavigate={onNavigate}
@@ -910,17 +952,23 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
  currentPage="signin"
  />
  )}
- <div className="bg-white rounded-2xl shadow-xl border border-gray-100 w-full max-w-md overflow-hidden relative z-10">
- <div className="h-1 w-full bg-gradient-to-r from-blue-600 to-indigo-600" />
- <div className="p-6 sm:p-8 border-b border-gray-100">
+
+ <motion.div
+ initial={{ opacity: 0, y: 20, scale: 0.98 }}
+ animate={{ opacity: 1, y: 0, scale: 1 }}
+ transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+ className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-[0_20px_50px_rgba(37,99,235,0.06)] border border-white/60 w-full max-w-md overflow-hidden relative z-10"
+ >
+ <div className="h-1.5 w-full bg-gradient-to-r from-blue-500 to-indigo-600" />
+ <div className="p-6 sm:p-8 border-b border-gray-100/50">
  <button
  onClick={() => setStep('welcome')}
- className="text-gray-500 hover:text-gray-700 transition-colors mb-5 flex items-center gap-1.5 text-sm font-medium group"
+ className="text-gray-500 hover:text-gray-800 transition-colors mb-5 flex items-center gap-1.5 text-sm font-semibold group animate-none"
  >
- <span className="group-hover:-translate-x-0.5 transition-transform"></span> Back
+ <span className="group-hover:-translate-x-0.5 transition-transform">←</span> Back
  </button>
- <h2 className="text-2xl font-bold text-gray-900">Welcome Back</h2>
- <p className="text-gray-500 mt-1 text-sm">Sign in to continue your financial journey.</p>
+ <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Welcome Back</h2>
+ <p className="text-gray-500 mt-1.5 text-sm font-medium">Sign in to continue your financial journey.</p>
  </div>
  <div className="p-6 sm:p-8 pt-6">
  <SignInForm
@@ -928,12 +976,54 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
  onSubmit={handleSignIn}
  />
  </div>
- </div>
+ </motion.div>
  </div>
  );
  case 'signup':
  return (
- <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50/50 flex items-center justify-center p-4 pt-24">
+ <div className="relative min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50/50 flex items-center justify-center p-4 pt-24 select-none overflow-hidden">
+ {/* Premium animated decorative blobs */}
+ <div className="absolute inset-0 pointer-events-none overflow-hidden">
+ <motion.div
+ animate={{
+ x: [0, 40, -20, 0],
+ y: [0, -40, 20, 0],
+ scale: [1, 1.1, 0.9, 1],
+ }}
+ transition={{
+ duration: 20,
+ repeat: Infinity,
+ ease: "easeInOut",
+ }}
+ className="absolute -top-[15%] -left-[10%] w-[60vw] h-[60vw] md:w-[40vw] md:h-[40vw] bg-blue-200/30 rounded-full blur-[80px]"
+ />
+ <motion.div
+ animate={{
+ x: [0, -30, 40, 0],
+ y: [0, 50, -30, 0],
+ scale: [1, 0.9, 1.1, 1],
+ }}
+ transition={{
+ duration: 25,
+ repeat: Infinity,
+ ease: "easeInOut",
+ }}
+ className="absolute top-[40%] -right-[10%] w-[50vw] h-[50vw] md:w-[35vw] md:h-[35vw] bg-indigo-200/25 rounded-full blur-[80px]"
+ />
+ <motion.div
+ animate={{
+ x: [0, 30, -30, 0],
+ y: [0, 30, -40, 0],
+ }}
+ transition={{
+ duration: 22,
+ repeat: Infinity,
+ ease: "easeInOut",
+ }}
+ className="absolute -bottom-[10%] left-[20%] w-[40vw] h-[40vw] bg-purple-200/20 rounded-full blur-[80px]"
+ />
+ </div>
+
  {onNavigate && onLogin && onGetStarted && (
  <PublicNavbar
  onNavigate={onNavigate}
@@ -942,17 +1032,23 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
  currentPage="signup"
  />
  )}
- <div className="bg-white rounded-2xl shadow-xl border border-gray-100 w-full max-w-md overflow-hidden relative z-10">
- <div className="h-1 w-full bg-gradient-to-r from-blue-600 to-indigo-600" />
- <div className="p-6 sm:p-8 border-b border-gray-100">
+
+ <motion.div
+ initial={{ opacity: 0, y: 20, scale: 0.98 }}
+ animate={{ opacity: 1, y: 0, scale: 1 }}
+ transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+ className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-[0_20px_50px_rgba(37,99,235,0.06)] border border-white/60 w-full max-w-md overflow-hidden relative z-10"
+ >
+ <div className="h-1.5 w-full bg-gradient-to-r from-blue-500 to-indigo-600" />
+ <div className="p-6 sm:p-8 border-b border-gray-100/50">
  <button
  onClick={() => setStep('welcome')}
- className="text-gray-500 hover:text-gray-700 transition-colors mb-5 flex items-center gap-1.5 text-sm font-medium group"
+ className="text-gray-500 hover:text-gray-800 transition-colors mb-5 flex items-center gap-1.5 text-sm font-semibold group animate-none"
  >
- <span className="group-hover:-translate-x-0.5 transition-transform"></span> Back
+ <span className="group-hover:-translate-x-0.5 transition-transform">←</span> Back
  </button>
- <h2 className="text-2xl font-bold text-gray-900">Create Account</h2>
- <p className="text-gray-500 mt-1 text-sm">Join KANAKU to start mastering your wealth.</p>
+ <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Create Account</h2>
+ <p className="text-gray-500 mt-1.5 text-sm font-medium">Join KANAKU to start mastering your wealth.</p>
  </div>
  <div className="p-6 sm:p-8 pt-6">
  <SignUpForm
@@ -962,7 +1058,7 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
  onViewPrivacy={() => setStep('privacy')}
  />
  </div>
- </div>
+ </motion.div>
  </div>
  );
  case 'privacy':
