@@ -631,6 +631,7 @@ exports.Prisma.GroupExpenseMemberScalarFieldEnum = {
   id: 'id',
   groupExpenseId: 'groupExpenseId',
   userId: 'userId',
+  friendId: 'friendId',
   name: 'name',
   email: 'email',
   phone: 'phone',

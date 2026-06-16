@@ -766,6 +766,45 @@ class BackendService {
     }
   }
 
+  /** Live, enriched friend list (registration status, totals) — always hits the backend, no offline fallback. */
+  async getFriendsEnriched() {
+    const response = await this.api.get('/friends');
+    return response.data?.data ?? [];
+  }
+
+  /** Friend profile: basic info + registration status + full expense history. `id` must be the backend (cloud) UUID. */
+  async getFriendDetail(id: string) {
+    assertCloudEntityId(id, 'friend');
+    const response = await this.api.get(`/friends/${id}`);
+    return response.data?.data;
+  }
+
+  async updateFriendRemote(id: string, updates: { name?: string; email?: string | null; phone?: string | null }) {
+    assertCloudEntityId(id, 'friend');
+    const response = await this.api.put(`/friends/${id}`, updates);
+    return response.data?.data;
+  }
+
+  async deleteFriendRemote(id: string) {
+    assertCloudEntityId(id, 'friend');
+    const response = await this.api.delete(`/friends/${id}`);
+    return response.data;
+  }
+
+  async bulkCreateFriends(friends: { name: string; email?: string; phone?: string }[]) {
+    const response = await this.api.post('/friends/bulk', { friends });
+    return response.data?.data;
+  }
+
+  async importFriendsCsv(file: File) {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await this.api.post('/friends/import', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data?.data;
+  }
+
   // ===== INVESTMENTS =====
   async updateInvestment(id: string, updates: any) {
     const localId = Number(updates?.localId ?? id);

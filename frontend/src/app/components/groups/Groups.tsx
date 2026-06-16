@@ -89,10 +89,13 @@ export const Groups: React.FC = () => {
  setCurrentPage('add-transaction');
  };
 
- const openFriendEditor = (friendId: number) => {
- localStorage.setItem('editingFriendId', String(friendId));
- localStorage.setItem('editingFriendBackPage', 'groups');
- setCurrentPage('add-friends');
+ const openFriendProfile = (friend: { id?: number; cloudId?: string }) => {
+ if (!friend.cloudId) {
+ toast.info('This friend is still syncing. Try again in a moment.');
+ return;
+ }
+ localStorage.setItem('viewingFriendId', friend.cloudId);
+ setCurrentPage('friend-profile');
  };
 
  const handleDeleteGroup = (groupId: number, groupName: string) => {
@@ -267,7 +270,7 @@ export const Groups: React.FC = () => {
  </div>
  </div>
  <Button
- onClick={() => setCurrentPage('add-friends')}
+ onClick={() => setCurrentPage('friends')}
  className="shadow-sm bg-sky-50 text-sky-700 hover:bg-sky-100 text-xs sm:text-sm h-9 px-3"
  >
  Manage Friends
@@ -281,10 +284,10 @@ export const Groups: React.FC = () => {
  <button
  key={friend.id}
  type="button"
- onClick={() => friend.id && openFriendEditor(friend.id)}
+ onClick={() => openFriendProfile(friend)}
  className="flex w-[82px] shrink-0 flex-col items-center text-center transition-transform hover:-translate-y-0.5"
- title={`Edit ${formatDisplayName(friend.name)}`}
- aria-label={`Edit ${formatDisplayName(friend.name)}`}
+ title={`View ${formatDisplayName(friend.name)}`}
+ aria-label={`View ${formatDisplayName(friend.name)}`}
  >
  <div className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-sky-200 bg-white p-0.5 shadow-sm transition-colors hover:border-sky-300">
  <Avatar className="h-full w-full rounded-full">

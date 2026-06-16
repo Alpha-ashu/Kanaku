@@ -10,6 +10,19 @@ import { sanitize } from '../../utils/sanitize';
 import { redisConnection } from '../../config/queue';
 import { inviteParticipants } from '../collaboration/invitation.service';
 
+// User has no `phone` column — phone numbers live on `profiles` (synced 1:1 with User.id on registration).
+async function findUserByEmailOrPhone(email?: string | null, phone?: string | null): Promise<any> {
+  if (email) {
+    const user = await prisma.user.findFirst({ where: { email } });
+    if (user) return user;
+  }
+  if (phone) {
+    const profile = await prisma.profiles.findFirst({ where: { phone } });
+    if (profile) return prisma.user.findUnique({ where: { id: profile.id } });
+  }
+  return null;
+}
+
 let _emailQueue: Queue | null = null;
 function getEmailQueue(): Queue {
   if (!_emailQueue) {
@@ -50,7 +63,7 @@ const buildGroupResponse = async (group: any, requestingUserId: string) => {
   });
 
   const memberResponses = members.map((m) => {
-    const friendRecord = userFriends.find((f) => 
+    const friendRecord = userFriends.find((f) =>
       (m.email && f.email === m.email) ||
       (m.phone && f.phone === m.phone) ||
       (f.name.toLowerCase() === m.name.toLowerCase())
@@ -63,7 +76,7 @@ const buildGroupResponse = async (group: any, requestingUserId: string) => {
       isCurrentUser: m.userId === requestingUserId,
       paidAmount: m.hasPaid ? Number(m.shareAmount) : 0,
       paymentStatus: m.hasPaid ? 'paid' : 'pending',
-      friendId: friendRecord?.id || undefined,
+      friendId: m.friendId || friendRecord?.id || undefined,
     };
   });
 
@@ -209,31 +222,44 @@ export const createGroup = async (req: AuthRequest, res: Response) => {
 
     // Create GroupExpenseMember entries and notifications
     for (const m of participants) {
-      const friend = await prisma.friend.findFirst({
+      let friend = await prisma.friend.findFirst({
         where: { userId, name: { equals: m.name, mode: 'insensitive' }, deletedAt: null }
       });
 
-      let targetUser: any = null;
-      if (friend && (friend.email || friend.phone)) {
-        targetUser = await prisma.user.findFirst({
+      const memberEmail = (m.email || '').trim().toLowerCase() || null;
+      const memberPhone = (m.phone || '').trim() || null;
+
+      // Fall back to matching an existing friend by contact info if the name didn't match.
+      if (!friend && (memberEmail || memberPhone)) {
+        friend = await prisma.friend.findFirst({
           where: {
-            OR: [
-              friend.email ? { email: friend.email } : null,
-              friend.phone ? { phone: friend.phone } : null
-            ].filter(Boolean) as any
-          }
+            userId,
+            deletedAt: null,
+            OR: [memberEmail ? { email: memberEmail } : null, memberPhone ? { phone: memberPhone } : null].filter(Boolean) as any,
+          },
         });
       }
 
-      const email = (m.email || friend?.email || '').trim().toLowerCase() || null;
+      // Every participant added to a group expense must become a manageable
+      // entity — auto-create a Friend record if one doesn't exist yet.
+      if (!friend && (memberEmail || memberPhone)) {
+        friend = await prisma.friend.create({
+          data: { userId, name: sanitize(m.name), email: memberEmail, phone: memberPhone, syncStatus: 'synced' },
+        });
+      }
+
+      const targetUser = await findUserByEmailOrPhone(friend?.email, friend?.phone);
+
+      const email = (memberEmail || friend?.email || '').trim().toLowerCase() || null;
 
       await prisma.groupExpenseMember.create({
         data: {
           groupExpenseId: group.id,
           userId: targetUser ? targetUser.id : null,
+          friendId: friend?.id || null,
           name: m.name,
           email,
-          phone: friend?.phone || null,
+          phone: friend?.phone || memberPhone,
           shareAmount: m.share,
           hasPaid: m.paid,
         }
@@ -243,12 +269,13 @@ export const createGroup = async (req: AuthRequest, res: Response) => {
         // Resolves registered vs. pending, tracks the invite, and sends the
         // matching in-app notification or "Join Kanaku" invitation email.
         try {
+          const detail = `Total: ₹${Number(group.totalAmount).toFixed(0)}, Your share: ₹${Number(m.share).toFixed(0)}.`;
           await inviteParticipants({
             moduleType: 'group_expense',
             moduleId: group.id,
             moduleName: group.name,
             creatorId: userId,
-            participants: [{ email, name: m.name }],
+            participants: [{ email, name: m.name, detail }],
           });
         } catch (err) {
           logger.warn('Failed to invite group expense participant', err);
@@ -372,17 +399,7 @@ export const updateGroup = async (req: AuthRequest, res: Response) => {
             where: { userId, name: { equals: m.name, mode: 'insensitive' }, deletedAt: null }
           });
 
-          let targetUser: any = null;
-          if (friend && (friend.email || friend.phone)) {
-            targetUser = await prisma.user.findFirst({
-              where: {
-                OR: [
-                  friend.email ? { email: friend.email } : null,
-                  friend.phone ? { phone: friend.phone } : null
-                ].filter(Boolean) as any
-              }
-            });
-          }
+          const targetUser = await findUserByEmailOrPhone(friend?.email, friend?.phone);
 
           await prisma.groupExpenseMember.create({
             data: {

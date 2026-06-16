@@ -64,6 +64,8 @@ async function queueCollaborationEmail(notificationId: string, userId: string, t
 export interface InviteParticipantInput {
   email: string;
   name?: string;
+  /** Extra context appended to the notification/email message, e.g. amount/share details for a group expense. */
+  detail?: string;
 }
 
 export interface ParticipantResolution {
@@ -124,9 +126,9 @@ export async function inviteParticipants(params: {
     });
 
     if (targetUser) {
-      await notifyRegisteredParticipant({ moduleType, moduleId, moduleName, targetUserId: targetUser.id, creatorId, creatorName });
+      await notifyRegisteredParticipant({ moduleType, moduleId, moduleName, targetUserId: targetUser.id, creatorId, creatorName, detail: p.detail });
     } else {
-      await sendInvitationEmail({ moduleType, moduleName, email, name, creatorName });
+      await sendInvitationEmail({ moduleType, moduleName, email, name, creatorName, detail: p.detail });
     }
 
     results.push({ email, name, status, userId: targetUser?.id || null });
@@ -142,11 +144,12 @@ async function notifyRegisteredParticipant(args: {
   targetUserId: string;
   creatorId: string;
   creatorName: string;
+  detail?: string;
 }): Promise<void> {
-  const { moduleType, moduleId, moduleName, targetUserId, creatorId, creatorName } = args;
+  const { moduleType, moduleId, moduleName, targetUserId, creatorId, creatorName, detail } = args;
   const deepLink = moduleDeepLink(moduleType, moduleId);
   const title = `You were added to a ${MODULE_LABELS[moduleType]}`;
-  const message = `${creatorName} added you to "${moduleName}".`;
+  const message = `${creatorName} added you to "${moduleName}".${detail ? ` ${detail}` : ''}`;
 
   const notification = await prisma.notification.create({
     data: {
@@ -180,8 +183,9 @@ async function sendInvitationEmail(args: {
   email: string;
   name: string;
   creatorName: string;
+  detail?: string;
 }): Promise<void> {
-  const { moduleType, moduleName, email, creatorName } = args;
+  const { moduleType, moduleName, email, creatorName, detail } = args;
   const frontendUrl = process.env.FRONTEND_URL || '';
   const joinUrl = `${frontendUrl}/register?invite=${moduleType}`;
   const subject = `You were added to a Kanaku ${MODULE_LABELS[moduleType]}`;
@@ -189,17 +193,19 @@ async function sendInvitationEmail(args: {
   const sent = await sendEmail({
     to: email,
     subject,
-    html: buildInvitationEmailHtml({ moduleType, moduleName, creatorName, joinUrl }),
+    html: buildInvitationEmailHtml({ moduleType, moduleName, creatorName, joinUrl, detail }),
     categories: ['kanaku-invitation', moduleType],
   });
 
-  if (!sent) {
+  if (sent) {
+    logger.info(`[Invitation] Pending-invite email sent to ${email.substring(0, 3)}*** for ${moduleType}`);
+  } else {
     logger.warn(`[Invitation] Email delivery failed/skipped for pending invite to ${email.substring(0, 3)}***`);
   }
 }
 
-function buildInvitationEmailHtml(args: { moduleType: ModuleType; moduleName: string; creatorName: string; joinUrl: string }): string {
-  const { moduleType, moduleName, creatorName, joinUrl } = args;
+function buildInvitationEmailHtml(args: { moduleType: ModuleType; moduleName: string; creatorName: string; joinUrl: string; detail?: string }): string {
+  const { moduleType, moduleName, creatorName, joinUrl, detail } = args;
   const noun = MODULE_LABELS[moduleType];
   return `
     <!DOCTYPE html>
@@ -223,7 +229,7 @@ function buildInvitationEmailHtml(args: { moduleType: ModuleType; moduleName: st
           <div class="card">
             <div class="logo">KANAKU</div>
             <div class="title">You were added to a ${noun}</div>
-            <p class="message">${creatorName} added you to "${moduleName}" on Kanaku. Join Kanaku to view it and stay in sync.</p>
+            <p class="message">${creatorName} added you to "${moduleName}" on Kanaku.${detail ? ` ${detail}` : ''} Join Kanaku to view it and stay in sync.</p>
             <a class="button" href="${joinUrl}">Join Kanaku</a>
             <div class="footer">
               <p>If you don't want to join, you can safely ignore this email.</p>

@@ -5123,6 +5123,37 @@ export namespace Prisma {
 
 
   /**
+   * Count Type FriendCountOutputType
+   */
+
+  export type FriendCountOutputType = {
+    groupExpenseMembers: number
+  }
+
+  export type FriendCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    groupExpenseMembers?: boolean | FriendCountOutputTypeCountGroupExpenseMembersArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * FriendCountOutputType without action
+   */
+  export type FriendCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FriendCountOutputType
+     */
+    select?: FriendCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * FriendCountOutputType without action
+   */
+  export type FriendCountOutputTypeCountGroupExpenseMembersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: GroupExpenseMemberWhereInput
+  }
+
+
+  /**
    * Count Type GoalCountOutputType
    */
 
@@ -16625,6 +16656,8 @@ export namespace Prisma {
     updatedAt?: boolean
     deletedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
+    groupExpenseMembers?: boolean | Friend$groupExpenseMembersArgs<ExtArgs>
+    _count?: boolean | FriendCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["friend"]>
 
   export type FriendSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -16677,6 +16710,8 @@ export namespace Prisma {
   export type FriendOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "deviceId" | "name" | "email" | "phone" | "avatar" | "notes" | "syncStatus" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["friend"]>
   export type FriendInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
+    groupExpenseMembers?: boolean | Friend$groupExpenseMembersArgs<ExtArgs>
+    _count?: boolean | FriendCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type FriendIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -16689,6 +16724,7 @@ export namespace Prisma {
     name: "Friend"
     objects: {
       user: Prisma.$UserPayload<ExtArgs>
+      groupExpenseMembers: Prisma.$GroupExpenseMemberPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -17098,6 +17134,7 @@ export namespace Prisma {
   export interface Prisma__FriendClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    groupExpenseMembers<T extends Friend$groupExpenseMembersArgs<ExtArgs> = {}>(args?: Subset<T, Friend$groupExpenseMembersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GroupExpenseMemberPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -17532,6 +17569,30 @@ export namespace Prisma {
      * Limit how many Friends to delete.
      */
     limit?: number
+  }
+
+  /**
+   * Friend.groupExpenseMembers
+   */
+  export type Friend$groupExpenseMembersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GroupExpenseMember
+     */
+    select?: GroupExpenseMemberSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GroupExpenseMember
+     */
+    omit?: GroupExpenseMemberOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GroupExpenseMemberInclude<ExtArgs> | null
+    where?: GroupExpenseMemberWhereInput
+    orderBy?: GroupExpenseMemberOrderByWithRelationInput | GroupExpenseMemberOrderByWithRelationInput[]
+    cursor?: GroupExpenseMemberWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: GroupExpenseMemberScalarFieldEnum | GroupExpenseMemberScalarFieldEnum[]
   }
 
   /**
@@ -44528,6 +44589,7 @@ export namespace Prisma {
     id: string | null
     groupExpenseId: string | null
     userId: string | null
+    friendId: string | null
     name: string | null
     email: string | null
     phone: string | null
@@ -44543,6 +44605,7 @@ export namespace Prisma {
     id: string | null
     groupExpenseId: string | null
     userId: string | null
+    friendId: string | null
     name: string | null
     email: string | null
     phone: string | null
@@ -44558,6 +44621,7 @@ export namespace Prisma {
     id: number
     groupExpenseId: number
     userId: number
+    friendId: number
     name: number
     email: number
     phone: number
@@ -44583,6 +44647,7 @@ export namespace Prisma {
     id?: true
     groupExpenseId?: true
     userId?: true
+    friendId?: true
     name?: true
     email?: true
     phone?: true
@@ -44598,6 +44663,7 @@ export namespace Prisma {
     id?: true
     groupExpenseId?: true
     userId?: true
+    friendId?: true
     name?: true
     email?: true
     phone?: true
@@ -44613,6 +44679,7 @@ export namespace Prisma {
     id?: true
     groupExpenseId?: true
     userId?: true
+    friendId?: true
     name?: true
     email?: true
     phone?: true
@@ -44715,6 +44782,7 @@ export namespace Prisma {
     id: string
     groupExpenseId: string
     userId: string | null
+    friendId: string | null
     name: string
     email: string | null
     phone: string | null
@@ -44749,6 +44817,7 @@ export namespace Prisma {
     id?: boolean
     groupExpenseId?: boolean
     userId?: boolean
+    friendId?: boolean
     name?: boolean
     email?: boolean
     phone?: boolean
@@ -44759,12 +44828,14 @@ export namespace Prisma {
     updatedAt?: boolean
     deletedAt?: boolean
     groupExpense?: boolean | GroupExpenseDefaultArgs<ExtArgs>
+    friend?: boolean | GroupExpenseMember$friendArgs<ExtArgs>
   }, ExtArgs["result"]["groupExpenseMember"]>
 
   export type GroupExpenseMemberSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     groupExpenseId?: boolean
     userId?: boolean
+    friendId?: boolean
     name?: boolean
     email?: boolean
     phone?: boolean
@@ -44775,12 +44846,14 @@ export namespace Prisma {
     updatedAt?: boolean
     deletedAt?: boolean
     groupExpense?: boolean | GroupExpenseDefaultArgs<ExtArgs>
+    friend?: boolean | GroupExpenseMember$friendArgs<ExtArgs>
   }, ExtArgs["result"]["groupExpenseMember"]>
 
   export type GroupExpenseMemberSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     groupExpenseId?: boolean
     userId?: boolean
+    friendId?: boolean
     name?: boolean
     email?: boolean
     phone?: boolean
@@ -44791,12 +44864,14 @@ export namespace Prisma {
     updatedAt?: boolean
     deletedAt?: boolean
     groupExpense?: boolean | GroupExpenseDefaultArgs<ExtArgs>
+    friend?: boolean | GroupExpenseMember$friendArgs<ExtArgs>
   }, ExtArgs["result"]["groupExpenseMember"]>
 
   export type GroupExpenseMemberSelectScalar = {
     id?: boolean
     groupExpenseId?: boolean
     userId?: boolean
+    friendId?: boolean
     name?: boolean
     email?: boolean
     phone?: boolean
@@ -44808,26 +44883,31 @@ export namespace Prisma {
     deletedAt?: boolean
   }
 
-  export type GroupExpenseMemberOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "groupExpenseId" | "userId" | "name" | "email" | "phone" | "shareAmount" | "hasPaid" | "paidAt" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["groupExpenseMember"]>
+  export type GroupExpenseMemberOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "groupExpenseId" | "userId" | "friendId" | "name" | "email" | "phone" | "shareAmount" | "hasPaid" | "paidAt" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["groupExpenseMember"]>
   export type GroupExpenseMemberInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     groupExpense?: boolean | GroupExpenseDefaultArgs<ExtArgs>
+    friend?: boolean | GroupExpenseMember$friendArgs<ExtArgs>
   }
   export type GroupExpenseMemberIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     groupExpense?: boolean | GroupExpenseDefaultArgs<ExtArgs>
+    friend?: boolean | GroupExpenseMember$friendArgs<ExtArgs>
   }
   export type GroupExpenseMemberIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     groupExpense?: boolean | GroupExpenseDefaultArgs<ExtArgs>
+    friend?: boolean | GroupExpenseMember$friendArgs<ExtArgs>
   }
 
   export type $GroupExpenseMemberPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "GroupExpenseMember"
     objects: {
       groupExpense: Prisma.$GroupExpensePayload<ExtArgs>
+      friend: Prisma.$FriendPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       groupExpenseId: string
       userId: string | null
+      friendId: string | null
       name: string
       email: string | null
       phone: string | null
@@ -45232,6 +45312,7 @@ export namespace Prisma {
   export interface Prisma__GroupExpenseMemberClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     groupExpense<T extends GroupExpenseDefaultArgs<ExtArgs> = {}>(args?: Subset<T, GroupExpenseDefaultArgs<ExtArgs>>): Prisma__GroupExpenseClient<$Result.GetResult<Prisma.$GroupExpensePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    friend<T extends GroupExpenseMember$friendArgs<ExtArgs> = {}>(args?: Subset<T, GroupExpenseMember$friendArgs<ExtArgs>>): Prisma__FriendClient<$Result.GetResult<Prisma.$FriendPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -45264,6 +45345,7 @@ export namespace Prisma {
     readonly id: FieldRef<"GroupExpenseMember", 'String'>
     readonly groupExpenseId: FieldRef<"GroupExpenseMember", 'String'>
     readonly userId: FieldRef<"GroupExpenseMember", 'String'>
+    readonly friendId: FieldRef<"GroupExpenseMember", 'String'>
     readonly name: FieldRef<"GroupExpenseMember", 'String'>
     readonly email: FieldRef<"GroupExpenseMember", 'String'>
     readonly phone: FieldRef<"GroupExpenseMember", 'String'>
@@ -45666,6 +45748,25 @@ export namespace Prisma {
      * Limit how many GroupExpenseMembers to delete.
      */
     limit?: number
+  }
+
+  /**
+   * GroupExpenseMember.friend
+   */
+  export type GroupExpenseMember$friendArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Friend
+     */
+    select?: FriendSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Friend
+     */
+    omit?: FriendOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FriendInclude<ExtArgs> | null
+    where?: FriendWhereInput
   }
 
   /**
@@ -62370,6 +62471,7 @@ export namespace Prisma {
     id: 'id',
     groupExpenseId: 'groupExpenseId',
     userId: 'userId',
+    friendId: 'friendId',
     name: 'name',
     email: 'email',
     phone: 'phone',
@@ -63702,6 +63804,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Friend"> | Date | string
     deletedAt?: DateTimeNullableFilter<"Friend"> | Date | string | null
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    groupExpenseMembers?: GroupExpenseMemberListRelationFilter
   }
 
   export type FriendOrderByWithRelationInput = {
@@ -63718,6 +63821,7 @@ export namespace Prisma {
     updatedAt?: SortOrder
     deletedAt?: SortOrderInput | SortOrder
     user?: UserOrderByWithRelationInput
+    groupExpenseMembers?: GroupExpenseMemberOrderByRelationAggregateInput
   }
 
   export type FriendWhereUniqueInput = Prisma.AtLeast<{
@@ -63737,6 +63841,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Friend"> | Date | string
     deletedAt?: DateTimeNullableFilter<"Friend"> | Date | string | null
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    groupExpenseMembers?: GroupExpenseMemberListRelationFilter
   }, "id">
 
   export type FriendOrderByWithAggregationInput = {
@@ -66012,6 +66117,7 @@ export namespace Prisma {
     id?: StringFilter<"GroupExpenseMember"> | string
     groupExpenseId?: StringFilter<"GroupExpenseMember"> | string
     userId?: StringNullableFilter<"GroupExpenseMember"> | string | null
+    friendId?: StringNullableFilter<"GroupExpenseMember"> | string | null
     name?: StringFilter<"GroupExpenseMember"> | string
     email?: StringNullableFilter<"GroupExpenseMember"> | string | null
     phone?: StringNullableFilter<"GroupExpenseMember"> | string | null
@@ -66022,12 +66128,14 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"GroupExpenseMember"> | Date | string
     deletedAt?: DateTimeNullableFilter<"GroupExpenseMember"> | Date | string | null
     groupExpense?: XOR<GroupExpenseScalarRelationFilter, GroupExpenseWhereInput>
+    friend?: XOR<FriendNullableScalarRelationFilter, FriendWhereInput> | null
   }
 
   export type GroupExpenseMemberOrderByWithRelationInput = {
     id?: SortOrder
     groupExpenseId?: SortOrder
     userId?: SortOrderInput | SortOrder
+    friendId?: SortOrderInput | SortOrder
     name?: SortOrder
     email?: SortOrderInput | SortOrder
     phone?: SortOrderInput | SortOrder
@@ -66038,6 +66146,7 @@ export namespace Prisma {
     updatedAt?: SortOrder
     deletedAt?: SortOrderInput | SortOrder
     groupExpense?: GroupExpenseOrderByWithRelationInput
+    friend?: FriendOrderByWithRelationInput
   }
 
   export type GroupExpenseMemberWhereUniqueInput = Prisma.AtLeast<{
@@ -66047,6 +66156,7 @@ export namespace Prisma {
     NOT?: GroupExpenseMemberWhereInput | GroupExpenseMemberWhereInput[]
     groupExpenseId?: StringFilter<"GroupExpenseMember"> | string
     userId?: StringNullableFilter<"GroupExpenseMember"> | string | null
+    friendId?: StringNullableFilter<"GroupExpenseMember"> | string | null
     name?: StringFilter<"GroupExpenseMember"> | string
     email?: StringNullableFilter<"GroupExpenseMember"> | string | null
     phone?: StringNullableFilter<"GroupExpenseMember"> | string | null
@@ -66057,12 +66167,14 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"GroupExpenseMember"> | Date | string
     deletedAt?: DateTimeNullableFilter<"GroupExpenseMember"> | Date | string | null
     groupExpense?: XOR<GroupExpenseScalarRelationFilter, GroupExpenseWhereInput>
+    friend?: XOR<FriendNullableScalarRelationFilter, FriendWhereInput> | null
   }, "id">
 
   export type GroupExpenseMemberOrderByWithAggregationInput = {
     id?: SortOrder
     groupExpenseId?: SortOrder
     userId?: SortOrderInput | SortOrder
+    friendId?: SortOrderInput | SortOrder
     name?: SortOrder
     email?: SortOrderInput | SortOrder
     phone?: SortOrderInput | SortOrder
@@ -66086,6 +66198,7 @@ export namespace Prisma {
     id?: StringWithAggregatesFilter<"GroupExpenseMember"> | string
     groupExpenseId?: StringWithAggregatesFilter<"GroupExpenseMember"> | string
     userId?: StringNullableWithAggregatesFilter<"GroupExpenseMember"> | string | null
+    friendId?: StringNullableWithAggregatesFilter<"GroupExpenseMember"> | string | null
     name?: StringWithAggregatesFilter<"GroupExpenseMember"> | string
     email?: StringNullableWithAggregatesFilter<"GroupExpenseMember"> | string | null
     phone?: StringNullableWithAggregatesFilter<"GroupExpenseMember"> | string | null
@@ -68421,6 +68534,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     user: UserCreateNestedOneWithoutFriendsInput
+    groupExpenseMembers?: GroupExpenseMemberCreateNestedManyWithoutFriendInput
   }
 
   export type FriendUncheckedCreateInput = {
@@ -68436,6 +68550,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
+    groupExpenseMembers?: GroupExpenseMemberUncheckedCreateNestedManyWithoutFriendInput
   }
 
   export type FriendUpdateInput = {
@@ -68451,6 +68566,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     user?: UserUpdateOneRequiredWithoutFriendsNestedInput
+    groupExpenseMembers?: GroupExpenseMemberUpdateManyWithoutFriendNestedInput
   }
 
   export type FriendUncheckedUpdateInput = {
@@ -68466,6 +68582,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    groupExpenseMembers?: GroupExpenseMemberUncheckedUpdateManyWithoutFriendNestedInput
   }
 
   export type FriendCreateManyInput = {
@@ -71105,12 +71222,14 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     groupExpense: GroupExpenseCreateNestedOneWithoutGroupMembersInput
+    friend?: FriendCreateNestedOneWithoutGroupExpenseMembersInput
   }
 
   export type GroupExpenseMemberUncheckedCreateInput = {
     id?: string
     groupExpenseId: string
     userId?: string | null
+    friendId?: string | null
     name: string
     email?: string | null
     phone?: string | null
@@ -71135,12 +71254,14 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     groupExpense?: GroupExpenseUpdateOneRequiredWithoutGroupMembersNestedInput
+    friend?: FriendUpdateOneWithoutGroupExpenseMembersNestedInput
   }
 
   export type GroupExpenseMemberUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     groupExpenseId?: StringFieldUpdateOperationsInput | string
     userId?: NullableStringFieldUpdateOperationsInput | string | null
+    friendId?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
@@ -71156,6 +71277,7 @@ export namespace Prisma {
     id?: string
     groupExpenseId: string
     userId?: string | null
+    friendId?: string | null
     name: string
     email?: string | null
     phone?: string | null
@@ -71185,6 +71307,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     groupExpenseId?: StringFieldUpdateOperationsInput | string
     userId?: NullableStringFieldUpdateOperationsInput | string | null
+    friendId?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
@@ -73548,6 +73671,16 @@ export namespace Prisma {
     size?: SortOrder
   }
 
+  export type GroupExpenseMemberListRelationFilter = {
+    every?: GroupExpenseMemberWhereInput
+    some?: GroupExpenseMemberWhereInput
+    none?: GroupExpenseMemberWhereInput
+  }
+
+  export type GroupExpenseMemberOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
   export type FriendCountOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
@@ -75114,16 +75247,6 @@ export namespace Prisma {
     isNot?: AccountWhereInput | null
   }
 
-  export type GroupExpenseMemberListRelationFilter = {
-    every?: GroupExpenseMemberWhereInput
-    some?: GroupExpenseMemberWhereInput
-    none?: GroupExpenseMemberWhereInput
-  }
-
-  export type GroupExpenseMemberOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
   export type GroupExpenseCountOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
@@ -75217,10 +75340,16 @@ export namespace Prisma {
     isNot?: GroupExpenseWhereInput
   }
 
+  export type FriendNullableScalarRelationFilter = {
+    is?: FriendWhereInput | null
+    isNot?: FriendWhereInput | null
+  }
+
   export type GroupExpenseMemberCountOrderByAggregateInput = {
     id?: SortOrder
     groupExpenseId?: SortOrder
     userId?: SortOrder
+    friendId?: SortOrder
     name?: SortOrder
     email?: SortOrder
     phone?: SortOrder
@@ -75240,6 +75369,7 @@ export namespace Prisma {
     id?: SortOrder
     groupExpenseId?: SortOrder
     userId?: SortOrder
+    friendId?: SortOrder
     name?: SortOrder
     email?: SortOrder
     phone?: SortOrder
@@ -75255,6 +75385,7 @@ export namespace Prisma {
     id?: SortOrder
     groupExpenseId?: SortOrder
     userId?: SortOrder
+    friendId?: SortOrder
     name?: SortOrder
     email?: SortOrder
     phone?: SortOrder
@@ -76539,12 +76670,54 @@ export namespace Prisma {
     connect?: UserWhereUniqueInput
   }
 
+  export type GroupExpenseMemberCreateNestedManyWithoutFriendInput = {
+    create?: XOR<GroupExpenseMemberCreateWithoutFriendInput, GroupExpenseMemberUncheckedCreateWithoutFriendInput> | GroupExpenseMemberCreateWithoutFriendInput[] | GroupExpenseMemberUncheckedCreateWithoutFriendInput[]
+    connectOrCreate?: GroupExpenseMemberCreateOrConnectWithoutFriendInput | GroupExpenseMemberCreateOrConnectWithoutFriendInput[]
+    createMany?: GroupExpenseMemberCreateManyFriendInputEnvelope
+    connect?: GroupExpenseMemberWhereUniqueInput | GroupExpenseMemberWhereUniqueInput[]
+  }
+
+  export type GroupExpenseMemberUncheckedCreateNestedManyWithoutFriendInput = {
+    create?: XOR<GroupExpenseMemberCreateWithoutFriendInput, GroupExpenseMemberUncheckedCreateWithoutFriendInput> | GroupExpenseMemberCreateWithoutFriendInput[] | GroupExpenseMemberUncheckedCreateWithoutFriendInput[]
+    connectOrCreate?: GroupExpenseMemberCreateOrConnectWithoutFriendInput | GroupExpenseMemberCreateOrConnectWithoutFriendInput[]
+    createMany?: GroupExpenseMemberCreateManyFriendInputEnvelope
+    connect?: GroupExpenseMemberWhereUniqueInput | GroupExpenseMemberWhereUniqueInput[]
+  }
+
   export type UserUpdateOneRequiredWithoutFriendsNestedInput = {
     create?: XOR<UserCreateWithoutFriendsInput, UserUncheckedCreateWithoutFriendsInput>
     connectOrCreate?: UserCreateOrConnectWithoutFriendsInput
     upsert?: UserUpsertWithoutFriendsInput
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutFriendsInput, UserUpdateWithoutFriendsInput>, UserUncheckedUpdateWithoutFriendsInput>
+  }
+
+  export type GroupExpenseMemberUpdateManyWithoutFriendNestedInput = {
+    create?: XOR<GroupExpenseMemberCreateWithoutFriendInput, GroupExpenseMemberUncheckedCreateWithoutFriendInput> | GroupExpenseMemberCreateWithoutFriendInput[] | GroupExpenseMemberUncheckedCreateWithoutFriendInput[]
+    connectOrCreate?: GroupExpenseMemberCreateOrConnectWithoutFriendInput | GroupExpenseMemberCreateOrConnectWithoutFriendInput[]
+    upsert?: GroupExpenseMemberUpsertWithWhereUniqueWithoutFriendInput | GroupExpenseMemberUpsertWithWhereUniqueWithoutFriendInput[]
+    createMany?: GroupExpenseMemberCreateManyFriendInputEnvelope
+    set?: GroupExpenseMemberWhereUniqueInput | GroupExpenseMemberWhereUniqueInput[]
+    disconnect?: GroupExpenseMemberWhereUniqueInput | GroupExpenseMemberWhereUniqueInput[]
+    delete?: GroupExpenseMemberWhereUniqueInput | GroupExpenseMemberWhereUniqueInput[]
+    connect?: GroupExpenseMemberWhereUniqueInput | GroupExpenseMemberWhereUniqueInput[]
+    update?: GroupExpenseMemberUpdateWithWhereUniqueWithoutFriendInput | GroupExpenseMemberUpdateWithWhereUniqueWithoutFriendInput[]
+    updateMany?: GroupExpenseMemberUpdateManyWithWhereWithoutFriendInput | GroupExpenseMemberUpdateManyWithWhereWithoutFriendInput[]
+    deleteMany?: GroupExpenseMemberScalarWhereInput | GroupExpenseMemberScalarWhereInput[]
+  }
+
+  export type GroupExpenseMemberUncheckedUpdateManyWithoutFriendNestedInput = {
+    create?: XOR<GroupExpenseMemberCreateWithoutFriendInput, GroupExpenseMemberUncheckedCreateWithoutFriendInput> | GroupExpenseMemberCreateWithoutFriendInput[] | GroupExpenseMemberUncheckedCreateWithoutFriendInput[]
+    connectOrCreate?: GroupExpenseMemberCreateOrConnectWithoutFriendInput | GroupExpenseMemberCreateOrConnectWithoutFriendInput[]
+    upsert?: GroupExpenseMemberUpsertWithWhereUniqueWithoutFriendInput | GroupExpenseMemberUpsertWithWhereUniqueWithoutFriendInput[]
+    createMany?: GroupExpenseMemberCreateManyFriendInputEnvelope
+    set?: GroupExpenseMemberWhereUniqueInput | GroupExpenseMemberWhereUniqueInput[]
+    disconnect?: GroupExpenseMemberWhereUniqueInput | GroupExpenseMemberWhereUniqueInput[]
+    delete?: GroupExpenseMemberWhereUniqueInput | GroupExpenseMemberWhereUniqueInput[]
+    connect?: GroupExpenseMemberWhereUniqueInput | GroupExpenseMemberWhereUniqueInput[]
+    update?: GroupExpenseMemberUpdateWithWhereUniqueWithoutFriendInput | GroupExpenseMemberUpdateWithWhereUniqueWithoutFriendInput[]
+    updateMany?: GroupExpenseMemberUpdateManyWithWhereWithoutFriendInput | GroupExpenseMemberUpdateManyWithWhereWithoutFriendInput[]
+    deleteMany?: GroupExpenseMemberScalarWhereInput | GroupExpenseMemberScalarWhereInput[]
   }
 
   export type UserCreateNestedOneWithoutGoalsInput = {
@@ -78553,12 +78726,28 @@ export namespace Prisma {
     connect?: GroupExpenseWhereUniqueInput
   }
 
+  export type FriendCreateNestedOneWithoutGroupExpenseMembersInput = {
+    create?: XOR<FriendCreateWithoutGroupExpenseMembersInput, FriendUncheckedCreateWithoutGroupExpenseMembersInput>
+    connectOrCreate?: FriendCreateOrConnectWithoutGroupExpenseMembersInput
+    connect?: FriendWhereUniqueInput
+  }
+
   export type GroupExpenseUpdateOneRequiredWithoutGroupMembersNestedInput = {
     create?: XOR<GroupExpenseCreateWithoutGroupMembersInput, GroupExpenseUncheckedCreateWithoutGroupMembersInput>
     connectOrCreate?: GroupExpenseCreateOrConnectWithoutGroupMembersInput
     upsert?: GroupExpenseUpsertWithoutGroupMembersInput
     connect?: GroupExpenseWhereUniqueInput
     update?: XOR<XOR<GroupExpenseUpdateToOneWithWhereWithoutGroupMembersInput, GroupExpenseUpdateWithoutGroupMembersInput>, GroupExpenseUncheckedUpdateWithoutGroupMembersInput>
+  }
+
+  export type FriendUpdateOneWithoutGroupExpenseMembersNestedInput = {
+    create?: XOR<FriendCreateWithoutGroupExpenseMembersInput, FriendUncheckedCreateWithoutGroupExpenseMembersInput>
+    connectOrCreate?: FriendCreateOrConnectWithoutGroupExpenseMembersInput
+    upsert?: FriendUpsertWithoutGroupExpenseMembersInput
+    disconnect?: FriendWhereInput | boolean
+    delete?: FriendWhereInput | boolean
+    connect?: FriendWhereUniqueInput
+    update?: XOR<XOR<FriendUpdateToOneWithWhereWithoutGroupExpenseMembersInput, FriendUpdateWithoutGroupExpenseMembersInput>, FriendUncheckedUpdateWithoutGroupExpenseMembersInput>
   }
 
   export type UserCreateNestedOneWithoutCollaborationParticipationsInput = {
@@ -82891,6 +83080,46 @@ export namespace Prisma {
     create: XOR<UserCreateWithoutFriendsInput, UserUncheckedCreateWithoutFriendsInput>
   }
 
+  export type GroupExpenseMemberCreateWithoutFriendInput = {
+    id?: string
+    userId?: string | null
+    name: string
+    email?: string | null
+    phone?: string | null
+    shareAmount?: Decimal | DecimalJsLike | number | string
+    hasPaid?: boolean
+    paidAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    groupExpense: GroupExpenseCreateNestedOneWithoutGroupMembersInput
+  }
+
+  export type GroupExpenseMemberUncheckedCreateWithoutFriendInput = {
+    id?: string
+    groupExpenseId: string
+    userId?: string | null
+    name: string
+    email?: string | null
+    phone?: string | null
+    shareAmount?: Decimal | DecimalJsLike | number | string
+    hasPaid?: boolean
+    paidAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type GroupExpenseMemberCreateOrConnectWithoutFriendInput = {
+    where: GroupExpenseMemberWhereUniqueInput
+    create: XOR<GroupExpenseMemberCreateWithoutFriendInput, GroupExpenseMemberUncheckedCreateWithoutFriendInput>
+  }
+
+  export type GroupExpenseMemberCreateManyFriendInputEnvelope = {
+    data: GroupExpenseMemberCreateManyFriendInput | GroupExpenseMemberCreateManyFriendInput[]
+    skipDuplicates?: boolean
+  }
+
   export type UserUpsertWithoutFriendsInput = {
     update: XOR<UserUpdateWithoutFriendsInput, UserUncheckedUpdateWithoutFriendsInput>
     create: XOR<UserCreateWithoutFriendsInput, UserUncheckedCreateWithoutFriendsInput>
@@ -83020,6 +83249,41 @@ export namespace Prisma {
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
+  }
+
+  export type GroupExpenseMemberUpsertWithWhereUniqueWithoutFriendInput = {
+    where: GroupExpenseMemberWhereUniqueInput
+    update: XOR<GroupExpenseMemberUpdateWithoutFriendInput, GroupExpenseMemberUncheckedUpdateWithoutFriendInput>
+    create: XOR<GroupExpenseMemberCreateWithoutFriendInput, GroupExpenseMemberUncheckedCreateWithoutFriendInput>
+  }
+
+  export type GroupExpenseMemberUpdateWithWhereUniqueWithoutFriendInput = {
+    where: GroupExpenseMemberWhereUniqueInput
+    data: XOR<GroupExpenseMemberUpdateWithoutFriendInput, GroupExpenseMemberUncheckedUpdateWithoutFriendInput>
+  }
+
+  export type GroupExpenseMemberUpdateManyWithWhereWithoutFriendInput = {
+    where: GroupExpenseMemberScalarWhereInput
+    data: XOR<GroupExpenseMemberUpdateManyMutationInput, GroupExpenseMemberUncheckedUpdateManyWithoutFriendInput>
+  }
+
+  export type GroupExpenseMemberScalarWhereInput = {
+    AND?: GroupExpenseMemberScalarWhereInput | GroupExpenseMemberScalarWhereInput[]
+    OR?: GroupExpenseMemberScalarWhereInput[]
+    NOT?: GroupExpenseMemberScalarWhereInput | GroupExpenseMemberScalarWhereInput[]
+    id?: StringFilter<"GroupExpenseMember"> | string
+    groupExpenseId?: StringFilter<"GroupExpenseMember"> | string
+    userId?: StringNullableFilter<"GroupExpenseMember"> | string | null
+    friendId?: StringNullableFilter<"GroupExpenseMember"> | string | null
+    name?: StringFilter<"GroupExpenseMember"> | string
+    email?: StringNullableFilter<"GroupExpenseMember"> | string | null
+    phone?: StringNullableFilter<"GroupExpenseMember"> | string | null
+    shareAmount?: DecimalFilter<"GroupExpenseMember"> | Decimal | DecimalJsLike | number | string
+    hasPaid?: BoolFilter<"GroupExpenseMember"> | boolean
+    paidAt?: DateTimeNullableFilter<"GroupExpenseMember"> | Date | string | null
+    createdAt?: DateTimeFilter<"GroupExpenseMember"> | Date | string
+    updatedAt?: DateTimeFilter<"GroupExpenseMember"> | Date | string
+    deletedAt?: DateTimeNullableFilter<"GroupExpenseMember"> | Date | string | null
   }
 
   export type UserCreateWithoutGoalsInput = {
@@ -87118,6 +87382,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
+    groupExpenseMembers?: GroupExpenseMemberCreateNestedManyWithoutFriendInput
   }
 
   export type FriendUncheckedCreateWithoutUserInput = {
@@ -87132,6 +87397,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
+    groupExpenseMembers?: GroupExpenseMemberUncheckedCreateNestedManyWithoutFriendInput
   }
 
   export type FriendCreateOrConnectWithoutUserInput = {
@@ -90472,11 +90738,13 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
+    friend?: FriendCreateNestedOneWithoutGroupExpenseMembersInput
   }
 
   export type GroupExpenseMemberUncheckedCreateWithoutGroupExpenseInput = {
     id?: string
     userId?: string | null
+    friendId?: string | null
     name: string
     email?: string | null
     phone?: string | null
@@ -90712,24 +90980,6 @@ export namespace Prisma {
     data: XOR<GroupExpenseMemberUpdateManyMutationInput, GroupExpenseMemberUncheckedUpdateManyWithoutGroupExpenseInput>
   }
 
-  export type GroupExpenseMemberScalarWhereInput = {
-    AND?: GroupExpenseMemberScalarWhereInput | GroupExpenseMemberScalarWhereInput[]
-    OR?: GroupExpenseMemberScalarWhereInput[]
-    NOT?: GroupExpenseMemberScalarWhereInput | GroupExpenseMemberScalarWhereInput[]
-    id?: StringFilter<"GroupExpenseMember"> | string
-    groupExpenseId?: StringFilter<"GroupExpenseMember"> | string
-    userId?: StringNullableFilter<"GroupExpenseMember"> | string | null
-    name?: StringFilter<"GroupExpenseMember"> | string
-    email?: StringNullableFilter<"GroupExpenseMember"> | string | null
-    phone?: StringNullableFilter<"GroupExpenseMember"> | string | null
-    shareAmount?: DecimalFilter<"GroupExpenseMember"> | Decimal | DecimalJsLike | number | string
-    hasPaid?: BoolFilter<"GroupExpenseMember"> | boolean
-    paidAt?: DateTimeNullableFilter<"GroupExpenseMember"> | Date | string | null
-    createdAt?: DateTimeFilter<"GroupExpenseMember"> | Date | string
-    updatedAt?: DateTimeFilter<"GroupExpenseMember"> | Date | string
-    deletedAt?: DateTimeNullableFilter<"GroupExpenseMember"> | Date | string | null
-  }
-
   export type GroupExpenseCreateWithoutGroupMembersInput = {
     id?: string
     deviceId?: string | null
@@ -90787,6 +91037,41 @@ export namespace Prisma {
   export type GroupExpenseCreateOrConnectWithoutGroupMembersInput = {
     where: GroupExpenseWhereUniqueInput
     create: XOR<GroupExpenseCreateWithoutGroupMembersInput, GroupExpenseUncheckedCreateWithoutGroupMembersInput>
+  }
+
+  export type FriendCreateWithoutGroupExpenseMembersInput = {
+    id?: string
+    deviceId?: string | null
+    name: string
+    email?: string | null
+    phone?: string | null
+    avatar?: string | null
+    notes?: string | null
+    syncStatus?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    user: UserCreateNestedOneWithoutFriendsInput
+  }
+
+  export type FriendUncheckedCreateWithoutGroupExpenseMembersInput = {
+    id?: string
+    userId: string
+    deviceId?: string | null
+    name: string
+    email?: string | null
+    phone?: string | null
+    avatar?: string | null
+    notes?: string | null
+    syncStatus?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type FriendCreateOrConnectWithoutGroupExpenseMembersInput = {
+    where: FriendWhereUniqueInput
+    create: XOR<FriendCreateWithoutGroupExpenseMembersInput, FriendUncheckedCreateWithoutGroupExpenseMembersInput>
   }
 
   export type GroupExpenseUpsertWithoutGroupMembersInput = {
@@ -90852,6 +91137,47 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     transactions?: TransactionUncheckedUpdateManyWithoutGroupExpenseNestedInput
+  }
+
+  export type FriendUpsertWithoutGroupExpenseMembersInput = {
+    update: XOR<FriendUpdateWithoutGroupExpenseMembersInput, FriendUncheckedUpdateWithoutGroupExpenseMembersInput>
+    create: XOR<FriendCreateWithoutGroupExpenseMembersInput, FriendUncheckedCreateWithoutGroupExpenseMembersInput>
+    where?: FriendWhereInput
+  }
+
+  export type FriendUpdateToOneWithWhereWithoutGroupExpenseMembersInput = {
+    where?: FriendWhereInput
+    data: XOR<FriendUpdateWithoutGroupExpenseMembersInput, FriendUncheckedUpdateWithoutGroupExpenseMembersInput>
+  }
+
+  export type FriendUpdateWithoutGroupExpenseMembersInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    deviceId?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    syncStatus?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    user?: UserUpdateOneRequiredWithoutFriendsNestedInput
+  }
+
+  export type FriendUncheckedUpdateWithoutGroupExpenseMembersInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    deviceId?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    syncStatus?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type UserCreateWithoutCollaborationParticipationsInput = {
@@ -92794,6 +93120,66 @@ export namespace Prisma {
     timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type GroupExpenseMemberCreateManyFriendInput = {
+    id?: string
+    groupExpenseId: string
+    userId?: string | null
+    name: string
+    email?: string | null
+    phone?: string | null
+    shareAmount?: Decimal | DecimalJsLike | number | string
+    hasPaid?: boolean
+    paidAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type GroupExpenseMemberUpdateWithoutFriendInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    shareAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    hasPaid?: BoolFieldUpdateOperationsInput | boolean
+    paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    groupExpense?: GroupExpenseUpdateOneRequiredWithoutGroupMembersNestedInput
+  }
+
+  export type GroupExpenseMemberUncheckedUpdateWithoutFriendInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    groupExpenseId?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    shareAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    hasPaid?: BoolFieldUpdateOperationsInput | boolean
+    paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type GroupExpenseMemberUncheckedUpdateManyWithoutFriendInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    groupExpenseId?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    shareAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    hasPaid?: BoolFieldUpdateOperationsInput | boolean
+    paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
   export type GoalContributionCreateManyGoalInput = {
     id?: string
     userId: string
@@ -93963,6 +94349,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    groupExpenseMembers?: GroupExpenseMemberUpdateManyWithoutFriendNestedInput
   }
 
   export type FriendUncheckedUpdateWithoutUserInput = {
@@ -93977,6 +94364,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    groupExpenseMembers?: GroupExpenseMemberUncheckedUpdateManyWithoutFriendNestedInput
   }
 
   export type FriendUncheckedUpdateManyWithoutUserInput = {
@@ -95049,6 +95437,7 @@ export namespace Prisma {
   export type GroupExpenseMemberCreateManyGroupExpenseInput = {
     id?: string
     userId?: string | null
+    friendId?: string | null
     name: string
     email?: string | null
     phone?: string | null
@@ -95168,11 +95557,13 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    friend?: FriendUpdateOneWithoutGroupExpenseMembersNestedInput
   }
 
   export type GroupExpenseMemberUncheckedUpdateWithoutGroupExpenseInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: NullableStringFieldUpdateOperationsInput | string | null
+    friendId?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
@@ -95187,6 +95578,7 @@ export namespace Prisma {
   export type GroupExpenseMemberUncheckedUpdateManyWithoutGroupExpenseInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: NullableStringFieldUpdateOperationsInput | string | null
+    friendId?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null

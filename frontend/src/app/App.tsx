@@ -74,6 +74,8 @@ const EditInvestment = lazy(() => import('@/app/components/investments/EditInves
 const AddLoan = lazy(() => import('@/app/components/loans/AddLoan').then(m => ({ default: m.AddLoan })));
 const AddGold = lazy(() => import('@/app/components/investments/AddGold').then(m => ({ default: m.AddGold })));
 const AddFriends = lazy(() => import('@/app/components/groups/AddFriends').then(m => ({ default: m.AddFriends })));
+const FriendsList = lazy(() => import('@/app/components/groups/FriendsList').then(m => ({ default: m.FriendsList })));
+const FriendProfile = lazy(() => import('@/app/components/groups/FriendProfile').then(m => ({ default: m.FriendProfile })));
 const UserProfile = lazy(() => import('@/app/components/profile/UserProfile').then(m => ({ default: m.UserProfile })));
 const Notifications = lazy(() => import('@/app/components/profile/Notifications').then(m => ({ default: m.Notifications })));
 const SimpleAutoTest = lazy(() => import('@/app/components/ui/SimpleAutoTest').then(m => ({ default: m.SimpleAutoTest })));
@@ -208,6 +210,8 @@ const PAGE_REQUIRED_TABLES: Record<string, SyncedTableName[]> = {
   groups: ['group_expenses', 'friends', 'accounts'],
   'add-group': ['group_expenses', 'friends', 'accounts'],
   'add-friends': ['friends'],
+  friends: ['friends'],
+  'friend-profile': ['friends'],
   investments: ['investments', 'accounts'],
   'add-investment': ['investments', 'accounts'],
   'add-gold': ['investments', 'accounts'],
@@ -821,6 +825,8 @@ const AppContent: React.FC = () => {
       case 'groups': return <Groups />;
       case 'add-group': return <AddGroup />;
       case 'add-friends': return <AddFriends />;
+      case 'friends': return <FriendsList />;
+      case 'friend-profile': return <FriendProfile />;
       case 'investments': return <Investments />;
       case 'add-investment': return <AddInvestment />;
       case 'add-gold': return <AddGold />;

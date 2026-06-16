@@ -224,19 +224,20 @@ model ExpenseBill {
 }
 
 model Friend {
-  id         String    @id @default(uuid())
-  userId     String
-  deviceId   String?
-  name       String
-  email      String?
-  phone      String?
-  avatar     String?
-  notes      String?
-  syncStatus String    @default("synced")
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
-  deletedAt  DateTime?
-  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                  String               @id @default(uuid())
+  userId              String
+  deviceId            String?
+  name                String
+  email               String?
+  phone               String?
+  avatar              String?
+  notes               String?
+  syncStatus          String               @default("synced")
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  deletedAt           DateTime?
+  user                User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  groupExpenseMembers GroupExpenseMember[]
 
   @@index([syncStatus])
   @@index([userId])
@@ -785,6 +786,7 @@ model GroupExpenseMember {
   id             String       @id @default(uuid())
   groupExpenseId String
   userId         String? // Optional: may be a friend without user account
+  friendId       String? // Links to the Friend record for management/profile views
   name           String // Display name
   email          String?
   phone          String?
@@ -795,9 +797,11 @@ model GroupExpenseMember {
   updatedAt      DateTime     @updatedAt
   deletedAt      DateTime?
   groupExpense   GroupExpense @relation(fields: [groupExpenseId], references: [id], onDelete: Cascade)
+  friend         Friend?      @relation(fields: [friendId], references: [id], onDelete: SetNull)
 
   @@index([groupExpenseId])
   @@index([userId])
+  @@index([friendId])
   @@index([deletedAt])
   @@schema("public")
 }
