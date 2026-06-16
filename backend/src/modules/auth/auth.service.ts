@@ -87,6 +87,17 @@ export class AuthService {
         });
       }
 
+      // Match this email against any pending collaboration invitations
+      // (Group Expenses, Together To-Do Lists, Together Goals) and link them.
+      try {
+        const { linkPendingInvitationsForUser } = await import('../collaboration/invitation.service');
+        await linkPendingInvitationsForUser(user.id, user.email);
+      } catch (linkError: any) {
+        logger.warn('[AuthService] Non-blocking pending-invitation link failed', {
+          message: linkError.message,
+        });
+      }
+
       const tokens = generateTokens(user);
       return tokens;
     } catch (error) {

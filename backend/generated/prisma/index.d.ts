@@ -179,6 +179,16 @@ export type GroupExpense = $Result.DefaultSelection<Prisma.$GroupExpensePayload>
  */
 export type GroupExpenseMember = $Result.DefaultSelection<Prisma.$GroupExpenseMemberPayload>
 /**
+ * Model CollaborationParticipant
+ * 
+ */
+export type CollaborationParticipant = $Result.DefaultSelection<Prisma.$CollaborationParticipantPayload>
+/**
+ * Model GoalMember
+ * 
+ */
+export type GoalMember = $Result.DefaultSelection<Prisma.$GoalMemberPayload>
+/**
  * Model user_features
  * 
  */
@@ -686,6 +696,26 @@ export class PrismaClient<
     * ```
     */
   get groupExpenseMember(): Prisma.GroupExpenseMemberDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.collaborationParticipant`: Exposes CRUD operations for the **CollaborationParticipant** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more CollaborationParticipants
+    * const collaborationParticipants = await prisma.collaborationParticipant.findMany()
+    * ```
+    */
+  get collaborationParticipant(): Prisma.CollaborationParticipantDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.goalMember`: Exposes CRUD operations for the **GoalMember** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more GoalMembers
+    * const goalMembers = await prisma.goalMember.findMany()
+    * ```
+    */
+  get goalMember(): Prisma.GoalMemberDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.user_features`: Exposes CRUD operations for the **user_features** model.
@@ -1280,6 +1310,8 @@ export namespace Prisma {
     AuditLog: 'AuditLog',
     GroupExpense: 'GroupExpense',
     GroupExpenseMember: 'GroupExpenseMember',
+    CollaborationParticipant: 'CollaborationParticipant',
+    GoalMember: 'GoalMember',
     user_features: 'user_features',
     profiles: 'profiles',
     OtpRequest: 'OtpRequest',
@@ -1310,7 +1342,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "account" | "advisorApplication" | "advisorAvailability" | "advisorSession" | "bookingRequest" | "category" | "chatMessage" | "device" | "expenseBill" | "friend" | "goal" | "goalContribution" | "importLog" | "investment" | "loan" | "loanPayment" | "notification" | "payment" | "refreshToken" | "syncQueue" | "todo" | "transaction" | "user" | "userPin" | "userSettings" | "otpCode" | "aiScan" | "ai_events" | "ai_insights" | "ai_model_runs" | "auditLog" | "groupExpense" | "groupExpenseMember" | "user_features" | "profiles" | "otpRequest" | "aaConsent" | "aaConsentArtifact" | "aaDataSession" | "aaFinancialData" | "aaTransaction" | "recurringTransaction" | "budget" | "taxCalculation" | "goldAsset"
+      modelProps: "account" | "advisorApplication" | "advisorAvailability" | "advisorSession" | "bookingRequest" | "category" | "chatMessage" | "device" | "expenseBill" | "friend" | "goal" | "goalContribution" | "importLog" | "investment" | "loan" | "loanPayment" | "notification" | "payment" | "refreshToken" | "syncQueue" | "todo" | "transaction" | "user" | "userPin" | "userSettings" | "otpCode" | "aiScan" | "ai_events" | "ai_insights" | "ai_model_runs" | "auditLog" | "groupExpense" | "groupExpenseMember" | "collaborationParticipant" | "goalMember" | "user_features" | "profiles" | "otpRequest" | "aaConsent" | "aaConsentArtifact" | "aaDataSession" | "aaFinancialData" | "aaTransaction" | "recurringTransaction" | "budget" | "taxCalculation" | "goldAsset"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -3756,6 +3788,154 @@ export namespace Prisma {
           }
         }
       }
+      CollaborationParticipant: {
+        payload: Prisma.$CollaborationParticipantPayload<ExtArgs>
+        fields: Prisma.CollaborationParticipantFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.CollaborationParticipantFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CollaborationParticipantPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.CollaborationParticipantFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CollaborationParticipantPayload>
+          }
+          findFirst: {
+            args: Prisma.CollaborationParticipantFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CollaborationParticipantPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.CollaborationParticipantFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CollaborationParticipantPayload>
+          }
+          findMany: {
+            args: Prisma.CollaborationParticipantFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CollaborationParticipantPayload>[]
+          }
+          create: {
+            args: Prisma.CollaborationParticipantCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CollaborationParticipantPayload>
+          }
+          createMany: {
+            args: Prisma.CollaborationParticipantCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.CollaborationParticipantCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CollaborationParticipantPayload>[]
+          }
+          delete: {
+            args: Prisma.CollaborationParticipantDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CollaborationParticipantPayload>
+          }
+          update: {
+            args: Prisma.CollaborationParticipantUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CollaborationParticipantPayload>
+          }
+          deleteMany: {
+            args: Prisma.CollaborationParticipantDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.CollaborationParticipantUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.CollaborationParticipantUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CollaborationParticipantPayload>[]
+          }
+          upsert: {
+            args: Prisma.CollaborationParticipantUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CollaborationParticipantPayload>
+          }
+          aggregate: {
+            args: Prisma.CollaborationParticipantAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateCollaborationParticipant>
+          }
+          groupBy: {
+            args: Prisma.CollaborationParticipantGroupByArgs<ExtArgs>
+            result: $Utils.Optional<CollaborationParticipantGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.CollaborationParticipantCountArgs<ExtArgs>
+            result: $Utils.Optional<CollaborationParticipantCountAggregateOutputType> | number
+          }
+        }
+      }
+      GoalMember: {
+        payload: Prisma.$GoalMemberPayload<ExtArgs>
+        fields: Prisma.GoalMemberFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.GoalMemberFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GoalMemberPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.GoalMemberFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GoalMemberPayload>
+          }
+          findFirst: {
+            args: Prisma.GoalMemberFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GoalMemberPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.GoalMemberFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GoalMemberPayload>
+          }
+          findMany: {
+            args: Prisma.GoalMemberFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GoalMemberPayload>[]
+          }
+          create: {
+            args: Prisma.GoalMemberCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GoalMemberPayload>
+          }
+          createMany: {
+            args: Prisma.GoalMemberCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.GoalMemberCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GoalMemberPayload>[]
+          }
+          delete: {
+            args: Prisma.GoalMemberDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GoalMemberPayload>
+          }
+          update: {
+            args: Prisma.GoalMemberUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GoalMemberPayload>
+          }
+          deleteMany: {
+            args: Prisma.GoalMemberDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.GoalMemberUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.GoalMemberUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GoalMemberPayload>[]
+          }
+          upsert: {
+            args: Prisma.GoalMemberUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GoalMemberPayload>
+          }
+          aggregate: {
+            args: Prisma.GoalMemberAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateGoalMember>
+          }
+          groupBy: {
+            args: Prisma.GoalMemberGroupByArgs<ExtArgs>
+            result: $Utils.Optional<GoalMemberGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.GoalMemberCountArgs<ExtArgs>
+            result: $Utils.Optional<GoalMemberCountAggregateOutputType> | number
+          }
+        }
+      }
       user_features: {
         payload: Prisma.$user_featuresPayload<ExtArgs>
         fields: Prisma.user_featuresFieldRefs
@@ -4773,6 +4953,8 @@ export namespace Prisma {
     auditLog?: AuditLogOmit
     groupExpense?: GroupExpenseOmit
     groupExpenseMember?: GroupExpenseMemberOmit
+    collaborationParticipant?: CollaborationParticipantOmit
+    goalMember?: GoalMemberOmit
     user_features?: user_featuresOmit
     profiles?: profilesOmit
     otpRequest?: OtpRequestOmit
@@ -4946,10 +5128,12 @@ export namespace Prisma {
 
   export type GoalCountOutputType = {
     goalContributions: number
+    goalMembers: number
   }
 
   export type GoalCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     goalContributions?: boolean | GoalCountOutputTypeCountGoalContributionsArgs
+    goalMembers?: boolean | GoalCountOutputTypeCountGoalMembersArgs
   }
 
   // Custom InputTypes
@@ -4968,6 +5152,13 @@ export namespace Prisma {
    */
   export type GoalCountOutputTypeCountGoalContributionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: GoalContributionWhereInput
+  }
+
+  /**
+   * GoalCountOutputType without action
+   */
+  export type GoalCountOutputTypeCountGoalMembersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: GoalMemberWhereInput
   }
 
 
@@ -5037,6 +5228,8 @@ export namespace Prisma {
     budgets: number
     taxCalculations: number
     goldAssets: number
+    collaborationParticipations: number
+    collaborationInvitesSent: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -5070,6 +5263,8 @@ export namespace Prisma {
     budgets?: boolean | UserCountOutputTypeCountBudgetsArgs
     taxCalculations?: boolean | UserCountOutputTypeCountTaxCalculationsArgs
     goldAssets?: boolean | UserCountOutputTypeCountGoldAssetsArgs
+    collaborationParticipations?: boolean | UserCountOutputTypeCountCollaborationParticipationsArgs
+    collaborationInvitesSent?: boolean | UserCountOutputTypeCountCollaborationInvitesSentArgs
   }
 
   // Custom InputTypes
@@ -5291,6 +5486,20 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountGoldAssetsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: GoldAssetWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountCollaborationParticipationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CollaborationParticipantWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountCollaborationInvitesSentArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CollaborationParticipantWhereInput
   }
 
 
@@ -17628,6 +17837,7 @@ export namespace Prisma {
     deletedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
     goalContributions?: boolean | Goal$goalContributionsArgs<ExtArgs>
+    goalMembers?: boolean | Goal$goalMembersArgs<ExtArgs>
     _count?: boolean | GoalCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["goal"]>
 
@@ -17691,6 +17901,7 @@ export namespace Prisma {
   export type GoalInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     goalContributions?: boolean | Goal$goalContributionsArgs<ExtArgs>
+    goalMembers?: boolean | Goal$goalMembersArgs<ExtArgs>
     _count?: boolean | GoalCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type GoalIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -17705,6 +17916,7 @@ export namespace Prisma {
     objects: {
       user: Prisma.$UserPayload<ExtArgs>
       goalContributions: Prisma.$GoalContributionPayload<ExtArgs>[]
+      goalMembers: Prisma.$GoalMemberPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -18118,6 +18330,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     goalContributions<T extends Goal$goalContributionsArgs<ExtArgs> = {}>(args?: Subset<T, Goal$goalContributionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GoalContributionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    goalMembers<T extends Goal$goalMembersArgs<ExtArgs> = {}>(args?: Subset<T, Goal$goalMembersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GoalMemberPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -18579,6 +18792,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: GoalContributionScalarFieldEnum | GoalContributionScalarFieldEnum[]
+  }
+
+  /**
+   * Goal.goalMembers
+   */
+  export type Goal$goalMembersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GoalMember
+     */
+    select?: GoalMemberSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GoalMember
+     */
+    omit?: GoalMemberOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GoalMemberInclude<ExtArgs> | null
+    where?: GoalMemberWhereInput
+    orderBy?: GoalMemberOrderByWithRelationInput | GoalMemberOrderByWithRelationInput[]
+    cursor?: GoalMemberWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: GoalMemberScalarFieldEnum | GoalMemberScalarFieldEnum[]
   }
 
   /**
@@ -32270,6 +32507,8 @@ export namespace Prisma {
     budgets?: boolean | User$budgetsArgs<ExtArgs>
     taxCalculations?: boolean | User$taxCalculationsArgs<ExtArgs>
     goldAssets?: boolean | User$goldAssetsArgs<ExtArgs>
+    collaborationParticipations?: boolean | User$collaborationParticipationsArgs<ExtArgs>
+    collaborationInvitesSent?: boolean | User$collaborationInvitesSentArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -32386,6 +32625,8 @@ export namespace Prisma {
     budgets?: boolean | User$budgetsArgs<ExtArgs>
     taxCalculations?: boolean | User$taxCalculationsArgs<ExtArgs>
     goldAssets?: boolean | User$goldAssetsArgs<ExtArgs>
+    collaborationParticipations?: boolean | User$collaborationParticipationsArgs<ExtArgs>
+    collaborationInvitesSent?: boolean | User$collaborationInvitesSentArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -32427,6 +32668,8 @@ export namespace Prisma {
       budgets: Prisma.$BudgetPayload<ExtArgs>[]
       taxCalculations: Prisma.$TaxCalculationPayload<ExtArgs>[]
       goldAssets: Prisma.$GoldAssetPayload<ExtArgs>[]
+      collaborationParticipations: Prisma.$CollaborationParticipantPayload<ExtArgs>[]
+      collaborationInvitesSent: Prisma.$CollaborationParticipantPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -32879,6 +33122,8 @@ export namespace Prisma {
     budgets<T extends User$budgetsArgs<ExtArgs> = {}>(args?: Subset<T, User$budgetsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BudgetPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     taxCalculations<T extends User$taxCalculationsArgs<ExtArgs> = {}>(args?: Subset<T, User$taxCalculationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TaxCalculationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     goldAssets<T extends User$goldAssetsArgs<ExtArgs> = {}>(args?: Subset<T, User$goldAssetsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GoldAssetPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    collaborationParticipations<T extends User$collaborationParticipationsArgs<ExtArgs> = {}>(args?: Subset<T, User$collaborationParticipationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CollaborationParticipantPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    collaborationInvitesSent<T extends User$collaborationInvitesSentArgs<ExtArgs> = {}>(args?: Subset<T, User$collaborationInvitesSentArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CollaborationParticipantPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -34093,6 +34338,54 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: GoldAssetScalarFieldEnum | GoldAssetScalarFieldEnum[]
+  }
+
+  /**
+   * User.collaborationParticipations
+   */
+  export type User$collaborationParticipationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CollaborationParticipant
+     */
+    select?: CollaborationParticipantSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CollaborationParticipant
+     */
+    omit?: CollaborationParticipantOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CollaborationParticipantInclude<ExtArgs> | null
+    where?: CollaborationParticipantWhereInput
+    orderBy?: CollaborationParticipantOrderByWithRelationInput | CollaborationParticipantOrderByWithRelationInput[]
+    cursor?: CollaborationParticipantWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: CollaborationParticipantScalarFieldEnum | CollaborationParticipantScalarFieldEnum[]
+  }
+
+  /**
+   * User.collaborationInvitesSent
+   */
+  export type User$collaborationInvitesSentArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CollaborationParticipant
+     */
+    select?: CollaborationParticipantSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CollaborationParticipant
+     */
+    omit?: CollaborationParticipantOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CollaborationParticipantInclude<ExtArgs> | null
+    where?: CollaborationParticipantWhereInput
+    orderBy?: CollaborationParticipantOrderByWithRelationInput | CollaborationParticipantOrderByWithRelationInput[]
+    cursor?: CollaborationParticipantWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: CollaborationParticipantScalarFieldEnum | CollaborationParticipantScalarFieldEnum[]
   }
 
   /**
@@ -45391,6 +45684,2292 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: GroupExpenseMemberInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model CollaborationParticipant
+   */
+
+  export type AggregateCollaborationParticipant = {
+    _count: CollaborationParticipantCountAggregateOutputType | null
+    _min: CollaborationParticipantMinAggregateOutputType | null
+    _max: CollaborationParticipantMaxAggregateOutputType | null
+  }
+
+  export type CollaborationParticipantMinAggregateOutputType = {
+    id: string | null
+    moduleType: string | null
+    moduleId: string | null
+    moduleName: string | null
+    email: string | null
+    name: string | null
+    userId: string | null
+    status: string | null
+    invitedBy: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    linkedAt: Date | null
+  }
+
+  export type CollaborationParticipantMaxAggregateOutputType = {
+    id: string | null
+    moduleType: string | null
+    moduleId: string | null
+    moduleName: string | null
+    email: string | null
+    name: string | null
+    userId: string | null
+    status: string | null
+    invitedBy: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    linkedAt: Date | null
+  }
+
+  export type CollaborationParticipantCountAggregateOutputType = {
+    id: number
+    moduleType: number
+    moduleId: number
+    moduleName: number
+    email: number
+    name: number
+    userId: number
+    status: number
+    invitedBy: number
+    createdAt: number
+    updatedAt: number
+    linkedAt: number
+    _all: number
+  }
+
+
+  export type CollaborationParticipantMinAggregateInputType = {
+    id?: true
+    moduleType?: true
+    moduleId?: true
+    moduleName?: true
+    email?: true
+    name?: true
+    userId?: true
+    status?: true
+    invitedBy?: true
+    createdAt?: true
+    updatedAt?: true
+    linkedAt?: true
+  }
+
+  export type CollaborationParticipantMaxAggregateInputType = {
+    id?: true
+    moduleType?: true
+    moduleId?: true
+    moduleName?: true
+    email?: true
+    name?: true
+    userId?: true
+    status?: true
+    invitedBy?: true
+    createdAt?: true
+    updatedAt?: true
+    linkedAt?: true
+  }
+
+  export type CollaborationParticipantCountAggregateInputType = {
+    id?: true
+    moduleType?: true
+    moduleId?: true
+    moduleName?: true
+    email?: true
+    name?: true
+    userId?: true
+    status?: true
+    invitedBy?: true
+    createdAt?: true
+    updatedAt?: true
+    linkedAt?: true
+    _all?: true
+  }
+
+  export type CollaborationParticipantAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which CollaborationParticipant to aggregate.
+     */
+    where?: CollaborationParticipantWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of CollaborationParticipants to fetch.
+     */
+    orderBy?: CollaborationParticipantOrderByWithRelationInput | CollaborationParticipantOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: CollaborationParticipantWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` CollaborationParticipants from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` CollaborationParticipants.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned CollaborationParticipants
+    **/
+    _count?: true | CollaborationParticipantCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: CollaborationParticipantMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: CollaborationParticipantMaxAggregateInputType
+  }
+
+  export type GetCollaborationParticipantAggregateType<T extends CollaborationParticipantAggregateArgs> = {
+        [P in keyof T & keyof AggregateCollaborationParticipant]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateCollaborationParticipant[P]>
+      : GetScalarType<T[P], AggregateCollaborationParticipant[P]>
+  }
+
+
+
+
+  export type CollaborationParticipantGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CollaborationParticipantWhereInput
+    orderBy?: CollaborationParticipantOrderByWithAggregationInput | CollaborationParticipantOrderByWithAggregationInput[]
+    by: CollaborationParticipantScalarFieldEnum[] | CollaborationParticipantScalarFieldEnum
+    having?: CollaborationParticipantScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: CollaborationParticipantCountAggregateInputType | true
+    _min?: CollaborationParticipantMinAggregateInputType
+    _max?: CollaborationParticipantMaxAggregateInputType
+  }
+
+  export type CollaborationParticipantGroupByOutputType = {
+    id: string
+    moduleType: string
+    moduleId: string
+    moduleName: string | null
+    email: string
+    name: string | null
+    userId: string | null
+    status: string
+    invitedBy: string
+    createdAt: Date
+    updatedAt: Date
+    linkedAt: Date | null
+    _count: CollaborationParticipantCountAggregateOutputType | null
+    _min: CollaborationParticipantMinAggregateOutputType | null
+    _max: CollaborationParticipantMaxAggregateOutputType | null
+  }
+
+  type GetCollaborationParticipantGroupByPayload<T extends CollaborationParticipantGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<CollaborationParticipantGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof CollaborationParticipantGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], CollaborationParticipantGroupByOutputType[P]>
+            : GetScalarType<T[P], CollaborationParticipantGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type CollaborationParticipantSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    moduleType?: boolean
+    moduleId?: boolean
+    moduleName?: boolean
+    email?: boolean
+    name?: boolean
+    userId?: boolean
+    status?: boolean
+    invitedBy?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    linkedAt?: boolean
+    user?: boolean | CollaborationParticipant$userArgs<ExtArgs>
+    invitedByUser?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["collaborationParticipant"]>
+
+  export type CollaborationParticipantSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    moduleType?: boolean
+    moduleId?: boolean
+    moduleName?: boolean
+    email?: boolean
+    name?: boolean
+    userId?: boolean
+    status?: boolean
+    invitedBy?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    linkedAt?: boolean
+    user?: boolean | CollaborationParticipant$userArgs<ExtArgs>
+    invitedByUser?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["collaborationParticipant"]>
+
+  export type CollaborationParticipantSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    moduleType?: boolean
+    moduleId?: boolean
+    moduleName?: boolean
+    email?: boolean
+    name?: boolean
+    userId?: boolean
+    status?: boolean
+    invitedBy?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    linkedAt?: boolean
+    user?: boolean | CollaborationParticipant$userArgs<ExtArgs>
+    invitedByUser?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["collaborationParticipant"]>
+
+  export type CollaborationParticipantSelectScalar = {
+    id?: boolean
+    moduleType?: boolean
+    moduleId?: boolean
+    moduleName?: boolean
+    email?: boolean
+    name?: boolean
+    userId?: boolean
+    status?: boolean
+    invitedBy?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    linkedAt?: boolean
+  }
+
+  export type CollaborationParticipantOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "moduleType" | "moduleId" | "moduleName" | "email" | "name" | "userId" | "status" | "invitedBy" | "createdAt" | "updatedAt" | "linkedAt", ExtArgs["result"]["collaborationParticipant"]>
+  export type CollaborationParticipantInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | CollaborationParticipant$userArgs<ExtArgs>
+    invitedByUser?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type CollaborationParticipantIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | CollaborationParticipant$userArgs<ExtArgs>
+    invitedByUser?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type CollaborationParticipantIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | CollaborationParticipant$userArgs<ExtArgs>
+    invitedByUser?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $CollaborationParticipantPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "CollaborationParticipant"
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs> | null
+      invitedByUser: Prisma.$UserPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      moduleType: string
+      moduleId: string
+      moduleName: string | null
+      email: string
+      name: string | null
+      userId: string | null
+      status: string
+      invitedBy: string
+      createdAt: Date
+      updatedAt: Date
+      linkedAt: Date | null
+    }, ExtArgs["result"]["collaborationParticipant"]>
+    composites: {}
+  }
+
+  type CollaborationParticipantGetPayload<S extends boolean | null | undefined | CollaborationParticipantDefaultArgs> = $Result.GetResult<Prisma.$CollaborationParticipantPayload, S>
+
+  type CollaborationParticipantCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<CollaborationParticipantFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: CollaborationParticipantCountAggregateInputType | true
+    }
+
+  export interface CollaborationParticipantDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['CollaborationParticipant'], meta: { name: 'CollaborationParticipant' } }
+    /**
+     * Find zero or one CollaborationParticipant that matches the filter.
+     * @param {CollaborationParticipantFindUniqueArgs} args - Arguments to find a CollaborationParticipant
+     * @example
+     * // Get one CollaborationParticipant
+     * const collaborationParticipant = await prisma.collaborationParticipant.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends CollaborationParticipantFindUniqueArgs>(args: SelectSubset<T, CollaborationParticipantFindUniqueArgs<ExtArgs>>): Prisma__CollaborationParticipantClient<$Result.GetResult<Prisma.$CollaborationParticipantPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one CollaborationParticipant that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {CollaborationParticipantFindUniqueOrThrowArgs} args - Arguments to find a CollaborationParticipant
+     * @example
+     * // Get one CollaborationParticipant
+     * const collaborationParticipant = await prisma.collaborationParticipant.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends CollaborationParticipantFindUniqueOrThrowArgs>(args: SelectSubset<T, CollaborationParticipantFindUniqueOrThrowArgs<ExtArgs>>): Prisma__CollaborationParticipantClient<$Result.GetResult<Prisma.$CollaborationParticipantPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first CollaborationParticipant that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CollaborationParticipantFindFirstArgs} args - Arguments to find a CollaborationParticipant
+     * @example
+     * // Get one CollaborationParticipant
+     * const collaborationParticipant = await prisma.collaborationParticipant.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends CollaborationParticipantFindFirstArgs>(args?: SelectSubset<T, CollaborationParticipantFindFirstArgs<ExtArgs>>): Prisma__CollaborationParticipantClient<$Result.GetResult<Prisma.$CollaborationParticipantPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first CollaborationParticipant that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CollaborationParticipantFindFirstOrThrowArgs} args - Arguments to find a CollaborationParticipant
+     * @example
+     * // Get one CollaborationParticipant
+     * const collaborationParticipant = await prisma.collaborationParticipant.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends CollaborationParticipantFindFirstOrThrowArgs>(args?: SelectSubset<T, CollaborationParticipantFindFirstOrThrowArgs<ExtArgs>>): Prisma__CollaborationParticipantClient<$Result.GetResult<Prisma.$CollaborationParticipantPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more CollaborationParticipants that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CollaborationParticipantFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all CollaborationParticipants
+     * const collaborationParticipants = await prisma.collaborationParticipant.findMany()
+     * 
+     * // Get first 10 CollaborationParticipants
+     * const collaborationParticipants = await prisma.collaborationParticipant.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const collaborationParticipantWithIdOnly = await prisma.collaborationParticipant.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends CollaborationParticipantFindManyArgs>(args?: SelectSubset<T, CollaborationParticipantFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CollaborationParticipantPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a CollaborationParticipant.
+     * @param {CollaborationParticipantCreateArgs} args - Arguments to create a CollaborationParticipant.
+     * @example
+     * // Create one CollaborationParticipant
+     * const CollaborationParticipant = await prisma.collaborationParticipant.create({
+     *   data: {
+     *     // ... data to create a CollaborationParticipant
+     *   }
+     * })
+     * 
+     */
+    create<T extends CollaborationParticipantCreateArgs>(args: SelectSubset<T, CollaborationParticipantCreateArgs<ExtArgs>>): Prisma__CollaborationParticipantClient<$Result.GetResult<Prisma.$CollaborationParticipantPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many CollaborationParticipants.
+     * @param {CollaborationParticipantCreateManyArgs} args - Arguments to create many CollaborationParticipants.
+     * @example
+     * // Create many CollaborationParticipants
+     * const collaborationParticipant = await prisma.collaborationParticipant.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends CollaborationParticipantCreateManyArgs>(args?: SelectSubset<T, CollaborationParticipantCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many CollaborationParticipants and returns the data saved in the database.
+     * @param {CollaborationParticipantCreateManyAndReturnArgs} args - Arguments to create many CollaborationParticipants.
+     * @example
+     * // Create many CollaborationParticipants
+     * const collaborationParticipant = await prisma.collaborationParticipant.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many CollaborationParticipants and only return the `id`
+     * const collaborationParticipantWithIdOnly = await prisma.collaborationParticipant.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends CollaborationParticipantCreateManyAndReturnArgs>(args?: SelectSubset<T, CollaborationParticipantCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CollaborationParticipantPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a CollaborationParticipant.
+     * @param {CollaborationParticipantDeleteArgs} args - Arguments to delete one CollaborationParticipant.
+     * @example
+     * // Delete one CollaborationParticipant
+     * const CollaborationParticipant = await prisma.collaborationParticipant.delete({
+     *   where: {
+     *     // ... filter to delete one CollaborationParticipant
+     *   }
+     * })
+     * 
+     */
+    delete<T extends CollaborationParticipantDeleteArgs>(args: SelectSubset<T, CollaborationParticipantDeleteArgs<ExtArgs>>): Prisma__CollaborationParticipantClient<$Result.GetResult<Prisma.$CollaborationParticipantPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one CollaborationParticipant.
+     * @param {CollaborationParticipantUpdateArgs} args - Arguments to update one CollaborationParticipant.
+     * @example
+     * // Update one CollaborationParticipant
+     * const collaborationParticipant = await prisma.collaborationParticipant.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends CollaborationParticipantUpdateArgs>(args: SelectSubset<T, CollaborationParticipantUpdateArgs<ExtArgs>>): Prisma__CollaborationParticipantClient<$Result.GetResult<Prisma.$CollaborationParticipantPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more CollaborationParticipants.
+     * @param {CollaborationParticipantDeleteManyArgs} args - Arguments to filter CollaborationParticipants to delete.
+     * @example
+     * // Delete a few CollaborationParticipants
+     * const { count } = await prisma.collaborationParticipant.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends CollaborationParticipantDeleteManyArgs>(args?: SelectSubset<T, CollaborationParticipantDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more CollaborationParticipants.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CollaborationParticipantUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many CollaborationParticipants
+     * const collaborationParticipant = await prisma.collaborationParticipant.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends CollaborationParticipantUpdateManyArgs>(args: SelectSubset<T, CollaborationParticipantUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more CollaborationParticipants and returns the data updated in the database.
+     * @param {CollaborationParticipantUpdateManyAndReturnArgs} args - Arguments to update many CollaborationParticipants.
+     * @example
+     * // Update many CollaborationParticipants
+     * const collaborationParticipant = await prisma.collaborationParticipant.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more CollaborationParticipants and only return the `id`
+     * const collaborationParticipantWithIdOnly = await prisma.collaborationParticipant.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends CollaborationParticipantUpdateManyAndReturnArgs>(args: SelectSubset<T, CollaborationParticipantUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CollaborationParticipantPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one CollaborationParticipant.
+     * @param {CollaborationParticipantUpsertArgs} args - Arguments to update or create a CollaborationParticipant.
+     * @example
+     * // Update or create a CollaborationParticipant
+     * const collaborationParticipant = await prisma.collaborationParticipant.upsert({
+     *   create: {
+     *     // ... data to create a CollaborationParticipant
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the CollaborationParticipant we want to update
+     *   }
+     * })
+     */
+    upsert<T extends CollaborationParticipantUpsertArgs>(args: SelectSubset<T, CollaborationParticipantUpsertArgs<ExtArgs>>): Prisma__CollaborationParticipantClient<$Result.GetResult<Prisma.$CollaborationParticipantPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of CollaborationParticipants.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CollaborationParticipantCountArgs} args - Arguments to filter CollaborationParticipants to count.
+     * @example
+     * // Count the number of CollaborationParticipants
+     * const count = await prisma.collaborationParticipant.count({
+     *   where: {
+     *     // ... the filter for the CollaborationParticipants we want to count
+     *   }
+     * })
+    **/
+    count<T extends CollaborationParticipantCountArgs>(
+      args?: Subset<T, CollaborationParticipantCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], CollaborationParticipantCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a CollaborationParticipant.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CollaborationParticipantAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends CollaborationParticipantAggregateArgs>(args: Subset<T, CollaborationParticipantAggregateArgs>): Prisma.PrismaPromise<GetCollaborationParticipantAggregateType<T>>
+
+    /**
+     * Group by CollaborationParticipant.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CollaborationParticipantGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends CollaborationParticipantGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: CollaborationParticipantGroupByArgs['orderBy'] }
+        : { orderBy?: CollaborationParticipantGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, CollaborationParticipantGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetCollaborationParticipantGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the CollaborationParticipant model
+   */
+  readonly fields: CollaborationParticipantFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for CollaborationParticipant.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__CollaborationParticipantClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends CollaborationParticipant$userArgs<ExtArgs> = {}>(args?: Subset<T, CollaborationParticipant$userArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    invitedByUser<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the CollaborationParticipant model
+   */
+  interface CollaborationParticipantFieldRefs {
+    readonly id: FieldRef<"CollaborationParticipant", 'String'>
+    readonly moduleType: FieldRef<"CollaborationParticipant", 'String'>
+    readonly moduleId: FieldRef<"CollaborationParticipant", 'String'>
+    readonly moduleName: FieldRef<"CollaborationParticipant", 'String'>
+    readonly email: FieldRef<"CollaborationParticipant", 'String'>
+    readonly name: FieldRef<"CollaborationParticipant", 'String'>
+    readonly userId: FieldRef<"CollaborationParticipant", 'String'>
+    readonly status: FieldRef<"CollaborationParticipant", 'String'>
+    readonly invitedBy: FieldRef<"CollaborationParticipant", 'String'>
+    readonly createdAt: FieldRef<"CollaborationParticipant", 'DateTime'>
+    readonly updatedAt: FieldRef<"CollaborationParticipant", 'DateTime'>
+    readonly linkedAt: FieldRef<"CollaborationParticipant", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * CollaborationParticipant findUnique
+   */
+  export type CollaborationParticipantFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CollaborationParticipant
+     */
+    select?: CollaborationParticipantSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CollaborationParticipant
+     */
+    omit?: CollaborationParticipantOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CollaborationParticipantInclude<ExtArgs> | null
+    /**
+     * Filter, which CollaborationParticipant to fetch.
+     */
+    where: CollaborationParticipantWhereUniqueInput
+  }
+
+  /**
+   * CollaborationParticipant findUniqueOrThrow
+   */
+  export type CollaborationParticipantFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CollaborationParticipant
+     */
+    select?: CollaborationParticipantSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CollaborationParticipant
+     */
+    omit?: CollaborationParticipantOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CollaborationParticipantInclude<ExtArgs> | null
+    /**
+     * Filter, which CollaborationParticipant to fetch.
+     */
+    where: CollaborationParticipantWhereUniqueInput
+  }
+
+  /**
+   * CollaborationParticipant findFirst
+   */
+  export type CollaborationParticipantFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CollaborationParticipant
+     */
+    select?: CollaborationParticipantSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CollaborationParticipant
+     */
+    omit?: CollaborationParticipantOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CollaborationParticipantInclude<ExtArgs> | null
+    /**
+     * Filter, which CollaborationParticipant to fetch.
+     */
+    where?: CollaborationParticipantWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of CollaborationParticipants to fetch.
+     */
+    orderBy?: CollaborationParticipantOrderByWithRelationInput | CollaborationParticipantOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for CollaborationParticipants.
+     */
+    cursor?: CollaborationParticipantWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` CollaborationParticipants from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` CollaborationParticipants.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of CollaborationParticipants.
+     */
+    distinct?: CollaborationParticipantScalarFieldEnum | CollaborationParticipantScalarFieldEnum[]
+  }
+
+  /**
+   * CollaborationParticipant findFirstOrThrow
+   */
+  export type CollaborationParticipantFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CollaborationParticipant
+     */
+    select?: CollaborationParticipantSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CollaborationParticipant
+     */
+    omit?: CollaborationParticipantOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CollaborationParticipantInclude<ExtArgs> | null
+    /**
+     * Filter, which CollaborationParticipant to fetch.
+     */
+    where?: CollaborationParticipantWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of CollaborationParticipants to fetch.
+     */
+    orderBy?: CollaborationParticipantOrderByWithRelationInput | CollaborationParticipantOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for CollaborationParticipants.
+     */
+    cursor?: CollaborationParticipantWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` CollaborationParticipants from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` CollaborationParticipants.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of CollaborationParticipants.
+     */
+    distinct?: CollaborationParticipantScalarFieldEnum | CollaborationParticipantScalarFieldEnum[]
+  }
+
+  /**
+   * CollaborationParticipant findMany
+   */
+  export type CollaborationParticipantFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CollaborationParticipant
+     */
+    select?: CollaborationParticipantSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CollaborationParticipant
+     */
+    omit?: CollaborationParticipantOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CollaborationParticipantInclude<ExtArgs> | null
+    /**
+     * Filter, which CollaborationParticipants to fetch.
+     */
+    where?: CollaborationParticipantWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of CollaborationParticipants to fetch.
+     */
+    orderBy?: CollaborationParticipantOrderByWithRelationInput | CollaborationParticipantOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing CollaborationParticipants.
+     */
+    cursor?: CollaborationParticipantWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` CollaborationParticipants from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` CollaborationParticipants.
+     */
+    skip?: number
+    distinct?: CollaborationParticipantScalarFieldEnum | CollaborationParticipantScalarFieldEnum[]
+  }
+
+  /**
+   * CollaborationParticipant create
+   */
+  export type CollaborationParticipantCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CollaborationParticipant
+     */
+    select?: CollaborationParticipantSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CollaborationParticipant
+     */
+    omit?: CollaborationParticipantOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CollaborationParticipantInclude<ExtArgs> | null
+    /**
+     * The data needed to create a CollaborationParticipant.
+     */
+    data: XOR<CollaborationParticipantCreateInput, CollaborationParticipantUncheckedCreateInput>
+  }
+
+  /**
+   * CollaborationParticipant createMany
+   */
+  export type CollaborationParticipantCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many CollaborationParticipants.
+     */
+    data: CollaborationParticipantCreateManyInput | CollaborationParticipantCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * CollaborationParticipant createManyAndReturn
+   */
+  export type CollaborationParticipantCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CollaborationParticipant
+     */
+    select?: CollaborationParticipantSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the CollaborationParticipant
+     */
+    omit?: CollaborationParticipantOmit<ExtArgs> | null
+    /**
+     * The data used to create many CollaborationParticipants.
+     */
+    data: CollaborationParticipantCreateManyInput | CollaborationParticipantCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CollaborationParticipantIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * CollaborationParticipant update
+   */
+  export type CollaborationParticipantUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CollaborationParticipant
+     */
+    select?: CollaborationParticipantSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CollaborationParticipant
+     */
+    omit?: CollaborationParticipantOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CollaborationParticipantInclude<ExtArgs> | null
+    /**
+     * The data needed to update a CollaborationParticipant.
+     */
+    data: XOR<CollaborationParticipantUpdateInput, CollaborationParticipantUncheckedUpdateInput>
+    /**
+     * Choose, which CollaborationParticipant to update.
+     */
+    where: CollaborationParticipantWhereUniqueInput
+  }
+
+  /**
+   * CollaborationParticipant updateMany
+   */
+  export type CollaborationParticipantUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update CollaborationParticipants.
+     */
+    data: XOR<CollaborationParticipantUpdateManyMutationInput, CollaborationParticipantUncheckedUpdateManyInput>
+    /**
+     * Filter which CollaborationParticipants to update
+     */
+    where?: CollaborationParticipantWhereInput
+    /**
+     * Limit how many CollaborationParticipants to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * CollaborationParticipant updateManyAndReturn
+   */
+  export type CollaborationParticipantUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CollaborationParticipant
+     */
+    select?: CollaborationParticipantSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the CollaborationParticipant
+     */
+    omit?: CollaborationParticipantOmit<ExtArgs> | null
+    /**
+     * The data used to update CollaborationParticipants.
+     */
+    data: XOR<CollaborationParticipantUpdateManyMutationInput, CollaborationParticipantUncheckedUpdateManyInput>
+    /**
+     * Filter which CollaborationParticipants to update
+     */
+    where?: CollaborationParticipantWhereInput
+    /**
+     * Limit how many CollaborationParticipants to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CollaborationParticipantIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * CollaborationParticipant upsert
+   */
+  export type CollaborationParticipantUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CollaborationParticipant
+     */
+    select?: CollaborationParticipantSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CollaborationParticipant
+     */
+    omit?: CollaborationParticipantOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CollaborationParticipantInclude<ExtArgs> | null
+    /**
+     * The filter to search for the CollaborationParticipant to update in case it exists.
+     */
+    where: CollaborationParticipantWhereUniqueInput
+    /**
+     * In case the CollaborationParticipant found by the `where` argument doesn't exist, create a new CollaborationParticipant with this data.
+     */
+    create: XOR<CollaborationParticipantCreateInput, CollaborationParticipantUncheckedCreateInput>
+    /**
+     * In case the CollaborationParticipant was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<CollaborationParticipantUpdateInput, CollaborationParticipantUncheckedUpdateInput>
+  }
+
+  /**
+   * CollaborationParticipant delete
+   */
+  export type CollaborationParticipantDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CollaborationParticipant
+     */
+    select?: CollaborationParticipantSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CollaborationParticipant
+     */
+    omit?: CollaborationParticipantOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CollaborationParticipantInclude<ExtArgs> | null
+    /**
+     * Filter which CollaborationParticipant to delete.
+     */
+    where: CollaborationParticipantWhereUniqueInput
+  }
+
+  /**
+   * CollaborationParticipant deleteMany
+   */
+  export type CollaborationParticipantDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which CollaborationParticipants to delete
+     */
+    where?: CollaborationParticipantWhereInput
+    /**
+     * Limit how many CollaborationParticipants to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * CollaborationParticipant.user
+   */
+  export type CollaborationParticipant$userArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the User
+     */
+    omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
+  }
+
+  /**
+   * CollaborationParticipant without action
+   */
+  export type CollaborationParticipantDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CollaborationParticipant
+     */
+    select?: CollaborationParticipantSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CollaborationParticipant
+     */
+    omit?: CollaborationParticipantOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CollaborationParticipantInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model GoalMember
+   */
+
+  export type AggregateGoalMember = {
+    _count: GoalMemberCountAggregateOutputType | null
+    _min: GoalMemberMinAggregateOutputType | null
+    _max: GoalMemberMaxAggregateOutputType | null
+  }
+
+  export type GoalMemberMinAggregateOutputType = {
+    id: string | null
+    goalId: string | null
+    userId: string | null
+    name: string | null
+    email: string | null
+    phone: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    deletedAt: Date | null
+  }
+
+  export type GoalMemberMaxAggregateOutputType = {
+    id: string | null
+    goalId: string | null
+    userId: string | null
+    name: string | null
+    email: string | null
+    phone: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    deletedAt: Date | null
+  }
+
+  export type GoalMemberCountAggregateOutputType = {
+    id: number
+    goalId: number
+    userId: number
+    name: number
+    email: number
+    phone: number
+    createdAt: number
+    updatedAt: number
+    deletedAt: number
+    _all: number
+  }
+
+
+  export type GoalMemberMinAggregateInputType = {
+    id?: true
+    goalId?: true
+    userId?: true
+    name?: true
+    email?: true
+    phone?: true
+    createdAt?: true
+    updatedAt?: true
+    deletedAt?: true
+  }
+
+  export type GoalMemberMaxAggregateInputType = {
+    id?: true
+    goalId?: true
+    userId?: true
+    name?: true
+    email?: true
+    phone?: true
+    createdAt?: true
+    updatedAt?: true
+    deletedAt?: true
+  }
+
+  export type GoalMemberCountAggregateInputType = {
+    id?: true
+    goalId?: true
+    userId?: true
+    name?: true
+    email?: true
+    phone?: true
+    createdAt?: true
+    updatedAt?: true
+    deletedAt?: true
+    _all?: true
+  }
+
+  export type GoalMemberAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which GoalMember to aggregate.
+     */
+    where?: GoalMemberWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of GoalMembers to fetch.
+     */
+    orderBy?: GoalMemberOrderByWithRelationInput | GoalMemberOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: GoalMemberWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` GoalMembers from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` GoalMembers.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned GoalMembers
+    **/
+    _count?: true | GoalMemberCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: GoalMemberMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: GoalMemberMaxAggregateInputType
+  }
+
+  export type GetGoalMemberAggregateType<T extends GoalMemberAggregateArgs> = {
+        [P in keyof T & keyof AggregateGoalMember]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateGoalMember[P]>
+      : GetScalarType<T[P], AggregateGoalMember[P]>
+  }
+
+
+
+
+  export type GoalMemberGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: GoalMemberWhereInput
+    orderBy?: GoalMemberOrderByWithAggregationInput | GoalMemberOrderByWithAggregationInput[]
+    by: GoalMemberScalarFieldEnum[] | GoalMemberScalarFieldEnum
+    having?: GoalMemberScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: GoalMemberCountAggregateInputType | true
+    _min?: GoalMemberMinAggregateInputType
+    _max?: GoalMemberMaxAggregateInputType
+  }
+
+  export type GoalMemberGroupByOutputType = {
+    id: string
+    goalId: string
+    userId: string | null
+    name: string
+    email: string | null
+    phone: string | null
+    createdAt: Date
+    updatedAt: Date
+    deletedAt: Date | null
+    _count: GoalMemberCountAggregateOutputType | null
+    _min: GoalMemberMinAggregateOutputType | null
+    _max: GoalMemberMaxAggregateOutputType | null
+  }
+
+  type GetGoalMemberGroupByPayload<T extends GoalMemberGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<GoalMemberGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof GoalMemberGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], GoalMemberGroupByOutputType[P]>
+            : GetScalarType<T[P], GoalMemberGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type GoalMemberSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    goalId?: boolean
+    userId?: boolean
+    name?: boolean
+    email?: boolean
+    phone?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    deletedAt?: boolean
+    goal?: boolean | GoalDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["goalMember"]>
+
+  export type GoalMemberSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    goalId?: boolean
+    userId?: boolean
+    name?: boolean
+    email?: boolean
+    phone?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    deletedAt?: boolean
+    goal?: boolean | GoalDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["goalMember"]>
+
+  export type GoalMemberSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    goalId?: boolean
+    userId?: boolean
+    name?: boolean
+    email?: boolean
+    phone?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    deletedAt?: boolean
+    goal?: boolean | GoalDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["goalMember"]>
+
+  export type GoalMemberSelectScalar = {
+    id?: boolean
+    goalId?: boolean
+    userId?: boolean
+    name?: boolean
+    email?: boolean
+    phone?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    deletedAt?: boolean
+  }
+
+  export type GoalMemberOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "goalId" | "userId" | "name" | "email" | "phone" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["goalMember"]>
+  export type GoalMemberInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    goal?: boolean | GoalDefaultArgs<ExtArgs>
+  }
+  export type GoalMemberIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    goal?: boolean | GoalDefaultArgs<ExtArgs>
+  }
+  export type GoalMemberIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    goal?: boolean | GoalDefaultArgs<ExtArgs>
+  }
+
+  export type $GoalMemberPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "GoalMember"
+    objects: {
+      goal: Prisma.$GoalPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      goalId: string
+      userId: string | null
+      name: string
+      email: string | null
+      phone: string | null
+      createdAt: Date
+      updatedAt: Date
+      deletedAt: Date | null
+    }, ExtArgs["result"]["goalMember"]>
+    composites: {}
+  }
+
+  type GoalMemberGetPayload<S extends boolean | null | undefined | GoalMemberDefaultArgs> = $Result.GetResult<Prisma.$GoalMemberPayload, S>
+
+  type GoalMemberCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<GoalMemberFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: GoalMemberCountAggregateInputType | true
+    }
+
+  export interface GoalMemberDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['GoalMember'], meta: { name: 'GoalMember' } }
+    /**
+     * Find zero or one GoalMember that matches the filter.
+     * @param {GoalMemberFindUniqueArgs} args - Arguments to find a GoalMember
+     * @example
+     * // Get one GoalMember
+     * const goalMember = await prisma.goalMember.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends GoalMemberFindUniqueArgs>(args: SelectSubset<T, GoalMemberFindUniqueArgs<ExtArgs>>): Prisma__GoalMemberClient<$Result.GetResult<Prisma.$GoalMemberPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one GoalMember that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {GoalMemberFindUniqueOrThrowArgs} args - Arguments to find a GoalMember
+     * @example
+     * // Get one GoalMember
+     * const goalMember = await prisma.goalMember.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends GoalMemberFindUniqueOrThrowArgs>(args: SelectSubset<T, GoalMemberFindUniqueOrThrowArgs<ExtArgs>>): Prisma__GoalMemberClient<$Result.GetResult<Prisma.$GoalMemberPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first GoalMember that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GoalMemberFindFirstArgs} args - Arguments to find a GoalMember
+     * @example
+     * // Get one GoalMember
+     * const goalMember = await prisma.goalMember.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends GoalMemberFindFirstArgs>(args?: SelectSubset<T, GoalMemberFindFirstArgs<ExtArgs>>): Prisma__GoalMemberClient<$Result.GetResult<Prisma.$GoalMemberPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first GoalMember that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GoalMemberFindFirstOrThrowArgs} args - Arguments to find a GoalMember
+     * @example
+     * // Get one GoalMember
+     * const goalMember = await prisma.goalMember.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends GoalMemberFindFirstOrThrowArgs>(args?: SelectSubset<T, GoalMemberFindFirstOrThrowArgs<ExtArgs>>): Prisma__GoalMemberClient<$Result.GetResult<Prisma.$GoalMemberPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more GoalMembers that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GoalMemberFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all GoalMembers
+     * const goalMembers = await prisma.goalMember.findMany()
+     * 
+     * // Get first 10 GoalMembers
+     * const goalMembers = await prisma.goalMember.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const goalMemberWithIdOnly = await prisma.goalMember.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends GoalMemberFindManyArgs>(args?: SelectSubset<T, GoalMemberFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GoalMemberPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a GoalMember.
+     * @param {GoalMemberCreateArgs} args - Arguments to create a GoalMember.
+     * @example
+     * // Create one GoalMember
+     * const GoalMember = await prisma.goalMember.create({
+     *   data: {
+     *     // ... data to create a GoalMember
+     *   }
+     * })
+     * 
+     */
+    create<T extends GoalMemberCreateArgs>(args: SelectSubset<T, GoalMemberCreateArgs<ExtArgs>>): Prisma__GoalMemberClient<$Result.GetResult<Prisma.$GoalMemberPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many GoalMembers.
+     * @param {GoalMemberCreateManyArgs} args - Arguments to create many GoalMembers.
+     * @example
+     * // Create many GoalMembers
+     * const goalMember = await prisma.goalMember.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends GoalMemberCreateManyArgs>(args?: SelectSubset<T, GoalMemberCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many GoalMembers and returns the data saved in the database.
+     * @param {GoalMemberCreateManyAndReturnArgs} args - Arguments to create many GoalMembers.
+     * @example
+     * // Create many GoalMembers
+     * const goalMember = await prisma.goalMember.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many GoalMembers and only return the `id`
+     * const goalMemberWithIdOnly = await prisma.goalMember.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends GoalMemberCreateManyAndReturnArgs>(args?: SelectSubset<T, GoalMemberCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GoalMemberPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a GoalMember.
+     * @param {GoalMemberDeleteArgs} args - Arguments to delete one GoalMember.
+     * @example
+     * // Delete one GoalMember
+     * const GoalMember = await prisma.goalMember.delete({
+     *   where: {
+     *     // ... filter to delete one GoalMember
+     *   }
+     * })
+     * 
+     */
+    delete<T extends GoalMemberDeleteArgs>(args: SelectSubset<T, GoalMemberDeleteArgs<ExtArgs>>): Prisma__GoalMemberClient<$Result.GetResult<Prisma.$GoalMemberPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one GoalMember.
+     * @param {GoalMemberUpdateArgs} args - Arguments to update one GoalMember.
+     * @example
+     * // Update one GoalMember
+     * const goalMember = await prisma.goalMember.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends GoalMemberUpdateArgs>(args: SelectSubset<T, GoalMemberUpdateArgs<ExtArgs>>): Prisma__GoalMemberClient<$Result.GetResult<Prisma.$GoalMemberPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more GoalMembers.
+     * @param {GoalMemberDeleteManyArgs} args - Arguments to filter GoalMembers to delete.
+     * @example
+     * // Delete a few GoalMembers
+     * const { count } = await prisma.goalMember.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends GoalMemberDeleteManyArgs>(args?: SelectSubset<T, GoalMemberDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more GoalMembers.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GoalMemberUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many GoalMembers
+     * const goalMember = await prisma.goalMember.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends GoalMemberUpdateManyArgs>(args: SelectSubset<T, GoalMemberUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more GoalMembers and returns the data updated in the database.
+     * @param {GoalMemberUpdateManyAndReturnArgs} args - Arguments to update many GoalMembers.
+     * @example
+     * // Update many GoalMembers
+     * const goalMember = await prisma.goalMember.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more GoalMembers and only return the `id`
+     * const goalMemberWithIdOnly = await prisma.goalMember.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends GoalMemberUpdateManyAndReturnArgs>(args: SelectSubset<T, GoalMemberUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GoalMemberPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one GoalMember.
+     * @param {GoalMemberUpsertArgs} args - Arguments to update or create a GoalMember.
+     * @example
+     * // Update or create a GoalMember
+     * const goalMember = await prisma.goalMember.upsert({
+     *   create: {
+     *     // ... data to create a GoalMember
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the GoalMember we want to update
+     *   }
+     * })
+     */
+    upsert<T extends GoalMemberUpsertArgs>(args: SelectSubset<T, GoalMemberUpsertArgs<ExtArgs>>): Prisma__GoalMemberClient<$Result.GetResult<Prisma.$GoalMemberPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of GoalMembers.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GoalMemberCountArgs} args - Arguments to filter GoalMembers to count.
+     * @example
+     * // Count the number of GoalMembers
+     * const count = await prisma.goalMember.count({
+     *   where: {
+     *     // ... the filter for the GoalMembers we want to count
+     *   }
+     * })
+    **/
+    count<T extends GoalMemberCountArgs>(
+      args?: Subset<T, GoalMemberCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], GoalMemberCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a GoalMember.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GoalMemberAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends GoalMemberAggregateArgs>(args: Subset<T, GoalMemberAggregateArgs>): Prisma.PrismaPromise<GetGoalMemberAggregateType<T>>
+
+    /**
+     * Group by GoalMember.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GoalMemberGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends GoalMemberGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: GoalMemberGroupByArgs['orderBy'] }
+        : { orderBy?: GoalMemberGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, GoalMemberGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetGoalMemberGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the GoalMember model
+   */
+  readonly fields: GoalMemberFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for GoalMember.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__GoalMemberClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    goal<T extends GoalDefaultArgs<ExtArgs> = {}>(args?: Subset<T, GoalDefaultArgs<ExtArgs>>): Prisma__GoalClient<$Result.GetResult<Prisma.$GoalPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the GoalMember model
+   */
+  interface GoalMemberFieldRefs {
+    readonly id: FieldRef<"GoalMember", 'String'>
+    readonly goalId: FieldRef<"GoalMember", 'String'>
+    readonly userId: FieldRef<"GoalMember", 'String'>
+    readonly name: FieldRef<"GoalMember", 'String'>
+    readonly email: FieldRef<"GoalMember", 'String'>
+    readonly phone: FieldRef<"GoalMember", 'String'>
+    readonly createdAt: FieldRef<"GoalMember", 'DateTime'>
+    readonly updatedAt: FieldRef<"GoalMember", 'DateTime'>
+    readonly deletedAt: FieldRef<"GoalMember", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * GoalMember findUnique
+   */
+  export type GoalMemberFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GoalMember
+     */
+    select?: GoalMemberSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GoalMember
+     */
+    omit?: GoalMemberOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GoalMemberInclude<ExtArgs> | null
+    /**
+     * Filter, which GoalMember to fetch.
+     */
+    where: GoalMemberWhereUniqueInput
+  }
+
+  /**
+   * GoalMember findUniqueOrThrow
+   */
+  export type GoalMemberFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GoalMember
+     */
+    select?: GoalMemberSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GoalMember
+     */
+    omit?: GoalMemberOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GoalMemberInclude<ExtArgs> | null
+    /**
+     * Filter, which GoalMember to fetch.
+     */
+    where: GoalMemberWhereUniqueInput
+  }
+
+  /**
+   * GoalMember findFirst
+   */
+  export type GoalMemberFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GoalMember
+     */
+    select?: GoalMemberSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GoalMember
+     */
+    omit?: GoalMemberOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GoalMemberInclude<ExtArgs> | null
+    /**
+     * Filter, which GoalMember to fetch.
+     */
+    where?: GoalMemberWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of GoalMembers to fetch.
+     */
+    orderBy?: GoalMemberOrderByWithRelationInput | GoalMemberOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for GoalMembers.
+     */
+    cursor?: GoalMemberWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` GoalMembers from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` GoalMembers.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of GoalMembers.
+     */
+    distinct?: GoalMemberScalarFieldEnum | GoalMemberScalarFieldEnum[]
+  }
+
+  /**
+   * GoalMember findFirstOrThrow
+   */
+  export type GoalMemberFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GoalMember
+     */
+    select?: GoalMemberSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GoalMember
+     */
+    omit?: GoalMemberOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GoalMemberInclude<ExtArgs> | null
+    /**
+     * Filter, which GoalMember to fetch.
+     */
+    where?: GoalMemberWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of GoalMembers to fetch.
+     */
+    orderBy?: GoalMemberOrderByWithRelationInput | GoalMemberOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for GoalMembers.
+     */
+    cursor?: GoalMemberWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` GoalMembers from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` GoalMembers.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of GoalMembers.
+     */
+    distinct?: GoalMemberScalarFieldEnum | GoalMemberScalarFieldEnum[]
+  }
+
+  /**
+   * GoalMember findMany
+   */
+  export type GoalMemberFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GoalMember
+     */
+    select?: GoalMemberSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GoalMember
+     */
+    omit?: GoalMemberOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GoalMemberInclude<ExtArgs> | null
+    /**
+     * Filter, which GoalMembers to fetch.
+     */
+    where?: GoalMemberWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of GoalMembers to fetch.
+     */
+    orderBy?: GoalMemberOrderByWithRelationInput | GoalMemberOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing GoalMembers.
+     */
+    cursor?: GoalMemberWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` GoalMembers from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` GoalMembers.
+     */
+    skip?: number
+    distinct?: GoalMemberScalarFieldEnum | GoalMemberScalarFieldEnum[]
+  }
+
+  /**
+   * GoalMember create
+   */
+  export type GoalMemberCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GoalMember
+     */
+    select?: GoalMemberSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GoalMember
+     */
+    omit?: GoalMemberOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GoalMemberInclude<ExtArgs> | null
+    /**
+     * The data needed to create a GoalMember.
+     */
+    data: XOR<GoalMemberCreateInput, GoalMemberUncheckedCreateInput>
+  }
+
+  /**
+   * GoalMember createMany
+   */
+  export type GoalMemberCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many GoalMembers.
+     */
+    data: GoalMemberCreateManyInput | GoalMemberCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * GoalMember createManyAndReturn
+   */
+  export type GoalMemberCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GoalMember
+     */
+    select?: GoalMemberSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the GoalMember
+     */
+    omit?: GoalMemberOmit<ExtArgs> | null
+    /**
+     * The data used to create many GoalMembers.
+     */
+    data: GoalMemberCreateManyInput | GoalMemberCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GoalMemberIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * GoalMember update
+   */
+  export type GoalMemberUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GoalMember
+     */
+    select?: GoalMemberSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GoalMember
+     */
+    omit?: GoalMemberOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GoalMemberInclude<ExtArgs> | null
+    /**
+     * The data needed to update a GoalMember.
+     */
+    data: XOR<GoalMemberUpdateInput, GoalMemberUncheckedUpdateInput>
+    /**
+     * Choose, which GoalMember to update.
+     */
+    where: GoalMemberWhereUniqueInput
+  }
+
+  /**
+   * GoalMember updateMany
+   */
+  export type GoalMemberUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update GoalMembers.
+     */
+    data: XOR<GoalMemberUpdateManyMutationInput, GoalMemberUncheckedUpdateManyInput>
+    /**
+     * Filter which GoalMembers to update
+     */
+    where?: GoalMemberWhereInput
+    /**
+     * Limit how many GoalMembers to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * GoalMember updateManyAndReturn
+   */
+  export type GoalMemberUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GoalMember
+     */
+    select?: GoalMemberSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the GoalMember
+     */
+    omit?: GoalMemberOmit<ExtArgs> | null
+    /**
+     * The data used to update GoalMembers.
+     */
+    data: XOR<GoalMemberUpdateManyMutationInput, GoalMemberUncheckedUpdateManyInput>
+    /**
+     * Filter which GoalMembers to update
+     */
+    where?: GoalMemberWhereInput
+    /**
+     * Limit how many GoalMembers to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GoalMemberIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * GoalMember upsert
+   */
+  export type GoalMemberUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GoalMember
+     */
+    select?: GoalMemberSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GoalMember
+     */
+    omit?: GoalMemberOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GoalMemberInclude<ExtArgs> | null
+    /**
+     * The filter to search for the GoalMember to update in case it exists.
+     */
+    where: GoalMemberWhereUniqueInput
+    /**
+     * In case the GoalMember found by the `where` argument doesn't exist, create a new GoalMember with this data.
+     */
+    create: XOR<GoalMemberCreateInput, GoalMemberUncheckedCreateInput>
+    /**
+     * In case the GoalMember was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<GoalMemberUpdateInput, GoalMemberUncheckedUpdateInput>
+  }
+
+  /**
+   * GoalMember delete
+   */
+  export type GoalMemberDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GoalMember
+     */
+    select?: GoalMemberSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GoalMember
+     */
+    omit?: GoalMemberOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GoalMemberInclude<ExtArgs> | null
+    /**
+     * Filter which GoalMember to delete.
+     */
+    where: GoalMemberWhereUniqueInput
+  }
+
+  /**
+   * GoalMember deleteMany
+   */
+  export type GoalMemberDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which GoalMembers to delete
+     */
+    where?: GoalMemberWhereInput
+    /**
+     * Limit how many GoalMembers to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * GoalMember without action
+   */
+  export type GoalMemberDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GoalMember
+     */
+    select?: GoalMemberSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GoalMember
+     */
+    omit?: GoalMemberOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GoalMemberInclude<ExtArgs> | null
   }
 
 
@@ -59805,6 +62384,39 @@ export namespace Prisma {
   export type GroupExpenseMemberScalarFieldEnum = (typeof GroupExpenseMemberScalarFieldEnum)[keyof typeof GroupExpenseMemberScalarFieldEnum]
 
 
+  export const CollaborationParticipantScalarFieldEnum: {
+    id: 'id',
+    moduleType: 'moduleType',
+    moduleId: 'moduleId',
+    moduleName: 'moduleName',
+    email: 'email',
+    name: 'name',
+    userId: 'userId',
+    status: 'status',
+    invitedBy: 'invitedBy',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt',
+    linkedAt: 'linkedAt'
+  };
+
+  export type CollaborationParticipantScalarFieldEnum = (typeof CollaborationParticipantScalarFieldEnum)[keyof typeof CollaborationParticipantScalarFieldEnum]
+
+
+  export const GoalMemberScalarFieldEnum: {
+    id: 'id',
+    goalId: 'goalId',
+    userId: 'userId',
+    name: 'name',
+    email: 'email',
+    phone: 'phone',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt',
+    deletedAt: 'deletedAt'
+  };
+
+  export type GoalMemberScalarFieldEnum = (typeof GoalMemberScalarFieldEnum)[keyof typeof GoalMemberScalarFieldEnum]
+
+
   export const User_featuresScalarFieldEnum: {
     user_id: 'user_id',
     avg_spend: 'avg_spend',
@@ -61184,6 +63796,7 @@ export namespace Prisma {
     deletedAt?: DateTimeNullableFilter<"Goal"> | Date | string | null
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     goalContributions?: GoalContributionListRelationFilter
+    goalMembers?: GoalMemberListRelationFilter
   }
 
   export type GoalOrderByWithRelationInput = {
@@ -61204,6 +63817,7 @@ export namespace Prisma {
     deletedAt?: SortOrderInput | SortOrder
     user?: UserOrderByWithRelationInput
     goalContributions?: GoalContributionOrderByRelationAggregateInput
+    goalMembers?: GoalMemberOrderByRelationAggregateInput
   }
 
   export type GoalWhereUniqueInput = Prisma.AtLeast<{
@@ -61227,6 +63841,7 @@ export namespace Prisma {
     deletedAt?: DateTimeNullableFilter<"Goal"> | Date | string | null
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     goalContributions?: GoalContributionListRelationFilter
+    goalMembers?: GoalMemberListRelationFilter
   }, "id" | "clientRequestId">
 
   export type GoalOrderByWithAggregationInput = {
@@ -62487,6 +65102,8 @@ export namespace Prisma {
     budgets?: BudgetListRelationFilter
     taxCalculations?: TaxCalculationListRelationFilter
     goldAssets?: GoldAssetListRelationFilter
+    collaborationParticipations?: CollaborationParticipantListRelationFilter
+    collaborationInvitesSent?: CollaborationParticipantListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -62546,6 +65163,8 @@ export namespace Prisma {
     budgets?: BudgetOrderByRelationAggregateInput
     taxCalculations?: TaxCalculationOrderByRelationAggregateInput
     goldAssets?: GoldAssetOrderByRelationAggregateInput
+    collaborationParticipations?: CollaborationParticipantOrderByRelationAggregateInput
+    collaborationInvitesSent?: CollaborationParticipantOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -62608,6 +65227,8 @@ export namespace Prisma {
     budgets?: BudgetListRelationFilter
     taxCalculations?: TaxCalculationListRelationFilter
     goldAssets?: GoldAssetListRelationFilter
+    collaborationParticipations?: CollaborationParticipantListRelationFilter
+    collaborationInvitesSent?: CollaborationParticipantListRelationFilter
   }, "id" | "email">
 
   export type UserOrderByWithAggregationInput = {
@@ -63474,6 +66095,175 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<"GroupExpenseMember"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"GroupExpenseMember"> | Date | string
     deletedAt?: DateTimeNullableWithAggregatesFilter<"GroupExpenseMember"> | Date | string | null
+  }
+
+  export type CollaborationParticipantWhereInput = {
+    AND?: CollaborationParticipantWhereInput | CollaborationParticipantWhereInput[]
+    OR?: CollaborationParticipantWhereInput[]
+    NOT?: CollaborationParticipantWhereInput | CollaborationParticipantWhereInput[]
+    id?: StringFilter<"CollaborationParticipant"> | string
+    moduleType?: StringFilter<"CollaborationParticipant"> | string
+    moduleId?: StringFilter<"CollaborationParticipant"> | string
+    moduleName?: StringNullableFilter<"CollaborationParticipant"> | string | null
+    email?: StringFilter<"CollaborationParticipant"> | string
+    name?: StringNullableFilter<"CollaborationParticipant"> | string | null
+    userId?: StringNullableFilter<"CollaborationParticipant"> | string | null
+    status?: StringFilter<"CollaborationParticipant"> | string
+    invitedBy?: StringFilter<"CollaborationParticipant"> | string
+    createdAt?: DateTimeFilter<"CollaborationParticipant"> | Date | string
+    updatedAt?: DateTimeFilter<"CollaborationParticipant"> | Date | string
+    linkedAt?: DateTimeNullableFilter<"CollaborationParticipant"> | Date | string | null
+    user?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+    invitedByUser?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }
+
+  export type CollaborationParticipantOrderByWithRelationInput = {
+    id?: SortOrder
+    moduleType?: SortOrder
+    moduleId?: SortOrder
+    moduleName?: SortOrderInput | SortOrder
+    email?: SortOrder
+    name?: SortOrderInput | SortOrder
+    userId?: SortOrderInput | SortOrder
+    status?: SortOrder
+    invitedBy?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    linkedAt?: SortOrderInput | SortOrder
+    user?: UserOrderByWithRelationInput
+    invitedByUser?: UserOrderByWithRelationInput
+  }
+
+  export type CollaborationParticipantWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    moduleType_moduleId_email?: CollaborationParticipantModuleTypeModuleIdEmailCompoundUniqueInput
+    AND?: CollaborationParticipantWhereInput | CollaborationParticipantWhereInput[]
+    OR?: CollaborationParticipantWhereInput[]
+    NOT?: CollaborationParticipantWhereInput | CollaborationParticipantWhereInput[]
+    moduleType?: StringFilter<"CollaborationParticipant"> | string
+    moduleId?: StringFilter<"CollaborationParticipant"> | string
+    moduleName?: StringNullableFilter<"CollaborationParticipant"> | string | null
+    email?: StringFilter<"CollaborationParticipant"> | string
+    name?: StringNullableFilter<"CollaborationParticipant"> | string | null
+    userId?: StringNullableFilter<"CollaborationParticipant"> | string | null
+    status?: StringFilter<"CollaborationParticipant"> | string
+    invitedBy?: StringFilter<"CollaborationParticipant"> | string
+    createdAt?: DateTimeFilter<"CollaborationParticipant"> | Date | string
+    updatedAt?: DateTimeFilter<"CollaborationParticipant"> | Date | string
+    linkedAt?: DateTimeNullableFilter<"CollaborationParticipant"> | Date | string | null
+    user?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+    invitedByUser?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }, "id" | "moduleType_moduleId_email">
+
+  export type CollaborationParticipantOrderByWithAggregationInput = {
+    id?: SortOrder
+    moduleType?: SortOrder
+    moduleId?: SortOrder
+    moduleName?: SortOrderInput | SortOrder
+    email?: SortOrder
+    name?: SortOrderInput | SortOrder
+    userId?: SortOrderInput | SortOrder
+    status?: SortOrder
+    invitedBy?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    linkedAt?: SortOrderInput | SortOrder
+    _count?: CollaborationParticipantCountOrderByAggregateInput
+    _max?: CollaborationParticipantMaxOrderByAggregateInput
+    _min?: CollaborationParticipantMinOrderByAggregateInput
+  }
+
+  export type CollaborationParticipantScalarWhereWithAggregatesInput = {
+    AND?: CollaborationParticipantScalarWhereWithAggregatesInput | CollaborationParticipantScalarWhereWithAggregatesInput[]
+    OR?: CollaborationParticipantScalarWhereWithAggregatesInput[]
+    NOT?: CollaborationParticipantScalarWhereWithAggregatesInput | CollaborationParticipantScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"CollaborationParticipant"> | string
+    moduleType?: StringWithAggregatesFilter<"CollaborationParticipant"> | string
+    moduleId?: StringWithAggregatesFilter<"CollaborationParticipant"> | string
+    moduleName?: StringNullableWithAggregatesFilter<"CollaborationParticipant"> | string | null
+    email?: StringWithAggregatesFilter<"CollaborationParticipant"> | string
+    name?: StringNullableWithAggregatesFilter<"CollaborationParticipant"> | string | null
+    userId?: StringNullableWithAggregatesFilter<"CollaborationParticipant"> | string | null
+    status?: StringWithAggregatesFilter<"CollaborationParticipant"> | string
+    invitedBy?: StringWithAggregatesFilter<"CollaborationParticipant"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"CollaborationParticipant"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"CollaborationParticipant"> | Date | string
+    linkedAt?: DateTimeNullableWithAggregatesFilter<"CollaborationParticipant"> | Date | string | null
+  }
+
+  export type GoalMemberWhereInput = {
+    AND?: GoalMemberWhereInput | GoalMemberWhereInput[]
+    OR?: GoalMemberWhereInput[]
+    NOT?: GoalMemberWhereInput | GoalMemberWhereInput[]
+    id?: StringFilter<"GoalMember"> | string
+    goalId?: StringFilter<"GoalMember"> | string
+    userId?: StringNullableFilter<"GoalMember"> | string | null
+    name?: StringFilter<"GoalMember"> | string
+    email?: StringNullableFilter<"GoalMember"> | string | null
+    phone?: StringNullableFilter<"GoalMember"> | string | null
+    createdAt?: DateTimeFilter<"GoalMember"> | Date | string
+    updatedAt?: DateTimeFilter<"GoalMember"> | Date | string
+    deletedAt?: DateTimeNullableFilter<"GoalMember"> | Date | string | null
+    goal?: XOR<GoalScalarRelationFilter, GoalWhereInput>
+  }
+
+  export type GoalMemberOrderByWithRelationInput = {
+    id?: SortOrder
+    goalId?: SortOrder
+    userId?: SortOrderInput | SortOrder
+    name?: SortOrder
+    email?: SortOrderInput | SortOrder
+    phone?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrderInput | SortOrder
+    goal?: GoalOrderByWithRelationInput
+  }
+
+  export type GoalMemberWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: GoalMemberWhereInput | GoalMemberWhereInput[]
+    OR?: GoalMemberWhereInput[]
+    NOT?: GoalMemberWhereInput | GoalMemberWhereInput[]
+    goalId?: StringFilter<"GoalMember"> | string
+    userId?: StringNullableFilter<"GoalMember"> | string | null
+    name?: StringFilter<"GoalMember"> | string
+    email?: StringNullableFilter<"GoalMember"> | string | null
+    phone?: StringNullableFilter<"GoalMember"> | string | null
+    createdAt?: DateTimeFilter<"GoalMember"> | Date | string
+    updatedAt?: DateTimeFilter<"GoalMember"> | Date | string
+    deletedAt?: DateTimeNullableFilter<"GoalMember"> | Date | string | null
+    goal?: XOR<GoalScalarRelationFilter, GoalWhereInput>
+  }, "id">
+
+  export type GoalMemberOrderByWithAggregationInput = {
+    id?: SortOrder
+    goalId?: SortOrder
+    userId?: SortOrderInput | SortOrder
+    name?: SortOrder
+    email?: SortOrderInput | SortOrder
+    phone?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrderInput | SortOrder
+    _count?: GoalMemberCountOrderByAggregateInput
+    _max?: GoalMemberMaxOrderByAggregateInput
+    _min?: GoalMemberMinOrderByAggregateInput
+  }
+
+  export type GoalMemberScalarWhereWithAggregatesInput = {
+    AND?: GoalMemberScalarWhereWithAggregatesInput | GoalMemberScalarWhereWithAggregatesInput[]
+    OR?: GoalMemberScalarWhereWithAggregatesInput[]
+    NOT?: GoalMemberScalarWhereWithAggregatesInput | GoalMemberScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"GoalMember"> | string
+    goalId?: StringWithAggregatesFilter<"GoalMember"> | string
+    userId?: StringNullableWithAggregatesFilter<"GoalMember"> | string | null
+    name?: StringWithAggregatesFilter<"GoalMember"> | string
+    email?: StringNullableWithAggregatesFilter<"GoalMember"> | string | null
+    phone?: StringNullableWithAggregatesFilter<"GoalMember"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"GoalMember"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"GoalMember"> | Date | string
+    deletedAt?: DateTimeNullableWithAggregatesFilter<"GoalMember"> | Date | string | null
   }
 
   export type user_featuresWhereInput = {
@@ -65739,6 +68529,7 @@ export namespace Prisma {
     deletedAt?: Date | string | null
     user: UserCreateNestedOneWithoutGoalsInput
     goalContributions?: GoalContributionCreateNestedManyWithoutGoalInput
+    goalMembers?: GoalMemberCreateNestedManyWithoutGoalInput
   }
 
   export type GoalUncheckedCreateInput = {
@@ -65758,6 +68549,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     goalContributions?: GoalContributionUncheckedCreateNestedManyWithoutGoalInput
+    goalMembers?: GoalMemberUncheckedCreateNestedManyWithoutGoalInput
   }
 
   export type GoalUpdateInput = {
@@ -65777,6 +68569,7 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     user?: UserUpdateOneRequiredWithoutGoalsNestedInput
     goalContributions?: GoalContributionUpdateManyWithoutGoalNestedInput
+    goalMembers?: GoalMemberUpdateManyWithoutGoalNestedInput
   }
 
   export type GoalUncheckedUpdateInput = {
@@ -65796,6 +68589,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     goalContributions?: GoalContributionUncheckedUpdateManyWithoutGoalNestedInput
+    goalMembers?: GoalMemberUncheckedUpdateManyWithoutGoalNestedInput
   }
 
   export type GoalCreateManyInput = {
@@ -67233,6 +70027,8 @@ export namespace Prisma {
     budgets?: BudgetCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -67292,6 +70088,8 @@ export namespace Prisma {
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserUpdateInput = {
@@ -67351,6 +70149,8 @@ export namespace Prisma {
     budgets?: BudgetUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -67410,6 +70210,8 @@ export namespace Prisma {
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -68389,6 +71191,192 @@ export namespace Prisma {
     shareAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     hasPaid?: BoolFieldUpdateOperationsInput | boolean
     paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type CollaborationParticipantCreateInput = {
+    id?: string
+    moduleType: string
+    moduleId: string
+    moduleName?: string | null
+    email: string
+    name?: string | null
+    status?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    linkedAt?: Date | string | null
+    user?: UserCreateNestedOneWithoutCollaborationParticipationsInput
+    invitedByUser: UserCreateNestedOneWithoutCollaborationInvitesSentInput
+  }
+
+  export type CollaborationParticipantUncheckedCreateInput = {
+    id?: string
+    moduleType: string
+    moduleId: string
+    moduleName?: string | null
+    email: string
+    name?: string | null
+    userId?: string | null
+    status?: string
+    invitedBy: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    linkedAt?: Date | string | null
+  }
+
+  export type CollaborationParticipantUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    moduleType?: StringFieldUpdateOperationsInput | string
+    moduleId?: StringFieldUpdateOperationsInput | string
+    moduleName?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    linkedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    user?: UserUpdateOneWithoutCollaborationParticipationsNestedInput
+    invitedByUser?: UserUpdateOneRequiredWithoutCollaborationInvitesSentNestedInput
+  }
+
+  export type CollaborationParticipantUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    moduleType?: StringFieldUpdateOperationsInput | string
+    moduleId?: StringFieldUpdateOperationsInput | string
+    moduleName?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    invitedBy?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    linkedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type CollaborationParticipantCreateManyInput = {
+    id?: string
+    moduleType: string
+    moduleId: string
+    moduleName?: string | null
+    email: string
+    name?: string | null
+    userId?: string | null
+    status?: string
+    invitedBy: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    linkedAt?: Date | string | null
+  }
+
+  export type CollaborationParticipantUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    moduleType?: StringFieldUpdateOperationsInput | string
+    moduleId?: StringFieldUpdateOperationsInput | string
+    moduleName?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    linkedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type CollaborationParticipantUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    moduleType?: StringFieldUpdateOperationsInput | string
+    moduleId?: StringFieldUpdateOperationsInput | string
+    moduleName?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    invitedBy?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    linkedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type GoalMemberCreateInput = {
+    id?: string
+    userId?: string | null
+    name: string
+    email?: string | null
+    phone?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    goal: GoalCreateNestedOneWithoutGoalMembersInput
+  }
+
+  export type GoalMemberUncheckedCreateInput = {
+    id?: string
+    goalId: string
+    userId?: string | null
+    name: string
+    email?: string | null
+    phone?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type GoalMemberUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    goal?: GoalUpdateOneRequiredWithoutGoalMembersNestedInput
+  }
+
+  export type GoalMemberUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    goalId?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type GoalMemberCreateManyInput = {
+    id?: string
+    goalId: string
+    userId?: string | null
+    name: string
+    email?: string | null
+    phone?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type GoalMemberUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type GoalMemberUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    goalId?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -70605,6 +73593,16 @@ export namespace Prisma {
     deletedAt?: SortOrder
   }
 
+  export type GoalMemberListRelationFilter = {
+    every?: GoalMemberWhereInput
+    some?: GoalMemberWhereInput
+    none?: GoalMemberWhereInput
+  }
+
+  export type GoalMemberOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
   export type GoalCountOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
@@ -71598,6 +74596,12 @@ export namespace Prisma {
     none?: GoldAssetWhereInput
   }
 
+  export type CollaborationParticipantListRelationFilter = {
+    every?: CollaborationParticipantWhereInput
+    some?: CollaborationParticipantWhereInput
+    none?: CollaborationParticipantWhereInput
+  }
+
   export type AccountOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
@@ -71687,6 +74691,10 @@ export namespace Prisma {
   }
 
   export type GoldAssetOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type CollaborationParticipantOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -72260,6 +75268,93 @@ export namespace Prisma {
 
   export type GroupExpenseMemberSumOrderByAggregateInput = {
     shareAmount?: SortOrder
+  }
+
+  export type CollaborationParticipantModuleTypeModuleIdEmailCompoundUniqueInput = {
+    moduleType: string
+    moduleId: string
+    email: string
+  }
+
+  export type CollaborationParticipantCountOrderByAggregateInput = {
+    id?: SortOrder
+    moduleType?: SortOrder
+    moduleId?: SortOrder
+    moduleName?: SortOrder
+    email?: SortOrder
+    name?: SortOrder
+    userId?: SortOrder
+    status?: SortOrder
+    invitedBy?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    linkedAt?: SortOrder
+  }
+
+  export type CollaborationParticipantMaxOrderByAggregateInput = {
+    id?: SortOrder
+    moduleType?: SortOrder
+    moduleId?: SortOrder
+    moduleName?: SortOrder
+    email?: SortOrder
+    name?: SortOrder
+    userId?: SortOrder
+    status?: SortOrder
+    invitedBy?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    linkedAt?: SortOrder
+  }
+
+  export type CollaborationParticipantMinOrderByAggregateInput = {
+    id?: SortOrder
+    moduleType?: SortOrder
+    moduleId?: SortOrder
+    moduleName?: SortOrder
+    email?: SortOrder
+    name?: SortOrder
+    userId?: SortOrder
+    status?: SortOrder
+    invitedBy?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    linkedAt?: SortOrder
+  }
+
+  export type GoalMemberCountOrderByAggregateInput = {
+    id?: SortOrder
+    goalId?: SortOrder
+    userId?: SortOrder
+    name?: SortOrder
+    email?: SortOrder
+    phone?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrder
+  }
+
+  export type GoalMemberMaxOrderByAggregateInput = {
+    id?: SortOrder
+    goalId?: SortOrder
+    userId?: SortOrder
+    name?: SortOrder
+    email?: SortOrder
+    phone?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrder
+  }
+
+  export type GoalMemberMinOrderByAggregateInput = {
+    id?: SortOrder
+    goalId?: SortOrder
+    userId?: SortOrder
+    name?: SortOrder
+    email?: SortOrder
+    phone?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrder
   }
 
   export type user_featuresCountOrderByAggregateInput = {
@@ -73465,11 +76560,25 @@ export namespace Prisma {
     connect?: GoalContributionWhereUniqueInput | GoalContributionWhereUniqueInput[]
   }
 
+  export type GoalMemberCreateNestedManyWithoutGoalInput = {
+    create?: XOR<GoalMemberCreateWithoutGoalInput, GoalMemberUncheckedCreateWithoutGoalInput> | GoalMemberCreateWithoutGoalInput[] | GoalMemberUncheckedCreateWithoutGoalInput[]
+    connectOrCreate?: GoalMemberCreateOrConnectWithoutGoalInput | GoalMemberCreateOrConnectWithoutGoalInput[]
+    createMany?: GoalMemberCreateManyGoalInputEnvelope
+    connect?: GoalMemberWhereUniqueInput | GoalMemberWhereUniqueInput[]
+  }
+
   export type GoalContributionUncheckedCreateNestedManyWithoutGoalInput = {
     create?: XOR<GoalContributionCreateWithoutGoalInput, GoalContributionUncheckedCreateWithoutGoalInput> | GoalContributionCreateWithoutGoalInput[] | GoalContributionUncheckedCreateWithoutGoalInput[]
     connectOrCreate?: GoalContributionCreateOrConnectWithoutGoalInput | GoalContributionCreateOrConnectWithoutGoalInput[]
     createMany?: GoalContributionCreateManyGoalInputEnvelope
     connect?: GoalContributionWhereUniqueInput | GoalContributionWhereUniqueInput[]
+  }
+
+  export type GoalMemberUncheckedCreateNestedManyWithoutGoalInput = {
+    create?: XOR<GoalMemberCreateWithoutGoalInput, GoalMemberUncheckedCreateWithoutGoalInput> | GoalMemberCreateWithoutGoalInput[] | GoalMemberUncheckedCreateWithoutGoalInput[]
+    connectOrCreate?: GoalMemberCreateOrConnectWithoutGoalInput | GoalMemberCreateOrConnectWithoutGoalInput[]
+    createMany?: GoalMemberCreateManyGoalInputEnvelope
+    connect?: GoalMemberWhereUniqueInput | GoalMemberWhereUniqueInput[]
   }
 
   export type UserUpdateOneRequiredWithoutGoalsNestedInput = {
@@ -73494,6 +76603,20 @@ export namespace Prisma {
     deleteMany?: GoalContributionScalarWhereInput | GoalContributionScalarWhereInput[]
   }
 
+  export type GoalMemberUpdateManyWithoutGoalNestedInput = {
+    create?: XOR<GoalMemberCreateWithoutGoalInput, GoalMemberUncheckedCreateWithoutGoalInput> | GoalMemberCreateWithoutGoalInput[] | GoalMemberUncheckedCreateWithoutGoalInput[]
+    connectOrCreate?: GoalMemberCreateOrConnectWithoutGoalInput | GoalMemberCreateOrConnectWithoutGoalInput[]
+    upsert?: GoalMemberUpsertWithWhereUniqueWithoutGoalInput | GoalMemberUpsertWithWhereUniqueWithoutGoalInput[]
+    createMany?: GoalMemberCreateManyGoalInputEnvelope
+    set?: GoalMemberWhereUniqueInput | GoalMemberWhereUniqueInput[]
+    disconnect?: GoalMemberWhereUniqueInput | GoalMemberWhereUniqueInput[]
+    delete?: GoalMemberWhereUniqueInput | GoalMemberWhereUniqueInput[]
+    connect?: GoalMemberWhereUniqueInput | GoalMemberWhereUniqueInput[]
+    update?: GoalMemberUpdateWithWhereUniqueWithoutGoalInput | GoalMemberUpdateWithWhereUniqueWithoutGoalInput[]
+    updateMany?: GoalMemberUpdateManyWithWhereWithoutGoalInput | GoalMemberUpdateManyWithWhereWithoutGoalInput[]
+    deleteMany?: GoalMemberScalarWhereInput | GoalMemberScalarWhereInput[]
+  }
+
   export type GoalContributionUncheckedUpdateManyWithoutGoalNestedInput = {
     create?: XOR<GoalContributionCreateWithoutGoalInput, GoalContributionUncheckedCreateWithoutGoalInput> | GoalContributionCreateWithoutGoalInput[] | GoalContributionUncheckedCreateWithoutGoalInput[]
     connectOrCreate?: GoalContributionCreateOrConnectWithoutGoalInput | GoalContributionCreateOrConnectWithoutGoalInput[]
@@ -73506,6 +76629,20 @@ export namespace Prisma {
     update?: GoalContributionUpdateWithWhereUniqueWithoutGoalInput | GoalContributionUpdateWithWhereUniqueWithoutGoalInput[]
     updateMany?: GoalContributionUpdateManyWithWhereWithoutGoalInput | GoalContributionUpdateManyWithWhereWithoutGoalInput[]
     deleteMany?: GoalContributionScalarWhereInput | GoalContributionScalarWhereInput[]
+  }
+
+  export type GoalMemberUncheckedUpdateManyWithoutGoalNestedInput = {
+    create?: XOR<GoalMemberCreateWithoutGoalInput, GoalMemberUncheckedCreateWithoutGoalInput> | GoalMemberCreateWithoutGoalInput[] | GoalMemberUncheckedCreateWithoutGoalInput[]
+    connectOrCreate?: GoalMemberCreateOrConnectWithoutGoalInput | GoalMemberCreateOrConnectWithoutGoalInput[]
+    upsert?: GoalMemberUpsertWithWhereUniqueWithoutGoalInput | GoalMemberUpsertWithWhereUniqueWithoutGoalInput[]
+    createMany?: GoalMemberCreateManyGoalInputEnvelope
+    set?: GoalMemberWhereUniqueInput | GoalMemberWhereUniqueInput[]
+    disconnect?: GoalMemberWhereUniqueInput | GoalMemberWhereUniqueInput[]
+    delete?: GoalMemberWhereUniqueInput | GoalMemberWhereUniqueInput[]
+    connect?: GoalMemberWhereUniqueInput | GoalMemberWhereUniqueInput[]
+    update?: GoalMemberUpdateWithWhereUniqueWithoutGoalInput | GoalMemberUpdateWithWhereUniqueWithoutGoalInput[]
+    updateMany?: GoalMemberUpdateManyWithWhereWithoutGoalInput | GoalMemberUpdateManyWithWhereWithoutGoalInput[]
+    deleteMany?: GoalMemberScalarWhereInput | GoalMemberScalarWhereInput[]
   }
 
   export type AccountCreateNestedOneWithoutGoalContributionsInput = {
@@ -74020,6 +77157,20 @@ export namespace Prisma {
     connect?: GoldAssetWhereUniqueInput | GoldAssetWhereUniqueInput[]
   }
 
+  export type CollaborationParticipantCreateNestedManyWithoutUserInput = {
+    create?: XOR<CollaborationParticipantCreateWithoutUserInput, CollaborationParticipantUncheckedCreateWithoutUserInput> | CollaborationParticipantCreateWithoutUserInput[] | CollaborationParticipantUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: CollaborationParticipantCreateOrConnectWithoutUserInput | CollaborationParticipantCreateOrConnectWithoutUserInput[]
+    createMany?: CollaborationParticipantCreateManyUserInputEnvelope
+    connect?: CollaborationParticipantWhereUniqueInput | CollaborationParticipantWhereUniqueInput[]
+  }
+
+  export type CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput = {
+    create?: XOR<CollaborationParticipantCreateWithoutInvitedByUserInput, CollaborationParticipantUncheckedCreateWithoutInvitedByUserInput> | CollaborationParticipantCreateWithoutInvitedByUserInput[] | CollaborationParticipantUncheckedCreateWithoutInvitedByUserInput[]
+    connectOrCreate?: CollaborationParticipantCreateOrConnectWithoutInvitedByUserInput | CollaborationParticipantCreateOrConnectWithoutInvitedByUserInput[]
+    createMany?: CollaborationParticipantCreateManyInvitedByUserInputEnvelope
+    connect?: CollaborationParticipantWhereUniqueInput | CollaborationParticipantWhereUniqueInput[]
+  }
+
   export type AccountUncheckedCreateNestedManyWithoutUserInput = {
     create?: XOR<AccountCreateWithoutUserInput, AccountUncheckedCreateWithoutUserInput> | AccountCreateWithoutUserInput[] | AccountUncheckedCreateWithoutUserInput[]
     connectOrCreate?: AccountCreateOrConnectWithoutUserInput | AccountCreateOrConnectWithoutUserInput[]
@@ -74246,6 +77397,20 @@ export namespace Prisma {
     connectOrCreate?: GoldAssetCreateOrConnectWithoutUserInput | GoldAssetCreateOrConnectWithoutUserInput[]
     createMany?: GoldAssetCreateManyUserInputEnvelope
     connect?: GoldAssetWhereUniqueInput | GoldAssetWhereUniqueInput[]
+  }
+
+  export type CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<CollaborationParticipantCreateWithoutUserInput, CollaborationParticipantUncheckedCreateWithoutUserInput> | CollaborationParticipantCreateWithoutUserInput[] | CollaborationParticipantUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: CollaborationParticipantCreateOrConnectWithoutUserInput | CollaborationParticipantCreateOrConnectWithoutUserInput[]
+    createMany?: CollaborationParticipantCreateManyUserInputEnvelope
+    connect?: CollaborationParticipantWhereUniqueInput | CollaborationParticipantWhereUniqueInput[]
+  }
+
+  export type CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput = {
+    create?: XOR<CollaborationParticipantCreateWithoutInvitedByUserInput, CollaborationParticipantUncheckedCreateWithoutInvitedByUserInput> | CollaborationParticipantCreateWithoutInvitedByUserInput[] | CollaborationParticipantUncheckedCreateWithoutInvitedByUserInput[]
+    connectOrCreate?: CollaborationParticipantCreateOrConnectWithoutInvitedByUserInput | CollaborationParticipantCreateOrConnectWithoutInvitedByUserInput[]
+    createMany?: CollaborationParticipantCreateManyInvitedByUserInputEnvelope
+    connect?: CollaborationParticipantWhereUniqueInput | CollaborationParticipantWhereUniqueInput[]
   }
 
   export type AccountUpdateManyWithoutUserNestedInput = {
@@ -74698,6 +77863,34 @@ export namespace Prisma {
     deleteMany?: GoldAssetScalarWhereInput | GoldAssetScalarWhereInput[]
   }
 
+  export type CollaborationParticipantUpdateManyWithoutUserNestedInput = {
+    create?: XOR<CollaborationParticipantCreateWithoutUserInput, CollaborationParticipantUncheckedCreateWithoutUserInput> | CollaborationParticipantCreateWithoutUserInput[] | CollaborationParticipantUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: CollaborationParticipantCreateOrConnectWithoutUserInput | CollaborationParticipantCreateOrConnectWithoutUserInput[]
+    upsert?: CollaborationParticipantUpsertWithWhereUniqueWithoutUserInput | CollaborationParticipantUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: CollaborationParticipantCreateManyUserInputEnvelope
+    set?: CollaborationParticipantWhereUniqueInput | CollaborationParticipantWhereUniqueInput[]
+    disconnect?: CollaborationParticipantWhereUniqueInput | CollaborationParticipantWhereUniqueInput[]
+    delete?: CollaborationParticipantWhereUniqueInput | CollaborationParticipantWhereUniqueInput[]
+    connect?: CollaborationParticipantWhereUniqueInput | CollaborationParticipantWhereUniqueInput[]
+    update?: CollaborationParticipantUpdateWithWhereUniqueWithoutUserInput | CollaborationParticipantUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: CollaborationParticipantUpdateManyWithWhereWithoutUserInput | CollaborationParticipantUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: CollaborationParticipantScalarWhereInput | CollaborationParticipantScalarWhereInput[]
+  }
+
+  export type CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput = {
+    create?: XOR<CollaborationParticipantCreateWithoutInvitedByUserInput, CollaborationParticipantUncheckedCreateWithoutInvitedByUserInput> | CollaborationParticipantCreateWithoutInvitedByUserInput[] | CollaborationParticipantUncheckedCreateWithoutInvitedByUserInput[]
+    connectOrCreate?: CollaborationParticipantCreateOrConnectWithoutInvitedByUserInput | CollaborationParticipantCreateOrConnectWithoutInvitedByUserInput[]
+    upsert?: CollaborationParticipantUpsertWithWhereUniqueWithoutInvitedByUserInput | CollaborationParticipantUpsertWithWhereUniqueWithoutInvitedByUserInput[]
+    createMany?: CollaborationParticipantCreateManyInvitedByUserInputEnvelope
+    set?: CollaborationParticipantWhereUniqueInput | CollaborationParticipantWhereUniqueInput[]
+    disconnect?: CollaborationParticipantWhereUniqueInput | CollaborationParticipantWhereUniqueInput[]
+    delete?: CollaborationParticipantWhereUniqueInput | CollaborationParticipantWhereUniqueInput[]
+    connect?: CollaborationParticipantWhereUniqueInput | CollaborationParticipantWhereUniqueInput[]
+    update?: CollaborationParticipantUpdateWithWhereUniqueWithoutInvitedByUserInput | CollaborationParticipantUpdateWithWhereUniqueWithoutInvitedByUserInput[]
+    updateMany?: CollaborationParticipantUpdateManyWithWhereWithoutInvitedByUserInput | CollaborationParticipantUpdateManyWithWhereWithoutInvitedByUserInput[]
+    deleteMany?: CollaborationParticipantScalarWhereInput | CollaborationParticipantScalarWhereInput[]
+  }
+
   export type AccountUncheckedUpdateManyWithoutUserNestedInput = {
     create?: XOR<AccountCreateWithoutUserInput, AccountUncheckedCreateWithoutUserInput> | AccountCreateWithoutUserInput[] | AccountUncheckedCreateWithoutUserInput[]
     connectOrCreate?: AccountCreateOrConnectWithoutUserInput | AccountCreateOrConnectWithoutUserInput[]
@@ -75148,6 +78341,34 @@ export namespace Prisma {
     deleteMany?: GoldAssetScalarWhereInput | GoldAssetScalarWhereInput[]
   }
 
+  export type CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<CollaborationParticipantCreateWithoutUserInput, CollaborationParticipantUncheckedCreateWithoutUserInput> | CollaborationParticipantCreateWithoutUserInput[] | CollaborationParticipantUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: CollaborationParticipantCreateOrConnectWithoutUserInput | CollaborationParticipantCreateOrConnectWithoutUserInput[]
+    upsert?: CollaborationParticipantUpsertWithWhereUniqueWithoutUserInput | CollaborationParticipantUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: CollaborationParticipantCreateManyUserInputEnvelope
+    set?: CollaborationParticipantWhereUniqueInput | CollaborationParticipantWhereUniqueInput[]
+    disconnect?: CollaborationParticipantWhereUniqueInput | CollaborationParticipantWhereUniqueInput[]
+    delete?: CollaborationParticipantWhereUniqueInput | CollaborationParticipantWhereUniqueInput[]
+    connect?: CollaborationParticipantWhereUniqueInput | CollaborationParticipantWhereUniqueInput[]
+    update?: CollaborationParticipantUpdateWithWhereUniqueWithoutUserInput | CollaborationParticipantUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: CollaborationParticipantUpdateManyWithWhereWithoutUserInput | CollaborationParticipantUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: CollaborationParticipantScalarWhereInput | CollaborationParticipantScalarWhereInput[]
+  }
+
+  export type CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput = {
+    create?: XOR<CollaborationParticipantCreateWithoutInvitedByUserInput, CollaborationParticipantUncheckedCreateWithoutInvitedByUserInput> | CollaborationParticipantCreateWithoutInvitedByUserInput[] | CollaborationParticipantUncheckedCreateWithoutInvitedByUserInput[]
+    connectOrCreate?: CollaborationParticipantCreateOrConnectWithoutInvitedByUserInput | CollaborationParticipantCreateOrConnectWithoutInvitedByUserInput[]
+    upsert?: CollaborationParticipantUpsertWithWhereUniqueWithoutInvitedByUserInput | CollaborationParticipantUpsertWithWhereUniqueWithoutInvitedByUserInput[]
+    createMany?: CollaborationParticipantCreateManyInvitedByUserInputEnvelope
+    set?: CollaborationParticipantWhereUniqueInput | CollaborationParticipantWhereUniqueInput[]
+    disconnect?: CollaborationParticipantWhereUniqueInput | CollaborationParticipantWhereUniqueInput[]
+    delete?: CollaborationParticipantWhereUniqueInput | CollaborationParticipantWhereUniqueInput[]
+    connect?: CollaborationParticipantWhereUniqueInput | CollaborationParticipantWhereUniqueInput[]
+    update?: CollaborationParticipantUpdateWithWhereUniqueWithoutInvitedByUserInput | CollaborationParticipantUpdateWithWhereUniqueWithoutInvitedByUserInput[]
+    updateMany?: CollaborationParticipantUpdateManyWithWhereWithoutInvitedByUserInput | CollaborationParticipantUpdateManyWithWhereWithoutInvitedByUserInput[]
+    deleteMany?: CollaborationParticipantScalarWhereInput | CollaborationParticipantScalarWhereInput[]
+  }
+
   export type UserCreateNestedOneWithoutUserPinInput = {
     create?: XOR<UserCreateWithoutUserPinInput, UserUncheckedCreateWithoutUserPinInput>
     connectOrCreate?: UserCreateOrConnectWithoutUserPinInput
@@ -75338,6 +78559,50 @@ export namespace Prisma {
     upsert?: GroupExpenseUpsertWithoutGroupMembersInput
     connect?: GroupExpenseWhereUniqueInput
     update?: XOR<XOR<GroupExpenseUpdateToOneWithWhereWithoutGroupMembersInput, GroupExpenseUpdateWithoutGroupMembersInput>, GroupExpenseUncheckedUpdateWithoutGroupMembersInput>
+  }
+
+  export type UserCreateNestedOneWithoutCollaborationParticipationsInput = {
+    create?: XOR<UserCreateWithoutCollaborationParticipationsInput, UserUncheckedCreateWithoutCollaborationParticipationsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutCollaborationParticipationsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutCollaborationInvitesSentInput = {
+    create?: XOR<UserCreateWithoutCollaborationInvitesSentInput, UserUncheckedCreateWithoutCollaborationInvitesSentInput>
+    connectOrCreate?: UserCreateOrConnectWithoutCollaborationInvitesSentInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserUpdateOneWithoutCollaborationParticipationsNestedInput = {
+    create?: XOR<UserCreateWithoutCollaborationParticipationsInput, UserUncheckedCreateWithoutCollaborationParticipationsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutCollaborationParticipationsInput
+    upsert?: UserUpsertWithoutCollaborationParticipationsInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutCollaborationParticipationsInput, UserUpdateWithoutCollaborationParticipationsInput>, UserUncheckedUpdateWithoutCollaborationParticipationsInput>
+  }
+
+  export type UserUpdateOneRequiredWithoutCollaborationInvitesSentNestedInput = {
+    create?: XOR<UserCreateWithoutCollaborationInvitesSentInput, UserUncheckedCreateWithoutCollaborationInvitesSentInput>
+    connectOrCreate?: UserCreateOrConnectWithoutCollaborationInvitesSentInput
+    upsert?: UserUpsertWithoutCollaborationInvitesSentInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutCollaborationInvitesSentInput, UserUpdateWithoutCollaborationInvitesSentInput>, UserUncheckedUpdateWithoutCollaborationInvitesSentInput>
+  }
+
+  export type GoalCreateNestedOneWithoutGoalMembersInput = {
+    create?: XOR<GoalCreateWithoutGoalMembersInput, GoalUncheckedCreateWithoutGoalMembersInput>
+    connectOrCreate?: GoalCreateOrConnectWithoutGoalMembersInput
+    connect?: GoalWhereUniqueInput
+  }
+
+  export type GoalUpdateOneRequiredWithoutGoalMembersNestedInput = {
+    create?: XOR<GoalCreateWithoutGoalMembersInput, GoalUncheckedCreateWithoutGoalMembersInput>
+    connectOrCreate?: GoalCreateOrConnectWithoutGoalMembersInput
+    upsert?: GoalUpsertWithoutGoalMembersInput
+    connect?: GoalWhereUniqueInput
+    update?: XOR<XOR<GoalUpdateToOneWithWhereWithoutGoalMembersInput, GoalUpdateWithoutGoalMembersInput>, GoalUncheckedUpdateWithoutGoalMembersInput>
   }
 
   export type UserCreateNestedOneWithoutRecurringTransactionsInput = {
@@ -75810,6 +79075,8 @@ export namespace Prisma {
     budgets?: BudgetCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserUncheckedCreateWithoutAccountsInput = {
@@ -75868,6 +79135,8 @@ export namespace Prisma {
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserCreateOrConnectWithoutAccountsInput = {
@@ -76116,6 +79385,8 @@ export namespace Prisma {
     budgets?: BudgetUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAccountsInput = {
@@ -76174,6 +79445,8 @@ export namespace Prisma {
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type GoalContributionUpsertWithWhereUniqueWithoutAccountInput = {
@@ -76362,6 +79635,8 @@ export namespace Prisma {
     budgets?: BudgetCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserUncheckedCreateWithoutAdvisorApplicationInput = {
@@ -76420,6 +79695,8 @@ export namespace Prisma {
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserCreateOrConnectWithoutAdvisorApplicationInput = {
@@ -76483,6 +79760,8 @@ export namespace Prisma {
     budgets?: BudgetCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserUncheckedCreateWithoutReviewedApplicationsInput = {
@@ -76541,6 +79820,8 @@ export namespace Prisma {
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserCreateOrConnectWithoutReviewedApplicationsInput = {
@@ -76615,6 +79896,8 @@ export namespace Prisma {
     budgets?: BudgetUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAdvisorApplicationInput = {
@@ -76673,6 +79956,8 @@ export namespace Prisma {
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type UserUpsertWithoutReviewedApplicationsInput = {
@@ -76742,6 +80027,8 @@ export namespace Prisma {
     budgets?: BudgetUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutReviewedApplicationsInput = {
@@ -76800,6 +80087,8 @@ export namespace Prisma {
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type UserCreateWithoutAdvisorAvailabilityInput = {
@@ -76858,6 +80147,8 @@ export namespace Prisma {
     budgets?: BudgetCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserUncheckedCreateWithoutAdvisorAvailabilityInput = {
@@ -76916,6 +80207,8 @@ export namespace Prisma {
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserCreateOrConnectWithoutAdvisorAvailabilityInput = {
@@ -76990,6 +80283,8 @@ export namespace Prisma {
     budgets?: BudgetUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAdvisorAvailabilityInput = {
@@ -77048,6 +80343,8 @@ export namespace Prisma {
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type UserCreateWithoutSessionsAsAdvisorInput = {
@@ -77106,6 +80403,8 @@ export namespace Prisma {
     budgets?: BudgetCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserUncheckedCreateWithoutSessionsAsAdvisorInput = {
@@ -77164,6 +80463,8 @@ export namespace Prisma {
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserCreateOrConnectWithoutSessionsAsAdvisorInput = {
@@ -77264,6 +80565,8 @@ export namespace Prisma {
     budgets?: BudgetCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserUncheckedCreateWithoutSessionsAsClientInput = {
@@ -77322,6 +80625,8 @@ export namespace Prisma {
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserCreateOrConnectWithoutSessionsAsClientInput = {
@@ -77453,6 +80758,8 @@ export namespace Prisma {
     budgets?: BudgetUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSessionsAsAdvisorInput = {
@@ -77511,6 +80818,8 @@ export namespace Prisma {
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type BookingRequestUpsertWithoutSessionInput = {
@@ -77623,6 +80932,8 @@ export namespace Prisma {
     budgets?: BudgetUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSessionsAsClientInput = {
@@ -77681,6 +80992,8 @@ export namespace Prisma {
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type ChatMessageUpsertWithWhereUniqueWithoutSessionInput = {
@@ -77844,6 +81157,8 @@ export namespace Prisma {
     budgets?: BudgetCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserUncheckedCreateWithoutBookingsAsAdvisorInput = {
@@ -77902,6 +81217,8 @@ export namespace Prisma {
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserCreateOrConnectWithoutBookingsAsAdvisorInput = {
@@ -77965,6 +81282,8 @@ export namespace Prisma {
     budgets?: BudgetCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserUncheckedCreateWithoutBookingsAsClientInput = {
@@ -78023,6 +81342,8 @@ export namespace Prisma {
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserCreateOrConnectWithoutBookingsAsClientInput = {
@@ -78142,6 +81463,8 @@ export namespace Prisma {
     budgets?: BudgetUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutBookingsAsAdvisorInput = {
@@ -78200,6 +81523,8 @@ export namespace Prisma {
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type UserUpsertWithoutBookingsAsClientInput = {
@@ -78269,6 +81594,8 @@ export namespace Prisma {
     budgets?: BudgetUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutBookingsAsClientInput = {
@@ -78327,6 +81654,8 @@ export namespace Prisma {
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type UserCreateWithoutCategoriesInput = {
@@ -78385,6 +81714,8 @@ export namespace Prisma {
     budgets?: BudgetCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserUncheckedCreateWithoutCategoriesInput = {
@@ -78443,6 +81774,8 @@ export namespace Prisma {
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserCreateOrConnectWithoutCategoriesInput = {
@@ -78517,6 +81850,8 @@ export namespace Prisma {
     budgets?: BudgetUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCategoriesInput = {
@@ -78575,6 +81910,8 @@ export namespace Prisma {
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type UserCreateWithoutChatMessagesInput = {
@@ -78633,6 +81970,8 @@ export namespace Prisma {
     budgets?: BudgetCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserUncheckedCreateWithoutChatMessagesInput = {
@@ -78691,6 +82030,8 @@ export namespace Prisma {
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserCreateOrConnectWithoutChatMessagesInput = {
@@ -78804,6 +82145,8 @@ export namespace Prisma {
     budgets?: BudgetUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutChatMessagesInput = {
@@ -78862,6 +82205,8 @@ export namespace Prisma {
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type AdvisorSessionUpsertWithoutChatMessagesInput = {
@@ -78965,6 +82310,8 @@ export namespace Prisma {
     budgets?: BudgetCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserUncheckedCreateWithoutDevicesInput = {
@@ -79023,6 +82370,8 @@ export namespace Prisma {
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserCreateOrConnectWithoutDevicesInput = {
@@ -79097,6 +82446,8 @@ export namespace Prisma {
     budgets?: BudgetUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutDevicesInput = {
@@ -79155,6 +82506,8 @@ export namespace Prisma {
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type UserCreateWithoutExpenseBillsInput = {
@@ -79213,6 +82566,8 @@ export namespace Prisma {
     budgets?: BudgetCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserUncheckedCreateWithoutExpenseBillsInput = {
@@ -79271,6 +82626,8 @@ export namespace Prisma {
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserCreateOrConnectWithoutExpenseBillsInput = {
@@ -79345,6 +82702,8 @@ export namespace Prisma {
     budgets?: BudgetUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutExpenseBillsInput = {
@@ -79403,6 +82762,8 @@ export namespace Prisma {
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type UserCreateWithoutFriendsInput = {
@@ -79461,6 +82822,8 @@ export namespace Prisma {
     budgets?: BudgetCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserUncheckedCreateWithoutFriendsInput = {
@@ -79519,6 +82882,8 @@ export namespace Prisma {
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserCreateOrConnectWithoutFriendsInput = {
@@ -79593,6 +82958,8 @@ export namespace Prisma {
     budgets?: BudgetUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutFriendsInput = {
@@ -79651,6 +83018,8 @@ export namespace Prisma {
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type UserCreateWithoutGoalsInput = {
@@ -79709,6 +83078,8 @@ export namespace Prisma {
     budgets?: BudgetCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserUncheckedCreateWithoutGoalsInput = {
@@ -79767,6 +83138,8 @@ export namespace Prisma {
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserCreateOrConnectWithoutGoalsInput = {
@@ -79807,6 +83180,38 @@ export namespace Prisma {
 
   export type GoalContributionCreateManyGoalInputEnvelope = {
     data: GoalContributionCreateManyGoalInput | GoalContributionCreateManyGoalInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type GoalMemberCreateWithoutGoalInput = {
+    id?: string
+    userId?: string | null
+    name: string
+    email?: string | null
+    phone?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type GoalMemberUncheckedCreateWithoutGoalInput = {
+    id?: string
+    userId?: string | null
+    name: string
+    email?: string | null
+    phone?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type GoalMemberCreateOrConnectWithoutGoalInput = {
+    where: GoalMemberWhereUniqueInput
+    create: XOR<GoalMemberCreateWithoutGoalInput, GoalMemberUncheckedCreateWithoutGoalInput>
+  }
+
+  export type GoalMemberCreateManyGoalInputEnvelope = {
+    data: GoalMemberCreateManyGoalInput | GoalMemberCreateManyGoalInput[]
     skipDuplicates?: boolean
   }
 
@@ -79877,6 +83282,8 @@ export namespace Prisma {
     budgets?: BudgetUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutGoalsInput = {
@@ -79935,6 +83342,8 @@ export namespace Prisma {
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type GoalContributionUpsertWithWhereUniqueWithoutGoalInput = {
@@ -79951,6 +83360,37 @@ export namespace Prisma {
   export type GoalContributionUpdateManyWithWhereWithoutGoalInput = {
     where: GoalContributionScalarWhereInput
     data: XOR<GoalContributionUpdateManyMutationInput, GoalContributionUncheckedUpdateManyWithoutGoalInput>
+  }
+
+  export type GoalMemberUpsertWithWhereUniqueWithoutGoalInput = {
+    where: GoalMemberWhereUniqueInput
+    update: XOR<GoalMemberUpdateWithoutGoalInput, GoalMemberUncheckedUpdateWithoutGoalInput>
+    create: XOR<GoalMemberCreateWithoutGoalInput, GoalMemberUncheckedCreateWithoutGoalInput>
+  }
+
+  export type GoalMemberUpdateWithWhereUniqueWithoutGoalInput = {
+    where: GoalMemberWhereUniqueInput
+    data: XOR<GoalMemberUpdateWithoutGoalInput, GoalMemberUncheckedUpdateWithoutGoalInput>
+  }
+
+  export type GoalMemberUpdateManyWithWhereWithoutGoalInput = {
+    where: GoalMemberScalarWhereInput
+    data: XOR<GoalMemberUpdateManyMutationInput, GoalMemberUncheckedUpdateManyWithoutGoalInput>
+  }
+
+  export type GoalMemberScalarWhereInput = {
+    AND?: GoalMemberScalarWhereInput | GoalMemberScalarWhereInput[]
+    OR?: GoalMemberScalarWhereInput[]
+    NOT?: GoalMemberScalarWhereInput | GoalMemberScalarWhereInput[]
+    id?: StringFilter<"GoalMember"> | string
+    goalId?: StringFilter<"GoalMember"> | string
+    userId?: StringNullableFilter<"GoalMember"> | string | null
+    name?: StringFilter<"GoalMember"> | string
+    email?: StringNullableFilter<"GoalMember"> | string | null
+    phone?: StringNullableFilter<"GoalMember"> | string | null
+    createdAt?: DateTimeFilter<"GoalMember"> | Date | string
+    updatedAt?: DateTimeFilter<"GoalMember"> | Date | string
+    deletedAt?: DateTimeNullableFilter<"GoalMember"> | Date | string | null
   }
 
   export type AccountCreateWithoutGoalContributionsInput = {
@@ -80014,6 +83454,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     user: UserCreateNestedOneWithoutGoalsInput
+    goalMembers?: GoalMemberCreateNestedManyWithoutGoalInput
   }
 
   export type GoalUncheckedCreateWithoutGoalContributionsInput = {
@@ -80032,6 +83473,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
+    goalMembers?: GoalMemberUncheckedCreateNestedManyWithoutGoalInput
   }
 
   export type GoalCreateOrConnectWithoutGoalContributionsInput = {
@@ -80095,6 +83537,8 @@ export namespace Prisma {
     budgets?: BudgetCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserUncheckedCreateWithoutGoalContributionsInput = {
@@ -80153,6 +83597,8 @@ export namespace Prisma {
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserCreateOrConnectWithoutGoalContributionsInput = {
@@ -80238,6 +83684,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     user?: UserUpdateOneRequiredWithoutGoalsNestedInput
+    goalMembers?: GoalMemberUpdateManyWithoutGoalNestedInput
   }
 
   export type GoalUncheckedUpdateWithoutGoalContributionsInput = {
@@ -80256,6 +83703,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    goalMembers?: GoalMemberUncheckedUpdateManyWithoutGoalNestedInput
   }
 
   export type UserUpsertWithoutGoalContributionsInput = {
@@ -80325,6 +83773,8 @@ export namespace Prisma {
     budgets?: BudgetUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutGoalContributionsInput = {
@@ -80383,6 +83833,8 @@ export namespace Prisma {
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type UserCreateWithoutImportLogsInput = {
@@ -80441,6 +83893,8 @@ export namespace Prisma {
     budgets?: BudgetCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserUncheckedCreateWithoutImportLogsInput = {
@@ -80499,6 +83953,8 @@ export namespace Prisma {
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserCreateOrConnectWithoutImportLogsInput = {
@@ -80573,6 +84029,8 @@ export namespace Prisma {
     budgets?: BudgetUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutImportLogsInput = {
@@ -80631,6 +84089,8 @@ export namespace Prisma {
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type UserCreateWithoutInvestmentsInput = {
@@ -80689,6 +84149,8 @@ export namespace Prisma {
     budgets?: BudgetCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserUncheckedCreateWithoutInvestmentsInput = {
@@ -80747,6 +84209,8 @@ export namespace Prisma {
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserCreateOrConnectWithoutInvestmentsInput = {
@@ -80821,6 +84285,8 @@ export namespace Prisma {
     budgets?: BudgetUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutInvestmentsInput = {
@@ -80879,6 +84345,8 @@ export namespace Prisma {
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type UserCreateWithoutLoansInput = {
@@ -80937,6 +84405,8 @@ export namespace Prisma {
     budgets?: BudgetCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserUncheckedCreateWithoutLoansInput = {
@@ -80995,6 +84465,8 @@ export namespace Prisma {
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserCreateOrConnectWithoutLoansInput = {
@@ -81099,6 +84571,8 @@ export namespace Prisma {
     budgets?: BudgetUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutLoansInput = {
@@ -81157,6 +84631,8 @@ export namespace Prisma {
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type LoanPaymentUpsertWithWhereUniqueWithoutLoanInput = {
@@ -81345,6 +84821,8 @@ export namespace Prisma {
     budgets?: BudgetCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserUncheckedCreateWithoutNotificationsInput = {
@@ -81403,6 +84881,8 @@ export namespace Prisma {
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserCreateOrConnectWithoutNotificationsInput = {
@@ -81477,6 +84957,8 @@ export namespace Prisma {
     budgets?: BudgetUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutNotificationsInput = {
@@ -81535,6 +85017,8 @@ export namespace Prisma {
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type UserCreateWithoutPaymentsAsAdvisorInput = {
@@ -81593,6 +85077,8 @@ export namespace Prisma {
     budgets?: BudgetCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserUncheckedCreateWithoutPaymentsAsAdvisorInput = {
@@ -81651,6 +85137,8 @@ export namespace Prisma {
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserCreateOrConnectWithoutPaymentsAsAdvisorInput = {
@@ -81714,6 +85202,8 @@ export namespace Prisma {
     budgets?: BudgetCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserUncheckedCreateWithoutPaymentsAsClientInput = {
@@ -81772,6 +85262,8 @@ export namespace Prisma {
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserCreateOrConnectWithoutPaymentsAsClientInput = {
@@ -81885,6 +85377,8 @@ export namespace Prisma {
     budgets?: BudgetUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutPaymentsAsAdvisorInput = {
@@ -81943,6 +85437,8 @@ export namespace Prisma {
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type UserUpsertWithoutPaymentsAsClientInput = {
@@ -82012,6 +85508,8 @@ export namespace Prisma {
     budgets?: BudgetUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutPaymentsAsClientInput = {
@@ -82070,6 +85568,8 @@ export namespace Prisma {
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type AdvisorSessionUpsertWithoutPaymentInput = {
@@ -82173,6 +85673,8 @@ export namespace Prisma {
     budgets?: BudgetCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserUncheckedCreateWithoutRefreshTokensInput = {
@@ -82231,6 +85733,8 @@ export namespace Prisma {
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserCreateOrConnectWithoutRefreshTokensInput = {
@@ -82305,6 +85809,8 @@ export namespace Prisma {
     budgets?: BudgetUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutRefreshTokensInput = {
@@ -82363,6 +85869,8 @@ export namespace Prisma {
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type UserCreateWithoutTodosInput = {
@@ -82421,6 +85929,8 @@ export namespace Prisma {
     budgets?: BudgetCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserUncheckedCreateWithoutTodosInput = {
@@ -82479,6 +85989,8 @@ export namespace Prisma {
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserCreateOrConnectWithoutTodosInput = {
@@ -82553,6 +86065,8 @@ export namespace Prisma {
     budgets?: BudgetUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutTodosInput = {
@@ -82611,6 +86125,8 @@ export namespace Prisma {
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type AccountCreateWithoutTransactionsInput = {
@@ -82773,6 +86289,8 @@ export namespace Prisma {
     budgets?: BudgetCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserUncheckedCreateWithoutTransactionsInput = {
@@ -82831,6 +86349,8 @@ export namespace Prisma {
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserCreateOrConnectWithoutTransactionsInput = {
@@ -83021,6 +86541,8 @@ export namespace Prisma {
     budgets?: BudgetUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutTransactionsInput = {
@@ -83079,6 +86601,8 @@ export namespace Prisma {
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type AccountCreateWithoutUserInput = {
@@ -83636,6 +87160,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     goalContributions?: GoalContributionCreateNestedManyWithoutGoalInput
+    goalMembers?: GoalMemberCreateNestedManyWithoutGoalInput
   }
 
   export type GoalUncheckedCreateWithoutUserInput = {
@@ -83654,6 +87179,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     goalContributions?: GoalContributionUncheckedCreateNestedManyWithoutGoalInput
+    goalMembers?: GoalMemberUncheckedCreateNestedManyWithoutGoalInput
   }
 
   export type GoalCreateOrConnectWithoutUserInput = {
@@ -84479,6 +88005,82 @@ export namespace Prisma {
 
   export type GoldAssetCreateManyUserInputEnvelope = {
     data: GoldAssetCreateManyUserInput | GoldAssetCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type CollaborationParticipantCreateWithoutUserInput = {
+    id?: string
+    moduleType: string
+    moduleId: string
+    moduleName?: string | null
+    email: string
+    name?: string | null
+    status?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    linkedAt?: Date | string | null
+    invitedByUser: UserCreateNestedOneWithoutCollaborationInvitesSentInput
+  }
+
+  export type CollaborationParticipantUncheckedCreateWithoutUserInput = {
+    id?: string
+    moduleType: string
+    moduleId: string
+    moduleName?: string | null
+    email: string
+    name?: string | null
+    status?: string
+    invitedBy: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    linkedAt?: Date | string | null
+  }
+
+  export type CollaborationParticipantCreateOrConnectWithoutUserInput = {
+    where: CollaborationParticipantWhereUniqueInput
+    create: XOR<CollaborationParticipantCreateWithoutUserInput, CollaborationParticipantUncheckedCreateWithoutUserInput>
+  }
+
+  export type CollaborationParticipantCreateManyUserInputEnvelope = {
+    data: CollaborationParticipantCreateManyUserInput | CollaborationParticipantCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type CollaborationParticipantCreateWithoutInvitedByUserInput = {
+    id?: string
+    moduleType: string
+    moduleId: string
+    moduleName?: string | null
+    email: string
+    name?: string | null
+    status?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    linkedAt?: Date | string | null
+    user?: UserCreateNestedOneWithoutCollaborationParticipationsInput
+  }
+
+  export type CollaborationParticipantUncheckedCreateWithoutInvitedByUserInput = {
+    id?: string
+    moduleType: string
+    moduleId: string
+    moduleName?: string | null
+    email: string
+    name?: string | null
+    userId?: string | null
+    status?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    linkedAt?: Date | string | null
+  }
+
+  export type CollaborationParticipantCreateOrConnectWithoutInvitedByUserInput = {
+    where: CollaborationParticipantWhereUniqueInput
+    create: XOR<CollaborationParticipantCreateWithoutInvitedByUserInput, CollaborationParticipantUncheckedCreateWithoutInvitedByUserInput>
+  }
+
+  export type CollaborationParticipantCreateManyInvitedByUserInputEnvelope = {
+    data: CollaborationParticipantCreateManyInvitedByUserInput | CollaborationParticipantCreateManyInvitedByUserInput[]
     skipDuplicates?: boolean
   }
 
@@ -85540,6 +89142,56 @@ export namespace Prisma {
     deletedAt?: DateTimeNullableFilter<"GoldAsset"> | Date | string | null
   }
 
+  export type CollaborationParticipantUpsertWithWhereUniqueWithoutUserInput = {
+    where: CollaborationParticipantWhereUniqueInput
+    update: XOR<CollaborationParticipantUpdateWithoutUserInput, CollaborationParticipantUncheckedUpdateWithoutUserInput>
+    create: XOR<CollaborationParticipantCreateWithoutUserInput, CollaborationParticipantUncheckedCreateWithoutUserInput>
+  }
+
+  export type CollaborationParticipantUpdateWithWhereUniqueWithoutUserInput = {
+    where: CollaborationParticipantWhereUniqueInput
+    data: XOR<CollaborationParticipantUpdateWithoutUserInput, CollaborationParticipantUncheckedUpdateWithoutUserInput>
+  }
+
+  export type CollaborationParticipantUpdateManyWithWhereWithoutUserInput = {
+    where: CollaborationParticipantScalarWhereInput
+    data: XOR<CollaborationParticipantUpdateManyMutationInput, CollaborationParticipantUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type CollaborationParticipantScalarWhereInput = {
+    AND?: CollaborationParticipantScalarWhereInput | CollaborationParticipantScalarWhereInput[]
+    OR?: CollaborationParticipantScalarWhereInput[]
+    NOT?: CollaborationParticipantScalarWhereInput | CollaborationParticipantScalarWhereInput[]
+    id?: StringFilter<"CollaborationParticipant"> | string
+    moduleType?: StringFilter<"CollaborationParticipant"> | string
+    moduleId?: StringFilter<"CollaborationParticipant"> | string
+    moduleName?: StringNullableFilter<"CollaborationParticipant"> | string | null
+    email?: StringFilter<"CollaborationParticipant"> | string
+    name?: StringNullableFilter<"CollaborationParticipant"> | string | null
+    userId?: StringNullableFilter<"CollaborationParticipant"> | string | null
+    status?: StringFilter<"CollaborationParticipant"> | string
+    invitedBy?: StringFilter<"CollaborationParticipant"> | string
+    createdAt?: DateTimeFilter<"CollaborationParticipant"> | Date | string
+    updatedAt?: DateTimeFilter<"CollaborationParticipant"> | Date | string
+    linkedAt?: DateTimeNullableFilter<"CollaborationParticipant"> | Date | string | null
+  }
+
+  export type CollaborationParticipantUpsertWithWhereUniqueWithoutInvitedByUserInput = {
+    where: CollaborationParticipantWhereUniqueInput
+    update: XOR<CollaborationParticipantUpdateWithoutInvitedByUserInput, CollaborationParticipantUncheckedUpdateWithoutInvitedByUserInput>
+    create: XOR<CollaborationParticipantCreateWithoutInvitedByUserInput, CollaborationParticipantUncheckedCreateWithoutInvitedByUserInput>
+  }
+
+  export type CollaborationParticipantUpdateWithWhereUniqueWithoutInvitedByUserInput = {
+    where: CollaborationParticipantWhereUniqueInput
+    data: XOR<CollaborationParticipantUpdateWithoutInvitedByUserInput, CollaborationParticipantUncheckedUpdateWithoutInvitedByUserInput>
+  }
+
+  export type CollaborationParticipantUpdateManyWithWhereWithoutInvitedByUserInput = {
+    where: CollaborationParticipantScalarWhereInput
+    data: XOR<CollaborationParticipantUpdateManyMutationInput, CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserInput>
+  }
+
   export type UserCreateWithoutUserPinInput = {
     id?: string
     email: string
@@ -85596,6 +89248,8 @@ export namespace Prisma {
     budgets?: BudgetCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserUncheckedCreateWithoutUserPinInput = {
@@ -85654,6 +89308,8 @@ export namespace Prisma {
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserCreateOrConnectWithoutUserPinInput = {
@@ -85728,6 +89384,8 @@ export namespace Prisma {
     budgets?: BudgetUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutUserPinInput = {
@@ -85786,6 +89444,8 @@ export namespace Prisma {
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type UserCreateWithoutUserSettingsInput = {
@@ -85844,6 +89504,8 @@ export namespace Prisma {
     budgets?: BudgetCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserUncheckedCreateWithoutUserSettingsInput = {
@@ -85902,6 +89564,8 @@ export namespace Prisma {
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserCreateOrConnectWithoutUserSettingsInput = {
@@ -85976,6 +89640,8 @@ export namespace Prisma {
     budgets?: BudgetUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutUserSettingsInput = {
@@ -86034,6 +89700,8 @@ export namespace Prisma {
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type UserCreateWithoutOtpCodesInput = {
@@ -86092,6 +89760,8 @@ export namespace Prisma {
     budgets?: BudgetCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserUncheckedCreateWithoutOtpCodesInput = {
@@ -86150,6 +89820,8 @@ export namespace Prisma {
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserCreateOrConnectWithoutOtpCodesInput = {
@@ -86224,6 +89896,8 @@ export namespace Prisma {
     budgets?: BudgetUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutOtpCodesInput = {
@@ -86282,6 +89956,8 @@ export namespace Prisma {
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type UserCreateWithoutAiScansInput = {
@@ -86340,6 +90016,8 @@ export namespace Prisma {
     budgets?: BudgetCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserUncheckedCreateWithoutAiScansInput = {
@@ -86398,6 +90076,8 @@ export namespace Prisma {
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserCreateOrConnectWithoutAiScansInput = {
@@ -86472,6 +90152,8 @@ export namespace Prisma {
     budgets?: BudgetUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAiScansInput = {
@@ -86530,6 +90212,8 @@ export namespace Prisma {
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type TransactionCreateWithoutGroupExpenseInput = {
@@ -86707,6 +90391,8 @@ export namespace Prisma {
     budgets?: BudgetCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserUncheckedCreateWithoutGroupExpensesInput = {
@@ -86765,6 +90451,8 @@ export namespace Prisma {
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserCreateOrConnectWithoutGroupExpensesInput = {
@@ -86944,6 +90632,8 @@ export namespace Prisma {
     budgets?: BudgetUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutGroupExpensesInput = {
@@ -87002,6 +90692,8 @@ export namespace Prisma {
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type GroupExpenseMemberUpsertWithWhereUniqueWithoutGroupExpenseInput = {
@@ -87162,6 +90854,610 @@ export namespace Prisma {
     transactions?: TransactionUncheckedUpdateManyWithoutGroupExpenseNestedInput
   }
 
+  export type UserCreateWithoutCollaborationParticipationsInput = {
+    id?: string
+    email: string
+    name: string
+    password: string
+    role?: string
+    roleMode?: string
+    advisorStatus?: string
+    status?: string
+    isApproved?: boolean
+    firstName?: string | null
+    lastName?: string | null
+    salary?: Decimal | DecimalJsLike | number | string | null
+    dateOfBirth?: Date | string | null
+    jobType?: string | null
+    lastSynced?: Date | string | null
+    syncToken?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    avatarId?: string | null
+    city?: string | null
+    country?: string | null
+    gender?: string | null
+    state?: string | null
+    accounts?: AccountCreateNestedManyWithoutUserInput
+    advisorAvailability?: AdvisorAvailabilityCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationCreateNestedManyWithoutReviewerInput
+    sessionsAsAdvisor?: AdvisorSessionCreateNestedManyWithoutAdvisorInput
+    sessionsAsClient?: AdvisorSessionCreateNestedManyWithoutClientInput
+    bookingsAsAdvisor?: BookingRequestCreateNestedManyWithoutAdvisorInput
+    bookingsAsClient?: BookingRequestCreateNestedManyWithoutClientInput
+    categories?: CategoryCreateNestedManyWithoutUserInput
+    chatMessages?: ChatMessageCreateNestedManyWithoutSenderInput
+    devices?: DeviceCreateNestedManyWithoutUserInput
+    expenseBills?: ExpenseBillCreateNestedManyWithoutUserInput
+    friends?: FriendCreateNestedManyWithoutUserInput
+    goals?: GoalCreateNestedManyWithoutUserInput
+    goalContributions?: GoalContributionCreateNestedManyWithoutUserInput
+    importLogs?: ImportLogCreateNestedManyWithoutUserInput
+    investments?: InvestmentCreateNestedManyWithoutUserInput
+    loans?: LoanCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    paymentsAsAdvisor?: PaymentCreateNestedManyWithoutAdvisorInput
+    paymentsAsClient?: PaymentCreateNestedManyWithoutClientInput
+    refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
+    todos?: TodoCreateNestedManyWithoutUserInput
+    transactions?: TransactionCreateNestedManyWithoutUserInput
+    userPin?: UserPinCreateNestedOneWithoutUserInput
+    userSettings?: UserSettingsCreateNestedOneWithoutUserInput
+    otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
+    aiScans?: AiScanCreateNestedManyWithoutUserInput
+    groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
+    budgets?: BudgetCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
+  }
+
+  export type UserUncheckedCreateWithoutCollaborationParticipationsInput = {
+    id?: string
+    email: string
+    name: string
+    password: string
+    role?: string
+    roleMode?: string
+    advisorStatus?: string
+    status?: string
+    isApproved?: boolean
+    firstName?: string | null
+    lastName?: string | null
+    salary?: Decimal | DecimalJsLike | number | string | null
+    dateOfBirth?: Date | string | null
+    jobType?: string | null
+    lastSynced?: Date | string | null
+    syncToken?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    avatarId?: string | null
+    city?: string | null
+    country?: string | null
+    gender?: string | null
+    state?: string | null
+    accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
+    advisorAvailability?: AdvisorAvailabilityUncheckedCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationUncheckedCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationUncheckedCreateNestedManyWithoutReviewerInput
+    sessionsAsAdvisor?: AdvisorSessionUncheckedCreateNestedManyWithoutAdvisorInput
+    sessionsAsClient?: AdvisorSessionUncheckedCreateNestedManyWithoutClientInput
+    bookingsAsAdvisor?: BookingRequestUncheckedCreateNestedManyWithoutAdvisorInput
+    bookingsAsClient?: BookingRequestUncheckedCreateNestedManyWithoutClientInput
+    categories?: CategoryUncheckedCreateNestedManyWithoutUserInput
+    chatMessages?: ChatMessageUncheckedCreateNestedManyWithoutSenderInput
+    devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
+    expenseBills?: ExpenseBillUncheckedCreateNestedManyWithoutUserInput
+    friends?: FriendUncheckedCreateNestedManyWithoutUserInput
+    goals?: GoalUncheckedCreateNestedManyWithoutUserInput
+    goalContributions?: GoalContributionUncheckedCreateNestedManyWithoutUserInput
+    importLogs?: ImportLogUncheckedCreateNestedManyWithoutUserInput
+    investments?: InvestmentUncheckedCreateNestedManyWithoutUserInput
+    loans?: LoanUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    paymentsAsAdvisor?: PaymentUncheckedCreateNestedManyWithoutAdvisorInput
+    paymentsAsClient?: PaymentUncheckedCreateNestedManyWithoutClientInput
+    refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
+    todos?: TodoUncheckedCreateNestedManyWithoutUserInput
+    transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
+    userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
+    userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
+    otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
+    aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
+    groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
+    budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
+  }
+
+  export type UserCreateOrConnectWithoutCollaborationParticipationsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutCollaborationParticipationsInput, UserUncheckedCreateWithoutCollaborationParticipationsInput>
+  }
+
+  export type UserCreateWithoutCollaborationInvitesSentInput = {
+    id?: string
+    email: string
+    name: string
+    password: string
+    role?: string
+    roleMode?: string
+    advisorStatus?: string
+    status?: string
+    isApproved?: boolean
+    firstName?: string | null
+    lastName?: string | null
+    salary?: Decimal | DecimalJsLike | number | string | null
+    dateOfBirth?: Date | string | null
+    jobType?: string | null
+    lastSynced?: Date | string | null
+    syncToken?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    avatarId?: string | null
+    city?: string | null
+    country?: string | null
+    gender?: string | null
+    state?: string | null
+    accounts?: AccountCreateNestedManyWithoutUserInput
+    advisorAvailability?: AdvisorAvailabilityCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationCreateNestedManyWithoutReviewerInput
+    sessionsAsAdvisor?: AdvisorSessionCreateNestedManyWithoutAdvisorInput
+    sessionsAsClient?: AdvisorSessionCreateNestedManyWithoutClientInput
+    bookingsAsAdvisor?: BookingRequestCreateNestedManyWithoutAdvisorInput
+    bookingsAsClient?: BookingRequestCreateNestedManyWithoutClientInput
+    categories?: CategoryCreateNestedManyWithoutUserInput
+    chatMessages?: ChatMessageCreateNestedManyWithoutSenderInput
+    devices?: DeviceCreateNestedManyWithoutUserInput
+    expenseBills?: ExpenseBillCreateNestedManyWithoutUserInput
+    friends?: FriendCreateNestedManyWithoutUserInput
+    goals?: GoalCreateNestedManyWithoutUserInput
+    goalContributions?: GoalContributionCreateNestedManyWithoutUserInput
+    importLogs?: ImportLogCreateNestedManyWithoutUserInput
+    investments?: InvestmentCreateNestedManyWithoutUserInput
+    loans?: LoanCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    paymentsAsAdvisor?: PaymentCreateNestedManyWithoutAdvisorInput
+    paymentsAsClient?: PaymentCreateNestedManyWithoutClientInput
+    refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
+    todos?: TodoCreateNestedManyWithoutUserInput
+    transactions?: TransactionCreateNestedManyWithoutUserInput
+    userPin?: UserPinCreateNestedOneWithoutUserInput
+    userSettings?: UserSettingsCreateNestedOneWithoutUserInput
+    otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
+    aiScans?: AiScanCreateNestedManyWithoutUserInput
+    groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
+    budgets?: BudgetCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutCollaborationInvitesSentInput = {
+    id?: string
+    email: string
+    name: string
+    password: string
+    role?: string
+    roleMode?: string
+    advisorStatus?: string
+    status?: string
+    isApproved?: boolean
+    firstName?: string | null
+    lastName?: string | null
+    salary?: Decimal | DecimalJsLike | number | string | null
+    dateOfBirth?: Date | string | null
+    jobType?: string | null
+    lastSynced?: Date | string | null
+    syncToken?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    avatarId?: string | null
+    city?: string | null
+    country?: string | null
+    gender?: string | null
+    state?: string | null
+    accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
+    advisorAvailability?: AdvisorAvailabilityUncheckedCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationUncheckedCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationUncheckedCreateNestedManyWithoutReviewerInput
+    sessionsAsAdvisor?: AdvisorSessionUncheckedCreateNestedManyWithoutAdvisorInput
+    sessionsAsClient?: AdvisorSessionUncheckedCreateNestedManyWithoutClientInput
+    bookingsAsAdvisor?: BookingRequestUncheckedCreateNestedManyWithoutAdvisorInput
+    bookingsAsClient?: BookingRequestUncheckedCreateNestedManyWithoutClientInput
+    categories?: CategoryUncheckedCreateNestedManyWithoutUserInput
+    chatMessages?: ChatMessageUncheckedCreateNestedManyWithoutSenderInput
+    devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
+    expenseBills?: ExpenseBillUncheckedCreateNestedManyWithoutUserInput
+    friends?: FriendUncheckedCreateNestedManyWithoutUserInput
+    goals?: GoalUncheckedCreateNestedManyWithoutUserInput
+    goalContributions?: GoalContributionUncheckedCreateNestedManyWithoutUserInput
+    importLogs?: ImportLogUncheckedCreateNestedManyWithoutUserInput
+    investments?: InvestmentUncheckedCreateNestedManyWithoutUserInput
+    loans?: LoanUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    paymentsAsAdvisor?: PaymentUncheckedCreateNestedManyWithoutAdvisorInput
+    paymentsAsClient?: PaymentUncheckedCreateNestedManyWithoutClientInput
+    refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
+    todos?: TodoUncheckedCreateNestedManyWithoutUserInput
+    transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
+    userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
+    userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
+    otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
+    aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
+    groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
+    budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
+    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutCollaborationInvitesSentInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutCollaborationInvitesSentInput, UserUncheckedCreateWithoutCollaborationInvitesSentInput>
+  }
+
+  export type UserUpsertWithoutCollaborationParticipationsInput = {
+    update: XOR<UserUpdateWithoutCollaborationParticipationsInput, UserUncheckedUpdateWithoutCollaborationParticipationsInput>
+    create: XOR<UserCreateWithoutCollaborationParticipationsInput, UserUncheckedCreateWithoutCollaborationParticipationsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutCollaborationParticipationsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutCollaborationParticipationsInput, UserUncheckedUpdateWithoutCollaborationParticipationsInput>
+  }
+
+  export type UserUpdateWithoutCollaborationParticipationsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    isApproved?: BoolFieldUpdateOperationsInput | boolean
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    jobType?: NullableStringFieldUpdateOperationsInput | string | null
+    lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    syncToken?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    avatarId?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableStringFieldUpdateOperationsInput | string | null
+    state?: NullableStringFieldUpdateOperationsInput | string | null
+    accounts?: AccountUpdateManyWithoutUserNestedInput
+    advisorAvailability?: AdvisorAvailabilityUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUpdateManyWithoutReviewerNestedInput
+    sessionsAsAdvisor?: AdvisorSessionUpdateManyWithoutAdvisorNestedInput
+    sessionsAsClient?: AdvisorSessionUpdateManyWithoutClientNestedInput
+    bookingsAsAdvisor?: BookingRequestUpdateManyWithoutAdvisorNestedInput
+    bookingsAsClient?: BookingRequestUpdateManyWithoutClientNestedInput
+    categories?: CategoryUpdateManyWithoutUserNestedInput
+    chatMessages?: ChatMessageUpdateManyWithoutSenderNestedInput
+    devices?: DeviceUpdateManyWithoutUserNestedInput
+    expenseBills?: ExpenseBillUpdateManyWithoutUserNestedInput
+    friends?: FriendUpdateManyWithoutUserNestedInput
+    goals?: GoalUpdateManyWithoutUserNestedInput
+    goalContributions?: GoalContributionUpdateManyWithoutUserNestedInput
+    importLogs?: ImportLogUpdateManyWithoutUserNestedInput
+    investments?: InvestmentUpdateManyWithoutUserNestedInput
+    loans?: LoanUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    paymentsAsAdvisor?: PaymentUpdateManyWithoutAdvisorNestedInput
+    paymentsAsClient?: PaymentUpdateManyWithoutClientNestedInput
+    refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
+    todos?: TodoUpdateManyWithoutUserNestedInput
+    transactions?: TransactionUpdateManyWithoutUserNestedInput
+    userPin?: UserPinUpdateOneWithoutUserNestedInput
+    userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
+    otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
+    aiScans?: AiScanUpdateManyWithoutUserNestedInput
+    groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutCollaborationParticipationsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    isApproved?: BoolFieldUpdateOperationsInput | boolean
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    jobType?: NullableStringFieldUpdateOperationsInput | string | null
+    lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    syncToken?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    avatarId?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableStringFieldUpdateOperationsInput | string | null
+    state?: NullableStringFieldUpdateOperationsInput | string | null
+    accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
+    advisorAvailability?: AdvisorAvailabilityUncheckedUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUncheckedUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUncheckedUpdateManyWithoutReviewerNestedInput
+    sessionsAsAdvisor?: AdvisorSessionUncheckedUpdateManyWithoutAdvisorNestedInput
+    sessionsAsClient?: AdvisorSessionUncheckedUpdateManyWithoutClientNestedInput
+    bookingsAsAdvisor?: BookingRequestUncheckedUpdateManyWithoutAdvisorNestedInput
+    bookingsAsClient?: BookingRequestUncheckedUpdateManyWithoutClientNestedInput
+    categories?: CategoryUncheckedUpdateManyWithoutUserNestedInput
+    chatMessages?: ChatMessageUncheckedUpdateManyWithoutSenderNestedInput
+    devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
+    expenseBills?: ExpenseBillUncheckedUpdateManyWithoutUserNestedInput
+    friends?: FriendUncheckedUpdateManyWithoutUserNestedInput
+    goals?: GoalUncheckedUpdateManyWithoutUserNestedInput
+    goalContributions?: GoalContributionUncheckedUpdateManyWithoutUserNestedInput
+    importLogs?: ImportLogUncheckedUpdateManyWithoutUserNestedInput
+    investments?: InvestmentUncheckedUpdateManyWithoutUserNestedInput
+    loans?: LoanUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    paymentsAsAdvisor?: PaymentUncheckedUpdateManyWithoutAdvisorNestedInput
+    paymentsAsClient?: PaymentUncheckedUpdateManyWithoutClientNestedInput
+    refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
+    todos?: TodoUncheckedUpdateManyWithoutUserNestedInput
+    transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
+    userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
+    userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+    otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
+    aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
+    groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
+  }
+
+  export type UserUpsertWithoutCollaborationInvitesSentInput = {
+    update: XOR<UserUpdateWithoutCollaborationInvitesSentInput, UserUncheckedUpdateWithoutCollaborationInvitesSentInput>
+    create: XOR<UserCreateWithoutCollaborationInvitesSentInput, UserUncheckedCreateWithoutCollaborationInvitesSentInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutCollaborationInvitesSentInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutCollaborationInvitesSentInput, UserUncheckedUpdateWithoutCollaborationInvitesSentInput>
+  }
+
+  export type UserUpdateWithoutCollaborationInvitesSentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    isApproved?: BoolFieldUpdateOperationsInput | boolean
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    jobType?: NullableStringFieldUpdateOperationsInput | string | null
+    lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    syncToken?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    avatarId?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableStringFieldUpdateOperationsInput | string | null
+    state?: NullableStringFieldUpdateOperationsInput | string | null
+    accounts?: AccountUpdateManyWithoutUserNestedInput
+    advisorAvailability?: AdvisorAvailabilityUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUpdateManyWithoutReviewerNestedInput
+    sessionsAsAdvisor?: AdvisorSessionUpdateManyWithoutAdvisorNestedInput
+    sessionsAsClient?: AdvisorSessionUpdateManyWithoutClientNestedInput
+    bookingsAsAdvisor?: BookingRequestUpdateManyWithoutAdvisorNestedInput
+    bookingsAsClient?: BookingRequestUpdateManyWithoutClientNestedInput
+    categories?: CategoryUpdateManyWithoutUserNestedInput
+    chatMessages?: ChatMessageUpdateManyWithoutSenderNestedInput
+    devices?: DeviceUpdateManyWithoutUserNestedInput
+    expenseBills?: ExpenseBillUpdateManyWithoutUserNestedInput
+    friends?: FriendUpdateManyWithoutUserNestedInput
+    goals?: GoalUpdateManyWithoutUserNestedInput
+    goalContributions?: GoalContributionUpdateManyWithoutUserNestedInput
+    importLogs?: ImportLogUpdateManyWithoutUserNestedInput
+    investments?: InvestmentUpdateManyWithoutUserNestedInput
+    loans?: LoanUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    paymentsAsAdvisor?: PaymentUpdateManyWithoutAdvisorNestedInput
+    paymentsAsClient?: PaymentUpdateManyWithoutClientNestedInput
+    refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
+    todos?: TodoUpdateManyWithoutUserNestedInput
+    transactions?: TransactionUpdateManyWithoutUserNestedInput
+    userPin?: UserPinUpdateOneWithoutUserNestedInput
+    userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
+    otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
+    aiScans?: AiScanUpdateManyWithoutUserNestedInput
+    groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutCollaborationInvitesSentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    isApproved?: BoolFieldUpdateOperationsInput | boolean
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    jobType?: NullableStringFieldUpdateOperationsInput | string | null
+    lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    syncToken?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    avatarId?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableStringFieldUpdateOperationsInput | string | null
+    state?: NullableStringFieldUpdateOperationsInput | string | null
+    accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
+    advisorAvailability?: AdvisorAvailabilityUncheckedUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUncheckedUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUncheckedUpdateManyWithoutReviewerNestedInput
+    sessionsAsAdvisor?: AdvisorSessionUncheckedUpdateManyWithoutAdvisorNestedInput
+    sessionsAsClient?: AdvisorSessionUncheckedUpdateManyWithoutClientNestedInput
+    bookingsAsAdvisor?: BookingRequestUncheckedUpdateManyWithoutAdvisorNestedInput
+    bookingsAsClient?: BookingRequestUncheckedUpdateManyWithoutClientNestedInput
+    categories?: CategoryUncheckedUpdateManyWithoutUserNestedInput
+    chatMessages?: ChatMessageUncheckedUpdateManyWithoutSenderNestedInput
+    devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
+    expenseBills?: ExpenseBillUncheckedUpdateManyWithoutUserNestedInput
+    friends?: FriendUncheckedUpdateManyWithoutUserNestedInput
+    goals?: GoalUncheckedUpdateManyWithoutUserNestedInput
+    goalContributions?: GoalContributionUncheckedUpdateManyWithoutUserNestedInput
+    importLogs?: ImportLogUncheckedUpdateManyWithoutUserNestedInput
+    investments?: InvestmentUncheckedUpdateManyWithoutUserNestedInput
+    loans?: LoanUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    paymentsAsAdvisor?: PaymentUncheckedUpdateManyWithoutAdvisorNestedInput
+    paymentsAsClient?: PaymentUncheckedUpdateManyWithoutClientNestedInput
+    refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
+    todos?: TodoUncheckedUpdateManyWithoutUserNestedInput
+    transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
+    userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
+    userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+    otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
+    aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
+    groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
+    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type GoalCreateWithoutGoalMembersInput = {
+    id?: string
+    deviceId?: string | null
+    name: string
+    description?: string | null
+    targetAmount: Decimal | DecimalJsLike | number | string
+    currentAmount?: Decimal | DecimalJsLike | number | string
+    targetDate: Date | string
+    category?: string | null
+    isGroupGoal?: boolean
+    syncStatus?: string
+    clientRequestId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    user: UserCreateNestedOneWithoutGoalsInput
+    goalContributions?: GoalContributionCreateNestedManyWithoutGoalInput
+  }
+
+  export type GoalUncheckedCreateWithoutGoalMembersInput = {
+    id?: string
+    userId: string
+    deviceId?: string | null
+    name: string
+    description?: string | null
+    targetAmount: Decimal | DecimalJsLike | number | string
+    currentAmount?: Decimal | DecimalJsLike | number | string
+    targetDate: Date | string
+    category?: string | null
+    isGroupGoal?: boolean
+    syncStatus?: string
+    clientRequestId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    goalContributions?: GoalContributionUncheckedCreateNestedManyWithoutGoalInput
+  }
+
+  export type GoalCreateOrConnectWithoutGoalMembersInput = {
+    where: GoalWhereUniqueInput
+    create: XOR<GoalCreateWithoutGoalMembersInput, GoalUncheckedCreateWithoutGoalMembersInput>
+  }
+
+  export type GoalUpsertWithoutGoalMembersInput = {
+    update: XOR<GoalUpdateWithoutGoalMembersInput, GoalUncheckedUpdateWithoutGoalMembersInput>
+    create: XOR<GoalCreateWithoutGoalMembersInput, GoalUncheckedCreateWithoutGoalMembersInput>
+    where?: GoalWhereInput
+  }
+
+  export type GoalUpdateToOneWithWhereWithoutGoalMembersInput = {
+    where?: GoalWhereInput
+    data: XOR<GoalUpdateWithoutGoalMembersInput, GoalUncheckedUpdateWithoutGoalMembersInput>
+  }
+
+  export type GoalUpdateWithoutGoalMembersInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    deviceId?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    targetAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currentAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    targetDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    category?: NullableStringFieldUpdateOperationsInput | string | null
+    isGroupGoal?: BoolFieldUpdateOperationsInput | boolean
+    syncStatus?: StringFieldUpdateOperationsInput | string
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    user?: UserUpdateOneRequiredWithoutGoalsNestedInput
+    goalContributions?: GoalContributionUpdateManyWithoutGoalNestedInput
+  }
+
+  export type GoalUncheckedUpdateWithoutGoalMembersInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    deviceId?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    targetAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currentAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    targetDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    category?: NullableStringFieldUpdateOperationsInput | string | null
+    isGroupGoal?: BoolFieldUpdateOperationsInput | boolean
+    syncStatus?: StringFieldUpdateOperationsInput | string
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    goalContributions?: GoalContributionUncheckedUpdateManyWithoutGoalNestedInput
+  }
+
   export type UserCreateWithoutRecurringTransactionsInput = {
     id?: string
     email: string
@@ -87218,6 +91514,8 @@ export namespace Prisma {
     budgets?: BudgetCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserUncheckedCreateWithoutRecurringTransactionsInput = {
@@ -87276,6 +91574,8 @@ export namespace Prisma {
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserCreateOrConnectWithoutRecurringTransactionsInput = {
@@ -87350,6 +91650,8 @@ export namespace Prisma {
     budgets?: BudgetUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutRecurringTransactionsInput = {
@@ -87408,6 +91710,8 @@ export namespace Prisma {
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type UserCreateWithoutBudgetsInput = {
@@ -87466,6 +91770,8 @@ export namespace Prisma {
     recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserUncheckedCreateWithoutBudgetsInput = {
@@ -87524,6 +91830,8 @@ export namespace Prisma {
     recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserCreateOrConnectWithoutBudgetsInput = {
@@ -87598,6 +91906,8 @@ export namespace Prisma {
     recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutBudgetsInput = {
@@ -87656,6 +91966,8 @@ export namespace Prisma {
     recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type UserCreateWithoutTaxCalculationsInput = {
@@ -87714,6 +92026,8 @@ export namespace Prisma {
     recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
     budgets?: BudgetCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserUncheckedCreateWithoutTaxCalculationsInput = {
@@ -87772,6 +92086,8 @@ export namespace Prisma {
     recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserCreateOrConnectWithoutTaxCalculationsInput = {
@@ -87846,6 +92162,8 @@ export namespace Prisma {
     recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
     budgets?: BudgetUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutTaxCalculationsInput = {
@@ -87904,6 +92222,8 @@ export namespace Prisma {
     recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type UserCreateWithoutGoldAssetsInput = {
@@ -87962,6 +92282,8 @@ export namespace Prisma {
     recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
     budgets?: BudgetCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserUncheckedCreateWithoutGoldAssetsInput = {
@@ -88020,6 +92342,8 @@ export namespace Prisma {
     recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
     taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
   }
 
   export type UserCreateOrConnectWithoutGoldAssetsInput = {
@@ -88094,6 +92418,8 @@ export namespace Prisma {
     recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
     budgets?: BudgetUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutGoldAssetsInput = {
@@ -88152,6 +92478,8 @@ export namespace Prisma {
     recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
     taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
   }
 
   export type GoalContributionCreateManyAccountInput = {
@@ -88479,6 +92807,17 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
+  export type GoalMemberCreateManyGoalInput = {
+    id?: string
+    userId?: string | null
+    name: string
+    email?: string | null
+    phone?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
   export type GoalContributionUpdateWithoutGoalInput = {
     id?: StringFieldUpdateOperationsInput | string
     amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -88516,6 +92855,39 @@ export namespace Prisma {
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type GoalMemberUpdateWithoutGoalInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type GoalMemberUncheckedUpdateWithoutGoalInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type GoalMemberUncheckedUpdateManyWithoutGoalInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type LoanPaymentCreateManyLoanInput = {
@@ -89042,6 +93414,34 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
+  }
+
+  export type CollaborationParticipantCreateManyUserInput = {
+    id?: string
+    moduleType: string
+    moduleId: string
+    moduleName?: string | null
+    email: string
+    name?: string | null
+    status?: string
+    invitedBy: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    linkedAt?: Date | string | null
+  }
+
+  export type CollaborationParticipantCreateManyInvitedByUserInput = {
+    id?: string
+    moduleType: string
+    moduleId: string
+    moduleName?: string | null
+    email: string
+    name?: string | null
+    userId?: string | null
+    status?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    linkedAt?: Date | string | null
   }
 
   export type AccountUpdateWithoutUserInput = {
@@ -89609,6 +94009,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     goalContributions?: GoalContributionUpdateManyWithoutGoalNestedInput
+    goalMembers?: GoalMemberUpdateManyWithoutGoalNestedInput
   }
 
   export type GoalUncheckedUpdateWithoutUserInput = {
@@ -89627,6 +94028,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     goalContributions?: GoalContributionUncheckedUpdateManyWithoutGoalNestedInput
+    goalMembers?: GoalMemberUncheckedUpdateManyWithoutGoalNestedInput
   }
 
   export type GoalUncheckedUpdateManyWithoutUserInput = {
@@ -90526,6 +94928,90 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type CollaborationParticipantUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    moduleType?: StringFieldUpdateOperationsInput | string
+    moduleId?: StringFieldUpdateOperationsInput | string
+    moduleName?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    linkedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    invitedByUser?: UserUpdateOneRequiredWithoutCollaborationInvitesSentNestedInput
+  }
+
+  export type CollaborationParticipantUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    moduleType?: StringFieldUpdateOperationsInput | string
+    moduleId?: StringFieldUpdateOperationsInput | string
+    moduleName?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    invitedBy?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    linkedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type CollaborationParticipantUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    moduleType?: StringFieldUpdateOperationsInput | string
+    moduleId?: StringFieldUpdateOperationsInput | string
+    moduleName?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    invitedBy?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    linkedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type CollaborationParticipantUpdateWithoutInvitedByUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    moduleType?: StringFieldUpdateOperationsInput | string
+    moduleId?: StringFieldUpdateOperationsInput | string
+    moduleName?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    linkedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    user?: UserUpdateOneWithoutCollaborationParticipationsNestedInput
+  }
+
+  export type CollaborationParticipantUncheckedUpdateWithoutInvitedByUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    moduleType?: StringFieldUpdateOperationsInput | string
+    moduleId?: StringFieldUpdateOperationsInput | string
+    moduleName?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    linkedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    moduleType?: StringFieldUpdateOperationsInput | string
+    moduleId?: StringFieldUpdateOperationsInput | string
+    moduleName?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    linkedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type TransactionCreateManyGroupExpenseInput = {

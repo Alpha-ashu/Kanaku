@@ -642,6 +642,33 @@ exports.Prisma.GroupExpenseMemberScalarFieldEnum = {
   deletedAt: 'deletedAt'
 };
 
+exports.Prisma.CollaborationParticipantScalarFieldEnum = {
+  id: 'id',
+  moduleType: 'moduleType',
+  moduleId: 'moduleId',
+  moduleName: 'moduleName',
+  email: 'email',
+  name: 'name',
+  userId: 'userId',
+  status: 'status',
+  invitedBy: 'invitedBy',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  linkedAt: 'linkedAt'
+};
+
+exports.Prisma.GoalMemberScalarFieldEnum = {
+  id: 'id',
+  goalId: 'goalId',
+  userId: 'userId',
+  name: 'name',
+  email: 'email',
+  phone: 'phone',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
+};
+
 exports.Prisma.User_featuresScalarFieldEnum = {
   user_id: 'user_id',
   avg_spend: 'avg_spend',
@@ -900,6 +927,8 @@ exports.Prisma.ModelName = {
   AuditLog: 'AuditLog',
   GroupExpense: 'GroupExpense',
   GroupExpenseMember: 'GroupExpenseMember',
+  CollaborationParticipant: 'CollaborationParticipant',
+  GoalMember: 'GoalMember',
   user_features: 'user_features',
   profiles: 'profiles',
   OtpRequest: 'OtpRequest',

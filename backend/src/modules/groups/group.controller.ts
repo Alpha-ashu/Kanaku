@@ -8,6 +8,7 @@ import { isDatabaseUnavailableError } from '../../utils/databaseAvailability';
 import { getSocketManager } from '../../sockets';
 import { sanitize } from '../../utils/sanitize';
 import { redisConnection } from '../../config/queue';
+import { inviteParticipants } from '../collaboration/invitation.service';
 
 let _emailQueue: Queue | null = null;
 function getEmailQueue(): Queue {
@@ -224,19 +225,37 @@ export const createGroup = async (req: AuthRequest, res: Response) => {
         });
       }
 
+      const email = (m.email || friend?.email || '').trim().toLowerCase() || null;
+
       await prisma.groupExpenseMember.create({
         data: {
           groupExpenseId: group.id,
           userId: targetUser ? targetUser.id : null,
           name: m.name,
-          email: friend?.email || null,
+          email,
           phone: friend?.phone || null,
           shareAmount: m.share,
           hasPaid: m.paid,
         }
       });
 
-      if (targetUser) {
+      if (email) {
+        // Resolves registered vs. pending, tracks the invite, and sends the
+        // matching in-app notification or "Join Kanaku" invitation email.
+        try {
+          await inviteParticipants({
+            moduleType: 'group_expense',
+            moduleId: group.id,
+            moduleName: group.name,
+            creatorId: userId,
+            participants: [{ email, name: m.name }],
+          });
+        } catch (err) {
+          logger.warn('Failed to invite group expense participant', err);
+        }
+      } else if (targetUser) {
+        // Resolved via phone only (no email on file) — fall back to a direct
+        // in-app notification since there's no email to track a pending invite by.
         const notifTitle = 'New Group Expense';
         const notifMsg = `${currentUser?.name || 'Someone'} added you to a split expense "${group.name}". Total: ₹${Number(group.totalAmount).toFixed(0)}, Your share: ₹${m.share.toFixed(0)}.`;
         const notification = await prisma.notification.create({

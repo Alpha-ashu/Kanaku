@@ -4,7 +4,7 @@ import { validateBody, validateParams } from '../../middleware/validate';
 import { responseCache } from '../../middleware/cache';
 import { CACHE_TTL_SECONDS } from '../../cache/cache-policy';
 import * as GoalController from './goal.controller';
-import { goalCreateSchema, goalUpdateSchema, goalIdParamSchema } from './goal.validation';
+import { goalCreateSchema, goalUpdateSchema, goalIdParamSchema, goalMemberAddSchema } from './goal.validation';
 
 const router = Router();
 
@@ -15,5 +15,8 @@ router.post('/', validateBody(goalCreateSchema), GoalController.createGoal);
 router.get('/:id', validateParams(goalIdParamSchema), responseCache({ prefix: 'goals:item', ttlSeconds: CACHE_TTL_SECONDS.goals.item }), GoalController.getGoal);
 router.put('/:id', validateParams(goalIdParamSchema), validateBody(goalUpdateSchema), GoalController.updateGoal);
 router.delete('/:id', validateParams(goalIdParamSchema), GoalController.deleteGoal);
+router.get('/:id/members', validateParams(goalIdParamSchema), GoalController.getGoalMembers);
+router.post('/:id/members', validateParams(goalIdParamSchema), validateBody(goalMemberAddSchema), GoalController.addGoalMember);
+router.delete('/:id/members/:memberId', GoalController.removeGoalMember);
 
 export { router as goalRoutes };

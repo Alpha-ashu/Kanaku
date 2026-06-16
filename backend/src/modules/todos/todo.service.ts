@@ -3,6 +3,7 @@ import { prisma } from '../../db/prisma';
 import { getSocketManager } from '../../sockets';
 import { AppError } from '../../utils/AppError';
 import { logger } from '../../config/logger';
+import { inviteParticipants } from '../collaboration/invitation.service';
 
 export class TodoService {
   // Helpers for socket notification
@@ -212,14 +213,10 @@ export class TodoService {
       throw AppError.notFound('User');
     }
 
-    // Check target user
+    const normalizedEmail = sharedWithEmail.trim().toLowerCase();
     const targetUser = await prisma.user.findFirst({
-      where: { email: { equals: sharedWithEmail.trim(), mode: 'insensitive' } },
+      where: { email: { equals: normalizedEmail, mode: 'insensitive' }, status: 'verified' },
     });
-
-    if (!targetUser) {
-      throw new AppError(404, 'NOT_FOUND', `No registered user found with email: ${sharedWithEmail}`);
-    }
 
     // Check list details and ownership/permissions
     const lists = await todoRepository.findListDetails(listId);
@@ -241,25 +238,26 @@ export class TodoService {
 
     const listName = list.name;
 
-    const shares = await todoRepository.createShare(listId, targetUser.id, userId, permission);
-
-    // Create Notification for target user
-    const notification = await prisma.notification.create({
-      data: {
-        userId: targetUser.id,
-        sourceUserId: userId,
-        title: 'Shared To-Do List',
-        message: `${currentUser.name} shared a to-do list "${listName}" with you.`,
-        type: 'todo_shared',
-        priority: 'normal',
-        channels: '["app"]',
-        deliveryStatus: '{}',
-      },
+    // Resolves registered vs. pending, tracks the invite, and sends the
+    // matching in-app notification or "Join Kanaku" invitation email.
+    await inviteParticipants({
+      moduleType: 'todo_list',
+      moduleId: String(listId),
+      moduleName: listName,
+      creatorId: userId,
+      participants: [{ email: normalizedEmail }],
     });
+
+    if (!targetUser) {
+      // No registered user yet — the share row is created once they register
+      // and the deferred-invitation auto-link runs (see linkPendingInvitationsForUser).
+      return { listId, sharedWithEmail: normalizedEmail, permission, status: 'PENDING_REGISTRATION' };
+    }
+
+    const shares = await todoRepository.createShare(listId, targetUser.id, userId, permission);
 
     try {
       const socketManager = getSocketManager();
-      socketManager.notifyUser(targetUser.id, 'notification', notification);
       socketManager.notifyUser(targetUser.id, 'todo_updated', { listId });
     } catch (err) {
       // Ignore

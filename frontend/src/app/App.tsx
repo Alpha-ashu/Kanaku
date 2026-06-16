@@ -78,6 +78,7 @@ const UserProfile = lazy(() => import('@/app/components/profile/UserProfile').th
 const Notifications = lazy(() => import('@/app/components/profile/Notifications').then(m => ({ default: m.Notifications })));
 const SimpleAutoTest = lazy(() => import('@/app/components/ui/SimpleAutoTest').then(m => ({ default: m.SimpleAutoTest })));
 const NewUserOnboarding = lazy(() => import('@/app/components/auth/onboarding/NewUserOnboarding').then(m => ({ default: m.NewUserOnboarding })));
+const AppFeatureSlides = lazy(() => import('@/app/components/auth/onboarding/AppFeatureSlides').then(m => ({ default: m.AppFeatureSlides })));
 
 // Dynamic features pages
 const TaxCalculator = lazy(() => import('@/app/components/features/TaxCalculatorPage').then(m => ({ default: m.TaxCalculator })));
@@ -245,6 +246,7 @@ const AppContent: React.FC = () => {
   const [criticalPagesPrefetched, setCriticalPagesPrefetched] = useState(false);
   const hasModuleReloaded = useRef(false);
   const [quickActionKey, setQuickActionKey] = useState(0);
+  const [slidesViewed, setSlidesViewed] = useState(() => localStorage.getItem('onboarding_slides_viewed') === 'true');
 
   const [onboardingCompleted, setOnboardingCompleted] = useState(() => {
     return localStorage.getItem('onboarding_completed') === 'true' ||
@@ -669,9 +671,23 @@ const AppContent: React.FC = () => {
     );
   }
 
+  // Gate 1.25: App Feature Slides for new users (after onboarding completes, before PIN setup)
+  const needsPinSetup = localStorage.getItem('pin_setup_required') === 'true';
+  if (user && needsPinSetup && !slidesViewed) {
+    return (
+      <Suspense fallback={<PageLoader />}>
+        <AppFeatureSlides
+          onComplete={() => {
+            localStorage.setItem('onboarding_slides_viewed', 'true');
+            setSlidesViewed(true);
+          }}
+        />
+      </Suspense>
+    );
+  }
+
   // Gate 1.5: PIN setup for new users (after onboarding completes)
   // Positioned before the !isAuthenticated check to avoid locking out new users
-  const needsPinSetup = localStorage.getItem('pin_setup_required') === 'true';
   if (user && needsPinSetup) {
     return (
       <Suspense fallback={<PageLoader />}>

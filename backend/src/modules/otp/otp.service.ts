@@ -1,6 +1,7 @@
 import { randomUUID, createHash, timingSafeEqual } from 'crypto';
 import { logger } from '../../config/logger';
 import { prisma } from '../../db/prisma';
+import { sendEmail } from '../../utils/email';
 import type { OtpChannel, OtpPurpose, OtpResponse, OtpVerifyResponse } from './otp.types';
 
 /**
@@ -270,12 +271,21 @@ class OtpService {
     }[purpose];
 
     if (channel === 'email') {
-      // Use existing notification system for email delivery
-      logger.info(`[OTP] Email delivery to ${destination}: OTP for ${purposeText}`);
-      // In production, integrate with email service (Supabase Auth email, SendGrid, etc.)
-      // For development, log the OTP
       if (process.env.NODE_ENV !== 'production') {
         logger.info(`[OTP] DEV MODE - OTP: ${otp} (destination: ${destination})`);
+      }
+
+      const sent = await sendEmail({
+        to: destination,
+        subject: `Your Kanaku verification code: ${otp}`,
+        html: buildOtpEmailHtml(otp, purposeText, OTP_EXPIRY_SECONDS),
+        categories: ['kanaku-otp', purpose],
+      });
+
+      if (sent) {
+        logger.info(`[OTP] Email delivered to ${destination.substring(0, 3)}*** for ${purposeText}`);
+      } else {
+        logger.warn(`[OTP] Email delivery failed/skipped for ${destination.substring(0, 3)}*** — OTP still valid, user can request resend`);
       }
     } else {
       // SMS delivery
@@ -302,6 +312,42 @@ class OtpService {
     });
     return Boolean(verified);
   }
+}
+
+function buildOtpEmailHtml(otp: string, purposeText: string, expirySeconds: number): string {
+  const minutes = Math.round(expirySeconds / 60) || 1;
+  return `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+          body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; color: #333; }
+          .container { max-width: 480px; margin: 0 auto; padding: 20px; background-color: #f9fafb; }
+          .card { background-color: white; border-radius: 8px; padding: 32px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); text-align: center; }
+          .logo { font-size: 22px; font-weight: bold; color: #5B21B6; margin-bottom: 8px; }
+          .code { font-size: 36px; font-weight: 700; letter-spacing: 6px; color: #1f2937; background: #f3f4f6; border-radius: 8px; padding: 16px; margin: 20px 0; }
+          .message { font-size: 14px; color: #4b5563; }
+          .footer { margin-top: 24px; font-size: 12px; color: #9ca3af; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="card">
+            <div class="logo">KANAKU</div>
+            <p class="message">Use this code to complete your ${purposeText}:</p>
+            <div class="code">${otp}</div>
+            <p class="message">This code expires in ${minutes} minute${minutes === 1 ? '' : 's'}. Never share it with anyone.</p>
+            <div class="footer">
+              <p>If you didn't request this, you can safely ignore this email.</p>
+              <p>&copy; ${new Date().getFullYear()} Kanaku. All rights reserved.</p>
+            </div>
+          </div>
+        </div>
+      </body>
+    </html>
+  `;
 }
 
 export const otpService = new OtpService();

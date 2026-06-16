@@ -23,3 +23,8 @@ export const goalIdParamSchema = z.object({
   id: z.string().trim().min(1, 'Goal ID is required'),
 });
 
+export const goalMemberAddSchema = z.object({
+  email: z.string().trim().email('A valid email is required'),
+  name: z.string().trim().max(120).optional(),
+});
+

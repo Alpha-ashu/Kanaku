@@ -6,13 +6,20 @@ import { AppError } from '../../utils/AppError';
 import { logger } from '../../config/logger';
 import { cacheDeleteByPrefix } from '../../cache/redis';
 import { isDatabaseUnavailableError } from '../../utils/databaseAvailability';
+import { inviteParticipants } from '../collaboration/invitation.service';
 
 export const getGoals = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const userId = getUserId(req);
 
     const goals = await prisma.goal.findMany({
-      where: { userId, deletedAt: null },
+      where: {
+        deletedAt: null,
+        OR: [
+          { userId },
+          { goalMembers: { some: { userId, deletedAt: null } } },
+        ],
+      },
       orderBy: { targetDate: 'asc' },
     });
 
@@ -91,7 +98,14 @@ export const getGoal = async (req: AuthRequest, res: Response, next: NextFunctio
     const { id } = req.params;
 
     const goal = await prisma.goal.findFirst({
-      where: { id, userId },
+      where: {
+        id,
+        deletedAt: null,
+        OR: [
+          { userId },
+          { goalMembers: { some: { userId, deletedAt: null } } },
+        ],
+      },
     });
 
     if (!goal) {
@@ -198,6 +212,113 @@ export const deleteGoal = async (req: AuthRequest, res: Response, next: NextFunc
     await cacheDeleteByPrefix('goals:');
 
     res.json({ success: true, message: 'Goal deleted' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getGoalMembers = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const userId = getUserId(req);
+    const { id } = req.params;
+
+    const goal = await prisma.goal.findFirst({
+      where: {
+        id,
+        deletedAt: null,
+        OR: [{ userId }, { goalMembers: { some: { userId, deletedAt: null } } }],
+      },
+    });
+    if (!goal) {
+      throw AppError.notFound('Goal');
+    }
+
+    const members = await prisma.goalMember.findMany({
+      where: { goalId: id, deletedAt: null },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    res.json({ success: true, data: members });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const addGoalMember = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const userId = getUserId(req);
+    const { id } = req.params;
+    const { email, name } = req.body as { email: string; name?: string };
+
+    // Only the goal owner can add participants
+    const goal = await prisma.goal.findFirst({ where: { id, userId, deletedAt: null } });
+    if (!goal) {
+      throw AppError.notFound('Goal');
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+    const resolvedUser = await prisma.user.findFirst({ where: { email: normalizedEmail, status: 'verified' } });
+
+    const existingMember = await prisma.goalMember.findFirst({
+      where: { goalId: id, email: normalizedEmail, deletedAt: null },
+    });
+    if (existingMember) {
+      throw AppError.badRequest('This person has already been added to the goal.', 'DUPLICATE_MEMBER');
+    }
+
+    const member = await prisma.goalMember.create({
+      data: {
+        goalId: id,
+        userId: resolvedUser?.id || null,
+        name: name || resolvedUser?.name || normalizedEmail,
+        email: normalizedEmail,
+      },
+    });
+
+    if (!goal.isGroupGoal) {
+      await prisma.goal.update({ where: { id }, data: { isGroupGoal: true } });
+    }
+
+    // Resolves registered vs. pending, tracks the invite, and sends the
+    // matching in-app notification or "Join Kanaku" invitation email.
+    await inviteParticipants({
+      moduleType: 'goal',
+      moduleId: id,
+      moduleName: goal.name,
+      creatorId: userId,
+      participants: [{ email: normalizedEmail, name }],
+    });
+
+    await cacheDeleteByPrefix('goals:');
+
+    res.status(201).json({ success: true, data: member });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const removeGoalMember = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const userId = getUserId(req);
+    const { id, memberId } = req.params;
+
+    const goal = await prisma.goal.findFirst({ where: { id, userId, deletedAt: null } });
+    if (!goal) {
+      throw AppError.notFound('Goal');
+    }
+
+    const result = await prisma.goalMember.updateMany({
+      where: { id: memberId, goalId: id, deletedAt: null },
+      data: { deletedAt: new Date() },
+    });
+
+    if (result.count === 0) {
+      throw AppError.notFound('Goal member');
+    }
+
+    await cacheDeleteByPrefix('goals:');
+
+    res.json({ success: true, message: 'Member removed' });
   } catch (error) {
     next(error);
   }

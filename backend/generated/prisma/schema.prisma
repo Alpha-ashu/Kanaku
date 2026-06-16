@@ -261,6 +261,7 @@ model Goal {
   deletedAt         DateTime?
   user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   goalContributions GoalContribution[]
+  goalMembers       GoalMember[]
 
   @@index([syncStatus])
   @@index([targetDate])
@@ -551,62 +552,64 @@ model Transaction {
 }
 
 model User {
-  id                    String                 @id @default(uuid())
-  email                 String                 @unique
-  name                  String
-  password              String
-  role                  String                 @default("user")
-  roleMode              String                 @default("user")
-  advisorStatus         String                 @default("NOT_AVAILABLE")
-  status                String                 @default("verified")
-  isApproved            Boolean                @default(false)
-  firstName             String?
-  lastName              String?
-  salary                Decimal?               @db.Decimal(12, 2)
-  dateOfBirth           DateTime?
-  jobType               String?
-  lastSynced            DateTime?
-  syncToken             String?
-  createdAt             DateTime               @default(now())
-  updatedAt             DateTime               @updatedAt
-  avatarId              String?
-  city                  String?
-  country               String?
-  gender                String?
-  state                 String?
-  accounts              Account[]
-  advisorAvailability   AdvisorAvailability[]
-  advisorApplication    AdvisorApplication?    @relation("AdvisorApplication_user")
-  reviewedApplications  AdvisorApplication[]   @relation("AdvisorApplication_reviewer")
-  sessionsAsAdvisor     AdvisorSession[]       @relation("AdvisorSession_advisorIdToUser")
-  sessionsAsClient      AdvisorSession[]       @relation("AdvisorSession_clientIdToUser")
-  bookingsAsAdvisor     BookingRequest[]       @relation("BookingRequest_advisorIdToUser")
-  bookingsAsClient      BookingRequest[]       @relation("BookingRequest_clientIdToUser")
-  categories            Category[]
-  chatMessages          ChatMessage[]
-  devices               Device[]
-  expenseBills          ExpenseBill[]
-  friends               Friend[]
-  goals                 Goal[]
-  goalContributions     GoalContribution[]
-  importLogs            ImportLog[]
-  investments           Investment[]
-  loans                 Loan[]
-  notifications         Notification[]
-  paymentsAsAdvisor     Payment[]              @relation("Payment_advisorIdToUser")
-  paymentsAsClient      Payment[]              @relation("Payment_clientIdToUser")
-  refreshTokens         RefreshToken[]
-  todos                 Todo[]
-  transactions          Transaction[]
-  userPin               UserPin?
-  userSettings          UserSettings?
-  otpCodes              OtpCode[]
-  aiScans               AiScan[]
-  groupExpenses         GroupExpense[]
-  recurringTransactions RecurringTransaction[]
-  budgets               Budget[]
-  taxCalculations       TaxCalculation[]
-  goldAssets            GoldAsset[]
+  id                          String                     @id @default(uuid())
+  email                       String                     @unique
+  name                        String
+  password                    String
+  role                        String                     @default("user")
+  roleMode                    String                     @default("user")
+  advisorStatus               String                     @default("NOT_AVAILABLE")
+  status                      String                     @default("verified")
+  isApproved                  Boolean                    @default(false)
+  firstName                   String?
+  lastName                    String?
+  salary                      Decimal?                   @db.Decimal(12, 2)
+  dateOfBirth                 DateTime?
+  jobType                     String?
+  lastSynced                  DateTime?
+  syncToken                   String?
+  createdAt                   DateTime                   @default(now())
+  updatedAt                   DateTime                   @updatedAt
+  avatarId                    String?
+  city                        String?
+  country                     String?
+  gender                      String?
+  state                       String?
+  accounts                    Account[]
+  advisorAvailability         AdvisorAvailability[]
+  advisorApplication          AdvisorApplication?        @relation("AdvisorApplication_user")
+  reviewedApplications        AdvisorApplication[]       @relation("AdvisorApplication_reviewer")
+  sessionsAsAdvisor           AdvisorSession[]           @relation("AdvisorSession_advisorIdToUser")
+  sessionsAsClient            AdvisorSession[]           @relation("AdvisorSession_clientIdToUser")
+  bookingsAsAdvisor           BookingRequest[]           @relation("BookingRequest_advisorIdToUser")
+  bookingsAsClient            BookingRequest[]           @relation("BookingRequest_clientIdToUser")
+  categories                  Category[]
+  chatMessages                ChatMessage[]
+  devices                     Device[]
+  expenseBills                ExpenseBill[]
+  friends                     Friend[]
+  goals                       Goal[]
+  goalContributions           GoalContribution[]
+  importLogs                  ImportLog[]
+  investments                 Investment[]
+  loans                       Loan[]
+  notifications               Notification[]
+  paymentsAsAdvisor           Payment[]                  @relation("Payment_advisorIdToUser")
+  paymentsAsClient            Payment[]                  @relation("Payment_clientIdToUser")
+  refreshTokens               RefreshToken[]
+  todos                       Todo[]
+  transactions                Transaction[]
+  userPin                     UserPin?
+  userSettings                UserSettings?
+  otpCodes                    OtpCode[]
+  aiScans                     AiScan[]
+  groupExpenses               GroupExpense[]
+  recurringTransactions       RecurringTransaction[]
+  budgets                     Budget[]
+  taxCalculations             TaxCalculation[]
+  goldAssets                  GoldAsset[]
+  collaborationParticipations CollaborationParticipant[] @relation("CollaborationParticipant_user")
+  collaborationInvitesSent    CollaborationParticipant[] @relation("CollaborationParticipant_invitedBy")
 
   @@index([isApproved])
   @@index([role])
@@ -794,6 +797,53 @@ model GroupExpenseMember {
   groupExpense   GroupExpense @relation(fields: [groupExpenseId], references: [id], onDelete: Cascade)
 
   @@index([groupExpenseId])
+  @@index([userId])
+  @@index([deletedAt])
+  @@schema("public")
+}
+
+// Unified participant/invitation tracking shared by Group Expenses, Together
+// To-Do Lists, Together Goals, and future collaborative modules. Module-specific
+// tables (GroupExpenseMember, todo_list_shares, GoalMember) still hold the
+// feature-specific data (share amounts, permissions, etc); this table only
+// tracks invitation/registration state and lets a single service drive
+// notifications, invitation emails, and deferred auto-linking on signup.
+model CollaborationParticipant {
+  id            String    @id @default(uuid())
+  moduleType    String // 'group_expense' | 'todo_list' | 'goal'
+  moduleId      String
+  moduleName    String? // snapshot of the title at invite time, for emails
+  email         String
+  name          String?
+  userId        String? // set once resolved/linked to a registered user
+  status        String    @default("PENDING_REGISTRATION") // REGISTERED | PENDING_REGISTRATION
+  invitedBy     String
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  linkedAt      DateTime?
+  user          User?     @relation("CollaborationParticipant_user", fields: [userId], references: [id], onDelete: SetNull)
+  invitedByUser User      @relation("CollaborationParticipant_invitedBy", fields: [invitedBy], references: [id], onDelete: Cascade)
+
+  @@unique([moduleType, moduleId, email])
+  @@index([email])
+  @@index([status])
+  @@index([moduleType, moduleId])
+  @@schema("public")
+}
+
+model GoalMember {
+  id        String    @id @default(uuid())
+  goalId    String
+  userId    String? // Optional: may be a non-registered participant
+  name      String
+  email     String?
+  phone     String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  goal      Goal      @relation(fields: [goalId], references: [id], onDelete: Cascade)
+
+  @@index([goalId])
   @@index([userId])
   @@index([deletedAt])
   @@schema("public")
