@@ -766,6 +766,65 @@ class BackendService {
     }
   }
 
+  /**
+   * Retry pushing a local-only friend (one that never got a `cloudId` because
+   * the original `createFriend` backend call failed and silently fell back
+   * to local-only storage) up to the backend. Updates the local record with
+   * the resulting `cloudId` on success so it becomes a normal synced record.
+   * Throws if the friend is already synced, has no email/phone, or the
+   * backend rejects it (e.g. duplicate name/email/phone).
+   */
+  async retrySyncFriend(localId: number): Promise<{ cloudId: string }> {
+    const localFriend = await db.friends.get(localId);
+    if (!localFriend) {
+      throw new Error('Friend not found locally.');
+    }
+    if (localFriend.cloudId) {
+      return { cloudId: localFriend.cloudId };
+    }
+    if (!localFriend.email && !localFriend.phone) {
+      throw new Error('This friend has no email or phone, so it cannot be synced. Edit it to add one.');
+    }
+
+    const response = await this.api.post('/friends', {
+      name: localFriend.name,
+      email: localFriend.email?.trim() || undefined,
+      phone: localFriend.phone?.trim() || undefined,
+      createdAt: (localFriend.createdAt || new Date()).toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
+
+    const responsePayload = response.data?.data ?? response.data;
+    await RealtimeDataManager.updateFriend(localId, {
+      cloudId: responsePayload.id,
+      syncStatus: 'synced',
+      updatedAt: new Date(),
+    });
+
+    return { cloudId: responsePayload.id };
+  }
+
+  /**
+   * Self-healing sweep: find every local-only friend (no `cloudId`, i.e. one
+   * whose original creation never reached the backend) and retry syncing it.
+   * Best-effort — failures for individual friends (missing contact info,
+   * duplicate name on the backend, etc.) are skipped, not thrown.
+   */
+  async retrySyncAllPendingFriends(): Promise<{ synced: number; skipped: number }> {
+    const pending = await db.friends.filter((f) => !f.cloudId && !f.deletedAt).toArray();
+    let synced = 0;
+    let skipped = 0;
+    for (const friend of pending) {
+      try {
+        await this.retrySyncFriend(friend.id!);
+        synced++;
+      } catch {
+        skipped++;
+      }
+    }
+    return { synced, skipped };
+  }
+
   /** Live, enriched friend list (registration status, totals) — always hits the backend, no offline fallback. */
   async getFriendsEnriched() {
     const response = await this.api.get('/friends');

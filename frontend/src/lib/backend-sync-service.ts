@@ -13,6 +13,7 @@ import { buildApiUrl, getConfiguredApiBase, shouldSkipOptionalBackendRequests } 
 import supabase from '@/utils/supabase/client';
 import { toast } from 'sonner';
 import { TokenManager } from './api';
+import { backendService } from './backend-api';
 
 export interface BackendSyncStatus {
   isOnline: boolean;
@@ -146,10 +147,16 @@ class BackendSyncService {
       }
 
       const syncData = await response.json();
-      
+
       // Process backend response
       await this.processBackendSyncData(syncData.data);
-      
+
+      // Self-heal: retry any friends that never got a cloudId because their
+      // original creation silently fell back to local-only storage (e.g. the
+      // backend was briefly unreachable). Best-effort — never blocks/fails
+      // the main sync.
+      backendService.retrySyncAllPendingFriends().catch(() => {});
+
       this.lastSyncTime = new Date();
       this.pendingOperations.clear();
 

@@ -270,6 +270,13 @@ const AppContent: React.FC = () => {
   useEffect(() => {
     const handleOnboardingCompleted = () => {
       setOnboardingCompleted(true);
+      // `onboarding_slides_viewed` is plain (unscoped) localStorage, not tied to
+      // a specific account. If a different user previously completed onboarding
+      // on this same browser, this flag would already be "true" and every
+      // subsequent new registration would silently skip the App Feature Slides.
+      // Force it false whenever a fresh onboarding just completed.
+      localStorage.removeItem('onboarding_slides_viewed');
+      setSlidesViewed(false);
     };
     window.addEventListener('ONBOARDING_COMPLETED', handleOnboardingCompleted);
     return () => {

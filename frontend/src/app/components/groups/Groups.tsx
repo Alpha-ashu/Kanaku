@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useApp, useSubFeature } from '@/contexts/AppContext';
 import { db } from '@/lib/database';
+import { backendService } from '@/lib/backend-api';
 import { queueTransactionDeleteSync } from '@/lib/auth-sync-integration';
 import { Avatar, AvatarFallback, AvatarImage } from '@/app/components/ui/avatar';
 import { getCategoryCartoonIcon, getCategoryColor } from '@/app/components/ui/CartoonCategoryIcons';
@@ -89,9 +90,22 @@ export const Groups: React.FC = () => {
  setCurrentPage('add-transaction');
  };
 
- const openFriendProfile = (friend: { id?: number; cloudId?: string }) => {
+ const openFriendProfile = async (friend: { id?: number; cloudId?: string; name?: string }) => {
  if (!friend.cloudId) {
- toast.info('This friend is still syncing. Try again in a moment.');
+ // This friend was created while the backend call failed, so it never got
+ // synced (no cloudId). Retry pushing it now instead of just giving up —
+ // most of the time this fixes itself transparently on the first click.
+ if (!friend.id) {
+ toast.error('This friend could not be found locally.');
+ return;
+ }
+ try {
+ const { cloudId } = await backendService.retrySyncFriend(friend.id);
+ localStorage.setItem('viewingFriendId', cloudId);
+ setCurrentPage('friend-profile');
+ } catch (err: any) {
+ toast.error(err?.response?.data?.error || err?.message || `Couldn't sync ${friend.name || 'this friend'}. Check their email/phone and try again.`);
+ }
  return;
  }
  localStorage.setItem('viewingFriendId', friend.cloudId);
