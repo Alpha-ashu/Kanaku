@@ -139,6 +139,11 @@ export type UserPin = $Result.DefaultSelection<Prisma.$UserPinPayload>
  */
 export type UserSettings = $Result.DefaultSelection<Prisma.$UserSettingsPayload>
 /**
+ * Model PlatformSettings
+ * 
+ */
+export type PlatformSettings = $Result.DefaultSelection<Prisma.$PlatformSettingsPayload>
+/**
  * Model OtpCode
  * 
  */
@@ -616,6 +621,16 @@ export class PrismaClient<
     * ```
     */
   get userSettings(): Prisma.UserSettingsDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.platformSettings`: Exposes CRUD operations for the **PlatformSettings** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more PlatformSettings
+    * const platformSettings = await prisma.platformSettings.findMany()
+    * ```
+    */
+  get platformSettings(): Prisma.PlatformSettingsDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.otpCode`: Exposes CRUD operations for the **OtpCode** model.
@@ -1302,6 +1317,7 @@ export namespace Prisma {
     User: 'User',
     UserPin: 'UserPin',
     UserSettings: 'UserSettings',
+    PlatformSettings: 'PlatformSettings',
     OtpCode: 'OtpCode',
     AiScan: 'AiScan',
     ai_events: 'ai_events',
@@ -1342,7 +1358,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "account" | "advisorApplication" | "advisorAvailability" | "advisorSession" | "bookingRequest" | "category" | "chatMessage" | "device" | "expenseBill" | "friend" | "goal" | "goalContribution" | "importLog" | "investment" | "loan" | "loanPayment" | "notification" | "payment" | "refreshToken" | "syncQueue" | "todo" | "transaction" | "user" | "userPin" | "userSettings" | "otpCode" | "aiScan" | "ai_events" | "ai_insights" | "ai_model_runs" | "auditLog" | "groupExpense" | "groupExpenseMember" | "collaborationParticipant" | "goalMember" | "user_features" | "profiles" | "otpRequest" | "aaConsent" | "aaConsentArtifact" | "aaDataSession" | "aaFinancialData" | "aaTransaction" | "recurringTransaction" | "budget" | "taxCalculation" | "goldAsset"
+      modelProps: "account" | "advisorApplication" | "advisorAvailability" | "advisorSession" | "bookingRequest" | "category" | "chatMessage" | "device" | "expenseBill" | "friend" | "goal" | "goalContribution" | "importLog" | "investment" | "loan" | "loanPayment" | "notification" | "payment" | "refreshToken" | "syncQueue" | "todo" | "transaction" | "user" | "userPin" | "userSettings" | "platformSettings" | "otpCode" | "aiScan" | "ai_events" | "ai_insights" | "ai_model_runs" | "auditLog" | "groupExpense" | "groupExpenseMember" | "collaborationParticipant" | "goalMember" | "user_features" | "profiles" | "otpRequest" | "aaConsent" | "aaConsentArtifact" | "aaDataSession" | "aaFinancialData" | "aaTransaction" | "recurringTransaction" | "budget" | "taxCalculation" | "goldAsset"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -3196,6 +3212,80 @@ export namespace Prisma {
           }
         }
       }
+      PlatformSettings: {
+        payload: Prisma.$PlatformSettingsPayload<ExtArgs>
+        fields: Prisma.PlatformSettingsFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.PlatformSettingsFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PlatformSettingsPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.PlatformSettingsFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PlatformSettingsPayload>
+          }
+          findFirst: {
+            args: Prisma.PlatformSettingsFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PlatformSettingsPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.PlatformSettingsFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PlatformSettingsPayload>
+          }
+          findMany: {
+            args: Prisma.PlatformSettingsFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PlatformSettingsPayload>[]
+          }
+          create: {
+            args: Prisma.PlatformSettingsCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PlatformSettingsPayload>
+          }
+          createMany: {
+            args: Prisma.PlatformSettingsCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.PlatformSettingsCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PlatformSettingsPayload>[]
+          }
+          delete: {
+            args: Prisma.PlatformSettingsDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PlatformSettingsPayload>
+          }
+          update: {
+            args: Prisma.PlatformSettingsUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PlatformSettingsPayload>
+          }
+          deleteMany: {
+            args: Prisma.PlatformSettingsDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.PlatformSettingsUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.PlatformSettingsUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PlatformSettingsPayload>[]
+          }
+          upsert: {
+            args: Prisma.PlatformSettingsUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PlatformSettingsPayload>
+          }
+          aggregate: {
+            args: Prisma.PlatformSettingsAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregatePlatformSettings>
+          }
+          groupBy: {
+            args: Prisma.PlatformSettingsGroupByArgs<ExtArgs>
+            result: $Utils.Optional<PlatformSettingsGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.PlatformSettingsCountArgs<ExtArgs>
+            result: $Utils.Optional<PlatformSettingsCountAggregateOutputType> | number
+          }
+        }
+      }
       OtpCode: {
         payload: Prisma.$OtpCodePayload<ExtArgs>
         fields: Prisma.OtpCodeFieldRefs
@@ -4945,6 +5035,7 @@ export namespace Prisma {
     user?: UserOmit
     userPin?: UserPinOmit
     userSettings?: UserSettingsOmit
+    platformSettings?: PlatformSettingsOmit
     otpCode?: OtpCodeOmit
     aiScan?: AiScanOmit
     ai_events?: ai_eventsOmit
@@ -36732,6 +36823,984 @@ export namespace Prisma {
 
 
   /**
+   * Model PlatformSettings
+   */
+
+  export type AggregatePlatformSettings = {
+    _count: PlatformSettingsCountAggregateOutputType | null
+    _min: PlatformSettingsMinAggregateOutputType | null
+    _max: PlatformSettingsMaxAggregateOutputType | null
+  }
+
+  export type PlatformSettingsMinAggregateOutputType = {
+    id: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type PlatformSettingsMaxAggregateOutputType = {
+    id: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type PlatformSettingsCountAggregateOutputType = {
+    id: number
+    settings: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type PlatformSettingsMinAggregateInputType = {
+    id?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type PlatformSettingsMaxAggregateInputType = {
+    id?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type PlatformSettingsCountAggregateInputType = {
+    id?: true
+    settings?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type PlatformSettingsAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PlatformSettings to aggregate.
+     */
+    where?: PlatformSettingsWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PlatformSettings to fetch.
+     */
+    orderBy?: PlatformSettingsOrderByWithRelationInput | PlatformSettingsOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: PlatformSettingsWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PlatformSettings from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PlatformSettings.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned PlatformSettings
+    **/
+    _count?: true | PlatformSettingsCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: PlatformSettingsMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: PlatformSettingsMaxAggregateInputType
+  }
+
+  export type GetPlatformSettingsAggregateType<T extends PlatformSettingsAggregateArgs> = {
+        [P in keyof T & keyof AggregatePlatformSettings]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregatePlatformSettings[P]>
+      : GetScalarType<T[P], AggregatePlatformSettings[P]>
+  }
+
+
+
+
+  export type PlatformSettingsGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PlatformSettingsWhereInput
+    orderBy?: PlatformSettingsOrderByWithAggregationInput | PlatformSettingsOrderByWithAggregationInput[]
+    by: PlatformSettingsScalarFieldEnum[] | PlatformSettingsScalarFieldEnum
+    having?: PlatformSettingsScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: PlatformSettingsCountAggregateInputType | true
+    _min?: PlatformSettingsMinAggregateInputType
+    _max?: PlatformSettingsMaxAggregateInputType
+  }
+
+  export type PlatformSettingsGroupByOutputType = {
+    id: string
+    settings: JsonValue
+    createdAt: Date
+    updatedAt: Date
+    _count: PlatformSettingsCountAggregateOutputType | null
+    _min: PlatformSettingsMinAggregateOutputType | null
+    _max: PlatformSettingsMaxAggregateOutputType | null
+  }
+
+  type GetPlatformSettingsGroupByPayload<T extends PlatformSettingsGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<PlatformSettingsGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof PlatformSettingsGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], PlatformSettingsGroupByOutputType[P]>
+            : GetScalarType<T[P], PlatformSettingsGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type PlatformSettingsSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    settings?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["platformSettings"]>
+
+  export type PlatformSettingsSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    settings?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["platformSettings"]>
+
+  export type PlatformSettingsSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    settings?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["platformSettings"]>
+
+  export type PlatformSettingsSelectScalar = {
+    id?: boolean
+    settings?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type PlatformSettingsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "settings" | "createdAt" | "updatedAt", ExtArgs["result"]["platformSettings"]>
+
+  export type $PlatformSettingsPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "PlatformSettings"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      settings: Prisma.JsonValue
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["platformSettings"]>
+    composites: {}
+  }
+
+  type PlatformSettingsGetPayload<S extends boolean | null | undefined | PlatformSettingsDefaultArgs> = $Result.GetResult<Prisma.$PlatformSettingsPayload, S>
+
+  type PlatformSettingsCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<PlatformSettingsFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: PlatformSettingsCountAggregateInputType | true
+    }
+
+  export interface PlatformSettingsDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['PlatformSettings'], meta: { name: 'PlatformSettings' } }
+    /**
+     * Find zero or one PlatformSettings that matches the filter.
+     * @param {PlatformSettingsFindUniqueArgs} args - Arguments to find a PlatformSettings
+     * @example
+     * // Get one PlatformSettings
+     * const platformSettings = await prisma.platformSettings.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends PlatformSettingsFindUniqueArgs>(args: SelectSubset<T, PlatformSettingsFindUniqueArgs<ExtArgs>>): Prisma__PlatformSettingsClient<$Result.GetResult<Prisma.$PlatformSettingsPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one PlatformSettings that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {PlatformSettingsFindUniqueOrThrowArgs} args - Arguments to find a PlatformSettings
+     * @example
+     * // Get one PlatformSettings
+     * const platformSettings = await prisma.platformSettings.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends PlatformSettingsFindUniqueOrThrowArgs>(args: SelectSubset<T, PlatformSettingsFindUniqueOrThrowArgs<ExtArgs>>): Prisma__PlatformSettingsClient<$Result.GetResult<Prisma.$PlatformSettingsPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first PlatformSettings that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PlatformSettingsFindFirstArgs} args - Arguments to find a PlatformSettings
+     * @example
+     * // Get one PlatformSettings
+     * const platformSettings = await prisma.platformSettings.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends PlatformSettingsFindFirstArgs>(args?: SelectSubset<T, PlatformSettingsFindFirstArgs<ExtArgs>>): Prisma__PlatformSettingsClient<$Result.GetResult<Prisma.$PlatformSettingsPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first PlatformSettings that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PlatformSettingsFindFirstOrThrowArgs} args - Arguments to find a PlatformSettings
+     * @example
+     * // Get one PlatformSettings
+     * const platformSettings = await prisma.platformSettings.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends PlatformSettingsFindFirstOrThrowArgs>(args?: SelectSubset<T, PlatformSettingsFindFirstOrThrowArgs<ExtArgs>>): Prisma__PlatformSettingsClient<$Result.GetResult<Prisma.$PlatformSettingsPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more PlatformSettings that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PlatformSettingsFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all PlatformSettings
+     * const platformSettings = await prisma.platformSettings.findMany()
+     * 
+     * // Get first 10 PlatformSettings
+     * const platformSettings = await prisma.platformSettings.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const platformSettingsWithIdOnly = await prisma.platformSettings.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends PlatformSettingsFindManyArgs>(args?: SelectSubset<T, PlatformSettingsFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PlatformSettingsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a PlatformSettings.
+     * @param {PlatformSettingsCreateArgs} args - Arguments to create a PlatformSettings.
+     * @example
+     * // Create one PlatformSettings
+     * const PlatformSettings = await prisma.platformSettings.create({
+     *   data: {
+     *     // ... data to create a PlatformSettings
+     *   }
+     * })
+     * 
+     */
+    create<T extends PlatformSettingsCreateArgs>(args: SelectSubset<T, PlatformSettingsCreateArgs<ExtArgs>>): Prisma__PlatformSettingsClient<$Result.GetResult<Prisma.$PlatformSettingsPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many PlatformSettings.
+     * @param {PlatformSettingsCreateManyArgs} args - Arguments to create many PlatformSettings.
+     * @example
+     * // Create many PlatformSettings
+     * const platformSettings = await prisma.platformSettings.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends PlatformSettingsCreateManyArgs>(args?: SelectSubset<T, PlatformSettingsCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many PlatformSettings and returns the data saved in the database.
+     * @param {PlatformSettingsCreateManyAndReturnArgs} args - Arguments to create many PlatformSettings.
+     * @example
+     * // Create many PlatformSettings
+     * const platformSettings = await prisma.platformSettings.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many PlatformSettings and only return the `id`
+     * const platformSettingsWithIdOnly = await prisma.platformSettings.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends PlatformSettingsCreateManyAndReturnArgs>(args?: SelectSubset<T, PlatformSettingsCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PlatformSettingsPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a PlatformSettings.
+     * @param {PlatformSettingsDeleteArgs} args - Arguments to delete one PlatformSettings.
+     * @example
+     * // Delete one PlatformSettings
+     * const PlatformSettings = await prisma.platformSettings.delete({
+     *   where: {
+     *     // ... filter to delete one PlatformSettings
+     *   }
+     * })
+     * 
+     */
+    delete<T extends PlatformSettingsDeleteArgs>(args: SelectSubset<T, PlatformSettingsDeleteArgs<ExtArgs>>): Prisma__PlatformSettingsClient<$Result.GetResult<Prisma.$PlatformSettingsPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one PlatformSettings.
+     * @param {PlatformSettingsUpdateArgs} args - Arguments to update one PlatformSettings.
+     * @example
+     * // Update one PlatformSettings
+     * const platformSettings = await prisma.platformSettings.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends PlatformSettingsUpdateArgs>(args: SelectSubset<T, PlatformSettingsUpdateArgs<ExtArgs>>): Prisma__PlatformSettingsClient<$Result.GetResult<Prisma.$PlatformSettingsPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more PlatformSettings.
+     * @param {PlatformSettingsDeleteManyArgs} args - Arguments to filter PlatformSettings to delete.
+     * @example
+     * // Delete a few PlatformSettings
+     * const { count } = await prisma.platformSettings.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends PlatformSettingsDeleteManyArgs>(args?: SelectSubset<T, PlatformSettingsDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PlatformSettings.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PlatformSettingsUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many PlatformSettings
+     * const platformSettings = await prisma.platformSettings.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends PlatformSettingsUpdateManyArgs>(args: SelectSubset<T, PlatformSettingsUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PlatformSettings and returns the data updated in the database.
+     * @param {PlatformSettingsUpdateManyAndReturnArgs} args - Arguments to update many PlatformSettings.
+     * @example
+     * // Update many PlatformSettings
+     * const platformSettings = await prisma.platformSettings.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more PlatformSettings and only return the `id`
+     * const platformSettingsWithIdOnly = await prisma.platformSettings.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends PlatformSettingsUpdateManyAndReturnArgs>(args: SelectSubset<T, PlatformSettingsUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PlatformSettingsPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one PlatformSettings.
+     * @param {PlatformSettingsUpsertArgs} args - Arguments to update or create a PlatformSettings.
+     * @example
+     * // Update or create a PlatformSettings
+     * const platformSettings = await prisma.platformSettings.upsert({
+     *   create: {
+     *     // ... data to create a PlatformSettings
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the PlatformSettings we want to update
+     *   }
+     * })
+     */
+    upsert<T extends PlatformSettingsUpsertArgs>(args: SelectSubset<T, PlatformSettingsUpsertArgs<ExtArgs>>): Prisma__PlatformSettingsClient<$Result.GetResult<Prisma.$PlatformSettingsPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of PlatformSettings.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PlatformSettingsCountArgs} args - Arguments to filter PlatformSettings to count.
+     * @example
+     * // Count the number of PlatformSettings
+     * const count = await prisma.platformSettings.count({
+     *   where: {
+     *     // ... the filter for the PlatformSettings we want to count
+     *   }
+     * })
+    **/
+    count<T extends PlatformSettingsCountArgs>(
+      args?: Subset<T, PlatformSettingsCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], PlatformSettingsCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a PlatformSettings.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PlatformSettingsAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends PlatformSettingsAggregateArgs>(args: Subset<T, PlatformSettingsAggregateArgs>): Prisma.PrismaPromise<GetPlatformSettingsAggregateType<T>>
+
+    /**
+     * Group by PlatformSettings.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PlatformSettingsGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends PlatformSettingsGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: PlatformSettingsGroupByArgs['orderBy'] }
+        : { orderBy?: PlatformSettingsGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, PlatformSettingsGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetPlatformSettingsGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the PlatformSettings model
+   */
+  readonly fields: PlatformSettingsFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for PlatformSettings.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__PlatformSettingsClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the PlatformSettings model
+   */
+  interface PlatformSettingsFieldRefs {
+    readonly id: FieldRef<"PlatformSettings", 'String'>
+    readonly settings: FieldRef<"PlatformSettings", 'Json'>
+    readonly createdAt: FieldRef<"PlatformSettings", 'DateTime'>
+    readonly updatedAt: FieldRef<"PlatformSettings", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * PlatformSettings findUnique
+   */
+  export type PlatformSettingsFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PlatformSettings
+     */
+    select?: PlatformSettingsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PlatformSettings
+     */
+    omit?: PlatformSettingsOmit<ExtArgs> | null
+    /**
+     * Filter, which PlatformSettings to fetch.
+     */
+    where: PlatformSettingsWhereUniqueInput
+  }
+
+  /**
+   * PlatformSettings findUniqueOrThrow
+   */
+  export type PlatformSettingsFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PlatformSettings
+     */
+    select?: PlatformSettingsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PlatformSettings
+     */
+    omit?: PlatformSettingsOmit<ExtArgs> | null
+    /**
+     * Filter, which PlatformSettings to fetch.
+     */
+    where: PlatformSettingsWhereUniqueInput
+  }
+
+  /**
+   * PlatformSettings findFirst
+   */
+  export type PlatformSettingsFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PlatformSettings
+     */
+    select?: PlatformSettingsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PlatformSettings
+     */
+    omit?: PlatformSettingsOmit<ExtArgs> | null
+    /**
+     * Filter, which PlatformSettings to fetch.
+     */
+    where?: PlatformSettingsWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PlatformSettings to fetch.
+     */
+    orderBy?: PlatformSettingsOrderByWithRelationInput | PlatformSettingsOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PlatformSettings.
+     */
+    cursor?: PlatformSettingsWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PlatformSettings from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PlatformSettings.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PlatformSettings.
+     */
+    distinct?: PlatformSettingsScalarFieldEnum | PlatformSettingsScalarFieldEnum[]
+  }
+
+  /**
+   * PlatformSettings findFirstOrThrow
+   */
+  export type PlatformSettingsFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PlatformSettings
+     */
+    select?: PlatformSettingsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PlatformSettings
+     */
+    omit?: PlatformSettingsOmit<ExtArgs> | null
+    /**
+     * Filter, which PlatformSettings to fetch.
+     */
+    where?: PlatformSettingsWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PlatformSettings to fetch.
+     */
+    orderBy?: PlatformSettingsOrderByWithRelationInput | PlatformSettingsOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PlatformSettings.
+     */
+    cursor?: PlatformSettingsWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PlatformSettings from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PlatformSettings.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PlatformSettings.
+     */
+    distinct?: PlatformSettingsScalarFieldEnum | PlatformSettingsScalarFieldEnum[]
+  }
+
+  /**
+   * PlatformSettings findMany
+   */
+  export type PlatformSettingsFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PlatformSettings
+     */
+    select?: PlatformSettingsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PlatformSettings
+     */
+    omit?: PlatformSettingsOmit<ExtArgs> | null
+    /**
+     * Filter, which PlatformSettings to fetch.
+     */
+    where?: PlatformSettingsWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PlatformSettings to fetch.
+     */
+    orderBy?: PlatformSettingsOrderByWithRelationInput | PlatformSettingsOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing PlatformSettings.
+     */
+    cursor?: PlatformSettingsWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PlatformSettings from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PlatformSettings.
+     */
+    skip?: number
+    distinct?: PlatformSettingsScalarFieldEnum | PlatformSettingsScalarFieldEnum[]
+  }
+
+  /**
+   * PlatformSettings create
+   */
+  export type PlatformSettingsCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PlatformSettings
+     */
+    select?: PlatformSettingsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PlatformSettings
+     */
+    omit?: PlatformSettingsOmit<ExtArgs> | null
+    /**
+     * The data needed to create a PlatformSettings.
+     */
+    data: XOR<PlatformSettingsCreateInput, PlatformSettingsUncheckedCreateInput>
+  }
+
+  /**
+   * PlatformSettings createMany
+   */
+  export type PlatformSettingsCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many PlatformSettings.
+     */
+    data: PlatformSettingsCreateManyInput | PlatformSettingsCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * PlatformSettings createManyAndReturn
+   */
+  export type PlatformSettingsCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PlatformSettings
+     */
+    select?: PlatformSettingsSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the PlatformSettings
+     */
+    omit?: PlatformSettingsOmit<ExtArgs> | null
+    /**
+     * The data used to create many PlatformSettings.
+     */
+    data: PlatformSettingsCreateManyInput | PlatformSettingsCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * PlatformSettings update
+   */
+  export type PlatformSettingsUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PlatformSettings
+     */
+    select?: PlatformSettingsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PlatformSettings
+     */
+    omit?: PlatformSettingsOmit<ExtArgs> | null
+    /**
+     * The data needed to update a PlatformSettings.
+     */
+    data: XOR<PlatformSettingsUpdateInput, PlatformSettingsUncheckedUpdateInput>
+    /**
+     * Choose, which PlatformSettings to update.
+     */
+    where: PlatformSettingsWhereUniqueInput
+  }
+
+  /**
+   * PlatformSettings updateMany
+   */
+  export type PlatformSettingsUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update PlatformSettings.
+     */
+    data: XOR<PlatformSettingsUpdateManyMutationInput, PlatformSettingsUncheckedUpdateManyInput>
+    /**
+     * Filter which PlatformSettings to update
+     */
+    where?: PlatformSettingsWhereInput
+    /**
+     * Limit how many PlatformSettings to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * PlatformSettings updateManyAndReturn
+   */
+  export type PlatformSettingsUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PlatformSettings
+     */
+    select?: PlatformSettingsSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the PlatformSettings
+     */
+    omit?: PlatformSettingsOmit<ExtArgs> | null
+    /**
+     * The data used to update PlatformSettings.
+     */
+    data: XOR<PlatformSettingsUpdateManyMutationInput, PlatformSettingsUncheckedUpdateManyInput>
+    /**
+     * Filter which PlatformSettings to update
+     */
+    where?: PlatformSettingsWhereInput
+    /**
+     * Limit how many PlatformSettings to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * PlatformSettings upsert
+   */
+  export type PlatformSettingsUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PlatformSettings
+     */
+    select?: PlatformSettingsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PlatformSettings
+     */
+    omit?: PlatformSettingsOmit<ExtArgs> | null
+    /**
+     * The filter to search for the PlatformSettings to update in case it exists.
+     */
+    where: PlatformSettingsWhereUniqueInput
+    /**
+     * In case the PlatformSettings found by the `where` argument doesn't exist, create a new PlatformSettings with this data.
+     */
+    create: XOR<PlatformSettingsCreateInput, PlatformSettingsUncheckedCreateInput>
+    /**
+     * In case the PlatformSettings was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<PlatformSettingsUpdateInput, PlatformSettingsUncheckedUpdateInput>
+  }
+
+  /**
+   * PlatformSettings delete
+   */
+  export type PlatformSettingsDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PlatformSettings
+     */
+    select?: PlatformSettingsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PlatformSettings
+     */
+    omit?: PlatformSettingsOmit<ExtArgs> | null
+    /**
+     * Filter which PlatformSettings to delete.
+     */
+    where: PlatformSettingsWhereUniqueInput
+  }
+
+  /**
+   * PlatformSettings deleteMany
+   */
+  export type PlatformSettingsDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PlatformSettings to delete
+     */
+    where?: PlatformSettingsWhereInput
+    /**
+     * Limit how many PlatformSettings to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * PlatformSettings without action
+   */
+  export type PlatformSettingsDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PlatformSettings
+     */
+    select?: PlatformSettingsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PlatformSettings
+     */
+    omit?: PlatformSettingsOmit<ExtArgs> | null
+  }
+
+
+  /**
    * Model OtpCode
    */
 
@@ -62357,6 +63426,16 @@ export namespace Prisma {
   export type UserSettingsScalarFieldEnum = (typeof UserSettingsScalarFieldEnum)[keyof typeof UserSettingsScalarFieldEnum]
 
 
+  export const PlatformSettingsScalarFieldEnum: {
+    id: 'id',
+    settings: 'settings',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type PlatformSettingsScalarFieldEnum = (typeof PlatformSettingsScalarFieldEnum)[keyof typeof PlatformSettingsScalarFieldEnum]
+
+
   export const OtpCodeScalarFieldEnum: {
     id: 'id',
     userId: 'userId',
@@ -65551,6 +66630,53 @@ export namespace Prisma {
     settings?: JsonWithAggregatesFilter<"UserSettings">
     createdAt?: DateTimeWithAggregatesFilter<"UserSettings"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"UserSettings"> | Date | string
+  }
+
+  export type PlatformSettingsWhereInput = {
+    AND?: PlatformSettingsWhereInput | PlatformSettingsWhereInput[]
+    OR?: PlatformSettingsWhereInput[]
+    NOT?: PlatformSettingsWhereInput | PlatformSettingsWhereInput[]
+    id?: StringFilter<"PlatformSettings"> | string
+    settings?: JsonFilter<"PlatformSettings">
+    createdAt?: DateTimeFilter<"PlatformSettings"> | Date | string
+    updatedAt?: DateTimeFilter<"PlatformSettings"> | Date | string
+  }
+
+  export type PlatformSettingsOrderByWithRelationInput = {
+    id?: SortOrder
+    settings?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PlatformSettingsWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: PlatformSettingsWhereInput | PlatformSettingsWhereInput[]
+    OR?: PlatformSettingsWhereInput[]
+    NOT?: PlatformSettingsWhereInput | PlatformSettingsWhereInput[]
+    settings?: JsonFilter<"PlatformSettings">
+    createdAt?: DateTimeFilter<"PlatformSettings"> | Date | string
+    updatedAt?: DateTimeFilter<"PlatformSettings"> | Date | string
+  }, "id">
+
+  export type PlatformSettingsOrderByWithAggregationInput = {
+    id?: SortOrder
+    settings?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: PlatformSettingsCountOrderByAggregateInput
+    _max?: PlatformSettingsMaxOrderByAggregateInput
+    _min?: PlatformSettingsMinOrderByAggregateInput
+  }
+
+  export type PlatformSettingsScalarWhereWithAggregatesInput = {
+    AND?: PlatformSettingsScalarWhereWithAggregatesInput | PlatformSettingsScalarWhereWithAggregatesInput[]
+    OR?: PlatformSettingsScalarWhereWithAggregatesInput[]
+    NOT?: PlatformSettingsScalarWhereWithAggregatesInput | PlatformSettingsScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"PlatformSettings"> | string
+    settings?: JsonWithAggregatesFilter<"PlatformSettings">
+    createdAt?: DateTimeWithAggregatesFilter<"PlatformSettings"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"PlatformSettings"> | Date | string
   }
 
   export type OtpCodeWhereInput = {
@@ -70582,6 +71708,55 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type PlatformSettingsCreateInput = {
+    id?: string
+    settings?: JsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PlatformSettingsUncheckedCreateInput = {
+    id?: string
+    settings?: JsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PlatformSettingsUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    settings?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PlatformSettingsUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    settings?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PlatformSettingsCreateManyInput = {
+    id?: string
+    settings?: JsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PlatformSettingsUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    settings?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PlatformSettingsUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    settings?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type OtpCodeCreateInput = {
     id?: string
     code: string
@@ -74994,6 +76169,25 @@ export namespace Prisma {
     language?: SortOrder
     currency?: SortOrder
     timezone?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PlatformSettingsCountOrderByAggregateInput = {
+    id?: SortOrder
+    settings?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PlatformSettingsMaxOrderByAggregateInput = {
+    id?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PlatformSettingsMinOrderByAggregateInput = {
+    id?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }

@@ -5,6 +5,7 @@ import { sendEmail } from '../../utils/email';
 import { getSocketManager } from '../../sockets';
 import { redisConnection } from '../../config/queue';
 import { todoRepository } from '../todos/todo.repository';
+import { logInvitationEvent } from '../../utils/invitationLifecycle';
 
 /**
  * Unified Collaboration, Invitation & Notification System.
@@ -56,8 +57,10 @@ async function queueCollaborationEmail(notificationId: string, userId: string, t
       attempts: 3,
       backoff: { type: 'exponential', delay: 2000 },
     });
+    logInvitationEvent('EMAIL_QUEUED', { notificationId, userId, moduleType: category });
   } catch (err) {
     logger.warn('Failed to queue collaboration email notification', err);
+    logInvitationEvent('EMAIL_FAILED', { notificationId, userId, moduleType: category, reason: 'queue_error' });
   }
 }
 
@@ -105,7 +108,7 @@ export async function inviteParticipants(params: {
     const status: 'REGISTERED' | 'PENDING_REGISTRATION' = targetUser ? 'REGISTERED' : 'PENDING_REGISTRATION';
     const name = p.name || targetUser?.name || email;
 
-    await prisma.collaborationParticipant.upsert({
+    const participant = await prisma.collaborationParticipant.upsert({
       where: { moduleType_moduleId_email: { moduleType, moduleId, email } },
       create: {
         moduleType,
@@ -123,6 +126,10 @@ export async function inviteParticipants(params: {
         userId: targetUser?.id || null,
         status,
       },
+    });
+
+    logInvitationEvent('INVITATION_CREATED', {
+      email, moduleType, moduleId, status, participantId: participant.id,
     });
 
     if (targetUser) {
@@ -195,12 +202,13 @@ async function sendInvitationEmail(args: {
     subject,
     html: buildInvitationEmailHtml({ moduleType, moduleName, creatorName, joinUrl, detail }),
     categories: ['kanaku-invitation', moduleType],
+    customArgs: { kind: 'pending_invite', moduleType, email },
   });
 
   if (sent) {
-    logger.info(`[Invitation] Pending-invite email sent to ${email.substring(0, 3)}*** for ${moduleType}`);
+    logInvitationEvent('EMAIL_SENT', { email, moduleType, path: 'pending_invite' });
   } else {
-    logger.warn(`[Invitation] Email delivery failed/skipped for pending invite to ${email.substring(0, 3)}***`);
+    logInvitationEvent('EMAIL_FAILED', { email, moduleType, path: 'pending_invite', reason: 'sendgrid_send_failed' });
   }
 }
 
@@ -255,6 +263,8 @@ export async function linkPendingInvitationsForUser(userId: string, email: strin
     where: { email: normalizedEmail, status: 'PENDING_REGISTRATION' },
   });
 
+  logInvitationEvent('REGISTRATION_COMPLETED', { email: normalizedEmail, userId, pendingCount: pending.length });
+
   if (!pending.length) return;
 
   await prisma.collaborationParticipant.updateMany({
@@ -277,6 +287,7 @@ export async function linkPendingInvitationsForUser(userId: string, email: strin
           data: { userId },
         });
       }
+      logInvitationEvent('INVITATION_LINKED', { email: normalizedEmail, userId, moduleType: p.moduleType, moduleId: p.moduleId, participantId: p.id });
     } catch (err) {
       logger.warn(`Failed to attach deferred collaboration (${p.moduleType}/${p.moduleId}) for newly registered user ${userId}`, err);
     }

@@ -9,13 +9,13 @@
  *   > node scripts/seed-production-roles.cjs
  *
  * Required secrets (set via `fly secrets set KEY=value`):
- *   SEED_ADMIN_EMAIL       admin@kanku.com
+ *   SEED_ADMIN_EMAIL       admin@kanaku.com
  *   SEED_ADMIN_PASSWORD    K@n4ku_Adm!n#2Xz9$
- *   SEED_MANAGER_EMAIL     manager@kanku.com
+ *   SEED_MANAGER_EMAIL     manager@kanaku.com
  *   SEED_MANAGER_PASSWORD  K@n4ku_M4n4g3r#7Qw8$
- *   SEED_ADVISOR_EMAIL     advisor@kanku.com
+ *   SEED_ADVISOR_EMAIL     advisor@kanaku.com
  *   SEED_ADVISOR_PASSWORD  K@n4ku_Adv!s0r#5Tz6^
- *   SEED_USER_EMAIL        user@kanku.com
+ *   SEED_USER_EMAIL        user@kanaku.com
  *   SEED_USER_PASSWORD     K@n4ku_Us3r#3Pm2*Wy
  *
  * DATABASE_URL must already be set (it is in production via fly secrets).
@@ -156,6 +156,7 @@ async function upsertRoleUser({ email, password, role }) {
       create: { userId: updated.id, currency: 'INR', language: 'en' },
     }).catch(() => {});
 
+    await syncProfileRow(updated, profile);
     return updated;
   }
 
@@ -168,7 +169,38 @@ async function upsertRoleUser({ email, password, role }) {
     create: { userId: created.id, currency: 'INR', language: 'en' },
   }).catch(() => {});
 
+  await syncProfileRow(created, profile);
   return created;
+}
+
+// GET /auth/profile reads name/fullName/etc. from public.profiles FIRST,
+// falling back to User only if no profiles row exists (see auth.controller.ts
+// buildProfilePayload). Without this sync, the API would keep showing
+// whatever stale name/contact info was already in profiles, even after
+// updating User — exactly the bug found in production this session.
+async function syncProfileRow(user, profile) {
+  const nameParts = (user.name || '').trim().split(/\s+/).filter(Boolean);
+  try {
+    await prisma.$executeRaw`
+      INSERT INTO public.profiles (
+        id, email, first_name, last_name, full_name, phone, gender,
+        date_of_birth, job_type, country, state, city, created_at, updated_at
+      ) VALUES (
+        ${user.id}::uuid, ${user.email}, ${profile?.firstName || nameParts[0] || null},
+        ${profile?.lastName || nameParts.slice(1).join(' ') || null}, ${user.name},
+        ${profile?.phone || null}, ${profile?.gender || null}, ${profile?.dateOfBirth ? new Date(profile.dateOfBirth) : null},
+        ${profile?.jobType || null}, ${profile?.country || null}, ${profile?.state || null}, ${profile?.city || null},
+        NOW(), NOW()
+      )
+      ON CONFLICT (id) DO UPDATE SET
+        email = EXCLUDED.email, first_name = EXCLUDED.first_name, last_name = EXCLUDED.last_name,
+        full_name = EXCLUDED.full_name, phone = EXCLUDED.phone, gender = EXCLUDED.gender,
+        date_of_birth = EXCLUDED.date_of_birth, job_type = EXCLUDED.job_type,
+        country = EXCLUDED.country, state = EXCLUDED.state, city = EXCLUDED.city, updated_at = NOW()
+    `;
+  } catch (err) {
+    console.warn(`[seed] Profile sync failed for ${user.email}:`, err.message);
+  }
 }
 
 async function main() {

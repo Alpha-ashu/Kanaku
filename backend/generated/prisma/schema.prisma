@@ -653,6 +653,21 @@ model UserSettings {
   @@schema("public")
 }
 
+// Singleton row (id always "global") for platform-wide admin configuration:
+// feature flags, AI feature flags, AI configurations. Previously these were
+// stored inside whichever User.role='admin' happened to be returned first by
+// an unordered query — fragile, since deleting/adding any admin account could
+// silently switch which row held the "global" settings, making admin choices
+// appear to reset. This table has no dependency on which admin users exist.
+model PlatformSettings {
+  id        String   @id @default("global")
+  settings  Json     @default("{}")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@schema("public")
+}
+
 model OtpCode {
   id        String   @id @default(uuid())
   userId    String

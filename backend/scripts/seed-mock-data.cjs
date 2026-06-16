@@ -455,7 +455,8 @@ async function seedRecurring(userId, role, acc) {
 
 // ── 10. Group Expenses ────────────────────────────────────────────────────────
 
-async function seedGroupExpenses(userId, role, acc) {
+async function seedGroupExpenses(userId, role, acc, friends) {
+  const friendByName = new Map((friends || []).map(f => [f.name.toLowerCase(), f]));
   const sets = {
     admin: [
       {
@@ -522,10 +523,14 @@ async function seedGroupExpenses(userId, role, acc) {
       userId, paidBy: acc.savings, ...groupData, syncStatus: 'synced',
     }});
     for (const m of members) {
+      const matchedFriend = m.isOwner ? null : friendByName.get(m.name.toLowerCase());
       await prisma.groupExpenseMember.create({ data: {
         groupExpenseId: ge.id,
         name: m.name,
         userId: m.isOwner ? userId : null,
+        friendId: matchedFriend?.id || null,
+        email: matchedFriend?.email || null,
+        phone: matchedFriend?.phone || null,
         shareAmount: m.shareAmount,
         hasPaid: m.hasPaid,
         paidAt: m.hasPaid ? new Date() : null,
@@ -599,19 +604,65 @@ async function seedNotifications(userId, role) {
 
 // ── 13. Todos ─────────────────────────────────────────────────────────────────
 
-async function seedTodos(userId, role) {
-  const sets = {
-    admin:   ['Review Q2 budget allocations', 'Schedule quarterly investment review', 'Renew vehicle insurance policy', 'File ITR before July 31 deadline', 'Increase SIP for retirement corpus', 'Rebalance equity portfolio (overweight in HDFC Bank)'],
-    manager: ['Pay SBI credit card bill by 25th', 'Set up automatic EMI debit', 'Research 3 best ELSS funds for tax saving', 'Update nominee in LIC policy', 'Start recurring SIP in index fund'],
-    advisor: ['Prepare financial plan for Suresh Kumar', 'Review Meena Pillai portfolio – quarterly update', 'Renew SEBI RIA certificate', 'File Q1 GST return (due June 20)', 'Schedule client education webinar on NPS'],
-    user:    ['Pay electricity bill this week', 'Transfer SIP amount to savings account', 'Apply for health insurance', 'Track June expenses in Finora', 'Research laptop models under ₹80,000'],
+// NOTE: the real "To-Do Lists" feature (frontend ToDoLists/ToDoListDetail/ToDoListShare)
+// reads from the raw public.todo_lists / todo_items / todo_list_shares tables, NOT the
+// legacy Prisma `Todo` model (which nothing in the app actually displays). Seeding only
+// `Todo` here used to mean this section produced data invisible to the real feature.
+async function seedTodos(userId, role, shareWithUserId) {
+  const individualItems = {
+    admin:   ['Review Q2 budget allocations', 'Schedule quarterly investment review', 'Renew vehicle insurance policy', 'File ITR before July 31 deadline'],
+    manager: ['Pay SBI credit card bill by 25th', 'Set up automatic EMI debit', 'Research 3 best ELSS funds for tax saving'],
+    advisor: ['Prepare financial plan for Suresh Kumar', 'Review Meena Pillai portfolio – quarterly update', 'Renew SEBI RIA certificate'],
+    user:    ['Pay electricity bill this week', 'Transfer SIP amount to savings account', 'Apply for health insurance'],
+  };
+  const togetherItems = {
+    admin:   ['Plan team offsite budget', 'Collect expense receipts from team'],
+    manager: ['Coordinate office lunch RSVPs', 'Split outing cab fare'],
+    advisor: ['Schedule joint client review call', 'Share updated financial plan PDF'],
+    user:    ['Buy groceries for the flat', 'Pay shared electricity bill'],
+  };
+  const listNames = {
+    admin:   { individual: 'My Admin Tasks', together: 'Team Offsite Planning' },
+    manager: { individual: 'My Manager Tasks', together: 'Office Outing' },
+    advisor: { individual: 'My Advisor Tasks', together: 'Client Review Prep' },
+    user:    { individual: 'My Personal Tasks', together: 'Flat Sharing' },
   };
 
   const created = [];
-  for (let i = 0; i < sets[role].length; i++) {
-    const c = await prisma.todo.create({ data: { userId, title: sets[role][i], completed: i === 0 } });
-    created.push(c);
+
+  const [individualList] = await prisma.$queryRaw`
+    INSERT INTO public.todo_lists (user_id, name, description)
+    VALUES (${userId}::uuid, ${listNames[role].individual}, 'Individual list')
+    RETURNING id::int AS id
+  `;
+  for (let i = 0; i < individualItems[role].length; i++) {
+    await prisma.$executeRaw`
+      INSERT INTO public.todo_items (list_id, user_id, title, completed, created_by)
+      VALUES (${individualList.id}::bigint, ${userId}::uuid, ${individualItems[role][i]}, ${i === 0}, ${userId}::uuid)
+    `;
   }
+  created.push({ id: individualList.id, kind: 'individual' });
+
+  if (shareWithUserId) {
+    const [togetherList] = await prisma.$queryRaw`
+      INSERT INTO public.todo_lists (user_id, name, description)
+      VALUES (${userId}::uuid, ${listNames[role].together}, 'Together (shared) list')
+      RETURNING id::int AS id
+    `;
+    for (let i = 0; i < togetherItems[role].length; i++) {
+      await prisma.$executeRaw`
+        INSERT INTO public.todo_items (list_id, user_id, title, completed, created_by)
+        VALUES (${togetherList.id}::bigint, ${userId}::uuid, ${togetherItems[role][i]}, false, ${userId}::uuid)
+      `;
+    }
+    await prisma.$executeRaw`
+      INSERT INTO public.todo_list_shares (list_id, shared_with_user_id, shared_by, permission)
+      VALUES (${togetherList.id}::bigint, ${shareWithUserId}::uuid, ${userId}::uuid, 'edit')
+      ON CONFLICT (list_id, shared_with_user_id) DO NOTHING
+    `;
+    created.push({ id: togetherList.id, kind: 'together', sharedWith: shareWithUserId });
+  }
+
   return created;
 }
 
@@ -625,7 +676,7 @@ async function seedAdvisorFeature(advisorId, clientId) {
     create: {
       userId:          advisorId,
       fullName:        'Vikram Nair',
-      email:           'advisor@kanku.com',
+      email:           'advisor@kanaku.com',
       phone:           '+91-9876012345',
       experienceYears: 12,
       expertise:       'Wealth Management, Tax Planning, Retirement Planning, Portfolio Advisory',
@@ -699,6 +750,8 @@ async function cleanupUser(userId) {
   await prisma.advisorAvailability.deleteMany({ where: { advisorId: userId } }).catch(() => {});
   await prisma.advisorApplication.deleteMany({ where: { userId } }).catch(() => {});
   await prisma.todo.deleteMany({ where: { userId } }).catch(() => {});
+  // Real to-do feature tables (raw SQL, not Prisma-managed) — cascades to items/shares.
+  await prisma.$executeRaw`DELETE FROM public.todo_lists WHERE user_id = ${userId}::uuid`.catch(() => {});
   await prisma.notification.deleteMany({ where: { userId } }).catch(() => {});
   await prisma.taxCalculation.deleteMany({ where: { userId } }).catch(() => {});
   await prisma.goldAsset.deleteMany({ where: { userId } }).catch(() => {});
@@ -723,10 +776,10 @@ async function main() {
 
   const ROLES = ['admin', 'manager', 'advisor', 'user'];
   const EMAILS = {
-    admin:   'admin@kanku.com',
-    manager: 'manager@kanku.com',
-    advisor: 'advisor@kanku.com',
-    user:    'user@kanku.com',
+    admin:   'admin@kanaku.com',
+    manager: 'manager@kanaku.com',
+    advisor: 'advisor@kanaku.com',
+    user:    'user@kanaku.com',
   };
 
   // Look up users dynamically
@@ -779,7 +832,7 @@ async function main() {
     const recurring = await seedRecurring(userId, role, acc);
     console.log(`  ✓ Recurring Txns:        ${recurring.length} created`);
 
-    const groups = await seedGroupExpenses(userId, role, acc);
+    const groups = await seedGroupExpenses(userId, role, acc, friends);
     console.log(`  ✓ Group Expenses:        ${groups.length} created`);
 
     const taxes = await seedTaxCalcs(userId, role);
@@ -788,8 +841,10 @@ async function main() {
     const notifs = await seedNotifications(userId, role);
     console.log(`  ✓ Notifications:         ${notifs.length} created`);
 
-    const todos = await seedTodos(userId, role);
-    console.log(`  ✓ Todos:                 ${todos.length} created`);
+    const nextRole = ROLES[(ROLES.indexOf(role) + 1) % ROLES.length];
+    const shareWithUserId = userMap[nextRole]?.id;
+    const todos = await seedTodos(userId, role, shareWithUserId);
+    console.log(`  ✓ Todos:                 ${todos.length} created (1 individual${shareWithUserId ? ' + 1 together, shared with ' + nextRole : ''})`);
   }
 
   // Advisor feature – needs both advisor and user

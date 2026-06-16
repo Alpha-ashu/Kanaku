@@ -538,6 +538,13 @@ exports.Prisma.UserSettingsScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.PlatformSettingsScalarFieldEnum = {
+  id: 'id',
+  settings: 'settings',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.OtpCodeScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
@@ -920,6 +927,7 @@ exports.Prisma.ModelName = {
   User: 'User',
   UserPin: 'UserPin',
   UserSettings: 'UserSettings',
+  PlatformSettings: 'PlatformSettings',
   OtpCode: 'OtpCode',
   AiScan: 'AiScan',
   ai_events: 'ai_events',

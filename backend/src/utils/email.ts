@@ -26,6 +26,8 @@ export interface SendEmailOptions {
   html: string;
   categories?: string[];
   headers?: Record<string, string>;
+  /** Echoed back verbatim in SendGrid Event Webhook payloads — use this (not headers) to correlate delivery/open/bounce events back to a notification or invitation. */
+  customArgs?: Record<string, string>;
 }
 
 /**
@@ -47,6 +49,7 @@ export async function sendEmail(opts: SendEmailOptions): Promise<boolean> {
       html: opts.html,
       categories: opts.categories,
       headers: opts.headers,
+      customArgs: opts.customArgs,
     });
     return true;
   } catch (err: any) {

@@ -30,6 +30,7 @@ import { recurringRoutes } from '../modules/recurring/recurring.routes';
 import { budgetRoutes } from '../modules/budgets/budget.routes';
 import { taxRoutes } from '../modules/tax/tax.routes';
 import { goldRoutes } from '../modules/gold/gold.routes';
+import { webhookRoutes } from '../modules/webhooks/webhook.routes';
 
 const router = Router();
 
@@ -54,6 +55,9 @@ const lazyRoute =
 // Authentication routes (public)
 router.use('/auth', authRoutes);
 router.use('/avatars', avatarRoutes);
+
+// Webhook routes (public — called directly by external providers like SendGrid)
+router.use('/webhooks', webhookRoutes);
 
 // Sync and PIN routes (protected)
 router.use('/sync', syncRoutes);

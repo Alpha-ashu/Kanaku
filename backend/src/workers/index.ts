@@ -5,6 +5,7 @@ import nodemailer from 'nodemailer';
 import { prisma } from '../db/prisma';
 import { sendEmail } from '../utils/email';
 import { redisConnection as sharedRedisConnection } from '../config/queue';
+import { logInvitationEvent } from '../utils/invitationLifecycle';
 
 // Initialize Firebase Admin if not already done
 let firebaseInitialized = false;
@@ -193,6 +194,11 @@ export const initializeEmailWorker = (emailQueue: Queue) => {
             'X-Notification-ID': notificationId,
             'X-User-ID': userId,
           },
+          customArgs: { kind: 'notification', notificationId, userId },
+        });
+
+        logInvitationEvent(sent ? 'EMAIL_SENT' : 'EMAIL_FAILED', {
+          email: user.email, notificationId, userId, moduleType: category, path: 'registered_user_queue',
         });
 
         if (notificationId) {

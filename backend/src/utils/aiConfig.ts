@@ -1,5 +1,5 @@
-import { prisma } from '../db/prisma';
 import { logger } from '../config/logger';
+import { getPlatformSettings, updatePlatformSettings } from './platformSettings';
 
 export interface AIConfigurations {
   ocr: {
@@ -118,36 +118,12 @@ export const DEFAULT_AI_CONFIGS: AIConfigurations = {
 
 export async function getAIConfigurations(): Promise<AIConfigurations> {
   try {
-    const adminUser = await prisma.user.findFirst({
-      where: { role: 'admin' },
-    });
-
-    if (!adminUser) {
+    const platformSettings = await getPlatformSettings();
+    const loaded = platformSettings.admin_ai_configurations;
+    if (!loaded) {
       return DEFAULT_AI_CONFIGS;
     }
 
-    const settings = await prisma.userSettings.findUnique({
-      where: { userId: adminUser.id },
-    });
-
-    if (!settings || !settings.settings) {
-      return DEFAULT_AI_CONFIGS;
-    }
-
-    let parsedSettings;
-    try {
-      parsedSettings = typeof settings.settings === 'string'
-        ? JSON.parse(settings.settings)
-        : (settings.settings as any);
-    } catch {
-      return DEFAULT_AI_CONFIGS;
-    }
-
-    if (!parsedSettings.admin_ai_configurations) {
-      return DEFAULT_AI_CONFIGS;
-    }
-
-    const loaded = parsedSettings.admin_ai_configurations;
     return {
       ocr: { ...DEFAULT_AI_CONFIGS.ocr, ...loaded.ocr },
       import: { ...DEFAULT_AI_CONFIGS.import, ...loaded.import },
@@ -163,30 +139,8 @@ export async function getAIConfigurations(): Promise<AIConfigurations> {
 }
 
 export async function updateAIConfigurations(configs: Partial<AIConfigurations>): Promise<AIConfigurations> {
-  const adminUser = await prisma.user.findFirst({
-    where: { role: 'admin' },
-  });
-
-  if (!adminUser) {
-    throw new Error('Admin user not found in the system');
-  }
-
-  let settings = await prisma.userSettings.findUnique({
-    where: { userId: adminUser.id },
-  });
-
-  let currentSettings: Record<string, any> = {};
-  if (settings && settings.settings) {
-    try {
-      currentSettings = typeof settings.settings === 'string'
-        ? JSON.parse(settings.settings)
-        : (settings.settings as any);
-    } catch {
-      currentSettings = {};
-    }
-  }
-
-  const existingConfig = currentSettings.admin_ai_configurations || DEFAULT_AI_CONFIGS;
+  const platformSettings = await getPlatformSettings();
+  const existingConfig = platformSettings.admin_ai_configurations || DEFAULT_AI_CONFIGS;
   const mergedConfig = {
     ocr: { ...DEFAULT_AI_CONFIGS.ocr, ...existingConfig.ocr, ...configs.ocr },
     import: { ...DEFAULT_AI_CONFIGS.import, ...existingConfig.import, ...configs.import },
@@ -196,24 +150,7 @@ export async function updateAIConfigurations(configs: Partial<AIConfigurations>)
     smartRules: { ...DEFAULT_AI_CONFIGS.smartRules, ...existingConfig.smartRules, ...configs.smartRules },
   };
 
-  currentSettings.admin_ai_configurations = mergedConfig;
-
-  if (!settings) {
-    await prisma.userSettings.create({
-      data: {
-        userId: adminUser.id,
-        settings: JSON.stringify(currentSettings),
-      },
-    });
-  } else {
-    await prisma.userSettings.update({
-      where: { userId: adminUser.id },
-      data: {
-        settings: JSON.stringify(currentSettings),
-        updatedAt: new Date(),
-      },
-    });
-  }
+  await updatePlatformSettings({ admin_ai_configurations: mergedConfig });
 
   return mergedConfig;
 }

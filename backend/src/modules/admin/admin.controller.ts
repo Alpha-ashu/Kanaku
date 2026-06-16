@@ -6,6 +6,8 @@ import { logger } from '../../config/logger';
 import { getCacheMetricsSnapshot, getRedisStatus, resetCacheMetrics } from '../../cache/redis';
 import { getSystemMetrics } from '../../utils/system';
 import { invalidateFeatureCache, invalidateAIFeatureCache } from '../../middleware/featureGate';
+import { getPlatformSettings, updatePlatformSettings } from '../../utils/platformSettings';
+import { auditLog } from '../../middleware/rbac';
 import { getSupabaseAdminClient } from '../../db/supabase';
 import { getSocketManager } from '../../sockets';
 import { 
@@ -271,31 +273,8 @@ export const getFeatureFlags = async (req: AuthRequest, res: Response) => {
     res.setHeader('Cache-Control', 'private, no-store, no-cache, must-revalidate');
     res.setHeader('Vary', 'Authorization');
 
-    // Find the first admin user in the system to load global feature flags
-    const adminUser = await prisma.user.findFirst({
-      where: { role: 'admin' },
-    });
-
-    if (!adminUser) {
-      const reconstructed = reconstructFeatures({}, userRole === 'admin' ? undefined : userRole);
-      return res.json(reconstructed);
-    }
-
-    const settings = await prisma.userSettings.findUnique({
-      where: { userId: adminUser.id },
-    });
-
-    let globalFeatures: Record<string, any> = {};
-    if (settings?.settings) {
-      try {
-        const parsedSettings = typeof settings.settings === 'string'
-          ? JSON.parse(settings.settings)
-          : (settings.settings as any);
-        globalFeatures = parsedSettings.admin_global_feature_settings || {};
-      } catch (parseErr) {
-        logger.warn('Failed to parse global feature settings', { error: parseErr });
-      }
-    }
+    const platformSettings = await getPlatformSettings();
+    const globalFeatures: Record<string, any> = platformSettings.admin_global_feature_settings || {};
 
     // Non-admin users get only their role's enabled/disabled features — no roleAccess matrix
     const reconstructed = reconstructFeatures(globalFeatures, userRole === 'admin' ? undefined : userRole);
@@ -322,51 +301,15 @@ export const toggleFeatureFlag = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ error: 'Missing required field: features' });
     }
 
-    const adminUser = await prisma.user.findFirst({
-      where: { role: 'admin' },
-    });
-
-    if (!adminUser) {
-      return res.status(404).json({ error: 'Admin user not found' });
-    }
-
-    let settings = await prisma.userSettings.findUnique({
-      where: { userId: adminUser.id },
-    });
-
-    let currentSettings: Record<string, any> = {};
-    if (settings && settings.settings) {
-      try {
-        currentSettings = typeof settings.settings === 'string'
-          ? JSON.parse(settings.settings)
-          : (settings.settings as any);
-      } catch {
-        currentSettings = {};
-      }
-    }
-
     // Save under the key 'admin_global_feature_settings'
     const roleCentricFeatures = transformFeaturesToRoleCentric(features);
-    currentSettings.admin_global_feature_settings = roleCentricFeatures;
-
-    if (!settings) {
-      settings = await prisma.userSettings.create({
-        data: {
-          userId: adminUser.id,
-          settings: JSON.stringify(currentSettings),
-        },
-      });
-    } else {
-      settings = await prisma.userSettings.update({
-        where: { userId: adminUser.id },
-        data: {
-          settings: JSON.stringify(currentSettings),
-          updatedAt: new Date(),
-        },
-      });
-    }
+    await updatePlatformSettings({ admin_global_feature_settings: roleCentricFeatures });
 
     invalidateFeatureCache();
+
+    await auditLog(req.userId, 'FEATURE_FLAGS_UPDATE', 'platform_settings:global_features', 'success', {
+      keys: Object.keys(roleCentricFeatures),
+    });
 
     // Broadcast real-time update to all connected clients
     try {
@@ -399,30 +342,8 @@ export const getAIFeatureFlags = async (req: AuthRequest, res: Response) => {
 
     const userRole = req.user.role as UserRole;
 
-    const adminUser = await prisma.user.findFirst({
-      where: { role: 'admin' },
-    });
-
-    if (!adminUser) {
-      const reconstructed = reconstructAIFeatures({}, userRole === 'admin' ? undefined : userRole);
-      return res.json(reconstructed);
-    }
-
-    const settings = await prisma.userSettings.findUnique({
-      where: { userId: adminUser.id },
-    });
-
-    let globalAIFeatures: Record<string, any> = {};
-    if (settings?.settings) {
-      try {
-        const parsedSettings = typeof settings.settings === 'string'
-          ? JSON.parse(settings.settings)
-          : (settings.settings as any);
-        globalAIFeatures = parsedSettings.admin_ai_feature_settings || {};
-      } catch (parseErr) {
-        logger.warn('Failed to parse AI feature settings', { error: parseErr });
-      }
-    }
+    const platformSettings = await getPlatformSettings();
+    const globalAIFeatures: Record<string, any> = platformSettings.admin_ai_feature_settings || {};
 
     const reconstructed = reconstructAIFeatures(globalAIFeatures, userRole === 'admin' ? undefined : userRole);
     res.json(reconstructed);
@@ -441,50 +362,14 @@ export const toggleAIFeatureFlags = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ error: 'Missing required field: features' });
     }
 
-    const adminUser = await prisma.user.findFirst({
-      where: { role: 'admin' },
-    });
-
-    if (!adminUser) {
-      return res.status(404).json({ error: 'Admin user not found' });
-    }
-
-    let settings = await prisma.userSettings.findUnique({
-      where: { userId: adminUser.id },
-    });
-
-    let currentSettings: Record<string, any> = {};
-    if (settings && settings.settings) {
-      try {
-        currentSettings = typeof settings.settings === 'string'
-          ? JSON.parse(settings.settings)
-          : (settings.settings as any);
-      } catch {
-        currentSettings = {};
-      }
-    }
-
     const roleCentricAIFeatures = transformAIFeaturesToRoleCentric(features);
-    currentSettings.admin_ai_feature_settings = roleCentricAIFeatures;
-
-    if (!settings) {
-      settings = await prisma.userSettings.create({
-        data: {
-          userId: adminUser.id,
-          settings: JSON.stringify(currentSettings),
-        },
-      });
-    } else {
-      settings = await prisma.userSettings.update({
-        where: { userId: adminUser.id },
-        data: {
-          settings: JSON.stringify(currentSettings),
-          updatedAt: new Date(),
-        },
-      });
-    }
+    await updatePlatformSettings({ admin_ai_feature_settings: roleCentricAIFeatures });
 
     invalidateAIFeatureCache();
+
+    await auditLog(req.userId, 'FEATURE_FLAGS_UPDATE', 'platform_settings:ai_features', 'success', {
+      keys: Object.keys(roleCentricAIFeatures),
+    });
 
     // Broadcast real-time update to all connected clients
     try {
@@ -775,9 +660,11 @@ export const updateUserRole = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ error: 'Invalid role specified' });
     }
 
+    const before = await prisma.user.findUnique({ where: { id: userId }, select: { role: true, email: true } });
+
     const updated = await prisma.user.update({
       where: { id: userId },
-      data: { 
+      data: {
         role,
         isApproved: role === 'advisor' ? true : undefined
       },
@@ -798,6 +685,12 @@ export const updateUserRole = async (req: AuthRequest, res: Response) => {
         message: `Your account role has been updated to ${role} by the administrator.`,
         category: 'system',
       },
+    });
+
+    await auditLog(req.userId, 'ROLE_CHANGE', `user:${userId}`, 'success', {
+      targetEmail: updated.email,
+      fromRole: before?.role ?? null,
+      toRole: role,
     });
 
     res.json({ message: `User role updated to ${role} successfully`, user: updated });
