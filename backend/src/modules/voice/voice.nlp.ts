@@ -13,8 +13,9 @@
  *   → cleanTranscript (filler removal)
  *   → detectLanguage (stub — always 'en' in Phase 1)
  *   → [translateToEnglish if lang ≠ 'en'] (stub — no-op in Phase 1)
- *   → extractWithLLM (Gemini — extracts ALL actions in one shot)
- *   → fallback: regexPipeline (if Gemini unavailable or returns nothing)
+ *   → LLM extraction (Gemini primary, Groq/OpenRouter as fallback providers — each
+ *     extracts ALL actions in one shot)
+ *   → fallback: regexPipeline (if every LLM provider is unavailable or returns nothing)
  *   → FinancialAction[]
  */
 
@@ -178,45 +179,14 @@ Return ONLY the JSON array. Example for "spent 500 on petrol and 3499 for dinner
 }
 
 /**
- * Send the cleaned transcript to Gemini and return all extracted actions.
- * Uses JSON mode (responseMimeType) for reliable structured output.
+ * Turn raw LLM JSON actions into validated FinancialAction[].
+ * Shared by every provider (Gemini, Groq, OpenRouter) so parsing rules stay identical.
  */
-async function extractWithLLM(
+function normaliseRawActions(
+  parsed: LLMRawAction[],
   transcript: string,
-  modelName: string,
   confidenceThreshold: number,
-): Promise<FinancialAction[]> {
-  const { GoogleGenerativeAI } = await import('@google/generative-ai');
-  const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY!);
-
-  const model = genAI.getGenerativeModel({
-    model: modelName,
-    generationConfig: {
-      responseMimeType: 'application/json',
-      temperature: 0.1,        // low temperature = consistent, predictable extraction
-      maxOutputTokens: 2048,
-    },
-  });
-
-  const prompt = buildExtractionPrompt(transcript);
-
-  const result = await model.generateContent(prompt);
-  const rawText = result.response.text().trim()
-    .replace(/^```(?:json)?\s*/i, '')
-    .replace(/\s*```\s*$/i, '');
-
-  let parsed: LLMRawAction[];
-  try {
-    const maybeArray = JSON.parse(rawText);
-    // Gemini sometimes wraps in {"actions": [...]}
-    parsed = Array.isArray(maybeArray)
-      ? maybeArray
-      : (maybeArray.actions ?? maybeArray.results ?? []);
-  } catch (e) {
-    logger.warn('Voice LLM: JSON parse failed', { rawText: rawText.slice(0, 200) });
-    return [];
-  }
-
+): FinancialAction[] {
   const today = TODAY();
 
   return parsed
@@ -247,6 +217,85 @@ async function extractWithLLM(
         requiresReview: confidence < confidenceThreshold,
       } satisfies FinancialAction;
     });
+}
+
+function parseLLMJson(rawText: string): LLMRawAction[] {
+  const cleaned = rawText.trim()
+    .replace(/^```(?:json)?\s*/i, '')
+    .replace(/\s*```\s*$/i, '');
+
+  try {
+    const maybe = JSON.parse(cleaned);
+    // Some providers wrap the array in {"actions": [...]}
+    return Array.isArray(maybe) ? maybe : (maybe.actions ?? maybe.results ?? []);
+  } catch {
+    logger.warn('Voice LLM: JSON parse failed', { rawText: cleaned.slice(0, 200) });
+    return [];
+  }
+}
+
+/**
+ * Send the cleaned transcript to Gemini and return all extracted actions.
+ * Uses JSON mode (responseMimeType) for reliable structured output.
+ */
+async function extractWithGemini(
+  transcript: string,
+  modelName: string,
+  confidenceThreshold: number,
+): Promise<FinancialAction[]> {
+  const { GoogleGenerativeAI } = await import('@google/generative-ai');
+  const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY!);
+
+  const model = genAI.getGenerativeModel({
+    model: modelName,
+    generationConfig: {
+      responseMimeType: 'application/json',
+      temperature: 0.1,        // low temperature = consistent, predictable extraction
+      maxOutputTokens: 2048,
+    },
+  });
+
+  const result = await model.generateContent(buildExtractionPrompt(transcript));
+  const parsed = parseLLMJson(result.response.text());
+  return normaliseRawActions(parsed, transcript, confidenceThreshold);
+}
+
+/**
+ * Send the cleaned transcript to an OpenAI-compatible chat-completions endpoint
+ * (Groq, OpenRouter, ...) and return all extracted actions. Used as a fallback
+ * when Gemini is unavailable, rate-limited, or experiencing an outage.
+ */
+async function extractWithOpenAICompatible(
+  transcript: string,
+  opts: { baseUrl: string; apiKey: string; model: string; label: string },
+  confidenceThreshold: number,
+): Promise<FinancialAction[]> {
+  const prompt = `${buildExtractionPrompt(transcript)}\n\nIMPORTANT: Wrap your answer as a single JSON object {"actions": [ ... ]}, not a bare array.`;
+
+  const res = await fetch(`${opts.baseUrl}/chat/completions`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${opts.apiKey}`,
+    },
+    body: JSON.stringify({
+      model: opts.model,
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.1,
+      max_tokens: 2048,
+      response_format: { type: 'json_object' },
+    }),
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(`${opts.label} API error ${res.status}: ${text.slice(0, 200)}`);
+  }
+
+  const data: any = await res.json();
+  const rawText: string = data?.choices?.[0]?.message?.content ?? '';
+  const parsed = parseLLMJson(rawText);
+  return normaliseRawActions(parsed, transcript, confidenceThreshold);
 }
 
 function normaliseType(raw: string | undefined): FinancialActionType {
@@ -446,27 +495,61 @@ export async function processVoiceTranscript(transcript: string): Promise<Financ
   const english = lang === 'en' ? cleaned : await translateToEnglish(cleaned, lang);
 
   const threshold = config.voice.autoSaveThreshold ?? 0.7;
-  const modelName = config.voice.model ?? 'gemini-1.5-flash';
+  const modelName = config.voice.model ?? 'gemini-2.5-flash';
 
-  // Step 4: LLM-first extraction (primary path — handles all natural language cases)
+  // Step 4: LLM-first extraction — try providers in order until one returns actions.
+  // Gemini is primary; Groq/OpenRouter are fallbacks for outages, rate limits, or
+  // a missing/invalid Gemini key. Each provider is independent — a failure on one
+  // simply moves to the next, regex is the last resort.
+  const providers: Array<{ label: string; run: () => Promise<FinancialAction[]> }> = [];
+
   if (process.env.GOOGLE_API_KEY) {
+    providers.push({
+      label: 'Gemini',
+      run: () => extractWithGemini(english, modelName, threshold),
+    });
+  }
+  if (process.env.GROQ_API_KEY) {
+    providers.push({
+      label: 'Groq',
+      run: () => extractWithOpenAICompatible(english, {
+        baseUrl: 'https://api.groq.com/openai/v1',
+        apiKey: process.env.GROQ_API_KEY!,
+        model: 'llama-3.3-70b-versatile',
+        label: 'Groq',
+      }, threshold),
+    });
+  }
+  if (process.env.OPENROUTER_API_KEY) {
+    providers.push({
+      label: 'OpenRouter',
+      run: () => extractWithOpenAICompatible(english, {
+        baseUrl: 'https://openrouter.ai/api/v1',
+        apiKey: process.env.OPENROUTER_API_KEY!,
+        model: 'meta-llama/llama-3.3-70b-instruct',
+        label: 'OpenRouter',
+      }, threshold),
+    });
+  }
+
+  for (const provider of providers) {
     try {
-      const llmActions = await extractWithLLM(english, modelName, threshold);
-      if (llmActions.length > 0) {
-        logger.info('Voice NLP: LLM extracted actions', {
-          count: llmActions.length,
-          types: llmActions.map(a => a.type),
-          amounts: llmActions.map(a => a.entities.amount),
+      const actions = await provider.run();
+      if (actions.length > 0) {
+        logger.info(`Voice NLP: ${provider.label} extracted actions`, {
+          count: actions.length,
+          types: actions.map(a => a.type),
+          amounts: actions.map(a => a.entities.amount),
         });
-        return llmActions;
+        return actions;
       }
-      logger.warn('Voice NLP: LLM returned empty result, falling back to regex');
+      logger.warn(`Voice NLP: ${provider.label} returned empty result, trying next provider`);
     } catch (err: any) {
-      logger.warn('Voice NLP: LLM extraction failed, falling back to regex', { error: err.message });
+      logger.warn(`Voice NLP: ${provider.label} extraction failed, trying next provider`, { error: err.message });
     }
   }
 
-  // Step 5: Regex fallback (offline / no API key / LLM failure)
+  // Step 5: Regex fallback (offline / no API keys / every LLM provider failed)
   const fallbackActions = regexPipeline(english, threshold);
   logger.info('Voice NLP: regex fallback extracted actions', {
     count: fallbackActions.length,

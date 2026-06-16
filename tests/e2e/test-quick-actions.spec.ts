@@ -8,7 +8,10 @@ const user = USERS.U1; // Arjun Sharma
 
 test.describe('Quick Actions Navigation Test', () => {
   test.setTimeout(120_000);
-  test.use({ storageState: undefined });
+  test.use({ 
+    storageState: undefined,
+    viewport: { width: 390, height: 844 },
+  });
 
   test('Should navigate to correct pages from Quick Action modal', async ({ page }) => {
     // Log console events
@@ -29,7 +32,7 @@ test.describe('Quick Actions Navigation Test', () => {
     console.log('Buttons on page:', buttons);
 
     // 2. Open the Quick Actions Modal
-    const quickAddButton = page.locator('[data-testid="quick-add-btn"], [aria-label="Quick Actions"], button:has-text("Add"), button:has-text("+"), button[aria-label="Add transaction"]').first();
+    const quickAddButton = page.locator('[data-testid="nav-quick-add-button"]').first();
     await quickAddButton.waitFor({ state: 'visible', timeout: 5000 }).catch(() => null);
     await quickAddButton.click();
     await page.waitForTimeout(1000);
@@ -51,7 +54,7 @@ test.describe('Quick Actions Navigation Test', () => {
     expect(hasAddTransactionTitle, 'Should navigate to Add Transaction page on Expense click').toBe(true);
 
     // Go back to dashboard to test next quick action
-    const backBtn = page.locator('button[aria-label="Back"], button:has-text("Back"), button:has(svg)').first();
+    const backBtn = page.locator('[data-testid="transaction-back-button"], button[title="Back"], button[aria-label="Back"], button:has-text("Back")').first();
     if (await backBtn.isVisible()) {
       await backBtn.click();
       await page.waitForTimeout(1000);

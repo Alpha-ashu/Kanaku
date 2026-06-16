@@ -118,7 +118,7 @@ export const processVoiceAudio = async (req: AuthRequest, res: Response) => {
       try {
         const { GoogleGenerativeAI } = await import('@google/generative-ai');
         const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
-        const modelName = config.voice.model || 'gemini-1.5-flash';
+        const modelName = config.voice.model || 'gemini-2.5-flash';
         const model = genAI.getGenerativeModel({ model: modelName });
 
         const result = await model.generateContent([

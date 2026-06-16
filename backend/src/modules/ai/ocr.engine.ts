@@ -324,7 +324,7 @@ export const scanReceiptWithGemini = async (imageBuffer: Buffer, mimeType: strin
       },
       async () => {
         const model = genAI.getGenerativeModel({
-          model: config.ocr.model || 'gemini-1.5-flash',
+          model: config.ocr.model || 'gemini-2.5-flash',
           systemInstruction: SYSTEM_INSTRUCTION,
           generationConfig: {
             temperature: 0.1,
@@ -422,7 +422,7 @@ export const scanReceiptFromText = async (text: string): Promise<Record<string, 
       },
       async () => {
         const model = genAI.getGenerativeModel({
-          model: config.ocr.model || 'gemini-1.5-flash',
+          model: config.ocr.model || 'gemini-2.5-flash',
           systemInstruction: SYSTEM_INSTRUCTION,
           generationConfig: { temperature: 0.1, topP: 0.95, maxOutputTokens: 2048 },
         });

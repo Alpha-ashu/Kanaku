@@ -548,6 +548,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           : {};
 
         Object.entries(parsed).forEach(([key, value]: [string, any]) => {
+          if (role !== 'admin') {
+            // Backend has already pre-filtered flags for non-admin roles.
+            merged[key] = value?.enabled === true;
+            return;
+          }
+
           const readiness = value?.readiness;
           let isVisible: boolean;
           switch (readiness) {
