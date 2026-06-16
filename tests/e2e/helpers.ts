@@ -80,6 +80,7 @@ export async function loginUser(page: Page, user: typeof USERS.U1) {
     localStorage.setItem('refresh_token', rt);
     localStorage.setItem('user_email', email);
     localStorage.setItem('onboarding_completed', 'true');
+    localStorage.setItem('onboarding_slides_viewed', 'true');
     localStorage.setItem('user_data', JSON.stringify(userObj));
     localStorage.setItem('pin_setup_completed', 'true');
     localStorage.setItem('pin_created', 'true');
@@ -248,6 +249,22 @@ export async function skipOnboardingIfPresent(page: Page) {
   const isDashboardVisible = await page.locator('[data-nav-id], [aria-label="Dashboard"], [aria-label="Home"]').first()
     .isVisible().catch(() => false);
   if (isDashboardVisible) return;
+
+  // Handle App Feature Slides (shown to new users before PIN setup)
+  const slidesContainer = page.getByTestId('onboarding-slides-container');
+  if (await isElementVisible(slidesContainer, 5000)) {
+    // Click Skip to jump to the last slide, then click Complete
+    const skipBtn = page.getByTestId('onboarding-slides-skip-button');
+    if (await isElementVisible(skipBtn, 2000)) {
+      await skipBtn.click();
+      await page.waitForTimeout(600);
+    }
+    const completeBtn = page.getByTestId('onboarding-slides-complete-button');
+    if (await isElementVisible(completeBtn, 3000)) {
+      await completeBtn.click();
+      await page.waitForTimeout(1000);
+    }
+  }
 
   const STRONG_PIN = '142536'; // non-repeating, non-sequential
 

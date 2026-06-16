@@ -1,8 +1,10 @@
 import { Worker, Queue } from 'bullmq';
-import Redis from 'ioredis';
 import { logger } from '../config/logger';
 import * as admin from 'firebase-admin';
 import nodemailer from 'nodemailer';
+import { prisma } from '../db/prisma';
+import { sendEmail } from '../utils/email';
+import { redisConnection as sharedRedisConnection } from '../config/queue';
 
 // Initialize Firebase Admin if not already done
 let firebaseInitialized = false;
@@ -66,18 +68,10 @@ const getEmailTransporter = () => {
 export const initializePushWorker = (pushQueue: Queue) => {
   initializeFirebase();
 
-  const redisConnection = new Redis({
-    host: process.env.REDIS_HOST || 'localhost',
-    port: parseInt(process.env.REDIS_PORT || '6379'),
-    password: process.env.REDIS_PASSWORD || undefined,
-    db: parseInt(process.env.REDIS_DB || '0'),
-    maxRetriesPerRequest: null,
-  });
-
-  redisConnection.on('error', (error) => {
-    // Handle error event to prevent unhandled AggregateError logs in dev environment
-  });
-
+  // Reuse the same Redis connection the queues are created with (config/queue.ts
+  // resolves REDIS_URL in production, not just REDIS_HOST/PORT) — otherwise this
+  // worker silently connects to a different (often unreachable) Redis instance
+  // and never picks up jobs that were actually enqueued.
   const worker = new Worker(
     'push-notifications',
     async (job) => {
@@ -139,7 +133,7 @@ export const initializePushWorker = (pushQueue: Queue) => {
       }
     },
     {
-      connection: redisConnection as any,
+      connection: sharedRedisConnection as any,
       concurrency: 10, // Process 10 notifications concurrently
     }
   );
@@ -164,62 +158,68 @@ export const initializePushWorker = (pushQueue: Queue) => {
  * Initialize email notification worker
  */
 export const initializeEmailWorker = (emailQueue: Queue) => {
-  const redisConnection = new Redis({
-    host: process.env.REDIS_HOST || 'localhost',
-    port: parseInt(process.env.REDIS_PORT || '6379'),
-    password: process.env.REDIS_PASSWORD || undefined,
-    db: parseInt(process.env.REDIS_DB || '0'),
-    maxRetriesPerRequest: null,
-  });
+  // Reuse the same Redis connection the queues are created with (see note on
+  // initializePushWorker above).
 
-  redisConnection.on('error', (error) => {
-    // Handle error event to prevent unhandled AggregateError logs in dev environment
-  });
-
-  const transporter = getEmailTransporter();
+  // Reserved for any future non-SendGrid SMTP fallback; the active send path
+  // below goes through utils/email.ts (SendGrid) to match the rest of the app.
+  void getEmailTransporter;
 
   const worker = new Worker(
     'email-notifications',
     async (job) => {
-      try {
-        const { notificationId, userId, title, message, type } = job.data;
+      const { notificationId, userId, title, message, category, deepLink } = job.data;
 
+      try {
         logger.info('Processing email notification', {
           notificationId,
           userId,
-          type,
+          category,
           jobId: job.id,
         });
 
-        // TODO: Get user email from database
-        // const user = await prisma.user.findUnique({ where: { id: userId } });
-        // if (!user?.email) {
-        //   logger.warn('User email not found', { userId });
-        //   return { status: 'skipped', reason: 'user_email_not_found' };
-        // }
+        const user = await prisma.user.findUnique({ where: { id: userId } });
+        if (!user?.email) {
+          logger.warn('Email notification skipped: user not found or has no email', { userId });
+          return { status: 'skipped', reason: 'user_email_not_found' };
+        }
 
-        const emailContent = `
-          <h2>${title}</h2>
-          <p>${message}</p>
-          <p style="color: #666; font-size: 12px;">
-            Notification Type: ${type}
-          </p>
-        `;
+        const sent = await sendEmail({
+          to: user.email,
+          subject: title,
+          html: buildNotificationEmailHtml({ title, message, category, deepLink }),
+          categories: ['kanaku-notification', category || 'general'],
+          headers: {
+            'X-Notification-ID': notificationId,
+            'X-User-ID': userId,
+          },
+        });
 
-        // await transporter.sendMail({
-        //   from: process.env.SMTP_FROM_EMAIL || 'noreply@KANAKU.app',
-        //   to: user.email,
-        //   subject: title,
-        //   html: emailContent,
-        // });
+        if (notificationId) {
+          try {
+            const notification = await prisma.notification.findUnique({ where: { id: notificationId } });
+            if (notification) {
+              const deliveryStatus = (typeof notification.deliveryStatus === 'string'
+                ? JSON.parse(notification.deliveryStatus)
+                : (notification.deliveryStatus || {})) as any;
+              deliveryStatus.email = sent ? 'sent' : 'failed';
+              await prisma.notification.update({
+                where: { id: notificationId },
+                data: { deliveryStatus: JSON.stringify(deliveryStatus) },
+              });
+            }
+          } catch (statusErr) {
+            logger.warn('Failed to update notification delivery status', statusErr);
+          }
+        }
 
-        logger.info('Email notification sent', { notificationId, userId });
+        if (!sent) {
+          throw new Error('SendGrid delivery failed');
+        }
 
-        return {
-          status: 'sent',
-          notificationId,
-          userId,
-        };
+        logger.info('Email notification sent', { notificationId, userId, to: user.email });
+
+        return { status: 'sent', notificationId, userId };
       } catch (error) {
         logger.error('Email notification worker error', {
           error: error instanceof Error ? error.message : String(error),
@@ -229,7 +229,7 @@ export const initializeEmailWorker = (emailQueue: Queue) => {
       }
     },
     {
-      connection: redisConnection as any,
+      connection: sharedRedisConnection as any,
       concurrency: 5, // Process 5 emails concurrently
     }
   );
@@ -249,6 +249,54 @@ export const initializeEmailWorker = (emailQueue: Queue) => {
   logger.info('Email notification worker initialized');
   return worker;
 };
+
+function escapeHtml(text: string): string {
+  const map: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+  return text.replace(/[&<>"']/g, (char) => map[char]);
+}
+
+function buildNotificationEmailHtml(args: { title: string; message: string; category?: string; deepLink?: string }): string {
+  const { title, message, category, deepLink } = args;
+  const actionButton = deepLink
+    ? `<a href="${process.env.FRONTEND_URL || ''}${deepLink}" style="display: inline-block; padding: 12px 24px; background-color: #5B21B6; color: white; text-decoration: none; border-radius: 6px; font-weight: 500; margin-top: 16px;">View Details</a>`
+    : '';
+
+  return `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+          body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9fafb; }
+          .card { background-color: white; border-radius: 8px; padding: 32px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+          .header { margin-bottom: 24px; border-bottom: 2px solid #5B21B6; padding-bottom: 16px; }
+          .logo { font-size: 24px; font-weight: bold; color: #5B21B6; }
+          .title { font-size: 22px; font-weight: 600; margin: 16px 0 8px 0; color: #1f2937; }
+          .category { font-size: 12px; text-transform: uppercase; color: #6b7280; letter-spacing: 0.5px; }
+          .message { font-size: 16px; margin: 20px 0; color: #4b5563; line-height: 1.8; }
+          .footer { margin-top: 32px; padding-top: 16px; border-top: 1px solid #e5e7eb; font-size: 12px; color: #9ca3af; text-align: center; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="card">
+            <div class="header"><div class="logo">KANAKU</div></div>
+            ${category ? `<div class="category">${escapeHtml(category)}</div>` : ''}
+            <div class="title">${escapeHtml(title)}</div>
+            <div class="message">${escapeHtml(message)}</div>
+            ${actionButton}
+            <div class="footer">
+              <p>This is an automated notification from Kanaku.</p>
+              <p>&copy; ${new Date().getFullYear()} Kanaku. All rights reserved.</p>
+            </div>
+          </div>
+        </div>
+      </body>
+    </html>
+  `;
+}
 
 /**
  * Initialize all notification workers

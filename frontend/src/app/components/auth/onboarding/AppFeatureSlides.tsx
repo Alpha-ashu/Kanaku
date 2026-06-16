@@ -245,7 +245,7 @@ export const AppFeatureSlides: React.FC<AppFeatureSlidesProps> = ({ onComplete }
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 flex items-center justify-center p-4">
+    <div data-testid="onboarding-slides-container" className="fixed inset-0 z-50 overflow-y-auto bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-white/40 backdrop-blur-xl rounded-[32px] border border-white/70 shadow-2xl p-6 md:p-8 flex flex-col justify-between min-h-[600px] relative overflow-hidden">
         {/* Decorative background gradients */}
         <div className={`absolute -top-24 -right-24 w-48 h-48 rounded-full bg-gradient-to-br ${slide.gradient} opacity-20 blur-3xl`} />
@@ -260,6 +260,7 @@ export const AppFeatureSlides: React.FC<AppFeatureSlidesProps> = ({ onComplete }
           {currentSlide < slides.length - 1 && (
             <button
               onClick={handleSkip}
+              data-testid="onboarding-slides-skip-button"
               className="text-xs font-bold text-gray-400 hover:text-gray-900 transition-colors uppercase tracking-wider"
             >
               Skip
@@ -279,6 +280,7 @@ export const AppFeatureSlides: React.FC<AppFeatureSlidesProps> = ({ onComplete }
                 animate="center"
                 exit="exit"
                 className="w-full flex flex-col items-center gap-6"
+                data-testid={`onboarding-slides-slide-${currentSlide}`}
               >
                 {/* Custom Card Visual */}
                 <div className="w-full max-w-[280px] min-h-[180px] flex items-center justify-center relative">
@@ -321,6 +323,7 @@ export const AppFeatureSlides: React.FC<AppFeatureSlidesProps> = ({ onComplete }
                     : 'w-2 bg-gray-200 hover:bg-gray-300'
                 }`}
                 aria-label={`Go to slide ${i + 1}`}
+                data-testid={`onboarding-slides-dot-${i}`}
               />
             ))}
           </div>
@@ -330,6 +333,7 @@ export const AppFeatureSlides: React.FC<AppFeatureSlidesProps> = ({ onComplete }
             {currentSlide > 0 ? (
               <button
                 onClick={handleBack}
+                data-testid="onboarding-slides-back-button"
                 className="flex items-center gap-1 text-sm font-bold text-gray-500 hover:text-gray-900 transition-colors py-2 px-3 rounded-xl hover:bg-gray-50"
               >
                 <ChevronLeft size={16} /> Back
@@ -341,6 +345,7 @@ export const AppFeatureSlides: React.FC<AppFeatureSlidesProps> = ({ onComplete }
             {currentSlide < slides.length - 1 ? (
               <button
                 onClick={handleNext}
+                data-testid="onboarding-slides-next-button"
                 className={`flex items-center gap-1 px-5 py-2.5 rounded-2xl text-sm font-black text-white ${slide.accentColor} hover:scale-105 active:scale-95 shadow-md hover:shadow-lg transition-all`}
               >
                 Next <ChevronRight size={16} />
@@ -348,6 +353,7 @@ export const AppFeatureSlides: React.FC<AppFeatureSlidesProps> = ({ onComplete }
             ) : (
               <button
                 onClick={handleNext}
+                data-testid="onboarding-slides-complete-button"
                 className="w-full flex items-center justify-center gap-2 px-6 py-3 rounded-2xl text-sm font-black text-white bg-gray-950 hover:bg-black active:scale-[0.98] shadow-lg hover:shadow-xl transition-all"
               >
                 Continue to Secure PIN Setup <ArrowRight size={16} />

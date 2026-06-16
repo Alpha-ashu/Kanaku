@@ -56,6 +56,20 @@ Centralised table of every `data-testid` added to Finora/Kanaku for Playwright a
 
 ---
 
+## Onboarding — App Feature Slides (`AppFeatureSlides.tsx`)
+
+| Automation ID | Screen | Element Type | Notes |
+|---|---|---|---|
+| `onboarding-slides-container` | Feature Slides | div | Root container; presence indicates slides are active |
+| `onboarding-slides-skip-button` | Feature Slides | button | Skips to last slide; hidden on final slide |
+| `onboarding-slides-slide-${i}` | Feature Slides | motion.div | Dynamic per slide index (0–4) |
+| `onboarding-slides-dot-0` … `onboarding-slides-dot-4` | Feature Slides | button | Pagination indicator dots |
+| `onboarding-slides-back-button` | Feature Slides | button | Previous slide; hidden on first slide |
+| `onboarding-slides-next-button` | Feature Slides | button | Next slide; hidden on final slide |
+| `onboarding-slides-complete-button` | Feature Slides | button | "Continue to Secure PIN Setup"; visible only on final slide |
+
+---
+
 ## Authentication — PIN Auth (`PINAuth.tsx`)
 
 | Automation ID | Screen | Element Type | Notes |
