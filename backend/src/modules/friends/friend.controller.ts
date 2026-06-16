@@ -155,16 +155,18 @@ export const createFriend = async (req: AuthRequest, res: Response, next: NextFu
       throw AppError.badRequest('Either email or phone is required to identify a friend.', 'CONTACT_REQUIRED');
     }
 
+    const cleanName = name.trim();
     const cleanEmail = email ? String(email).trim().toLowerCase() : null;
     const cleanPhone = phone ? String(phone).trim() : null;
 
-    // 1. Prevent duplicate friend records
-    // Check if the user has already added this friend (not deleted)
+    // 1. Prevent duplicate friend records — no two friends of the same user
+    // may share a name, email, or phone number.
     const existing = await prisma.friend.findFirst({
       where: {
         userId,
         deletedAt: null,
         OR: [
+          { name: { equals: cleanName, mode: 'insensitive' } },
           cleanEmail ? { email: cleanEmail } : null,
           cleanPhone ? { phone: cleanPhone } : null,
         ].filter(Boolean) as any,
@@ -172,7 +174,12 @@ export const createFriend = async (req: AuthRequest, res: Response, next: NextFu
     });
 
     if (existing) {
-      throw AppError.badRequest('Friend already added or request already sent.', 'FRIEND_ALREADY_EXISTS');
+      const reason = existing.name.toLowerCase() === cleanName.toLowerCase()
+        ? 'A friend with this name already exists.'
+        : (cleanEmail && existing.email === cleanEmail)
+          ? 'A friend with this email already exists.'
+          : 'A friend with this phone number already exists.';
+      throw AppError.badRequest(reason, 'FRIEND_ALREADY_EXISTS');
     }
 
     // Fetch current user details
@@ -317,6 +324,31 @@ export const updateFriend = async (req: AuthRequest, res: Response, next: NextFu
       throw AppError.notFound('Friend');
     }
 
+    const nextName = name !== undefined ? String(name).trim() : existing.name;
+    const nextEmail = email !== undefined ? (email ? String(email).trim().toLowerCase() : null) : existing.email;
+    const nextPhone = phone !== undefined ? (phone ? String(phone).trim() : null) : existing.phone;
+
+    const conflict = await prisma.friend.findFirst({
+      where: {
+        userId,
+        deletedAt: null,
+        id: { not: id },
+        OR: [
+          { name: { equals: nextName, mode: 'insensitive' } },
+          nextEmail ? { email: nextEmail } : null,
+          nextPhone ? { phone: nextPhone } : null,
+        ].filter(Boolean) as any,
+      },
+    });
+    if (conflict) {
+      const reason = conflict.name.toLowerCase() === nextName.toLowerCase()
+        ? 'Another friend with this name already exists.'
+        : (nextEmail && conflict.email === nextEmail)
+          ? 'Another friend with this email already exists.'
+          : 'Another friend with this phone number already exists.';
+      throw AppError.badRequest(reason, 'FRIEND_ALREADY_EXISTS');
+    }
+
     const updated = await prisma.friend.update({
       where: { id },
       data: {
@@ -357,7 +389,8 @@ export const bulkCreateFriends = async (req: AuthRequest, res: Response, next: N
     }
 
     const existing = await prisma.friend.findMany({ where: { userId, deletedAt: null } });
-    const existingKeys = new Set(
+    const existingNameKeys = new Set(existing.map(f => f.name.toLowerCase()));
+    const existingContactKeys = new Set(
       existing.flatMap(f => [f.email?.toLowerCase(), f.phone].filter(Boolean) as string[])
     );
 
@@ -377,7 +410,11 @@ export const bulkCreateFriends = async (req: AuthRequest, res: Response, next: N
         skipped.push({ name, reason: 'Email or phone is required' });
         continue;
       }
-      if ((cleanEmail && existingKeys.has(cleanEmail)) || (cleanPhone && existingKeys.has(cleanPhone))) {
+      if (existingNameKeys.has(name.toLowerCase())) {
+        skipped.push({ name, reason: 'A friend with this name already exists' });
+        continue;
+      }
+      if ((cleanEmail && existingContactKeys.has(cleanEmail)) || (cleanPhone && existingContactKeys.has(cleanPhone))) {
         skipped.push({ name, reason: 'Already added' });
         continue;
       }
@@ -386,8 +423,9 @@ export const bulkCreateFriends = async (req: AuthRequest, res: Response, next: N
         data: { userId, name: sanitize(name), email: cleanEmail, phone: cleanPhone, syncStatus: 'synced' },
       });
       created.push(friend);
-      if (cleanEmail) existingKeys.add(cleanEmail);
-      if (cleanPhone) existingKeys.add(cleanPhone);
+      existingNameKeys.add(name.toLowerCase());
+      if (cleanEmail) existingContactKeys.add(cleanEmail);
+      if (cleanPhone) existingContactKeys.add(cleanPhone);
     }
 
     const registeredMap = await getRegisteredUserMap(created.map(f => f.email), created.map(f => f.phone));

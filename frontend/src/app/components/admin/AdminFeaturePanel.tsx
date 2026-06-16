@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useApp } from '@/contexts/AppContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { PageHeader } from '@/app/components/ui/PageHeader';
@@ -195,6 +195,14 @@ export const AdminFeaturePanel: React.FC = () => {
     }
   }, []);
 
+  // Guards against a GET-after-POST race: the initial loadFromDb() fetch can still
+  // be in flight when the admin clicks a toggle. If it resolves after the toggle,
+  // it would silently overwrite the just-made change with the pre-toggle DB state,
+  // making the first click look like a no-op (it only "works" on the second click,
+  // once the stale fetch has already resolved). Once the admin has made any local
+  // change, ignore late-arriving results from that initial load.
+  const userInteractedRef = useRef(false);
+
   const applyFeatureVisibility = useCallback((featureList: FeatureControl[]) => {
     const newVisibility: Record<string, boolean> = {};
     featureList.forEach(feature => {
@@ -210,6 +218,11 @@ export const AdminFeaturePanel: React.FC = () => {
     const loadFromDb = async () => {
       try {
         const dbFlags = await backendService.getGlobalFeatureFlags();
+        if (userInteractedRef.current) {
+          // The admin already toggled something while this fetch was in flight —
+          // applying this now would silently revert their change.
+          return;
+        }
         if (dbFlags && Object.keys(dbFlags).length > 0) {
           localStorage.setItem(ADMIN_FEATURE_SETTINGS_KEY, JSON.stringify(dbFlags));
           const updatedFeatures = FEATURES.map(f => {
@@ -329,6 +342,7 @@ export const AdminFeaturePanel: React.FC = () => {
   }, [dataReady, role, setCurrentPage]);
 
   const saveAndBroadcastFeatures = (updatedFeatures: FeatureControl[]) => {
+    userInteractedRef.current = true;
     setFeatures(updatedFeatures);
     applyFeatureVisibility(updatedFeatures);
 

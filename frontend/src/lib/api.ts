@@ -53,11 +53,17 @@ function getUserMessage(
   status: number,
   serverCode: string | undefined,
   technicalMessage: string,
+  logToConsole = true,
 ): string {
-  // Log the raw technical detail for debugging  never shown to the user
-  console.error(
-    `[API Error] HTTP ${status} | code=${serverCode ?? 'n/a'} | ${technicalMessage}`,
-  );
+  // Log the raw technical detail for debugging  never shown to the user.
+  // Callers that already expect/handle this failure (e.g. the login challenge's
+  // SHA-256-then-plain-password fallback) pass showErrorToast: false and should
+  // not spam the console with a "failure" that's actually a normal retry step.
+  if (logToConsole) {
+    console.error(
+      `[API Error] HTTP ${status} | code=${serverCode ?? 'n/a'} | ${technicalMessage}`,
+    );
+  }
 
   if (serverCode && USER_FRIENDLY_MESSAGES[serverCode]) {
     return USER_FRIENDLY_MESSAGES[serverCode];
@@ -411,7 +417,7 @@ class HTTPClient {
 
             const serverCode = data.code || `HTTP_${response.status}`;
             const technicalMessage = data.message || data.error || response.statusText;
-            const userMessage = getUserMessage(response.status, serverCode, technicalMessage);
+            const userMessage = getUserMessage(response.status, serverCode, technicalMessage, showErrorToast);
 
             const error: ApiError = {
               code: serverCode,
