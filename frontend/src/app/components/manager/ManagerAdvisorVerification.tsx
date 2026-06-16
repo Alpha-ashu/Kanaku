@@ -65,8 +65,12 @@ export const ManagerAdvisorVerification: React.FC = () => {
      const data = await backendService.api.get('/advisors/admin/applications');
      const result = data.data;
 
+     // Backend returns `fullName` (and a nested `user.name`), never a top-level
+     // `name` — map it here so every display field below has a value instead
+     // of crashing on .charAt() of undefined.
      const enhancedPending = (result.pending || []).map((app: any) => ({
        ...app,
+       name: app.fullName || app.user?.name || 'Unknown',
        status: 'pending',
        qualification: 'Certified Financial Planner (CFP)',
        experience: '8+ Years',
@@ -79,14 +83,21 @@ export const ManagerAdvisorVerification: React.FC = () => {
        }
      }));
 
-     const enhancedAll = (result.all || []).map((app: any) => ({
-       ...app,
-       status: app.isApproved ? 'approved' : 'pending',
-       qualification: 'MBA Finance',
-       experience: '5 Years'
-     }));
+     // `result.all` includes pending applications too — exclude those here so
+     // they aren't listed twice, and use the real `status` field instead of
+     // the previous `app.isApproved` check (which doesn't exist on this
+     // response shape and silently forced every entry to "pending").
+     const enhancedRest = (result.all || [])
+       .filter((app: any) => app.status !== 'PENDING')
+       .map((app: any) => ({
+         ...app,
+         name: app.fullName || app.user?.name || 'Unknown',
+         status: app.status === 'APPROVED' ? 'approved' : app.status === 'REJECTED' ? 'rejected' : 'pending',
+         qualification: 'MBA Finance',
+         experience: '5 Years'
+       }));
 
-     setApplications([...enhancedPending, ...enhancedAll]);
+     setApplications([...enhancedPending, ...enhancedRest]);
    } catch (err: any) {
      console.error('Failed to load verification queue:', err?.message ?? err);
      toast.error('Failed to load verification queue');
