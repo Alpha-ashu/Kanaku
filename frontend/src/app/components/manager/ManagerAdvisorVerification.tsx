@@ -68,8 +68,12 @@ export const ManagerAdvisorVerification: React.FC = () => {
      // Backend returns `fullName` (and a nested `user.name`), never a top-level
      // `name` — map it here so every display field below has a value instead
      // of crashing on .charAt() of undefined.
+     // Backend response items have `applicationId`, never `id` — without this
+     // mapping, the Approve/Reject buttons below call
+     // `/advisors/admin/undefined/approve` and silently fail.
      const enhancedPending = (result.pending || []).map((app: any) => ({
        ...app,
+       id: app.applicationId,
        name: app.fullName || app.user?.name || 'Unknown',
        status: 'pending',
        qualification: 'Certified Financial Planner (CFP)',
@@ -91,6 +95,7 @@ export const ManagerAdvisorVerification: React.FC = () => {
        .filter((app: any) => app.status !== 'PENDING')
        .map((app: any) => ({
          ...app,
+         id: app.applicationId,
          name: app.fullName || app.user?.name || 'Unknown',
          status: app.status === 'APPROVED' ? 'approved' : app.status === 'REJECTED' ? 'rejected' : 'pending',
          qualification: 'MBA Finance',
