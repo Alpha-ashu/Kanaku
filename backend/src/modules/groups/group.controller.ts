@@ -213,7 +213,10 @@ export const createGroup = async (req: AuthRequest, res: Response) => {
       return {
         name: m.name,
         share: m.share ?? (body.totalAmount / (rawMembers.length + 1)),
-        paid: m.paid || m.paymentStatus === 'paid' || false
+        paid: m.paid || m.paymentStatus === 'paid' || false,
+        email: m.email,
+        phone: m.phone,
+        isCurrentUser: m.isCurrentUser,
       };
     });
 
@@ -388,33 +391,70 @@ export const updateGroup = async (req: AuthRequest, res: Response) => {
           return {
             name: m.name,
             share: m.share ?? ((body.totalAmount ?? Number(existing.totalAmount)) / (rawMembers.length + 1)),
-            paid: m.paid || m.paymentStatus === 'paid' || false
+            paid: m.paid || m.paymentStatus === 'paid' || false,
+            email: m.email,
+            phone: m.phone,
+            isCurrentUser: m.isCurrentUser,
           };
         });
 
         const participants = normalizedMembers.filter((m: any) => !m.isCurrentUser && m.name.toLowerCase() !== 'you');
 
         for (const m of participants) {
-          const friend = await prisma.friend.findFirst({
+          let friend = await prisma.friend.findFirst({
             where: { userId, name: { equals: m.name, mode: 'insensitive' }, deletedAt: null }
           });
 
+          const memberEmail = (m.email || '').trim().toLowerCase() || null;
+          const memberPhone = (m.phone || '').trim() || null;
+
+          if (!friend && (memberEmail || memberPhone)) {
+            friend = await prisma.friend.findFirst({
+              where: {
+                userId,
+                deletedAt: null,
+                OR: [memberEmail ? { email: memberEmail } : null, memberPhone ? { phone: memberPhone } : null].filter(Boolean) as any,
+              },
+            });
+          }
+          if (!friend && (memberEmail || memberPhone)) {
+            friend = await prisma.friend.create({
+              data: { userId, name: sanitize(m.name), email: memberEmail, phone: memberPhone, syncStatus: 'synced' },
+            });
+          }
+
           const targetUser = await findUserByEmailOrPhone(friend?.email, friend?.phone);
+          const email = memberEmail || friend?.email || null;
 
           await prisma.groupExpenseMember.create({
             data: {
               groupExpenseId: id,
               userId: targetUser ? targetUser.id : null,
+              friendId: friend?.id || null,
               name: m.name,
-              email: friend?.email || null,
-              phone: friend?.phone || null,
+              email,
+              phone: friend?.phone || memberPhone,
               shareAmount: m.share,
               hasPaid: m.paid,
             }
           });
 
-          // Send update notifications
-          if (targetUser) {
+          if (email) {
+            try {
+              const detail = `Total: ₹${Number(updated.totalAmount).toFixed(0)}, Your share: ₹${Number(m.share).toFixed(0)}.`;
+              await inviteParticipants({
+                moduleType: 'group_expense',
+                moduleId: id,
+                moduleName: updated.name,
+                creatorId: userId,
+                participants: [{ email, name: m.name, detail }],
+              });
+            } catch (err) {
+              logger.warn('Failed to invite group expense participant on update', err);
+            }
+          } else if (targetUser) {
+            // Resolved via phone only (no email on file) — fall back to a direct
+            // in-app notification since there's no email to track a pending invite by.
             const updNotifTitle = 'Group Expense Updated';
             const updNotifMsg = `${currentUser.name} updated the split expense "${updated.name}".`;
             const notification = await prisma.notification.create({

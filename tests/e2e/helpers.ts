@@ -170,10 +170,13 @@ export async function registerUser(page: Page, user: typeof USERS.U1) {
     if (!await termsCheckbox.isChecked()) await termsCheckbox.check();
   }
 
-  await page.waitForTimeout(400);
-  await screenshot(page, `register_${user.firstName}_before_submit`);
+  // Check if email taken warning is already visible (e.g. from async email check)
+  const inlineDuplicateText = page.getByText(/already registered|already.*email|phone.*already/i).first();
+  if (await isElementVisible(inlineDuplicateText, 1500)) {
+    return 'already_exists';
+  }
 
-  const submitBtn = page.getByRole('button', { name: /create account.*ready|create account|sign up|register/i }).last();
+  const submitBtn = page.locator('[data-testid="auth-signup-submit-button"], button[type="submit"]').first();
   await submitBtn.click();
   await screenshot(page, `register_${user.firstName}_after_submit`);
 
