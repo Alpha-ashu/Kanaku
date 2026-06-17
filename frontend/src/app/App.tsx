@@ -141,6 +141,10 @@ class PageErrorBoundary extends React.Component<
       this.retryTimer = setTimeout(() => {
         this.setState({ error: null });
       }, 500);
+    } else if (isModuleError && nextAttemptCount > 2) {
+      // All retries exhausted for a stale-deployment chunk 404 — force reload to pick up latest build
+      console.warn('[PageErrorBoundary] All retries failed for module load; forcing page reload...');
+      window.location.reload();
     }
   }
 
@@ -167,10 +171,12 @@ class PageErrorBoundary extends React.Component<
               ? 'The page is loading. Please wait a moment.'
               : 'We hit an unexpected problem loading this page. Please try again.'}
           </p>
-          {isModuleError && this.state.attemptCount <= 2 ? (
+          {isModuleError ? (
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 border-2 border-pink-200 border-t-pink-500 rounded-full animate-spin" />
-              <span className="text-sm text-gray-600">Auto-retrying...</span>
+              <span className="text-sm text-gray-600">
+                {this.state.attemptCount <= 2 ? 'Auto-retrying...' : 'Reloading page...'}
+              </span>
             </div>
           ) : (
             <button
