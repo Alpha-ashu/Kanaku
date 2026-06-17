@@ -77,6 +77,8 @@ const buildGroupResponse = async (group: any, requestingUserId: string) => {
       paidAmount: m.hasPaid ? Number(m.shareAmount) : 0,
       paymentStatus: m.hasPaid ? 'paid' : 'pending',
       friendId: m.friendId || friendRecord?.id || undefined,
+      email: m.email || friendRecord?.email || undefined,
+      phone: m.phone || friendRecord?.phone || undefined,
     };
   });
 
@@ -549,6 +551,148 @@ export const updateGroup = async (req: AuthRequest, res: Response) => {
   } catch (error) {
     logger.error('Failed to update group', { error });
     res.status(500).json({ success: false, error: 'Failed to update group' });
+  }
+};
+
+/**
+ * Repairs ALL stale GroupExpenseMember rows across all groups owned by this
+ * user. Called automatically by the frontend on Groups page mount.
+ */
+export const repairAllGroupMembers = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = getUserId(req);
+
+    // Find all group expenses owned by this user
+    const groups = await prisma.groupExpense.findMany({
+      where: { userId, deletedAt: null },
+      select: { id: true, name: true, totalAmount: true },
+    });
+
+    if (!groups.length) {
+      return res.json({ success: true, message: 'No groups to repair', repaired: 0 });
+    }
+
+    const groupIds = groups.map(g => g.id);
+    const staleMembers = await prisma.groupExpenseMember.findMany({
+      where: { groupExpenseId: { in: groupIds }, deletedAt: null, friendId: null, email: null },
+    });
+
+    if (!staleMembers.length) {
+      return res.json({ success: true, message: 'No stale members', repaired: 0 });
+    }
+
+    const friends = await prisma.friend.findMany({
+      where: { userId, deletedAt: null },
+    });
+    const friendByNameLower = new Map(friends.map(f => [f.name.toLowerCase(), f]));
+    const groupById = new Map(groups.map(g => [g.id, g]));
+
+    let repaired = 0;
+    for (const m of staleMembers) {
+      const friend = friendByNameLower.get(m.name.toLowerCase());
+      if (!friend || !friend.email) continue;
+
+      const targetUser = await findUserByEmailOrPhone(friend.email, friend.phone);
+      await prisma.groupExpenseMember.update({
+        where: { id: m.id },
+        data: { email: friend.email, phone: friend.phone || null, friendId: friend.id, userId: targetUser?.id || null },
+      });
+
+      const group = groupById.get(m.groupExpenseId);
+      if (group) {
+        try {
+          const detail = `Total: ₹${Number(group.totalAmount).toFixed(0)}, Your share: ₹${Number(m.shareAmount).toFixed(0)}.`;
+          await inviteParticipants({
+            moduleType: 'group_expense',
+            moduleId: group.id,
+            moduleName: group.name,
+            creatorId: userId,
+            participants: [{ email: friend.email, name: m.name, detail }],
+          });
+        } catch (err) {
+          logger.warn('Failed to send deferred invite during bulk repair', err);
+        }
+      }
+      repaired++;
+    }
+
+    res.json({ success: true, repaired, total: staleMembers.length });
+  } catch (error) {
+    logger.error('Failed to repair all group members', { error });
+    res.status(500).json({ success: false, error: 'Failed to repair group members' });
+  }
+};
+
+/**
+ * Repairs stale GroupExpenseMember rows where email/friendId were never set
+ * (created before the normalizedMembers bug was fixed). For each such row,
+ * looks up the Friend by name, back-fills email/friendId, and triggers
+ * inviteParticipants so the overdue notification/email is sent now.
+ */
+export const repairGroupMembers = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = getUserId(req);
+    const { id } = req.params;
+
+    const group = await prisma.groupExpense.findFirst({ where: { id, userId, deletedAt: null } });
+    if (!group) {
+      return res.status(404).json({ success: false, error: 'Group not found or access denied' });
+    }
+
+    const staleMembers = await prisma.groupExpenseMember.findMany({
+      where: { groupExpenseId: id, deletedAt: null, friendId: null, email: null },
+    });
+
+    if (!staleMembers.length) {
+      return res.json({ success: true, message: 'No stale members to repair', repaired: 0 });
+    }
+
+    let repaired = 0;
+    const details: any[] = [];
+
+    for (const m of staleMembers) {
+      const friend = await prisma.friend.findFirst({
+        where: { userId, name: { equals: m.name, mode: 'insensitive' }, deletedAt: null },
+      });
+
+      if (!friend || !friend.email) {
+        details.push({ name: m.name, result: 'skipped_no_friend_email' });
+        continue;
+      }
+
+      const targetUser = await findUserByEmailOrPhone(friend.email, friend.phone);
+
+      await prisma.groupExpenseMember.update({
+        where: { id: m.id },
+        data: {
+          email: friend.email,
+          phone: friend.phone || null,
+          friendId: friend.id,
+          userId: targetUser?.id || null,
+        },
+      });
+
+      try {
+        const detail = `Total: ₹${Number(group.totalAmount).toFixed(0)}, Your share: ₹${Number(m.shareAmount).toFixed(0)}.`;
+        await inviteParticipants({
+          moduleType: 'group_expense',
+          moduleId: id,
+          moduleName: group.name,
+          creatorId: userId,
+          participants: [{ email: friend.email, name: m.name, detail }],
+        });
+      } catch (err) {
+        logger.warn('Failed to send deferred invite during repair', err);
+      }
+
+      repaired++;
+      details.push({ name: m.name, email: friend.email, result: 'repaired' });
+    }
+
+    res.json({ success: true, repaired, total: staleMembers.length, details });
+  } catch (error) {
+    logger.error('Failed to repair group members', { error });
+    res.status(500).json({ success: false, error: 'Failed to repair group members' });
   }
 };
 

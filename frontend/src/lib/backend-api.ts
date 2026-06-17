@@ -825,6 +825,12 @@ class BackendService {
     return { synced, skipped };
   }
 
+  /** Repairs stale GroupExpenseMember rows (null email/friendId from pre-fix creation) across all groups owned by this user. Fire-and-forget — call on Groups page mount. */
+  async repairAllGroupMembers(): Promise<{ repaired: number; total: number }> {
+    const response = await this.api.post('/groups/repair-all-members');
+    return response.data;
+  }
+
   /** Live, enriched friend list (registration status, totals) — always hits the backend, no offline fallback. */
   async getFriendsEnriched() {
     const response = await this.api.get('/friends');

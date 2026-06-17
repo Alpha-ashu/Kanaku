@@ -59,12 +59,14 @@ export const Groups: React.FC = () => {
 
  useEffect(() => {
  const pendingDraft = readVoiceDraft<VoiceGroupDraft>(VOICE_GROUP_DRAFT_KEY);
- if (!pendingDraft?.amount) {
- return;
- }
-
+ if (pendingDraft?.amount) {
  toast.info('Opening your group expense draft.');
  openGroupExpenseForm();
+ }
+
+ // Silently repair any stale member rows (created before the email-stripping
+ // bug was fixed) — sets email/friendId and triggers overdue invite emails.
+ backendService.repairAllGroupMembers().catch(() => {});
  }, []);
 
  const sortedExpenses = useMemo(

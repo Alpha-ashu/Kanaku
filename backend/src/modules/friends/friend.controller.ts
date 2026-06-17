@@ -53,18 +53,29 @@ export const getFriends = async (req: AuthRequest, res: Response, next: NextFunc
 
     const registeredMap = await getRegisteredUserMap(friends.map(f => f.email!), friends.map(f => f.phone!));
 
-    // Aggregate expense totals per friend in one query rather than N+1
+    // Aggregate expense totals per friend — match by friendId OR email to handle
+    // stale rows where friendId was never set (pre-normalizedMembers-fix rows).
+    const friendEmails = friends.map(f => f.email).filter(Boolean) as string[];
     const memberRows = await prisma.groupExpenseMember.findMany({
-      where: { friendId: { in: friends.map(f => f.id) }, deletedAt: null },
-      select: { friendId: true, shareAmount: true, hasPaid: true },
+      where: {
+        deletedAt: null,
+        OR: [
+          { friendId: { in: friends.map(f => f.id) } },
+          ...(friendEmails.length ? [{ email: { in: friendEmails } }] : []),
+        ],
+      },
+      select: { friendId: true, email: true, shareAmount: true, hasPaid: true },
     });
+    // Build a quick email→friendId lookup so email-matched rows can be attributed
+    const emailToFriendId = new Map(friends.filter(f => f.email).map(f => [f.email!.toLowerCase(), f.id]));
     const totalsByFriend = new Map<string, { totalExpenses: number; outstanding: number }>();
     for (const m of memberRows) {
-      if (!m.friendId) continue;
-      const entry = totalsByFriend.get(m.friendId) || { totalExpenses: 0, outstanding: 0 };
+      const fid = m.friendId || (m.email ? emailToFriendId.get(m.email.toLowerCase()) : null);
+      if (!fid) continue;
+      const entry = totalsByFriend.get(fid) || { totalExpenses: 0, outstanding: 0 };
       entry.totalExpenses += 1;
       if (!m.hasPaid) entry.outstanding += Number(m.shareAmount);
-      totalsByFriend.set(m.friendId, entry);
+      totalsByFriend.set(fid, entry);
     }
 
     const data = friends.map((f) => {
@@ -103,8 +114,14 @@ export const getFriendDetail = async (req: AuthRequest, res: Response, next: Nex
     const registeredMap = await getRegisteredUserMap([friend.email!], [friend.phone!]);
     const { isRegistered, linkedUserId } = resolveRegistration(registeredMap, friend.email, friend.phone);
 
+    // Match by friendId OR email to handle stale rows where friendId was never
+    // set (created before the normalizedMembers email-stripping bug was fixed).
+    const friendEmailCondition = friend.email ? [{ email: friend.email }] : [];
     const members = await prisma.groupExpenseMember.findMany({
-      where: { friendId: friend.id, deletedAt: null },
+      where: {
+        deletedAt: null,
+        OR: [{ friendId: friend.id }, ...friendEmailCondition],
+      },
       include: { groupExpense: { select: { id: true, name: true, date: true, totalAmount: true, category: true } } },
       orderBy: { createdAt: 'desc' },
     });
