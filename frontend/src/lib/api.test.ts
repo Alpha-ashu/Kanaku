@@ -115,7 +115,7 @@ describe('api auth token resolution', () => {
 
     await expect(api.auth.updateProfile({ firstName: 'Test' })).rejects.toMatchObject({
       status: 401,
-      message: 'Please sign in to continue.',
+      message: 'Your session has expired. Please sign in again.',
     });
 
     expect(window.location.pathname).toBe('/');
