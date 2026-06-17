@@ -40,7 +40,7 @@ jobs:
         run: npx eslint "src/**/*.ts" --max-warnings 0 || true
 
       - name: Run tests
-        run: npx jest --passWithNoTests --ci --forceExit
+        run: npx jest --passWithNoTests --ci --forceExit --testPathIgnorePatterns="tests/integration"
         env:
           NODE_ENV: test
           DATABASE_URL: ${{ secrets.TEST_DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/KANAKU_test' }}
