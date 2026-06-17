@@ -369,11 +369,17 @@ class PinService {
   }
 
   /**
-   * Request a security token via biometric/OTP verification
+   * Request a security token. The backend requires proof: pass the user's PIN
+   * (`pin`), a freshly-minted auth/OTP token for the forgot-PIN reset flow
+   * (`freshAuthToken`), or — when neither is supplied — rely on a recent
+   * server-recorded PIN verification performed just before this call.
    */
-  async verifySecurity(): Promise<{ success: boolean; securityToken?: string; message?: string }> {
+  async verifySecurity(opts?: { pin?: string; freshAuthToken?: string }): Promise<{ success: boolean; securityToken?: string; message?: string }> {
     try {
-      const response = await this.post('verify-security', {});
+      const body: Record<string, string> = {};
+      if (opts?.pin) body.pin = CryptoJS.SHA256(opts.pin).toString();
+      if (opts?.freshAuthToken) body.freshAuthToken = opts.freshAuthToken;
+      const response = await this.post('verify-security', body);
       if (response.success && (response as any).securityToken) {
         return { 
           success: true, 

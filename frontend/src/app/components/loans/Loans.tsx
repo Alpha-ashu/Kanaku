@@ -196,6 +196,7 @@ export const Loans: React.FC = () => {
  localStorage.setItem('quickBackPage', 'loans');
  setCurrentPage('add-loan');
  }}
+ data-testid="loans-add-loan-button"
  className="shadow-lg bg-gray-900 hover:bg-gray-800 text-white h-12 px-6 rounded-2xl font-bold flex items-center gap-2"
  >
  <Plus size={18} />
@@ -309,6 +310,7 @@ export const Loans: React.FC = () => {
  {canAddLoan && (
  <button
  onClick={() => handleEditClick(loan)}
+ data-testid={`loans-edit-button-${loan.id}`}
  className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors text-gray-600"
  title="Edit loan"
  >
@@ -318,6 +320,7 @@ export const Loans: React.FC = () => {
  {canDelete && (
  <button
  onClick={() => handleDeleteLoan(loan.id!, loan.name)}
+ data-testid={`loans-delete-button-${loan.id}`}
  className="p-1.5 hover:bg-red-100 rounded-lg transition-colors text-red-600"
  title="Delete loan"
  >
@@ -338,6 +341,7 @@ export const Loans: React.FC = () => {
  onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
  placeholder="Loan name"
  aria-label="Loan name"
+ data-testid="loans-edit-name-input"
  className="w-full px-2 py-1 border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-black/10"
  />
  <input
@@ -346,6 +350,7 @@ export const Loans: React.FC = () => {
  onChange={(e) => setEditFormData({ ...editFormData, principalAmount: parseFloat(e.target.value) })}
  placeholder="Principal amount"
  aria-label="Principal amount"
+ data-testid="loans-edit-principal-input"
  className="w-full px-2 py-1 border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-black/10"
  />
  <input
@@ -354,6 +359,7 @@ export const Loans: React.FC = () => {
  onChange={(e) => setEditFormData({ ...editFormData, outstandingBalance: parseFloat(e.target.value) })}
  placeholder="Outstanding balance"
  aria-label="Outstanding balance"
+ data-testid="loans-edit-outstanding-input"
  className="w-full px-2 py-1 border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-black/10"
  />
  {editFormData.emiAmount !== undefined && (
@@ -363,6 +369,7 @@ export const Loans: React.FC = () => {
  onChange={(e) => setEditFormData({ ...editFormData, emiAmount: parseFloat(e.target.value) })}
  placeholder="EMI amount"
  aria-label="EMI amount"
+ data-testid="loans-edit-emi-input"
  className="w-full px-2 py-1 border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-black/10"
  />
  )}
@@ -372,17 +379,20 @@ export const Loans: React.FC = () => {
  onChange={(e) => setEditFormData({ ...editFormData, dueDate: e.target.value })}
  aria-label="Due date"
  title="Due date"
+ data-testid="loans-edit-due-date-input"
  className="w-full px-2 py-1 border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-black/10"
  />
  <div className="flex gap-2">
  <button
  onClick={handleSaveEdit}
+ data-testid="loans-edit-save-button"
  className="flex-1 px-2 py-1 bg-black text-white rounded-lg text-xs font-bold hover:bg-gray-900"
  >
  Save
  </button>
  <button
  onClick={() => setEditingLoanId(null)}
+ data-testid="loans-edit-cancel-button"
  className="flex-1 px-2 py-1 bg-gray-100 text-gray-700 rounded-lg text-xs font-bold hover:bg-gray-200"
  >
  Cancel
@@ -442,6 +452,7 @@ export const Loans: React.FC = () => {
  <div className="flex gap-2">
  <button
  onClick={() => setShowPaymentModal(loan.id!)}
+ data-testid={`loans-make-payment-button-${loan.id}`}
  className="flex-1 px-4 py-2.5 bg-black text-white rounded-xl hover:bg-gray-900 transition-all text-xs font-black uppercase tracking-widest shadow-sm active:scale-95"
  >
  Make Payment
@@ -449,6 +460,7 @@ export const Loans: React.FC = () => {
  {loanPayments.some(p => p.loanId === loan.id && p.documentId) && (
  <button
  onClick={() => handleViewBill(loan.id!)}
+ data-testid={`loans-view-bill-button-${loan.id}`}
  className="px-4 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-all text-xs font-black uppercase tracking-widest shadow-sm flex items-center gap-2"
  title="View Bills"
  >
@@ -652,6 +664,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ loanId, accounts, onClose }
  step="0.01"
  value={amount || ''}
  onChange={(e) => setAmount(parseFloat(e.target.value) || 0)}
+ data-testid="loans-payment-amount-input"
  className="w-full px-4 py-3 bg-white border border-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:bg-white transition-all font-bold text-gray-900"
  placeholder="0.00"
  required
@@ -665,6 +678,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ loanId, accounts, onClose }
  id="loan-payment-account"
  value={accountId}
  onChange={(e) => setAccountId(parseInt(e.target.value))}
+ data-testid="loans-payment-account-select"
  className="w-full px-4 py-3 bg-white border border-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:bg-white transition-all font-bold text-gray-900 text-sm"
  >
  {accounts.map(acc => (
@@ -684,6 +698,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ loanId, accounts, onClose }
  <button 
  type="button" 
  onClick={() => setDocumentId(null)}
+ data-testid="loans-payment-remove-bill-button"
  className="p-1 text-emerald-400 hover:text-rose-500 transition-colors"
  >
  <X size={14} strokeWidth={3} />
@@ -694,6 +709,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ loanId, accounts, onClose }
  <button
  type="button"
  onClick={() => { setScannerMode('scan'); setShowScanner(true); }}
+ data-testid="loans-payment-scan-button"
  className="flex flex-col items-center gap-2 p-3 rounded-xl bg-white border border-gray-100 hover:bg-gray-100 transition-all group"
  >
  <ScanLine size={18} className="text-gray-400 group-hover:text-indigo-600 transition-colors" />
@@ -702,6 +718,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ loanId, accounts, onClose }
  <button
  type="button"
  onClick={() => { setScannerMode('attachment'); setShowScanner(true); }}
+ data-testid="loans-payment-attach-button"
  className="flex flex-col items-center gap-2 p-3 rounded-xl bg-white border border-gray-100 hover:bg-gray-100 transition-all group"
  >
  <Paperclip size={18} className="text-gray-400 group-hover:text-indigo-600 transition-colors" />
@@ -717,6 +734,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ loanId, accounts, onClose }
  id="loan-payment-notes"
  value={notes}
  onChange={(e) => setNotes(e.target.value)}
+ data-testid="loans-payment-notes-textarea"
  className="w-full px-4 py-3 bg-white border border-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:bg-white transition-all font-bold text-gray-900 text-sm min-h-[80px]"
  placeholder="Added payment details..."
  />
@@ -726,12 +744,14 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ loanId, accounts, onClose }
  <button
  type="button"
  onClick={onClose}
+ data-testid="loans-payment-cancel-button"
  className="flex-1 px-4 py-3 bg-gray-100 text-gray-600 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-gray-200 transition-all"
  >
  Cancel
  </button>
  <button
  type="submit"
+ data-testid="loans-payment-submit-button"
  className="flex-1 px-4 py-3 bg-indigo-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all active:scale-[0.98]"
  >
  Record Payment

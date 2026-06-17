@@ -29,26 +29,33 @@ import { formatCurrencyAmount } from '@/lib/currencyUtils';
 
 const chartColors = ['#2563EB', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#22C55E', '#0EA5E9', '#F97316'];
 
-const ForecastSection: React.FC<{ transactions: any[]; currency: string; formatCurrency: (v: number) => string }> = ({ transactions, currency, formatCurrency }) => {
+const ForecastSection: React.FC<{ transactions: any[]; accounts: any[]; currency: string; formatCurrency: (v: number) => string }> = ({ transactions, accounts, currency, formatCurrency }) => {
   const forecastData = useMemo(() => {
     const monthlyNet: number[] = [];
     const monthlyMap = new Map<string, number>();
-    
+
     transactions.forEach(t => {
       const date = new Date(t.date);
       const key = `${date.getFullYear()}-${date.getMonth()}`;
       const delta = t.type === 'income' ? t.amount : -t.amount;
       monthlyMap.set(key, (monthlyMap.get(key) || 0) + delta);
     });
-    
+
     monthlyMap.forEach(val => monthlyNet.push(val));
-    
+
+    // Average monthly net cash flow drives the projection slope. With no
+    // history there is nothing to project from, so the slope is flat (0).
     const avgMonthlyNet = monthlyNet.length > 0
       ? monthlyNet.reduce((a, b) => a + b, 0) / monthlyNet.length
-      : 800; // premium fallback value
-      
-    const startValue = 18500; // calculated fallback baseline
-    
+      : 0;
+
+    // Starting baseline = the user's real current net worth (sum of account
+    // balances). Falls back to the cumulative net of all transactions when no
+    // account balances are available, so the chart always reflects real data.
+    const accountsTotal = (accounts || []).reduce((sum, a) => sum + (Number(a?.balance) || 0), 0);
+    const cumulativeNet = monthlyNet.reduce((a, b) => a + b, 0);
+    const startValue = accountsTotal !== 0 ? accountsTotal : cumulativeNet;
+
     const data: Array<{ month: string; Optimistic: number; Conservative: number; Expected: number }> = [];
     const now = new Date();
     
@@ -76,7 +83,7 @@ const ForecastSection: React.FC<{ transactions: any[]; currency: string; formatC
     }
     
     return data;
-  }, [transactions]);
+  }, [transactions, accounts]);
 
   return (
     <div className="space-y-4">
@@ -604,7 +611,7 @@ export const Reports: React.FC = () => {
             Smart Financial Forecasting
           </h3>
           <div className="flex-1">
-            <ForecastSection transactions={transactions} currency={currency} formatCurrency={formatCurrency} />
+            <ForecastSection transactions={transactions} accounts={accounts} currency={currency} formatCurrency={formatCurrency} />
           </div>
         </Card>
       )}

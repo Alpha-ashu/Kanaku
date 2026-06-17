@@ -152,6 +152,7 @@ export const RecurringTransactions: React.FC = () => {
           <button
             onClick={() => setShowAddForm((v) => !v)}
             className="bg-indigo-600 text-white px-5 py-3.5 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-indigo-700 active:scale-95 transition-all shadow-lg shadow-indigo-100 flex items-center gap-2"
+            data-testid="recurring-toggle-form-button"
           >
             <Plus size={16} />
             {showAddForm ? 'Close' : 'Create Recurring'}
@@ -193,6 +194,7 @@ export const RecurringTransactions: React.FC = () => {
                   value={form.name}
                   onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
                   className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:border-indigo-600 transition-colors"
+                  data-testid="recurring-form-name-input"
                 />
               </div>
 
@@ -206,6 +208,7 @@ export const RecurringTransactions: React.FC = () => {
                   value={form.amount}
                   onChange={(e) => setForm((f) => ({ ...f, amount: e.target.value }))}
                   className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:border-indigo-600 transition-colors"
+                  data-testid="recurring-form-amount-input"
                 />
               </div>
 
@@ -215,6 +218,7 @@ export const RecurringTransactions: React.FC = () => {
                   value={form.type}
                   onChange={(e) => setForm((f) => ({ ...f, type: e.target.value as TxType }))}
                   className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:border-indigo-600 transition-colors"
+                  data-testid="recurring-form-type-select"
                 >
                   <option value="expense">Expense</option>
                   <option value="income">Income</option>
@@ -230,6 +234,7 @@ export const RecurringTransactions: React.FC = () => {
                   value={form.category}
                   onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
                   className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:border-indigo-600 transition-colors"
+                  data-testid="recurring-form-category-input"
                 />
               </div>
 
@@ -239,6 +244,7 @@ export const RecurringTransactions: React.FC = () => {
                   value={form.frequency}
                   onChange={(e) => setForm((f) => ({ ...f, frequency: e.target.value as Frequency }))}
                   className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:border-indigo-600 transition-colors"
+                  data-testid="recurring-form-frequency-select"
                 >
                   <option value="weekly">Weekly</option>
                   <option value="monthly">Monthly</option>
@@ -253,6 +259,7 @@ export const RecurringTransactions: React.FC = () => {
                   value={form.nextDueDate}
                   onChange={(e) => setForm((f) => ({ ...f, nextDueDate: e.target.value }))}
                   className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:border-indigo-600 transition-colors"
+                  data-testid="recurring-form-date-input"
                 />
               </div>
 
@@ -263,6 +270,7 @@ export const RecurringTransactions: React.FC = () => {
                     value={form.accountId}
                     onChange={(e) => setForm((f) => ({ ...f, accountId: e.target.value }))}
                     className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:border-indigo-600 transition-colors"
+                    data-testid="recurring-form-account-select"
                   >
                     <option value="">— Select account —</option>
                     {accounts.map((a) => (
@@ -277,6 +285,7 @@ export const RecurringTransactions: React.FC = () => {
                   type="submit"
                   disabled={saving}
                   className="bg-indigo-600 text-white px-6 py-4 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-indigo-700 active:scale-95 transition-all shadow-lg shadow-indigo-100 flex items-center gap-2 disabled:opacity-60"
+                  data-testid="recurring-form-submit-button"
                 >
                   {saving && <Loader2 size={14} className="animate-spin" />}
                   Create Schedule
@@ -351,6 +360,7 @@ export const RecurringTransactions: React.FC = () => {
                           ? 'bg-slate-50 text-slate-500 hover:bg-slate-100'
                           : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'
                       }`}
+                      data-testid={`recurring-card-toggle-${item.id}`}
                     >
                       {item.status === 'active' ? 'Pause' : 'Resume'}
                     </button>
@@ -358,6 +368,7 @@ export const RecurringTransactions: React.FC = () => {
                       onClick={() => handleDelete(item)}
                       className="p-2.5 rounded-xl bg-rose-50 text-rose-500 hover:bg-rose-100 transition-all"
                       title="Delete"
+                      data-testid={`recurring-card-delete-${item.id}`}
                     >
                       <Trash2 size={14} />
                     </button>

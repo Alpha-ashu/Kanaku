@@ -27,6 +27,7 @@ interface SearchableDropdownProps {
  renderTrigger?: (selected: DropdownOption | undefined, open: boolean) => React.ReactNode;
  triggerClassName?: string;
  allowCustom?: boolean;
+ testId?: string;
 }
 
 export const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
@@ -45,6 +46,7 @@ export const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
  renderTrigger,
  triggerClassName,
  allowCustom = false,
+ testId,
 }) => {
  const [open, setOpen] = useState(false);
  const [query, setQuery] = useState('');
@@ -185,6 +187,7 @@ export const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
  tabIndex={disabled ? -1 : 0}
  onClick={openDropdown}
  onKeyDown={handleKeyDown}
+ data-testid={testId}
  className={cn('cursor-pointer', disabled && 'opacity-60 cursor-not-allowed')}
  >
  {renderTrigger(selected, open)}
@@ -199,6 +202,7 @@ export const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
  disabled={disabled}
  onClick={openDropdown}
  onKeyDown={handleKeyDown}
+ data-testid={testId}
  className={cn(
  'w-full flex items-center gap-2 rounded-2xl px-4 py-3 bg-white border border-slate-100 text-left transition-all shadow-sm min-h-[48px]',
  'focus:outline-none focus:ring-2 focus:ring-indigo-400/60 focus:border-indigo-400',
@@ -241,6 +245,7 @@ export const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
  }}
  onKeyDown={handleKeyDown}
  placeholder={searchPlaceholder}
+ data-testid={testId ? `${testId}-search-input` : undefined}
  className="flex-1 bg-transparent text-sm text-gray-900 outline-none placeholder:text-gray-400"
  />
  {query && (
@@ -290,6 +295,7 @@ export const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
  isHighlighted={globalIndex === highlighted}
  onSelect={() => selectOption(opt)}
  onHover={() => setHighlighted(globalIndex)}
+ testId={testId ? `${testId}-option-${opt.value}` : undefined}
  />
  );
  })}
@@ -304,6 +310,7 @@ export const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
  isHighlighted={index === highlighted}
  onSelect={() => selectOption(opt)}
  onHover={() => setHighlighted(index)}
+ testId={testId ? `${testId}-option-${opt.value}` : undefined}
  />
  ))
  )}
@@ -321,7 +328,8 @@ const OptionItem: React.FC<{
  isHighlighted: boolean;
  onSelect: () => void;
  onHover: () => void;
-}> = ({ option, isSelected, isHighlighted, onSelect, onHover }) => (
+ testId?: string;
+}> = ({ option, isSelected, isHighlighted, onSelect, onHover, testId }) => (
  <button
  type="button"
  role="option"
@@ -329,6 +337,7 @@ const OptionItem: React.FC<{
  data-option
  onClick={onSelect}
  onMouseEnter={onHover}
+ data-testid={testId}
  className={cn(
  'w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors',
  isHighlighted ? 'bg-indigo-50' : 'hover:bg-gray-50',

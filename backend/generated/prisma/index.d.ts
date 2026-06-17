@@ -21438,6 +21438,18 @@ export namespace Prisma {
     totalInvested: Decimal | null
     currentValue: Decimal | null
     profitLoss: Decimal | null
+    buyFxRate: Decimal | null
+    lastKnownFxRate: Decimal | null
+    totalInvestedNative: Decimal | null
+    currentValueNative: Decimal | null
+    valuationVersion: number | null
+    closePrice: Decimal | null
+    closeFxRate: Decimal | null
+    grossSaleValue: Decimal | null
+    netSaleValue: Decimal | null
+    purchaseFees: Decimal | null
+    closingFees: Decimal | null
+    realizedProfitLoss: Decimal | null
   }
 
   export type InvestmentSumAggregateOutputType = {
@@ -21447,6 +21459,18 @@ export namespace Prisma {
     totalInvested: Decimal | null
     currentValue: Decimal | null
     profitLoss: Decimal | null
+    buyFxRate: Decimal | null
+    lastKnownFxRate: Decimal | null
+    totalInvestedNative: Decimal | null
+    currentValueNative: Decimal | null
+    valuationVersion: number | null
+    closePrice: Decimal | null
+    closeFxRate: Decimal | null
+    grossSaleValue: Decimal | null
+    netSaleValue: Decimal | null
+    purchaseFees: Decimal | null
+    closingFees: Decimal | null
+    realizedProfitLoss: Decimal | null
   }
 
   export type InvestmentMinAggregateOutputType = {
@@ -21463,6 +21487,25 @@ export namespace Prisma {
     purchaseDate: Date | null
     lastUpdated: Date | null
     clientRequestId: string | null
+    broker: string | null
+    description: string | null
+    assetCurrency: string | null
+    baseCurrency: string | null
+    buyFxRate: Decimal | null
+    lastKnownFxRate: Decimal | null
+    totalInvestedNative: Decimal | null
+    currentValueNative: Decimal | null
+    valuationVersion: number | null
+    positionStatus: string | null
+    closedAt: Date | null
+    closePrice: Decimal | null
+    closeFxRate: Decimal | null
+    grossSaleValue: Decimal | null
+    netSaleValue: Decimal | null
+    purchaseFees: Decimal | null
+    closingFees: Decimal | null
+    realizedProfitLoss: Decimal | null
+    closeNotes: string | null
     createdAt: Date | null
     updatedAt: Date | null
     deletedAt: Date | null
@@ -21482,6 +21525,25 @@ export namespace Prisma {
     purchaseDate: Date | null
     lastUpdated: Date | null
     clientRequestId: string | null
+    broker: string | null
+    description: string | null
+    assetCurrency: string | null
+    baseCurrency: string | null
+    buyFxRate: Decimal | null
+    lastKnownFxRate: Decimal | null
+    totalInvestedNative: Decimal | null
+    currentValueNative: Decimal | null
+    valuationVersion: number | null
+    positionStatus: string | null
+    closedAt: Date | null
+    closePrice: Decimal | null
+    closeFxRate: Decimal | null
+    grossSaleValue: Decimal | null
+    netSaleValue: Decimal | null
+    purchaseFees: Decimal | null
+    closingFees: Decimal | null
+    realizedProfitLoss: Decimal | null
+    closeNotes: string | null
     createdAt: Date | null
     updatedAt: Date | null
     deletedAt: Date | null
@@ -21502,6 +21564,25 @@ export namespace Prisma {
     lastUpdated: number
     metadata: number
     clientRequestId: number
+    broker: number
+    description: number
+    assetCurrency: number
+    baseCurrency: number
+    buyFxRate: number
+    lastKnownFxRate: number
+    totalInvestedNative: number
+    currentValueNative: number
+    valuationVersion: number
+    positionStatus: number
+    closedAt: number
+    closePrice: number
+    closeFxRate: number
+    grossSaleValue: number
+    netSaleValue: number
+    purchaseFees: number
+    closingFees: number
+    realizedProfitLoss: number
+    closeNotes: number
     createdAt: number
     updatedAt: number
     deletedAt: number
@@ -21516,6 +21597,18 @@ export namespace Prisma {
     totalInvested?: true
     currentValue?: true
     profitLoss?: true
+    buyFxRate?: true
+    lastKnownFxRate?: true
+    totalInvestedNative?: true
+    currentValueNative?: true
+    valuationVersion?: true
+    closePrice?: true
+    closeFxRate?: true
+    grossSaleValue?: true
+    netSaleValue?: true
+    purchaseFees?: true
+    closingFees?: true
+    realizedProfitLoss?: true
   }
 
   export type InvestmentSumAggregateInputType = {
@@ -21525,6 +21618,18 @@ export namespace Prisma {
     totalInvested?: true
     currentValue?: true
     profitLoss?: true
+    buyFxRate?: true
+    lastKnownFxRate?: true
+    totalInvestedNative?: true
+    currentValueNative?: true
+    valuationVersion?: true
+    closePrice?: true
+    closeFxRate?: true
+    grossSaleValue?: true
+    netSaleValue?: true
+    purchaseFees?: true
+    closingFees?: true
+    realizedProfitLoss?: true
   }
 
   export type InvestmentMinAggregateInputType = {
@@ -21541,6 +21646,25 @@ export namespace Prisma {
     purchaseDate?: true
     lastUpdated?: true
     clientRequestId?: true
+    broker?: true
+    description?: true
+    assetCurrency?: true
+    baseCurrency?: true
+    buyFxRate?: true
+    lastKnownFxRate?: true
+    totalInvestedNative?: true
+    currentValueNative?: true
+    valuationVersion?: true
+    positionStatus?: true
+    closedAt?: true
+    closePrice?: true
+    closeFxRate?: true
+    grossSaleValue?: true
+    netSaleValue?: true
+    purchaseFees?: true
+    closingFees?: true
+    realizedProfitLoss?: true
+    closeNotes?: true
     createdAt?: true
     updatedAt?: true
     deletedAt?: true
@@ -21560,6 +21684,25 @@ export namespace Prisma {
     purchaseDate?: true
     lastUpdated?: true
     clientRequestId?: true
+    broker?: true
+    description?: true
+    assetCurrency?: true
+    baseCurrency?: true
+    buyFxRate?: true
+    lastKnownFxRate?: true
+    totalInvestedNative?: true
+    currentValueNative?: true
+    valuationVersion?: true
+    positionStatus?: true
+    closedAt?: true
+    closePrice?: true
+    closeFxRate?: true
+    grossSaleValue?: true
+    netSaleValue?: true
+    purchaseFees?: true
+    closingFees?: true
+    realizedProfitLoss?: true
+    closeNotes?: true
     createdAt?: true
     updatedAt?: true
     deletedAt?: true
@@ -21580,6 +21723,25 @@ export namespace Prisma {
     lastUpdated?: true
     metadata?: true
     clientRequestId?: true
+    broker?: true
+    description?: true
+    assetCurrency?: true
+    baseCurrency?: true
+    buyFxRate?: true
+    lastKnownFxRate?: true
+    totalInvestedNative?: true
+    currentValueNative?: true
+    valuationVersion?: true
+    positionStatus?: true
+    closedAt?: true
+    closePrice?: true
+    closeFxRate?: true
+    grossSaleValue?: true
+    netSaleValue?: true
+    purchaseFees?: true
+    closingFees?: true
+    realizedProfitLoss?: true
+    closeNotes?: true
     createdAt?: true
     updatedAt?: true
     deletedAt?: true
@@ -21687,6 +21849,25 @@ export namespace Prisma {
     lastUpdated: Date
     metadata: JsonValue | null
     clientRequestId: string | null
+    broker: string | null
+    description: string | null
+    assetCurrency: string | null
+    baseCurrency: string | null
+    buyFxRate: Decimal | null
+    lastKnownFxRate: Decimal | null
+    totalInvestedNative: Decimal | null
+    currentValueNative: Decimal | null
+    valuationVersion: number | null
+    positionStatus: string | null
+    closedAt: Date | null
+    closePrice: Decimal | null
+    closeFxRate: Decimal | null
+    grossSaleValue: Decimal | null
+    netSaleValue: Decimal | null
+    purchaseFees: Decimal | null
+    closingFees: Decimal | null
+    realizedProfitLoss: Decimal | null
+    closeNotes: string | null
     createdAt: Date
     updatedAt: Date
     deletedAt: Date | null
@@ -21726,6 +21907,25 @@ export namespace Prisma {
     lastUpdated?: boolean
     metadata?: boolean
     clientRequestId?: boolean
+    broker?: boolean
+    description?: boolean
+    assetCurrency?: boolean
+    baseCurrency?: boolean
+    buyFxRate?: boolean
+    lastKnownFxRate?: boolean
+    totalInvestedNative?: boolean
+    currentValueNative?: boolean
+    valuationVersion?: boolean
+    positionStatus?: boolean
+    closedAt?: boolean
+    closePrice?: boolean
+    closeFxRate?: boolean
+    grossSaleValue?: boolean
+    netSaleValue?: boolean
+    purchaseFees?: boolean
+    closingFees?: boolean
+    realizedProfitLoss?: boolean
+    closeNotes?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     deletedAt?: boolean
@@ -21747,6 +21947,25 @@ export namespace Prisma {
     lastUpdated?: boolean
     metadata?: boolean
     clientRequestId?: boolean
+    broker?: boolean
+    description?: boolean
+    assetCurrency?: boolean
+    baseCurrency?: boolean
+    buyFxRate?: boolean
+    lastKnownFxRate?: boolean
+    totalInvestedNative?: boolean
+    currentValueNative?: boolean
+    valuationVersion?: boolean
+    positionStatus?: boolean
+    closedAt?: boolean
+    closePrice?: boolean
+    closeFxRate?: boolean
+    grossSaleValue?: boolean
+    netSaleValue?: boolean
+    purchaseFees?: boolean
+    closingFees?: boolean
+    realizedProfitLoss?: boolean
+    closeNotes?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     deletedAt?: boolean
@@ -21768,6 +21987,25 @@ export namespace Prisma {
     lastUpdated?: boolean
     metadata?: boolean
     clientRequestId?: boolean
+    broker?: boolean
+    description?: boolean
+    assetCurrency?: boolean
+    baseCurrency?: boolean
+    buyFxRate?: boolean
+    lastKnownFxRate?: boolean
+    totalInvestedNative?: boolean
+    currentValueNative?: boolean
+    valuationVersion?: boolean
+    positionStatus?: boolean
+    closedAt?: boolean
+    closePrice?: boolean
+    closeFxRate?: boolean
+    grossSaleValue?: boolean
+    netSaleValue?: boolean
+    purchaseFees?: boolean
+    closingFees?: boolean
+    realizedProfitLoss?: boolean
+    closeNotes?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     deletedAt?: boolean
@@ -21789,12 +22027,31 @@ export namespace Prisma {
     lastUpdated?: boolean
     metadata?: boolean
     clientRequestId?: boolean
+    broker?: boolean
+    description?: boolean
+    assetCurrency?: boolean
+    baseCurrency?: boolean
+    buyFxRate?: boolean
+    lastKnownFxRate?: boolean
+    totalInvestedNative?: boolean
+    currentValueNative?: boolean
+    valuationVersion?: boolean
+    positionStatus?: boolean
+    closedAt?: boolean
+    closePrice?: boolean
+    closeFxRate?: boolean
+    grossSaleValue?: boolean
+    netSaleValue?: boolean
+    purchaseFees?: boolean
+    closingFees?: boolean
+    realizedProfitLoss?: boolean
+    closeNotes?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     deletedAt?: boolean
   }
 
-  export type InvestmentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "assetType" | "assetName" | "quantity" | "buyPrice" | "currentPrice" | "totalInvested" | "currentValue" | "profitLoss" | "purchaseDate" | "lastUpdated" | "metadata" | "clientRequestId" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["investment"]>
+  export type InvestmentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "assetType" | "assetName" | "quantity" | "buyPrice" | "currentPrice" | "totalInvested" | "currentValue" | "profitLoss" | "purchaseDate" | "lastUpdated" | "metadata" | "clientRequestId" | "broker" | "description" | "assetCurrency" | "baseCurrency" | "buyFxRate" | "lastKnownFxRate" | "totalInvestedNative" | "currentValueNative" | "valuationVersion" | "positionStatus" | "closedAt" | "closePrice" | "closeFxRate" | "grossSaleValue" | "netSaleValue" | "purchaseFees" | "closingFees" | "realizedProfitLoss" | "closeNotes" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["investment"]>
   export type InvestmentInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
   }
@@ -21825,6 +22082,25 @@ export namespace Prisma {
       lastUpdated: Date
       metadata: Prisma.JsonValue | null
       clientRequestId: string | null
+      broker: string | null
+      description: string | null
+      assetCurrency: string | null
+      baseCurrency: string | null
+      buyFxRate: Prisma.Decimal | null
+      lastKnownFxRate: Prisma.Decimal | null
+      totalInvestedNative: Prisma.Decimal | null
+      currentValueNative: Prisma.Decimal | null
+      valuationVersion: number | null
+      positionStatus: string | null
+      closedAt: Date | null
+      closePrice: Prisma.Decimal | null
+      closeFxRate: Prisma.Decimal | null
+      grossSaleValue: Prisma.Decimal | null
+      netSaleValue: Prisma.Decimal | null
+      purchaseFees: Prisma.Decimal | null
+      closingFees: Prisma.Decimal | null
+      realizedProfitLoss: Prisma.Decimal | null
+      closeNotes: string | null
       createdAt: Date
       updatedAt: Date
       deletedAt: Date | null
@@ -22266,6 +22542,25 @@ export namespace Prisma {
     readonly lastUpdated: FieldRef<"Investment", 'DateTime'>
     readonly metadata: FieldRef<"Investment", 'Json'>
     readonly clientRequestId: FieldRef<"Investment", 'String'>
+    readonly broker: FieldRef<"Investment", 'String'>
+    readonly description: FieldRef<"Investment", 'String'>
+    readonly assetCurrency: FieldRef<"Investment", 'String'>
+    readonly baseCurrency: FieldRef<"Investment", 'String'>
+    readonly buyFxRate: FieldRef<"Investment", 'Decimal'>
+    readonly lastKnownFxRate: FieldRef<"Investment", 'Decimal'>
+    readonly totalInvestedNative: FieldRef<"Investment", 'Decimal'>
+    readonly currentValueNative: FieldRef<"Investment", 'Decimal'>
+    readonly valuationVersion: FieldRef<"Investment", 'Int'>
+    readonly positionStatus: FieldRef<"Investment", 'String'>
+    readonly closedAt: FieldRef<"Investment", 'DateTime'>
+    readonly closePrice: FieldRef<"Investment", 'Decimal'>
+    readonly closeFxRate: FieldRef<"Investment", 'Decimal'>
+    readonly grossSaleValue: FieldRef<"Investment", 'Decimal'>
+    readonly netSaleValue: FieldRef<"Investment", 'Decimal'>
+    readonly purchaseFees: FieldRef<"Investment", 'Decimal'>
+    readonly closingFees: FieldRef<"Investment", 'Decimal'>
+    readonly realizedProfitLoss: FieldRef<"Investment", 'Decimal'>
+    readonly closeNotes: FieldRef<"Investment", 'String'>
     readonly createdAt: FieldRef<"Investment", 'DateTime'>
     readonly updatedAt: FieldRef<"Investment", 'DateTime'>
     readonly deletedAt: FieldRef<"Investment", 'DateTime'>
@@ -22700,6 +22995,9 @@ export namespace Prisma {
     outstandingBalance: Decimal | null
     interestRate: Decimal | null
     emiAmount: Decimal | null
+    totalPayable: Decimal | null
+    tenureMonths: number | null
+    downPayment: Decimal | null
   }
 
   export type LoanSumAggregateOutputType = {
@@ -22707,6 +23005,9 @@ export namespace Prisma {
     outstandingBalance: Decimal | null
     interestRate: Decimal | null
     emiAmount: Decimal | null
+    totalPayable: Decimal | null
+    tenureMonths: number | null
+    downPayment: Decimal | null
   }
 
   export type LoanMinAggregateOutputType = {
@@ -22725,6 +23026,15 @@ export namespace Prisma {
     contactPerson: string | null
     syncStatus: string | null
     clientRequestId: string | null
+    totalPayable: Decimal | null
+    loanDate: Date | null
+    contactEmail: string | null
+    contactPhone: string | null
+    bankName: string | null
+    tenureMonths: number | null
+    downPayment: Decimal | null
+    loanCategory: string | null
+    notes: string | null
     createdAt: Date | null
     updatedAt: Date | null
     deletedAt: Date | null
@@ -22746,6 +23056,15 @@ export namespace Prisma {
     contactPerson: string | null
     syncStatus: string | null
     clientRequestId: string | null
+    totalPayable: Decimal | null
+    loanDate: Date | null
+    contactEmail: string | null
+    contactPhone: string | null
+    bankName: string | null
+    tenureMonths: number | null
+    downPayment: Decimal | null
+    loanCategory: string | null
+    notes: string | null
     createdAt: Date | null
     updatedAt: Date | null
     deletedAt: Date | null
@@ -22767,6 +23086,15 @@ export namespace Prisma {
     contactPerson: number
     syncStatus: number
     clientRequestId: number
+    totalPayable: number
+    loanDate: number
+    contactEmail: number
+    contactPhone: number
+    bankName: number
+    tenureMonths: number
+    downPayment: number
+    loanCategory: number
+    notes: number
     createdAt: number
     updatedAt: number
     deletedAt: number
@@ -22779,6 +23107,9 @@ export namespace Prisma {
     outstandingBalance?: true
     interestRate?: true
     emiAmount?: true
+    totalPayable?: true
+    tenureMonths?: true
+    downPayment?: true
   }
 
   export type LoanSumAggregateInputType = {
@@ -22786,6 +23117,9 @@ export namespace Prisma {
     outstandingBalance?: true
     interestRate?: true
     emiAmount?: true
+    totalPayable?: true
+    tenureMonths?: true
+    downPayment?: true
   }
 
   export type LoanMinAggregateInputType = {
@@ -22804,6 +23138,15 @@ export namespace Prisma {
     contactPerson?: true
     syncStatus?: true
     clientRequestId?: true
+    totalPayable?: true
+    loanDate?: true
+    contactEmail?: true
+    contactPhone?: true
+    bankName?: true
+    tenureMonths?: true
+    downPayment?: true
+    loanCategory?: true
+    notes?: true
     createdAt?: true
     updatedAt?: true
     deletedAt?: true
@@ -22825,6 +23168,15 @@ export namespace Prisma {
     contactPerson?: true
     syncStatus?: true
     clientRequestId?: true
+    totalPayable?: true
+    loanDate?: true
+    contactEmail?: true
+    contactPhone?: true
+    bankName?: true
+    tenureMonths?: true
+    downPayment?: true
+    loanCategory?: true
+    notes?: true
     createdAt?: true
     updatedAt?: true
     deletedAt?: true
@@ -22846,6 +23198,15 @@ export namespace Prisma {
     contactPerson?: true
     syncStatus?: true
     clientRequestId?: true
+    totalPayable?: true
+    loanDate?: true
+    contactEmail?: true
+    contactPhone?: true
+    bankName?: true
+    tenureMonths?: true
+    downPayment?: true
+    loanCategory?: true
+    notes?: true
     createdAt?: true
     updatedAt?: true
     deletedAt?: true
@@ -22954,6 +23315,15 @@ export namespace Prisma {
     contactPerson: string | null
     syncStatus: string
     clientRequestId: string | null
+    totalPayable: Decimal | null
+    loanDate: Date | null
+    contactEmail: string | null
+    contactPhone: string | null
+    bankName: string | null
+    tenureMonths: number | null
+    downPayment: Decimal | null
+    loanCategory: string | null
+    notes: string | null
     createdAt: Date
     updatedAt: Date
     deletedAt: Date | null
@@ -22994,6 +23364,15 @@ export namespace Prisma {
     contactPerson?: boolean
     syncStatus?: boolean
     clientRequestId?: boolean
+    totalPayable?: boolean
+    loanDate?: boolean
+    contactEmail?: boolean
+    contactPhone?: boolean
+    bankName?: boolean
+    tenureMonths?: boolean
+    downPayment?: boolean
+    loanCategory?: boolean
+    notes?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     deletedAt?: boolean
@@ -23018,6 +23397,15 @@ export namespace Prisma {
     contactPerson?: boolean
     syncStatus?: boolean
     clientRequestId?: boolean
+    totalPayable?: boolean
+    loanDate?: boolean
+    contactEmail?: boolean
+    contactPhone?: boolean
+    bankName?: boolean
+    tenureMonths?: boolean
+    downPayment?: boolean
+    loanCategory?: boolean
+    notes?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     deletedAt?: boolean
@@ -23040,6 +23428,15 @@ export namespace Prisma {
     contactPerson?: boolean
     syncStatus?: boolean
     clientRequestId?: boolean
+    totalPayable?: boolean
+    loanDate?: boolean
+    contactEmail?: boolean
+    contactPhone?: boolean
+    bankName?: boolean
+    tenureMonths?: boolean
+    downPayment?: boolean
+    loanCategory?: boolean
+    notes?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     deletedAt?: boolean
@@ -23062,12 +23459,21 @@ export namespace Prisma {
     contactPerson?: boolean
     syncStatus?: boolean
     clientRequestId?: boolean
+    totalPayable?: boolean
+    loanDate?: boolean
+    contactEmail?: boolean
+    contactPhone?: boolean
+    bankName?: boolean
+    tenureMonths?: boolean
+    downPayment?: boolean
+    loanCategory?: boolean
+    notes?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     deletedAt?: boolean
   }
 
-  export type LoanOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "deviceId" | "type" | "name" | "principalAmount" | "outstandingBalance" | "interestRate" | "emiAmount" | "dueDate" | "frequency" | "status" | "contactPerson" | "syncStatus" | "clientRequestId" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["loan"]>
+  export type LoanOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "deviceId" | "type" | "name" | "principalAmount" | "outstandingBalance" | "interestRate" | "emiAmount" | "dueDate" | "frequency" | "status" | "contactPerson" | "syncStatus" | "clientRequestId" | "totalPayable" | "loanDate" | "contactEmail" | "contactPhone" | "bankName" | "tenureMonths" | "downPayment" | "loanCategory" | "notes" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["loan"]>
   export type LoanInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     payments?: boolean | Loan$paymentsArgs<ExtArgs>
@@ -23102,6 +23508,15 @@ export namespace Prisma {
       contactPerson: string | null
       syncStatus: string
       clientRequestId: string | null
+      totalPayable: Prisma.Decimal | null
+      loanDate: Date | null
+      contactEmail: string | null
+      contactPhone: string | null
+      bankName: string | null
+      tenureMonths: number | null
+      downPayment: Prisma.Decimal | null
+      loanCategory: string | null
+      notes: string | null
       createdAt: Date
       updatedAt: Date
       deletedAt: Date | null
@@ -23545,6 +23960,15 @@ export namespace Prisma {
     readonly contactPerson: FieldRef<"Loan", 'String'>
     readonly syncStatus: FieldRef<"Loan", 'String'>
     readonly clientRequestId: FieldRef<"Loan", 'String'>
+    readonly totalPayable: FieldRef<"Loan", 'Decimal'>
+    readonly loanDate: FieldRef<"Loan", 'DateTime'>
+    readonly contactEmail: FieldRef<"Loan", 'String'>
+    readonly contactPhone: FieldRef<"Loan", 'String'>
+    readonly bankName: FieldRef<"Loan", 'String'>
+    readonly tenureMonths: FieldRef<"Loan", 'Int'>
+    readonly downPayment: FieldRef<"Loan", 'Decimal'>
+    readonly loanCategory: FieldRef<"Loan", 'String'>
+    readonly notes: FieldRef<"Loan", 'String'>
     readonly createdAt: FieldRef<"Loan", 'DateTime'>
     readonly updatedAt: FieldRef<"Loan", 'DateTime'>
     readonly deletedAt: FieldRef<"Loan", 'DateTime'>
@@ -34588,6 +35012,7 @@ export namespace Prisma {
     isActive: boolean | null
     failedAttempts: number | null
     lockedUntil: Date | null
+    lastVerifiedAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -34601,6 +35026,7 @@ export namespace Prisma {
     isActive: boolean | null
     failedAttempts: number | null
     lockedUntil: Date | null
+    lastVerifiedAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -34614,6 +35040,7 @@ export namespace Prisma {
     isActive: number
     failedAttempts: number
     lockedUntil: number
+    lastVerifiedAt: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -34637,6 +35064,7 @@ export namespace Prisma {
     isActive?: true
     failedAttempts?: true
     lockedUntil?: true
+    lastVerifiedAt?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -34650,6 +35078,7 @@ export namespace Prisma {
     isActive?: true
     failedAttempts?: true
     lockedUntil?: true
+    lastVerifiedAt?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -34663,6 +35092,7 @@ export namespace Prisma {
     isActive?: true
     failedAttempts?: true
     lockedUntil?: true
+    lastVerifiedAt?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -34763,6 +35193,7 @@ export namespace Prisma {
     isActive: boolean
     failedAttempts: number
     lockedUntil: Date | null
+    lastVerifiedAt: Date | null
     createdAt: Date
     updatedAt: Date
     _count: UserPinCountAggregateOutputType | null
@@ -34795,6 +35226,7 @@ export namespace Prisma {
     isActive?: boolean
     failedAttempts?: boolean
     lockedUntil?: boolean
+    lastVerifiedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -34809,6 +35241,7 @@ export namespace Prisma {
     isActive?: boolean
     failedAttempts?: boolean
     lockedUntil?: boolean
+    lastVerifiedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -34823,6 +35256,7 @@ export namespace Prisma {
     isActive?: boolean
     failedAttempts?: boolean
     lockedUntil?: boolean
+    lastVerifiedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -34837,11 +35271,12 @@ export namespace Prisma {
     isActive?: boolean
     failedAttempts?: boolean
     lockedUntil?: boolean
+    lastVerifiedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type UserPinOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "pinHash" | "keyBackup" | "expiresAt" | "isActive" | "failedAttempts" | "lockedUntil" | "createdAt" | "updatedAt", ExtArgs["result"]["userPin"]>
+  export type UserPinOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "pinHash" | "keyBackup" | "expiresAt" | "isActive" | "failedAttempts" | "lockedUntil" | "lastVerifiedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["userPin"]>
   export type UserPinInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
   }
@@ -34866,6 +35301,7 @@ export namespace Prisma {
       isActive: boolean
       failedAttempts: number
       lockedUntil: Date | null
+      lastVerifiedAt: Date | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["userPin"]>
@@ -35300,6 +35736,7 @@ export namespace Prisma {
     readonly isActive: FieldRef<"UserPin", 'Boolean'>
     readonly failedAttempts: FieldRef<"UserPin", 'Int'>
     readonly lockedUntil: FieldRef<"UserPin", 'DateTime'>
+    readonly lastVerifiedAt: FieldRef<"UserPin", 'DateTime'>
     readonly createdAt: FieldRef<"UserPin", 'DateTime'>
     readonly updatedAt: FieldRef<"UserPin", 'DateTime'>
   }
@@ -57850,10 +58287,12 @@ export namespace Prisma {
 
   export type RecurringTransactionAvgAggregateOutputType = {
     amount: Decimal | null
+    reminderDaysBefore: number | null
   }
 
   export type RecurringTransactionSumAggregateOutputType = {
     amount: Decimal | null
+    reminderDaysBefore: number | null
   }
 
   export type RecurringTransactionMinAggregateOutputType = {
@@ -57873,6 +58312,12 @@ export namespace Prisma {
     lastProcessedAt: Date | null
     clientRequestId: string | null
     syncStatus: string | null
+    type: string | null
+    startDate: Date | null
+    endDate: Date | null
+    reminderDaysBefore: number | null
+    notes: string | null
+    transferToAccountId: string | null
     createdAt: Date | null
     updatedAt: Date | null
     deletedAt: Date | null
@@ -57895,6 +58340,12 @@ export namespace Prisma {
     lastProcessedAt: Date | null
     clientRequestId: string | null
     syncStatus: string | null
+    type: string | null
+    startDate: Date | null
+    endDate: Date | null
+    reminderDaysBefore: number | null
+    notes: string | null
+    transferToAccountId: string | null
     createdAt: Date | null
     updatedAt: Date | null
     deletedAt: Date | null
@@ -57917,6 +58368,12 @@ export namespace Prisma {
     lastProcessedAt: number
     clientRequestId: number
     syncStatus: number
+    type: number
+    startDate: number
+    endDate: number
+    reminderDaysBefore: number
+    notes: number
+    transferToAccountId: number
     createdAt: number
     updatedAt: number
     deletedAt: number
@@ -57926,10 +58383,12 @@ export namespace Prisma {
 
   export type RecurringTransactionAvgAggregateInputType = {
     amount?: true
+    reminderDaysBefore?: true
   }
 
   export type RecurringTransactionSumAggregateInputType = {
     amount?: true
+    reminderDaysBefore?: true
   }
 
   export type RecurringTransactionMinAggregateInputType = {
@@ -57949,6 +58408,12 @@ export namespace Prisma {
     lastProcessedAt?: true
     clientRequestId?: true
     syncStatus?: true
+    type?: true
+    startDate?: true
+    endDate?: true
+    reminderDaysBefore?: true
+    notes?: true
+    transferToAccountId?: true
     createdAt?: true
     updatedAt?: true
     deletedAt?: true
@@ -57971,6 +58436,12 @@ export namespace Prisma {
     lastProcessedAt?: true
     clientRequestId?: true
     syncStatus?: true
+    type?: true
+    startDate?: true
+    endDate?: true
+    reminderDaysBefore?: true
+    notes?: true
+    transferToAccountId?: true
     createdAt?: true
     updatedAt?: true
     deletedAt?: true
@@ -57993,6 +58464,12 @@ export namespace Prisma {
     lastProcessedAt?: true
     clientRequestId?: true
     syncStatus?: true
+    type?: true
+    startDate?: true
+    endDate?: true
+    reminderDaysBefore?: true
+    notes?: true
+    transferToAccountId?: true
     createdAt?: true
     updatedAt?: true
     deletedAt?: true
@@ -58102,6 +58579,12 @@ export namespace Prisma {
     lastProcessedAt: Date | null
     clientRequestId: string | null
     syncStatus: string
+    type: string | null
+    startDate: Date | null
+    endDate: Date | null
+    reminderDaysBefore: number | null
+    notes: string | null
+    transferToAccountId: string | null
     createdAt: Date
     updatedAt: Date
     deletedAt: Date | null
@@ -58143,6 +58626,12 @@ export namespace Prisma {
     lastProcessedAt?: boolean
     clientRequestId?: boolean
     syncStatus?: boolean
+    type?: boolean
+    startDate?: boolean
+    endDate?: boolean
+    reminderDaysBefore?: boolean
+    notes?: boolean
+    transferToAccountId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     deletedAt?: boolean
@@ -58166,6 +58655,12 @@ export namespace Prisma {
     lastProcessedAt?: boolean
     clientRequestId?: boolean
     syncStatus?: boolean
+    type?: boolean
+    startDate?: boolean
+    endDate?: boolean
+    reminderDaysBefore?: boolean
+    notes?: boolean
+    transferToAccountId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     deletedAt?: boolean
@@ -58189,6 +58684,12 @@ export namespace Prisma {
     lastProcessedAt?: boolean
     clientRequestId?: boolean
     syncStatus?: boolean
+    type?: boolean
+    startDate?: boolean
+    endDate?: boolean
+    reminderDaysBefore?: boolean
+    notes?: boolean
+    transferToAccountId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     deletedAt?: boolean
@@ -58212,12 +58713,18 @@ export namespace Prisma {
     lastProcessedAt?: boolean
     clientRequestId?: boolean
     syncStatus?: boolean
+    type?: boolean
+    startDate?: boolean
+    endDate?: boolean
+    reminderDaysBefore?: boolean
+    notes?: boolean
+    transferToAccountId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     deletedAt?: boolean
   }
 
-  export type RecurringTransactionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "title" | "amount" | "category" | "subcategory" | "interval" | "nextDueDate" | "autoProcess" | "status" | "accountId" | "description" | "merchant" | "lastProcessedAt" | "clientRequestId" | "syncStatus" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["recurringTransaction"]>
+  export type RecurringTransactionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "title" | "amount" | "category" | "subcategory" | "interval" | "nextDueDate" | "autoProcess" | "status" | "accountId" | "description" | "merchant" | "lastProcessedAt" | "clientRequestId" | "syncStatus" | "type" | "startDate" | "endDate" | "reminderDaysBefore" | "notes" | "transferToAccountId" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["recurringTransaction"]>
   export type RecurringTransactionInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
   }
@@ -58250,6 +58757,12 @@ export namespace Prisma {
       lastProcessedAt: Date | null
       clientRequestId: string | null
       syncStatus: string
+      type: string | null
+      startDate: Date | null
+      endDate: Date | null
+      reminderDaysBefore: number | null
+      notes: string | null
+      transferToAccountId: string | null
       createdAt: Date
       updatedAt: Date
       deletedAt: Date | null
@@ -58693,6 +59206,12 @@ export namespace Prisma {
     readonly lastProcessedAt: FieldRef<"RecurringTransaction", 'DateTime'>
     readonly clientRequestId: FieldRef<"RecurringTransaction", 'String'>
     readonly syncStatus: FieldRef<"RecurringTransaction", 'String'>
+    readonly type: FieldRef<"RecurringTransaction", 'String'>
+    readonly startDate: FieldRef<"RecurringTransaction", 'DateTime'>
+    readonly endDate: FieldRef<"RecurringTransaction", 'DateTime'>
+    readonly reminderDaysBefore: FieldRef<"RecurringTransaction", 'Int'>
+    readonly notes: FieldRef<"RecurringTransaction", 'String'>
+    readonly transferToAccountId: FieldRef<"RecurringTransaction", 'String'>
     readonly createdAt: FieldRef<"RecurringTransaction", 'DateTime'>
     readonly updatedAt: FieldRef<"RecurringTransaction", 'DateTime'>
     readonly deletedAt: FieldRef<"RecurringTransaction", 'DateTime'>
@@ -63197,6 +63716,25 @@ export namespace Prisma {
     lastUpdated: 'lastUpdated',
     metadata: 'metadata',
     clientRequestId: 'clientRequestId',
+    broker: 'broker',
+    description: 'description',
+    assetCurrency: 'assetCurrency',
+    baseCurrency: 'baseCurrency',
+    buyFxRate: 'buyFxRate',
+    lastKnownFxRate: 'lastKnownFxRate',
+    totalInvestedNative: 'totalInvestedNative',
+    currentValueNative: 'currentValueNative',
+    valuationVersion: 'valuationVersion',
+    positionStatus: 'positionStatus',
+    closedAt: 'closedAt',
+    closePrice: 'closePrice',
+    closeFxRate: 'closeFxRate',
+    grossSaleValue: 'grossSaleValue',
+    netSaleValue: 'netSaleValue',
+    purchaseFees: 'purchaseFees',
+    closingFees: 'closingFees',
+    realizedProfitLoss: 'realizedProfitLoss',
+    closeNotes: 'closeNotes',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
     deletedAt: 'deletedAt'
@@ -63221,6 +63759,15 @@ export namespace Prisma {
     contactPerson: 'contactPerson',
     syncStatus: 'syncStatus',
     clientRequestId: 'clientRequestId',
+    totalPayable: 'totalPayable',
+    loanDate: 'loanDate',
+    contactEmail: 'contactEmail',
+    contactPhone: 'contactPhone',
+    bankName: 'bankName',
+    tenureMonths: 'tenureMonths',
+    downPayment: 'downPayment',
+    loanCategory: 'loanCategory',
+    notes: 'notes',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
     deletedAt: 'deletedAt'
@@ -63404,6 +63951,7 @@ export namespace Prisma {
     isActive: 'isActive',
     failedAttempts: 'failedAttempts',
     lockedUntil: 'lockedUntil',
+    lastVerifiedAt: 'lastVerifiedAt',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -63748,6 +64296,12 @@ export namespace Prisma {
     lastProcessedAt: 'lastProcessedAt',
     clientRequestId: 'clientRequestId',
     syncStatus: 'syncStatus',
+    type: 'type',
+    startDate: 'startDate',
+    endDate: 'endDate',
+    reminderDaysBefore: 'reminderDaysBefore',
+    notes: 'notes',
+    transferToAccountId: 'transferToAccountId',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
     deletedAt: 'deletedAt'
@@ -65300,6 +65854,25 @@ export namespace Prisma {
     lastUpdated?: DateTimeFilter<"Investment"> | Date | string
     metadata?: JsonNullableFilter<"Investment">
     clientRequestId?: StringNullableFilter<"Investment"> | string | null
+    broker?: StringNullableFilter<"Investment"> | string | null
+    description?: StringNullableFilter<"Investment"> | string | null
+    assetCurrency?: StringNullableFilter<"Investment"> | string | null
+    baseCurrency?: StringNullableFilter<"Investment"> | string | null
+    buyFxRate?: DecimalNullableFilter<"Investment"> | Decimal | DecimalJsLike | number | string | null
+    lastKnownFxRate?: DecimalNullableFilter<"Investment"> | Decimal | DecimalJsLike | number | string | null
+    totalInvestedNative?: DecimalNullableFilter<"Investment"> | Decimal | DecimalJsLike | number | string | null
+    currentValueNative?: DecimalNullableFilter<"Investment"> | Decimal | DecimalJsLike | number | string | null
+    valuationVersion?: IntNullableFilter<"Investment"> | number | null
+    positionStatus?: StringNullableFilter<"Investment"> | string | null
+    closedAt?: DateTimeNullableFilter<"Investment"> | Date | string | null
+    closePrice?: DecimalNullableFilter<"Investment"> | Decimal | DecimalJsLike | number | string | null
+    closeFxRate?: DecimalNullableFilter<"Investment"> | Decimal | DecimalJsLike | number | string | null
+    grossSaleValue?: DecimalNullableFilter<"Investment"> | Decimal | DecimalJsLike | number | string | null
+    netSaleValue?: DecimalNullableFilter<"Investment"> | Decimal | DecimalJsLike | number | string | null
+    purchaseFees?: DecimalNullableFilter<"Investment"> | Decimal | DecimalJsLike | number | string | null
+    closingFees?: DecimalNullableFilter<"Investment"> | Decimal | DecimalJsLike | number | string | null
+    realizedProfitLoss?: DecimalNullableFilter<"Investment"> | Decimal | DecimalJsLike | number | string | null
+    closeNotes?: StringNullableFilter<"Investment"> | string | null
     createdAt?: DateTimeFilter<"Investment"> | Date | string
     updatedAt?: DateTimeFilter<"Investment"> | Date | string
     deletedAt?: DateTimeNullableFilter<"Investment"> | Date | string | null
@@ -65321,6 +65894,25 @@ export namespace Prisma {
     lastUpdated?: SortOrder
     metadata?: SortOrderInput | SortOrder
     clientRequestId?: SortOrderInput | SortOrder
+    broker?: SortOrderInput | SortOrder
+    description?: SortOrderInput | SortOrder
+    assetCurrency?: SortOrderInput | SortOrder
+    baseCurrency?: SortOrderInput | SortOrder
+    buyFxRate?: SortOrderInput | SortOrder
+    lastKnownFxRate?: SortOrderInput | SortOrder
+    totalInvestedNative?: SortOrderInput | SortOrder
+    currentValueNative?: SortOrderInput | SortOrder
+    valuationVersion?: SortOrderInput | SortOrder
+    positionStatus?: SortOrderInput | SortOrder
+    closedAt?: SortOrderInput | SortOrder
+    closePrice?: SortOrderInput | SortOrder
+    closeFxRate?: SortOrderInput | SortOrder
+    grossSaleValue?: SortOrderInput | SortOrder
+    netSaleValue?: SortOrderInput | SortOrder
+    purchaseFees?: SortOrderInput | SortOrder
+    closingFees?: SortOrderInput | SortOrder
+    realizedProfitLoss?: SortOrderInput | SortOrder
+    closeNotes?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     deletedAt?: SortOrderInput | SortOrder
@@ -65345,6 +65937,25 @@ export namespace Prisma {
     purchaseDate?: DateTimeFilter<"Investment"> | Date | string
     lastUpdated?: DateTimeFilter<"Investment"> | Date | string
     metadata?: JsonNullableFilter<"Investment">
+    broker?: StringNullableFilter<"Investment"> | string | null
+    description?: StringNullableFilter<"Investment"> | string | null
+    assetCurrency?: StringNullableFilter<"Investment"> | string | null
+    baseCurrency?: StringNullableFilter<"Investment"> | string | null
+    buyFxRate?: DecimalNullableFilter<"Investment"> | Decimal | DecimalJsLike | number | string | null
+    lastKnownFxRate?: DecimalNullableFilter<"Investment"> | Decimal | DecimalJsLike | number | string | null
+    totalInvestedNative?: DecimalNullableFilter<"Investment"> | Decimal | DecimalJsLike | number | string | null
+    currentValueNative?: DecimalNullableFilter<"Investment"> | Decimal | DecimalJsLike | number | string | null
+    valuationVersion?: IntNullableFilter<"Investment"> | number | null
+    positionStatus?: StringNullableFilter<"Investment"> | string | null
+    closedAt?: DateTimeNullableFilter<"Investment"> | Date | string | null
+    closePrice?: DecimalNullableFilter<"Investment"> | Decimal | DecimalJsLike | number | string | null
+    closeFxRate?: DecimalNullableFilter<"Investment"> | Decimal | DecimalJsLike | number | string | null
+    grossSaleValue?: DecimalNullableFilter<"Investment"> | Decimal | DecimalJsLike | number | string | null
+    netSaleValue?: DecimalNullableFilter<"Investment"> | Decimal | DecimalJsLike | number | string | null
+    purchaseFees?: DecimalNullableFilter<"Investment"> | Decimal | DecimalJsLike | number | string | null
+    closingFees?: DecimalNullableFilter<"Investment"> | Decimal | DecimalJsLike | number | string | null
+    realizedProfitLoss?: DecimalNullableFilter<"Investment"> | Decimal | DecimalJsLike | number | string | null
+    closeNotes?: StringNullableFilter<"Investment"> | string | null
     createdAt?: DateTimeFilter<"Investment"> | Date | string
     updatedAt?: DateTimeFilter<"Investment"> | Date | string
     deletedAt?: DateTimeNullableFilter<"Investment"> | Date | string | null
@@ -65366,6 +65977,25 @@ export namespace Prisma {
     lastUpdated?: SortOrder
     metadata?: SortOrderInput | SortOrder
     clientRequestId?: SortOrderInput | SortOrder
+    broker?: SortOrderInput | SortOrder
+    description?: SortOrderInput | SortOrder
+    assetCurrency?: SortOrderInput | SortOrder
+    baseCurrency?: SortOrderInput | SortOrder
+    buyFxRate?: SortOrderInput | SortOrder
+    lastKnownFxRate?: SortOrderInput | SortOrder
+    totalInvestedNative?: SortOrderInput | SortOrder
+    currentValueNative?: SortOrderInput | SortOrder
+    valuationVersion?: SortOrderInput | SortOrder
+    positionStatus?: SortOrderInput | SortOrder
+    closedAt?: SortOrderInput | SortOrder
+    closePrice?: SortOrderInput | SortOrder
+    closeFxRate?: SortOrderInput | SortOrder
+    grossSaleValue?: SortOrderInput | SortOrder
+    netSaleValue?: SortOrderInput | SortOrder
+    purchaseFees?: SortOrderInput | SortOrder
+    closingFees?: SortOrderInput | SortOrder
+    realizedProfitLoss?: SortOrderInput | SortOrder
+    closeNotes?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     deletedAt?: SortOrderInput | SortOrder
@@ -65394,6 +66024,25 @@ export namespace Prisma {
     lastUpdated?: DateTimeWithAggregatesFilter<"Investment"> | Date | string
     metadata?: JsonNullableWithAggregatesFilter<"Investment">
     clientRequestId?: StringNullableWithAggregatesFilter<"Investment"> | string | null
+    broker?: StringNullableWithAggregatesFilter<"Investment"> | string | null
+    description?: StringNullableWithAggregatesFilter<"Investment"> | string | null
+    assetCurrency?: StringNullableWithAggregatesFilter<"Investment"> | string | null
+    baseCurrency?: StringNullableWithAggregatesFilter<"Investment"> | string | null
+    buyFxRate?: DecimalNullableWithAggregatesFilter<"Investment"> | Decimal | DecimalJsLike | number | string | null
+    lastKnownFxRate?: DecimalNullableWithAggregatesFilter<"Investment"> | Decimal | DecimalJsLike | number | string | null
+    totalInvestedNative?: DecimalNullableWithAggregatesFilter<"Investment"> | Decimal | DecimalJsLike | number | string | null
+    currentValueNative?: DecimalNullableWithAggregatesFilter<"Investment"> | Decimal | DecimalJsLike | number | string | null
+    valuationVersion?: IntNullableWithAggregatesFilter<"Investment"> | number | null
+    positionStatus?: StringNullableWithAggregatesFilter<"Investment"> | string | null
+    closedAt?: DateTimeNullableWithAggregatesFilter<"Investment"> | Date | string | null
+    closePrice?: DecimalNullableWithAggregatesFilter<"Investment"> | Decimal | DecimalJsLike | number | string | null
+    closeFxRate?: DecimalNullableWithAggregatesFilter<"Investment"> | Decimal | DecimalJsLike | number | string | null
+    grossSaleValue?: DecimalNullableWithAggregatesFilter<"Investment"> | Decimal | DecimalJsLike | number | string | null
+    netSaleValue?: DecimalNullableWithAggregatesFilter<"Investment"> | Decimal | DecimalJsLike | number | string | null
+    purchaseFees?: DecimalNullableWithAggregatesFilter<"Investment"> | Decimal | DecimalJsLike | number | string | null
+    closingFees?: DecimalNullableWithAggregatesFilter<"Investment"> | Decimal | DecimalJsLike | number | string | null
+    realizedProfitLoss?: DecimalNullableWithAggregatesFilter<"Investment"> | Decimal | DecimalJsLike | number | string | null
+    closeNotes?: StringNullableWithAggregatesFilter<"Investment"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Investment"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Investment"> | Date | string
     deletedAt?: DateTimeNullableWithAggregatesFilter<"Investment"> | Date | string | null
@@ -65418,6 +66067,15 @@ export namespace Prisma {
     contactPerson?: StringNullableFilter<"Loan"> | string | null
     syncStatus?: StringFilter<"Loan"> | string
     clientRequestId?: StringNullableFilter<"Loan"> | string | null
+    totalPayable?: DecimalNullableFilter<"Loan"> | Decimal | DecimalJsLike | number | string | null
+    loanDate?: DateTimeNullableFilter<"Loan"> | Date | string | null
+    contactEmail?: StringNullableFilter<"Loan"> | string | null
+    contactPhone?: StringNullableFilter<"Loan"> | string | null
+    bankName?: StringNullableFilter<"Loan"> | string | null
+    tenureMonths?: IntNullableFilter<"Loan"> | number | null
+    downPayment?: DecimalNullableFilter<"Loan"> | Decimal | DecimalJsLike | number | string | null
+    loanCategory?: StringNullableFilter<"Loan"> | string | null
+    notes?: StringNullableFilter<"Loan"> | string | null
     createdAt?: DateTimeFilter<"Loan"> | Date | string
     updatedAt?: DateTimeFilter<"Loan"> | Date | string
     deletedAt?: DateTimeNullableFilter<"Loan"> | Date | string | null
@@ -65441,6 +66099,15 @@ export namespace Prisma {
     contactPerson?: SortOrderInput | SortOrder
     syncStatus?: SortOrder
     clientRequestId?: SortOrderInput | SortOrder
+    totalPayable?: SortOrderInput | SortOrder
+    loanDate?: SortOrderInput | SortOrder
+    contactEmail?: SortOrderInput | SortOrder
+    contactPhone?: SortOrderInput | SortOrder
+    bankName?: SortOrderInput | SortOrder
+    tenureMonths?: SortOrderInput | SortOrder
+    downPayment?: SortOrderInput | SortOrder
+    loanCategory?: SortOrderInput | SortOrder
+    notes?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     deletedAt?: SortOrderInput | SortOrder
@@ -65467,6 +66134,15 @@ export namespace Prisma {
     status?: StringFilter<"Loan"> | string
     contactPerson?: StringNullableFilter<"Loan"> | string | null
     syncStatus?: StringFilter<"Loan"> | string
+    totalPayable?: DecimalNullableFilter<"Loan"> | Decimal | DecimalJsLike | number | string | null
+    loanDate?: DateTimeNullableFilter<"Loan"> | Date | string | null
+    contactEmail?: StringNullableFilter<"Loan"> | string | null
+    contactPhone?: StringNullableFilter<"Loan"> | string | null
+    bankName?: StringNullableFilter<"Loan"> | string | null
+    tenureMonths?: IntNullableFilter<"Loan"> | number | null
+    downPayment?: DecimalNullableFilter<"Loan"> | Decimal | DecimalJsLike | number | string | null
+    loanCategory?: StringNullableFilter<"Loan"> | string | null
+    notes?: StringNullableFilter<"Loan"> | string | null
     createdAt?: DateTimeFilter<"Loan"> | Date | string
     updatedAt?: DateTimeFilter<"Loan"> | Date | string
     deletedAt?: DateTimeNullableFilter<"Loan"> | Date | string | null
@@ -65490,6 +66166,15 @@ export namespace Prisma {
     contactPerson?: SortOrderInput | SortOrder
     syncStatus?: SortOrder
     clientRequestId?: SortOrderInput | SortOrder
+    totalPayable?: SortOrderInput | SortOrder
+    loanDate?: SortOrderInput | SortOrder
+    contactEmail?: SortOrderInput | SortOrder
+    contactPhone?: SortOrderInput | SortOrder
+    bankName?: SortOrderInput | SortOrder
+    tenureMonths?: SortOrderInput | SortOrder
+    downPayment?: SortOrderInput | SortOrder
+    loanCategory?: SortOrderInput | SortOrder
+    notes?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     deletedAt?: SortOrderInput | SortOrder
@@ -65519,6 +66204,15 @@ export namespace Prisma {
     contactPerson?: StringNullableWithAggregatesFilter<"Loan"> | string | null
     syncStatus?: StringWithAggregatesFilter<"Loan"> | string
     clientRequestId?: StringNullableWithAggregatesFilter<"Loan"> | string | null
+    totalPayable?: DecimalNullableWithAggregatesFilter<"Loan"> | Decimal | DecimalJsLike | number | string | null
+    loanDate?: DateTimeNullableWithAggregatesFilter<"Loan"> | Date | string | null
+    contactEmail?: StringNullableWithAggregatesFilter<"Loan"> | string | null
+    contactPhone?: StringNullableWithAggregatesFilter<"Loan"> | string | null
+    bankName?: StringNullableWithAggregatesFilter<"Loan"> | string | null
+    tenureMonths?: IntNullableWithAggregatesFilter<"Loan"> | number | null
+    downPayment?: DecimalNullableWithAggregatesFilter<"Loan"> | Decimal | DecimalJsLike | number | string | null
+    loanCategory?: StringNullableWithAggregatesFilter<"Loan"> | string | null
+    notes?: StringNullableWithAggregatesFilter<"Loan"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Loan"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Loan"> | Date | string
     deletedAt?: DateTimeNullableWithAggregatesFilter<"Loan"> | Date | string | null
@@ -66487,6 +67181,7 @@ export namespace Prisma {
     isActive?: BoolFilter<"UserPin"> | boolean
     failedAttempts?: IntFilter<"UserPin"> | number
     lockedUntil?: DateTimeNullableFilter<"UserPin"> | Date | string | null
+    lastVerifiedAt?: DateTimeNullableFilter<"UserPin"> | Date | string | null
     createdAt?: DateTimeFilter<"UserPin"> | Date | string
     updatedAt?: DateTimeFilter<"UserPin"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -66501,6 +67196,7 @@ export namespace Prisma {
     isActive?: SortOrder
     failedAttempts?: SortOrder
     lockedUntil?: SortOrderInput | SortOrder
+    lastVerifiedAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     user?: UserOrderByWithRelationInput
@@ -66518,6 +67214,7 @@ export namespace Prisma {
     isActive?: BoolFilter<"UserPin"> | boolean
     failedAttempts?: IntFilter<"UserPin"> | number
     lockedUntil?: DateTimeNullableFilter<"UserPin"> | Date | string | null
+    lastVerifiedAt?: DateTimeNullableFilter<"UserPin"> | Date | string | null
     createdAt?: DateTimeFilter<"UserPin"> | Date | string
     updatedAt?: DateTimeFilter<"UserPin"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -66532,6 +67229,7 @@ export namespace Prisma {
     isActive?: SortOrder
     failedAttempts?: SortOrder
     lockedUntil?: SortOrderInput | SortOrder
+    lastVerifiedAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: UserPinCountOrderByAggregateInput
@@ -66553,6 +67251,7 @@ export namespace Prisma {
     isActive?: BoolWithAggregatesFilter<"UserPin"> | boolean
     failedAttempts?: IntWithAggregatesFilter<"UserPin"> | number
     lockedUntil?: DateTimeNullableWithAggregatesFilter<"UserPin"> | Date | string | null
+    lastVerifiedAt?: DateTimeNullableWithAggregatesFilter<"UserPin"> | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter<"UserPin"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"UserPin"> | Date | string
   }
@@ -68174,6 +68873,12 @@ export namespace Prisma {
     lastProcessedAt?: DateTimeNullableFilter<"RecurringTransaction"> | Date | string | null
     clientRequestId?: StringNullableFilter<"RecurringTransaction"> | string | null
     syncStatus?: StringFilter<"RecurringTransaction"> | string
+    type?: StringNullableFilter<"RecurringTransaction"> | string | null
+    startDate?: DateTimeNullableFilter<"RecurringTransaction"> | Date | string | null
+    endDate?: DateTimeNullableFilter<"RecurringTransaction"> | Date | string | null
+    reminderDaysBefore?: IntNullableFilter<"RecurringTransaction"> | number | null
+    notes?: StringNullableFilter<"RecurringTransaction"> | string | null
+    transferToAccountId?: StringNullableFilter<"RecurringTransaction"> | string | null
     createdAt?: DateTimeFilter<"RecurringTransaction"> | Date | string
     updatedAt?: DateTimeFilter<"RecurringTransaction"> | Date | string
     deletedAt?: DateTimeNullableFilter<"RecurringTransaction"> | Date | string | null
@@ -68197,6 +68902,12 @@ export namespace Prisma {
     lastProcessedAt?: SortOrderInput | SortOrder
     clientRequestId?: SortOrderInput | SortOrder
     syncStatus?: SortOrder
+    type?: SortOrderInput | SortOrder
+    startDate?: SortOrderInput | SortOrder
+    endDate?: SortOrderInput | SortOrder
+    reminderDaysBefore?: SortOrderInput | SortOrder
+    notes?: SortOrderInput | SortOrder
+    transferToAccountId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     deletedAt?: SortOrderInput | SortOrder
@@ -68223,6 +68934,12 @@ export namespace Prisma {
     merchant?: StringNullableFilter<"RecurringTransaction"> | string | null
     lastProcessedAt?: DateTimeNullableFilter<"RecurringTransaction"> | Date | string | null
     syncStatus?: StringFilter<"RecurringTransaction"> | string
+    type?: StringNullableFilter<"RecurringTransaction"> | string | null
+    startDate?: DateTimeNullableFilter<"RecurringTransaction"> | Date | string | null
+    endDate?: DateTimeNullableFilter<"RecurringTransaction"> | Date | string | null
+    reminderDaysBefore?: IntNullableFilter<"RecurringTransaction"> | number | null
+    notes?: StringNullableFilter<"RecurringTransaction"> | string | null
+    transferToAccountId?: StringNullableFilter<"RecurringTransaction"> | string | null
     createdAt?: DateTimeFilter<"RecurringTransaction"> | Date | string
     updatedAt?: DateTimeFilter<"RecurringTransaction"> | Date | string
     deletedAt?: DateTimeNullableFilter<"RecurringTransaction"> | Date | string | null
@@ -68246,6 +68963,12 @@ export namespace Prisma {
     lastProcessedAt?: SortOrderInput | SortOrder
     clientRequestId?: SortOrderInput | SortOrder
     syncStatus?: SortOrder
+    type?: SortOrderInput | SortOrder
+    startDate?: SortOrderInput | SortOrder
+    endDate?: SortOrderInput | SortOrder
+    reminderDaysBefore?: SortOrderInput | SortOrder
+    notes?: SortOrderInput | SortOrder
+    transferToAccountId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     deletedAt?: SortOrderInput | SortOrder
@@ -68276,6 +68999,12 @@ export namespace Prisma {
     lastProcessedAt?: DateTimeNullableWithAggregatesFilter<"RecurringTransaction"> | Date | string | null
     clientRequestId?: StringNullableWithAggregatesFilter<"RecurringTransaction"> | string | null
     syncStatus?: StringWithAggregatesFilter<"RecurringTransaction"> | string
+    type?: StringNullableWithAggregatesFilter<"RecurringTransaction"> | string | null
+    startDate?: DateTimeNullableWithAggregatesFilter<"RecurringTransaction"> | Date | string | null
+    endDate?: DateTimeNullableWithAggregatesFilter<"RecurringTransaction"> | Date | string | null
+    reminderDaysBefore?: IntNullableWithAggregatesFilter<"RecurringTransaction"> | number | null
+    notes?: StringNullableWithAggregatesFilter<"RecurringTransaction"> | string | null
+    transferToAccountId?: StringNullableWithAggregatesFilter<"RecurringTransaction"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"RecurringTransaction"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"RecurringTransaction"> | Date | string
     deletedAt?: DateTimeNullableWithAggregatesFilter<"RecurringTransaction"> | Date | string | null
@@ -70136,6 +70865,25 @@ export namespace Prisma {
     lastUpdated: Date | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
     clientRequestId?: string | null
+    broker?: string | null
+    description?: string | null
+    assetCurrency?: string | null
+    baseCurrency?: string | null
+    buyFxRate?: Decimal | DecimalJsLike | number | string | null
+    lastKnownFxRate?: Decimal | DecimalJsLike | number | string | null
+    totalInvestedNative?: Decimal | DecimalJsLike | number | string | null
+    currentValueNative?: Decimal | DecimalJsLike | number | string | null
+    valuationVersion?: number | null
+    positionStatus?: string | null
+    closedAt?: Date | string | null
+    closePrice?: Decimal | DecimalJsLike | number | string | null
+    closeFxRate?: Decimal | DecimalJsLike | number | string | null
+    grossSaleValue?: Decimal | DecimalJsLike | number | string | null
+    netSaleValue?: Decimal | DecimalJsLike | number | string | null
+    purchaseFees?: Decimal | DecimalJsLike | number | string | null
+    closingFees?: Decimal | DecimalJsLike | number | string | null
+    realizedProfitLoss?: Decimal | DecimalJsLike | number | string | null
+    closeNotes?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -70157,6 +70905,25 @@ export namespace Prisma {
     lastUpdated: Date | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
     clientRequestId?: string | null
+    broker?: string | null
+    description?: string | null
+    assetCurrency?: string | null
+    baseCurrency?: string | null
+    buyFxRate?: Decimal | DecimalJsLike | number | string | null
+    lastKnownFxRate?: Decimal | DecimalJsLike | number | string | null
+    totalInvestedNative?: Decimal | DecimalJsLike | number | string | null
+    currentValueNative?: Decimal | DecimalJsLike | number | string | null
+    valuationVersion?: number | null
+    positionStatus?: string | null
+    closedAt?: Date | string | null
+    closePrice?: Decimal | DecimalJsLike | number | string | null
+    closeFxRate?: Decimal | DecimalJsLike | number | string | null
+    grossSaleValue?: Decimal | DecimalJsLike | number | string | null
+    netSaleValue?: Decimal | DecimalJsLike | number | string | null
+    purchaseFees?: Decimal | DecimalJsLike | number | string | null
+    closingFees?: Decimal | DecimalJsLike | number | string | null
+    realizedProfitLoss?: Decimal | DecimalJsLike | number | string | null
+    closeNotes?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -70176,6 +70943,25 @@ export namespace Prisma {
     lastUpdated?: DateTimeFieldUpdateOperationsInput | Date | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
     clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
+    broker?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    assetCurrency?: NullableStringFieldUpdateOperationsInput | string | null
+    baseCurrency?: NullableStringFieldUpdateOperationsInput | string | null
+    buyFxRate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    lastKnownFxRate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    totalInvestedNative?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    currentValueNative?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    valuationVersion?: NullableIntFieldUpdateOperationsInput | number | null
+    positionStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    closePrice?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    closeFxRate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    grossSaleValue?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    netSaleValue?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    purchaseFees?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    closingFees?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    realizedProfitLoss?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    closeNotes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -70197,6 +70983,25 @@ export namespace Prisma {
     lastUpdated?: DateTimeFieldUpdateOperationsInput | Date | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
     clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
+    broker?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    assetCurrency?: NullableStringFieldUpdateOperationsInput | string | null
+    baseCurrency?: NullableStringFieldUpdateOperationsInput | string | null
+    buyFxRate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    lastKnownFxRate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    totalInvestedNative?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    currentValueNative?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    valuationVersion?: NullableIntFieldUpdateOperationsInput | number | null
+    positionStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    closePrice?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    closeFxRate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    grossSaleValue?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    netSaleValue?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    purchaseFees?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    closingFees?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    realizedProfitLoss?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    closeNotes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -70217,6 +71022,25 @@ export namespace Prisma {
     lastUpdated: Date | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
     clientRequestId?: string | null
+    broker?: string | null
+    description?: string | null
+    assetCurrency?: string | null
+    baseCurrency?: string | null
+    buyFxRate?: Decimal | DecimalJsLike | number | string | null
+    lastKnownFxRate?: Decimal | DecimalJsLike | number | string | null
+    totalInvestedNative?: Decimal | DecimalJsLike | number | string | null
+    currentValueNative?: Decimal | DecimalJsLike | number | string | null
+    valuationVersion?: number | null
+    positionStatus?: string | null
+    closedAt?: Date | string | null
+    closePrice?: Decimal | DecimalJsLike | number | string | null
+    closeFxRate?: Decimal | DecimalJsLike | number | string | null
+    grossSaleValue?: Decimal | DecimalJsLike | number | string | null
+    netSaleValue?: Decimal | DecimalJsLike | number | string | null
+    purchaseFees?: Decimal | DecimalJsLike | number | string | null
+    closingFees?: Decimal | DecimalJsLike | number | string | null
+    realizedProfitLoss?: Decimal | DecimalJsLike | number | string | null
+    closeNotes?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -70236,6 +71060,25 @@ export namespace Prisma {
     lastUpdated?: DateTimeFieldUpdateOperationsInput | Date | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
     clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
+    broker?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    assetCurrency?: NullableStringFieldUpdateOperationsInput | string | null
+    baseCurrency?: NullableStringFieldUpdateOperationsInput | string | null
+    buyFxRate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    lastKnownFxRate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    totalInvestedNative?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    currentValueNative?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    valuationVersion?: NullableIntFieldUpdateOperationsInput | number | null
+    positionStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    closePrice?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    closeFxRate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    grossSaleValue?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    netSaleValue?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    purchaseFees?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    closingFees?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    realizedProfitLoss?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    closeNotes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -70256,6 +71099,25 @@ export namespace Prisma {
     lastUpdated?: DateTimeFieldUpdateOperationsInput | Date | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
     clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
+    broker?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    assetCurrency?: NullableStringFieldUpdateOperationsInput | string | null
+    baseCurrency?: NullableStringFieldUpdateOperationsInput | string | null
+    buyFxRate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    lastKnownFxRate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    totalInvestedNative?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    currentValueNative?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    valuationVersion?: NullableIntFieldUpdateOperationsInput | number | null
+    positionStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    closePrice?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    closeFxRate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    grossSaleValue?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    netSaleValue?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    purchaseFees?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    closingFees?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    realizedProfitLoss?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    closeNotes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -70276,6 +71138,15 @@ export namespace Prisma {
     contactPerson?: string | null
     syncStatus?: string
     clientRequestId?: string | null
+    totalPayable?: Decimal | DecimalJsLike | number | string | null
+    loanDate?: Date | string | null
+    contactEmail?: string | null
+    contactPhone?: string | null
+    bankName?: string | null
+    tenureMonths?: number | null
+    downPayment?: Decimal | DecimalJsLike | number | string | null
+    loanCategory?: string | null
+    notes?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -70299,6 +71170,15 @@ export namespace Prisma {
     contactPerson?: string | null
     syncStatus?: string
     clientRequestId?: string | null
+    totalPayable?: Decimal | DecimalJsLike | number | string | null
+    loanDate?: Date | string | null
+    contactEmail?: string | null
+    contactPhone?: string | null
+    bankName?: string | null
+    tenureMonths?: number | null
+    downPayment?: Decimal | DecimalJsLike | number | string | null
+    loanCategory?: string | null
+    notes?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -70320,6 +71200,15 @@ export namespace Prisma {
     contactPerson?: NullableStringFieldUpdateOperationsInput | string | null
     syncStatus?: StringFieldUpdateOperationsInput | string
     clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
+    totalPayable?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    loanDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    contactEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    contactPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
+    tenureMonths?: NullableIntFieldUpdateOperationsInput | number | null
+    downPayment?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    loanCategory?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -70343,6 +71232,15 @@ export namespace Prisma {
     contactPerson?: NullableStringFieldUpdateOperationsInput | string | null
     syncStatus?: StringFieldUpdateOperationsInput | string
     clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
+    totalPayable?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    loanDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    contactEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    contactPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
+    tenureMonths?: NullableIntFieldUpdateOperationsInput | number | null
+    downPayment?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    loanCategory?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -70365,6 +71263,15 @@ export namespace Prisma {
     contactPerson?: string | null
     syncStatus?: string
     clientRequestId?: string | null
+    totalPayable?: Decimal | DecimalJsLike | number | string | null
+    loanDate?: Date | string | null
+    contactEmail?: string | null
+    contactPhone?: string | null
+    bankName?: string | null
+    tenureMonths?: number | null
+    downPayment?: Decimal | DecimalJsLike | number | string | null
+    loanCategory?: string | null
+    notes?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -70385,6 +71292,15 @@ export namespace Prisma {
     contactPerson?: NullableStringFieldUpdateOperationsInput | string | null
     syncStatus?: StringFieldUpdateOperationsInput | string
     clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
+    totalPayable?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    loanDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    contactEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    contactPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
+    tenureMonths?: NullableIntFieldUpdateOperationsInput | number | null
+    downPayment?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    loanCategory?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -70406,6 +71322,15 @@ export namespace Prisma {
     contactPerson?: NullableStringFieldUpdateOperationsInput | string | null
     syncStatus?: StringFieldUpdateOperationsInput | string
     clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
+    totalPayable?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    loanDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    contactEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    contactPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
+    tenureMonths?: NullableIntFieldUpdateOperationsInput | number | null
+    downPayment?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    loanCategory?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -71543,6 +72468,7 @@ export namespace Prisma {
     isActive?: boolean
     failedAttempts?: number
     lockedUntil?: Date | string | null
+    lastVerifiedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutUserPinInput
@@ -71557,6 +72483,7 @@ export namespace Prisma {
     isActive?: boolean
     failedAttempts?: number
     lockedUntil?: Date | string | null
+    lastVerifiedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -71569,6 +72496,7 @@ export namespace Prisma {
     isActive?: BoolFieldUpdateOperationsInput | boolean
     failedAttempts?: IntFieldUpdateOperationsInput | number
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutUserPinNestedInput
@@ -71583,6 +72511,7 @@ export namespace Prisma {
     isActive?: BoolFieldUpdateOperationsInput | boolean
     failedAttempts?: IntFieldUpdateOperationsInput | number
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -71596,6 +72525,7 @@ export namespace Prisma {
     isActive?: boolean
     failedAttempts?: number
     lockedUntil?: Date | string | null
+    lastVerifiedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -71608,6 +72538,7 @@ export namespace Prisma {
     isActive?: BoolFieldUpdateOperationsInput | boolean
     failedAttempts?: IntFieldUpdateOperationsInput | number
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -71621,6 +72552,7 @@ export namespace Prisma {
     isActive?: BoolFieldUpdateOperationsInput | boolean
     failedAttempts?: IntFieldUpdateOperationsInput | number
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -73459,6 +74391,12 @@ export namespace Prisma {
     lastProcessedAt?: Date | string | null
     clientRequestId?: string | null
     syncStatus?: string
+    type?: string | null
+    startDate?: Date | string | null
+    endDate?: Date | string | null
+    reminderDaysBefore?: number | null
+    notes?: string | null
+    transferToAccountId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -73482,6 +74420,12 @@ export namespace Prisma {
     lastProcessedAt?: Date | string | null
     clientRequestId?: string | null
     syncStatus?: string
+    type?: string | null
+    startDate?: Date | string | null
+    endDate?: Date | string | null
+    reminderDaysBefore?: number | null
+    notes?: string | null
+    transferToAccountId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -73503,6 +74447,12 @@ export namespace Prisma {
     lastProcessedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
     syncStatus?: StringFieldUpdateOperationsInput | string
+    type?: NullableStringFieldUpdateOperationsInput | string | null
+    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reminderDaysBefore?: NullableIntFieldUpdateOperationsInput | number | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    transferToAccountId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -73526,6 +74476,12 @@ export namespace Prisma {
     lastProcessedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
     syncStatus?: StringFieldUpdateOperationsInput | string
+    type?: NullableStringFieldUpdateOperationsInput | string | null
+    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reminderDaysBefore?: NullableIntFieldUpdateOperationsInput | number | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    transferToAccountId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -73548,6 +74504,12 @@ export namespace Prisma {
     lastProcessedAt?: Date | string | null
     clientRequestId?: string | null
     syncStatus?: string
+    type?: string | null
+    startDate?: Date | string | null
+    endDate?: Date | string | null
+    reminderDaysBefore?: number | null
+    notes?: string | null
+    transferToAccountId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -73569,6 +74531,12 @@ export namespace Prisma {
     lastProcessedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
     syncStatus?: StringFieldUpdateOperationsInput | string
+    type?: NullableStringFieldUpdateOperationsInput | string | null
+    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reminderDaysBefore?: NullableIntFieldUpdateOperationsInput | number | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    transferToAccountId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -73591,6 +74559,12 @@ export namespace Prisma {
     lastProcessedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
     syncStatus?: StringFieldUpdateOperationsInput | string
+    type?: NullableStringFieldUpdateOperationsInput | string | null
+    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reminderDaysBefore?: NullableIntFieldUpdateOperationsInput | number | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    transferToAccountId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -75150,6 +76124,28 @@ export namespace Prisma {
     _max?: NestedJsonFilter<$PrismaModel>
   }
 
+  export type DecimalNullableFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalNullableFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
+  }
+
+  export type IntNullableFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableFilter<$PrismaModel> | number | null
+  }
+
   export type InvestmentCountOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
@@ -75165,6 +76161,25 @@ export namespace Prisma {
     lastUpdated?: SortOrder
     metadata?: SortOrder
     clientRequestId?: SortOrder
+    broker?: SortOrder
+    description?: SortOrder
+    assetCurrency?: SortOrder
+    baseCurrency?: SortOrder
+    buyFxRate?: SortOrder
+    lastKnownFxRate?: SortOrder
+    totalInvestedNative?: SortOrder
+    currentValueNative?: SortOrder
+    valuationVersion?: SortOrder
+    positionStatus?: SortOrder
+    closedAt?: SortOrder
+    closePrice?: SortOrder
+    closeFxRate?: SortOrder
+    grossSaleValue?: SortOrder
+    netSaleValue?: SortOrder
+    purchaseFees?: SortOrder
+    closingFees?: SortOrder
+    realizedProfitLoss?: SortOrder
+    closeNotes?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     deletedAt?: SortOrder
@@ -75177,6 +76192,18 @@ export namespace Prisma {
     totalInvested?: SortOrder
     currentValue?: SortOrder
     profitLoss?: SortOrder
+    buyFxRate?: SortOrder
+    lastKnownFxRate?: SortOrder
+    totalInvestedNative?: SortOrder
+    currentValueNative?: SortOrder
+    valuationVersion?: SortOrder
+    closePrice?: SortOrder
+    closeFxRate?: SortOrder
+    grossSaleValue?: SortOrder
+    netSaleValue?: SortOrder
+    purchaseFees?: SortOrder
+    closingFees?: SortOrder
+    realizedProfitLoss?: SortOrder
   }
 
   export type InvestmentMaxOrderByAggregateInput = {
@@ -75193,6 +76220,25 @@ export namespace Prisma {
     purchaseDate?: SortOrder
     lastUpdated?: SortOrder
     clientRequestId?: SortOrder
+    broker?: SortOrder
+    description?: SortOrder
+    assetCurrency?: SortOrder
+    baseCurrency?: SortOrder
+    buyFxRate?: SortOrder
+    lastKnownFxRate?: SortOrder
+    totalInvestedNative?: SortOrder
+    currentValueNative?: SortOrder
+    valuationVersion?: SortOrder
+    positionStatus?: SortOrder
+    closedAt?: SortOrder
+    closePrice?: SortOrder
+    closeFxRate?: SortOrder
+    grossSaleValue?: SortOrder
+    netSaleValue?: SortOrder
+    purchaseFees?: SortOrder
+    closingFees?: SortOrder
+    realizedProfitLoss?: SortOrder
+    closeNotes?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     deletedAt?: SortOrder
@@ -75212,6 +76258,25 @@ export namespace Prisma {
     purchaseDate?: SortOrder
     lastUpdated?: SortOrder
     clientRequestId?: SortOrder
+    broker?: SortOrder
+    description?: SortOrder
+    assetCurrency?: SortOrder
+    baseCurrency?: SortOrder
+    buyFxRate?: SortOrder
+    lastKnownFxRate?: SortOrder
+    totalInvestedNative?: SortOrder
+    currentValueNative?: SortOrder
+    valuationVersion?: SortOrder
+    positionStatus?: SortOrder
+    closedAt?: SortOrder
+    closePrice?: SortOrder
+    closeFxRate?: SortOrder
+    grossSaleValue?: SortOrder
+    netSaleValue?: SortOrder
+    purchaseFees?: SortOrder
+    closingFees?: SortOrder
+    realizedProfitLoss?: SortOrder
+    closeNotes?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     deletedAt?: SortOrder
@@ -75224,9 +76289,21 @@ export namespace Prisma {
     totalInvested?: SortOrder
     currentValue?: SortOrder
     profitLoss?: SortOrder
+    buyFxRate?: SortOrder
+    lastKnownFxRate?: SortOrder
+    totalInvestedNative?: SortOrder
+    currentValueNative?: SortOrder
+    valuationVersion?: SortOrder
+    closePrice?: SortOrder
+    closeFxRate?: SortOrder
+    grossSaleValue?: SortOrder
+    netSaleValue?: SortOrder
+    purchaseFees?: SortOrder
+    closingFees?: SortOrder
+    realizedProfitLoss?: SortOrder
   }
 
-  export type DecimalNullableFilter<$PrismaModel = never> = {
+  export type DecimalNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
     in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
     notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
@@ -75234,7 +76311,28 @@ export namespace Prisma {
     lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
     gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
     gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    not?: NestedDecimalNullableFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
+    not?: NestedDecimalNullableWithAggregatesFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedDecimalNullableFilter<$PrismaModel>
+    _sum?: NestedDecimalNullableFilter<$PrismaModel>
+    _min?: NestedDecimalNullableFilter<$PrismaModel>
+    _max?: NestedDecimalNullableFilter<$PrismaModel>
+  }
+
+  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedIntNullableFilter<$PrismaModel>
+    _max?: NestedIntNullableFilter<$PrismaModel>
   }
 
   export type LoanPaymentListRelationFilter = {
@@ -75263,6 +76361,15 @@ export namespace Prisma {
     contactPerson?: SortOrder
     syncStatus?: SortOrder
     clientRequestId?: SortOrder
+    totalPayable?: SortOrder
+    loanDate?: SortOrder
+    contactEmail?: SortOrder
+    contactPhone?: SortOrder
+    bankName?: SortOrder
+    tenureMonths?: SortOrder
+    downPayment?: SortOrder
+    loanCategory?: SortOrder
+    notes?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     deletedAt?: SortOrder
@@ -75273,6 +76380,9 @@ export namespace Prisma {
     outstandingBalance?: SortOrder
     interestRate?: SortOrder
     emiAmount?: SortOrder
+    totalPayable?: SortOrder
+    tenureMonths?: SortOrder
+    downPayment?: SortOrder
   }
 
   export type LoanMaxOrderByAggregateInput = {
@@ -75291,6 +76401,15 @@ export namespace Prisma {
     contactPerson?: SortOrder
     syncStatus?: SortOrder
     clientRequestId?: SortOrder
+    totalPayable?: SortOrder
+    loanDate?: SortOrder
+    contactEmail?: SortOrder
+    contactPhone?: SortOrder
+    bankName?: SortOrder
+    tenureMonths?: SortOrder
+    downPayment?: SortOrder
+    loanCategory?: SortOrder
+    notes?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     deletedAt?: SortOrder
@@ -75312,6 +76431,15 @@ export namespace Prisma {
     contactPerson?: SortOrder
     syncStatus?: SortOrder
     clientRequestId?: SortOrder
+    totalPayable?: SortOrder
+    loanDate?: SortOrder
+    contactEmail?: SortOrder
+    contactPhone?: SortOrder
+    bankName?: SortOrder
+    tenureMonths?: SortOrder
+    downPayment?: SortOrder
+    loanCategory?: SortOrder
+    notes?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     deletedAt?: SortOrder
@@ -75322,22 +76450,9 @@ export namespace Prisma {
     outstandingBalance?: SortOrder
     interestRate?: SortOrder
     emiAmount?: SortOrder
-  }
-
-  export type DecimalNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
-    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
-    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
-    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    not?: NestedDecimalNullableWithAggregatesFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _avg?: NestedDecimalNullableFilter<$PrismaModel>
-    _sum?: NestedDecimalNullableFilter<$PrismaModel>
-    _min?: NestedDecimalNullableFilter<$PrismaModel>
-    _max?: NestedDecimalNullableFilter<$PrismaModel>
+    totalPayable?: SortOrder
+    tenureMonths?: SortOrder
+    downPayment?: SortOrder
   }
 
   export type LoanScalarRelationFilter = {
@@ -75517,17 +76632,6 @@ export namespace Prisma {
     createdAt?: SortOrder
   }
 
-  export type IntNullableFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableFilter<$PrismaModel> | number | null
-  }
-
   export type SyncQueueCountOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
@@ -75594,22 +76698,6 @@ export namespace Prisma {
     retryCount?: SortOrder
     maxRetries?: SortOrder
     processingTime?: SortOrder
-  }
-
-  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _avg?: NestedFloatNullableFilter<$PrismaModel>
-    _sum?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedIntNullableFilter<$PrismaModel>
-    _max?: NestedIntNullableFilter<$PrismaModel>
   }
 
   export type TodoCountOrderByAggregateInput = {
@@ -76101,6 +77189,7 @@ export namespace Prisma {
     isActive?: SortOrder
     failedAttempts?: SortOrder
     lockedUntil?: SortOrder
+    lastVerifiedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -76118,6 +77207,7 @@ export namespace Prisma {
     isActive?: SortOrder
     failedAttempts?: SortOrder
     lockedUntil?: SortOrder
+    lastVerifiedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -76131,6 +77221,7 @@ export namespace Prisma {
     isActive?: SortOrder
     failedAttempts?: SortOrder
     lockedUntil?: SortOrder
+    lastVerifiedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -77091,6 +78182,12 @@ export namespace Prisma {
     lastProcessedAt?: SortOrder
     clientRequestId?: SortOrder
     syncStatus?: SortOrder
+    type?: SortOrder
+    startDate?: SortOrder
+    endDate?: SortOrder
+    reminderDaysBefore?: SortOrder
+    notes?: SortOrder
+    transferToAccountId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     deletedAt?: SortOrder
@@ -77098,6 +78195,7 @@ export namespace Prisma {
 
   export type RecurringTransactionAvgOrderByAggregateInput = {
     amount?: SortOrder
+    reminderDaysBefore?: SortOrder
   }
 
   export type RecurringTransactionMaxOrderByAggregateInput = {
@@ -77117,6 +78215,12 @@ export namespace Prisma {
     lastProcessedAt?: SortOrder
     clientRequestId?: SortOrder
     syncStatus?: SortOrder
+    type?: SortOrder
+    startDate?: SortOrder
+    endDate?: SortOrder
+    reminderDaysBefore?: SortOrder
+    notes?: SortOrder
+    transferToAccountId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     deletedAt?: SortOrder
@@ -77139,6 +78243,12 @@ export namespace Prisma {
     lastProcessedAt?: SortOrder
     clientRequestId?: SortOrder
     syncStatus?: SortOrder
+    type?: SortOrder
+    startDate?: SortOrder
+    endDate?: SortOrder
+    reminderDaysBefore?: SortOrder
+    notes?: SortOrder
+    transferToAccountId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     deletedAt?: SortOrder
@@ -77146,6 +78256,7 @@ export namespace Prisma {
 
   export type RecurringTransactionSumOrderByAggregateInput = {
     amount?: SortOrder
+    reminderDaysBefore?: SortOrder
   }
 
   export type BudgetUserIdCategoryPeriodCompoundUniqueInput = {
@@ -78074,6 +79185,22 @@ export namespace Prisma {
     connect?: UserWhereUniqueInput
   }
 
+  export type NullableDecimalFieldUpdateOperationsInput = {
+    set?: Decimal | DecimalJsLike | number | string | null
+    increment?: Decimal | DecimalJsLike | number | string
+    decrement?: Decimal | DecimalJsLike | number | string
+    multiply?: Decimal | DecimalJsLike | number | string
+    divide?: Decimal | DecimalJsLike | number | string
+  }
+
+  export type NullableIntFieldUpdateOperationsInput = {
+    set?: number | null
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
+  }
+
   export type UserUpdateOneRequiredWithoutInvestmentsNestedInput = {
     create?: XOR<UserCreateWithoutInvestmentsInput, UserUncheckedCreateWithoutInvestmentsInput>
     connectOrCreate?: UserCreateOrConnectWithoutInvestmentsInput
@@ -78100,14 +79227,6 @@ export namespace Prisma {
     connectOrCreate?: LoanPaymentCreateOrConnectWithoutLoanInput | LoanPaymentCreateOrConnectWithoutLoanInput[]
     createMany?: LoanPaymentCreateManyLoanInputEnvelope
     connect?: LoanPaymentWhereUniqueInput | LoanPaymentWhereUniqueInput[]
-  }
-
-  export type NullableDecimalFieldUpdateOperationsInput = {
-    set?: Decimal | DecimalJsLike | number | string | null
-    increment?: Decimal | DecimalJsLike | number | string
-    decrement?: Decimal | DecimalJsLike | number | string
-    multiply?: Decimal | DecimalJsLike | number | string
-    divide?: Decimal | DecimalJsLike | number | string
   }
 
   export type UserUpdateOneRequiredWithoutLoansNestedInput = {
@@ -78228,14 +79347,6 @@ export namespace Prisma {
     upsert?: UserUpsertWithoutRefreshTokensInput
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutRefreshTokensInput, UserUpdateWithoutRefreshTokensInput>, UserUncheckedUpdateWithoutRefreshTokensInput>
-  }
-
-  export type NullableIntFieldUpdateOperationsInput = {
-    set?: number | null
-    increment?: number
-    decrement?: number
-    multiply?: number
-    divide?: number
   }
 
   export type UserCreateNestedOneWithoutTodosInput = {
@@ -86138,6 +87249,15 @@ export namespace Prisma {
     contactPerson?: string | null
     syncStatus?: string
     clientRequestId?: string | null
+    totalPayable?: Decimal | DecimalJsLike | number | string | null
+    loanDate?: Date | string | null
+    contactEmail?: string | null
+    contactPhone?: string | null
+    bankName?: string | null
+    tenureMonths?: number | null
+    downPayment?: Decimal | DecimalJsLike | number | string | null
+    loanCategory?: string | null
+    notes?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -86160,6 +87280,15 @@ export namespace Prisma {
     contactPerson?: string | null
     syncStatus?: string
     clientRequestId?: string | null
+    totalPayable?: Decimal | DecimalJsLike | number | string | null
+    loanDate?: Date | string | null
+    contactEmail?: string | null
+    contactPhone?: string | null
+    bankName?: string | null
+    tenureMonths?: number | null
+    downPayment?: Decimal | DecimalJsLike | number | string | null
+    loanCategory?: string | null
+    notes?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -86196,6 +87325,15 @@ export namespace Prisma {
     contactPerson?: NullableStringFieldUpdateOperationsInput | string | null
     syncStatus?: StringFieldUpdateOperationsInput | string
     clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
+    totalPayable?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    loanDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    contactEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    contactPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
+    tenureMonths?: NullableIntFieldUpdateOperationsInput | number | null
+    downPayment?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    loanCategory?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -86218,6 +87356,15 @@ export namespace Prisma {
     contactPerson?: NullableStringFieldUpdateOperationsInput | string | null
     syncStatus?: StringFieldUpdateOperationsInput | string
     clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
+    totalPayable?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    loanDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    contactEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    contactPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
+    tenureMonths?: NullableIntFieldUpdateOperationsInput | number | null
+    downPayment?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    loanCategory?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -88750,6 +89897,25 @@ export namespace Prisma {
     lastUpdated: Date | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
     clientRequestId?: string | null
+    broker?: string | null
+    description?: string | null
+    assetCurrency?: string | null
+    baseCurrency?: string | null
+    buyFxRate?: Decimal | DecimalJsLike | number | string | null
+    lastKnownFxRate?: Decimal | DecimalJsLike | number | string | null
+    totalInvestedNative?: Decimal | DecimalJsLike | number | string | null
+    currentValueNative?: Decimal | DecimalJsLike | number | string | null
+    valuationVersion?: number | null
+    positionStatus?: string | null
+    closedAt?: Date | string | null
+    closePrice?: Decimal | DecimalJsLike | number | string | null
+    closeFxRate?: Decimal | DecimalJsLike | number | string | null
+    grossSaleValue?: Decimal | DecimalJsLike | number | string | null
+    netSaleValue?: Decimal | DecimalJsLike | number | string | null
+    purchaseFees?: Decimal | DecimalJsLike | number | string | null
+    closingFees?: Decimal | DecimalJsLike | number | string | null
+    realizedProfitLoss?: Decimal | DecimalJsLike | number | string | null
+    closeNotes?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -88769,6 +89935,25 @@ export namespace Prisma {
     lastUpdated: Date | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
     clientRequestId?: string | null
+    broker?: string | null
+    description?: string | null
+    assetCurrency?: string | null
+    baseCurrency?: string | null
+    buyFxRate?: Decimal | DecimalJsLike | number | string | null
+    lastKnownFxRate?: Decimal | DecimalJsLike | number | string | null
+    totalInvestedNative?: Decimal | DecimalJsLike | number | string | null
+    currentValueNative?: Decimal | DecimalJsLike | number | string | null
+    valuationVersion?: number | null
+    positionStatus?: string | null
+    closedAt?: Date | string | null
+    closePrice?: Decimal | DecimalJsLike | number | string | null
+    closeFxRate?: Decimal | DecimalJsLike | number | string | null
+    grossSaleValue?: Decimal | DecimalJsLike | number | string | null
+    netSaleValue?: Decimal | DecimalJsLike | number | string | null
+    purchaseFees?: Decimal | DecimalJsLike | number | string | null
+    closingFees?: Decimal | DecimalJsLike | number | string | null
+    realizedProfitLoss?: Decimal | DecimalJsLike | number | string | null
+    closeNotes?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -88799,6 +89984,15 @@ export namespace Prisma {
     contactPerson?: string | null
     syncStatus?: string
     clientRequestId?: string | null
+    totalPayable?: Decimal | DecimalJsLike | number | string | null
+    loanDate?: Date | string | null
+    contactEmail?: string | null
+    contactPhone?: string | null
+    bankName?: string | null
+    tenureMonths?: number | null
+    downPayment?: Decimal | DecimalJsLike | number | string | null
+    loanCategory?: string | null
+    notes?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -88820,6 +90014,15 @@ export namespace Prisma {
     contactPerson?: string | null
     syncStatus?: string
     clientRequestId?: string | null
+    totalPayable?: Decimal | DecimalJsLike | number | string | null
+    loanDate?: Date | string | null
+    contactEmail?: string | null
+    contactPhone?: string | null
+    bankName?: string | null
+    tenureMonths?: number | null
+    downPayment?: Decimal | DecimalJsLike | number | string | null
+    loanCategory?: string | null
+    notes?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -89092,6 +90295,7 @@ export namespace Prisma {
     isActive?: boolean
     failedAttempts?: number
     lockedUntil?: Date | string | null
+    lastVerifiedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -89104,6 +90308,7 @@ export namespace Prisma {
     isActive?: boolean
     failedAttempts?: number
     lockedUntil?: Date | string | null
+    lastVerifiedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -89284,6 +90489,12 @@ export namespace Prisma {
     lastProcessedAt?: Date | string | null
     clientRequestId?: string | null
     syncStatus?: string
+    type?: string | null
+    startDate?: Date | string | null
+    endDate?: Date | string | null
+    reminderDaysBefore?: number | null
+    notes?: string | null
+    transferToAccountId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -89305,6 +90516,12 @@ export namespace Prisma {
     lastProcessedAt?: Date | string | null
     clientRequestId?: string | null
     syncStatus?: string
+    type?: string | null
+    startDate?: Date | string | null
+    endDate?: Date | string | null
+    reminderDaysBefore?: number | null
+    notes?: string | null
+    transferToAccountId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -90091,6 +91308,25 @@ export namespace Prisma {
     lastUpdated?: DateTimeFilter<"Investment"> | Date | string
     metadata?: JsonNullableFilter<"Investment">
     clientRequestId?: StringNullableFilter<"Investment"> | string | null
+    broker?: StringNullableFilter<"Investment"> | string | null
+    description?: StringNullableFilter<"Investment"> | string | null
+    assetCurrency?: StringNullableFilter<"Investment"> | string | null
+    baseCurrency?: StringNullableFilter<"Investment"> | string | null
+    buyFxRate?: DecimalNullableFilter<"Investment"> | Decimal | DecimalJsLike | number | string | null
+    lastKnownFxRate?: DecimalNullableFilter<"Investment"> | Decimal | DecimalJsLike | number | string | null
+    totalInvestedNative?: DecimalNullableFilter<"Investment"> | Decimal | DecimalJsLike | number | string | null
+    currentValueNative?: DecimalNullableFilter<"Investment"> | Decimal | DecimalJsLike | number | string | null
+    valuationVersion?: IntNullableFilter<"Investment"> | number | null
+    positionStatus?: StringNullableFilter<"Investment"> | string | null
+    closedAt?: DateTimeNullableFilter<"Investment"> | Date | string | null
+    closePrice?: DecimalNullableFilter<"Investment"> | Decimal | DecimalJsLike | number | string | null
+    closeFxRate?: DecimalNullableFilter<"Investment"> | Decimal | DecimalJsLike | number | string | null
+    grossSaleValue?: DecimalNullableFilter<"Investment"> | Decimal | DecimalJsLike | number | string | null
+    netSaleValue?: DecimalNullableFilter<"Investment"> | Decimal | DecimalJsLike | number | string | null
+    purchaseFees?: DecimalNullableFilter<"Investment"> | Decimal | DecimalJsLike | number | string | null
+    closingFees?: DecimalNullableFilter<"Investment"> | Decimal | DecimalJsLike | number | string | null
+    realizedProfitLoss?: DecimalNullableFilter<"Investment"> | Decimal | DecimalJsLike | number | string | null
+    closeNotes?: StringNullableFilter<"Investment"> | string | null
     createdAt?: DateTimeFilter<"Investment"> | Date | string
     updatedAt?: DateTimeFilter<"Investment"> | Date | string
     deletedAt?: DateTimeNullableFilter<"Investment"> | Date | string | null
@@ -90131,6 +91367,15 @@ export namespace Prisma {
     contactPerson?: StringNullableFilter<"Loan"> | string | null
     syncStatus?: StringFilter<"Loan"> | string
     clientRequestId?: StringNullableFilter<"Loan"> | string | null
+    totalPayable?: DecimalNullableFilter<"Loan"> | Decimal | DecimalJsLike | number | string | null
+    loanDate?: DateTimeNullableFilter<"Loan"> | Date | string | null
+    contactEmail?: StringNullableFilter<"Loan"> | string | null
+    contactPhone?: StringNullableFilter<"Loan"> | string | null
+    bankName?: StringNullableFilter<"Loan"> | string | null
+    tenureMonths?: IntNullableFilter<"Loan"> | number | null
+    downPayment?: DecimalNullableFilter<"Loan"> | Decimal | DecimalJsLike | number | string | null
+    loanCategory?: StringNullableFilter<"Loan"> | string | null
+    notes?: StringNullableFilter<"Loan"> | string | null
     createdAt?: DateTimeFilter<"Loan"> | Date | string
     updatedAt?: DateTimeFilter<"Loan"> | Date | string
     deletedAt?: DateTimeNullableFilter<"Loan"> | Date | string | null
@@ -90315,6 +91560,7 @@ export namespace Prisma {
     isActive?: BoolFieldUpdateOperationsInput | boolean
     failedAttempts?: IntFieldUpdateOperationsInput | number
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -90327,6 +91573,7 @@ export namespace Prisma {
     isActive?: BoolFieldUpdateOperationsInput | boolean
     failedAttempts?: IntFieldUpdateOperationsInput | number
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -90478,6 +91725,12 @@ export namespace Prisma {
     lastProcessedAt?: DateTimeNullableFilter<"RecurringTransaction"> | Date | string | null
     clientRequestId?: StringNullableFilter<"RecurringTransaction"> | string | null
     syncStatus?: StringFilter<"RecurringTransaction"> | string
+    type?: StringNullableFilter<"RecurringTransaction"> | string | null
+    startDate?: DateTimeNullableFilter<"RecurringTransaction"> | Date | string | null
+    endDate?: DateTimeNullableFilter<"RecurringTransaction"> | Date | string | null
+    reminderDaysBefore?: IntNullableFilter<"RecurringTransaction"> | number | null
+    notes?: StringNullableFilter<"RecurringTransaction"> | string | null
+    transferToAccountId?: StringNullableFilter<"RecurringTransaction"> | string | null
     createdAt?: DateTimeFilter<"RecurringTransaction"> | Date | string
     updatedAt?: DateTimeFilter<"RecurringTransaction"> | Date | string
     deletedAt?: DateTimeNullableFilter<"RecurringTransaction"> | Date | string | null
@@ -94750,6 +96003,25 @@ export namespace Prisma {
     lastUpdated: Date | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
     clientRequestId?: string | null
+    broker?: string | null
+    description?: string | null
+    assetCurrency?: string | null
+    baseCurrency?: string | null
+    buyFxRate?: Decimal | DecimalJsLike | number | string | null
+    lastKnownFxRate?: Decimal | DecimalJsLike | number | string | null
+    totalInvestedNative?: Decimal | DecimalJsLike | number | string | null
+    currentValueNative?: Decimal | DecimalJsLike | number | string | null
+    valuationVersion?: number | null
+    positionStatus?: string | null
+    closedAt?: Date | string | null
+    closePrice?: Decimal | DecimalJsLike | number | string | null
+    closeFxRate?: Decimal | DecimalJsLike | number | string | null
+    grossSaleValue?: Decimal | DecimalJsLike | number | string | null
+    netSaleValue?: Decimal | DecimalJsLike | number | string | null
+    purchaseFees?: Decimal | DecimalJsLike | number | string | null
+    closingFees?: Decimal | DecimalJsLike | number | string | null
+    realizedProfitLoss?: Decimal | DecimalJsLike | number | string | null
+    closeNotes?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -94770,6 +96042,15 @@ export namespace Prisma {
     contactPerson?: string | null
     syncStatus?: string
     clientRequestId?: string | null
+    totalPayable?: Decimal | DecimalJsLike | number | string | null
+    loanDate?: Date | string | null
+    contactEmail?: string | null
+    contactPhone?: string | null
+    bankName?: string | null
+    tenureMonths?: number | null
+    downPayment?: Decimal | DecimalJsLike | number | string | null
+    loanCategory?: string | null
+    notes?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -94932,6 +96213,12 @@ export namespace Prisma {
     lastProcessedAt?: Date | string | null
     clientRequestId?: string | null
     syncStatus?: string
+    type?: string | null
+    startDate?: Date | string | null
+    endDate?: Date | string | null
+    reminderDaysBefore?: number | null
+    notes?: string | null
+    transferToAccountId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -95740,6 +97027,25 @@ export namespace Prisma {
     lastUpdated?: DateTimeFieldUpdateOperationsInput | Date | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
     clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
+    broker?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    assetCurrency?: NullableStringFieldUpdateOperationsInput | string | null
+    baseCurrency?: NullableStringFieldUpdateOperationsInput | string | null
+    buyFxRate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    lastKnownFxRate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    totalInvestedNative?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    currentValueNative?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    valuationVersion?: NullableIntFieldUpdateOperationsInput | number | null
+    positionStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    closePrice?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    closeFxRate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    grossSaleValue?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    netSaleValue?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    purchaseFees?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    closingFees?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    realizedProfitLoss?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    closeNotes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -95759,6 +97065,25 @@ export namespace Prisma {
     lastUpdated?: DateTimeFieldUpdateOperationsInput | Date | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
     clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
+    broker?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    assetCurrency?: NullableStringFieldUpdateOperationsInput | string | null
+    baseCurrency?: NullableStringFieldUpdateOperationsInput | string | null
+    buyFxRate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    lastKnownFxRate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    totalInvestedNative?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    currentValueNative?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    valuationVersion?: NullableIntFieldUpdateOperationsInput | number | null
+    positionStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    closePrice?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    closeFxRate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    grossSaleValue?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    netSaleValue?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    purchaseFees?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    closingFees?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    realizedProfitLoss?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    closeNotes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -95778,6 +97103,25 @@ export namespace Prisma {
     lastUpdated?: DateTimeFieldUpdateOperationsInput | Date | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
     clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
+    broker?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    assetCurrency?: NullableStringFieldUpdateOperationsInput | string | null
+    baseCurrency?: NullableStringFieldUpdateOperationsInput | string | null
+    buyFxRate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    lastKnownFxRate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    totalInvestedNative?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    currentValueNative?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    valuationVersion?: NullableIntFieldUpdateOperationsInput | number | null
+    positionStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    closePrice?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    closeFxRate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    grossSaleValue?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    netSaleValue?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    purchaseFees?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    closingFees?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    realizedProfitLoss?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    closeNotes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -95798,6 +97142,15 @@ export namespace Prisma {
     contactPerson?: NullableStringFieldUpdateOperationsInput | string | null
     syncStatus?: StringFieldUpdateOperationsInput | string
     clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
+    totalPayable?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    loanDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    contactEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    contactPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
+    tenureMonths?: NullableIntFieldUpdateOperationsInput | number | null
+    downPayment?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    loanCategory?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -95819,6 +97172,15 @@ export namespace Prisma {
     contactPerson?: NullableStringFieldUpdateOperationsInput | string | null
     syncStatus?: StringFieldUpdateOperationsInput | string
     clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
+    totalPayable?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    loanDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    contactEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    contactPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
+    tenureMonths?: NullableIntFieldUpdateOperationsInput | number | null
+    downPayment?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    loanCategory?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -95840,6 +97202,15 @@ export namespace Prisma {
     contactPerson?: NullableStringFieldUpdateOperationsInput | string | null
     syncStatus?: StringFieldUpdateOperationsInput | string
     clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
+    totalPayable?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    loanDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    contactEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    contactPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
+    tenureMonths?: NullableIntFieldUpdateOperationsInput | number | null
+    downPayment?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    loanCategory?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -96288,6 +97659,12 @@ export namespace Prisma {
     lastProcessedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
     syncStatus?: StringFieldUpdateOperationsInput | string
+    type?: NullableStringFieldUpdateOperationsInput | string | null
+    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reminderDaysBefore?: NullableIntFieldUpdateOperationsInput | number | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    transferToAccountId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -96309,6 +97686,12 @@ export namespace Prisma {
     lastProcessedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
     syncStatus?: StringFieldUpdateOperationsInput | string
+    type?: NullableStringFieldUpdateOperationsInput | string | null
+    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reminderDaysBefore?: NullableIntFieldUpdateOperationsInput | number | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    transferToAccountId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -96330,6 +97713,12 @@ export namespace Prisma {
     lastProcessedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
     syncStatus?: StringFieldUpdateOperationsInput | string
+    type?: NullableStringFieldUpdateOperationsInput | string | null
+    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reminderDaysBefore?: NullableIntFieldUpdateOperationsInput | number | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    transferToAccountId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null

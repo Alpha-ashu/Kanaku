@@ -1,5 +1,5 @@
 import { Response } from 'express';
-import { timingSafeEqual } from 'crypto';
+import { timingSafeEqual, createHmac } from 'crypto';
 import { AuthRequest, getUserId } from '../../middleware/auth';
 import { prisma } from '../../db/prisma';
 
@@ -44,6 +44,27 @@ const normalizePaymentMethod = (paymentMethod: unknown) => {
 const canTransitionPayment = (currentStatus: string, nextStatus: string) =>
   PAYMENT_TRANSITIONS[currentStatus]?.includes(nextStatus) ?? false;
 
+/**
+ * Verify an HMAC-SHA256 signature computed over the exact raw request body.
+ * Accepts the signature as a bare hex digest or a "sha256=<hex>" prefixed value
+ * (the convention used by Razorpay/Stripe-style providers). Returns false if no
+ * raw body was captured or the header is malformed.
+ */
+const verifyWebhookSignature = (req: AuthRequest | any, secret: string): boolean => {
+  const sigHeader = req.headers?.['x-webhook-signature'] ?? req.headers?.['x-payment-signature'];
+  const provided = Array.isArray(sigHeader) ? sigHeader[0] : sigHeader;
+  if (typeof provided !== 'string' || !provided) return false;
+
+  const raw = (req as any).rawBody;
+  const body: Buffer = Buffer.isBuffer(raw)
+    ? raw
+    : Buffer.from(typeof raw === 'string' ? raw : JSON.stringify(req.body ?? {}), 'utf8');
+
+  const expected = createHmac('sha256', secret).update(body).digest('hex');
+  const normalized = provided.startsWith('sha256=') ? provided.slice(7) : provided;
+  return safeEqual(normalized, expected);
+};
+
 const requireWebhookSecret = (req: AuthRequest | any) => {
   const webhookSecret = process.env.PAYMENT_WEBHOOK_SECRET;
   if (!webhookSecret) {
@@ -54,6 +75,19 @@ const requireWebhookSecret = (req: AuthRequest | any) => {
     };
   }
 
+  // Preferred: HMAC signature over the raw body. If a signature header is
+  // present we require it to be valid (no silent fallthrough to the weaker
+  // shared-secret check).
+  const hasSignature = Boolean(req.headers?.['x-webhook-signature'] ?? req.headers?.['x-payment-signature']);
+  if (hasSignature) {
+    if (verifyWebhookSignature(req, webhookSecret)) {
+      return { ok: true as const };
+    }
+    return { ok: false as const, status: 401, error: 'Invalid webhook signature' };
+  }
+
+  // Fallback (backward compatible): shared-secret header, compared in
+  // constant time. Used by integrations that don't sign the payload.
   const headerValue = req.headers?.['x-payment-webhook-secret'] ?? req.headers?.['x-webhook-secret'];
   const providedSecret = Array.isArray(headerValue) ? headerValue[0] : headerValue;
 

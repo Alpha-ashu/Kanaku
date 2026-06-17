@@ -8,6 +8,12 @@ const router = Router();
 // All sync routes require authentication
 router.use(authMiddleware);
 
+// NOTE: sync routes keep their in-handler validation (clear, tested error
+// messages like 'Device ID is required'). The per-entity payload is further
+// validated defensively in sync.service (unknown entity types are rejected and
+// only allow-listed fields are persisted), so a generic validateBody layer is
+// intentionally not used here.
+
 function requireUserId(req: AuthRequest): string {
   const userId = req.user?.id;
   if (!userId) throw AppError.unauthorized();

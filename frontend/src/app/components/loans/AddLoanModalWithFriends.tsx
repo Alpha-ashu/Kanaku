@@ -116,6 +116,7 @@ export const AddLoanModalWithFriends: React.FC<AddLoanModalWithFriendsProps> = (
  key={option.value}
  type="button"
  onClick={() => setFormData({ ...formData, type: option.value as any })}
+ data-testid={`loan-modal-type-${option.value}-button`}
  className={`p-3 rounded-xl border-2 transition-all ${
  formData.type === option.value
  ? 'border-blue-600 bg-blue-50 text-blue-700'
@@ -136,6 +137,7 @@ export const AddLoanModalWithFriends: React.FC<AddLoanModalWithFriendsProps> = (
  type="text"
  value={formData.name}
  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+ data-testid="loan-modal-name-input"
  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 transition-colors"
  placeholder="e.g., Car Loan, Personal Loan"
  required
@@ -152,6 +154,7 @@ export const AddLoanModalWithFriends: React.FC<AddLoanModalWithFriendsProps> = (
  step="0.01"
  value={formData.principalAmount || ''}
  onChange={(e) => setFormData({ ...formData, principalAmount: parseFloat(e.target.value) || 0 })}
+ data-testid="loan-modal-amount-input"
  className="w-full pl-8 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 transition-colors"
  placeholder="0.00"
  required
@@ -170,6 +173,7 @@ export const AddLoanModalWithFriends: React.FC<AddLoanModalWithFriendsProps> = (
  <button
  type="button"
  onClick={() => setShowAddFriend(!showAddFriend)}
+ data-testid="loan-modal-add-friend-toggle"
  className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
  >
  <UserPlus size={14} />
@@ -183,6 +187,7 @@ export const AddLoanModalWithFriends: React.FC<AddLoanModalWithFriendsProps> = (
  type="text"
  value={newFriend.name}
  onChange={(e) => setNewFriend({ ...newFriend, name: e.target.value })}
+ data-testid="loan-modal-new-friend-name-input"
  className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
  placeholder="Friend's name *"
  />
@@ -191,6 +196,7 @@ export const AddLoanModalWithFriends: React.FC<AddLoanModalWithFriendsProps> = (
  type="email"
  value={newFriend.email}
  onChange={(e) => setNewFriend({ ...newFriend, email: e.target.value })}
+ data-testid="loan-modal-new-friend-email-input"
  className="px-3 py-2 border border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
  placeholder="Email"
  />
@@ -198,6 +204,7 @@ export const AddLoanModalWithFriends: React.FC<AddLoanModalWithFriendsProps> = (
  type="tel"
  value={newFriend.phone}
  onChange={(e) => setNewFriend({ ...newFriend, phone: e.target.value })}
+ data-testid="loan-modal-new-friend-phone-input"
  className="px-3 py-2 border border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
  placeholder="Phone"
  />
@@ -206,6 +213,7 @@ export const AddLoanModalWithFriends: React.FC<AddLoanModalWithFriendsProps> = (
  <button
  type="button"
  onClick={handleAddFriend}
+ data-testid="loan-modal-save-friend-button"
  className="flex-1 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
  >
  Save Friend
@@ -213,6 +221,7 @@ export const AddLoanModalWithFriends: React.FC<AddLoanModalWithFriendsProps> = (
  <button
  type="button"
  onClick={() => setShowAddFriend(false)}
+ data-testid="loan-modal-cancel-friend-button"
  className="px-3 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm"
  >
  Cancel
@@ -227,6 +236,7 @@ export const AddLoanModalWithFriends: React.FC<AddLoanModalWithFriendsProps> = (
  placeholder="Select a friend (optional)"
  searchPlaceholder="Search friends..."
  grouped
+ testId="loan-modal-friend-dropdown"
  />
  )}
  </div>
@@ -242,6 +252,7 @@ export const AddLoanModalWithFriends: React.FC<AddLoanModalWithFriendsProps> = (
  type="text"
  value={formData.contactPerson}
  onChange={(e) => setFormData({ ...formData, contactPerson: e.target.value })}
+ data-testid="loan-modal-contact-input"
  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 transition-colors"
  placeholder="Bank, Person, or Institution"
  aria-label="Contact Person or Institution"
@@ -259,6 +270,7 @@ export const AddLoanModalWithFriends: React.FC<AddLoanModalWithFriendsProps> = (
  step="0.01"
  value={formData.interestRate || ''}
  onChange={(e) => setFormData({ ...formData, interestRate: parseFloat(e.target.value) || 0 })}
+ data-testid="loan-modal-rate-input"
  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 transition-colors"
  placeholder="0.00"
  />
@@ -270,6 +282,7 @@ export const AddLoanModalWithFriends: React.FC<AddLoanModalWithFriendsProps> = (
  step="0.01"
  value={formData.emiAmount || ''}
  onChange={(e) => setFormData({ ...formData, emiAmount: parseFloat(e.target.value) || 0 })}
+ data-testid="loan-modal-emi-input"
  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 transition-colors"
  placeholder="0.00"
  />
@@ -283,6 +296,7 @@ export const AddLoanModalWithFriends: React.FC<AddLoanModalWithFriendsProps> = (
  type="date"
  value={formData.dueDate}
  onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
+ data-testid="loan-modal-due-date-input"
  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 transition-colors"
  placeholder="Due Date"
  aria-label="Due Date"
@@ -295,12 +309,14 @@ export const AddLoanModalWithFriends: React.FC<AddLoanModalWithFriendsProps> = (
  <button
  type="button"
  onClick={onClose}
+ data-testid="loan-modal-cancel-button"
  className="flex-1 px-6 py-3 border-2 border-gray-300 rounded-xl hover:bg-gray-50 transition-colors font-medium"
  >
  Cancel
  </button>
  <button
  type="submit"
+ data-testid="loan-modal-submit-button"
  className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all font-medium shadow-lg shadow-blue-500/30"
  >
  Add Loan

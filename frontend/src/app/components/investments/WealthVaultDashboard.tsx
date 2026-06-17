@@ -211,6 +211,7 @@ export const WealthVaultDashboard: React.FC<{ onAddAsset?: () => void }> = ({ on
             onClick={() => loadPrices(true)}
             className="p-2.5 rounded-xl border border-gray-200 bg-white shadow-sm hover:bg-gray-50 active:scale-95 transition-all"
             title="Refresh prices"
+            data-testid="vault-refresh-prices-button"
           >
             <RefreshCw
               size={14}
@@ -220,6 +221,7 @@ export const WealthVaultDashboard: React.FC<{ onAddAsset?: () => void }> = ({ on
           <button
             onClick={onAddAsset ?? (() => setCurrentPage('add-investment'))}
             className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl font-bold text-xs bg-gray-950 hover:bg-gray-800 text-white shadow transition-all active:scale-95"
+            data-testid="vault-add-asset-button"
           >
             <Plus size={13} />
             Add Asset
@@ -290,6 +292,7 @@ export const WealthVaultDashboard: React.FC<{ onAddAsset?: () => void }> = ({ on
       <button
         onClick={onAddAsset ?? (() => setCurrentPage('add-investment'))}
         className="w-full relative overflow-hidden rounded-2xl border border-amber-200 bg-white hover:bg-amber-50/20 p-4 transition-all active:scale-99 text-left flex items-center justify-between shadow-sm"
+        data-testid="vault-scan-bill-banner"
       >
         <div className="flex items-center gap-4">
           <div className="w-11 h-11 rounded-xl bg-amber-500 flex items-center justify-center text-white shadow-sm shrink-0">
@@ -522,6 +525,7 @@ export const WealthVaultDashboard: React.FC<{ onAddAsset?: () => void }> = ({ on
           <button
             onClick={onAddAsset ?? (() => setCurrentPage('add-investment'))}
             className="mt-5 px-5 py-2.5 bg-gray-950 hover:bg-gray-800 text-white rounded-xl text-xs font-bold shadow active:scale-95 transition-all"
+            data-testid="vault-empty-state-add-button"
           >
             Add First Wealth Asset
           </button>

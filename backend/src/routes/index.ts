@@ -30,6 +30,7 @@ import { recurringRoutes } from '../modules/recurring/recurring.routes';
 import { budgetRoutes } from '../modules/budgets/budget.routes';
 import { taxRoutes } from '../modules/tax/tax.routes';
 import { goldRoutes } from '../modules/gold/gold.routes';
+import { collaborationRoutes } from '../modules/collaboration/collaboration.routes';
 import { webhookRoutes } from '../modules/webhooks/webhook.routes';
 
 const router = Router();
@@ -117,5 +118,8 @@ router.use('/recurring', recurringRoutes);
 router.use('/budgets', budgetRoutes);
 router.use('/tax', taxRoutes);
 router.use('/gold', goldRoutes);
+
+// Unified collaboration/invitation management (Group Expenses, To-Do Lists, Goals)
+router.use('/collaborations', collaborationRoutes);
 
 export { router as apiRoutes };

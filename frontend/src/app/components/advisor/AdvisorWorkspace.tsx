@@ -143,7 +143,9 @@ export const AdvisorWorkspace: React.FC = () => {
  </div>
  <button onClick={toggleAvailability} disabled={isTogglingAvail}
  className={cn('flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold border-2 transition-all',
- advisorProfile?.availability ? 'border-emerald-400 bg-emerald-50 text-emerald-700' : 'border-gray-300 bg-white text-gray-600')}>
+ advisorProfile?.availability ? 'border-emerald-400 bg-emerald-50 text-emerald-700' : 'border-gray-300 bg-white text-gray-600')}
+ data-testid="advisor-ws-avail-status-button"
+ >
  {isTogglingAvail ? <Loader2 size={14} className="animate-spin" /> : <Power size={14} />}
  {advisorProfile?.availability ? 'Available' : 'Unavailable'}
  </button>
@@ -156,7 +158,9 @@ export const AdvisorWorkspace: React.FC = () => {
  {TABS.map(tab => (
  <button key={tab.id} onClick={() => setActiveTab(tab.id)}
  className={cn('relative flex items-center gap-1.5 px-5 py-4 text-sm font-bold whitespace-nowrap border-b-2 transition-all',
- activeTab === tab.id ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700')}>
+ activeTab === tab.id ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700')}
+ data-testid={`advisor-ws-tab-${tab.id}-button`}
+ >
  <tab.icon size={15} />{tab.label}
  {tab.badge ? <span className="ml-1 px-1.5 py-0.5 bg-red-500 text-white rounded-full text-[10px] font-black leading-none">{tab.badge}</span> : null}
  </button>
@@ -189,15 +193,21 @@ export const AdvisorWorkspace: React.FC = () => {
  </div>
  <div className="flex gap-2">
  <button onClick={() => handleAccept(b.id)} disabled={processingId === b.id}
- className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-bold disabled:opacity-50 hover:bg-emerald-700">
+ className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-bold disabled:opacity-50 hover:bg-emerald-700"
+ data-testid={`advisor-ws-booking-accept-${b.id}`}
+ >
  {processingId === b.id ? <Loader2 size={13} className="animate-spin" /> : <CheckCircle size={13} />} Accept
  </button>
  <button onClick={() => setRescheduleModal({ id: b.id, date: '', time: '' })} disabled={processingId === b.id}
- className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-blue-50 text-blue-700 border border-blue-200 rounded-xl text-sm font-bold disabled:opacity-50">
+ className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-blue-50 text-blue-700 border border-blue-200 rounded-xl text-sm font-bold disabled:opacity-50"
+ data-testid={`advisor-ws-booking-reschedule-toggle-${b.id}`}
+ >
  <RotateCw size={13} /> Reschedule
  </button>
  <button onClick={() => handleReject(b.id)} disabled={processingId === b.id}
- className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-red-50 text-red-600 border border-red-200 rounded-xl text-sm font-bold disabled:opacity-50">
+ className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-red-50 text-red-600 border border-red-200 rounded-xl text-sm font-bold disabled:opacity-50"
+ data-testid={`advisor-ws-booking-reject-${b.id}`}
+ >
  <XCircle size={13} /> Decline
  </button>
  </div>
@@ -269,17 +279,21 @@ export const AdvisorWorkspace: React.FC = () => {
  <div className="flex-1">
  <label className="text-[10px] font-bold text-gray-400 block mb-1">From</label>
  <input type="time" id={`avail-start-${idx}`} defaultValue={slot?.startTime ?? '09:00'}
- className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300" />
+ className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+ data-testid={`advisor-ws-sched-start-${idx}`} />
  </div>
  <div className="flex-1">
  <label className="text-[10px] font-bold text-gray-400 block mb-1">To</label>
  <input type="time" id={`avail-end-${idx}`} defaultValue={slot?.endTime ?? '17:00'}
- className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300" />
+ className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+ data-testid={`advisor-ws-sched-end-${idx}`} />
  </div>
  </div>
  <button onClick={() => updateDaySlot(idx, !(slot?.isActive))}
  className={cn('px-4 py-2 rounded-xl text-sm font-bold border-2 transition-all whitespace-nowrap shrink-0',
- slot?.isActive ? 'border-emerald-400 bg-emerald-50 text-emerald-700' : 'border-gray-200 bg-white text-gray-500 hover:border-indigo-300')}>
+ slot?.isActive ? 'border-emerald-400 bg-emerald-50 text-emerald-700' : 'border-gray-200 bg-white text-gray-500 hover:border-indigo-300')}
+ data-testid={`advisor-ws-sched-active-toggle-${idx}`}
+ >
  {slot?.isActive ? ' Active' : 'Set Active'}
  </button>
  </div>
@@ -339,19 +353,23 @@ export const AdvisorWorkspace: React.FC = () => {
  <label className="block text-sm font-bold text-gray-700 mb-1">New Date</label>
  <input type="date" value={rescheduleModal.date} min={new Date().toISOString().slice(0, 10)}
  onChange={e => setRescheduleModal(m => m ? { ...m, date: e.target.value } : null)}
- className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300" />
+ className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+ data-testid="advisor-ws-resched-date-input" />
  </div>
  <div>
  <label className="block text-sm font-bold text-gray-700 mb-1">New Time</label>
  <input type="time" value={rescheduleModal.time}
  onChange={e => setRescheduleModal(m => m ? { ...m, time: e.target.value } : null)}
- className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300" />
+ className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+ data-testid="advisor-ws-resched-time-input" />
  </div>
  </div>
  <div className="flex gap-3 mt-5">
- <button onClick={() => setRescheduleModal(null)} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-bold text-gray-700">Cancel</button>
+ <button onClick={() => setRescheduleModal(null)} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-bold text-gray-700" data-testid="advisor-ws-resched-cancel-button">Cancel</button>
  <button onClick={handleReschedule} disabled={!rescheduleModal.date || !rescheduleModal.time || processingId !== null}
- className="flex-1 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 disabled:opacity-50">
+ className="flex-1 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 disabled:opacity-50"
+ data-testid="advisor-ws-resched-submit-button"
+ >
  {processingId ? <Loader2 size={14} className="animate-spin" /> : null} Send
  </button>
  </div>

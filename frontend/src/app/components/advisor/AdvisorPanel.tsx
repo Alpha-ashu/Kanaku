@@ -198,6 +198,7 @@ export const AdvisorPanel: React.FC = () => {
  ? 'bg-green-100 text-green-700 hover:bg-green-200'
  : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
  }`}
+ data-testid={`advisor-panel-avail-toggle-${idx}`}
  >
  {slot.isAvailable ? 'Available' : 'Off'}
  </button>
@@ -237,6 +238,7 @@ export const AdvisorPanel: React.FC = () => {
  <button
  onClick={() => handleBookingAction(booking.id, 'accept')}
  className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium flex items-center justify-center gap-2"
+ data-testid={`advisor-panel-booking-accept-${booking.id}`}
  >
  <CheckCircle size={18} />
  Accept
@@ -244,6 +246,7 @@ export const AdvisorPanel: React.FC = () => {
  <button
  onClick={() => handleBookingAction(booking.id, 'reject')}
  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium flex items-center justify-center gap-2"
+ data-testid={`advisor-panel-booking-decline-${booking.id}`}
  >
  <XCircle size={18} />
  Decline
@@ -280,8 +283,8 @@ export const AdvisorPanel: React.FC = () => {
 " {booking.topic} ({booking.sessionType})
  </p>
  </div>
- <button className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-900 font-medium">
- Start Session
+ <button className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-900 font-medium" data-testid={`advisor-panel-session-start-${booking.id}`}>
+  Start Session
  </button>
  </div>
  </div>

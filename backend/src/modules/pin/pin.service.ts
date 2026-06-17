@@ -133,7 +133,7 @@ class PinService {
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + this.PIN_EXPIRY_DAYS);
 
-      // Create PIN record
+      // Create PIN record.
       await prisma.userPin.create({
         data: {
           userId,
@@ -142,6 +142,11 @@ class PinService {
           isActive: true,
         },
       });
+
+      // Creating a PIN is itself a proof-of-possession event for the
+      // verify-security gate. Recorded as a separate best-effort write so a
+      // not-yet-regenerated Prisma client can never break PIN creation.
+      await this.recordVerification(userId);
 
       return {
         success: true,
@@ -255,7 +260,7 @@ class PinService {
         };
       }
 
-      // PIN is correct - reset failed attempts, update last activity and auto-upgrade legacy format
+      // PIN is correct - reset failed attempts and auto-upgrade legacy format
       const updatePayload: any = {
         failedAttempts: 0,
         lockedUntil: null,
@@ -275,6 +280,10 @@ class PinService {
         where: { userId },
         data: updatePayload,
       });
+
+      // Record the verification time for the verify-security step-up gate
+      // (best-effort; never blocks a successful PIN verification).
+      await this.recordVerification(userId);
 
       // Update device last seen if provided
       if (deviceId) {
@@ -297,6 +306,40 @@ class PinService {
         success: false,
         message: 'Failed to verify PIN',
       };
+    }
+  }
+
+  /**
+   * Best-effort record of a successful PIN proof-of-possession. Wrapped so it
+   * can never break the critical create/verify path — e.g. if the Prisma client
+   * has not yet been regenerated to include the `lastVerifiedAt` column, this
+   * silently no-ops rather than throwing an "unknown arg" error.
+   */
+  private async recordVerification(userId: string): Promise<void> {
+    try {
+      await prisma.userPin.update({
+        where: { userId },
+        data: { lastVerifiedAt: new Date() } as any,
+      });
+    } catch (error) {
+      logger.warn('[PinService] Failed to record PIN verification timestamp (non-fatal)', error);
+    }
+  }
+
+  /**
+   * Returns true if the user completed a successful PIN verify/create within
+   * `withinMs`. Used by the verify-security step-up gate so a security token is
+   * only issued off the back of a recent proof-of-possession.
+   */
+  async hasRecentVerification(userId: string, withinMs: number): Promise<boolean> {
+    try {
+      const userPin = await prisma.userPin.findUnique({ where: { userId } });
+      const lastVerifiedAt = (userPin as any)?.lastVerifiedAt as Date | null | undefined;
+      if (!lastVerifiedAt) return false;
+      return Date.now() - new Date(lastVerifiedAt).getTime() <= withinMs;
+    } catch (error) {
+      logger.error('[PinService] hasRecentVerification error:', error);
+      return false;
     }
   }
 

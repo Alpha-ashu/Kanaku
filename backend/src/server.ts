@@ -81,4 +81,25 @@ process.on('SIGTERM', () => {
   void shutdown('SIGTERM');
 });
 
+// Last-resort safety nets: never let an unhandled rejection or exception crash
+// the process silently. Log with full context; for uncaught exceptions (which
+// leave the process in an undefined state) exit so the orchestrator restarts a
+// clean instance.
+process.on('unhandledRejection', (reason: unknown) => {
+  logger.error('Unhandled promise rejection', {
+    reason: reason instanceof Error ? reason.message : String(reason),
+    stack: reason instanceof Error ? reason.stack : undefined,
+  });
+});
+
+process.on('uncaughtException', (error: Error) => {
+  logger.error('Uncaught exception — shutting down', {
+    message: error.message,
+    stack: error.stack,
+  });
+  // Attempt a graceful shutdown, then force-exit so a fresh instance starts.
+  server.close(() => process.exit(1));
+  setTimeout(() => process.exit(1), 10_000).unref();
+});
+
 export default server;

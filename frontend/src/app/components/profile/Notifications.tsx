@@ -196,6 +196,7 @@ export const Notifications: React.FC = () => {
  {unreadCount > 0 && (
  <button
  onClick={handleMarkAllAsRead}
+ data-testid="notifications-mark-all-read-button"
  className="bg-black hover:bg-gray-900 text-white px-4 py-2 rounded-xl font-semibold transition-colors text-sm shadow-lg"
  >
  Mark All as Read
@@ -204,6 +205,7 @@ export const Notifications: React.FC = () => {
  {supportedNotifications.length > 0 && (
  <button
  onClick={handleClearAll}
+ data-testid="notifications-clear-all-button"
  className="bg-white hover:bg-gray-100 text-gray-700 px-4 py-2 rounded-xl font-semibold transition-colors text-sm border border-gray-200"
  >
  Clear All
@@ -217,6 +219,7 @@ export const Notifications: React.FC = () => {
  <button
  key={filter.value}
  onClick={() => setFilterType(filter.value)}
+ data-testid={`notifications-filter-tab-${filter.value}`}
  className={`px-4 py-2 rounded-full whitespace-nowrap font-semibold transition-colors text-sm ${
  filterType === filter.value
  ? 'bg-black text-white shadow-lg'
@@ -241,6 +244,7 @@ export const Notifications: React.FC = () => {
  animate={{ opacity: 1, y: 0 }}
  exit={{ opacity: 0, y: -20 }}
  transition={{ delay: index * 0.04 }}
+ data-testid={`notifications-card-select-${notification.id}`}
  className={`border rounded-xl p-4 lg:p-6 transition-all duration-300 ${presentation.bgColor} ${!notification.isRead ? 'ring-2 ring-black/80' : ''}`}
  >
  <div className="flex gap-4">
@@ -272,6 +276,7 @@ export const Notifications: React.FC = () => {
  <div className="flex-shrink-0 text-right">
  <button
  onClick={() => handleDelete(notification.id)}
+ data-testid={`notifications-delete-button-${notification.id}`}
  className="text-gray-400 hover:text-red-600 transition-colors"
  aria-label="Delete notification"
  >
@@ -284,6 +289,7 @@ export const Notifications: React.FC = () => {
  {!notification.isRead && (
  <button
  onClick={() => notification.id && markNotificationAsRead(notification.id)}
+ data-testid={`notifications-mark-read-button-${notification.id}`}
  className="bg-white hover:bg-white text-blue-600 border border-blue-200 px-4 py-2 rounded-lg font-medium transition-colors text-sm"
  >
  Mark Read
@@ -292,6 +298,7 @@ export const Notifications: React.FC = () => {
  {notification.deepLink && (
  <button
  onClick={() => handleOpenNotification(notification)}
+ data-testid={`notifications-open-button-${notification.id}`}
  className="bg-black hover:bg-gray-900 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm"
  >
  Open

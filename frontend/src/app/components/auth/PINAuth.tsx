@@ -292,14 +292,17 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
     setIsResettingPin(true);
     setResetError('');
     try {
-      const { error } = await supabase.auth.verifyOtp({
+      const { data: otpData, error } = await supabase.auth.verifyOtp({
         email: user!.email,
         token: resetOtp,
         type: 'email'
       });
       if (error) throw error;
 
-      const secResult = await pinService.verifySecurity();
+      // Forgot-PIN path: the user has no PIN to verify, so prove the step-up
+      // with the freshly-issued Supabase session token from the OTP check.
+      const freshAuthToken = otpData?.session?.access_token;
+      const secResult = await pinService.verifySecurity({ freshAuthToken });
       if (!secResult.success || !secResult.securityToken) {
         setResetError(secResult.message || 'Security verification failed');
         return;

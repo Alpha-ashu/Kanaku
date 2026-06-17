@@ -1,6 +1,7 @@
 import { Page, expect, Locator } from '@playwright/test';
 import * as path from 'path';
 import * as fs from 'fs';
+import { createHash } from 'crypto';
 
 export async function isElementVisible(locator: Locator, timeout = 5000): Promise<boolean> {
   return locator.waitFor({ state: 'visible', timeout }).then(() => true).catch(() => false);
@@ -10,13 +11,13 @@ export const BASE = 'http://localhost:9002';
 export const API = 'http://localhost:3000';
 
 export const USERS = {
-  U1: { firstName: 'Arjun', lastName: 'Sharma', email: 'arjun.test@Kanaku.app', mobile: '9000000001', password: 'TestKanaku@2026', persona: 'Debt Manager' },
-  U2: { firstName: 'Priya', lastName: 'Mehta', email: 'priya.test@Kanaku.app', mobile: '9000000002', password: 'TestKanaku@2026', persona: 'Group Splitter' },
-  U3: { firstName: 'Rohan', lastName: 'Verma', email: 'rohan.test@Kanaku.app', mobile: '9000000003', password: 'TestKanaku@2026', persona: 'Investor' },
-  U4: { firstName: 'Sneha', lastName: 'Kapoor', email: 'sneha.test@Kanaku.app', mobile: '9000000004', password: 'TestKanaku@2026', persona: 'Goal Setter' },
-  U5: { firstName: 'Dev', lastName: 'Nair', email: 'dev.test@Kanaku.app', mobile: '9000000005', password: 'TestKanaku@2026', persona: 'Portfolio Builder' },
-  U6: { firstName: 'Isha', lastName: 'Patel', email: 'isha.test@Kanaku.app', mobile: '9000000006', password: 'TestKanaku@2026', persona: 'Planner' },
-  U7: { firstName: 'Power', lastName: 'User', email: 'admin.test@Kanaku.app', mobile: '9000000007', password: 'TestKanaku@2026', persona: 'Power User' },
+  U1: { firstName: 'Arjun', lastName: 'Sharma', email: 'arjun.test@kanaku.app', mobile: '9000000001', password: 'TestKanaku@2026', persona: 'Debt Manager' },
+  U2: { firstName: 'Priya', lastName: 'Mehta', email: 'priya.test@kanaku.app', mobile: '9000000002', password: 'TestKanaku@2026', persona: 'Group Splitter' },
+  U3: { firstName: 'Rohan', lastName: 'Verma', email: 'rohan.test@kanaku.app', mobile: '9000000003', password: 'TestKanaku@2026', persona: 'Investor' },
+  U4: { firstName: 'Sneha', lastName: 'Kapoor', email: 'sneha.test@kanaku.app', mobile: '9000000004', password: 'TestKanaku@2026', persona: 'Goal Setter' },
+  U5: { firstName: 'Dev', lastName: 'Nair', email: 'dev.test@kanaku.app', mobile: '9000000005', password: 'TestKanaku@2026', persona: 'Portfolio Builder' },
+  U6: { firstName: 'Isha', lastName: 'Patel', email: 'isha.test@kanaku.app', mobile: '9000000006', password: 'TestKanaku@2026', persona: 'Planner' },
+  U7: { firstName: 'Power', lastName: 'User', email: 'admin.test@kanaku.app', mobile: '9000000007', password: 'TestKanaku@2026', persona: 'Power User' },
 };
 
 export async function screenshot(page: Page, name: string) {
@@ -37,24 +38,50 @@ export async function gotoApp(page: Page) {
  * bypassing the marketing landing page navigation flow.
  */
 export async function loginUser(page: Page, user: typeof USERS.U1) {
-  // 1. Get tokens from backend API (retry up to 3x for transient ECONNREFUSED on startup)
-  let resp: Awaited<ReturnType<typeof page.request.post>> | null = null;
-  for (let attempt = 0; attempt < 3; attempt++) {
-    try {
-      resp = await page.request.post(`${API}/api/v1/auth/login`, {
-        data: { email: user.email, password: user.password },
-      });
-      break;
-    } catch (e: any) {
-      if (attempt === 2) throw e;
-      await page.waitForTimeout(3000);
+  // ── Step 1: SHA-256 hash the password (matches frontend api.ts behaviour) ──
+  // Use Node.js crypto so this works before any page navigation.
+  const sha256Hex = createHash('sha256').update(user.password, 'utf8').digest('hex');
+
+  // ── Step 2: Challenge request (mirrors frontend /auth/login/challenge flow) ──
+  const tryChallenge = async (password: string, encoding: string) => {
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        return await page.request.post(`${API}/api/v1/auth/login/challenge`, {
+          data: { email: user.email, password },
+          headers: { 'x-pw-encoding': encoding, 'Content-Type': 'application/json' },
+        });
+      } catch (e: any) {
+        if (attempt === 2) throw e;
+        await page.waitForTimeout(3000);
+      }
     }
+  };
+
+  let challengeResp = await tryChallenge(sha256Hex, 'sha256');
+  let challengeJson = await challengeResp!.json();
+
+  // Fallback: if SHA-256 challenge fails, retry with plain password (legacy accounts)
+  if (!challengeJson?.success || !challengeJson?.data?.code) {
+    challengeResp = await tryChallenge(user.password, 'plain');
+    challengeJson = await challengeResp!.json();
   }
-  const json = await resp!.json();
+
+  if (!challengeJson?.success || !challengeJson?.data?.code) {
+    throw new Error(
+      `Login challenge failed for ${user.email}: ${JSON.stringify(challengeJson)}`
+    );
+  }
+
+  // ── Step 3: Exchange challenge code for tokens ──
+  const tokenResp = await page.request.post(`${API}/api/v1/auth/login`, {
+    data: { email: user.email, challengeCode: challengeJson.data.code },
+    headers: { 'Content-Type': 'application/json' },
+  });
+  const json = await tokenResp.json();
   const { accessToken, refreshToken, user: userObj } = json.data ?? {};
 
   if (!accessToken) {
-    throw new Error(`Login API failed for ${user.email}: ${JSON.stringify(json)}`);
+    throw new Error(`Token exchange failed for ${user.email}: ${JSON.stringify(json)}`);
   }
 
   // 1b. Pre-create a default cash account so AddTransaction/group expense flows work

@@ -71,6 +71,7 @@ const GoalCategoryGrid = ({
               <div 
                 key={cat.key}
                 onClick={() => onSelect(cat.key)}
+                data-testid={`goals-create-category-${cat.key}-button`}
                 className={cn(
                   "flex flex-col items-center gap-1.5 p-2 rounded-xl transition-all cursor-pointer group",
                   selectedCategory === cat.key ? "bg-indigo-600 shadow-lg shadow-indigo-200" : "bg-slate-50 hover:bg-slate-100"
@@ -107,6 +108,7 @@ const GoalCategoryGrid = ({
                   setActivePage(idx);
                 }
               }}
+              data-testid={`goals-create-category-page-${idx}-dot`}
               className={cn(
                 "w-1.5 h-1.5 rounded-full transition-all duration-300",
                 activePage === idx ? "bg-indigo-600 w-3.5" : "bg-slate-300 hover:bg-slate-400"
@@ -218,7 +220,7 @@ export const AddGoal: React.FC = () => {
  <header className="px-4 lg:px-6 py-4 bg-white border-b border-slate-100">
  <div className="flex flex-row flex-wrap items-center justify-between gap-4 w-full">
  <div className="flex items-center gap-3">
- <button onClick={() => setCurrentPage('goals')} title="Back" className="lg:!hidden p-2 text-slate-600 hover:bg-slate-50 rounded-xl transition-all">
+ <button onClick={() => setCurrentPage('goals')} title="Back" data-testid="goals-create-back-button" className="lg:!hidden p-2 text-slate-600 hover:bg-slate-50 rounded-xl transition-all">
  <ArrowLeft size={20} />
  </button>
  <h1 className="text-xl font-black text-slate-900 tracking-tight leading-none">New Saving Goal</h1>
@@ -239,7 +241,7 @@ export const AddGoal: React.FC = () => {
  { id: 'individual', label: 'Individual', icon: <Target size={12} /> },
  { id: 'group', label: 'Group Goal', icon: <Users size={12} /> }
  ].map(m => (
- <button key={m.id} onClick={() => setFormData(prev => ({ ...prev, goalType: m.id as any }))} className={cn("flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg font-black text-[8px] uppercase tracking-wider transition-all", formData.goalType === m.id ?"bg-white text-slate-900 shadow-sm" :"text-slate-400 hover:text-slate-600")}>
+ <button key={m.id} onClick={() => setFormData(prev => ({ ...prev, goalType: m.id as any }))} data-testid={`goals-create-type-${m.id}-button`} className={cn("flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg font-black text-[8px] uppercase tracking-wider transition-all", formData.goalType === m.id ?"bg-white text-slate-900 shadow-sm" :"text-slate-400 hover:text-slate-600")}>
  {m.icon} {m.label}
  </button>
  ))}
@@ -250,7 +252,7 @@ export const AddGoal: React.FC = () => {
  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Goal Name</label>
  <div className="relative">
  <Target className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
- <input type="text" value={formData.name} onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))} className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-900 text-xs" placeholder="e.g. New Macbook Pro" />
+ <input type="text" value={formData.name} onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))} data-testid="goals-create-name-input" className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-900 text-xs" placeholder="e.g. New Macbook Pro" />
  </div>
  </div>
 
@@ -263,7 +265,7 @@ export const AddGoal: React.FC = () => {
  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Description / Note</label>
  <div className="relative">
  <AlignLeft className="absolute left-2.5 top-3 text-slate-300" size={14} />
- <textarea value={formData.description} onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))} className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-900 text-xs min-h-[60px] resize-none" placeholder="What is this for?" />
+ <textarea value={formData.description} onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))} data-testid="goals-create-description-textarea" className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-900 text-xs min-h-[60px] resize-none" placeholder="What is this for?" />
  </div>
  </div>
 
@@ -277,15 +279,15 @@ export const AddGoal: React.FC = () => {
  
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
  <div className="flex flex-col gap-2 p-3 bg-slate-50 rounded-xl">
- <input type="text" value={memberInput.name} onChange={e => setMemberInput(prev => ({ ...prev, name: e.target.value }))} className="bg-white border-none rounded-lg px-3 py-2 text-xs font-bold" placeholder="Friend Name" />
+ <input type="text" value={memberInput.name} onChange={e => setMemberInput(prev => ({ ...prev, name: e.target.value }))} data-testid="goals-create-member-name-input" className="bg-white border-none rounded-lg px-3 py-2 text-xs font-bold" placeholder="Friend Name" />
  <div className="flex gap-2">
- <select value={memberInput.contactType} onChange={e => setMemberInput(prev => ({ ...prev, contactType: e.target.value as any }))} aria-label="Contact type" className="bg-white border-none rounded-lg px-2 text-[10px] font-black uppercase">
+ <select value={memberInput.contactType} onChange={e => setMemberInput(prev => ({ ...prev, contactType: e.target.value as any }))} aria-label="Contact type" data-testid="goals-create-member-contact-type" className="bg-white border-none rounded-lg px-2 text-[10px] font-black uppercase">
  <option value="email">Email</option>
  <option value="phone">Phone</option>
  </select>
- <input type="text" value={memberInput.contactValue} onChange={e => setMemberInput(prev => ({ ...prev, contactValue: e.target.value }))} className="flex-1 bg-white border-none rounded-lg px-3 py-2 text-xs font-bold" placeholder="Contact..." />
+ <input type="text" value={memberInput.contactValue} onChange={e => setMemberInput(prev => ({ ...prev, contactValue: e.target.value }))} data-testid="goals-create-member-contact-input" className="flex-1 bg-white border-none rounded-lg px-3 py-2 text-xs font-bold" placeholder="Contact..." />
  </div>
- <button onClick={addMember} className="w-full py-2 bg-slate-900 text-white rounded-lg text-[9px] font-black uppercase tracking-widest">+ Add</button>
+ <button onClick={addMember} data-testid="goals-create-member-add-button" className="w-full py-2 bg-slate-900 text-white rounded-lg text-[9px] font-black uppercase tracking-widest">+ Add</button>
  </div>
 
  <div className="space-y-2 max-h-[120px] overflow-y-auto no-scrollbar">
@@ -295,7 +297,7 @@ export const AddGoal: React.FC = () => {
  <div className="w-7 h-7 rounded-full bg-indigo-50 flex items-center justify-center text-[10px] font-black text-indigo-500">{m.name[0]}</div>
  <span className="text-[10px] font-bold text-slate-700">{m.name}</span>
  </div>
- <button onClick={() => setMembers(prev => prev.filter((_, i) => i !== idx))} title="Remove member" className="text-slate-300 hover:text-rose-500"><Trash2 size={12} /></button>
+ <button onClick={() => setMembers(prev => prev.filter((_, i) => i !== idx))} title="Remove member" data-testid={`goals-create-member-remove-${idx}`} className="text-slate-300 hover:text-rose-500"><Trash2 size={12} /></button>
  </div>
  ))}
  {members.length === 0 && <div className="h-full flex items-center justify-center border-2 border-dashed border-slate-100 rounded-xl text-[9px] font-black text-slate-300 uppercase">No members added</div>}
@@ -320,6 +322,7 @@ export const AddGoal: React.FC = () => {
  name="targetAmount"
  value={amountStr}
  onChange={e => { setAmountStr(e.target.value); setFormData(prev => ({ ...prev, targetAmount: parseFloat(e.target.value) || 0 })); }}
+ data-testid="goals-create-target-amount-input"
  className="bg-transparent text-4xl font-black text-slate-900 outline-none w-[160px] text-center tracking-tighter"
  placeholder="0.00"
  />
@@ -332,14 +335,14 @@ export const AddGoal: React.FC = () => {
  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Initial Deposit</label>
  <div className="relative">
  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300 text-[10px] font-black">{currency}</span>
- <input type="number" value={initialAmtStr} onChange={e => { setInitialAmtStr(e.target.value); setFormData(prev => ({ ...prev, currentAmount: parseFloat(e.target.value) || 0 })); }} className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-7 pr-3 font-bold text-xs" placeholder="0" />
+ <input type="number" value={initialAmtStr} onChange={e => { setInitialAmtStr(e.target.value); setFormData(prev => ({ ...prev, currentAmount: parseFloat(e.target.value) || 0 })); }} data-testid="goals-create-initial-deposit-input" className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-7 pr-3 font-bold text-xs" placeholder="0" />
  </div>
  </div>
  <div className="space-y-1">
  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Target Date</label>
  <div className="relative">
  <Calendar className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
- <input type="date" value={formData.deadline} onChange={e => setFormData(prev => ({ ...prev, deadline: e.target.value }))} onClick={(e) => (e.target as HTMLInputElement).showPicker?.()} aria-label="Target date" className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-xs" />
+ <input type="date" value={formData.deadline} onChange={e => setFormData(prev => ({ ...prev, deadline: e.target.value }))} onClick={(e) => (e.target as HTMLInputElement).showPicker?.()} aria-label="Target date" data-testid="goals-create-target-date-input" className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-xs" />
  </div>
  </div>
  </div>
@@ -349,10 +352,10 @@ export const AddGoal: React.FC = () => {
  <div className="flex gap-3">
  <div className="flex-1 relative">
  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300 text-[10px] font-black">{currency}</span>
- <input type="number" value={formData.monthlySavingPlan} onChange={e => setFormData(prev => ({ ...prev, monthlySavingPlan: parseFloat(e.target.value) || 0 }))} aria-label="Monthly saving plan" className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-7 pr-3 font-bold text-xs" />
+ <input type="number" value={formData.monthlySavingPlan} onChange={e => setFormData(prev => ({ ...prev, monthlySavingPlan: parseFloat(e.target.value) || 0 }))} aria-label="Monthly saving plan" data-testid="goals-create-monthly-plan-input" className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-7 pr-3 font-bold text-xs" />
  </div>
  {suggestion && (
- <button onClick={() => setFormData(prev => ({ ...prev, monthlySavingPlan: Math.ceil(suggestion.monthlyAmount) }))} className="px-3 bg-indigo-50 text-indigo-600 rounded-xl text-[9px] font-black uppercase tracking-wider hover:bg-indigo-100 transition-colors">
+ <button onClick={() => setFormData(prev => ({ ...prev, monthlySavingPlan: Math.ceil(suggestion.monthlyAmount) }))} data-testid="goals-create-suggest-button" className="px-3 bg-indigo-50 text-indigo-600 rounded-xl text-[9px] font-black uppercase tracking-wider hover:bg-indigo-100 transition-colors">
  Use Smart Suggest: {formatCurrency(suggestion.monthlyAmount, currency)}
  </button>
  )}
@@ -391,6 +394,8 @@ export const AddGoal: React.FC = () => {
    onDiscard={() => setCurrentPage('goals')}
    isSaving={isSubmitting}
    saveLabel="Create Goal"
+   saveTestId="goals-create-save-button"
+   discardTestId="goals-create-discard-button"
  />
  </div>
  );

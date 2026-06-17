@@ -1,8 +1,16 @@
-import { randomUUID, createHash, timingSafeEqual } from 'crypto';
+import { randomUUID, createHmac, timingSafeEqual } from 'crypto';
 import { logger } from '../../config/logger';
 import { prisma } from '../../db/prisma';
 import { sendEmail } from '../../utils/email';
 import type { OtpChannel, OtpPurpose, OtpResponse, OtpVerifyResponse } from './otp.types';
+
+/**
+ * Server-side secret keying the OTP HMAC. A dedicated OTP_HMAC_SECRET is
+ * preferred; we fall back to JWT_SECRET (always set) so existing deployments
+ * keep working without a new env var. Keying the hash means a DB read alone
+ * cannot be brute-forced/rainbow-tabled against the small 6-digit OTP space.
+ */
+const OTP_HMAC_SECRET = process.env.OTP_HMAC_SECRET || process.env.JWT_SECRET || 'kanaku-otp-fallback-secret';
 
 /**
  * OTP Service — RBI-Compliant OTP Generation and Verification
@@ -13,7 +21,7 @@ import type { OtpChannel, OtpPurpose, OtpResponse, OtpVerifyResponse } from './o
  * - Max 5 attempts per OTP
  * - Rate limiting: 1 OTP per purpose per 60s cooldown
  * - Constant-time comparison to prevent timing attacks
- * - Hash-only storage (SHA-256)
+ * - Hash-only storage (keyed HMAC-SHA256)
  * - Single active OTP per destination+purpose
  * - Full audit logging
  */
@@ -36,10 +44,12 @@ class OtpService {
   }
 
   /**
-   * Hash OTP for secure storage (SHA-256)
+   * Hash OTP for secure storage (keyed HMAC-SHA256).
+   * Keyed so an attacker with DB read access cannot precompute the full
+   * 6-digit space and reverse a stored hash.
    */
   private hashOtp(otp: string): string {
-    return createHash('sha256').update(otp).digest('hex');
+    return createHmac('sha256', OTP_HMAC_SECRET).update(otp).digest('hex');
   }
 
   /**

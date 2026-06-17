@@ -39,6 +39,9 @@ const destructiveLimiter = rateLimit({
 });
 
 router.post('/check-email', authLimiter, checkEmailAvailability);
+// NOTE: register/login/challenge keep their hardened in-controller validation
+// (EMAIL_REGEX, password length, MISSING_FIELDS codes) which the test suite
+// asserts on — do not front them with a generic validateBody layer.
 router.post('/register', authLimiter, register);
 router.post('/login/challenge', authLimiter, loginChallenge);
 router.post('/login', authLimiter, login);

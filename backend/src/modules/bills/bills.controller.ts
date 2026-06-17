@@ -53,6 +53,37 @@ export const getBills = async (req: AuthRequest, res: Response, next: NextFuncti
   }
 };
 
+export const getBill = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const userId = getUserId(req);
+    const { id } = req.params;
+
+    const bill = await prisma.expenseBill.findFirst({ where: { id, userId } });
+    if (!bill) {
+      throw AppError.notFound('Bill');
+    }
+
+    let downloadUrl: string | null = null;
+    try {
+      downloadUrl = await createSignedUrl(bill.storagePath);
+    } catch (error: any) {
+      logger.warn('Failed to create signed url', { billId: bill.id, error: error?.message || error });
+    }
+
+    res.json({
+      id: bill.id,
+      transactionId: bill.transactionId,
+      fileName: bill.originalName,
+      fileType: bill.contentType,
+      fileSize: bill.size,
+      uploadedAt: bill.createdAt,
+      downloadUrl,
+    });
+  } catch (error: any) {
+    next(error);
+  }
+};
+
 export const uploadBill = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const userId = getUserId(req);

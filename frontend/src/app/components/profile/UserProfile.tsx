@@ -718,7 +718,8 @@ export const UserProfile: React.FC = () => {
 
     setIsPinLoading(true);
     try {
-      const secResult = await pinService.verifySecurity();
+      // Prove possession with the current PIN the user just entered.
+      const secResult = await pinService.verifySecurity({ pin: currentPin });
       if (!secResult.success || !secResult.securityToken) {
         toast.error(secResult.message || 'Security verification failed');
         return;
@@ -1027,6 +1028,7 @@ export const UserProfile: React.FC = () => {
  setIsEditingBasic(true);
  setShowAvatarGallery((prev) => !prev);
  }}
+ data-testid="profile-choose-avatar-button"
  className="inline-flex items-center gap-2 rounded-full border border-blue-200 px-4 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-50"
  >
  Choose Avatar
@@ -1034,6 +1036,7 @@ export const UserProfile: React.FC = () => {
  {showAvatarGallery && (
  <button
  onClick={handleSaveProfile}
+ data-testid="profile-save-avatar-button"
  className="inline-flex items-center gap-2 rounded-full border border-green-200 px-4 py-2 text-xs font-semibold text-green-700 hover:bg-green-50"
  >
  <Check size={14} />
@@ -1056,6 +1059,7 @@ export const UserProfile: React.FC = () => {
  <button
  key={avatar.id}
  type="button"
+ data-testid={`profile-avatar-select-${avatar.id}`}
  onClick={() => setTempData((prev) => ({
  ...prev,
  profilePhoto: avatar.url,
@@ -1110,6 +1114,7 @@ export const UserProfile: React.FC = () => {
  setIsEditingBasic(!isEditingBasic);
  if (isEditingBasic) setTempData(profileData);
  }}
+ data-testid="profile-edit-basic-button"
  className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${isEditingBasic
  ? 'bg-red-50 text-red-600 hover:bg-red-100'
  : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
@@ -1173,6 +1178,7 @@ export const UserProfile: React.FC = () => {
  type="text"
  value={tempData.firstName}
  onChange={(e) => setTempData({ ...tempData, firstName: e.target.value })}
+ data-testid="profile-first-name-input"
  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
  placeholder="Enter first name"
  aria-label="First name"
@@ -1186,6 +1192,7 @@ export const UserProfile: React.FC = () => {
  type="text"
  value={tempData.lastName}
  onChange={(e) => setTempData({ ...tempData, lastName: e.target.value })}
+ data-testid="profile-last-name-input"
  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
  placeholder="Enter last name"
  aria-label="Last name"
@@ -1203,6 +1210,7 @@ export const UserProfile: React.FC = () => {
  <select
  value={tempData.gender}
  onChange={(e) => setTempData({ ...tempData, gender: e.target.value as ProfileData['gender'] })}
+ data-testid="profile-gender-select"
  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
  aria-label="Select gender"
  id="gender"
@@ -1247,6 +1255,7 @@ export const UserProfile: React.FC = () => {
        type="date"
        value={tempData.dateOfBirth}
        onChange={(e) => setTempData({ ...tempData, dateOfBirth: e.target.value })}
+       data-testid="profile-dob-input"
        className="absolute inset-0 opacity-0 cursor-pointer z-20"
        max={new Date().toISOString().split('T')[0]}
        aria-label="Date of birth"
@@ -1265,6 +1274,7 @@ export const UserProfile: React.FC = () => {
  <select
  value={tempData.jobType}
  onChange={(e) => setTempData({ ...tempData, jobType: e.target.value as any })}
+ data-testid="profile-job-type-select"
  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
  aria-label="Select job type"
  id="jobType"
@@ -1284,6 +1294,7 @@ export const UserProfile: React.FC = () => {
  type="number"
  value={tempData.monthlyIncome || ''}
  onChange={(e) => setTempData({ ...tempData, monthlyIncome: parseFloat(e.target.value) || 0 })}
+ data-testid="profile-income-input"
  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
  placeholder="0.00"
  id="monthlyIncome"
@@ -1295,6 +1306,7 @@ export const UserProfile: React.FC = () => {
  <button
  onClick={handleSaveProfile}
  disabled={isLoading}
+ data-testid="profile-save-basic-button"
  className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white py-3 rounded-xl font-semibold transition-colors"
  >
  {isLoading ? 'Saving...' : 'Save Changes'}
@@ -1321,6 +1333,7 @@ export const UserProfile: React.FC = () => {
  setIsEditingLocation(!isEditingLocation);
  if (isEditingLocation) setTempData(profileData);
  }}
+ data-testid="profile-edit-location-button"
  className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${isEditingLocation
  ? 'bg-red-50 text-red-600 hover:bg-red-100'
  : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
@@ -1373,6 +1386,7 @@ export const UserProfile: React.FC = () => {
  type="text"
  value={tempData.city}
  onChange={(e) => handleCitySearch(e.target.value)}
+ data-testid="profile-city-search-input"
  className={`w-full pl-10 pr-10 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm transition-all ${
  isSearchingCity ? 'border-blue-200 bg-blue-50/10' : ''
  }`}
@@ -1398,6 +1412,7 @@ export const UserProfile: React.FC = () => {
  <button
  key={idx}
  onClick={() => handleSelectCity(suggestion)}
+ data-testid={`profile-city-suggest-${idx}`}
  className="w-full text-left px-4 py-3 hover:bg-blue-50 transition-colors border-b border-gray-50 last:border-0 flex flex-col"
  >
  <span className="text-sm font-semibold text-gray-900">
@@ -1437,6 +1452,7 @@ export const UserProfile: React.FC = () => {
  title="Currency Settings"
  value={currency}
  onChange={(e) => setCurrency(e.target.value)}
+ data-testid="profile-currency-select"
  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm bg-white"
  >
  <option value="USD">USD - US Dollar</option>
@@ -1458,6 +1474,7 @@ export const UserProfile: React.FC = () => {
  <button
  onClick={handleSaveProfile}
  disabled={isLoading}
+ data-testid="profile-save-location-button"
  className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white py-3.5 rounded-xl font-bold shadow-lg shadow-blue-100 transition-all active:scale-[0.98]"
  >
  {isLoading ? 'Saving...' : 'Save Location & Currency'}
@@ -1509,6 +1526,7 @@ export const UserProfile: React.FC = () => {
  step: 'request',
  })
  }
+ data-testid="profile-change-email-button"
  className="bg-blue-50 hover:bg-blue-100 text-blue-600 px-4 py-2 rounded-lg font-medium transition-colors"
  >
  Change Email
@@ -1525,6 +1543,7 @@ export const UserProfile: React.FC = () => {
  onChange={(e) =>
  setVerification({ ...verification, newValue: e.target.value })
  }
+ data-testid="profile-new-email-input"
  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
  id="newEmail"
  name="newEmail"
@@ -1532,6 +1551,7 @@ export const UserProfile: React.FC = () => {
  <div className="flex gap-3">
  <button
  onClick={handleChangeEmail}
+ data-testid="profile-send-email-otp-button"
  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-medium transition-colors"
  >
  Send OTP to Mobile
@@ -1545,6 +1565,7 @@ export const UserProfile: React.FC = () => {
  step: 'request',
  })
  }
+ data-testid="profile-cancel-email-change-button"
  className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-900 py-2 rounded-lg font-medium transition-colors"
  >
  Cancel
@@ -1566,12 +1587,14 @@ export const UserProfile: React.FC = () => {
  value={verification.otp}
  onChange={(e) => setVerification({ ...verification, otp: e.target.value })}
  maxLength={6}
+ data-testid="profile-email-otp-input"
  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-center text-2xl tracking-widest"
  />
  <p className="text-xs text-gray-500 mt-2">Use code: 123456 (Demo)</p>
  <div className="flex gap-3 mt-4">
  <button
  onClick={handleVerifyEmailOTP}
+ data-testid="profile-verify-email-otp-button"
  className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg font-medium transition-colors"
  >
  Verify OTP
@@ -1585,6 +1608,7 @@ export const UserProfile: React.FC = () => {
  step: 'request',
  })
  }
+ data-testid="profile-cancel-email-otp-button"
  className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-900 py-2 rounded-lg font-medium transition-colors"
  >
  Cancel
@@ -1621,6 +1645,7 @@ export const UserProfile: React.FC = () => {
  step: 'request',
  })
  }
+ data-testid="profile-change-mobile-button"
  className="bg-green-50 hover:bg-green-100 text-green-600 px-4 py-2 rounded-lg font-medium transition-colors"
  >
  Change Mobile
@@ -1637,6 +1662,7 @@ export const UserProfile: React.FC = () => {
  onChange={(e) =>
  setVerification({ ...verification, newValue: e.target.value })
  }
+ data-testid="profile-new-mobile-input"
  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
  id="newMobile"
  name="newMobile"
@@ -1644,6 +1670,7 @@ export const UserProfile: React.FC = () => {
  <div className="flex gap-3">
  <button
  onClick={handleChangeMobile}
+ data-testid="profile-send-mobile-otp-button"
  className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg font-medium transition-colors"
  >
  Send OTP to Email
@@ -1657,6 +1684,7 @@ export const UserProfile: React.FC = () => {
  step: 'request',
  })
  }
+ data-testid="profile-cancel-mobile-change-button"
  className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-900 py-2 rounded-lg font-medium transition-colors"
  >
  Cancel
@@ -1678,6 +1706,7 @@ export const UserProfile: React.FC = () => {
  value={verification.otp}
  onChange={(e) => setVerification({ ...verification, otp: e.target.value })}
  maxLength={6}
+ data-testid="profile-mobile-otp-input"
  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-center text-2xl tracking-widest"
  id="emailOtp"
  name="emailOtp"
@@ -1686,6 +1715,7 @@ export const UserProfile: React.FC = () => {
  <div className="flex gap-3 mt-4">
  <button
  onClick={handleVerifyMobileOTP}
+ data-testid="profile-verify-mobile-otp-button"
  className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg font-medium transition-colors"
  >
  Verify OTP
@@ -1699,6 +1729,7 @@ export const UserProfile: React.FC = () => {
  step: 'request',
  })
  }
+ data-testid="profile-cancel-mobile-otp-button"
  className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-900 py-2 rounded-lg font-medium transition-colors"
  >
  Cancel
@@ -1734,6 +1765,7 @@ export const UserProfile: React.FC = () => {
  <Button
  onClick={() => setPinChangeStep('set-new-pin')}
  disabled={isPinLoading}
+ data-testid="profile-change-pin-button"
  className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-6 shrink-0 whitespace-nowrap"
  >
  {isPinLoading ? 'Updating...' : 'Change PIN'}
@@ -1751,7 +1783,7 @@ export const UserProfile: React.FC = () => {
   >
   <div className="flex items-center justify-between">
   <p className="font-semibold text-green-900">Set New PIN</p>
-  <button type="button" onClick={resetPinFlow} className="text-xs text-green-600 hover:underline">Cancel</button>
+  <button type="button" onClick={resetPinFlow} data-testid="profile-cancel-pin-button" className="text-xs text-green-600 hover:underline">Cancel</button>
   </div>
 
   <div className="space-y-3">
@@ -1762,6 +1794,7 @@ export const UserProfile: React.FC = () => {
   value={currentPin}
   onChange={(e) => setCurrentPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
   autoComplete="new-password"
+  data-testid="profile-current-pin-input"
   className="w-full px-4 py-2.5 rounded-xl border border-green-200 focus:border-green-500 focus:ring-2 focus:ring-green-100 outline-none text-center font-mono text-lg tracking-widest"
   />
   </div>
@@ -1773,6 +1806,7 @@ export const UserProfile: React.FC = () => {
   value={newPin}
   onChange={(e) => setNewPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
   autoComplete="new-password"
+  data-testid="profile-new-pin-input"
   className={`w-full px-4 py-2.5 rounded-xl border outline-none text-center font-mono text-lg tracking-widest transition-all ${
     isPinWeak
       ? 'border-red-300 focus:border-red-500 focus:ring-2 focus:ring-red-100 bg-red-50/30'
@@ -1801,11 +1835,13 @@ export const UserProfile: React.FC = () => {
   value={confirmNewPin}
   onChange={(e) => setConfirmNewPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
   autoComplete="new-password"
+  data-testid="profile-confirm-pin-input"
   className="w-full px-4 py-2.5 rounded-xl border border-green-200 focus:border-green-500 focus:ring-2 focus:ring-green-100 outline-none text-center font-mono text-lg tracking-widest"
   />
 
   <Button
   type="submit"
+  data-testid="profile-update-pin-button"
   className="w-full bg-green-600 hover:bg-green-700 text-white rounded-xl py-3 mt-2"
   disabled={isPinLoading || currentPin.length !== 6 || newPin.length !== 6 || newPin !== confirmNewPin || isPinWeak}
   >
@@ -1851,6 +1887,7 @@ export const UserProfile: React.FC = () => {
  <button
  onClick={handleSignOut}
  disabled={isSigningOut}
+ data-testid="profile-signout-button"
  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-800 hover:bg-gray-700 text-white rounded-xl font-medium text-sm transition-colors active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
  >
  <LogOut size={15} />
@@ -1877,6 +1914,7 @@ export const UserProfile: React.FC = () => {
 
  <button
  onClick={() => setIsDeleteModalOpen(true)}
+ data-testid="profile-delete-account-button"
  className="flex items-center gap-2 px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl font-medium transition-colors"
  >
  <Trash2 size={18} />
@@ -1907,6 +1945,7 @@ export const UserProfile: React.FC = () => {
  }}
  aria-label="Close delete account dialog"
  title="Close delete account dialog"
+ data-testid="profile-delete-close-button"
  className="absolute top-4 right-4 bg-white/20 hover:bg-white/30 p-1.5 rounded-full transition-colors"
  >
  <X size={20} />
@@ -1930,12 +1969,14 @@ export const UserProfile: React.FC = () => {
  placeholder="Enter your password"
  value={deletePassword}
  onChange={(e) => setDeletePassword(e.target.value)}
+ data-testid="profile-delete-password-input"
  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 mb-6"
  />
 
  <div className="flex gap-3">
  <button
  onClick={() => setIsDeleteModalOpen(false)}
+ data-testid="profile-delete-cancel-button"
  className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-900 py-3 rounded-xl font-medium transition-colors"
  >
  Cancel
@@ -1943,6 +1984,7 @@ export const UserProfile: React.FC = () => {
  <button
  onClick={handleDeleteAccount}
  disabled={isDeleting || !deletePassword}
+ data-testid="profile-delete-confirm-button"
  className="flex-1 bg-red-600 hover:bg-red-700 text-white py-3 rounded-xl font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center"
  >
  {isDeleting ? 'Deleting...' : 'Delete Permanently'}
@@ -1993,6 +2035,7 @@ export const UserProfile: React.FC = () => {
       id="floating-discard-btn"
       onClick={handleDiscard}
       disabled={isLoading}
+      data-testid="profile-floating-discard-button"
       className="flex items-center gap-1.5 px-4 py-2.5 rounded-[14px] text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 active:scale-95 transition-all disabled:opacity-50 flex-shrink-0"
      >
       <RotateCcw size={12} />
@@ -2004,6 +2047,7 @@ export const UserProfile: React.FC = () => {
       id="floating-save-btn"
       onClick={handleSaveProfile}
       disabled={isLoading}
+      data-testid="profile-floating-save-button"
       className={`flex items-center gap-1.5 px-5 py-2.5 rounded-[14px] text-xs font-bold text-white active:scale-95 transition-all disabled:opacity-60 flex-shrink-0 shadow-[0_4px_12px_rgba(79,70,229,0.35)] ${isLoading ? 'bg-blue-400/60' : 'bg-gradient-to-br from-blue-500 to-indigo-600'}`}
      >
       {isLoading ? (

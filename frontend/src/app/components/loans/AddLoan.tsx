@@ -159,7 +159,7 @@ export const AddLoan: React.FC = () => {
  <header className="px-4 lg:px-6 py-4 bg-white border-b border-slate-100">
  <div className="flex flex-row flex-wrap items-center justify-between gap-4 w-full">
  <div className="flex items-center gap-3">
- <button onClick={() => setCurrentPage('loans')} title="Back" className="lg:!hidden p-2 text-slate-600 hover:bg-slate-50 rounded-xl transition-all">
+ <button onClick={() => setCurrentPage('loans')} title="Back" data-testid="loan-create-back-button" className="lg:!hidden p-2 text-slate-600 hover:bg-slate-50 rounded-xl transition-all">
  <ArrowLeft size={20} />
  </button>
  <h1 className="text-xl font-black text-slate-900 tracking-tight leading-none">New Borrowed Loan</h1>
@@ -184,20 +184,21 @@ export const AddLoan: React.FC = () => {
  name="name"
  value={formData.lenderName} 
  onChange={e => handleFieldChange('lenderName', e.target.value)} 
+ data-testid="loan-create-lender-input"
  className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-900 text-xs" 
  placeholder="e.g. HDFC Bank, John Doe" 
  />
  </div>
  {friends && friends.length > 0 && (
  <div className="pt-1">
- <button onClick={() => setShowFriendPicker(!showFriendPicker)} className="text-[8px] font-black uppercase text-sky-600 bg-sky-50 px-2 py-1 rounded-lg flex items-center gap-1 hover:bg-sky-100 transition-colors">
+ <button onClick={() => setShowFriendPicker(!showFriendPicker)} data-testid="loan-create-friends-toggle" className="text-[8px] font-black uppercase text-sky-600 bg-sky-50 px-2 py-1 rounded-lg flex items-center gap-1 hover:bg-sky-100 transition-colors">
  <UserPlus size={10} /> {showFriendPicker ? 'Close Friends List' : 'Select from Friends'}
  </button>
  {showFriendPicker && (
  <div className="mt-2 p-3 bg-white border border-slate-100 rounded-xl shadow-sm animate-in slide-in-from-top-1">
  <div className="flex flex-wrap gap-2">
  {friends.map(f => (
- <button key={f.id} onClick={() => handleFriendSelect(f.id!)} className="px-2.5 py-1.5 bg-slate-50 border border-slate-100 rounded-lg text-[9px] font-bold text-slate-700 hover:bg-sky-600 hover:text-white transition-all">
+ <button key={f.id} onClick={() => handleFriendSelect(f.id!)} data-testid={`loan-create-friend-select-${f.id}`} className="px-2.5 py-1.5 bg-slate-50 border border-slate-100 rounded-lg text-[9px] font-bold text-slate-700 hover:bg-sky-600 hover:text-white transition-all">
  {f.name}
  </button>
  ))}
@@ -218,6 +219,7 @@ export const AddLoan: React.FC = () => {
  name="rate"
  value={formData.interestRate || ''} 
  onChange={e => handleFieldChange('interestRate', parseFloat(e.target.value) || 0)} 
+ data-testid="loan-create-rate-input"
  className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-xs text-center" 
  placeholder="0.00" 
  />
@@ -231,6 +233,7 @@ export const AddLoan: React.FC = () => {
  type="number" 
  value={formData.tenureMonths || ''} 
  onChange={e => handleFieldChange('tenureMonths', parseInt(e.target.value) || 0)} 
+ data-testid="loan-create-tenure-input"
  className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-xs text-center" 
  placeholder="12" 
  />
@@ -246,6 +249,7 @@ export const AddLoan: React.FC = () => {
  value={formData.startDate}
  onChange={e => handleFieldChange('startDate', e.target.value)}
  aria-label="Loan start date"
+ data-testid="loan-create-date-input"
  className="w-full bg-slate-50 border-none rounded-xl py-2.5 px-3 font-bold text-xs"
  />
  </div>
@@ -256,6 +260,7 @@ export const AddLoan: React.FC = () => {
  value={String(formData.accountId)}
  onChange={val => handleFieldChange('accountId', parseInt(val))}
  placeholder="Account"
+ testId="loan-create-account-dropdown"
  className="bg-slate-50 border-none rounded-xl h-10 font-bold text-xs"
  />
  </div>
@@ -268,6 +273,7 @@ export const AddLoan: React.FC = () => {
  <textarea 
  value={formData.description} 
  onChange={e => handleFieldChange('description', e.target.value)} 
+ data-testid="loan-create-notes-textarea"
  className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-900 text-xs min-h-[60px] resize-none" 
  placeholder="e.g. For buying a new laptop" 
  />
@@ -298,6 +304,7 @@ export const AddLoan: React.FC = () => {
  name="amount"
  value={amountStr} 
  onChange={e => { setAmountStr(e.target.value); handleFieldChange('principalAmount', parseFloat(e.target.value) || 0); }}
+ data-testid="loan-create-amount-input"
  className="bg-transparent text-5xl font-black text-slate-900 outline-none w-[200px] text-center tracking-tighter" 
  placeholder="0"
  autoFocus
@@ -366,6 +373,8 @@ export const AddLoan: React.FC = () => {
    disabled={!formData.principalAmount}
    saveLabel="Create Loan"
    accentClass="from-sky-500 to-sky-600"
+   saveTestId="loan-create-save-button"
+   discardTestId="loan-create-discard-button"
  />
  </div>
  );

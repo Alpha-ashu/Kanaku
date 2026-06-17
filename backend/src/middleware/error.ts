@@ -68,12 +68,20 @@ export const errorHandler = (
     logger.warn('Client error', logPayload);
   }
 
-  //  3. Response 
+  //  3. Response
 
-  // Never leak internal details in the response  only user-friendly message
+  // Guard against double-send if headers were already flushed (e.g. streaming).
+  if (res.headersSent) {
+    return;
+  }
+
+  // Never leak internal details in the response  only user-friendly message.
+  // requestId is echoed so users can quote it when reporting an issue and
+  // support can correlate it with the server logs above.
   res.status(appError.statusCode).json({
     success: false,
     error: appError.message,
     code: appError.code,
+    requestId: (req as any).id ?? undefined,
   });
 };

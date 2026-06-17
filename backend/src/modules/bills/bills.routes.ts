@@ -10,6 +10,7 @@ const router = Router();
 router.use(authMiddleware);
 
 router.get('/', BillsController.getBills);
+router.get('/:id', BillsController.getBill);
 router.post(
   '/',
   authenticatedRateLimit({

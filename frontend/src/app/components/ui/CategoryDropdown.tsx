@@ -12,6 +12,7 @@ interface CategoryDropdownProps {
  label?: string;
  required?: boolean;
  className?: string;
+ testId?: string;
 }
 
 export const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
@@ -22,6 +23,7 @@ export const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
  label,
  required = false,
  className = '',
+ testId,
 }) => {
  const [isOpen, setIsOpen] = useState(false);
  const dropdownRef = useRef<HTMLDivElement>(null);
@@ -68,6 +70,7 @@ export const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
  'transition-all duration-200',
  isOpen && 'ring-2 ring-blue-500 border-transparent'
  )}
+ data-testid={testId}
  >
  {selectedOption ? (
  <>
@@ -119,6 +122,7 @@ export const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
  'hover:bg-slate-50 active:scale-[0.98]',
  isSelected && 'bg-blue-50/50'
  )}
+ data-testid={testId ? `${testId}-option-${option}` : undefined}
  >
  <div className="flex-shrink-0 transform transition-transform group-hover:scale-110">
  {getCategoryCartoonIcon(option, 44)}

@@ -1,7 +1,14 @@
 import { Router } from 'express';
 import { authMiddleware } from '../../middleware/auth';
 import { requireFeature, requireRole, requireApproved } from '../../middleware/rbac';
+import { validateBody, validateParams } from '../../middleware/validate';
 import * as BookingController from './booking.controller';
+import {
+  bookingCreateSchema,
+  bookingIdParamSchema,
+  rescheduleSchema,
+  cancelBookingSchema,
+} from './booking.validation';
 
 const router = Router();
 
@@ -12,6 +19,7 @@ router.use(authMiddleware);
 router.post(
   '/',
   requireFeature('bookAdvisor'),
+  validateBody(bookingCreateSchema),
   BookingController.createBooking
 );
 
@@ -41,12 +49,16 @@ router.put(
   '/:id/reschedule',
   requireRole('advisor'),
   requireApproved,
+  validateParams(bookingIdParamSchema),
+  validateBody(rescheduleSchema),
   BookingController.rescheduleBooking
 );
 
 // Cancel booking (client only - but any authenticated user can call)
 router.put(
   '/:id/cancel',
+  validateParams(bookingIdParamSchema),
+  validateBody(cancelBookingSchema),
   BookingController.cancelBooking
 );
 

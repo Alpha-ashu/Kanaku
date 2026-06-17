@@ -7,6 +7,7 @@ export default defineConfig({
   expect: { timeout: 10_000 },
   fullyParallel: false,
   workers: 1,
+  retries: 1,
   reporter: [
     ['list'],
     ['html', { outputFolder: 'tests/e2e/report', open: 'never' }],

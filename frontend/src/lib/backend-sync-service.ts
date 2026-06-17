@@ -175,7 +175,7 @@ class BackendSyncService {
   private async processBackendSyncData(data: any): Promise<void> {
     if (!data) return;
 
-    const { accounts, transactions, goals, loans, investments } = data;
+    const { accounts, transactions, goals, loans, investments, recurringTransactions, friends, budgets, goldAssets } = data;
 
     // Process each data type in parallel
     await Promise.all([
@@ -184,7 +184,34 @@ class BackendSyncService {
       this.processTableData('goals', goals),
       this.processTableData('loans', loans),
       this.processTableData('investments', investments),
+      this.processTableData('recurringTransactions', recurringTransactions),
+      this.processTableData('friends', friends),
+      // Backend exposes gold under `goldAssets`; the local Dexie table is `gold`.
+      this.processTableData('gold', goldAssets),
+      // Budgets use a string primary key (= the backend id) rather than the
+      // cloudId/++id pattern, so they are merged separately.
+      this.processBudgets(budgets),
     ]);
+  }
+
+  // Budgets keep the backend uuid as their Dexie primary key, so a simple
+  // put() upserts cleanly without the cloudId lookup the other tables use.
+  private async processBudgets(records: any[]): Promise<void> {
+    if (!records || records.length === 0) return;
+    for (const record of records) {
+      try {
+        await db.budgets.put({
+          id: String(record.id),
+          category: record.category,
+          amount: Number(record.amount ?? 0),
+          period: record.period ?? 'monthly',
+          spent: Number(record.spent ?? 0),
+          createdAt: record.createdAt ? new Date(record.createdAt) : new Date(),
+        });
+      } catch (error) {
+        console.error('Failed to process budget record:', error);
+      }
+    }
   }
 
   // Process individual table data
@@ -197,6 +224,9 @@ class BackendSyncService {
       goals: db.goals,
       loans: db.loans,
       investments: db.investments,
+      recurringTransactions: db.recurringTransactions,
+      friends: db.friends,
+      gold: db.gold,
     };
 
     const dexieTable = tableMap[table];
@@ -215,10 +245,12 @@ class BackendSyncService {
             updatedAt: new Date(),
           });
         } else {
-          // Existing record - update if backend is newer
-          const backendTime = new Date(record.updated_at).getTime();
+          // Existing record - update if backend is newer.
+          // Backend (Prisma) returns camelCase timestamps; fall back to
+          // snake_case for safety with any legacy payloads.
+          const backendTime = new Date(record.updatedAt ?? record.updated_at ?? 0).getTime();
           const localTime = new Date(existingRecord.updatedAt || 0).getTime();
-          
+
           if (backendTime > localTime) {
             await dexieTable.update(existingRecord.id, {
               ...this.mapBackendToLocal(record),
@@ -237,12 +269,14 @@ class BackendSyncService {
   private mapBackendToLocal(record: any): any {
     return {
       ...record,
-      createdAt: record.created_at ? new Date(record.created_at) : new Date(),
-      updatedAt: record.updated_at ? new Date(record.updated_at) : new Date(),
+      // Backend (Prisma) returns camelCase; keep snake_case as a fallback.
+      createdAt: record.createdAt ?? record.created_at ? new Date(record.createdAt ?? record.created_at) : new Date(),
+      updatedAt: record.updatedAt ?? record.updated_at ? new Date(record.updatedAt ?? record.updated_at) : new Date(),
       // Remove backend-specific fields
-      id: undefined, // Remove backend ID
-      cloudId: record.id, // Store as cloudId
-      user_id: undefined, // Remove user_id from local
+      id: undefined, // Remove backend ID (Dexie uses its own ++id + cloudId)
+      cloudId: record.id, // Store backend id as cloudId
+      userId: undefined, // Strip server-side ownership fields
+      user_id: undefined,
     };
   }
 

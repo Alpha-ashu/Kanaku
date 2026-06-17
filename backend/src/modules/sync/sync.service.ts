@@ -39,8 +39,17 @@ export interface SyncResponse {
     transactions: any[];
     goals: any[];
     loans: any[];
+    budgets: any[];
+    investments: any[];
+    recurringTransactions: any[];
+    goldAssets: any[];
+    friends: any[];
     settings?: any;
     lastSyncedAt: string;
+    // Cursor for the next incremental pull — clients should store this and send
+    // it back as `lastSyncedAt`. Identical to lastSyncedAt; named explicitly so
+    // its purpose is unambiguous.
+    serverTimestamp: string;
   };
   conflicts?: {
     entityType: string;
@@ -50,6 +59,24 @@ export interface SyncResponse {
   }[];
   errors?: string[];
 }
+
+// ─── Syncable-field allow-lists (Prisma field names) ───────────────────────────
+const SYNC_FIELDS = {
+  budgets: ['category', 'amount', 'spent', 'period', 'threshold', 'startDate', 'endDate', 'alertEnabled', 'alertChannels', 'syncStatus'] as const,
+  investments: [
+    'assetType', 'assetName', 'quantity', 'buyPrice', 'currentPrice', 'totalInvested', 'currentValue', 'profitLoss',
+    'purchaseDate', 'lastUpdated', 'metadata', 'broker', 'description', 'assetCurrency', 'baseCurrency', 'buyFxRate',
+    'lastKnownFxRate', 'totalInvestedNative', 'currentValueNative', 'valuationVersion', 'positionStatus', 'closedAt',
+    'closePrice', 'closeFxRate', 'grossSaleValue', 'netSaleValue', 'purchaseFees', 'closingFees', 'realizedProfitLoss',
+    'closeNotes', 'syncStatus',
+  ] as const,
+  recurringTransactions: [
+    'title', 'amount', 'category', 'subcategory', 'interval', 'nextDueDate', 'autoProcess', 'status', 'accountId',
+    'description', 'merchant', 'type', 'startDate', 'endDate', 'reminderDaysBefore', 'notes', 'transferToAccountId', 'syncStatus',
+  ] as const,
+  goldAssets: ['type', 'quantity', 'unit', 'purchasePrice', 'currentPrice', 'purchaseDate', 'purityPercentage', 'location', 'certificateNumber', 'notes', 'syncStatus'] as const,
+  friends: ['name', 'email', 'phone', 'avatar', 'notes', 'syncStatus'] as const,
+};
 
 class SyncService {
   private pickAllowedFields(data: any, allowed: readonly string[]): Record<string, any> {
@@ -135,57 +162,51 @@ class SyncService {
           }
         : { userId };
 
+      const want = (t: string) => !entityTypes || entityTypes.includes(t);
+
       // Fetch all user data in parallel
-      const [accounts, transactions, goals, loans, settings] = await Promise.all([
-        (!entityTypes || entityTypes.includes('accounts')) 
-          ? prisma.account.findMany({
-              where: whereClause,
-              orderBy: { updatedAt: 'asc' },
-            })
-          : [],
-        (!entityTypes || entityTypes.includes('transactions'))
-          ? prisma.transaction.findMany({
-              where: whereClause,
-              orderBy: { updatedAt: 'asc' },
-            })
-          : [],
-        (!entityTypes || entityTypes.includes('goals'))
-          ? prisma.goal.findMany({
-              where: whereClause,
-              orderBy: { updatedAt: 'asc' },
-            })
-          : [],
-        (!entityTypes || entityTypes.includes('loans'))
-          ? prisma.loan.findMany({
-              where: whereClause,
-              orderBy: { updatedAt: 'asc' },
-            })
-          : [],
-        (!entityTypes || entityTypes.includes('settings'))
-          ? prisma.userSettings.findUnique({
-              where: { userId },
-            })
-          : null,
+      const [accounts, transactions, goals, loans, budgets, investments, recurring, goldAssets, friends, settings] = await Promise.all([
+        want('accounts') ? prisma.account.findMany({ where: whereClause, orderBy: { updatedAt: 'asc' } }) : [],
+        want('transactions') ? prisma.transaction.findMany({ where: whereClause, orderBy: { updatedAt: 'asc' } }) : [],
+        want('goals') ? prisma.goal.findMany({ where: whereClause, orderBy: { updatedAt: 'asc' } }) : [],
+        want('loans') ? prisma.loan.findMany({ where: whereClause, orderBy: { updatedAt: 'asc' } }) : [],
+        want('budgets') ? prisma.budget.findMany({ where: whereClause, orderBy: { updatedAt: 'asc' } }) : [],
+        want('investments') ? prisma.investment.findMany({ where: whereClause, orderBy: { updatedAt: 'asc' } }) : [],
+        want('recurringTransactions') ? prisma.recurringTransaction.findMany({ where: whereClause, orderBy: { updatedAt: 'asc' } }) : [],
+        want('goldAssets') ? prisma.goldAsset.findMany({ where: whereClause, orderBy: { updatedAt: 'asc' } }) : [],
+        want('friends') ? prisma.friend.findMany({ where: whereClause, orderBy: { updatedAt: 'asc' } }) : [],
+        want('settings') ? prisma.userSettings.findUnique({ where: { userId } }) : null,
       ]);
 
       // Update user's last synced timestamp
       await prisma.user.update({
         where: { id: userId },
-        data: { 
+        data: {
           lastSynced: new Date(),
           syncToken: this.generateSyncToken(userId, deviceId),
         },
       });
 
+      const now = new Date().toISOString();
+      const strip = <T extends { deletedAt?: Date | null }>(rows: T[]) =>
+        rows.map((r) => ({ ...r, deletedAt: r.deletedAt || undefined }));
+
       return {
         success: true,
         data: {
-          accounts: accounts.map(acc => ({ ...acc, deletedAt: acc.deletedAt || undefined })),
-          transactions: transactions.map(txn => ({ ...txn, deletedAt: txn.deletedAt || undefined })),
-          goals: goals.map(goal => ({ ...goal, deletedAt: goal.deletedAt || undefined })),
-          loans: loans.map(loan => ({ ...loan, deletedAt: loan.deletedAt || undefined })),
+          accounts: strip(accounts as any),
+          transactions: strip(transactions as any),
+          goals: strip(goals as any),
+          loans: strip(loans as any),
+          budgets: strip(budgets as any),
+          investments: strip(investments as any),
+          // Surface Dexie-friendly aliases (name/frequency) alongside canonical columns.
+          recurringTransactions: strip(recurring as any).map((r: any) => ({ ...r, name: r.title, frequency: r.interval })),
+          goldAssets: strip(goldAssets as any),
+          friends: strip(friends as any),
           settings: settings || undefined,
-          lastSyncedAt: new Date().toISOString(),
+          lastSyncedAt: now,
+          serverTimestamp: now,
         },
       };
     } catch (error) {
@@ -276,8 +297,96 @@ class SyncService {
       case 'loans':
         await this.processLoanOperation(userId, deviceId, operation, entityId, data, localTimestamp, conflicts);
         break;
+      case 'budgets':
+        await this.processRecordOperation({ delegate: prisma.budget, entityType, userId, operation, entityId, data, localTimestamp, conflicts, allowed: SYNC_FIELDS.budgets });
+        break;
+      case 'investments':
+        await this.processRecordOperation({ delegate: prisma.investment, entityType, userId, operation, entityId, data, localTimestamp, conflicts, allowed: SYNC_FIELDS.investments });
+        break;
+      case 'recurringTransactions':
+        await this.processRecordOperation({
+          delegate: prisma.recurringTransaction, entityType, userId, operation, entityId,
+          // Map Dexie names onto canonical Prisma columns so nothing is dropped.
+          data: this.mapRecurringInbound(data), localTimestamp, conflicts, allowed: SYNC_FIELDS.recurringTransactions,
+        });
+        break;
+      case 'goldAssets':
+        await this.processRecordOperation({ delegate: prisma.goldAsset, entityType, userId, operation, entityId, data, localTimestamp, conflicts, allowed: SYNC_FIELDS.goldAssets });
+        break;
+      case 'friends':
+        await this.processRecordOperation({ delegate: prisma.friend, entityType, userId, operation, entityId, data, localTimestamp, conflicts, allowed: SYNC_FIELDS.friends });
+        break;
       default:
         throw new Error(`Unsupported entity type: ${entityType}`);
+    }
+  }
+
+  /** Normalize a recurring-transaction payload coming from the Dexie client. */
+  private mapRecurringInbound(data: any): any {
+    if (!data || typeof data !== 'object') return data;
+    const mapped = { ...data };
+    if (mapped.name !== undefined && mapped.title === undefined) mapped.title = mapped.name;
+    if (mapped.frequency !== undefined && mapped.interval === undefined) mapped.interval = mapped.frequency;
+    return mapped;
+  }
+
+  /**
+   * Generic create/update/delete handler with idempotent create, owner-scoped
+   * delete, and latest-timestamp-wins conflict resolution. Used for the
+   * self-contained record types (budgets, investments, recurring, gold, friends).
+   */
+  private async processRecordOperation(args: {
+    delegate: any;
+    entityType: string;
+    userId: string;
+    operation: string;
+    entityId: string;
+    data: any;
+    localTimestamp: Date;
+    conflicts: any[];
+    allowed: readonly string[];
+  }) {
+    const { delegate, entityType, userId, operation, entityId, data, localTimestamp, conflicts, allowed } = args;
+    const sanitizedData = this.pickAllowedFields(data, allowed);
+
+    if (operation === 'delete') {
+      // Owner-scoped soft delete.
+      await delegate.updateMany({
+        where: { id: entityId, userId },
+        data: { deletedAt: new Date(), updatedAt: localTimestamp },
+      });
+      return;
+    }
+
+    if (operation === 'create') {
+      // Idempotent create — a retried create is a silent no-op.
+      await delegate.upsert({
+        where: { id: entityId },
+        create: { ...sanitizedData, id: entityId, userId, syncStatus: 'synced', createdAt: localTimestamp, updatedAt: localTimestamp },
+        update: {},
+      });
+      return;
+    }
+
+    // update
+    const existing = await delegate.findUnique({ where: { id: entityId } });
+    if (!existing) {
+      await delegate.create({
+        data: { ...sanitizedData, id: entityId, userId, syncStatus: 'synced', createdAt: localTimestamp, updatedAt: localTimestamp },
+      });
+      return;
+    }
+    if (existing.userId !== userId) {
+      // Never let one user's push mutate another user's record.
+      return;
+    }
+    if (existing.updatedAt > localTimestamp) {
+      conflicts.push({ entityType, entityId, localData: data, remoteData: existing });
+    } else {
+      await delegate.update({
+        where: { id: entityId },
+        data: { ...sanitizedData, syncStatus: 'synced', updatedAt: localTimestamp },
+      });
     }
   }
 
@@ -555,8 +664,11 @@ class SyncService {
     conflicts: any[]
   ) {
     const allowed = [
-      'name', 'type', 'principalAmount', 'outstandingBalance', 'interestRate', 
-      'emiAmount', 'dueDate', 'frequency', 'contactPerson', 'status', 'syncStatus'
+      'name', 'type', 'principalAmount', 'outstandingBalance', 'interestRate',
+      'emiAmount', 'dueDate', 'frequency', 'contactPerson', 'status', 'syncStatus',
+      // Extended fields (schema alignment)
+      'totalPayable', 'loanDate', 'contactEmail', 'contactPhone', 'bankName',
+      'tenureMonths', 'downPayment', 'loanCategory', 'notes',
     ];
     const sanitizedData = this.pickAllowedFields(data, allowed);
 

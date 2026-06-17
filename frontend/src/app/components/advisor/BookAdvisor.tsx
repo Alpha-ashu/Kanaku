@@ -225,6 +225,7 @@ export const BookAdvisor: React.FC = () => {
  onClick={handleApplyAsAdvisor} 
  disabled={applyingAsAdvisor}
  className="hidden sm:flex items-center gap-2 px-5 py-2.5 bg-slate-50 text-slate-600 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-100 transition-all border border-slate-200"
+ data-testid="advisor-become-button"
  >
  {applyingAsAdvisor ? <Loader2 size={14} className="animate-spin" /> : <Shield size={14} />}
  Become an Advisor
@@ -254,6 +255,7 @@ export const BookAdvisor: React.FC = () => {
  onChange={e => setSearchQuery(e.target.value)}
  placeholder="Search by name, expertise..." 
  className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-10 pr-4 font-bold text-slate-900 text-xs"
+ data-testid="advisor-search-input"
  />
  </div>
  <div className="flex items-center gap-2 px-3">
@@ -304,6 +306,7 @@ export const BookAdvisor: React.FC = () => {
 "premium-glass-card p-5 cursor-pointer transition-all border-2",
  selectedAdvisor?.id === advisor.id ?"border-indigo-600 shadow-xl shadow-indigo-100" :"border-transparent hover:border-slate-200"
  )}
+ data-testid={`advisor-card-${advisor.id}`}
  >
  <div className="flex items-start justify-between mb-4">
  <div className="flex items-center gap-3">
@@ -403,6 +406,7 @@ export const BookAdvisor: React.FC = () => {
 "flex flex-col items-center gap-1.5 py-3 rounded-xl border-2 transition-all",
  form.sessionType === st.id ?"border-indigo-600 bg-indigo-50 text-indigo-700" :"border-slate-100 text-slate-400 hover:border-slate-200"
  )}
+ data-testid={`advisor-booking-session-${st.id}-button`}
  >
  <st.icon size={16} />
  <span className="text-[9px] font-black uppercase">{st.label}</span>
@@ -422,6 +426,7 @@ export const BookAdvisor: React.FC = () => {
  onChange={e => setForm(f => ({ ...f, topic: e.target.value }))}
  className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-10 pr-4 font-bold text-slate-900 text-xs"
  placeholder="e.g. Tax Review 2024"
+ data-testid="advisor-booking-topic-input"
  />
  </div>
  </div>
@@ -436,6 +441,7 @@ export const BookAdvisor: React.FC = () => {
  value={form.preferredDate}
  onChange={e => setForm(f => ({ ...f, preferredDate: e.target.value }))}
  className="w-full bg-slate-50 border-none rounded-xl py-2.5 px-3 font-bold text-slate-900 text-xs"
+ data-testid="advisor-booking-date-input"
  />
  </div>
  <div className="space-y-1">
@@ -446,6 +452,7 @@ export const BookAdvisor: React.FC = () => {
  value={form.preferredTime}
  onChange={e => setForm(f => ({ ...f, preferredTime: e.target.value }))}
  className="w-full bg-slate-50 border-none rounded-xl py-2.5 px-3 font-bold text-slate-900 text-xs"
+ data-testid="advisor-booking-time-input"
  />
  </div>
  </div>
@@ -459,6 +466,7 @@ export const BookAdvisor: React.FC = () => {
  onChange={e => setForm(f => ({ ...f, message: e.target.value }))}
  className="w-full bg-slate-50 border-none rounded-xl py-3 px-4 font-bold text-slate-900 text-xs resize-none"
  placeholder="Add any specific details..."
+ data-testid="advisor-booking-notes-textarea"
  />
  </div>
  
@@ -476,6 +484,7 @@ export const BookAdvisor: React.FC = () => {
  onClick={handleSubmitBooking}
  disabled={isSubmitting || !form.preferredDate || !form.preferredTime || !form.topic}
  className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-xl shadow-indigo-200 hover:bg-indigo-700 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+ data-testid="advisor-booking-submit-button"
  >
  {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : <Calendar size={16} />}
  Confirm Booking Request
@@ -575,12 +584,12 @@ export const BookAdvisor: React.FC = () => {
        <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
          {/* Text fields */}
          {([
-           { key: 'fullName', label: 'Full Name *', type: 'text', placeholder: 'Your legal name' },
-           { key: 'phone', label: 'Phone Number *', type: 'tel', placeholder: '+91 98765 43210' },
-           { key: 'expertise', label: 'Area of Expertise *', type: 'text', placeholder: 'e.g. Mutual Funds, Tax Planning' },
-           { key: 'experienceYears', label: 'Years of Experience *', type: 'number', placeholder: '5' },
-           { key: 'organizationName', label: 'Organization (optional)', type: 'text', placeholder: 'e.g. XYZ Financial Advisors' },
-         ] as { key: keyof typeof applyForm; label: string; type: string; placeholder: string }[]).map(f => (
+           { key: 'fullName', label: 'Full Name *', type: 'text', placeholder: 'Your legal name', testId: 'advisor-apply-name-input' },
+           { key: 'phone', label: 'Phone Number *', type: 'tel', placeholder: '+91 98765 43210', testId: 'advisor-apply-phone-input' },
+           { key: 'expertise', label: 'Area of Expertise *', type: 'text', placeholder: 'e.g. Mutual Funds, Tax Planning', testId: 'advisor-apply-expertise-input' },
+           { key: 'experienceYears', label: 'Years of Experience *', type: 'number', placeholder: '5', testId: 'advisor-apply-experience-input' },
+           { key: 'organizationName', label: 'Organization (optional)', type: 'text', placeholder: 'e.g. XYZ Financial Advisors', testId: 'advisor-apply-organization-input' },
+         ] as { key: keyof typeof applyForm; label: string; type: string; placeholder: string; testId: string }[]).map(f => (
            <div key={f.key} className="space-y-1">
              <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{f.label}</label>
              <input
@@ -589,6 +598,7 @@ export const BookAdvisor: React.FC = () => {
                onChange={e => setApplyForm(p => ({ ...p, [f.key]: e.target.value }))}
                placeholder={f.placeholder}
                className="w-full bg-slate-50 rounded-xl py-2.5 px-4 text-sm font-medium text-slate-900 border-none focus:outline-none focus:ring-2 focus:ring-indigo-500"
+               data-testid={f.testId}
              />
            </div>
          ))}
@@ -600,6 +610,7 @@ export const BookAdvisor: React.FC = () => {
              onChange={e => setApplyForm(p => ({ ...p, bio: e.target.value }))}
              placeholder="Briefly describe your background and what clients can expect..."
              className="w-full bg-slate-50 rounded-xl py-2.5 px-4 text-sm font-medium text-slate-900 border-none resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500"
+             data-testid="advisor-apply-bio-textarea"
            />
          </div>
 
@@ -607,10 +618,10 @@ export const BookAdvisor: React.FC = () => {
          <div className="pt-2 border-t border-slate-100 space-y-3">
            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Identity Documents</p>
            {([
-             { key: 'panDocument', label: 'PAN Card *', accept: 'image/*,.pdf' },
-             { key: 'aadhaarDocument', label: 'Aadhaar Card *', accept: 'image/*,.pdf' },
-             { key: 'certDocument', label: 'Professional Certificate (optional)', accept: 'image/*,.pdf' },
-           ] as { key: keyof typeof applyFiles; label: string; accept: string }[]).map(f => (
+             { key: 'panDocument', label: 'PAN Card *', accept: 'image/*,.pdf', testId: 'advisor-apply-pan-upload' },
+             { key: 'aadhaarDocument', label: 'Aadhaar Card *', accept: 'image/*,.pdf', testId: 'advisor-apply-aadhaar-upload' },
+             { key: 'certDocument', label: 'Professional Certificate (optional)', accept: 'image/*,.pdf', testId: 'advisor-apply-cert-upload' },
+           ] as { key: keyof typeof applyFiles; label: string; accept: string; testId: string }[]).map(f => (
              <div key={f.key} className="space-y-1">
                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{f.label}</label>
                <div className={cn('flex items-center gap-3 p-3 rounded-xl border-2 border-dashed transition-colors', applyFiles[f.key] ? 'border-indigo-400 bg-indigo-50' : 'border-slate-200 bg-slate-50')}>
@@ -622,6 +633,7 @@ export const BookAdvisor: React.FC = () => {
                      accept={f.accept}
                      className="hidden"
                      onChange={e => setApplyFiles(p => ({ ...p, [f.key]: e.target.files?.[0] || null }))}
+                     data-testid={f.testId}
                    />
                  </label>
                </div>
@@ -631,13 +643,14 @@ export const BookAdvisor: React.FC = () => {
        </div>
 
        <div className="p-6 border-t border-slate-100 flex gap-3">
-         <button onClick={() => setShowApplyModal(false)} className="flex-1 py-3 rounded-xl bg-slate-100 text-slate-700 font-black text-[10px] uppercase tracking-widest hover:bg-slate-200 transition-colors">
+         <button onClick={() => setShowApplyModal(false)} className="flex-1 py-3 rounded-xl bg-slate-100 text-slate-700 font-black text-[10px] uppercase tracking-widest hover:bg-slate-200 transition-colors" data-testid="advisor-apply-cancel-button">
            Cancel
          </button>
          <button
            onClick={handleSubmitApplication}
            disabled={applyingAsAdvisor}
            className="flex-1 py-3 rounded-xl bg-indigo-600 text-white font-black text-[10px] uppercase tracking-widest hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+           data-testid="advisor-apply-submit-button"
          >
            {applyingAsAdvisor ? <Loader2 size={14} className="animate-spin" /> : <Shield size={14} />}
            Submit Application

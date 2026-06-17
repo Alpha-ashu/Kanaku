@@ -42,6 +42,23 @@ export const createBooking = async (req: AuthRequest, res: Response) => {
       console.warn(`No availability slot for advisor ${advisorId} on dayOfWeek ${dayOfWeek}. Proceeding with booking.`);
     }
 
+    // Prevent duplicate booking requests — a double-submit (or retry) for the
+    // same advisor/slot must not create a second pending request.
+    const duplicate = await prisma.bookingRequest.findFirst({
+      where: {
+        clientId,
+        advisorId,
+        sessionType,
+        proposedDate: proposedDateTime,
+        proposedTime,
+        status: { in: ['pending', 'accepted'] },
+      },
+    });
+
+    if (duplicate) {
+      return res.status(200).json(duplicate);
+    }
+
     // Create booking request
     const booking = await prisma.bookingRequest.create({
       data: {

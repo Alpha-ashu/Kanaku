@@ -392,6 +392,7 @@ export const EditInvestment: React.FC = () => {
  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
  aria-label="Asset Type"
  title="Asset Type"
+ data-testid="investments-edit-type-select"
  >
  <option value="stock">Stock</option>
  <option value="crypto">Cryptocurrency</option>
@@ -417,6 +418,7 @@ export const EditInvestment: React.FC = () => {
  required
  aria-label="Asset Name"
  title="Asset Name"
+ data-testid="investments-edit-name-input"
  />
  </div>
 
@@ -427,15 +429,15 @@ export const EditInvestment: React.FC = () => {
  <div className="grid grid-cols-2 gap-4">
  <div>
  <label className="block text-xs font-medium text-gray-600 mb-1">Weight (grams)</label>
- <input type="number" step="0.01" value={metadata.weightGrams || ''} onChange={e => setMetadata(prev => ({ ...prev, weightGrams: parseFloat(e.target.value) || 0 }))} className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm" placeholder="0.00" title="Weight in grams" />
+ <input type="number" step="0.01" value={metadata.weightGrams || ''} onChange={e => setMetadata(prev => ({ ...prev, weightGrams: parseFloat(e.target.value) || 0 }))} className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm" placeholder="0.00" title="Weight in grams" data-testid="investments-edit-weight-input" />
  </div>
  <div>
  <label className="block text-xs font-medium text-gray-600 mb-1">Purity</label>
- <input type="text" value={metadata.purity || ''} onChange={e => setMetadata(prev => ({ ...prev, purity: e.target.value }))} className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm" placeholder="e.g. 22K (916)" title="Purity" />
+ <input type="text" value={metadata.purity || ''} onChange={e => setMetadata(prev => ({ ...prev, purity: e.target.value }))} className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm" placeholder="e.g. 22K (916)" title="Purity" data-testid="investments-edit-purity-input" />
  </div>
  <div>
  <label className="block text-xs font-medium text-gray-600 mb-1">Form</label>
- <select value={metadata.form || ''} onChange={e => setMetadata(prev => ({ ...prev, form: e.target.value }))} className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm" title="Form">
+ <select value={metadata.form || ''} onChange={e => setMetadata(prev => ({ ...prev, form: e.target.value }))} className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm" title="Form" data-testid="investments-edit-form-select">
  <option value="">Select form</option>
  <option value="jewelry">Jewelry</option>
  <option value="coin">Coin</option>
@@ -446,22 +448,22 @@ export const EditInvestment: React.FC = () => {
  </div>
  <div>
  <label className="block text-xs font-medium text-gray-600 mb-1">BIS HUID</label>
- <input type="text" value={metadata.hallmarkNumber || ''} onChange={e => setMetadata(prev => ({ ...prev, hallmarkNumber: e.target.value.toUpperCase().slice(0, 6) }))} className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm tracking-widest" placeholder="6-digit" maxLength={6} title="BIS HUID" />
+ <input type="text" value={metadata.hallmarkNumber || ''} onChange={e => setMetadata(prev => ({ ...prev, hallmarkNumber: e.target.value.toUpperCase().slice(0, 6) }))} className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm tracking-widest" placeholder="6-digit" maxLength={6} title="BIS HUID" data-testid="investments-edit-huid-input" />
  </div>
  <div>
  <label className="block text-xs font-medium text-gray-600 mb-1">Jeweler</label>
- <input type="text" value={metadata.jewelerName || ''} onChange={e => setMetadata(prev => ({ ...prev, jewelerName: e.target.value }))} className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm" placeholder="Shop name" title="Jeweler" />
+ <input type="text" value={metadata.jewelerName || ''} onChange={e => setMetadata(prev => ({ ...prev, jewelerName: e.target.value }))} className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm" placeholder="Shop name" title="Jeweler" data-testid="investments-edit-jeweler-input" />
  </div>
  <div>
  <label className="block text-xs font-medium text-gray-600 mb-1">Storage / Locker</label>
- <input type="text" value={metadata.lockerName || ''} onChange={e => setMetadata(prev => ({ ...prev, lockerName: e.target.value }))} className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm" placeholder="e.g. Home Safe" title="Storage" />
+ <input type="text" value={metadata.lockerName || ''} onChange={e => setMetadata(prev => ({ ...prev, lockerName: e.target.value }))} className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm" placeholder="e.g. Home Safe" title="Storage" data-testid="investments-edit-locker-input" />
  </div>
  </div>
  <div>
  <label className="block text-xs font-medium text-gray-600 mb-1">Ownership</label>
  <div className="flex gap-2">
  {(['self', 'inherited', 'gifted'] as const).map(tag => (
- <button key={tag} type="button" onClick={() => setMetadata(prev => ({ ...prev, ownershipTag: tag }))} className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${metadata.ownershipTag === tag ? 'bg-amber-600 text-white' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
+ <button key={tag} type="button" onClick={() => setMetadata(prev => ({ ...prev, ownershipTag: tag }))} className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${metadata.ownershipTag === tag ? 'bg-amber-600 text-white' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'}`} data-testid={`investments-edit-ownership-${tag}-button`}>
  {tag === 'self' ? '🛒 Self' : tag === 'inherited' ? '👨‍👩‍👧 Inherited' : '🎁 Gifted'}
  </button>
  ))}
@@ -477,7 +479,7 @@ export const EditInvestment: React.FC = () => {
  <div className="grid grid-cols-2 gap-4">
  <div>
  <label className="block text-xs font-medium text-gray-600 mb-1">Property Type</label>
- <select value={metadata.propertyType || ''} onChange={e => setMetadata(prev => ({ ...prev, propertyType: e.target.value }))} className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm" title="Property Type">
+ <select value={metadata.propertyType || ''} onChange={e => setMetadata(prev => ({ ...prev, propertyType: e.target.value }))} className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm" title="Property Type" data-testid="investments-edit-property-type">
  <option value="">Select type</option>
  <option value="Residential">Residential</option>
  <option value="Commercial">Commercial</option>
@@ -487,15 +489,15 @@ export const EditInvestment: React.FC = () => {
  </div>
  <div>
  <label className="block text-xs font-medium text-gray-600 mb-1">Location</label>
- <input type="text" value={metadata.location || ''} onChange={e => setMetadata(prev => ({ ...prev, location: e.target.value }))} className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm" placeholder="City, Area" title="Location" />
+ <input type="text" value={metadata.location || ''} onChange={e => setMetadata(prev => ({ ...prev, location: e.target.value }))} className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm" placeholder="City, Area" title="Location" data-testid="investments-edit-property-location" />
  </div>
  <div>
  <label className="block text-xs font-medium text-gray-600 mb-1">Area (sq.ft)</label>
- <input type="number" value={metadata.areaSqft || ''} onChange={e => setMetadata(prev => ({ ...prev, areaSqft: parseFloat(e.target.value) || 0 }))} className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm" title="Area" />
+ <input type="number" value={metadata.areaSqft || ''} onChange={e => setMetadata(prev => ({ ...prev, areaSqft: parseFloat(e.target.value) || 0 }))} className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm" title="Area" data-testid="investments-edit-property-area" />
  </div>
  <div>
  <label className="block text-xs font-medium text-gray-600 mb-1">Rental Yield %</label>
- <input type="number" step="0.1" value={metadata.rentalYield || ''} onChange={e => setMetadata(prev => ({ ...prev, rentalYield: parseFloat(e.target.value) || 0 }))} className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm" title="Rental Yield" />
+ <input type="number" step="0.1" value={metadata.rentalYield || ''} onChange={e => setMetadata(prev => ({ ...prev, rentalYield: parseFloat(e.target.value) || 0 }))} className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm" title="Rental Yield" data-testid="investments-edit-property-yield" />
  </div>
  </div>
  </div>
@@ -508,11 +510,11 @@ export const EditInvestment: React.FC = () => {
  <div className="grid grid-cols-2 gap-4">
  <div>
  <label className="block text-xs font-medium text-gray-600 mb-1">Ownership %</label>
- <input type="number" min={0} max={100} value={metadata.ownershipPercent || ''} onChange={e => setMetadata(prev => ({ ...prev, ownershipPercent: parseFloat(e.target.value) || 0 }))} className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm" title="Ownership %" />
+ <input type="number" min={0} max={100} value={metadata.ownershipPercent || ''} onChange={e => setMetadata(prev => ({ ...prev, ownershipPercent: parseFloat(e.target.value) || 0 }))} className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm" title="Ownership %" data-testid="investments-edit-business-percent" />
  </div>
  <div>
  <label className="block text-xs font-medium text-gray-600 mb-1">Sector</label>
- <input type="text" value={metadata.sector || ''} onChange={e => setMetadata(prev => ({ ...prev, sector: e.target.value }))} className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm" placeholder="e.g. Retail" title="Sector" />
+ <input type="text" value={metadata.sector || ''} onChange={e => setMetadata(prev => ({ ...prev, sector: e.target.value }))} className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm" placeholder="e.g. Retail" title="Sector" data-testid="investments-edit-business-sector" />
  </div>
  </div>
  </div>
@@ -558,6 +560,7 @@ export const EditInvestment: React.FC = () => {
  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
  required
  title="Payment Account"
+ data-testid="investments-edit-account-select"
  >
  <option value="">Select an account</option>
  {activeAccounts.map((account) => (
@@ -577,6 +580,7 @@ export const EditInvestment: React.FC = () => {
  onChange={(e) => setFormData({ ...formData, purchaseFees: parseFloat(e.target.value) || 0 })}
  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
  title="Buy-side Fees"
+ data-testid="investments-edit-fees-input"
  />
  <p className="mt-1 text-xs text-gray-400">Entered in {currency}</p>
  </div>
@@ -601,6 +605,7 @@ export const EditInvestment: React.FC = () => {
  required
  aria-label="Current Price"
  title="Current Price"
+ data-testid="investments-edit-current-price-input"
  />
  <p className="mt-1 text-xs text-gray-400">Entered in {assetCurrencyCode}</p>
  </div>
@@ -616,6 +621,7 @@ export const EditInvestment: React.FC = () => {
  aria-label="Purchase Date"
  title="Purchase Date"
  placeholder="Purchase Date"
+ data-testid="investments-edit-date-input"
  />
  </div>
 
@@ -657,6 +663,7 @@ export const EditInvestment: React.FC = () => {
  className="flex-1 px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium"
  aria-label="Cancel"
  title="Cancel"
+ data-testid="investments-edit-cancel-button"
  >
  Cancel
  </button>
@@ -665,6 +672,7 @@ export const EditInvestment: React.FC = () => {
  className="flex-1 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
  aria-label="Update Investment"
  title="Update Investment"
+ data-testid="investments-edit-submit-button"
  >
  Update Investment
  </button>
@@ -677,8 +685,9 @@ export const EditInvestment: React.FC = () => {
    onDiscard={() => { localStorage.removeItem('editingInvestmentId'); setCurrentPage('investments'); }}
    isSaving={isSaving}
    saveLabel="Update Investment"
+   saveTestId="investments-edit-submit-button"
+   discardTestId="investments-edit-cancel-button"
  />
  </CenteredLayout>
  );
 };
-

@@ -583,7 +583,7 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
  </div>
  <p className="text-xs md:text-sm text-slate-500 font-medium">Multi-Intent Financial Extraction</p>
  </div>
- <button onClick={onClose} className="p-2 md:p-3 bg-slate-100 hover:bg-slate-200 rounded-xl md:rounded-2xl transition-colors">
+ <button onClick={onClose} className="p-2 md:p-3 bg-slate-100 hover:bg-slate-200 rounded-xl md:rounded-2xl transition-colors" data-testid="voice-ai-close-button">
  <X size={18} className="text-slate-600" />
  </button>
  </div>
@@ -600,7 +600,7 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
  <div className="bg-slate-50/80 p-3 md:p-5 rounded-2xl md:rounded-[28px] border border-slate-100 relative flex md:flex-col justify-between items-center md:items-start">
  <span className="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Account</span>
  <div className="relative mt-0 md:mt-1">
- <select value={selectedAccountId} onChange={(e) => setSelectedAccountId(Number(e.target.value))} className="bg-transparent text-slate-900 font-bold focus:outline-none appearance-none cursor-pointer pr-6 text-sm md:text-xl">
+ <select value={selectedAccountId} onChange={(e) => setSelectedAccountId(Number(e.target.value))} className="bg-transparent text-slate-900 font-bold focus:outline-none appearance-none cursor-pointer pr-6 text-sm md:text-xl" data-testid="voice-ai-account-select">
  {accounts.map(acc => ( <option key={acc.id} value={acc.id}>{acc.name}</option> ))}
  </select>
  <div className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
@@ -666,13 +666,14 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
  onChange={e => handleEntityUpdate(index, { description: e.target.value })} 
  onBlur={() => setEditingIndex(null)} 
  onKeyDown={e => e.key === 'Enter' && setEditingIndex(null)} 
+ data-testid={`voice-ai-action-desc-input-${index}`}
  />
  ) : (
- <h4 className="text-sm md:text-xl font-bold text-slate-900 cursor-text hover:bg-slate-50 rounded px-1 transition-colors break-words line-clamp-4" onClick={() => setEditingIndex(index)}>
+ <h4 className="text-sm md:text-xl font-bold text-slate-900 cursor-text hover:bg-slate-50 rounded px-1 transition-colors break-words line-clamp-4" onClick={() => setEditingIndex(index)} data-testid={`voice-ai-action-desc-${index}`}>
  {sanitizeLabel(action.entities.description, action.rawSegment)}
  </h4>
  )}
- {editingIndex !== index && <Edit3 size={14} className="text-slate-300 opacity-0 group-hover/edit:opacity-100 cursor-pointer absolute -right-6" onClick={() => setEditingIndex(index)} />}
+ {editingIndex !== index && <Edit3 size={14} className="text-slate-300 opacity-0 group-hover/edit:opacity-100 cursor-pointer absolute -right-6" onClick={() => setEditingIndex(index)} data-testid={`voice-ai-action-edit-button-${index}`} />}
  </div>
  <div className="flex flex-wrap gap-2 pt-1">
  {editingIndex === index ? (
@@ -681,13 +682,14 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
  value={action.entities.category || "General"} 
  onChange={e => handleEntityUpdate(index, { category: e.target.value })}
  onBlur={() => setEditingIndex(null)}
+ data-testid={`voice-ai-action-category-select-${index}`}
  >
  {ALL_CATEGORIES.map(cat => (
  <option key={cat} value={cat}>{cat}</option>
  ))}
  </select>
  ) : (
- <span className="text-[11px] bg-slate-100 text-slate-600 px-2.5 py-1 rounded-lg font-bold uppercase tracking-wider cursor-pointer hover:bg-slate-200" onClick={() => setEditingIndex(index)}>{action.entities.category || "General"}</span>
+ <span className="text-[11px] bg-slate-100 text-slate-600 px-2.5 py-1 rounded-lg font-bold uppercase tracking-wider cursor-pointer hover:bg-slate-200" onClick={() => setEditingIndex(index)} data-testid={`voice-ai-action-category-${index}`}>{action.entities.category || "General"}</span>
  )}
  {action.type === 'subscription' && (
  <span className="text-[11px] bg-pink-50 text-pink-600 px-2.5 py-1 rounded-lg font-bold uppercase tracking-wider flex items-center gap-1">
@@ -706,13 +708,14 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
  onChange={e => handleEntityUpdate(index, { amount: parseFloat(e.target.value) || 0 })} 
  onBlur={() => setEditingIndex(null)} 
  onKeyDown={e => e.key === 'Enter' && setEditingIndex(null)} 
+ data-testid={`voice-ai-action-amount-input-${index}`}
  />
  ) : (
- <div className="text-xl md:text-3xl font-black text-slate-900 cursor-text hover:bg-slate-50 rounded px-1 transition-colors" onClick={() => setEditingIndex(index)}>
+ <div className="text-xl md:text-3xl font-black text-slate-900 cursor-text hover:bg-slate-50 rounded px-1 transition-colors" onClick={() => setEditingIndex(index)} data-testid={`voice-ai-action-amount-${index}`}>
  {action.entities.amount?.toLocaleString()}
  </div>
  )}
- <button onClick={(e) => { e.stopPropagation(); removeAction(index); }} className="mt-2 text-rose-400 hover:text-rose-600 flex items-center gap-1 text-[10px] md:text-xs font-bold transition-colors">
+ <button onClick={(e) => { e.stopPropagation(); removeAction(index); }} className="mt-2 text-rose-400 hover:text-rose-600 flex items-center gap-1 text-[10px] md:text-xs font-bold transition-colors" data-testid={`voice-ai-action-remove-button-${index}`}>
  <Trash2 size={10}/> Remove
  </button>
  </div>
@@ -727,10 +730,10 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
  {/* Footer */}
  <div className="p-4 md:p-8 pt-3 md:pt-4 bg-white rounded-b-[32px] md:rounded-b-[40px] border-t border-gray-100">
  <div className="flex flex-col md:flex-row gap-3 md:gap-4">
- <button onClick={onAddMore} className="w-full md:flex-1 py-4 md:py-5 bg-white border border-slate-200 text-slate-700 rounded-2xl md:rounded-[28px] font-bold hover:bg-slate-50 transition-all flex items-center justify-center gap-2 shadow-sm order-2 md:order-1">
+ <button onClick={onAddMore} className="w-full md:flex-1 py-4 md:py-5 bg-white border border-slate-200 text-slate-700 rounded-2xl md:rounded-[28px] font-bold hover:bg-slate-50 transition-all flex items-center justify-center gap-2 shadow-sm order-2 md:order-1" data-testid="voice-ai-add-more-button">
  <Mic size={18} className="text-indigo-500" /> Add More
  </button>
- <button onClick={confirmAll} disabled={isSaving || actions.length === 0} className="w-full md:flex-[2] py-4 md:py-5 bg-indigo-600 text-white rounded-2xl md:rounded-[28px] font-black text-base md:text-lg hover:bg-indigo-700 disabled:bg-slate-300 transition-all flex items-center justify-center gap-3 shadow-xl order-1 md:order-2">
+ <button onClick={confirmAll} disabled={isSaving || actions.length === 0} className="w-full md:flex-[2] py-4 md:py-5 bg-indigo-600 text-white rounded-2xl md:rounded-[28px] font-black text-base md:text-lg hover:bg-indigo-700 disabled:bg-slate-300 transition-all flex items-center justify-center gap-3 shadow-xl order-1 md:order-2" data-testid="voice-ai-submit-button">
  {isSaving ?"Syncing..." :"Confirm & Sync Actions"} <ArrowRight size={20} />
  </button>
  </div>

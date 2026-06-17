@@ -204,6 +204,7 @@ export const Investments: React.FC = () => {
  <Button
  onClick={() => setCurrentPage('add-investment')}
  className="shadow-lg bg-gray-900 hover:bg-gray-800 text-white h-12 px-6 rounded-2xl font-bold flex items-center gap-2"
+ data-testid="investments-add-button"
  >
  <Plus size={18} />
  <span>Add Investment</span>
@@ -232,6 +233,7 @@ export const Investments: React.FC = () => {
  ? 'bg-white text-gray-900 shadow-sm'
  : 'text-gray-500 hover:text-gray-700'
  )}
+ data-testid={`investments-tab-${id}-button`}
  >
  <Icon size={15} />
  {label}
@@ -392,6 +394,7 @@ export const Investments: React.FC = () => {
  onClick={() => fetchLivePrices(true)}
  disabled={updatingPrices}
  className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-700 transition-colors disabled:opacity-40"
+ data-testid="investments-refresh-prices-button"
  >
  <RefreshCw size={12} className={cn(updatingPrices && 'animate-spin')} />
  Update Prices
@@ -456,6 +459,7 @@ export const Investments: React.FC = () => {
  onClick={() => { localStorage.setItem('editingInvestmentId', inv.id!.toString()); setCurrentPage('edit-investment'); }}
  className="text-gray-600 hover:text-gray-900 transition-colors p-1.5 hover:bg-gray-100 rounded-lg"
  title="Edit"
+ data-testid={`investments-edit-button-${inv.id}`}
  >
  <Edit2 size={16} />
  </button>
@@ -464,6 +468,7 @@ export const Investments: React.FC = () => {
  onClick={() => setClosingInvestment(inv)}
  className="px-3 py-1.5 rounded-lg bg-black text-white text-xs font-semibold hover:bg-gray-900 transition-colors"
  title="Complete Order"
+ data-testid={`investments-complete-order-button-${inv.id}`}
  >
  Complete Order
  </button>
@@ -472,6 +477,7 @@ export const Investments: React.FC = () => {
  onClick={() => handleDeleteInvestment(inv.id!, inv.assetName)}
  className="text-red-600 hover:text-red-900 transition-colors p-1.5 hover:bg-red-100 rounded-lg"
  title="Delete"
+ data-testid={`investments-delete-button-${inv.id}`}
  >
  <Trash2 size={16} />
  </button>
@@ -510,6 +516,7 @@ export const Investments: React.FC = () => {
  onClick={() => { localStorage.setItem('editingInvestmentId', inv.id!.toString()); setCurrentPage('edit-investment'); }}
  className="text-gray-500 hover:text-gray-900 transition-colors p-2 hover:bg-gray-100 rounded-xl"
  title="Edit"
+ data-testid={`investments-mobile-edit-button-${inv.id}`}
  >
  <Edit2 size={15} />
  </button>
@@ -519,6 +526,7 @@ export const Investments: React.FC = () => {
  onClick={() => handleDeleteInvestment(inv.id!, inv.assetName)}
  className="text-red-500 hover:text-red-700 transition-colors p-2 hover:bg-red-50 rounded-xl"
  title="Delete"
+ data-testid={`investments-mobile-delete-button-${inv.id}`}
  >
  <Trash2 size={15} />
  </button>
@@ -562,6 +570,7 @@ export const Investments: React.FC = () => {
  <button
  onClick={() => setClosingInvestment(inv)}
  className="mt-3 w-full rounded-xl bg-black text-white py-2.5 text-sm font-semibold hover:bg-gray-900 transition-colors"
+ data-testid={`investments-mobile-complete-order-button-${inv.id}`}
  >
  Complete Order
  </button>
@@ -635,6 +644,7 @@ export const Investments: React.FC = () => {
  <Button
  onClick={() => setCurrentPage('add-investment')}
  className="rounded-full h-11 px-6 shadow-lg bg-black text-white hover:bg-gray-900 transition-transform active:scale-95"
+ data-testid="investments-empty-state-add-button"
  >
  <Plus size={18} className="mr-2" />
  Add Your First Investment

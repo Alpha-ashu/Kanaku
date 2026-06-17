@@ -72,7 +72,14 @@ app.use(cors({
     'x-request-id',
   ],
 }));
-app.use(express.json({ limit: '1mb' }));
+app.use(express.json({
+  limit: '1mb',
+  // Stash the raw request bytes so webhook handlers can verify an HMAC
+  // signature computed over the exact payload (see payment webhook).
+  verify: (req, _res, buf) => {
+    (req as any).rawBody = buf;
+  },
+}));
 
 //  Global body sanitization (B-4) 
 // Strip HTML/script tags from all string fields in the request body (including arrays & nested objects).

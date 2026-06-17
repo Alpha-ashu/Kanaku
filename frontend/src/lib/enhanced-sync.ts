@@ -4,7 +4,16 @@ import { TokenManager } from './api';
 
 
 export interface SyncEntity {
-  entityType: 'accounts' | 'transactions' | 'goals' | 'loans';
+  entityType:
+    | 'accounts'
+    | 'transactions'
+    | 'goals'
+    | 'loans'
+    | 'budgets'
+    | 'investments'
+    | 'recurringTransactions'
+    | 'goldAssets'
+    | 'friends';
   operation: 'create' | 'update' | 'delete';
   entityId: string;
   data?: any;
@@ -18,8 +27,14 @@ export interface SyncResponse {
     transactions: any[];
     goals: any[];
     loans: any[];
+    budgets?: any[];
+    investments?: any[];
+    recurringTransactions?: any[];
+    goldAssets?: any[];
+    friends?: any[];
     settings?: any;
     lastSyncedAt: string;
+    serverTimestamp?: string;
   };
   conflicts?: {
     entityType: string;
@@ -287,6 +302,22 @@ class EnhancedSyncService {
           deletedAt: loan.deletedAt ? new Date(loan.deletedAt) : null,
         })));
         console.log(` Synced ${data.loans.length} loans`);
+      }
+
+      // Add/Update budgets (string primary key = backend id, so put() upserts cleanly).
+      // The cloudId-keyed tables (investments, recurringTransactions, friends) are
+      // merged by backendSyncService's pull path, which uses the correct
+      // cloudId/++id dedup pattern for those tables.
+      if (data.budgets?.length) {
+        await db.budgets.bulkPut(data.budgets.map((b: any) => ({
+          id: String(b.id),
+          category: b.category,
+          amount: Number(b.amount ?? 0),
+          period: b.period ?? 'monthly',
+          spent: Number(b.spent ?? 0),
+          createdAt: b.createdAt ? new Date(b.createdAt) : new Date(),
+        })));
+        console.log(` Synced ${data.budgets.length} budgets`);
       }
 
       // Store settings

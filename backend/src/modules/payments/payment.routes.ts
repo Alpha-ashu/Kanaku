@@ -1,6 +1,13 @@
 import { Router } from 'express';
 import { authMiddleware } from '../../middleware/auth';
+import { validateBody } from '../../middleware/validate';
 import * as PaymentController from './payment.controller';
+import {
+  initiatePaymentSchema,
+  completePaymentSchema,
+  failPaymentSchema,
+  refundPaymentSchema,
+} from './payment.validation';
 
 const router = Router();
 
@@ -17,15 +24,15 @@ router.get('/', PaymentController.getPayments);
 router.get('/:id', PaymentController.getPayment);
 
 // Initiate payment
-router.post('/initiate', PaymentController.initiatePayment);
+router.post('/initiate', validateBody(initiatePaymentSchema), PaymentController.initiatePayment);
 
 // Complete payment
-router.post('/complete', PaymentController.completePayment);
+router.post('/complete', validateBody(completePaymentSchema), PaymentController.completePayment);
 
 // Handle payment failure
-router.post('/fail', PaymentController.failPayment);
+router.post('/fail', validateBody(failPaymentSchema), PaymentController.failPayment);
 
 // Refund payment
-router.post('/refund', PaymentController.refundPayment);
+router.post('/refund', validateBody(refundPaymentSchema), PaymentController.refundPayment);
 
 export { router as paymentRoutes };

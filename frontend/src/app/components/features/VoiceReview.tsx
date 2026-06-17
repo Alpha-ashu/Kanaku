@@ -389,6 +389,7 @@ export const VoiceReview: React.FC = () => {
  onClick={() => setCurrentPage('voice-input')}
  className="rounded-lg p-2 transition-colors hover:bg-gray-100 md:!hidden"
  aria-label="Go back to voice input"
+ data-testid="voice-review-back-button"
  >
  <ChevronLeft size={24} className="text-gray-600" />
  </button>
@@ -405,6 +406,7 @@ export const VoiceReview: React.FC = () => {
  onChange={(event) => setAccountId(Number(event.target.value))}
  className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
  aria-label="Select account for transactions"
+ data-testid="voice-review-account-select"
  >
  <option value={0}>Select an account</option>
  {accounts.map((account) => (
@@ -442,6 +444,7 @@ export const VoiceReview: React.FC = () => {
  onChange={(event) => handleIntentChange(index, event.target.value as DraftIntent)}
  className="rounded-lg border border-gray-300 px-3 py-2 text-sm"
  aria-label="Select transaction type"
+ data-testid={`voice-review-intent-select-${index}`}
  >
  <option value="expense">Expense</option>
  <option value="income">Income</option>
@@ -468,6 +471,7 @@ export const VoiceReview: React.FC = () => {
  <button
  onClick={() => handleRemove(index)}
  className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-red-600"
+ data-testid={`voice-review-remove-button-${index}`}
  >
  <Trash2 size={16} /> Remove
  </button>
@@ -497,6 +501,7 @@ export const VoiceReview: React.FC = () => {
  className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
  placeholder="0.00"
  aria-label="Amount"
+ data-testid={`voice-review-amount-input-${index}`}
  />
  </div>
  </div>
@@ -509,6 +514,7 @@ export const VoiceReview: React.FC = () => {
  onChange={(event) => handleUpdate(index, { date: event.target.value })}
  className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
  aria-label="Transaction date"
+ data-testid={`voice-review-date-input-${index}`}
  />
  </div>
 
@@ -519,6 +525,7 @@ export const VoiceReview: React.FC = () => {
  value={item.category || ''}
  onChange={(value) => handleUpdate(index, { category: value })}
  options={categoryList}
+ testId={`voice-review-category-dropdown-${index}`}
  />
  ) : (
  <div className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-gray-600">
@@ -536,6 +543,7 @@ export const VoiceReview: React.FC = () => {
  className="w-full rounded-lg border border-gray-300 px-3 py-2"
  placeholder="Enter description"
  aria-label="Description"
+ data-testid={`voice-review-description-input-${index}`}
  />
  </div>
  </div>
@@ -548,6 +556,7 @@ export const VoiceReview: React.FC = () => {
  value={item.targetGoalId || ''}
  onChange={(event) => handleUpdate(index, { targetGoalId: Number(event.target.value) || undefined })}
  className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+ data-testid={`voice-review-goal-select-${index}`}
  >
  <option value="">Choose a goal</option>
  {goals.map((goal) => (
@@ -568,6 +577,7 @@ export const VoiceReview: React.FC = () => {
  <button
  onClick={() => handleOpenIntentFlow(item)}
  className="inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700"
+ data-testid={`voice-review-open-transfer-${index}`}
  >
  <ArrowRightLeft size={16} /> Open transfer
  </button>
@@ -576,6 +586,7 @@ export const VoiceReview: React.FC = () => {
  <button
  onClick={() => handleOpenIntentFlow(item)}
  className="inline-flex items-center gap-2 text-sm text-purple-600 hover:text-purple-700"
+ data-testid={`voice-review-open-goals-${index}`}
  >
  <Goal size={16} /> Open goals
  </button>
@@ -584,6 +595,7 @@ export const VoiceReview: React.FC = () => {
  <button
  onClick={() => handleOpenIntentFlow(item)}
  className="inline-flex items-center gap-2 text-sm text-orange-600 hover:text-orange-700"
+ data-testid={`voice-review-open-groups-${index}`}
  >
  <Users size={16} /> Open groups
  </button>
@@ -592,6 +604,7 @@ export const VoiceReview: React.FC = () => {
  <button
  onClick={() => handleOpenIntentFlow(item)}
  className="inline-flex items-center gap-2 text-sm text-teal-600 hover:text-teal-700"
+ data-testid={`voice-review-open-investment-${index}`}
  >
  <PiggyBank size={16} /> Open investment form
  </button>
@@ -613,6 +626,7 @@ export const VoiceReview: React.FC = () => {
  onClick={handleSave}
  disabled={isSaving || (standardItems.length === 0 && actionableGoalItems.length === 0)}
  className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-3 font-medium text-white hover:bg-blue-700 disabled:bg-gray-300"
+ data-testid="voice-review-save-button"
  >
  <Check size={18} /> {isSaving ? 'Saving...' : 'Save Transactions'}
  </button>
@@ -621,4 +635,3 @@ export const VoiceReview: React.FC = () => {
  </CenteredLayout>
  );
 };
-

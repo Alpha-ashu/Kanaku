@@ -85,6 +85,7 @@ const AssetTypeGrid = ({
               <button
                 key={key}
                 onClick={() => onSelect(key)}
+                data-testid={`investments-create-type-${key}-button`}
                 ref={el => {
                   if (el) {
                     el.style.background = isSelected ? (accentColor ? `${accentColor}22` : '#4f46e5') : 'rgba(248,250,252,1)';
@@ -128,6 +129,7 @@ const PhysicalAssetForm: React.FC<{
               type="number"
               value={metadata.weightValue || ''}
               onChange={e => onChange('weightValue', parseFloat(e.target.value) || 0)}
+              data-testid="investments-create-weight-input"
               className="w-2/3 bg-slate-50 border-none rounded-xl py-2 px-3 font-bold text-slate-900 text-xs"
               placeholder="0.00"
             />
@@ -135,6 +137,7 @@ const PhysicalAssetForm: React.FC<{
               value={metadata.weightUnit || 'g'}
               onChange={e => onChange('weightUnit', e.target.value)}
               aria-label="Weight unit"
+              data-testid="investments-create-weight-unit"
               className="w-1/3 bg-slate-50 border-none rounded-xl py-2 px-2 font-bold text-xs text-slate-700"
             >
               <option value="g">g</option>
@@ -152,6 +155,7 @@ const PhysicalAssetForm: React.FC<{
             type="text"
             value={metadata.purity || ''}
             onChange={e => onChange('purity', e.target.value)}
+            data-testid="investments-create-purity-input"
             className="w-full bg-slate-50 border-none rounded-xl py-2 px-3 font-bold text-slate-900 text-xs"
             placeholder="e.g. 22K (916)"
           />
@@ -164,6 +168,7 @@ const PhysicalAssetForm: React.FC<{
             value={metadata.form || ''}
             onChange={e => onChange('form', e.target.value)}
             aria-label="Gold form"
+            data-testid="investments-create-form-select"
             className="w-full bg-slate-50 border-none rounded-xl py-2 px-3 font-bold text-xs text-slate-700"
           >
             <option value="">Select form</option>
@@ -182,6 +187,7 @@ const PhysicalAssetForm: React.FC<{
             type="text"
             value={metadata.hallmarkNumber || ''}
             onChange={e => onChange('hallmarkNumber', e.target.value.toUpperCase().slice(0, 6))}
+            data-testid="investments-create-huid-input"
             className="w-full bg-slate-50 border-none rounded-xl py-2 px-3 font-bold text-slate-900 text-xs tracking-widest"
             placeholder="6-digit code"
             maxLength={6}
@@ -196,6 +202,7 @@ const PhysicalAssetForm: React.FC<{
           type="text"
           value={metadata.jewelerName || ''}
           onChange={e => onChange('jewelerName', e.target.value)}
+          data-testid="investments-create-jeweler-input"
           className="w-full bg-slate-50 border-none rounded-xl py-2 px-3 font-bold text-slate-900 text-xs"
           placeholder="e.g. Tanishq, Kalyan Jewellers"
         />
@@ -208,6 +215,7 @@ const PhysicalAssetForm: React.FC<{
           type="text"
           value={metadata.lockerName || ''}
           onChange={e => onChange('lockerName', e.target.value)}
+          data-testid="investments-create-locker-input"
           className="w-full bg-slate-50 border-none rounded-xl py-2 px-3 font-bold text-slate-900 text-xs"
           placeholder="e.g. SBI Bank Locker, Home Safe"
         />
@@ -225,6 +233,7 @@ const PhysicalAssetForm: React.FC<{
               <button
                 key={tag}
                 onClick={() => onChange('ownershipTag', tag)}
+                data-testid={`investments-create-ownership-${tag}-button`}
                 ref={el => {
                   if (el) {
                     el.style.background = isActive ? `${accent}18` : 'rgba(248,250,252,1)';
@@ -261,6 +270,7 @@ const RealEstateForm: React.FC<{
           value={metadata.propertyType || ''}
           onChange={e => onChange('propertyType', e.target.value)}
           aria-label="Property type"
+          data-testid="investments-create-property-type"
           className="w-full bg-slate-50 border-none rounded-xl py-2 px-3 font-bold text-xs text-slate-700"
         >
           <option value="">Select type</option>
@@ -277,6 +287,7 @@ const RealEstateForm: React.FC<{
           type="text"
           value={metadata.location || ''}
           onChange={e => onChange('location', e.target.value)}
+          data-testid="investments-create-property-location"
           className="w-full bg-slate-50 border-none rounded-xl py-2 px-3 font-bold text-slate-900 text-xs"
           placeholder="City, Area"
         />
@@ -287,6 +298,7 @@ const RealEstateForm: React.FC<{
           type="number"
           value={metadata.areaSqft || ''}
           onChange={e => onChange('areaSqft', parseFloat(e.target.value) || 0)}
+          data-testid="investments-create-property-area"
           className="w-full bg-slate-50 border-none rounded-xl py-2 px-3 font-bold text-slate-900 text-xs"
           placeholder="0"
         />
@@ -297,6 +309,7 @@ const RealEstateForm: React.FC<{
           type="number"
           value={metadata.rentalYield || ''}
           onChange={e => onChange('rentalYield', parseFloat(e.target.value) || 0)}
+          data-testid="investments-create-property-yield"
           className="w-full bg-slate-50 border-none rounded-xl py-2 px-3 font-bold text-slate-900 text-xs"
           placeholder="e.g. 4.5"
         />
@@ -308,6 +321,7 @@ const RealEstateForm: React.FC<{
         type="text"
         value={metadata.documentSafe || ''}
         onChange={e => onChange('documentSafe', e.target.value)}
+        data-testid="investments-create-property-docsafe"
         className="w-full bg-slate-50 border-none rounded-xl py-2 px-3 font-bold text-slate-900 text-xs"
         placeholder="Where are the documents kept?"
       />
@@ -332,6 +346,7 @@ const BusinessForm: React.FC<{
           type="number"
           value={metadata.ownershipPercent || ''}
           onChange={e => onChange('ownershipPercent', parseFloat(e.target.value) || 0)}
+          data-testid="investments-create-business-percent"
           className="w-full bg-slate-50 border-none rounded-xl py-2 px-3 font-bold text-slate-900 text-xs"
           placeholder="e.g. 51"
           min={0} max={100}
@@ -343,6 +358,7 @@ const BusinessForm: React.FC<{
           type="text"
           value={metadata.sector || ''}
           onChange={e => onChange('sector', e.target.value)}
+          data-testid="investments-create-business-sector"
           className="w-full bg-slate-50 border-none rounded-xl py-2 px-3 font-bold text-slate-900 text-xs"
           placeholder="e.g. Retail, Tech"
         />
@@ -405,12 +421,14 @@ const OcrBillScanner: React.FC<{
         type="file"
         accept="image/*,.pdf"
         aria-label="Upload bill or document"
+        data-testid="investments-ocr-file-input"
         className="hidden"
         onChange={e => { if (e.target.files?.[0]) handleFile(e.target.files[0]); }}
       />
       <button
         onClick={() => fileRef.current?.click()}
         disabled={scanning}
+        data-testid="investments-ocr-scan-button"
         ref={el => {
           if (el) {
             el.style.background = `${accentColor}0F`;
@@ -689,7 +707,7 @@ export const AddInvestment: React.FC = () => {
       <header className="px-4 lg:px-6 py-4 bg-white border-b border-slate-100">
         <div className="flex flex-row flex-wrap items-center justify-between gap-4 w-full">
           <div className="flex items-center gap-3">
-            <button onClick={() => setCurrentPage('investments')} title="Back" className="lg:!hidden p-2 text-slate-600 hover:bg-slate-50 rounded-xl transition-all">
+            <button onClick={() => setCurrentPage('investments')} title="Back" data-testid="investments-create-back-button" className="lg:!hidden p-2 text-slate-600 hover:bg-slate-50 rounded-xl transition-all">
               <ChevronLeft size={20} />
             </button>
             <h1 className="text-xl font-black text-slate-900 tracking-tight leading-none">Add Investment</h1>
@@ -723,6 +741,7 @@ export const AddInvestment: React.FC = () => {
                   name="name"
                   value={formData.name}
                   onChange={e => { setFormData(prev => ({ ...prev, name: e.target.value })); if (isMarketAsset) setShowSuggestions(true); }}
+                  data-testid="investments-create-name-input"
                   className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-900 text-xs"
                   placeholder={
                     isMarketAsset ? 'Search Symbol (AAPL, BTC...)' :
@@ -740,7 +759,7 @@ export const AddInvestment: React.FC = () => {
                   {searching ? (
                     <div className="p-4 text-center text-[9px] font-black text-slate-300 uppercase tracking-widest">Searching Market...</div>
                   ) : searchResults.slice(0, 5).map(r => (
-                    <button key={r.symbol} onClick={() => handleSelectStock(r)} className="w-full flex items-center justify-between p-3 hover:bg-slate-50 transition-colors border-b border-slate-50 last:border-0">
+                    <button key={r.symbol} onClick={() => handleSelectStock(r)} data-testid={`investments-create-suggestion-${r.symbol}`} className="w-full flex items-center justify-between p-3 hover:bg-slate-50 transition-colors border-b border-slate-50 last:border-0">
                       <div className="text-left">
                         <p className="text-xs font-black text-slate-900">{displaySymbol(r.symbol)}</p>
                         <p className="text-[9px] font-bold text-slate-400 uppercase truncate max-w-[180px]">{r.companyName}</p>
@@ -786,21 +805,21 @@ export const AddInvestment: React.FC = () => {
                 <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Broker / Platform</label>
                 <div className="relative">
                   <Globe className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
-                  <input type="text" value={formData.broker} onChange={e => setFormData(prev => ({ ...prev, broker: e.target.value }))} className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-900 text-xs" placeholder="e.g. Zerodha" />
+                  <input type="text" value={formData.broker} onChange={e => setFormData(prev => ({ ...prev, broker: e.target.value }))} data-testid="investments-create-broker-input" className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-900 text-xs" placeholder="e.g. Zerodha" />
                 </div>
               </div>
               <div className="space-y-1">
                 <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Date</label>
                 <div className="relative">
                   <Calendar className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
-                  <input type="date" value={formData.date} onChange={e => setFormData(prev => ({ ...prev, date: e.target.value }))} aria-label="Investment date" className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-xs" />
+                  <input type="date" value={formData.date} onChange={e => setFormData(prev => ({ ...prev, date: e.target.value }))} aria-label="Investment date" data-testid="investments-create-date-input" className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-xs" />
                 </div>
               </div>
             </div>
 
             <div className="space-y-1">
               <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Notes</label>
-              <textarea value={formData.description} onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))} className="w-full bg-slate-50 border-none rounded-xl py-2.5 px-3 font-bold text-slate-900 text-xs min-h-[60px] resize-none" placeholder="Long term holding..." />
+              <textarea value={formData.description} onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))} data-testid="investments-create-notes-textarea" className="w-full bg-slate-50 border-none rounded-xl py-2.5 px-3 font-bold text-slate-900 text-xs min-h-[60px] resize-none" placeholder="Long term holding..." />
             </div>
           </div>
 
@@ -817,6 +836,7 @@ export const AddInvestment: React.FC = () => {
               value={String(formData.fundingAccountId)}
               onChange={val => setFormData(prev => ({ ...prev, fundingAccountId: parseInt(val) }))}
               placeholder="Select Account"
+              testId="investments-create-account-dropdown"
               className="h-12 rounded-xl border-none bg-slate-50 font-bold text-xs"
             />
           </div>
@@ -839,6 +859,7 @@ export const AddInvestment: React.FC = () => {
                     name="quantity"
                     value={physicalMeta.weightValue || ''}
                     onChange={e => setPhysicalMeta(prev => ({ ...prev, weightValue: parseFloat(e.target.value) || 0 }))}
+                    data-testid="investments-create-quantity-input"
                     className="bg-transparent text-3xl font-black text-slate-900 outline-none w-full text-center tracking-tighter"
                     placeholder="0.00"
                   />
@@ -848,6 +869,7 @@ export const AddInvestment: React.FC = () => {
                     name="quantity"
                     value={formData.quantity || ''}
                     onChange={e => setFormData(prev => ({ ...prev, quantity: parseFloat(e.target.value) || 0 }))}
+                    data-testid="investments-create-quantity-input"
                     className="bg-transparent text-3xl font-black text-slate-900 outline-none w-full text-center tracking-tighter"
                     placeholder="0.00"
                   />
@@ -862,6 +884,7 @@ export const AddInvestment: React.FC = () => {
                   name={isPhysicalMetal ? "pricePerGram" : (formData.type === 'mutual-funds' ? "amount" : "purchasePrice")}
                   value={formData.purchasePrice || ''}
                   onChange={e => setFormData(prev => ({ ...prev, purchasePrice: parseFloat(e.target.value) || 0 }))}
+                  data-testid="investments-create-price-input"
                   className="bg-transparent text-3xl font-black text-slate-900 outline-none w-full text-center tracking-tighter"
                   placeholder="0.00"
                 />
@@ -873,7 +896,7 @@ export const AddInvestment: React.FC = () => {
             <div className="flex items-center justify-between">
               <div className="space-y-1">
                 <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Fees ({currency})</label>
-                <input type="number" value={formData.purchaseFees || ''} onChange={e => setFormData(prev => ({ ...prev, purchaseFees: parseFloat(e.target.value) || 0 }))} className="w-full bg-slate-50 border-none rounded-xl py-2.5 px-3 font-bold text-xs" placeholder="0" />
+                <input type="number" value={formData.purchaseFees || ''} onChange={e => setFormData(prev => ({ ...prev, purchaseFees: parseFloat(e.target.value) || 0 }))} data-testid="investments-create-fees-input" className="w-full bg-slate-50 border-none rounded-xl py-2.5 px-3 font-bold text-xs" placeholder="0" />
               </div>
               <div className="text-right">
                 <p className="text-[8px] font-black text-slate-300 uppercase tracking-widest">Subtotal</p>
@@ -947,6 +970,8 @@ export const AddInvestment: React.FC = () => {
         onDiscard={() => setCurrentPage('investments')}
         isSaving={isSubmitting}
         saveLabel="Add to Portfolio"
+        saveTestId="investments-create-save-button"
+        discardTestId="investments-create-discard-button"
       />
     </div>
   );

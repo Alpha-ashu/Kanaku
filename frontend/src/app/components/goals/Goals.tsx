@@ -170,6 +170,7 @@ export const Goals: React.FC = () => {
  {canCreateGoal && (
  <Button
  onClick={() => setCurrentPage('add-goal')}
+ data-testid="goals-add-goal-button"
  className="shadow-lg bg-gray-900 hover:bg-gray-800 text-white h-12 px-6 rounded-2xl font-bold flex items-center gap-2"
  >
  <Plus size={18} />
@@ -280,6 +281,7 @@ export const Goals: React.FC = () => {
  {canEditGoal && (
  <button
  onClick={() => handleEditClick(goal)}
+ data-testid={`goals-edit-button-${goal.id}`}
  className="p-1 sm:p-1.5 hover:bg-gray-100 rounded-lg transition-colors text-gray-600"
  title="Edit goal"
  aria-label={`Edit goal ${goal.name}`}
@@ -290,6 +292,7 @@ export const Goals: React.FC = () => {
  {canDeleteGoal && (
  <button
  onClick={() => handleDeleteGoal(goal.id!, goal.name)}
+ data-testid={`goals-delete-button-${goal.id}`}
  className="p-1 sm:p-1.5 hover:bg-red-100 rounded-lg transition-colors text-red-600"
  title="Delete goal"
  aria-label={`Delete goal ${goal.name}`}
@@ -319,6 +322,7 @@ export const Goals: React.FC = () => {
  placeholder="Goal name"
  aria-label="Goal name"
  title="Goal name"
+ data-testid="goals-edit-name-input"
  className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-black/10"
  />
  <input
@@ -328,6 +332,7 @@ export const Goals: React.FC = () => {
  placeholder="Target amount"
  aria-label="Target amount"
  title="Target amount"
+ data-testid="goals-edit-target-input"
  className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-black/10"
  />
  <input
@@ -337,6 +342,7 @@ export const Goals: React.FC = () => {
  placeholder="Current amount"
  aria-label="Current amount"
  title="Current amount"
+ data-testid="goals-edit-current-input"
  className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-black/10"
  />
  <input
@@ -345,17 +351,20 @@ export const Goals: React.FC = () => {
  onChange={(e) => setEditFormData({ ...editFormData, targetDate: e.target.value })}
  aria-label="Target date"
  title="Target date"
+ data-testid="goals-edit-date-input"
  className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-black/10"
  />
  <div className="flex gap-2">
  <button
  onClick={handleSaveEdit}
+ data-testid="goals-edit-save-button"
  className="flex-1 px-3 py-2 bg-black text-white rounded-xl text-sm font-medium hover:bg-gray-900 transition-colors shadow-sm"
  >
  Save
  </button>
  <button
  onClick={() => setEditingGoalId(null)}
+ data-testid="goals-edit-cancel-button"
  className="flex-1 px-3 py-2 bg-gray-100 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-200 transition-colors"
  >
  Cancel
@@ -445,6 +454,7 @@ export const Goals: React.FC = () => {
  <div className="grid grid-cols-2 gap-2 mt-auto pt-3">
  <button
  onClick={() => openContributionModal(goal.id!)}
+ data-testid={`goals-contribute-button-${goal.id}`}
  className="w-full px-4 py-2.5 bg-black text-white rounded-xl hover:bg-gray-900 transition-all font-medium shadow-sm active:scale-95"
  aria-label={`Add contribution to ${goal.name}`}
  title={`Add contribution to ${goal.name}`}
@@ -453,6 +463,7 @@ export const Goals: React.FC = () => {
  </button>
  <button
  onClick={() => openGoalDetail(goal.id!)}
+ data-testid={`goals-detail-button-${goal.id}`}
  className="w-full px-4 py-2.5 bg-white border border-gray-300 text-gray-800 rounded-xl hover:bg-gray-50 transition-all font-medium"
  aria-label={`View details for ${goal.name}`}
  title={`View details for ${goal.name}`}
@@ -529,6 +540,7 @@ export const Goals: React.FC = () => {
  key={goal.id}
  type="button"
  onClick={() => handleUseVoiceDraftForGoal(goal.id!)}
+ data-testid={`goals-voice-picker-goal-${goal.id}`}
  className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-left transition-colors hover:border-gray-300 hover:bg-gray-50"
  >
  <div className="flex items-center justify-between gap-3">
@@ -550,6 +562,7 @@ export const Goals: React.FC = () => {
  <button
  type="button"
  onClick={handleCreateGoalFromVoiceDraft}
+ data-testid="goals-voice-picker-new-button"
  className="rounded-2xl bg-black px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-gray-900"
  >
  Create New Goal
@@ -560,6 +573,7 @@ export const Goals: React.FC = () => {
  setShowVoiceGoalPicker(false);
  setPendingVoiceGoalDraft(null);
  }}
+ data-testid="goals-voice-picker-dismiss-button"
  className="rounded-2xl border border-gray-200 px-5 py-3 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50"
  >
  Dismiss
@@ -658,6 +672,7 @@ const ContributeModal: React.FC<{
  step="0.01"
  value={amount || ''}
  onChange={(e) => setAmount(parseFloat(e.target.value) || 0)}
+ data-testid="goals-contribution-amount-input"
  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black/10 font-medium"
  required
  autoFocus
@@ -673,6 +688,7 @@ const ContributeModal: React.FC<{
  id="goal-contribution-account"
  value={accountId}
  onChange={(e) => setAccountId(parseInt(e.target.value))}
+ data-testid="goals-contribution-account-select"
  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black/10 font-medium appearance-none bg-white"
  aria-label="Select account"
  title="Select account"
@@ -689,6 +705,7 @@ const ContributeModal: React.FC<{
  id="goal-contribution-notes"
  value={notes}
  onChange={(e) => setNotes(e.target.value)}
+ data-testid="goals-contribution-notes-textarea"
  className="w-full rounded-xl border border-gray-200 px-4 py-3 font-medium focus:outline-none focus:ring-2 focus:ring-black/10"
  rows={3}
  placeholder="Optional note for this contribution"
@@ -699,6 +716,7 @@ const ContributeModal: React.FC<{
  <button
  type="button"
  onClick={onClose}
+ data-testid="goals-contribution-cancel-button"
  className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl hover:bg-gray-50 transition-all font-medium active:scale-95"
  aria-label="Cancel contribution"
  title="Cancel contribution"
@@ -707,6 +725,7 @@ const ContributeModal: React.FC<{
  </button>
  <button
  type="submit"
+ data-testid="goals-contribution-submit-button"
  className="flex-1 px-4 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition-all font-medium shadow-sm active:scale-95"
  aria-label="Add contribution"
  title="Add contribution"
@@ -719,4 +738,3 @@ const ContributeModal: React.FC<{
  </div>
  );
 };
-

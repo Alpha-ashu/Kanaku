@@ -198,6 +198,7 @@ export const ManagerAdvisorVerification: React.FC = () => {
  onClick={fetchApplications} 
  disabled={loading}
  className="p-2.5 bg-white border border-slate-200 rounded-2xl hover:bg-slate-50 transition-all text-slate-600 shadow-sm"
+ data-testid="manager-verify-refresh-button"
  >
  <RefreshCw size={20} className={loading ? 'animate-spin' : ''} />
  </button>
@@ -213,6 +214,7 @@ export const ManagerAdvisorVerification: React.FC = () => {
 "px-6 py-2 rounded-xl text-sm font-bold capitalize transition-all",
  activeTab === tab ?"bg-white text-slate-900 shadow-sm" :"text-slate-500 hover:text-slate-700"
  )}
+ data-testid={`manager-verify-tab-${tab}-button`}
  >
  {tab}
  </button>
@@ -270,6 +272,7 @@ export const ManagerAdvisorVerification: React.FC = () => {
  <button
  onClick={() => setSelectedApp(app)}
  className="px-6 py-2.5 bg-slate-900 text-white rounded-2xl font-bold text-sm hover:bg-slate-800 transition-all shadow-lg shadow-slate-200 flex items-center gap-2"
+ data-testid={`manager-verify-review-button-${app.id}`}
  >
  <Eye size={16} />
  Review Documents
@@ -401,6 +404,7 @@ export const ManagerAdvisorVerification: React.FC = () => {
  placeholder="Please explain why this application is being rejected..."
  rows={3}
  autoFocus
+ data-testid="manager-verify-reject-reason-textarea"
  />
  </section>
  )}
@@ -422,6 +426,7 @@ export const ManagerAdvisorVerification: React.FC = () => {
  onClick={() => setIsRejecting(true)}
  disabled={processingId !== null}
  className="px-8 py-3 bg-white border border-red-200 text-red-600 rounded-2xl font-bold text-sm hover:bg-red-50 transition-all flex items-center gap-2"
+ data-testid="manager-verify-reject-toggle"
  >
  <XCircle size={18} />
  Reject Application
@@ -430,6 +435,7 @@ export const ManagerAdvisorVerification: React.FC = () => {
  onClick={() => handleApprove(selectedApp)}
  disabled={processingId !== null}
  className="px-8 py-3 bg-emerald-600 text-white rounded-2xl font-bold text-sm hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-200 flex items-center gap-2"
+ data-testid="manager-verify-approve-button"
  >
  {processingId === selectedApp.id ? <Loader2 size={18} className="animate-spin" /> : <CheckCircle2 size={18} />}
  Approve Advisor
@@ -440,6 +446,7 @@ export const ManagerAdvisorVerification: React.FC = () => {
  <button
  onClick={() => setIsRejecting(false)}
  className="px-8 py-3 bg-white border border-slate-200 text-slate-600 rounded-2xl font-bold text-sm hover:bg-slate-50 transition-all"
+ data-testid="manager-verify-reject-cancel-button"
  >
  Cancel
  </button>
@@ -447,6 +454,7 @@ export const ManagerAdvisorVerification: React.FC = () => {
  onClick={handleReject}
  disabled={processingId !== null || !rejectReason}
  className="px-8 py-3 bg-red-600 text-white rounded-2xl font-bold text-sm hover:bg-red-700 transition-all shadow-lg shadow-red-200 flex items-center gap-2"
+ data-testid="manager-verify-reject-confirm-button"
  >
  {processingId === selectedApp.id ? <Loader2 size={18} className="animate-spin" /> : <XCircle size={18} />}
  Confirm Rejection

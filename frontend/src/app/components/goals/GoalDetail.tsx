@@ -206,6 +206,7 @@ export const GoalDetail: React.FC = () => {
  </div>
  <button
  onClick={() => setCurrentPage('goals')}
+ data-testid="goals-detail-back-button"
  className="px-6 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold rounded-2xl transition-colors"
  >
  Back to Goals
@@ -280,6 +281,7 @@ export const GoalDetail: React.FC = () => {
  step="0.01"
  value={amount || ''}
  onChange={(e) => setAmount(parseFloat(e.target.value) || 0)}
+ data-testid="goals-detail-amount-input"
  className="w-full bg-white border-0 rounded-2xl px-4 py-3.5 text-gray-900 font-medium text-lg placeholder-gray-400 focus:ring-2 focus:ring-gray-900 focus:bg-white transition-all"
  placeholder="0.00"
  required
@@ -290,6 +292,7 @@ export const GoalDetail: React.FC = () => {
  <select
  value={accountId}
  onChange={(e) => setAccountId(parseInt(e.target.value, 10))}
+ data-testid="goals-detail-account-select"
  className="w-full bg-white border-0 rounded-2xl px-4 py-3.5 text-gray-900 font-medium focus:ring-2 focus:ring-gray-900 focus:bg-white transition-all appearance-none"
  >
  {accounts.map((account) => (
@@ -303,6 +306,7 @@ export const GoalDetail: React.FC = () => {
  <select
  value={memberName}
  onChange={(e) => setMemberName(e.target.value)}
+ data-testid="goals-detail-member-select"
  className="w-full bg-white border-0 rounded-2xl px-4 py-3.5 text-gray-900 font-medium focus:ring-2 focus:ring-gray-900 focus:bg-white transition-all appearance-none"
  >
  {(goal.members || []).map((member) => (
@@ -316,12 +320,13 @@ export const GoalDetail: React.FC = () => {
  <textarea
  value={notes}
  onChange={(e) => setNotes(e.target.value)}
+ data-testid="goals-detail-notes-textarea"
  className="w-full resize-none rounded-2xl bg-white px-4 py-3.5 text-sm font-medium text-gray-900 placeholder-gray-400 transition-all focus:bg-white focus:ring-2 focus:ring-gray-900"
  rows={3}
  placeholder="Optional note for this contribution"
  />
  </div>
- <button type="submit" className="w-full py-4 rounded-2xl bg-gray-900 hover:bg-gray-800 text-white font-bold text-sm transition-all flex items-center justify-center gap-2 mt-2">
+ <button type="submit" data-testid="goals-detail-submit-button" className="w-full py-4 rounded-2xl bg-gray-900 hover:bg-gray-800 text-white font-bold text-sm transition-all flex items-center justify-center gap-2 mt-2">
  <Plus size={18} /> Add Contribution
  </button>
  </form>

@@ -1,6 +1,7 @@
 // GoldEntry interface for gold assets
 export interface GoldEntry {
   id?: number;
+  cloudId?: string; // backend id — enables cross-device sync dedup
   type: 'gold' | 'jewelry' | 'coin';
   quantity: number;
   unit: 'gram' | 'ounce' | 'kg';
@@ -13,6 +14,7 @@ export interface GoldEntry {
   notes?: string;
   createdAt: Date;
   updatedAt?: Date;
+  syncStatus?: SyncStatus;
 }
 import Dexie, { Table } from 'dexie';
 
@@ -1151,6 +1153,12 @@ export class OfflineSyncDB extends ProductionDB {
     this.version(14).stores({
       recurringTransactions: '++id, cloudId, accountId, type, nextDueDate, status, syncStatus',
       budgetAlerts: '++id, budgetId, type, isRead, triggeredAt',
+    });
+
+    // Version 15: index gold.cloudId so backend gold assets can be deduped and
+    // merged during cross-device sync (parity with other syncable tables).
+    this.version(15).stores({
+      gold: '++id, type, unit, purchaseDate, cloudId',
     });
   }
 }

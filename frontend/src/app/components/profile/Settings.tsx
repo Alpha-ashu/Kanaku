@@ -434,6 +434,7 @@ export const Settings: React.FC = () => {
  onChange={(e) => { setLanguage(e.target.value); toast.success(`Language changed to ${e.target.value}`); }}
  className="px-3 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black/10"
  aria-label="Select language"
+ data-testid="settings-language-select"
  >
  <option value="en">English</option>
  <option value="es">Español (Spanish)</option>
@@ -461,6 +462,7 @@ export const Settings: React.FC = () => {
  onChange={(e) => { setCurrency(e.target.value); toast.success(`Currency changed to ${e.target.value}`); }}
  className="px-3 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black/10"
  aria-label="Select currency"
+ data-testid="settings-currency-select"
  >
  <option value="USD">USD ($)</option>
  <option value="INR">INR (₹)</option>
@@ -512,6 +514,7 @@ export const Settings: React.FC = () => {
  aria-label={`Toggle ${label}`}
  onClick={() => toggleNotif(key)}
  className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-black/20 ${notifSettings[key] ? 'bg-black' : 'bg-gray-300'}`}
+ data-testid={`settings-notif-toggle-${key}`}
  >
  <span className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-sm transform transition-transform duration-200 ${notifSettings[key] ? 'translate-x-5' : 'translate-x-0'}`} />
  </button>
@@ -543,6 +546,7 @@ export const Settings: React.FC = () => {
  className={`min-w-[112px] rounded-full px-4 py-2 text-sm font-semibold transition-all shadow-sm ${
  smsStatus.enabled ? 'bg-black text-white hover:bg-gray-900' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
  } ${isSmsBusy ? 'cursor-not-allowed opacity-60' : ''}`}
+ data-testid="settings-sms-toggle"
  >
  {isSmsBusy ? 'Working...' : smsStatus.enabled ? 'Turn Off' : 'Turn On'}
  </button>
@@ -573,8 +577,8 @@ export const Settings: React.FC = () => {
  <h4 className="font-medium text-gray-900">Export Data</h4>
  </div>
  <div className="flex gap-2">
- <button onClick={() => handleExportData('json')} className="px-4 py-2 bg-black text-white rounded-full hover:bg-gray-900 transition-all active:scale-95 shadow-lg">JSON</button>
- <button onClick={() => handleExportData('csv')} className="px-4 py-2 bg-black text-white rounded-full hover:bg-gray-900 transition-all active:scale-95 shadow-lg">CSV</button>
+ <button onClick={() => handleExportData('json')} className="px-4 py-2 bg-black text-white rounded-full hover:bg-gray-900 transition-all active:scale-95 shadow-lg" data-testid="settings-export-json-button">JSON</button>
+ <button onClick={() => handleExportData('csv')} className="px-4 py-2 bg-black text-white rounded-full hover:bg-gray-900 transition-all active:scale-95 shadow-lg" data-testid="settings-export-csv-button">CSV</button>
  </div>
  </div>
  </div>
@@ -586,7 +590,7 @@ export const Settings: React.FC = () => {
  </div>
  <h4 className="font-medium text-gray-900">Import Data</h4>
  </div>
- <button onClick={() => setShowImportModal(true)} className="px-4 py-2 bg-black text-white rounded-full hover:bg-gray-900 transition-all active:scale-95 cursor-pointer shadow-lg">Import</button>
+ <button onClick={() => setShowImportModal(true)} className="px-4 py-2 bg-black text-white rounded-full hover:bg-gray-900 transition-all active:scale-95 cursor-pointer shadow-lg" data-testid="settings-import-button">Import</button>
  </div>
  </div>
  <div className="p-6">
@@ -597,7 +601,7 @@ export const Settings: React.FC = () => {
  </div>
  <h4 className="font-medium text-gray-900">Create Backup</h4>
  </div>
- <button onClick={handleCreateBackup} className="px-4 py-2 bg-black text-white rounded-full hover:bg-gray-900 transition-all active:scale-95 shadow-lg">Create</button>
+ <button onClick={handleCreateBackup} className="px-4 py-2 bg-black text-white rounded-full hover:bg-gray-900 transition-all active:scale-95 shadow-lg" data-testid="settings-create-backup-button">Create</button>
  </div>
  </div>
  {backups.length > 0 && (
@@ -657,7 +661,7 @@ export const Settings: React.FC = () => {
  </div>
  <h4 className="font-medium text-gray-900">Clear All Data</h4>
  </div>
- <button onClick={handleClearAllData} className="px-4 py-2 bg-red-600 text-white rounded-full hover:bg-red-700 transition-all active:scale-95 shadow-lg">Clear All</button>
+ <button onClick={handleClearAllData} className="px-4 py-2 bg-red-600 text-white rounded-full hover:bg-red-700 transition-all active:scale-95 shadow-lg" data-testid="settings-clear-data-button">Clear All</button>
  </div>
  </div>
  </div>
@@ -684,7 +688,7 @@ export const Settings: React.FC = () => {
  </div>
  <h4 className="font-medium text-gray-900">Privacy Policy</h4>
  </div>
- <button onClick={() => setCurrentPage('privacy-policy')} className="inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-700 font-medium">
+ <button onClick={() => setCurrentPage('privacy-policy')} className="inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-700 font-medium" data-testid="settings-privacy-link">
  View <ExternalLink size={14} />
  </button>
  </div>
@@ -697,7 +701,7 @@ export const Settings: React.FC = () => {
  </div>
  <h4 className="font-medium text-gray-900">Terms &amp; Conditions</h4>
  </div>
- <button onClick={() => setCurrentPage('terms')} className="inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-700 font-medium">
+ <button onClick={() => setCurrentPage('terms')} className="inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-700 font-medium" data-testid="settings-terms-link">
  View <ExternalLink size={14} />
  </button>
  </div>

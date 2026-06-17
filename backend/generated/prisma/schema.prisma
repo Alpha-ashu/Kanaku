@@ -322,28 +322,49 @@ model ImportLog {
 }
 
 model Investment {
-  id              String    @id @default(uuid())
-  userId          String
-  assetType       String
-  assetName       String
-  quantity        Decimal   @db.Decimal(12, 4)
-  buyPrice        Decimal   @db.Decimal(12, 2)
-  currentPrice    Decimal   @db.Decimal(12, 2)
-  totalInvested   Decimal   @db.Decimal(12, 2) // Computed by trigger: quantity * buyPrice
-  currentValue    Decimal   @db.Decimal(12, 2) // Computed by trigger: quantity * currentPrice
-  profitLoss      Decimal   @db.Decimal(12, 2) // Computed by trigger: currentValue - totalInvested
-  purchaseDate    DateTime
-  lastUpdated     DateTime
-  metadata        Json?
-  clientRequestId String?   @unique
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  deletedAt       DateTime?
-  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                  String    @id @default(uuid())
+  userId              String
+  assetType           String
+  assetName           String
+  quantity            Decimal   @db.Decimal(12, 4)
+  buyPrice            Decimal   @db.Decimal(12, 2)
+  currentPrice        Decimal   @db.Decimal(12, 2)
+  totalInvested       Decimal   @db.Decimal(12, 2) // Computed by trigger: quantity * buyPrice
+  currentValue        Decimal   @db.Decimal(12, 2) // Computed by trigger: quantity * currentPrice
+  profitLoss          Decimal   @db.Decimal(12, 2) // Computed by trigger: currentValue - totalInvested
+  purchaseDate        DateTime
+  lastUpdated         DateTime
+  metadata            Json?
+  clientRequestId     String?   @unique
+  // ─── Extended fields (schema alignment with Dexie client) ───
+  broker              String?
+  description         String?
+  assetCurrency       String?
+  baseCurrency        String?
+  buyFxRate           Decimal?  @db.Decimal(18, 8)
+  lastKnownFxRate     Decimal?  @db.Decimal(18, 8)
+  totalInvestedNative Decimal?  @db.Decimal(18, 2)
+  currentValueNative  Decimal?  @db.Decimal(18, 2)
+  valuationVersion    Int?
+  positionStatus      String?   @default("open") // open | closed
+  closedAt            DateTime?
+  closePrice          Decimal?  @db.Decimal(18, 2)
+  closeFxRate         Decimal?  @db.Decimal(18, 8)
+  grossSaleValue      Decimal?  @db.Decimal(18, 2)
+  netSaleValue        Decimal?  @db.Decimal(18, 2)
+  purchaseFees        Decimal?  @db.Decimal(18, 2)
+  closingFees         Decimal?  @db.Decimal(18, 2)
+  realizedProfitLoss  Decimal?  @db.Decimal(18, 2)
+  closeNotes          String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  deletedAt           DateTime?
+  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([assetType])
   @@index([userId])
   @@index([deletedAt])
+  @@index([positionStatus])
   @@schema("public")
 }
 
@@ -363,6 +384,16 @@ model Loan {
   contactPerson      String?
   syncStatus         String        @default("synced")
   clientRequestId    String?       @unique
+  // ─── Extended fields (schema alignment with Dexie client) ───
+  totalPayable       Decimal?      @db.Decimal(12, 2)
+  loanDate           DateTime?
+  contactEmail       String?
+  contactPhone       String?
+  bankName           String?
+  tenureMonths       Int?
+  downPayment        Decimal?      @db.Decimal(12, 2)
+  loanCategory       String?
+  notes              String?
   createdAt          DateTime      @default(now())
   updatedAt          DateTime      @updatedAt
   deletedAt          DateTime?
@@ -627,6 +658,10 @@ model UserPin {
   isActive       Boolean   @default(true)
   failedAttempts Int       @default(0)
   lockedUntil    DateTime?
+  // Timestamp of the last successful PIN verify/create. Used by the
+  // verify-security step-up endpoint to require a recent proof before issuing
+  // a security token (closes the "issue token without proof" bypass).
+  lastVerifiedAt DateTime?
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
   user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -1021,26 +1056,33 @@ model AaTransaction {
 // ─── Recurring Transactions (Subscriptions & Bills) ────────────────────────────
 
 model RecurringTransaction {
-  id              String    @id @default(uuid())
-  userId          String
-  title           String
-  amount          Decimal   @db.Decimal(12, 2)
-  category        String
-  subcategory     String?
-  interval        String    @default("monthly") // weekly, monthly, yearly
-  nextDueDate     DateTime
-  autoProcess     Boolean   @default(false)
-  status          String    @default("active") // active, paused, cancelled
-  accountId       String?
-  description     String?
-  merchant        String?
-  lastProcessedAt DateTime?
-  clientRequestId String?   @unique
-  syncStatus      String    @default("synced")
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  deletedAt       DateTime?
-  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                  String    @id @default(uuid())
+  userId              String
+  title               String
+  amount              Decimal   @db.Decimal(12, 2)
+  category            String
+  subcategory         String?
+  interval            String    @default("monthly") // weekly, monthly, yearly
+  nextDueDate         DateTime
+  autoProcess         Boolean   @default(false)
+  status              String    @default("active") // active, paused, cancelled
+  accountId           String?
+  description         String?
+  merchant            String?
+  lastProcessedAt     DateTime?
+  clientRequestId     String?   @unique
+  syncStatus          String    @default("synced")
+  // ─── Extended fields (schema alignment with Dexie client) ───
+  type                String? // income | expense | transfer
+  startDate           DateTime?
+  endDate             DateTime?
+  reminderDaysBefore  Int?
+  notes               String?
+  transferToAccountId String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  deletedAt           DateTime?
+  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([status])
