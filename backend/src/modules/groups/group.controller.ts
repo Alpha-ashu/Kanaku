@@ -119,21 +119,22 @@ export const getGroups = async (req: AuthRequest, res: Response) => {
   try {
     const userId = getUserId(req);
 
-    // Fetch groups created by user OR where user is a member
+    // Also match by email for member rows where userId wasn't set at creation
+    // time (stale rows from before the normalizedMembers fix, or rows where the
+    // participant wasn't yet registered when the expense was created).
+    const currentUser = await prisma.user.findUnique({ where: { id: userId }, select: { email: true } });
+    const emailConditions = currentUser?.email
+      ? [{ groupMembers: { some: { email: currentUser.email, deletedAt: null } } }]
+      : [];
+
     const groups = await prisma.groupExpense.findMany({
       where: {
         deletedAt: null,
         OR: [
           { userId },
-          {
-            groupMembers: {
-              some: {
-                userId,
-                deletedAt: null
-              }
-            }
-          }
-        ]
+          { groupMembers: { some: { userId, deletedAt: null } } },
+          ...emailConditions,
+        ],
       },
       orderBy: { createdAt: 'desc' }
     });

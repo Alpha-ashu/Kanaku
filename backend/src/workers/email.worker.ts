@@ -12,7 +12,8 @@ import { redisConnection } from "../config/queue";
 // Initialize SendGrid
 sgMail.setApiKey(process.env.SENDGRID_API_KEY || "");
 
-const FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || "notifications@KANAKU.app";
+const FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || "notifications@kanaku.app";
+const FRONTEND_URL = (process.env.FRONTEND_URL || 'https://kanaku-fawn.vercel.app').replace(/\/$/, '');
 
 interface EmailNotificationJob {
   notificationId: string;
@@ -84,13 +85,14 @@ export function createEmailWorker() {
         // Send email via SendGrid
         await sgMail.send({
           to: user.email,
-          from: FROM_EMAIL,
+          from: { email: FROM_EMAIL, name: 'Kanaku' },
           subject: title,
           html,
-          categories: ["KANAKU-notifications", category || "general"],
+          categories: ["kanaku-notifications", category || "general"],
           headers: {
             "X-Notification-ID": notificationId,
-            "X-User-ID": userId,
+            "List-Unsubscribe": `<${FRONTEND_URL}/settings/notifications>`,
+            "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
           },
         });
 
@@ -184,7 +186,7 @@ function generateEmailHTML({
   deepLink?: string;
 }): string {
   const actionButton = deepLink
-    ? `<a href="${process.env.FRONTEND_URL}${deepLink}" style="display: inline-block; padding: 12px 24px; background-color: #5B21B6; color: white; text-decoration: none; border-radius: 6px; font-weight: 500; margin-top: 16px;">View Details</a>`
+    ? `<a href="${FRONTEND_URL}${deepLink}" style="display: inline-block; padding: 12px 24px; background-color: #5B21B6; color: white; text-decoration: none; border-radius: 6px; font-weight: 500; margin-top: 16px;">View Details</a>`
     : "";
 
   return `
