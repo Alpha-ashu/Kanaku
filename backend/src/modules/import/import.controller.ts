@@ -152,15 +152,44 @@ export const uploadImport = async (req: AuthRequest, res: Response) => {
     if (contentType.includes('csv') || ext === 'csv') {
       const text = file.buffer.toString('utf-8');
       rows = parseCSV(text);
-    } else if (contentType.includes('excel') || contentType.includes('spreadsheet') || ext === 'xlsx' || ext === 'xls') {
+    } else if (contentType.includes('excel') || contentType.includes('spreadsheet') || ext === 'xlsx') {
       try {
-        const XLSX = require('xlsx');
-        const workbook = XLSX.read(file.buffer, { type: 'buffer' });
-        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-        rows = XLSX.utils.sheet_to_json(firstSheet, { defval: '' }) as JsonRow[];
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const ExcelJS = require('exceljs') as typeof import('exceljs');
+        const workbook = new ExcelJS.Workbook();
+        await workbook.xlsx.load(file.buffer);
+        const worksheet = workbook.worksheets[0];
+        if (!worksheet) throw new Error('No worksheet found');
+        const headers: string[] = [];
+        worksheet.getRow(1).eachCell({ includeEmpty: false }, (cell, colNumber) => {
+          headers[colNumber] = String(cell.value ?? '');
+        });
+        rows = [];
+        worksheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
+          if (rowNumber === 1) return;
+          const obj: JsonRow = {};
+          row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
+            const header = headers[colNumber];
+            if (header) {
+              const val = cell.value;
+              if (val === null || val === undefined) {
+                obj[header] = '';
+              } else if (val instanceof Date) {
+                obj[header] = val.toISOString();
+              } else if (typeof val === 'object' && 'result' in val) {
+                obj[header] = String((val as { result?: unknown }).result ?? '');
+              } else {
+                obj[header] = String(val);
+              }
+            }
+          });
+          rows.push(obj);
+        });
       } catch {
-        return res.status(400).json({ error: 'Excel parsing failed. Please export as CSV.' });
+        return res.status(400).json({ error: 'Excel parsing failed. Please export as CSV or XLSX.' });
       }
+    } else if (ext === 'xls') {
+      return res.status(400).json({ error: 'Legacy .xls format is not supported. Please export as .xlsx or .csv.' });
     } else {
       return res.status(400).json({ error: 'Unsupported file type. Upload CSV or Excel.' });
     }
