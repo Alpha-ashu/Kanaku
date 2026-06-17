@@ -1,5 +1,7 @@
 // @ts-ignore
-import * as pdfjsLib from 'pdfjs-dist/build/pdf';
+import * as pdfjsLib from 'pdfjs-dist/build/pdf.mjs';
+// @ts-ignore
+import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import type {
   ReceiptLineItem,
   ReceiptScanResult,
@@ -8,7 +10,7 @@ import type {
 } from '@/types/receipt.types';
 import { documentIntelligenceService } from './documentIntelligenceService';
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
 export interface ReceiptScannerResult extends ReceiptScanResult {}
 

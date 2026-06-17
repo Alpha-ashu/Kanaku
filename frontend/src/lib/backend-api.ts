@@ -147,7 +147,7 @@ class BackendService {
   async createGroup(group: {
     id?: string;
     name: string;
-    members: string[];
+    members: Array<string | { name: string; email?: string; phone?: string; share?: number; paid?: boolean }>;
     createdAt: Date;
     description?: string;
     totalAmount?: number;
@@ -161,9 +161,11 @@ class BackendService {
       paidBy: 0,
       date: group.date ?? group.createdAt,
       members: group.members.map((member) => ({
-        name: member,
-        share: group.amountPerPerson ?? 0,
-        paid: false,
+        name: typeof member === 'string' ? member : member.name,
+        email: typeof member === 'string' ? undefined : member.email,
+        phone: typeof member === 'string' ? undefined : member.phone,
+        share: (typeof member === 'string' ? undefined : member.share) ?? group.amountPerPerson ?? 0,
+        paid: (typeof member === 'string' ? false : member.paid) ?? false,
         paymentStatus: 'pending' as const,
       })),
       description: group.description,

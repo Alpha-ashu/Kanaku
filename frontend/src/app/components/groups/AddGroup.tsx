@@ -137,15 +137,23 @@ export const AddGroup: React.FC = () => {
  // Auto-save all new participant names as Friends in the DB
  await Promise.all(validParticipants.map(name => saveNewFriend(name)));
 
+ // Enrich participant names with email/phone from the Friends store so the
+ // backend can send invitation emails to the correct addresses.
+ const enrichedMembers = validParticipants.map((name) => {
+   const friend = friends.find((f) => f.name.toLowerCase() === name.toLowerCase());
+   return friend?.email || (friend as any)?.phone
+     ? { name, email: friend?.email, phone: (friend as any)?.phone }
+     : name;
+ });
  await backendService.createGroup({
- id: Date.now().toString(), 
- name: formData.name, 
- members: validParticipants,
- createdAt: new Date(), 
- description: formData.description, 
+ id: Date.now().toString(),
+ name: formData.name,
+ members: enrichedMembers as string[],
+ createdAt: new Date(),
+ description: formData.description,
  totalAmount: totalNum,
- amountPerPerson: perPerson, 
- category: formData.category, 
+ amountPerPerson: perPerson,
+ category: formData.category,
  date: new Date(formData.date),
  });
  toast.success('Group expense created! Participants saved to contacts.');

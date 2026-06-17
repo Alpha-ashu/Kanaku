@@ -245,7 +245,7 @@ export const StatementImport: React.FC<StatementImportProps> = ({
  type="file"
  ref={fileInputRef}
  onChange={handleFileSelect}
- accept=".pdf,.csv,.xls,.xlsx"
+ accept=".pdf,.csv,.xlsx"
  className="hidden"
  />
 

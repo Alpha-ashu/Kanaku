@@ -46,6 +46,11 @@ beforeEach(() => {
   toastSuccess.mockReset();
   vi.unstubAllGlobals();
   vi.stubGlobal('localStorage', mockLocalStorage());
+  vi.stubGlobal('crypto', {
+    subtle: {
+      digest: vi.fn().mockResolvedValue(new Uint8Array([1, 2, 3]).buffer),
+    },
+  });
   localStorage.clear();
   // Clear in-memory token state (module-level vars in api.ts)
   TokenManager.clearTokens();
