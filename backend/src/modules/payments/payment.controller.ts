@@ -1,6 +1,18 @@
 import { Response } from 'express';
+import { timingSafeEqual } from 'crypto';
 import { AuthRequest, getUserId } from '../../middleware/auth';
 import { prisma } from '../../db/prisma';
+
+/**
+ * Constant-time string comparison to prevent timing attacks on secret/token
+ * checks. Returns false on any length mismatch without leaking position.
+ */
+const safeEqual = (a: string, b: string): boolean => {
+  const bufA = Buffer.from(a, 'utf8');
+  const bufB = Buffer.from(b, 'utf8');
+  if (bufA.length !== bufB.length) return false;
+  return timingSafeEqual(bufA, bufB);
+};
 
 const ALLOWED_PAYMENT_METHODS = new Set([
   'bank_transfer',
@@ -45,7 +57,7 @@ const requireWebhookSecret = (req: AuthRequest | any) => {
   const headerValue = req.headers?.['x-payment-webhook-secret'] ?? req.headers?.['x-webhook-secret'];
   const providedSecret = Array.isArray(headerValue) ? headerValue[0] : headerValue;
 
-  if (providedSecret !== webhookSecret) {
+  if (typeof providedSecret !== 'string' || !safeEqual(providedSecret, webhookSecret)) {
     return {
       ok: false as const,
       status: 401,

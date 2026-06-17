@@ -545,7 +545,7 @@ const AppContent: React.FC = () => {
         localStorage.setItem('quickFormType', 'expense');
         localStorage.setItem('quickExpenseMode', 'loan');
         localStorage.setItem('quickBackPage', 'loans');
-        setCurrentPage('add-transaction');
+        setCurrentPage('add-loan');
         setQuickActionKey(k => k + 1);
         break;
       case 'add-account': setCurrentPage('add-account'); break;

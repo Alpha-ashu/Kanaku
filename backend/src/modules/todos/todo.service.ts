@@ -95,7 +95,7 @@ export class TodoService {
     // Get shares before deleting
     const shares = await todoRepository.findListShares(id);
 
-    await todoRepository.deleteList(id);
+    await todoRepository.deleteList(id, userId);
 
     // Notify participants
     const socketManager = getSocketManager();

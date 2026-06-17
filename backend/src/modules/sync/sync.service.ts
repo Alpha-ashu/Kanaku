@@ -304,8 +304,11 @@ class SyncService {
         },
       });
     } else if (operation === 'create') {
-      await prisma.account.create({
-        data: {
+      // Idempotent create: a retried create (e.g. after a dropped response)
+      // must not throw a primary-key violation. Treat re-creates as no-ops.
+      await prisma.account.upsert({
+        where: { id: entityId },
+        create: {
           ...sanitizedData,
           id: entityId,
           userId,
@@ -314,6 +317,7 @@ class SyncService {
           createdAt: localTimestamp,
           updatedAt: localTimestamp,
         } as any,
+        update: {},
       });
     } else if (operation === 'update') {
       const existing = await prisma.account.findUnique({
@@ -486,8 +490,10 @@ class SyncService {
         },
       });
     } else if (operation === 'create') {
-      await prisma.goal.create({
-        data: {
+      // Idempotent create — see processAccountOperation for rationale.
+      await prisma.goal.upsert({
+        where: { id: entityId },
+        create: {
           ...sanitizedData,
           id: entityId,
           userId,
@@ -496,6 +502,7 @@ class SyncService {
           createdAt: localTimestamp,
           updatedAt: localTimestamp,
         } as any,
+        update: {},
       });
     } else if (operation === 'update') {
       const existing = await prisma.goal.findUnique({
@@ -563,8 +570,10 @@ class SyncService {
         },
       });
     } else if (operation === 'create') {
-      await prisma.loan.create({
-        data: {
+      // Idempotent create — see processAccountOperation for rationale.
+      await prisma.loan.upsert({
+        where: { id: entityId },
+        create: {
           ...sanitizedData,
           id: entityId,
           userId,
@@ -573,6 +582,7 @@ class SyncService {
           createdAt: localTimestamp,
           updatedAt: localTimestamp,
         } as any,
+        update: {},
       });
     } else if (operation === 'update') {
       const existing = await prisma.loan.findUnique({

@@ -9,6 +9,7 @@ const router = Router();
 router.use(authMiddleware);
 
 router.get('/', InvestmentController.getInvestments);
+router.get('/:id', validateParams(investmentIdParamSchema), InvestmentController.getInvestment);
 router.post('/', validateBody(investmentCreateSchema), InvestmentController.createInvestment);
 router.put('/:id', validateParams(investmentIdParamSchema), validateBody(investmentUpdateSchema), InvestmentController.updateInvestment);
 router.delete('/:id', validateParams(investmentIdParamSchema), InvestmentController.deleteInvestment);

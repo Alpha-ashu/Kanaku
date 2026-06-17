@@ -153,6 +153,45 @@ export const getGroups = async (req: AuthRequest, res: Response) => {
   }
 };
 
+export const getGroup = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = getUserId(req);
+    const { id } = req.params;
+
+    const currentUser = await prisma.user.findUnique({ where: { id: userId }, select: { email: true } });
+    const emailConditions = currentUser?.email
+      ? [{ groupMembers: { some: { email: currentUser.email, deletedAt: null } } }]
+      : [];
+
+    const group = await prisma.groupExpense.findFirst({
+      where: {
+        id,
+        deletedAt: null,
+        OR: [
+          { userId },
+          { groupMembers: { some: { userId, deletedAt: null } } },
+          ...emailConditions,
+        ],
+      },
+    });
+
+    if (!group) {
+      return res.status(404).json({ success: false, error: 'Group not found or access denied' });
+    }
+
+    const data = await buildGroupResponse(group, userId);
+    res.json({ success: true, data });
+  } catch (error) {
+    if (isDatabaseUnavailableError(error)) {
+      logger.warn('Group detail fallback: database unavailable.');
+      return res.status(503).json({ success: false, error: 'Database temporarily unavailable' });
+    }
+
+    logger.error('Failed to fetch group', { error });
+    res.status(500).json({ success: false, error: 'Failed to fetch group' });
+  }
+};
+
 export const createGroup = async (req: AuthRequest, res: Response) => {
   try {
     const userId = getUserId(req);

@@ -29,6 +29,25 @@ export const getInvestments = async (req: AuthRequest, res: Response, next: Next
   }
 };
 
+export const getInvestment = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const userId = getUserId(req);
+    const { id } = req.params;
+
+    const investment = await prisma.investment.findFirst({
+      where: { id, userId, deletedAt: null },
+    });
+
+    if (!investment) {
+      throw AppError.notFound('Investment');
+    }
+
+    res.json({ success: true, data: investment });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const createInvestment = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const userId = getUserId(req);

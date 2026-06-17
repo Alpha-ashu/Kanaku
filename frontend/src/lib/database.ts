@@ -1157,3 +1157,7 @@ export class OfflineSyncDB extends ProductionDB {
 
 export const db = new OfflineSyncDB();
 
+if (typeof window !== 'undefined') {
+  (window as any).db = db;
+}
+

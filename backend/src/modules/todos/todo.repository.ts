@@ -94,9 +94,11 @@ export class TodoRepository {
     `;
   }
 
-  async deleteList(id: number) {
+  async deleteList(id: number, userId: string) {
+    // Scope the delete to the owning user so this is safe even if the
+    // service-layer ownership check is ever bypassed (defense-in-depth).
     return prisma.$executeRaw`
-      DELETE FROM public.todo_lists WHERE id = ${id}::bigint
+      DELETE FROM public.todo_lists WHERE id = ${id}::bigint AND user_id = ${userId}
     `;
   }
 
