@@ -167,7 +167,7 @@ export const BookAdvisor: React.FC = () => {
  };
 
  const handleApplyAsAdvisor = () => {
-   setApplyForm(f => ({ ...f, fullName: user?.name || f.fullName }));
+   setApplyForm(f => ({ ...f, fullName: (user?.user_metadata?.full_name as string | undefined) ?? (user?.user_metadata?.name as string | undefined) ?? f.fullName }));
    setShowApplyModal(true);
  };
 

@@ -39,7 +39,7 @@ export const ToDoListShare: React.FC = () => {
   }, [listId]);
 
   const sharedWith: any[] = (useLiveQuery(
-    () => listId ? db.toDoListShares.where('listId').equals(listId).toArray() : Promise.resolve([]),
+    () => listId ? db.toDoListShares.where('listId').equals(listId).toArray() : Promise.resolve([] as any[]),
     [listId]
   ) || []);
 

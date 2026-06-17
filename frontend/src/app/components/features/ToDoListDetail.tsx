@@ -65,13 +65,13 @@ export const ToDoListDetail: React.FC = () => {
   }, []);
 
   const items: ToDoItem[] = (useLiveQuery(
-    () => listId ? db.toDoItems.where('listId').equals(listId).toArray() : Promise.resolve([]),
+    () => listId ? db.toDoItems.where('listId').equals(listId).toArray() : Promise.resolve([] as ToDoItem[]),
     [listId]
   ) || []) as ToDoItem[];
 
   // Shares for collaborator list (Together lists)
   const shares: ToDoListShare[] = (useLiveQuery(
-    () => listId ? db.toDoListShares.where('listId').equals(listId).toArray() : Promise.resolve([]),
+    () => listId ? db.toDoListShares.where('listId').equals(listId).toArray() : Promise.resolve([] as ToDoListShare[]),
     [listId]
   ) || []) as ToDoListShare[];
 

@@ -640,21 +640,21 @@ export const api = {
         }
       }
 
-      if (!challengeResponse.success || !challengeResponse.data?.code) {
-        throw new Error(challengeResponse.message || 'Verification challenge failed.');
+      if (!challengeResponse?.success || !challengeResponse?.data?.code) {
+        throw new Error(challengeResponse?.message || 'Verification challenge failed.');
       }
 
       return apiClient.post('/auth/login', {
         email: credentials.email,
-        challengeCode: challengeResponse.data.code,
+        challengeCode: challengeResponse!.data!.code,
       }, {
         showSuccessToast: true,
         successMessage: 'Login successful',
       });
     },
 
-    checkEmail: (email: string): Promise<{ data: { available: boolean; code?: string } }> =>
-      apiClient.post('/auth/check-email', { email }),
+    checkEmail: (email: string): Promise<{ data?: { available: boolean; code?: string }; success: boolean }> =>
+      apiClient.post('/auth/check-email', { email }) as any,
 
     register: (data: { name: string; email: string; password: string; firstName?: string; lastName?: string; mobile?: string }) =>
       apiClient.post('/auth/register', data, {

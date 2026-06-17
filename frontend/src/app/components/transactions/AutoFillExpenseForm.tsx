@@ -3,7 +3,7 @@ import { Camera, Mic, Upload, X, Check, AlertCircle, Zap, Brain } from 'lucide-r
 import { motion } from 'motion/react';
 import { ocrEngine, ExpenseData } from '@/services/tesseractOCRService';
 import { createVoiceAIProcessor, VoiceExpenseResult } from '@/services/voiceAIProcessor';
-import { KANAKUAI } from '@/services/KANAKUIntelligenceEngine';
+import { KANAKUAI } from '@/services/KANKUIntelligenceEngine';
 import { useAICapability } from '@/contexts/AppContext';
 
 // AUTO-FILL EXPENSE FORM LOGIC

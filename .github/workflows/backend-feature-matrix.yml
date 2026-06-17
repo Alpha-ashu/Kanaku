@@ -16,6 +16,8 @@ on:
 jobs:
   feature-matrix:
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
     defaults:
       run:
         working-directory: backend
@@ -35,6 +37,7 @@ jobs:
         run: npm ci
 
       - name: Sync Prisma schema
+        if: env.DATABASE_URL != ''
         run: npx prisma db push
 
       - name: Build backend

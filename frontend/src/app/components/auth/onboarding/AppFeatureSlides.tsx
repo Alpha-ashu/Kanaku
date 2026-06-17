@@ -229,7 +229,7 @@ export const AppFeatureSlides: React.FC<AppFeatureSlidesProps> = ({ onComplete }
       opacity: 1,
       scale: 1,
       transition: {
-        x: { type: "spring", stiffness: 300, damping: 30 },
+        x: { type: "spring" as const, stiffness: 300, damping: 30 },
         opacity: { duration: 0.25 }
       }
     },
@@ -238,11 +238,11 @@ export const AppFeatureSlides: React.FC<AppFeatureSlidesProps> = ({ onComplete }
       opacity: 0,
       scale: 0.95,
       transition: {
-        x: { type: "spring", stiffness: 300, damping: 30 },
+        x: { type: "spring" as const, stiffness: 300, damping: 30 },
         opacity: { duration: 0.25 }
       }
     })
-  };
+  } as import('framer-motion').Variants;
 
   return (
     <div data-testid="onboarding-slides-container" className="fixed inset-0 z-50 overflow-y-auto bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 flex items-center justify-center p-4">

@@ -377,7 +377,7 @@ export const AddAccount: React.FC = () => {
  <div className="order-1 lg:order-2 flex flex-col gap-3">
  {/* Large Preview Card */}
  <div
- ref={el => { if (el && selectedColor.bg === 'custom') el.style.backgroundColor = selectedColor.color; else if (el) el.style.backgroundColor = ''; }}
+ ref={el => { if (el && selectedColor.bg === 'custom') el.style.backgroundColor = selectedColor.color ?? ''; else if (el) el.style.backgroundColor = ''; }}
  className={cn("p-8 rounded-[2.5rem] text-white relative overflow-hidden flex flex-col justify-between min-h-[240px] shadow-2xl shadow-indigo-500/20 group border border-white/5 transition-all duration-500", selectedColor.bg !== 'custom' ? selectedColor.bg : '')}
  >
  {/* Decorative Elements */}
@@ -470,7 +470,7 @@ export const AddAccount: React.FC = () => {
  <div className="flex items-center justify-between w-full md:w-auto gap-4">
  <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">Custom Spectrum</span>
  <div
- ref={el => { if (el) el.style.backgroundColor = selectedColor.id === 'custom' ? selectedColor.color : '#6366f1'; }}
+ ref={el => { if (el) el.style.backgroundColor = selectedColor.id === 'custom' ? (selectedColor.color ?? '#6366f1') : '#6366f1'; }}
  className="w-4 h-4 rounded-full shadow-sm border border-white shrink-0"
  />
  </div>
