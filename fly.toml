@@ -1,5 +1,6 @@
 app = 'kanaku'
 primary_region = 'sin'
+# auto-deploy enabled via GitHub Actions
 
 [build]
   dockerfile = 'backend/Dockerfile'
