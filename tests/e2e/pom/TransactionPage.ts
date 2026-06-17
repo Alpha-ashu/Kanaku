@@ -34,8 +34,13 @@ export class TransactionPage extends BasePage {
   }
 
   async selectType(type: 'expense' | 'income' | 'transfer') {
-    const tab = this.page.locator(`[data-testid="transaction-type-${type}-tab"]`);
-    await tab.first().click();
+    const modalBtn = this.page.locator(`[data-testid="transaction-modal-type-${type}-button"]`).first();
+    const tab = this.page.locator(`[data-testid="transaction-type-${type}-tab"]`).first();
+    if (await modalBtn.isVisible()) {
+      await modalBtn.click();
+    } else {
+      await tab.click();
+    }
     await this.wait(500);
   }
 

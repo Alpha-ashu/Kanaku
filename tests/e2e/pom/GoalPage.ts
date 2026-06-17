@@ -11,11 +11,11 @@ export class GoalPage extends BasePage {
 
   constructor(page: Page) {
     super(page);
-    this.addGoalBtn = page.getByRole('button', { name: /add goal|new goal|\+ goal|create goal/i });
-    this.nameInput = page.locator('input[name="name"], input[name="title"], input[placeholder*="goal" i], input[placeholder*="name" i]');
-    this.targetAmountInput = page.locator('input[name="targetAmount"], input[name="target"], input[name="amount"]');
-    this.targetDateInput = page.locator('input[name="deadline"], input[name="targetDate"], input[name="dueDate"], input[type="date"]');
-    this.saveGoalBtn = page.locator('button:not([disabled])').filter({ hasText: /save|create|add|confirm/i });
+    this.addGoalBtn = page.locator('[data-testid="goals-add-goal-button"]');
+    this.nameInput = page.locator('[data-testid="goals-create-name-input"]');
+    this.targetAmountInput = page.locator('[data-testid="goals-create-target-amount-input"]');
+    this.targetDateInput = page.locator('[data-testid="goals-create-target-date-input"]');
+    this.saveGoalBtn = page.locator('[data-testid="goals-create-save-button"]');
   }
 
   async clickAddGoal() {
@@ -32,7 +32,7 @@ export class GoalPage extends BasePage {
     await this.nameInput.first().fill(options.name);
     await this.targetAmountInput.first().fill(options.targetAmount);
     await this.targetDateInput.first().fill(options.targetDate);
-    await this.saveGoalBtn.last().click();
+    await this.saveGoalBtn.first().click();
     await this.wait(2000);
   }
 
@@ -43,14 +43,10 @@ export class GoalPage extends BasePage {
   }
 
   async addContribution(amount: string) {
-    const addContribBtn = this.page.getByRole('button', { name: /add contribution|contribute|add savings|deposit/i }).first();
-    await addContribBtn.click();
-    await this.wait(500);
-
-    const amtInput = this.page.locator('input[name="amount"], input[type="number"], input[placeholder*="amount" i]').first();
+    const amtInput = this.page.locator('[data-testid="goals-detail-amount-input"]').first();
     await amtInput.fill(amount);
 
-    const saveBtn = this.page.locator('button:not([disabled])').filter({ hasText: /save|add|confirm/i }).last();
+    const saveBtn = this.page.locator('[data-testid="goals-detail-submit-button"]').first();
     await saveBtn.click();
     await this.wait(2000);
   }

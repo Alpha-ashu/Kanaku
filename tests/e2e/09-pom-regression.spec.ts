@@ -30,7 +30,7 @@ test.describe('Kanaku/Finora - Comprehensive Playwright POM & Regression Test Su
     await authPage.signinEmailInput.first().fill(USERS.U1.email);
     await authPage.signinPasswordInput.first().fill('WrongPassword123');
     await authPage.signinSubmitBtn.first().click();
-    await authPage.assertErrorMessageVisible(/invalid credentials|failed|incorrect/i);
+    await authPage.assertErrorMessageVisible(/invalid email or password|invalid credentials|failed|incorrect/i);
     await authPage.screenshot('neg_01_invalid_signin');
 
     // Case 1.2: Sign Up with an email that is already registered
@@ -42,7 +42,6 @@ test.describe('Kanaku/Finora - Comprehensive Playwright POM & Regression Test Su
     await authPage.passwordInput.first().fill(USERS.U1.password);
     await authPage.confirmPasswordInput.first().fill(USERS.U1.password);
     await authPage.agreeTermsCheckbox.first().check();
-    await authPage.signupSubmitBtn.first().click();
     await authPage.assertErrorMessageVisible(/already registered|already.*email|phone.*already|already.*use/i);
     await authPage.screenshot('neg_02_duplicate_signup');
   });

@@ -1223,6 +1223,7 @@ export const Accounts: React.FC = () => {
                             ].map((opt) => (
                                 <button
                                     key={opt.type}
+                                    data-testid={`transaction-modal-type-${opt.type}-button`}
                                     onClick={() => {
                                         setShowTransactionTypeModal(false);
                                         if (activeCardAccountId) {

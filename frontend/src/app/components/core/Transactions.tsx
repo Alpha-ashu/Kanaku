@@ -859,28 +859,29 @@ export const Transactions: React.FC = () => {
         <p className="text-slate-500 font-medium mb-8">What kind of transaction is this?</p>
 
         <div className="space-y-3">
-          {[
-            { type: 'expense', label: 'Expense', desc: 'Money spent', color: 'bg-rose-50 text-rose-700 hover:bg-rose-100', icon: ArrowDownLeft },
-            { type: 'income', label: 'Income', desc: 'Money received', color: 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100', icon: ArrowUpRight },
-            { type: 'transfer', label: 'Transfer', desc: 'Move between accounts', color: 'bg-blue-50 text-blue-700 hover:bg-blue-100', icon: Repeat2 },
-          ].map((opt) => (
-            <button
-              key={opt.type}
-              onClick={() => {
-                setShowTransactionTypeModal(false);
-                if (opt.type === 'transfer') {
-                  // Always open the Transfer page
-                  setCurrentPage('transfer');
-                } else {
-                  localStorage.setItem('quickFormType', opt.type);
-                  setCurrentPage('add-transaction');
-                }
-              }}
-              className={cn(
-                "w-full p-4 flex items-center gap-4 rounded-2xl transition-all border border-transparent hover:scale-[1.02] active:scale-[0.98]",
-                opt.color
-              )}
-            >
+            {[
+              { type: 'expense', label: 'Expense', desc: 'Money spent', color: 'bg-rose-50 text-rose-700 hover:bg-rose-100', icon: ArrowDownLeft },
+              { type: 'income', label: 'Income', desc: 'Money received', color: 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100', icon: ArrowUpRight },
+              { type: 'transfer', label: 'Transfer', desc: 'Move between accounts', color: 'bg-blue-50 text-blue-700 hover:bg-blue-100', icon: Repeat2 },
+            ].map((opt) => (
+              <button
+                key={opt.type}
+                data-testid={`transaction-modal-type-${opt.type}-button`}
+                onClick={() => {
+                  setShowTransactionTypeModal(false);
+                  if (opt.type === 'transfer') {
+                    // Always open the Transfer page
+                    setCurrentPage('transfer');
+                  } else {
+                    localStorage.setItem('quickFormType', opt.type);
+                    setCurrentPage('add-transaction');
+                  }
+                }}
+                className={cn(
+                  "w-full p-4 flex items-center gap-4 rounded-2xl transition-all border border-transparent hover:scale-[1.02] active:scale-[0.98]",
+                  opt.color
+                )}
+              >
               <div className="w-12 h-12 bg-white/80 rounded-xl flex items-center justify-center shadow-sm shrink-0">
                 <opt.icon size={22} />
               </div>

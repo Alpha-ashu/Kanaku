@@ -66,413 +66,25 @@
   },
   "suites": [
     {
-      "title": "01-registration.spec.ts",
-      "file": "01-registration.spec.ts",
+      "title": "09-pom-regression.spec.ts",
+      "file": "09-pom-regression.spec.ts",
       "column": 0,
       "line": 0,
       "specs": [],
       "suites": [
         {
-          "title": "User Registration – All 7 Personas",
-          "file": "01-registration.spec.ts",
-          "line": 8,
+          "title": "Kanaku/Finora - Comprehensive Playwright POM & Regression Test Suite",
+          "file": "09-pom-regression.spec.ts",
+          "line": 22,
           "column": 6,
           "specs": [
             {
-              "title": "Register U1: Arjun Sharma (Debt Manager)",
+              "title": "01. Negative Validations - Sign In & Sign Up Errors",
               "ok": true,
               "tags": [],
               "tests": [
                 {
-                  "timeout": 180000,
-                  "annotations": [
-                    {
-                      "type": "note",
-                      "description": "User already existed — treated as pass"
-                    }
-                  ],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 9243,
-                      "errors": [],
-                      "stdout": [
-                        {
-                          "text": "  ℹ️  arjun.test@kanaku.app already registered — skipping\n"
-                        }
-                      ],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-06-17T17:25:48.509Z",
-                      "annotations": [
-                        {
-                          "type": "note",
-                          "description": "User already existed — treated as pass"
-                        }
-                      ],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-68f44--Arjun-Sharma-Debt-Manager--chromium\\test-finished-1.png"
-                        }
-                      ]
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "180cc0718174fb543e11-de044b99cce50d3afdd3",
-              "file": "01-registration.spec.ts",
-              "line": 12,
-              "column": 5
-            },
-            {
-              "title": "Register U2: Priya Mehta (Group Splitter)",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 180000,
-                  "annotations": [
-                    {
-                      "type": "note",
-                      "description": "User already existed — treated as pass"
-                    }
-                  ],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 8482,
-                      "errors": [],
-                      "stdout": [
-                        {
-                          "text": "  ℹ️  priya.test@kanaku.app already registered — skipping\n"
-                        }
-                      ],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-06-17T17:25:58.404Z",
-                      "annotations": [
-                        {
-                          "type": "note",
-                          "description": "User already existed — treated as pass"
-                        }
-                      ],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-86b22-Priya-Mehta-Group-Splitter--chromium\\test-finished-1.png"
-                        }
-                      ]
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "180cc0718174fb543e11-21510b2fa9920e7bfc8a",
-              "file": "01-registration.spec.ts",
-              "line": 12,
-              "column": 5
-            },
-            {
-              "title": "Register U3: Rohan Verma (Investor)",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 180000,
-                  "annotations": [
-                    {
-                      "type": "note",
-                      "description": "User already existed — treated as pass"
-                    }
-                  ],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 9189,
-                      "errors": [],
-                      "stdout": [
-                        {
-                          "text": "  ℹ️  rohan.test@kanaku.app already registered — skipping\n"
-                        }
-                      ],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-06-17T17:26:06.943Z",
-                      "annotations": [
-                        {
-                          "type": "note",
-                          "description": "User already existed — treated as pass"
-                        }
-                      ],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-cbb8e-er-U3-Rohan-Verma-Investor--chromium\\test-finished-1.png"
-                        }
-                      ]
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "180cc0718174fb543e11-80b6dadee4719c17c9d6",
-              "file": "01-registration.spec.ts",
-              "line": 12,
-              "column": 5
-            },
-            {
-              "title": "Register U4: Sneha Kapoor (Goal Setter)",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 180000,
-                  "annotations": [
-                    {
-                      "type": "note",
-                      "description": "User already existed — treated as pass"
-                    }
-                  ],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 10077,
-                      "errors": [],
-                      "stdout": [
-                        {
-                          "text": "  ℹ️  sneha.test@kanaku.app already registered — skipping\n"
-                        }
-                      ],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-06-17T17:26:16.217Z",
-                      "annotations": [
-                        {
-                          "type": "note",
-                          "description": "User already existed — treated as pass"
-                        }
-                      ],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-072dd-4-Sneha-Kapoor-Goal-Setter--chromium\\test-finished-1.png"
-                        }
-                      ]
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "180cc0718174fb543e11-b9233d0375095f555a66",
-              "file": "01-registration.spec.ts",
-              "line": 12,
-              "column": 5
-            },
-            {
-              "title": "Register U5: Dev Nair (Portfolio Builder)",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 180000,
-                  "annotations": [
-                    {
-                      "type": "note",
-                      "description": "User already existed — treated as pass"
-                    }
-                  ],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 9346,
-                      "errors": [],
-                      "stdout": [
-                        {
-                          "text": "  ℹ️  dev.test@kanaku.app already registered — skipping\n"
-                        }
-                      ],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-06-17T17:26:26.361Z",
-                      "annotations": [
-                        {
-                          "type": "note",
-                          "description": "User already existed — treated as pass"
-                        }
-                      ],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-a249b-Dev-Nair-Portfolio-Builder--chromium\\test-finished-1.png"
-                        }
-                      ]
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "180cc0718174fb543e11-b8c4e63d383cb3a2aa0f",
-              "file": "01-registration.spec.ts",
-              "line": 12,
-              "column": 5
-            },
-            {
-              "title": "Register U6: Isha Patel (Planner)",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 180000,
-                  "annotations": [
-                    {
-                      "type": "note",
-                      "description": "User already existed — treated as pass"
-                    }
-                  ],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 11207,
-                      "errors": [],
-                      "stdout": [
-                        {
-                          "text": "  ℹ️  isha.test@kanaku.app already registered — skipping\n"
-                        }
-                      ],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-06-17T17:26:35.778Z",
-                      "annotations": [
-                        {
-                          "type": "note",
-                          "description": "User already existed — treated as pass"
-                        }
-                      ],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-f3f5a-ster-U6-Isha-Patel-Planner--chromium\\test-finished-1.png"
-                        }
-                      ]
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "180cc0718174fb543e11-4f0c395bd55e21c05e84",
-              "file": "01-registration.spec.ts",
-              "line": 12,
-              "column": 5
-            },
-            {
-              "title": "Register U7: Power User (Power User)",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 180000,
-                  "annotations": [
-                    {
-                      "type": "note",
-                      "description": "User already existed — treated as pass"
-                    }
-                  ],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 10682,
-                      "errors": [],
-                      "stdout": [
-                        {
-                          "text": "  ℹ️  admin.test@kanaku.app already registered — skipping\n"
-                        }
-                      ],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-06-17T17:26:47.084Z",
-                      "annotations": [
-                        {
-                          "type": "note",
-                          "description": "User already existed — treated as pass"
-                        }
-                      ],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-af66e-r-U7-Power-User-Power-User--chromium\\test-finished-1.png"
-                        }
-                      ]
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "180cc0718174fb543e11-7ead62567899ae25bb2a",
-              "file": "01-registration.spec.ts",
-              "line": 12,
-              "column": 5
-            }
-          ]
-        },
-        {
-          "title": "Login – Verify All Accounts Work",
-          "file": "01-registration.spec.ts",
-          "line": 40,
-          "column": 6,
-          "specs": [
-            {
-              "title": "Login U1: arjun.test@kanaku.app",
-              "ok": true,
-              "tags": [
-                "kanaku.app"
-              ],
-              "tests": [
-                {
-                  "timeout": 180000,
+                  "timeout": 240000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
@@ -482,18 +94,18 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 41637,
+                      "duration": 19486,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-17T17:26:57.879Z",
+                      "startTime": "2026-06-17T17:44:35.923Z",
                       "annotations": [],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-42e48-in-U1-arjun-test-kanaku-app-chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\09-pom-regression-Kanaku-F-438f5-ns---Sign-In-Sign-Up-Errors-chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -501,20 +113,58 @@
                   "status": "expected"
                 }
               ],
-              "id": "180cc0718174fb543e11-eaa4e954688a5ee41d4d",
-              "file": "01-registration.spec.ts",
-              "line": 44,
-              "column": 5
+              "id": "ae96145aa1befaaf3af9-5f400e1cc7bfa6e1a66c",
+              "file": "09-pom-regression.spec.ts",
+              "line": 25,
+              "column": 3
             },
             {
-              "title": "Login U2: priya.test@kanaku.app",
+              "title": "02. Positive Registration & Onboarding Flow",
               "ok": true,
-              "tags": [
-                "kanaku.app"
-              ],
+              "tags": [],
               "tests": [
                 {
-                  "timeout": 180000,
+                  "timeout": 240000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 70974,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-17T17:44:55.961Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\09-pom-regression-Kanaku-F-281b9-egistration-Onboarding-Flow-chromium\\test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "ae96145aa1befaaf3af9-9fc993c85f6ac516cc77",
+              "file": "09-pom-regression.spec.ts",
+              "line": 49,
+              "column": 3
+            },
+            {
+              "title": "03. Account Creation & Invalid Numeric Validation",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 240000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
@@ -524,771 +174,988 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "failed",
-                      "duration": 10454,
+                      "duration": 70114,
                       "error": {
-                        "message": "Error: apiRequestContext.post: connect ECONNREFUSED ::1:3000\nCall log:\n\u001b[2m  - → POST http://localhost:3000/api/v1/auth/login/challenge\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - x-pw-encoding: sha256\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 111\u001b[22m\n",
-                        "stack": "Error: apiRequestContext.post: connect ECONNREFUSED ::1:3000\nCall log:\n\u001b[2m  - → POST http://localhost:3000/api/v1/auth/login/challenge\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - x-pw-encoding: sha256\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 111\u001b[22m\n\n    at apiRequestContext.post: connect ECONNREFUSED ::1:3000\n    at tryChallenge (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:49:35)\n    at loginUser (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:60:23)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:45:7",
+                        "message": "TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: /add account|new account|\\+ account/i }).first()\u001b[22m\n",
+                        "stack": "TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: /add account|new account|\\+ account/i }).first()\u001b[22m\n\n    at AccountPage.clickAddAccount (K:\\Project\\kenku\\Finora\\tests\\e2e\\pom\\AccountPage.ts:22:38)\n    at AccountPage.createAccount (K:\\Project\\kenku\\Finora\\tests\\e2e\\pom\\AccountPage.ts:89:16)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\09-pom-regression.spec.ts:97:23",
                         "location": {
-                          "file": "apiRequestContext.post: connect ECONNREFUSED :",
-                          "column": 3000,
-                          "line": 1
-                        }
+                          "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\pom\\AccountPage.ts",
+                          "column": 38,
+                          "line": 22
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mpom\\AccountPage.ts:22\n\n\u001b[0m \u001b[90m 20 |\u001b[39m\n \u001b[90m 21 |\u001b[39m   \u001b[36masync\u001b[39m clickAddAccount() {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 22 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39maddAccountBtn\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                      \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 23 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mwait(\u001b[35m800\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 24 |\u001b[39m   }\n \u001b[90m 25 |\u001b[39m\u001b[0m"
                       },
                       "errors": [
                         {
                           "location": {
-                            "file": "apiRequestContext.post: connect ECONNREFUSED :",
-                            "column": 3000,
-                            "line": 1
+                            "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\pom\\AccountPage.ts",
+                            "column": 38,
+                            "line": 22
                           },
-                          "message": "Error: apiRequestContext.post: connect ECONNREFUSED ::1:3000\nCall log:\n\u001b[2m  - → POST http://localhost:3000/api/v1/auth/login/challenge\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - x-pw-encoding: sha256\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 111\u001b[22m\n\n    at apiRequestContext.post: connect ECONNREFUSED ::1:3000\n    at tryChallenge (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:49:35)\n    at loginUser (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:60:23)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:45:7"
+                          "message": "TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: /add account|new account|\\+ account/i }).first()\u001b[22m\n\n\n   at pom\\AccountPage.ts:22\n\n  20 |\n  21 |   async clickAddAccount() {\n> 22 |     await this.addAccountBtn.first().click();\n     |                                      ^\n  23 |     await this.wait(800);\n  24 |   }\n  25 |\n    at AccountPage.clickAddAccount (K:\\Project\\kenku\\Finora\\tests\\e2e\\pom\\AccountPage.ts:22:38)\n    at AccountPage.createAccount (K:\\Project\\kenku\\Finora\\tests\\e2e\\pom\\AccountPage.ts:89:16)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\09-pom-regression.spec.ts:97:23"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-17T17:27:39.589Z",
+                      "startTime": "2026-06-17T17:46:07.034Z",
                       "annotations": [],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-e0348-in-U2-priya-test-kanaku-app-chromium\\test-failed-1.png"
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\09-pom-regression-Kanaku-F-e9c67--Invalid-Numeric-Validation-chromium\\test-failed-1.png"
                         },
                         {
                           "name": "video",
                           "contentType": "video/webm",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-e0348-in-U2-priya-test-kanaku-app-chromium\\video.webm"
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\09-pom-regression-Kanaku-F-e9c67--Invalid-Numeric-Validation-chromium\\video.webm"
                         },
                         {
                           "name": "error-context",
                           "contentType": "text/markdown",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-e0348-in-U2-priya-test-kanaku-app-chromium\\error-context.md"
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\09-pom-regression-Kanaku-F-e9c67--Invalid-Numeric-Validation-chromium\\error-context.md"
                         },
                         {
                           "name": "trace",
                           "contentType": "application/zip",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-e0348-in-U2-priya-test-kanaku-app-chromium\\trace.zip"
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\09-pom-regression-Kanaku-F-e9c67--Invalid-Numeric-Validation-chromium\\trace.zip"
                         }
                       ],
                       "errorLocation": {
-                        "file": "apiRequestContext.post: connect ECONNREFUSED :",
-                        "column": 3000,
-                        "line": 1
+                        "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\pom\\AccountPage.ts",
+                        "column": 38,
+                        "line": 22
                       }
                     },
                     {
                       "workerIndex": 1,
                       "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 79854,
-                      "errors": [],
+                      "status": "failed",
+                      "duration": 69684,
+                      "error": {
+                        "message": "TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: /add account|new account|\\+ account/i }).first()\u001b[22m\n",
+                        "stack": "TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: /add account|new account|\\+ account/i }).first()\u001b[22m\n\n    at AccountPage.clickAddAccount (K:\\Project\\kenku\\Finora\\tests\\e2e\\pom\\AccountPage.ts:22:38)\n    at AccountPage.createAccount (K:\\Project\\kenku\\Finora\\tests\\e2e\\pom\\AccountPage.ts:89:16)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\09-pom-regression.spec.ts:97:23",
+                        "location": {
+                          "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\pom\\AccountPage.ts",
+                          "column": 38,
+                          "line": 22
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mpom\\AccountPage.ts:22\n\n\u001b[0m \u001b[90m 20 |\u001b[39m\n \u001b[90m 21 |\u001b[39m   \u001b[36masync\u001b[39m clickAddAccount() {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 22 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39maddAccountBtn\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                      \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 23 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mwait(\u001b[35m800\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 24 |\u001b[39m   }\n \u001b[90m 25 |\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\pom\\AccountPage.ts",
+                            "column": 38,
+                            "line": 22
+                          },
+                          "message": "TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: /add account|new account|\\+ account/i }).first()\u001b[22m\n\n\n   at pom\\AccountPage.ts:22\n\n  20 |\n  21 |   async clickAddAccount() {\n> 22 |     await this.addAccountBtn.first().click();\n     |                                      ^\n  23 |     await this.wait(800);\n  24 |   }\n  25 |\n    at AccountPage.clickAddAccount (K:\\Project\\kenku\\Finora\\tests\\e2e\\pom\\AccountPage.ts:22:38)\n    at AccountPage.createAccount (K:\\Project\\kenku\\Finora\\tests\\e2e\\pom\\AccountPage.ts:89:16)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\09-pom-regression.spec.ts:97:23"
+                        }
+                      ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 1,
-                      "startTime": "2026-06-17T17:27:56.058Z",
+                      "startTime": "2026-06-17T17:47:22.068Z",
                       "annotations": [],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-e0348-in-U2-priya-test-kanaku-app-chromium-retry1\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\09-pom-regression-Kanaku-F-e9c67--Invalid-Numeric-Validation-chromium-retry1\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\09-pom-regression-Kanaku-F-e9c67--Invalid-Numeric-Validation-chromium-retry1\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\09-pom-regression-Kanaku-F-e9c67--Invalid-Numeric-Validation-chromium-retry1\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\09-pom-regression-Kanaku-F-e9c67--Invalid-Numeric-Validation-chromium-retry1\\trace.zip"
                         }
-                      ]
+                      ],
+                      "errorLocation": {
+                        "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\pom\\AccountPage.ts",
+                        "column": 38,
+                        "line": 22
+                      }
                     }
                   ],
-                  "status": "flaky"
+                  "status": "unexpected"
                 }
               ],
-              "id": "180cc0718174fb543e11-0917b51b290f6047d7b1",
-              "file": "01-registration.spec.ts",
-              "line": 44,
-              "column": 5
+              "id": "ae96145aa1befaaf3af9-b5d0adfd5b48e55c7487",
+              "file": "09-pom-regression.spec.ts",
+              "line": 61,
+              "column": 3
             },
             {
-              "title": "Login U3: rohan.test@kanaku.app",
+              "title": "04. Transactions, Double-Submit Prevention, and Direct DB Check",
               "ok": false,
-              "tags": [
-                "kanaku.app"
-              ],
+              "tags": [],
               "tests": [
                 {
-                  "timeout": 180000,
+                  "timeout": 240000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
                   "projectName": "chromium",
                   "results": [
-                    {
-                      "workerIndex": 1,
-                      "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 9911,
-                      "error": {
-                        "message": "Error: apiRequestContext.post: connect ECONNREFUSED ::1:3000\nCall log:\n\u001b[2m  - → POST http://localhost:3000/api/v1/auth/login/challenge\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - x-pw-encoding: sha256\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 111\u001b[22m\n",
-                        "stack": "Error: apiRequestContext.post: connect ECONNREFUSED ::1:3000\nCall log:\n\u001b[2m  - → POST http://localhost:3000/api/v1/auth/login/challenge\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - x-pw-encoding: sha256\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 111\u001b[22m\n\n    at apiRequestContext.post: connect ECONNREFUSED ::1:3000\n    at tryChallenge (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:49:35)\n    at loginUser (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:60:23)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:45:7",
-                        "location": {
-                          "file": "apiRequestContext.post: connect ECONNREFUSED :",
-                          "column": 3000,
-                          "line": 1
-                        }
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "apiRequestContext.post: connect ECONNREFUSED :",
-                            "column": 3000,
-                            "line": 1
-                          },
-                          "message": "Error: apiRequestContext.post: connect ECONNREFUSED ::1:3000\nCall log:\n\u001b[2m  - → POST http://localhost:3000/api/v1/auth/login/challenge\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - x-pw-encoding: sha256\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 111\u001b[22m\n\n    at apiRequestContext.post: connect ECONNREFUSED ::1:3000\n    at tryChallenge (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:49:35)\n    at loginUser (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:60:23)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:45:7"
-                        }
-                      ],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-06-17T17:29:17.055Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-45b2b-in-U3-rohan-test-kanaku-app-chromium\\test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-45b2b-in-U3-rohan-test-kanaku-app-chromium\\video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-45b2b-in-U3-rohan-test-kanaku-app-chromium\\error-context.md"
-                        },
-                        {
-                          "name": "trace",
-                          "contentType": "application/zip",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-45b2b-in-U3-rohan-test-kanaku-app-chromium\\trace.zip"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "apiRequestContext.post: connect ECONNREFUSED :",
-                        "column": 3000,
-                        "line": 1
-                      }
-                    },
                     {
                       "workerIndex": 2,
                       "parallelIndex": 0,
                       "status": "failed",
-                      "duration": 9959,
+                      "duration": 50561,
                       "error": {
-                        "message": "Error: apiRequestContext.post: connect ECONNREFUSED ::1:3000\nCall log:\n\u001b[2m  - → POST http://localhost:3000/api/v1/auth/login/challenge\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - x-pw-encoding: sha256\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 111\u001b[22m\n",
-                        "stack": "Error: apiRequestContext.post: connect ECONNREFUSED ::1:3000\nCall log:\n\u001b[2m  - → POST http://localhost:3000/api/v1/auth/login/challenge\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - x-pw-encoding: sha256\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 111\u001b[22m\n\n    at apiRequestContext.post: connect ECONNREFUSED ::1:3000\n    at tryChallenge (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:49:35)\n    at loginUser (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:60:23)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:45:7",
+                        "message": "TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"transaction-type-expense-tab\"]').first()\u001b[22m\n",
+                        "stack": "TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"transaction-type-expense-tab\"]').first()\u001b[22m\n\n    at TransactionPage.selectType (K:\\Project\\kenku\\Finora\\tests\\e2e\\pom\\TransactionPage.ts:38:23)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\09-pom-regression.spec.ts:129:19",
                         "location": {
-                          "file": "apiRequestContext.post: connect ECONNREFUSED :",
-                          "column": 3000,
-                          "line": 1
-                        }
+                          "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\pom\\TransactionPage.ts",
+                          "column": 23,
+                          "line": 38
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mpom\\TransactionPage.ts:38\n\n\u001b[0m \u001b[90m 36 |\u001b[39m   \u001b[36masync\u001b[39m selectType(type\u001b[33m:\u001b[39m \u001b[32m'expense'\u001b[39m \u001b[33m|\u001b[39m \u001b[32m'income'\u001b[39m \u001b[33m|\u001b[39m \u001b[32m'transfer'\u001b[39m) {\n \u001b[90m 37 |\u001b[39m     \u001b[36mconst\u001b[39m tab \u001b[33m=\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mpage\u001b[33m.\u001b[39mlocator(\u001b[32m`[data-testid=\"transaction-type-${type}-tab\"]`\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 38 |\u001b[39m     \u001b[36mawait\u001b[39m tab\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                       \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 39 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mwait(\u001b[35m500\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 40 |\u001b[39m   }\n \u001b[90m 41 |\u001b[39m\u001b[0m"
                       },
                       "errors": [
                         {
                           "location": {
-                            "file": "apiRequestContext.post: connect ECONNREFUSED :",
-                            "column": 3000,
-                            "line": 1
+                            "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\pom\\TransactionPage.ts",
+                            "column": 23,
+                            "line": 38
                           },
-                          "message": "Error: apiRequestContext.post: connect ECONNREFUSED ::1:3000\nCall log:\n\u001b[2m  - → POST http://localhost:3000/api/v1/auth/login/challenge\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - x-pw-encoding: sha256\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 111\u001b[22m\n\n    at apiRequestContext.post: connect ECONNREFUSED ::1:3000\n    at tryChallenge (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:49:35)\n    at loginUser (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:60:23)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:45:7"
+                          "message": "TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"transaction-type-expense-tab\"]').first()\u001b[22m\n\n\n   at pom\\TransactionPage.ts:38\n\n  36 |   async selectType(type: 'expense' | 'income' | 'transfer') {\n  37 |     const tab = this.page.locator(`[data-testid=\"transaction-type-${type}-tab\"]`);\n> 38 |     await tab.first().click();\n     |                       ^\n  39 |     await this.wait(500);\n  40 |   }\n  41 |\n    at TransactionPage.selectType (K:\\Project\\kenku\\Finora\\tests\\e2e\\pom\\TransactionPage.ts:38:23)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\09-pom-regression.spec.ts:129:19"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
-                      "retry": 1,
-                      "startTime": "2026-06-17T17:29:29.577Z",
+                      "retry": 0,
+                      "startTime": "2026-06-17T17:48:35.780Z",
                       "annotations": [],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-45b2b-in-U3-rohan-test-kanaku-app-chromium-retry1\\test-failed-1.png"
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\09-pom-regression-Kanaku-F-3ee8d-vention-and-Direct-DB-Check-chromium\\test-failed-1.png"
                         },
                         {
                           "name": "video",
                           "contentType": "video/webm",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-45b2b-in-U3-rohan-test-kanaku-app-chromium-retry1\\video.webm"
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\09-pom-regression-Kanaku-F-3ee8d-vention-and-Direct-DB-Check-chromium\\video.webm"
                         },
                         {
                           "name": "error-context",
                           "contentType": "text/markdown",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-45b2b-in-U3-rohan-test-kanaku-app-chromium-retry1\\error-context.md"
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\09-pom-regression-Kanaku-F-3ee8d-vention-and-Direct-DB-Check-chromium\\error-context.md"
                         },
                         {
                           "name": "trace",
                           "contentType": "application/zip",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-45b2b-in-U3-rohan-test-kanaku-app-chromium-retry1\\trace.zip"
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\09-pom-regression-Kanaku-F-3ee8d-vention-and-Direct-DB-Check-chromium\\trace.zip"
                         }
                       ],
                       "errorLocation": {
-                        "file": "apiRequestContext.post: connect ECONNREFUSED :",
-                        "column": 3000,
-                        "line": 1
+                        "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\pom\\TransactionPage.ts",
+                        "column": 23,
+                        "line": 38
                       }
-                    }
-                  ],
-                  "status": "unexpected"
-                }
-              ],
-              "id": "180cc0718174fb543e11-c2cf14e8f968ddf587da",
-              "file": "01-registration.spec.ts",
-              "line": 44,
-              "column": 5
-            },
-            {
-              "title": "Login U4: sneha.test@kanaku.app",
-              "ok": false,
-              "tags": [
-                "kanaku.app"
-              ],
-              "tests": [
-                {
-                  "timeout": 180000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
+                    },
                     {
                       "workerIndex": 3,
                       "parallelIndex": 0,
                       "status": "failed",
-                      "duration": 9210,
+                      "duration": 51523,
                       "error": {
-                        "message": "Error: apiRequestContext.post: connect ECONNREFUSED ::1:3000\nCall log:\n\u001b[2m  - → POST http://localhost:3000/api/v1/auth/login/challenge\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - x-pw-encoding: sha256\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 111\u001b[22m\n",
-                        "stack": "Error: apiRequestContext.post: connect ECONNREFUSED ::1:3000\nCall log:\n\u001b[2m  - → POST http://localhost:3000/api/v1/auth/login/challenge\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - x-pw-encoding: sha256\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 111\u001b[22m\n\n    at apiRequestContext.post: connect ECONNREFUSED ::1:3000\n    at tryChallenge (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:49:35)\n    at loginUser (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:60:23)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:45:7",
+                        "message": "TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"transaction-type-expense-tab\"]').first()\u001b[22m\n",
+                        "stack": "TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"transaction-type-expense-tab\"]').first()\u001b[22m\n\n    at TransactionPage.selectType (K:\\Project\\kenku\\Finora\\tests\\e2e\\pom\\TransactionPage.ts:38:23)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\09-pom-regression.spec.ts:129:19",
                         "location": {
-                          "file": "apiRequestContext.post: connect ECONNREFUSED :",
-                          "column": 3000,
-                          "line": 1
-                        }
+                          "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\pom\\TransactionPage.ts",
+                          "column": 23,
+                          "line": 38
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mpom\\TransactionPage.ts:38\n\n\u001b[0m \u001b[90m 36 |\u001b[39m   \u001b[36masync\u001b[39m selectType(type\u001b[33m:\u001b[39m \u001b[32m'expense'\u001b[39m \u001b[33m|\u001b[39m \u001b[32m'income'\u001b[39m \u001b[33m|\u001b[39m \u001b[32m'transfer'\u001b[39m) {\n \u001b[90m 37 |\u001b[39m     \u001b[36mconst\u001b[39m tab \u001b[33m=\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mpage\u001b[33m.\u001b[39mlocator(\u001b[32m`[data-testid=\"transaction-type-${type}-tab\"]`\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 38 |\u001b[39m     \u001b[36mawait\u001b[39m tab\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                       \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 39 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mwait(\u001b[35m500\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 40 |\u001b[39m   }\n \u001b[90m 41 |\u001b[39m\u001b[0m"
                       },
                       "errors": [
                         {
                           "location": {
-                            "file": "apiRequestContext.post: connect ECONNREFUSED :",
-                            "column": 3000,
-                            "line": 1
+                            "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\pom\\TransactionPage.ts",
+                            "column": 23,
+                            "line": 38
                           },
-                          "message": "Error: apiRequestContext.post: connect ECONNREFUSED ::1:3000\nCall log:\n\u001b[2m  - → POST http://localhost:3000/api/v1/auth/login/challenge\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - x-pw-encoding: sha256\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 111\u001b[22m\n\n    at apiRequestContext.post: connect ECONNREFUSED ::1:3000\n    at tryChallenge (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:49:35)\n    at loginUser (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:60:23)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:45:7"
+                          "message": "TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"transaction-type-expense-tab\"]').first()\u001b[22m\n\n\n   at pom\\TransactionPage.ts:38\n\n  36 |   async selectType(type: 'expense' | 'income' | 'transfer') {\n  37 |     const tab = this.page.locator(`[data-testid=\"transaction-type-${type}-tab\"]`);\n> 38 |     await tab.first().click();\n     |                       ^\n  39 |     await this.wait(500);\n  40 |   }\n  41 |\n    at TransactionPage.selectType (K:\\Project\\kenku\\Finora\\tests\\e2e\\pom\\TransactionPage.ts:38:23)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\09-pom-regression.spec.ts:129:19"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-06-17T17:29:42.504Z",
+                      "retry": 1,
+                      "startTime": "2026-06-17T17:49:29.321Z",
                       "annotations": [],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-0fbfb-in-U4-sneha-test-kanaku-app-chromium\\test-failed-1.png"
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\09-pom-regression-Kanaku-F-3ee8d-vention-and-Direct-DB-Check-chromium-retry1\\test-failed-1.png"
                         },
                         {
                           "name": "video",
                           "contentType": "video/webm",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-0fbfb-in-U4-sneha-test-kanaku-app-chromium\\video.webm"
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\09-pom-regression-Kanaku-F-3ee8d-vention-and-Direct-DB-Check-chromium-retry1\\video.webm"
                         },
                         {
                           "name": "error-context",
                           "contentType": "text/markdown",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-0fbfb-in-U4-sneha-test-kanaku-app-chromium\\error-context.md"
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\09-pom-regression-Kanaku-F-3ee8d-vention-and-Direct-DB-Check-chromium-retry1\\error-context.md"
                         },
                         {
                           "name": "trace",
                           "contentType": "application/zip",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-0fbfb-in-U4-sneha-test-kanaku-app-chromium\\trace.zip"
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\09-pom-regression-Kanaku-F-3ee8d-vention-and-Direct-DB-Check-chromium-retry1\\trace.zip"
                         }
                       ],
                       "errorLocation": {
-                        "file": "apiRequestContext.post: connect ECONNREFUSED :",
-                        "column": 3000,
-                        "line": 1
+                        "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\pom\\TransactionPage.ts",
+                        "column": 23,
+                        "line": 38
                       }
-                    },
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "ae96145aa1befaaf3af9-ae118259937a605fb7b0",
+              "file": "09-pom-regression.spec.ts",
+              "line": 118,
+              "column": 3
+            },
+            {
+              "title": "05. Goals & Contribution Tracking",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 240000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
                     {
                       "workerIndex": 4,
                       "parallelIndex": 0,
                       "status": "failed",
-                      "duration": 8809,
+                      "duration": 52646,
                       "error": {
-                        "message": "Error: apiRequestContext.post: connect ECONNREFUSED ::1:3000\nCall log:\n\u001b[2m  - → POST http://localhost:3000/api/v1/auth/login/challenge\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - x-pw-encoding: sha256\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 111\u001b[22m\n",
-                        "stack": "Error: apiRequestContext.post: connect ECONNREFUSED ::1:3000\nCall log:\n\u001b[2m  - → POST http://localhost:3000/api/v1/auth/login/challenge\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - x-pw-encoding: sha256\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 111\u001b[22m\n\n    at apiRequestContext.post: connect ECONNREFUSED ::1:3000\n    at tryChallenge (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:49:35)\n    at loginUser (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:60:23)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:45:7",
+                        "message": "TimeoutError: locator.fill: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[name=\"name\"], input[name=\"title\"], input[placeholder*=\"goal\" i], input[placeholder*=\"name\" i]').first()\u001b[22m\n",
+                        "stack": "TimeoutError: locator.fill: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[name=\"name\"], input[name=\"title\"], input[placeholder*=\"goal\" i], input[placeholder*=\"name\" i]').first()\u001b[22m\n\n    at GoalPage.createGoal (K:\\Project\\kenku\\Finora\\tests\\e2e\\pom\\GoalPage.ts:32:34)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\09-pom-regression.spec.ts:192:5",
                         "location": {
-                          "file": "apiRequestContext.post: connect ECONNREFUSED :",
-                          "column": 3000,
-                          "line": 1
-                        }
+                          "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\pom\\GoalPage.ts",
+                          "column": 34,
+                          "line": 32
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mpom\\GoalPage.ts:32\n\n\u001b[0m \u001b[90m 30 |\u001b[39m   }) {\n \u001b[90m 31 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mclickAddGoal()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 32 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mnameInput\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39mfill(options\u001b[33m.\u001b[39mname)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                  \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 33 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mtargetAmountInput\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39mfill(options\u001b[33m.\u001b[39mtargetAmount)\u001b[33m;\u001b[39m\n \u001b[90m 34 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mtargetDateInput\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39mfill(options\u001b[33m.\u001b[39mtargetDate)\u001b[33m;\u001b[39m\n \u001b[90m 35 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39msaveGoalBtn\u001b[33m.\u001b[39mlast()\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\u001b[0m"
                       },
                       "errors": [
                         {
                           "location": {
-                            "file": "apiRequestContext.post: connect ECONNREFUSED :",
-                            "column": 3000,
-                            "line": 1
+                            "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\pom\\GoalPage.ts",
+                            "column": 34,
+                            "line": 32
                           },
-                          "message": "Error: apiRequestContext.post: connect ECONNREFUSED ::1:3000\nCall log:\n\u001b[2m  - → POST http://localhost:3000/api/v1/auth/login/challenge\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - x-pw-encoding: sha256\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 111\u001b[22m\n\n    at apiRequestContext.post: connect ECONNREFUSED ::1:3000\n    at tryChallenge (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:49:35)\n    at loginUser (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:60:23)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:45:7"
+                          "message": "TimeoutError: locator.fill: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[name=\"name\"], input[name=\"title\"], input[placeholder*=\"goal\" i], input[placeholder*=\"name\" i]').first()\u001b[22m\n\n\n   at pom\\GoalPage.ts:32\n\n  30 |   }) {\n  31 |     await this.clickAddGoal();\n> 32 |     await this.nameInput.first().fill(options.name);\n     |                                  ^\n  33 |     await this.targetAmountInput.first().fill(options.targetAmount);\n  34 |     await this.targetDateInput.first().fill(options.targetDate);\n  35 |     await this.saveGoalBtn.last().click();\n    at GoalPage.createGoal (K:\\Project\\kenku\\Finora\\tests\\e2e\\pom\\GoalPage.ts:32:34)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\09-pom-regression.spec.ts:192:5"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
-                      "retry": 1,
-                      "startTime": "2026-06-17T17:29:54.507Z",
+                      "retry": 0,
+                      "startTime": "2026-06-17T17:50:24.389Z",
                       "annotations": [],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-0fbfb-in-U4-sneha-test-kanaku-app-chromium-retry1\\test-failed-1.png"
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\09-pom-regression-Kanaku-F-e263b-Goals-Contribution-Tracking-chromium\\test-failed-1.png"
                         },
                         {
                           "name": "video",
                           "contentType": "video/webm",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-0fbfb-in-U4-sneha-test-kanaku-app-chromium-retry1\\video.webm"
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\09-pom-regression-Kanaku-F-e263b-Goals-Contribution-Tracking-chromium\\video.webm"
                         },
                         {
                           "name": "error-context",
                           "contentType": "text/markdown",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-0fbfb-in-U4-sneha-test-kanaku-app-chromium-retry1\\error-context.md"
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\09-pom-regression-Kanaku-F-e263b-Goals-Contribution-Tracking-chromium\\error-context.md"
                         },
                         {
                           "name": "trace",
                           "contentType": "application/zip",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-0fbfb-in-U4-sneha-test-kanaku-app-chromium-retry1\\trace.zip"
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\09-pom-regression-Kanaku-F-e263b-Goals-Contribution-Tracking-chromium\\trace.zip"
                         }
                       ],
                       "errorLocation": {
-                        "file": "apiRequestContext.post: connect ECONNREFUSED :",
-                        "column": 3000,
-                        "line": 1
+                        "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\pom\\GoalPage.ts",
+                        "column": 34,
+                        "line": 32
                       }
-                    }
-                  ],
-                  "status": "unexpected"
-                }
-              ],
-              "id": "180cc0718174fb543e11-80739b2e085265d36674",
-              "file": "01-registration.spec.ts",
-              "line": 44,
-              "column": 5
-            },
-            {
-              "title": "Login U5: dev.test@kanaku.app",
-              "ok": false,
-              "tags": [
-                "kanaku.app"
-              ],
-              "tests": [
-                {
-                  "timeout": 180000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
+                    },
                     {
                       "workerIndex": 5,
                       "parallelIndex": 0,
                       "status": "failed",
-                      "duration": 8981,
+                      "duration": 52396,
                       "error": {
-                        "message": "Error: apiRequestContext.post: connect ECONNREFUSED ::1:3000\nCall log:\n\u001b[2m  - → POST http://localhost:3000/api/v1/auth/login/challenge\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - x-pw-encoding: sha256\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 109\u001b[22m\n",
-                        "stack": "Error: apiRequestContext.post: connect ECONNREFUSED ::1:3000\nCall log:\n\u001b[2m  - → POST http://localhost:3000/api/v1/auth/login/challenge\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - x-pw-encoding: sha256\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 109\u001b[22m\n\n    at apiRequestContext.post: connect ECONNREFUSED ::1:3000\n    at tryChallenge (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:49:35)\n    at loginUser (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:60:23)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:45:7",
+                        "message": "TimeoutError: locator.fill: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[name=\"name\"], input[name=\"title\"], input[placeholder*=\"goal\" i], input[placeholder*=\"name\" i]').first()\u001b[22m\n",
+                        "stack": "TimeoutError: locator.fill: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[name=\"name\"], input[name=\"title\"], input[placeholder*=\"goal\" i], input[placeholder*=\"name\" i]').first()\u001b[22m\n\n    at GoalPage.createGoal (K:\\Project\\kenku\\Finora\\tests\\e2e\\pom\\GoalPage.ts:32:34)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\09-pom-regression.spec.ts:192:5",
                         "location": {
-                          "file": "apiRequestContext.post: connect ECONNREFUSED :",
-                          "column": 3000,
-                          "line": 1
-                        }
+                          "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\pom\\GoalPage.ts",
+                          "column": 34,
+                          "line": 32
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mpom\\GoalPage.ts:32\n\n\u001b[0m \u001b[90m 30 |\u001b[39m   }) {\n \u001b[90m 31 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mclickAddGoal()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 32 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mnameInput\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39mfill(options\u001b[33m.\u001b[39mname)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                  \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 33 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mtargetAmountInput\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39mfill(options\u001b[33m.\u001b[39mtargetAmount)\u001b[33m;\u001b[39m\n \u001b[90m 34 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mtargetDateInput\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39mfill(options\u001b[33m.\u001b[39mtargetDate)\u001b[33m;\u001b[39m\n \u001b[90m 35 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39msaveGoalBtn\u001b[33m.\u001b[39mlast()\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\u001b[0m"
                       },
                       "errors": [
                         {
                           "location": {
-                            "file": "apiRequestContext.post: connect ECONNREFUSED :",
-                            "column": 3000,
-                            "line": 1
+                            "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\pom\\GoalPage.ts",
+                            "column": 34,
+                            "line": 32
                           },
-                          "message": "Error: apiRequestContext.post: connect ECONNREFUSED ::1:3000\nCall log:\n\u001b[2m  - → POST http://localhost:3000/api/v1/auth/login/challenge\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - x-pw-encoding: sha256\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 109\u001b[22m\n\n    at apiRequestContext.post: connect ECONNREFUSED ::1:3000\n    at tryChallenge (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:49:35)\n    at loginUser (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:60:23)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:45:7"
+                          "message": "TimeoutError: locator.fill: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[name=\"name\"], input[name=\"title\"], input[placeholder*=\"goal\" i], input[placeholder*=\"name\" i]').first()\u001b[22m\n\n\n   at pom\\GoalPage.ts:32\n\n  30 |   }) {\n  31 |     await this.clickAddGoal();\n> 32 |     await this.nameInput.first().fill(options.name);\n     |                                  ^\n  33 |     await this.targetAmountInput.first().fill(options.targetAmount);\n  34 |     await this.targetDateInput.first().fill(options.targetDate);\n  35 |     await this.saveGoalBtn.last().click();\n    at GoalPage.createGoal (K:\\Project\\kenku\\Finora\\tests\\e2e\\pom\\GoalPage.ts:32:34)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\09-pom-regression.spec.ts:192:5"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-06-17T17:30:06.339Z",
+                      "retry": 1,
+                      "startTime": "2026-06-17T17:51:20.476Z",
                       "annotations": [],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-39725-ogin-U5-dev-test-kanaku-app-chromium\\test-failed-1.png"
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\09-pom-regression-Kanaku-F-e263b-Goals-Contribution-Tracking-chromium-retry1\\test-failed-1.png"
                         },
                         {
                           "name": "video",
                           "contentType": "video/webm",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-39725-ogin-U5-dev-test-kanaku-app-chromium\\video.webm"
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\09-pom-regression-Kanaku-F-e263b-Goals-Contribution-Tracking-chromium-retry1\\video.webm"
                         },
                         {
                           "name": "error-context",
                           "contentType": "text/markdown",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-39725-ogin-U5-dev-test-kanaku-app-chromium\\error-context.md"
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\09-pom-regression-Kanaku-F-e263b-Goals-Contribution-Tracking-chromium-retry1\\error-context.md"
                         },
                         {
                           "name": "trace",
                           "contentType": "application/zip",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-39725-ogin-U5-dev-test-kanaku-app-chromium\\trace.zip"
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\09-pom-regression-Kanaku-F-e263b-Goals-Contribution-Tracking-chromium-retry1\\trace.zip"
                         }
                       ],
                       "errorLocation": {
-                        "file": "apiRequestContext.post: connect ECONNREFUSED :",
-                        "column": 3000,
-                        "line": 1
+                        "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\pom\\GoalPage.ts",
+                        "column": 34,
+                        "line": 32
                       }
-                    },
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "ae96145aa1befaaf3af9-085d5d52e185cdd2aea6",
+              "file": "09-pom-regression.spec.ts",
+              "line": 182,
+              "column": 3
+            },
+            {
+              "title": "06. Todo List Planning & Team Split Share",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 240000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
                     {
                       "workerIndex": 6,
                       "parallelIndex": 0,
                       "status": "failed",
-                      "duration": 8855,
+                      "duration": 49312,
                       "error": {
-                        "message": "Error: apiRequestContext.post: connect ECONNREFUSED ::1:3000\nCall log:\n\u001b[2m  - → POST http://localhost:3000/api/v1/auth/login/challenge\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - x-pw-encoding: sha256\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 109\u001b[22m\n",
-                        "stack": "Error: apiRequestContext.post: connect ECONNREFUSED ::1:3000\nCall log:\n\u001b[2m  - → POST http://localhost:3000/api/v1/auth/login/challenge\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - x-pw-encoding: sha256\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 109\u001b[22m\n\n    at apiRequestContext.post: connect ECONNREFUSED ::1:3000\n    at tryChallenge (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:49:35)\n    at loginUser (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:60:23)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:45:7",
+                        "message": "TimeoutError: locator.fill: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[name=\"name\"], input[name=\"title\"], input[placeholder*=\"list\" i], input[placeholder*=\"name\" i]').first()\u001b[22m\n",
+                        "stack": "TimeoutError: locator.fill: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[name=\"name\"], input[name=\"title\"], input[placeholder*=\"list\" i], input[placeholder*=\"name\" i]').first()\u001b[22m\n\n    at TodoPage.createPersonalList (K:\\Project\\kenku\\Finora\\tests\\e2e\\pom\\TodoPage.ts:32:38)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\09-pom-regression.spec.ts:218:5",
                         "location": {
-                          "file": "apiRequestContext.post: connect ECONNREFUSED :",
-                          "column": 3000,
-                          "line": 1
-                        }
+                          "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\pom\\TodoPage.ts",
+                          "column": 38,
+                          "line": 32
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mpom\\TodoPage.ts:32\n\n\u001b[0m \u001b[90m 30 |\u001b[39m   \u001b[36masync\u001b[39m createPersonalList(name\u001b[33m:\u001b[39m string) {\n \u001b[90m 31 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mclickCreateList()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 32 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mlistNameInput\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39mfill(name)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                      \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 33 |\u001b[39m     \n \u001b[90m 34 |\u001b[39m     \u001b[36mconst\u001b[39m submitBtn \u001b[33m=\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39msaveListBtn\u001b[33m.\u001b[39mfirst()\u001b[33m;\u001b[39m\n \u001b[90m 35 |\u001b[39m     \u001b[36mif\u001b[39m (\u001b[36mawait\u001b[39m submitBtn\u001b[33m.\u001b[39misVisible()) {\u001b[0m"
                       },
                       "errors": [
                         {
                           "location": {
-                            "file": "apiRequestContext.post: connect ECONNREFUSED :",
-                            "column": 3000,
-                            "line": 1
+                            "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\pom\\TodoPage.ts",
+                            "column": 38,
+                            "line": 32
                           },
-                          "message": "Error: apiRequestContext.post: connect ECONNREFUSED ::1:3000\nCall log:\n\u001b[2m  - → POST http://localhost:3000/api/v1/auth/login/challenge\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - x-pw-encoding: sha256\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 109\u001b[22m\n\n    at apiRequestContext.post: connect ECONNREFUSED ::1:3000\n    at tryChallenge (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:49:35)\n    at loginUser (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:60:23)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:45:7"
+                          "message": "TimeoutError: locator.fill: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[name=\"name\"], input[name=\"title\"], input[placeholder*=\"list\" i], input[placeholder*=\"name\" i]').first()\u001b[22m\n\n\n   at pom\\TodoPage.ts:32\n\n  30 |   async createPersonalList(name: string) {\n  31 |     await this.clickCreateList();\n> 32 |     await this.listNameInput.first().fill(name);\n     |                                      ^\n  33 |     \n  34 |     const submitBtn = this.saveListBtn.first();\n  35 |     if (await submitBtn.isVisible()) {\n    at TodoPage.createPersonalList (K:\\Project\\kenku\\Finora\\tests\\e2e\\pom\\TodoPage.ts:32:38)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\09-pom-regression.spec.ts:218:5"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
-                      "retry": 1,
-                      "startTime": "2026-06-17T17:30:17.733Z",
+                      "retry": 0,
+                      "startTime": "2026-06-17T17:52:16.509Z",
                       "annotations": [],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-39725-ogin-U5-dev-test-kanaku-app-chromium-retry1\\test-failed-1.png"
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\09-pom-regression-Kanaku-F-9c334-t-Planning-Team-Split-Share-chromium\\test-failed-1.png"
                         },
                         {
                           "name": "video",
                           "contentType": "video/webm",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-39725-ogin-U5-dev-test-kanaku-app-chromium-retry1\\video.webm"
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\09-pom-regression-Kanaku-F-9c334-t-Planning-Team-Split-Share-chromium\\video.webm"
                         },
                         {
                           "name": "error-context",
                           "contentType": "text/markdown",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-39725-ogin-U5-dev-test-kanaku-app-chromium-retry1\\error-context.md"
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\09-pom-regression-Kanaku-F-9c334-t-Planning-Team-Split-Share-chromium\\error-context.md"
                         },
                         {
                           "name": "trace",
                           "contentType": "application/zip",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-39725-ogin-U5-dev-test-kanaku-app-chromium-retry1\\trace.zip"
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\09-pom-regression-Kanaku-F-9c334-t-Planning-Team-Split-Share-chromium\\trace.zip"
                         }
                       ],
                       "errorLocation": {
-                        "file": "apiRequestContext.post: connect ECONNREFUSED :",
-                        "column": 3000,
-                        "line": 1
+                        "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\pom\\TodoPage.ts",
+                        "column": 38,
+                        "line": 32
                       }
-                    }
-                  ],
-                  "status": "unexpected"
-                }
-              ],
-              "id": "180cc0718174fb543e11-4e7e16a3d708b318b9cc",
-              "file": "01-registration.spec.ts",
-              "line": 44,
-              "column": 5
-            },
-            {
-              "title": "Login U6: isha.test@kanaku.app",
-              "ok": false,
-              "tags": [
-                "kanaku.app"
-              ],
-              "tests": [
-                {
-                  "timeout": 180000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
+                    },
                     {
                       "workerIndex": 7,
                       "parallelIndex": 0,
                       "status": "failed",
-                      "duration": 10392,
+                      "duration": 49545,
                       "error": {
-                        "message": "Error: apiRequestContext.post: connect ECONNREFUSED ::1:3000\nCall log:\n\u001b[2m  - → POST http://localhost:3000/api/v1/auth/login/challenge\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - x-pw-encoding: sha256\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 110\u001b[22m\n",
-                        "stack": "Error: apiRequestContext.post: connect ECONNREFUSED ::1:3000\nCall log:\n\u001b[2m  - → POST http://localhost:3000/api/v1/auth/login/challenge\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - x-pw-encoding: sha256\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 110\u001b[22m\n\n    at apiRequestContext.post: connect ECONNREFUSED ::1:3000\n    at tryChallenge (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:49:35)\n    at loginUser (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:60:23)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:45:7",
+                        "message": "TimeoutError: locator.fill: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[name=\"name\"], input[name=\"title\"], input[placeholder*=\"list\" i], input[placeholder*=\"name\" i]').first()\u001b[22m\n",
+                        "stack": "TimeoutError: locator.fill: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[name=\"name\"], input[name=\"title\"], input[placeholder*=\"list\" i], input[placeholder*=\"name\" i]').first()\u001b[22m\n\n    at TodoPage.createPersonalList (K:\\Project\\kenku\\Finora\\tests\\e2e\\pom\\TodoPage.ts:32:38)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\09-pom-regression.spec.ts:218:5",
                         "location": {
-                          "file": "apiRequestContext.post: connect ECONNREFUSED :",
-                          "column": 3000,
-                          "line": 1
-                        }
+                          "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\pom\\TodoPage.ts",
+                          "column": 38,
+                          "line": 32
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mpom\\TodoPage.ts:32\n\n\u001b[0m \u001b[90m 30 |\u001b[39m   \u001b[36masync\u001b[39m createPersonalList(name\u001b[33m:\u001b[39m string) {\n \u001b[90m 31 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mclickCreateList()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 32 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mlistNameInput\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39mfill(name)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                      \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 33 |\u001b[39m     \n \u001b[90m 34 |\u001b[39m     \u001b[36mconst\u001b[39m submitBtn \u001b[33m=\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39msaveListBtn\u001b[33m.\u001b[39mfirst()\u001b[33m;\u001b[39m\n \u001b[90m 35 |\u001b[39m     \u001b[36mif\u001b[39m (\u001b[36mawait\u001b[39m submitBtn\u001b[33m.\u001b[39misVisible()) {\u001b[0m"
                       },
                       "errors": [
                         {
                           "location": {
-                            "file": "apiRequestContext.post: connect ECONNREFUSED :",
-                            "column": 3000,
-                            "line": 1
+                            "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\pom\\TodoPage.ts",
+                            "column": 38,
+                            "line": 32
                           },
-                          "message": "Error: apiRequestContext.post: connect ECONNREFUSED ::1:3000\nCall log:\n\u001b[2m  - → POST http://localhost:3000/api/v1/auth/login/challenge\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - x-pw-encoding: sha256\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 110\u001b[22m\n\n    at apiRequestContext.post: connect ECONNREFUSED ::1:3000\n    at tryChallenge (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:49:35)\n    at loginUser (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:60:23)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:45:7"
-                        }
-                      ],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-06-17T17:30:29.773Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-80515-gin-U6-isha-test-kanaku-app-chromium\\test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-80515-gin-U6-isha-test-kanaku-app-chromium\\video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-80515-gin-U6-isha-test-kanaku-app-chromium\\error-context.md"
-                        },
-                        {
-                          "name": "trace",
-                          "contentType": "application/zip",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-80515-gin-U6-isha-test-kanaku-app-chromium\\trace.zip"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "apiRequestContext.post: connect ECONNREFUSED :",
-                        "column": 3000,
-                        "line": 1
-                      }
-                    },
-                    {
-                      "workerIndex": 8,
-                      "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 10224,
-                      "error": {
-                        "message": "Error: apiRequestContext.post: connect ECONNREFUSED ::1:3000\nCall log:\n\u001b[2m  - → POST http://localhost:3000/api/v1/auth/login/challenge\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - x-pw-encoding: sha256\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 110\u001b[22m\n",
-                        "stack": "Error: apiRequestContext.post: connect ECONNREFUSED ::1:3000\nCall log:\n\u001b[2m  - → POST http://localhost:3000/api/v1/auth/login/challenge\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - x-pw-encoding: sha256\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 110\u001b[22m\n\n    at apiRequestContext.post: connect ECONNREFUSED ::1:3000\n    at tryChallenge (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:49:35)\n    at loginUser (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:60:23)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:45:7",
-                        "location": {
-                          "file": "apiRequestContext.post: connect ECONNREFUSED :",
-                          "column": 3000,
-                          "line": 1
-                        }
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "apiRequestContext.post: connect ECONNREFUSED :",
-                            "column": 3000,
-                            "line": 1
-                          },
-                          "message": "Error: apiRequestContext.post: connect ECONNREFUSED ::1:3000\nCall log:\n\u001b[2m  - → POST http://localhost:3000/api/v1/auth/login/challenge\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - x-pw-encoding: sha256\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 110\u001b[22m\n\n    at apiRequestContext.post: connect ECONNREFUSED ::1:3000\n    at tryChallenge (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:49:35)\n    at loginUser (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:60:23)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:45:7"
+                          "message": "TimeoutError: locator.fill: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[name=\"name\"], input[name=\"title\"], input[placeholder*=\"list\" i], input[placeholder*=\"name\" i]').first()\u001b[22m\n\n\n   at pom\\TodoPage.ts:32\n\n  30 |   async createPersonalList(name: string) {\n  31 |     await this.clickCreateList();\n> 32 |     await this.listNameInput.first().fill(name);\n     |                                      ^\n  33 |     \n  34 |     const submitBtn = this.saveListBtn.first();\n  35 |     if (await submitBtn.isVisible()) {\n    at TodoPage.createPersonalList (K:\\Project\\kenku\\Finora\\tests\\e2e\\pom\\TodoPage.ts:32:38)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\09-pom-regression.spec.ts:218:5"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 1,
-                      "startTime": "2026-06-17T17:30:44.189Z",
+                      "startTime": "2026-06-17T17:53:08.845Z",
                       "annotations": [],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-80515-gin-U6-isha-test-kanaku-app-chromium-retry1\\test-failed-1.png"
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\09-pom-regression-Kanaku-F-9c334-t-Planning-Team-Split-Share-chromium-retry1\\test-failed-1.png"
                         },
                         {
                           "name": "video",
                           "contentType": "video/webm",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-80515-gin-U6-isha-test-kanaku-app-chromium-retry1\\video.webm"
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\09-pom-regression-Kanaku-F-9c334-t-Planning-Team-Split-Share-chromium-retry1\\video.webm"
                         },
                         {
                           "name": "error-context",
                           "contentType": "text/markdown",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-80515-gin-U6-isha-test-kanaku-app-chromium-retry1\\error-context.md"
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\09-pom-regression-Kanaku-F-9c334-t-Planning-Team-Split-Share-chromium-retry1\\error-context.md"
                         },
                         {
                           "name": "trace",
                           "contentType": "application/zip",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-80515-gin-U6-isha-test-kanaku-app-chromium-retry1\\trace.zip"
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\09-pom-regression-Kanaku-F-9c334-t-Planning-Team-Split-Share-chromium-retry1\\trace.zip"
                         }
                       ],
                       "errorLocation": {
-                        "file": "apiRequestContext.post: connect ECONNREFUSED :",
-                        "column": 3000,
-                        "line": 1
+                        "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\pom\\TodoPage.ts",
+                        "column": 38,
+                        "line": 32
                       }
                     }
                   ],
                   "status": "unexpected"
                 }
               ],
-              "id": "180cc0718174fb543e11-b8308a26e501cfe69c44",
-              "file": "01-registration.spec.ts",
-              "line": 44,
-              "column": 5
+              "id": "ae96145aa1befaaf3af9-9fc9358708a6b9c49748",
+              "file": "09-pom-regression.spec.ts",
+              "line": 208,
+              "column": 3
             },
             {
-              "title": "Login U7: admin.test@kanaku.app",
+              "title": "07. Advisor Registration, Manager Compliance Review, and Approval",
               "ok": false,
-              "tags": [
-                "kanaku.app"
-              ],
+              "tags": [],
               "tests": [
                 {
-                  "timeout": 180000,
+                  "timeout": 240000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 9,
+                      "workerIndex": 8,
                       "parallelIndex": 0,
                       "status": "failed",
-                      "duration": 8901,
+                      "duration": 51065,
                       "error": {
-                        "message": "Error: apiRequestContext.post: connect ECONNREFUSED ::1:3000\nCall log:\n\u001b[2m  - → POST http://localhost:3000/api/v1/auth/login/challenge\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - x-pw-encoding: sha256\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 111\u001b[22m\n",
-                        "stack": "Error: apiRequestContext.post: connect ECONNREFUSED ::1:3000\nCall log:\n\u001b[2m  - → POST http://localhost:3000/api/v1/auth/login/challenge\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - x-pw-encoding: sha256\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 111\u001b[22m\n\n    at apiRequestContext.post: connect ECONNREFUSED ::1:3000\n    at tryChallenge (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:49:35)\n    at loginUser (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:60:23)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:45:7",
+                        "message": "TimeoutError: locator.fill: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[placeholder*=\"Experience\" i]')\u001b[22m\n",
+                        "stack": "TimeoutError: locator.fill: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[placeholder*=\"Experience\" i]')\u001b[22m\n\n    at AdvisorPage.submitApplication (K:\\Project\\kenku\\Finora\\tests\\e2e\\pom\\AdvisorPage.ts:45:32)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\09-pom-regression.spec.ts:243:5",
                         "location": {
-                          "file": "apiRequestContext.post: connect ECONNREFUSED :",
-                          "column": 3000,
-                          "line": 1
-                        }
+                          "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\pom\\AdvisorPage.ts",
+                          "column": 32,
+                          "line": 45
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mpom\\AdvisorPage.ts:45\n\n\u001b[0m \u001b[90m 43 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mphoneInput\u001b[33m.\u001b[39mfill(options\u001b[33m.\u001b[39mphone)\u001b[33m;\u001b[39m\n \u001b[90m 44 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mexpertiseInput\u001b[33m.\u001b[39mfill(options\u001b[33m.\u001b[39mexpertise)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 45 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mexperienceInput\u001b[33m.\u001b[39mfill(options\u001b[33m.\u001b[39mexperience)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 46 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mbioInput\u001b[33m.\u001b[39mfill(options\u001b[33m.\u001b[39mbio)\u001b[33m;\u001b[39m\n \u001b[90m 47 |\u001b[39m\n \u001b[90m 48 |\u001b[39m     \u001b[90m// Mock document uploads using hidden file inputs (nth(0) for PAN, nth(1) for Aadhaar)\u001b[39m\u001b[0m"
                       },
                       "errors": [
                         {
                           "location": {
-                            "file": "apiRequestContext.post: connect ECONNREFUSED :",
-                            "column": 3000,
-                            "line": 1
+                            "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\pom\\AdvisorPage.ts",
+                            "column": 32,
+                            "line": 45
                           },
-                          "message": "Error: apiRequestContext.post: connect ECONNREFUSED ::1:3000\nCall log:\n\u001b[2m  - → POST http://localhost:3000/api/v1/auth/login/challenge\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - x-pw-encoding: sha256\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 111\u001b[22m\n\n    at apiRequestContext.post: connect ECONNREFUSED ::1:3000\n    at tryChallenge (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:49:35)\n    at loginUser (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:60:23)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:45:7"
+                          "message": "TimeoutError: locator.fill: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[placeholder*=\"Experience\" i]')\u001b[22m\n\n\n   at pom\\AdvisorPage.ts:45\n\n  43 |     await this.phoneInput.fill(options.phone);\n  44 |     await this.expertiseInput.fill(options.expertise);\n> 45 |     await this.experienceInput.fill(options.experience);\n     |                                ^\n  46 |     await this.bioInput.fill(options.bio);\n  47 |\n  48 |     // Mock document uploads using hidden file inputs (nth(0) for PAN, nth(1) for Aadhaar)\n    at AdvisorPage.submitApplication (K:\\Project\\kenku\\Finora\\tests\\e2e\\pom\\AdvisorPage.ts:45:32)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\09-pom-regression.spec.ts:243:5"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-17T17:30:57.971Z",
+                      "startTime": "2026-06-17T17:54:01.622Z",
                       "annotations": [],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-ca1b2-in-U7-admin-test-kanaku-app-chromium\\test-failed-1.png"
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\09-pom-regression-Kanaku-F-3119d-pliance-Review-and-Approval-chromium\\test-failed-1.png"
                         },
                         {
                           "name": "video",
                           "contentType": "video/webm",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-ca1b2-in-U7-admin-test-kanaku-app-chromium\\video.webm"
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\09-pom-regression-Kanaku-F-3119d-pliance-Review-and-Approval-chromium\\video.webm"
                         },
                         {
                           "name": "error-context",
                           "contentType": "text/markdown",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-ca1b2-in-U7-admin-test-kanaku-app-chromium\\error-context.md"
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\09-pom-regression-Kanaku-F-3119d-pliance-Review-and-Approval-chromium\\error-context.md"
                         },
                         {
                           "name": "trace",
                           "contentType": "application/zip",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-ca1b2-in-U7-admin-test-kanaku-app-chromium\\trace.zip"
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\09-pom-regression-Kanaku-F-3119d-pliance-Review-and-Approval-chromium\\trace.zip"
                         }
                       ],
                       "errorLocation": {
-                        "file": "apiRequestContext.post: connect ECONNREFUSED :",
-                        "column": 3000,
-                        "line": 1
+                        "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\pom\\AdvisorPage.ts",
+                        "column": 32,
+                        "line": 45
                       }
                     },
                     {
-                      "workerIndex": 10,
+                      "workerIndex": 9,
                       "parallelIndex": 0,
                       "status": "failed",
-                      "duration": 9632,
+                      "duration": 51722,
                       "error": {
-                        "message": "Error: apiRequestContext.post: connect ECONNREFUSED ::1:3000\nCall log:\n\u001b[2m  - → POST http://localhost:3000/api/v1/auth/login/challenge\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - x-pw-encoding: sha256\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 111\u001b[22m\n",
-                        "stack": "Error: apiRequestContext.post: connect ECONNREFUSED ::1:3000\nCall log:\n\u001b[2m  - → POST http://localhost:3000/api/v1/auth/login/challenge\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - x-pw-encoding: sha256\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 111\u001b[22m\n\n    at apiRequestContext.post: connect ECONNREFUSED ::1:3000\n    at tryChallenge (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:49:35)\n    at loginUser (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:60:23)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:45:7",
+                        "message": "TimeoutError: locator.fill: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[placeholder*=\"Experience\" i]')\u001b[22m\n",
+                        "stack": "TimeoutError: locator.fill: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[placeholder*=\"Experience\" i]')\u001b[22m\n\n    at AdvisorPage.submitApplication (K:\\Project\\kenku\\Finora\\tests\\e2e\\pom\\AdvisorPage.ts:45:32)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\09-pom-regression.spec.ts:243:5",
                         "location": {
-                          "file": "apiRequestContext.post: connect ECONNREFUSED :",
-                          "column": 3000,
-                          "line": 1
-                        }
+                          "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\pom\\AdvisorPage.ts",
+                          "column": 32,
+                          "line": 45
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mpom\\AdvisorPage.ts:45\n\n\u001b[0m \u001b[90m 43 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mphoneInput\u001b[33m.\u001b[39mfill(options\u001b[33m.\u001b[39mphone)\u001b[33m;\u001b[39m\n \u001b[90m 44 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mexpertiseInput\u001b[33m.\u001b[39mfill(options\u001b[33m.\u001b[39mexpertise)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 45 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mexperienceInput\u001b[33m.\u001b[39mfill(options\u001b[33m.\u001b[39mexperience)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 46 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mbioInput\u001b[33m.\u001b[39mfill(options\u001b[33m.\u001b[39mbio)\u001b[33m;\u001b[39m\n \u001b[90m 47 |\u001b[39m\n \u001b[90m 48 |\u001b[39m     \u001b[90m// Mock document uploads using hidden file inputs (nth(0) for PAN, nth(1) for Aadhaar)\u001b[39m\u001b[0m"
                       },
                       "errors": [
                         {
                           "location": {
-                            "file": "apiRequestContext.post: connect ECONNREFUSED :",
-                            "column": 3000,
-                            "line": 1
+                            "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\pom\\AdvisorPage.ts",
+                            "column": 32,
+                            "line": 45
                           },
-                          "message": "Error: apiRequestContext.post: connect ECONNREFUSED ::1:3000\nCall log:\n\u001b[2m  - → POST http://localhost:3000/api/v1/auth/login/challenge\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - x-pw-encoding: sha256\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 111\u001b[22m\n\n    at apiRequestContext.post: connect ECONNREFUSED ::1:3000\n    at tryChallenge (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:49:35)\n    at loginUser (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:60:23)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:45:7"
+                          "message": "TimeoutError: locator.fill: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[placeholder*=\"Experience\" i]')\u001b[22m\n\n\n   at pom\\AdvisorPage.ts:45\n\n  43 |     await this.phoneInput.fill(options.phone);\n  44 |     await this.expertiseInput.fill(options.expertise);\n> 45 |     await this.experienceInput.fill(options.experience);\n     |                                ^\n  46 |     await this.bioInput.fill(options.bio);\n  47 |\n  48 |     // Mock document uploads using hidden file inputs (nth(0) for PAN, nth(1) for Aadhaar)\n    at AdvisorPage.submitApplication (K:\\Project\\kenku\\Finora\\tests\\e2e\\pom\\AdvisorPage.ts:45:32)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\09-pom-regression.spec.ts:243:5"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 1,
-                      "startTime": "2026-06-17T17:31:09.433Z",
+                      "startTime": "2026-06-17T17:54:56.729Z",
                       "annotations": [],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-ca1b2-in-U7-admin-test-kanaku-app-chromium-retry1\\test-failed-1.png"
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\09-pom-regression-Kanaku-F-3119d-pliance-Review-and-Approval-chromium-retry1\\test-failed-1.png"
                         },
                         {
                           "name": "video",
                           "contentType": "video/webm",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-ca1b2-in-U7-admin-test-kanaku-app-chromium-retry1\\video.webm"
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\09-pom-regression-Kanaku-F-3119d-pliance-Review-and-Approval-chromium-retry1\\video.webm"
                         },
                         {
                           "name": "error-context",
                           "contentType": "text/markdown",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-ca1b2-in-U7-admin-test-kanaku-app-chromium-retry1\\error-context.md"
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\09-pom-regression-Kanaku-F-3119d-pliance-Review-and-Approval-chromium-retry1\\error-context.md"
                         },
                         {
                           "name": "trace",
                           "contentType": "application/zip",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-ca1b2-in-U7-admin-test-kanaku-app-chromium-retry1\\trace.zip"
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\09-pom-regression-Kanaku-F-3119d-pliance-Review-and-Approval-chromium-retry1\\trace.zip"
                         }
                       ],
                       "errorLocation": {
-                        "file": "apiRequestContext.post: connect ECONNREFUSED :",
-                        "column": 3000,
-                        "line": 1
+                        "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\pom\\AdvisorPage.ts",
+                        "column": 32,
+                        "line": 45
                       }
                     }
                   ],
                   "status": "unexpected"
                 }
               ],
-              "id": "180cc0718174fb543e11-554fcda1b27df4c9671e",
-              "file": "01-registration.spec.ts",
-              "line": 44,
-              "column": 5
+              "id": "ae96145aa1befaaf3af9-753434220028872dd055",
+              "file": "09-pom-regression.spec.ts",
+              "line": 231,
+              "column": 3
+            },
+            {
+              "title": "08. Recurring Liability Schedule Management",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 240000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 10,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 38666,
+                      "error": {
+                        "message": "Error: Recurring schedule \"Office Space Rent\" should exist\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoContain\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // indexOf\u001b[22m\n\nExpected substring: \u001b[32m\"Office Space Rent\"\u001b[39m\nReceived string:    \u001b[31m\"\u001b[39m\n\u001b[31m  KANAKU⌘KRecurring TransactionsCreate Recurring Auto-Pay Liquidity Protection₹32,000.00/moAggregate monthly projection of active recurring liabilities. Ensure your linked accounts retain sufficient balance before the due date.Active schedules1 ProfilesRent & Housingexpenseutilitiesmonthly Next: 1 Jul 2026Liability₹32,000.00Pause\\\"Rent & Housing\\\" created··········\u001b[39m\n\u001b[31m    @keyframes spin {\u001b[39m\n\u001b[31m      0% {\u001b[39m\n\u001b[31m        transform: rotate(0deg);\u001b[39m\n\u001b[31m      }·\u001b[39m\n\u001b[31m      100% {\u001b[39m\n\u001b[31m        transform: rotate(360deg);\u001b[39m\n\u001b[31m      }\u001b[39m\n\u001b[31m    }······\u001b[39m\n\u001b[31m\"\u001b[39m",
+                        "stack": "Error: Recurring schedule \"Office Space Rent\" should exist\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoContain\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // indexOf\u001b[22m\n\nExpected substring: \u001b[32m\"Office Space Rent\"\u001b[39m\nReceived string:    \u001b[31m\"\u001b[39m\n\u001b[31m  KANAKU⌘KRecurring TransactionsCreate Recurring Auto-Pay Liquidity Protection₹32,000.00/moAggregate monthly projection of active recurring liabilities. Ensure your linked accounts retain sufficient balance before the due date.Active schedules1 ProfilesRent & Housingexpenseutilitiesmonthly Next: 1 Jul 2026Liability₹32,000.00Pause\\\"Rent & Housing\\\" created··········\u001b[39m\n\u001b[31m    @keyframes spin {\u001b[39m\n\u001b[31m      0% {\u001b[39m\n\u001b[31m        transform: rotate(0deg);\u001b[39m\n\u001b[31m      }·\u001b[39m\n\u001b[31m      100% {\u001b[39m\n\u001b[31m        transform: rotate(360deg);\u001b[39m\n\u001b[31m      }\u001b[39m\n\u001b[31m    }······\u001b[39m\n\u001b[31m\"\u001b[39m\n    at RecurringPage.assertScheduleExists (K:\\Project\\kenku\\Finora\\tests\\e2e\\pom\\RecurringPage.ts:68:67)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\09-pom-regression.spec.ts:293:5",
+                        "location": {
+                          "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\pom\\RecurringPage.ts",
+                          "column": 67,
+                          "line": 68
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mpom\\RecurringPage.ts:68\n\n\u001b[0m \u001b[90m 66 |\u001b[39m   \u001b[36masync\u001b[39m assertScheduleExists(name\u001b[33m:\u001b[39m string\u001b[33m,\u001b[39m amount\u001b[33m?\u001b[39m\u001b[33m:\u001b[39m string) {\n \u001b[90m 67 |\u001b[39m     \u001b[36mconst\u001b[39m pageText \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mpage\u001b[33m.\u001b[39mtextContent(\u001b[32m'body'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 68 |\u001b[39m     expect(pageText\u001b[33m,\u001b[39m \u001b[32m`Recurring schedule \"${name}\" should exist`\u001b[39m)\u001b[33m.\u001b[39mtoContain(name)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                                   \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 69 |\u001b[39m     \u001b[36mif\u001b[39m (amount) {\n \u001b[90m 70 |\u001b[39m       \u001b[36mconst\u001b[39m formatted \u001b[33m=\u001b[39m \u001b[33mNumber\u001b[39m(amount)\u001b[33m.\u001b[39mtoLocaleString()\u001b[33m;\u001b[39m\n \u001b[90m 71 |\u001b[39m       expect(pageText\u001b[33m,\u001b[39m \u001b[32m`Recurring schedule amount should show ${formatted}`\u001b[39m)\u001b[33m.\u001b[39mtoContain(formatted)\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\pom\\RecurringPage.ts",
+                            "column": 67,
+                            "line": 68
+                          },
+                          "message": "Error: Recurring schedule \"Office Space Rent\" should exist\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoContain\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // indexOf\u001b[22m\n\nExpected substring: \u001b[32m\"Office Space Rent\"\u001b[39m\nReceived string:    \u001b[31m\"\u001b[39m\n\u001b[31m  KANAKU⌘KRecurring TransactionsCreate Recurring Auto-Pay Liquidity Protection₹32,000.00/moAggregate monthly projection of active recurring liabilities. Ensure your linked accounts retain sufficient balance before the due date.Active schedules1 ProfilesRent & Housingexpenseutilitiesmonthly Next: 1 Jul 2026Liability₹32,000.00Pause\\\"Rent & Housing\\\" created··········\u001b[39m\n\u001b[31m    @keyframes spin {\u001b[39m\n\u001b[31m      0% {\u001b[39m\n\u001b[31m        transform: rotate(0deg);\u001b[39m\n\u001b[31m      }·\u001b[39m\n\u001b[31m      100% {\u001b[39m\n\u001b[31m        transform: rotate(360deg);\u001b[39m\n\u001b[31m      }\u001b[39m\n\u001b[31m    }······\u001b[39m\n\u001b[31m\"\u001b[39m\n\n   at pom\\RecurringPage.ts:68\n\n  66 |   async assertScheduleExists(name: string, amount?: string) {\n  67 |     const pageText = await this.page.textContent('body');\n> 68 |     expect(pageText, `Recurring schedule \"${name}\" should exist`).toContain(name);\n     |                                                                   ^\n  69 |     if (amount) {\n  70 |       const formatted = Number(amount).toLocaleString();\n  71 |       expect(pageText, `Recurring schedule amount should show ${formatted}`).toContain(formatted);\n    at RecurringPage.assertScheduleExists (K:\\Project\\kenku\\Finora\\tests\\e2e\\pom\\RecurringPage.ts:68:67)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\09-pom-regression.spec.ts:293:5"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-17T17:55:52.862Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\09-pom-regression-Kanaku-F-90bfe-ability-Schedule-Management-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\09-pom-regression-Kanaku-F-90bfe-ability-Schedule-Management-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\09-pom-regression-Kanaku-F-90bfe-ability-Schedule-Management-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\09-pom-regression-Kanaku-F-90bfe-ability-Schedule-Management-chromium\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\pom\\RecurringPage.ts",
+                        "column": 67,
+                        "line": 68
+                      }
+                    },
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 38500,
+                      "error": {
+                        "message": "Error: Recurring schedule \"Office Space Rent\" should exist\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoContain\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // indexOf\u001b[22m\n\nExpected substring: \u001b[32m\"Office Space Rent\"\u001b[39m\nReceived string:    \u001b[31m\"\u001b[39m\n\u001b[31m  KANAKU⌘KRecurring TransactionsCreate Recurring Auto-Pay Liquidity Protection₹32,000.00/moAggregate monthly projection of active recurring liabilities. Ensure your linked accounts retain sufficient balance before the due date.Active schedules1 ProfilesRent & Housingexpenseutilitiesmonthly Next: 1 Jul 2026Liability₹32,000.00Pause\\\"Rent & Housing\\\" created··········\u001b[39m\n\u001b[31m    @keyframes spin {\u001b[39m\n\u001b[31m      0% {\u001b[39m\n\u001b[31m        transform: rotate(0deg);\u001b[39m\n\u001b[31m      }·\u001b[39m\n\u001b[31m      100% {\u001b[39m\n\u001b[31m        transform: rotate(360deg);\u001b[39m\n\u001b[31m      }\u001b[39m\n\u001b[31m    }······\u001b[39m\n\u001b[31m\"\u001b[39m",
+                        "stack": "Error: Recurring schedule \"Office Space Rent\" should exist\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoContain\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // indexOf\u001b[22m\n\nExpected substring: \u001b[32m\"Office Space Rent\"\u001b[39m\nReceived string:    \u001b[31m\"\u001b[39m\n\u001b[31m  KANAKU⌘KRecurring TransactionsCreate Recurring Auto-Pay Liquidity Protection₹32,000.00/moAggregate monthly projection of active recurring liabilities. Ensure your linked accounts retain sufficient balance before the due date.Active schedules1 ProfilesRent & Housingexpenseutilitiesmonthly Next: 1 Jul 2026Liability₹32,000.00Pause\\\"Rent & Housing\\\" created··········\u001b[39m\n\u001b[31m    @keyframes spin {\u001b[39m\n\u001b[31m      0% {\u001b[39m\n\u001b[31m        transform: rotate(0deg);\u001b[39m\n\u001b[31m      }·\u001b[39m\n\u001b[31m      100% {\u001b[39m\n\u001b[31m        transform: rotate(360deg);\u001b[39m\n\u001b[31m      }\u001b[39m\n\u001b[31m    }······\u001b[39m\n\u001b[31m\"\u001b[39m\n    at RecurringPage.assertScheduleExists (K:\\Project\\kenku\\Finora\\tests\\e2e\\pom\\RecurringPage.ts:68:67)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\09-pom-regression.spec.ts:293:5",
+                        "location": {
+                          "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\pom\\RecurringPage.ts",
+                          "column": 67,
+                          "line": 68
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mpom\\RecurringPage.ts:68\n\n\u001b[0m \u001b[90m 66 |\u001b[39m   \u001b[36masync\u001b[39m assertScheduleExists(name\u001b[33m:\u001b[39m string\u001b[33m,\u001b[39m amount\u001b[33m?\u001b[39m\u001b[33m:\u001b[39m string) {\n \u001b[90m 67 |\u001b[39m     \u001b[36mconst\u001b[39m pageText \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mpage\u001b[33m.\u001b[39mtextContent(\u001b[32m'body'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 68 |\u001b[39m     expect(pageText\u001b[33m,\u001b[39m \u001b[32m`Recurring schedule \"${name}\" should exist`\u001b[39m)\u001b[33m.\u001b[39mtoContain(name)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                                   \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 69 |\u001b[39m     \u001b[36mif\u001b[39m (amount) {\n \u001b[90m 70 |\u001b[39m       \u001b[36mconst\u001b[39m formatted \u001b[33m=\u001b[39m \u001b[33mNumber\u001b[39m(amount)\u001b[33m.\u001b[39mtoLocaleString()\u001b[33m;\u001b[39m\n \u001b[90m 71 |\u001b[39m       expect(pageText\u001b[33m,\u001b[39m \u001b[32m`Recurring schedule amount should show ${formatted}`\u001b[39m)\u001b[33m.\u001b[39mtoContain(formatted)\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\pom\\RecurringPage.ts",
+                            "column": 67,
+                            "line": 68
+                          },
+                          "message": "Error: Recurring schedule \"Office Space Rent\" should exist\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoContain\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // indexOf\u001b[22m\n\nExpected substring: \u001b[32m\"Office Space Rent\"\u001b[39m\nReceived string:    \u001b[31m\"\u001b[39m\n\u001b[31m  KANAKU⌘KRecurring TransactionsCreate Recurring Auto-Pay Liquidity Protection₹32,000.00/moAggregate monthly projection of active recurring liabilities. Ensure your linked accounts retain sufficient balance before the due date.Active schedules1 ProfilesRent & Housingexpenseutilitiesmonthly Next: 1 Jul 2026Liability₹32,000.00Pause\\\"Rent & Housing\\\" created··········\u001b[39m\n\u001b[31m    @keyframes spin {\u001b[39m\n\u001b[31m      0% {\u001b[39m\n\u001b[31m        transform: rotate(0deg);\u001b[39m\n\u001b[31m      }·\u001b[39m\n\u001b[31m      100% {\u001b[39m\n\u001b[31m        transform: rotate(360deg);\u001b[39m\n\u001b[31m      }\u001b[39m\n\u001b[31m    }······\u001b[39m\n\u001b[31m\"\u001b[39m\n\n   at pom\\RecurringPage.ts:68\n\n  66 |   async assertScheduleExists(name: string, amount?: string) {\n  67 |     const pageText = await this.page.textContent('body');\n> 68 |     expect(pageText, `Recurring schedule \"${name}\" should exist`).toContain(name);\n     |                                                                   ^\n  69 |     if (amount) {\n  70 |       const formatted = Number(amount).toLocaleString();\n  71 |       expect(pageText, `Recurring schedule amount should show ${formatted}`).toContain(formatted);\n    at RecurringPage.assertScheduleExists (K:\\Project\\kenku\\Finora\\tests\\e2e\\pom\\RecurringPage.ts:68:67)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\09-pom-regression.spec.ts:293:5"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2026-06-17T17:56:35.787Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\09-pom-regression-Kanaku-F-90bfe-ability-Schedule-Management-chromium-retry1\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\09-pom-regression-Kanaku-F-90bfe-ability-Schedule-Management-chromium-retry1\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\09-pom-regression-Kanaku-F-90bfe-ability-Schedule-Management-chromium-retry1\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\09-pom-regression-Kanaku-F-90bfe-ability-Schedule-Management-chromium-retry1\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\pom\\RecurringPage.ts",
+                        "column": 67,
+                        "line": 68
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "ae96145aa1befaaf3af9-602dec3c5eb42215dc22",
+              "file": "09-pom-regression.spec.ts",
+              "line": 273,
+              "column": 3
+            },
+            {
+              "title": "09. Regression - Add Loan Navigation & Redirection Bug",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 240000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 12,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 36851,
+                      "error": {
+                        "message": "TimeoutError: locator.waitFor: Timeout 5000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"nav-quick-add-button\"]').first() to be visible\u001b[22m\n\u001b[2m    14 × locator resolved to hidden <button tabindex=\"0\" title=\"Quick Add\" data-testid=\"nav-quick-add-button\" class=\"flex items-center justify-center w-12 h-12 bg-black text-white rounded-full shadow-xl hover:shadow-2xl transition-all flex-shrink-0 mx-0 z-20\">…</button>\u001b[22m\n",
+                        "stack": "TimeoutError: locator.waitFor: Timeout 5000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"nav-quick-add-button\"]').first() to be visible\u001b[22m\n\u001b[2m    14 × locator resolved to hidden <button tabindex=\"0\" title=\"Quick Add\" data-testid=\"nav-quick-add-button\" class=\"flex items-center justify-center w-12 h-12 bg-black text-white rounded-full shadow-xl hover:shadow-2xl transition-all flex-shrink-0 mx-0 z-20\">…</button>\u001b[22m\n\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\09-pom-regression.spec.ts:311:26",
+                        "location": {
+                          "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\09-pom-regression.spec.ts",
+                          "column": 26,
+                          "line": 311
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 309 |\u001b[39m     \u001b[90m// Case 9.1: Quick Actions redirection regression test\u001b[39m\n \u001b[90m 310 |\u001b[39m     \u001b[36mconst\u001b[39m quickAddButton \u001b[33m=\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'[data-testid=\"nav-quick-add-button\"]'\u001b[39m)\u001b[33m.\u001b[39mfirst()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 311 |\u001b[39m     \u001b[36mawait\u001b[39m quickAddButton\u001b[33m.\u001b[39mwaitFor({ state\u001b[33m:\u001b[39m \u001b[32m'visible'\u001b[39m\u001b[33m,\u001b[39m timeout\u001b[33m:\u001b[39m \u001b[35m5000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                          \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 312 |\u001b[39m     \u001b[36mawait\u001b[39m quickAddButton\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m 313 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForTimeout(\u001b[35m800\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 314 |\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\09-pom-regression.spec.ts",
+                            "column": 26,
+                            "line": 311
+                          },
+                          "message": "TimeoutError: locator.waitFor: Timeout 5000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"nav-quick-add-button\"]').first() to be visible\u001b[22m\n\u001b[2m    14 × locator resolved to hidden <button tabindex=\"0\" title=\"Quick Add\" data-testid=\"nav-quick-add-button\" class=\"flex items-center justify-center w-12 h-12 bg-black text-white rounded-full shadow-xl hover:shadow-2xl transition-all flex-shrink-0 mx-0 z-20\">…</button>\u001b[22m\n\n\n  309 |     // Case 9.1: Quick Actions redirection regression test\n  310 |     const quickAddButton = page.locator('[data-testid=\"nav-quick-add-button\"]').first();\n> 311 |     await quickAddButton.waitFor({ state: 'visible', timeout: 5000 });\n      |                          ^\n  312 |     await quickAddButton.click();\n  313 |     await page.waitForTimeout(800);\n  314 |\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\09-pom-regression.spec.ts:311:26"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-17T17:57:18.485Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\09-pom-regression-Kanaku-F-c3543--Navigation-Redirection-Bug-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\09-pom-regression-Kanaku-F-c3543--Navigation-Redirection-Bug-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\09-pom-regression-Kanaku-F-c3543--Navigation-Redirection-Bug-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\09-pom-regression-Kanaku-F-c3543--Navigation-Redirection-Bug-chromium\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\09-pom-regression.spec.ts",
+                        "column": 26,
+                        "line": 311
+                      }
+                    },
+                    {
+                      "workerIndex": 13,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 37108,
+                      "error": {
+                        "message": "TimeoutError: locator.waitFor: Timeout 5000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"nav-quick-add-button\"]').first() to be visible\u001b[22m\n\u001b[2m    14 × locator resolved to hidden <button tabindex=\"0\" title=\"Quick Add\" data-testid=\"nav-quick-add-button\" class=\"flex items-center justify-center w-12 h-12 bg-black text-white rounded-full shadow-xl hover:shadow-2xl transition-all flex-shrink-0 mx-0 z-20\">…</button>\u001b[22m\n",
+                        "stack": "TimeoutError: locator.waitFor: Timeout 5000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"nav-quick-add-button\"]').first() to be visible\u001b[22m\n\u001b[2m    14 × locator resolved to hidden <button tabindex=\"0\" title=\"Quick Add\" data-testid=\"nav-quick-add-button\" class=\"flex items-center justify-center w-12 h-12 bg-black text-white rounded-full shadow-xl hover:shadow-2xl transition-all flex-shrink-0 mx-0 z-20\">…</button>\u001b[22m\n\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\09-pom-regression.spec.ts:311:26",
+                        "location": {
+                          "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\09-pom-regression.spec.ts",
+                          "column": 26,
+                          "line": 311
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 309 |\u001b[39m     \u001b[90m// Case 9.1: Quick Actions redirection regression test\u001b[39m\n \u001b[90m 310 |\u001b[39m     \u001b[36mconst\u001b[39m quickAddButton \u001b[33m=\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'[data-testid=\"nav-quick-add-button\"]'\u001b[39m)\u001b[33m.\u001b[39mfirst()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 311 |\u001b[39m     \u001b[36mawait\u001b[39m quickAddButton\u001b[33m.\u001b[39mwaitFor({ state\u001b[33m:\u001b[39m \u001b[32m'visible'\u001b[39m\u001b[33m,\u001b[39m timeout\u001b[33m:\u001b[39m \u001b[35m5000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                          \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 312 |\u001b[39m     \u001b[36mawait\u001b[39m quickAddButton\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m 313 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForTimeout(\u001b[35m800\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 314 |\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\09-pom-regression.spec.ts",
+                            "column": 26,
+                            "line": 311
+                          },
+                          "message": "TimeoutError: locator.waitFor: Timeout 5000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"nav-quick-add-button\"]').first() to be visible\u001b[22m\n\u001b[2m    14 × locator resolved to hidden <button tabindex=\"0\" title=\"Quick Add\" data-testid=\"nav-quick-add-button\" class=\"flex items-center justify-center w-12 h-12 bg-black text-white rounded-full shadow-xl hover:shadow-2xl transition-all flex-shrink-0 mx-0 z-20\">…</button>\u001b[22m\n\n\n  309 |     // Case 9.1: Quick Actions redirection regression test\n  310 |     const quickAddButton = page.locator('[data-testid=\"nav-quick-add-button\"]').first();\n> 311 |     await quickAddButton.waitFor({ state: 'visible', timeout: 5000 });\n      |                          ^\n  312 |     await quickAddButton.click();\n  313 |     await page.waitForTimeout(800);\n  314 |\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\09-pom-regression.spec.ts:311:26"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2026-06-17T17:57:59.578Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\09-pom-regression-Kanaku-F-c3543--Navigation-Redirection-Bug-chromium-retry1\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\09-pom-regression-Kanaku-F-c3543--Navigation-Redirection-Bug-chromium-retry1\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\09-pom-regression-Kanaku-F-c3543--Navigation-Redirection-Bug-chromium-retry1\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\09-pom-regression-Kanaku-F-c3543--Navigation-Redirection-Bug-chromium-retry1\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "K:\\Project\\kenku\\Finora\\tests\\e2e\\09-pom-regression.spec.ts",
+                        "column": 26,
+                        "line": 311
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "ae96145aa1befaaf3af9-b8ba28baa8a9b4b21b8a",
+              "file": "09-pom-regression.spec.ts",
+              "line": 304,
+              "column": 3
+            },
+            {
+              "title": "10. Logout/Login Session Retention & State Check",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 240000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 14,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 65929,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-17T17:58:39.744Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\09-pom-regression-Kanaku-F-67413-ssion-Retention-State-Check-chromium\\test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "ae96145aa1befaaf3af9-a96f418603f1baca6ea9",
+              "file": "09-pom-regression.spec.ts",
+              "line": 365,
+              "column": 3
             }
           ]
         }
@@ -1297,11 +1164,11 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-06-17T17:25:47.463Z",
-    "duration": 332776.053,
-    "expected": 8,
+    "startTime": "2026-06-17T17:44:10.950Z",
+    "duration": 936034.996,
+    "expected": 3,
     "skipped": 0,
-    "unexpected": 5,
-    "flaky": 1
+    "unexpected": 7,
+    "flaky": 0
   }
 }
