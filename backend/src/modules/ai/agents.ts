@@ -81,7 +81,7 @@ export async function runExpenseCategorizationAgent(userId: string): Promise<Age
     const uncategorized = await safeQuery(() => (prisma as any).transaction.findMany({
       where: {
         userId,
-        OR: [{ category: null }, { category: '' }, { category: 'Others' }],
+        OR: [{ category: '' }, { category: 'Others' }],
       },
       take: 50,
       orderBy: { createdAt: 'desc' },
@@ -504,11 +504,11 @@ export async function runLoanApprovalAgent(userId: string): Promise<AgentResult>
         where: { userId, type: 'income', date: { gte: dateRangeStart(90) } },
         _sum: { amount: true },
       }), { _sum: { amount: 0 } }),
-      safeQuery(() => (prisma as any).loan?.findMany?.({ where: { userId, status: 'active' }, select: { amount: true } }) ?? [], []),
+      safeQuery(() => (prisma as any).loan?.findMany?.({ where: { userId, status: 'active' }, select: { principalAmount: true } }) ?? [], []),
     ]);
 
     const avgMonthlyIncome = Number(incomeAgg._sum?.amount ?? 0) / 3;
-    const totalDebt = loans.reduce((s: number, l: any) => s + Number(l.amount), 0);
+    const totalDebt = loans.reduce((s: number, l: any) => s + Number(l.principalAmount), 0);
     const debtToIncomeRatio = avgMonthlyIncome > 0 ? totalDebt / avgMonthlyIncome : 1;
 
     let approvalLikelihood = 100;
