@@ -660,6 +660,30 @@ class BackendService {
     return response.data;
   }
 
+  // ===== BUDGETS =====
+  async getBudgets() {
+    try {
+      const response = await this.api.get('/budgets');
+      return response.data?.data ?? [];
+    } catch {
+      return [];
+    }
+  }
+
+  async createBudget(data: { category: string; amount: number; period?: string; threshold?: number }) {
+    const response = await this.api.post('/budgets', data);
+    return response.data?.data;
+  }
+
+  async updateBudget(id: string, updates: { category?: string; amount?: number; period?: string; threshold?: number }) {
+    const response = await this.api.put(`/budgets/${id}`, updates);
+    return response.data?.data;
+  }
+
+  async deleteBudget(id: string) {
+    await this.api.delete(`/budgets/${id}`);
+  }
+
   // ===== SETTINGS =====
   async getSettings() {
     const response = await this.api.get('/settings');
@@ -944,6 +968,52 @@ class BackendService {
 
   async deleteExpenseBill(id: string) {
     await this.api.delete(`/bills/${id}`);
+  }
+
+  // ===== RECURRING TRANSACTIONS =====
+  async getRecurringTransactions(params?: { status?: string; interval?: string }) {
+    const query = new URLSearchParams();
+    if (params?.status) query.append('status', params.status);
+    if (params?.interval) query.append('interval', params.interval);
+    const url = `/recurring${query.toString() ? `?${query}` : ''}`;
+    const response = await this.api.get(url);
+    return response.data?.data ?? [];
+  }
+
+  async createRecurringTransaction(data: {
+    title: string;
+    amount: number;
+    category: string;
+    interval: 'weekly' | 'monthly' | 'yearly';
+    nextDueDate: string;
+    autoProcess?: boolean;
+    accountId?: string;
+    description?: string;
+  }) {
+    const response = await this.api.post('/recurring', data);
+    return response.data?.data;
+  }
+
+  async updateRecurringTransaction(id: string, updates: {
+    title?: string;
+    amount?: number;
+    category?: string;
+    interval?: 'weekly' | 'monthly' | 'yearly';
+    nextDueDate?: string;
+    autoProcess?: boolean;
+    description?: string;
+  }) {
+    const response = await this.api.put(`/recurring/${id}`, updates);
+    return response.data?.data;
+  }
+
+  async toggleRecurringStatus(id: string) {
+    const response = await this.api.patch(`/recurring/${id}/toggle`);
+    return response.data?.data;
+  }
+
+  async deleteRecurringTransaction(id: string) {
+    await this.api.delete(`/recurring/${id}`);
   }
 
   // ===== ADVISOR =====

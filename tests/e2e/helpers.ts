@@ -7,16 +7,16 @@ export async function isElementVisible(locator: Locator, timeout = 5000): Promis
 }
 
 export const BASE = 'http://localhost:9002';
-export const API  = 'http://localhost:3000';
+export const API = 'http://localhost:3000';
 
 export const USERS = {
-  U1: { firstName: 'Arjun',  lastName: 'Sharma',  email: 'arjun.test@finora.app',  mobile: '9000000001', password: 'TestFinora@2026', persona: 'Debt Manager' },
-  U2: { firstName: 'Priya',  lastName: 'Mehta',   email: 'priya.test@finora.app',   mobile: '9000000002', password: 'TestFinora@2026', persona: 'Group Splitter' },
-  U3: { firstName: 'Rohan',  lastName: 'Verma',   email: 'rohan.test@finora.app',   mobile: '9000000003', password: 'TestFinora@2026', persona: 'Investor' },
-  U4: { firstName: 'Sneha',  lastName: 'Kapoor',  email: 'sneha.test@finora.app',   mobile: '9000000004', password: 'TestFinora@2026', persona: 'Goal Setter' },
-  U5: { firstName: 'Dev',    lastName: 'Nair',    email: 'dev.test@finora.app',     mobile: '9000000005', password: 'TestFinora@2026', persona: 'Portfolio Builder' },
-  U6: { firstName: 'Isha',   lastName: 'Patel',   email: 'isha.test@finora.app',    mobile: '9000000006', password: 'TestFinora@2026', persona: 'Planner' },
-  U7: { firstName: 'Power',  lastName: 'User',    email: 'admin.test@finora.app',   mobile: '9000000007', password: 'TestFinora@2026', persona: 'Power User' },
+  U1: { firstName: 'Arjun', lastName: 'Sharma', email: 'arjun.test@Kanaku.app', mobile: '9000000001', password: 'TestKanaku@2026', persona: 'Debt Manager' },
+  U2: { firstName: 'Priya', lastName: 'Mehta', email: 'priya.test@Kanaku.app', mobile: '9000000002', password: 'TestKanaku@2026', persona: 'Group Splitter' },
+  U3: { firstName: 'Rohan', lastName: 'Verma', email: 'rohan.test@Kanaku.app', mobile: '9000000003', password: 'TestKanaku@2026', persona: 'Investor' },
+  U4: { firstName: 'Sneha', lastName: 'Kapoor', email: 'sneha.test@Kanaku.app', mobile: '9000000004', password: 'TestKanaku@2026', persona: 'Goal Setter' },
+  U5: { firstName: 'Dev', lastName: 'Nair', email: 'dev.test@Kanaku.app', mobile: '9000000005', password: 'TestKanaku@2026', persona: 'Portfolio Builder' },
+  U6: { firstName: 'Isha', lastName: 'Patel', email: 'isha.test@Kanaku.app', mobile: '9000000006', password: 'TestKanaku@2026', persona: 'Planner' },
+  U7: { firstName: 'Power', lastName: 'User', email: 'admin.test@Kanaku.app', mobile: '9000000007', password: 'TestKanaku@2026', persona: 'Power User' },
 };
 
 export async function screenshot(page: Page, name: string) {
@@ -68,7 +68,7 @@ export async function loginUser(page: Page, user: typeof USERS.U1) {
       currency: 'INR',
       clientRequestId: `test-acct-${user.email}`,
     },
-  }).catch(() => {}); // ignore if already exists
+  }).catch(() => { }); // ignore if already exists
 
 
   // 2. Open the app and wipe localStorage / IndexedDB to start with a clean slate
@@ -208,7 +208,7 @@ export async function registerUser(page: Page, user: typeof USERS.U1) {
   const bodyText = (await page.locator('body').textContent().catch(() => null)) ?? '';
   const lowerBody = bodyText.toLowerCase();
   if (lowerBody.includes('already') || lowerBody.includes('taken') || lowerBody.includes('in use') ||
-      lowerBody.includes('email_exists') || lowerBody.includes('phone_exists')) {
+    lowerBody.includes('email_exists') || lowerBody.includes('phone_exists')) {
     return 'already_exists';
   }
   // If form is still visible, the submission was rejected (validation or inline error)

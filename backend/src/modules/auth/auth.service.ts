@@ -41,7 +41,7 @@ export class AuthService {
       }
 
       // Hash password
-      const hashedPassword = await bcrypt.hash(input.password, 10);
+      const hashedPassword = await bcrypt.hash(input.password, 12);
 
       // Never trust a raw role value from the client. Users may request advisor
       // onboarding, but privileged roles must still be granted by the backend.
@@ -347,7 +347,7 @@ export class AuthService {
           isPasswordValid = true;
           // Migrating password hash to local DB for future logins
           try {
-            const hashedPassword = await bcrypt.hash(input.password, 10);
+            const hashedPassword = await bcrypt.hash(input.password, 12);
             await prisma.user.update({
               where: { id: user.id },
               data: { password: hashedPassword }
@@ -400,7 +400,7 @@ export class AuthService {
           isPasswordValid = true;
           // Migrate password hash to local DB for future logins
           try {
-            const hashedPassword = await bcrypt.hash(passwordStr, 10);
+            const hashedPassword = await bcrypt.hash(passwordStr, 12);
             await prisma.user.update({
               where: { id: user.id },
               data: { password: hashedPassword }

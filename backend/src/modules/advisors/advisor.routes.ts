@@ -28,7 +28,7 @@ router.post(
 
 // Approved advisor only
 router.put('/online-status', requireRole('advisor'), requireApproved, AdvisorController.setOnlineStatus);
-router.put('/role-mode', AdvisorController.switchRoleMode);
+router.put('/role-mode', requireRole(['advisor', 'admin', 'manager']), AdvisorController.switchRoleMode);
 
 // Availability slots (approved advisors)
 router.post('/availability', requireRole('advisor'), requireApproved, AdvisorController.setAvailability);

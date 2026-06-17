@@ -1,21 +1,21 @@
-# Finora Platform — Terms & Conditions
+# Kanaku Platform — Terms & Conditions
 
 **Effective Date:** June 13, 2026
 **Last Updated:** June 13, 2026
-**Platform:** Finora (Personal Finance & Wealth Management)
-**Operated by:** Finora Technologies
+**Platform:** Kanaku (Personal Finance & Wealth Management)
+**Operated by:** Kanaku Technologies
 
 ---
 
 ## 1. Introduction
 
-Welcome to Finora. By creating an account and using this platform, you agree to these Terms & Conditions. Please read them carefully. If you do not agree, do not use the platform.
+Welcome to Kanaku. By creating an account and using this platform, you agree to these Terms & Conditions. Please read them carefully. If you do not agree, do not use the platform.
 
-Finora is a personal finance management platform that offers expense tracking, investment monitoring, receipt scanning, AI-powered insights, and access to verified financial advisors. Different users have different roles, and each role has its own specific terms (see linked documents below).
+Kanaku is a personal finance management platform that offers expense tracking, investment monitoring, receipt scanning, AI-powered insights, and access to verified financial advisors. Different users have different roles, and each role has its own specific terms (see linked documents below).
 
 ---
 
-## 2. Who Can Use Finora
+## 2. Who Can Use Kanaku
 
 - You must be at least **18 years old** to create an account.
 - You must provide accurate, complete registration information.
@@ -24,9 +24,9 @@ Finora is a personal finance management platform that offers expense tracking, i
 
 ---
 
-## 3. Roles on Finora
+## 3. Roles on Kanaku
 
-Finora has four distinct user roles, each with its own permissions, features, and responsibilities:
+Kanaku has four distinct user roles, each with its own permissions, features, and responsibilities:
 
 | Role | Who They Are | Document |
 |------|-------------|----------|
@@ -53,13 +53,13 @@ All users must comply with both this Master Terms document and their role-specif
 - Harassing, threatening, or abusing other users or advisors
 - Using automated bots or scrapers without written permission
 - Impersonating another person or organization
-- Using Finora for money laundering or any illegal financial activity
+- Using Kanaku for money laundering or any illegal financial activity
 
 ---
 
 ## 5. Data & Privacy
 
-- Finora collects financial data you enter, receipts you upload, and usage data to improve the service.
+- Kanaku collects financial data you enter, receipts you upload, and usage data to improve the service.
 - Your financial data is **never sold** to third parties.
 - Data is encrypted at rest and in transit using industry-standard encryption.
 - You can request a full export or deletion of your data at any time via Settings.
@@ -69,7 +69,7 @@ All users must comply with both this Master Terms document and their role-specif
 
 ## 6. AI Features
 
-Finora uses AI to scan receipts, categorize transactions, and support voice logging.
+Kanaku uses AI to scan receipts, categorize transactions, and support voice logging.
 
 - AI suggestions are **not financial advice** — they are automated tools to help you organize data.
 - AI-extracted data may contain errors. You are responsible for reviewing and correcting any AI-generated entries.
@@ -88,7 +88,7 @@ Finora uses AI to scan receipts, categorize transactions, and support voice logg
 
 ## 8. Account Suspension & Termination
 
-Finora may suspend or terminate your account if you:
+Kanaku may suspend or terminate your account if you:
 - Violate these Terms or your role-specific terms
 - Engage in fraudulent activity
 - Remain inactive for more than 24 months (with prior notice)
@@ -100,9 +100,9 @@ On termination, your data will be retained for 30 days then permanently deleted,
 
 ## 9. Limitation of Liability
 
-- Finora is a **financial management tool**, not a licensed financial institution.
-- Nothing on Finora constitutes regulated financial advice unless explicitly provided by a verified Advisor under their professional license.
-- Finora is not liable for financial losses arising from decisions made based on platform data.
+- Kanaku is a **financial management tool**, not a licensed financial institution.
+- Nothing on Kanaku constitutes regulated financial advice unless explicitly provided by a verified Advisor under their professional license.
+- Kanaku is not liable for financial losses arising from decisions made based on platform data.
 - Our liability for any claim is limited to the fees you paid in the 12 months preceding the claim.
 
 ---
@@ -116,7 +116,7 @@ We may update these terms. We will notify you by email and in-app notification a
 ## 11. Contact
 
 For questions about these terms:
-- **Email:** legal@finora.app
+- **Email:** legal@Kanaku.app
 - **In-app:** Settings > Help & Support > Terms Inquiry
 
 ---

@@ -38,7 +38,7 @@ function Invoke-ApiTest {
 }
 
 Write-Host '=========================================' -ForegroundColor Yellow
-Write-Host '  FINORA AUTH API TEST SUITE' -ForegroundColor Yellow
+Write-Host '  Kanaku AUTH API TEST SUITE' -ForegroundColor Yellow
 Write-Host "  Backend : $baseUrl" -ForegroundColor Yellow
 Write-Host "  Email   : $testEmail" -ForegroundColor Yellow
 Write-Host '=========================================' -ForegroundColor Yellow
@@ -59,7 +59,7 @@ $null = $results.Add((Invoke-ApiTest -Name 'T5: Register missing firstName' -Uri
 # REGISTRATION - POSITIVE
 Write-Host '' ; Write-Host '=== REGISTRATION POSITIVE TEST ===' -ForegroundColor Magenta
 
-$r6 = Invoke-ApiTest -Name 'T6: Register valid user' -Uri "$baseUrl/api/v1/auth/register" -Method POST -Body @{ firstName='TestFinora';lastName='User';email=$testEmail;password=$testPassword } -ExpectCode 201
+$r6 = Invoke-ApiTest -Name 'T6: Register valid user' -Uri "$baseUrl/api/v1/auth/register" -Method POST -Body @{ firstName='TestKanaku';lastName='User';email=$testEmail;password=$testPassword } -ExpectCode 201
 $null = $results.Add($r6)
 
 # Duplicate registration

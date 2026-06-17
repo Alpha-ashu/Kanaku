@@ -1,4 +1,4 @@
-# Finora — Sprint 1: User-Level Test Scenarios
+# Kanaku — Sprint 1: User-Level Test Scenarios
 **Sprint:** 1 (Current)
 **Period:** June 13 – June 20, 2026
 **Goal:** Validate every core feature with real-world data across 7 user personas
@@ -18,15 +18,15 @@ Each test user represents a real-life financial persona. The purpose is to exerc
 
 | ID | Name | Email | Role | Persona |
 |----|------|-------|------|---------|
-| U1 | Arjun Sharma | arjun.test@finora.app | End User | Debt / Loan Manager |
-| U2 | Priya Mehta | priya.test@finora.app | End User | Group Expense Splitter |
-| U3 | Rohan Verma | rohan.test@finora.app | End User | Investor |
-| U4 | Sneha Kapoor | sneha.test@finora.app | End User | Goal Setter |
-| U5 | Dev Nair | dev.test@finora.app | Client | Portfolio Builder |
-| U6 | Isha Patel | isha.test@finora.app | End User | Collaborative Planner |
-| U7 | Admin Tester | admin.test@finora.app | End User | Power User (all features) |
+| U1 | Arjun Sharma | arjun.test@Kanaku.app | End User | Debt / Loan Manager |
+| U2 | Priya Mehta | priya.test@Kanaku.app | End User | Group Expense Splitter |
+| U3 | Rohan Verma | rohan.test@Kanaku.app | End User | Investor |
+| U4 | Sneha Kapoor | sneha.test@Kanaku.app | End User | Goal Setter |
+| U5 | Dev Nair | dev.test@Kanaku.app | Client | Portfolio Builder |
+| U6 | Isha Patel | isha.test@Kanaku.app | End User | Collaborative Planner |
+| U7 | Admin Tester | admin.test@Kanaku.app | End User | Power User (all features) |
 
-> **Password for all test users:** `TestFinora@2026`
+> **Password for all test users:** `TestKanaku@2026`
 > **PIN for all test users:** `1234`
 
 ---

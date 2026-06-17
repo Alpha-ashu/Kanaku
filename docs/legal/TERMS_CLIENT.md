@@ -1,8 +1,8 @@
-# Finora — Client Terms & Conditions
+# Kanaku — Client Terms & Conditions
 
 **Role:** Client (Advisor-Enabled Account)
 **Effective Date:** June 13, 2026
-**Applies to:** End Users who book sessions with Finora-verified financial advisors
+**Applies to:** End Users who book sessions with Kanaku-verified financial advisors
 
 > These terms apply in addition to the [Master Terms & Conditions](./TERMS_MASTER.md) and the [End User Terms](./TERMS_END_USER.md). As a Client, you retain all End User rights and take on additional responsibilities.
 
@@ -10,7 +10,7 @@
 
 ## Who Is a Client?
 
-A Client is an End User who chooses to work with a verified financial advisor through the Finora platform. By requesting or booking an advisor session, you automatically accept these Client Terms.
+A Client is an End User who chooses to work with a verified financial advisor through the Kanaku platform. By requesting or booking an advisor session, you automatically accept these Client Terms.
 
 You become a Client when:
 - You send a booking request to an advisor
@@ -35,7 +35,7 @@ You remain an End User for all other features at all times.
 - Receive booking confirmation and reminders via in-app notification and email
 
 ### Session Access
-- Join live sessions via Finora's in-app messaging and chat interface
+- Join live sessions via Kanaku's in-app messaging and chat interface
 - Share specific financial data snapshots with your advisor (you control exactly what is shared)
 - View session notes and recommendations your advisor provides after the session
 - Access your full session history at any time
@@ -47,7 +47,7 @@ You remain an End User for all other features at all times.
 - Advisors cannot modify your data — they can only view what you explicitly share
 
 ### Payments
-- Pay for sessions through Finora's secure payment gateway
+- Pay for sessions through Kanaku's secure payment gateway
 - View payment history and receipts for all advisor fees
 - Choose pay-per-session or subscribe to a package
 
@@ -76,10 +76,10 @@ You remain an End User for all other features at all times.
 
 | Don't | Consequence |
 |-------|-------------|
-| Contact advisors outside Finora for services arranged through Finora | Violation of platform terms; account suspension |
+| Contact advisors outside Kanaku for services arranged through Kanaku | Violation of platform terms; account suspension |
 | Share your advisor's personal contact details or proprietary advice without consent | Violation of advisor confidentiality |
 | Misrepresent your financial situation to manipulate advice | Account termination |
-| Make payments to advisors outside the Finora payment system | Not covered by our dispute protection; not allowed |
+| Make payments to advisors outside the Kanaku payment system | Not covered by our dispute protection; not allowed |
 | Record advisor sessions without their consent | Immediate session termination; account suspension |
 | Leave false or malicious reviews | Content removal; account warning or suspension |
 | Repeatedly cancel sessions without notice | Booking privileges may be restricted |
@@ -94,13 +94,13 @@ You remain an End User for all other features at all times.
 - Read your transaction history (if you share it)
 - Leave session notes and recommendations in your account
 - See your goals and budgets (if you share them)
-- Message you through Finora's in-app chat
+- Message you through Kanaku's in-app chat
 
 ### Your Advisor CANNOT:
 - Add, edit, or delete any of your transactions or records
 - See data categories you have not shared
 - Access your account without an active, confirmed booking
-- Contact you outside Finora's platform
+- Contact you outside Kanaku's platform
 - Share your data with third parties
 - See your passwords, PIN, or payment information
 
@@ -121,9 +121,9 @@ You remain an End User for all other features at all times.
 
 ## Advisor Relationship Disclaimer
 
-**Important:** Advice provided by advisors through Finora is for informational and educational purposes. Advisors on Finora may or may not be licensed financial planners depending on their listed credentials. Always verify an advisor's professional licenses independently before making major financial decisions.
+**Important:** Advice provided by advisors through Kanaku is for informational and educational purposes. Advisors on Kanaku may or may not be licensed financial planners depending on their listed credentials. Always verify an advisor's professional licenses independently before making major financial decisions.
 
-Finora is a platform facilitating connections. Finora is **not** responsible for the financial outcomes of advice received from advisors, unless the advisor's conduct is in clear violation of our platform standards.
+Kanaku is a platform facilitating connections. Kanaku is **not** responsible for the financial outcomes of advice received from advisors, unless the advisor's conduct is in clear violation of our platform standards.
 
 ---
 
@@ -132,7 +132,7 @@ Finora is a platform facilitating connections. Finora is **not** responsible for
 If you have a complaint about an advisor:
 1. First, raise it in the session chat and try to resolve directly.
 2. If unresolved, use **Settings > My Sessions > [Session] > Report Issue**.
-3. Finora's Trust & Safety team will review within 5 business days.
+3. Kanaku's Trust & Safety team will review within 5 business days.
 4. For refund disputes: escalate via Settings > Payments > Dispute.
 
 ---
@@ -141,4 +141,4 @@ If you have a complaint about an advisor:
 
 Settings > Help & Support > Contact Us
 
-Or email: **clients@finora.app**
+Or email: **clients@Kanaku.app**

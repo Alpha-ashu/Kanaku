@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { randomUUID } from 'crypto';
+import { randomUUID, randomInt } from 'crypto';
 import { AuthService } from './auth.service';
 import { RegisterInput, LoginInput } from './auth.types';
 import { AuthRequest, invalidateUserSnapshotCache } from '../../middleware/auth';
@@ -297,7 +297,7 @@ export const loginChallenge = async (req: Request, res: Response, next: NextFunc
       throw AppError.unauthorized('Incorrect email or password. Please check your credentials and try again.', 'INVALID_CREDENTIALS');
     }
 
-    const challengeCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const challengeCode = randomInt(100000, 1000000).toString();
     const challengeId = 'ch_' + randomUUID();
     const redisKey = `login-challenge:${email.toLowerCase().trim()}`;
 

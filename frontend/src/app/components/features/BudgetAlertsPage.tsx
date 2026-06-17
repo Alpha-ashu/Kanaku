@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { PageHeader } from '@/app/components/ui/PageHeader';
 import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
 import { Card } from '@/app/components/ui/card';
@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { db } from '@/lib/database';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useApp } from '@/contexts/AppContext';
+import { backendService } from '@/lib/backend-api';
 
 interface BudgetLimit {
   id: string;
@@ -31,30 +32,23 @@ export const BudgetAlertsPage: React.FC = () => {
   const [newLimit, setNewLimit] = useState<number>(0);
   const [dismissedAlerts, setDismissedAlerts] = useState<string[]>([]);
 
-  const [emailAlerts, setEmailAlerts] = useState(true);
-  const [pushAlerts, setPushAlerts] = useState(true);
-  const [smsAlerts, setSmsAlerts] = useState(false);
-
-  // Seed default budgets if database is empty on mount
-  useEffect(() => {
-    const seedDefaults = async () => {
-      try {
-        const count = await db.budgets.count();
-        if (count === 0) {
-          const defaults = [
-            { id: '1', category: 'Dining Out', amount: 12000, period: 'monthly', threshold: 85, createdAt: new Date() },
-            { id: '2', category: 'Shopping', amount: 15000, period: 'monthly', threshold: 90, createdAt: new Date() },
-            { id: '3', category: 'Groceries', amount: 20000, period: 'monthly', threshold: 80, createdAt: new Date() },
-            { id: '4', category: 'Entertainment', amount: 8000, period: 'monthly', threshold: 75, createdAt: new Date() }
-          ];
-          await db.budgets.bulkPut(defaults as any);
-        }
-      } catch (error) {
-        console.error('Failed to seed default budgets:', error);
-      }
+  // Notification channel preferences — persisted to Dexie settings
+  const notifPrefs = useLiveQuery(async () => {
+    const [email, push, sms] = await Promise.all([
+      db.settings.get('budget_alert_email'),
+      db.settings.get('budget_alert_push'),
+      db.settings.get('budget_alert_sms'),
+    ]);
+    return {
+      email: email?.value ?? true,
+      push: push?.value ?? true,
+      sms: sms?.value ?? false,
     };
-    seedDefaults();
-  }, []);
+  }, []) ?? { email: true, push: true, sms: false };
+
+  const emailAlerts = notifPrefs.email;
+  const pushAlerts = notifPrefs.push;
+  const smsAlerts = notifPrefs.sms;
 
   // Live Query from Dexie DB.
   const limits = useLiveQuery(async () => {
@@ -127,9 +121,10 @@ export const BudgetAlertsPage: React.FC = () => {
     }
   };
 
-  const handleToggleChannel = (channel: string, current: boolean, setter: (v: boolean) => void) => {
-    setter(!current);
-    toast.success(`${channel} notifications ${!current ? 'Enabled' : 'Disabled'}`);
+  const handleToggleChannel = async (key: 'budget_alert_email' | 'budget_alert_push' | 'budget_alert_sms', current: boolean, label: string) => {
+    const next = !current;
+    await db.settings.put({ key, value: next, timestamp: new Date() });
+    toast.success(`${label} notifications ${next ? 'Enabled' : 'Disabled'}`);
   };
 
   const handleDismissAlert = (category: string) => {
@@ -163,6 +158,21 @@ export const BudgetAlertsPage: React.FC = () => {
       setNewCategory('');
       setNewLimit(0);
       setShowAddModal(false);
+
+      // Background sync to backend
+      try {
+        const resp = await backendService.createBudget({
+          category: newCategory.trim(),
+          amount: newLimit,
+          period: 'monthly',
+          threshold: 85,
+        });
+        if (resp?.id) {
+          await db.budgets.update(budgetId, { id: resp.id } as any);
+        }
+      } catch {
+        // Keep locally — backend sync will retry on next session
+      }
     } catch (error) {
       console.error('Failed to add budget:', error);
       toast.error('Failed to save budget');
@@ -173,6 +183,8 @@ export const BudgetAlertsPage: React.FC = () => {
     try {
       await db.budgets.delete(id);
       toast.success('Budget deleted successfully');
+
+      try { await backendService.deleteBudget(id); } catch { /* offline */ }
     } catch (error) {
       console.error('Failed to delete budget:', error);
       toast.error('Failed to delete budget');
@@ -310,7 +322,7 @@ export const BudgetAlertsPage: React.FC = () => {
                   </div>
                 </div>
                 <button
-                  onClick={() => handleToggleChannel('Email', emailAlerts, setEmailAlerts)}
+                  onClick={() => handleToggleChannel('budget_alert_email', emailAlerts, 'Email')}
                   className={`w-10 h-5 rounded-full relative transition-all ${emailAlerts ? 'bg-indigo-600' : 'bg-slate-300'}`}
                 >
                   <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all shadow-sm ${emailAlerts ? 'right-0.5' : 'left-0.5'}`} />
@@ -328,7 +340,7 @@ export const BudgetAlertsPage: React.FC = () => {
                   </div>
                 </div>
                 <button
-                  onClick={() => handleToggleChannel('Push', pushAlerts, setPushAlerts)}
+                  onClick={() => handleToggleChannel('budget_alert_push', pushAlerts, 'Push')}
                   className={`w-10 h-5 rounded-full relative transition-all ${pushAlerts ? 'bg-indigo-600' : 'bg-slate-300'}`}
                 >
                   <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all shadow-sm ${pushAlerts ? 'right-0.5' : 'left-0.5'}`} />
@@ -346,7 +358,7 @@ export const BudgetAlertsPage: React.FC = () => {
                   </div>
                 </div>
                 <button
-                  onClick={() => handleToggleChannel('SMS', smsAlerts, setSmsAlerts)}
+                  onClick={() => handleToggleChannel('budget_alert_sms', smsAlerts, 'SMS')}
                   className={`w-10 h-5 rounded-full relative transition-all ${smsAlerts ? 'bg-indigo-600' : 'bg-slate-300'}`}
                 >
                   <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all shadow-sm ${smsAlerts ? 'right-0.5' : 'left-0.5'}`} />

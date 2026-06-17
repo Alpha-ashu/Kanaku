@@ -1,4 +1,4 @@
-# Finora — Product Sprint Plan
+# Kanaku — Product Sprint Plan
 **Perspective:** CEO / Product Owner
 **Date:** June 13, 2026
 **Current Version:** v495
@@ -8,7 +8,7 @@
 
 ## Executive Summary
 
-Finora is a production-ready personal finance platform. Core financial features (accounts, transactions, loans, goals, investments, budgets, receipts, voice, advisor booking) are fully implemented. The next phase shifts focus from building to **hardening**: real-data user testing, cross-user integration flows (friends/notifications), SMS integration, and E2E test coverage.
+Kanaku is a production-ready personal finance platform. Core financial features (accounts, transactions, loans, goals, investments, budgets, receipts, voice, advisor booking) are fully implemented. The next phase shifts focus from building to **hardening**: real-data user testing, cross-user integration flows (friends/notifications), SMS integration, and E2E test coverage.
 
 **Current overall completion: ~93%**
 

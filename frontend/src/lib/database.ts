@@ -581,24 +581,6 @@ export interface BookingRequest {
   sequenceNumber?: number; // For sorting
 }
 
-export interface Notification {
-  id?: number;
-  type: 'emi' | 'loan' | 'goal' | 'group' | 'booking' | 'message' | 'session' | 'friend_request' | 'friend_accepted' | 'todo_shared';
-  title: string;
-  message: string;
-  dueDate?: Date;
-  isRead: boolean;
-  relatedId?: number;
-  createdAt: Date;
-  userId?: string;
-  deepLink?: string; // e.g., "/calendar?session=123"
-  remoteId?: string;
-  category?: string;
-  readAt?: Date;
-  source?: 'local' | 'supabase';
-  metadata?: Record<string, string>;
-}
-
 export interface RecurringTransaction {
   id?: number;
   cloudId?: string;

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { useApp } from '@/contexts/AppContext';
 import { ChevronLeft, ChevronRight, Plus, X, Clock, CheckCircle2, AlertCircle, Calendar as CalendarIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -7,6 +7,8 @@ import { PageHeader } from '@/app/components/ui/PageHeader';
 import { Button } from '@/app/components/ui/button';
 import { TimeFilter, TimeFilterPeriod, filterByTimePeriod } from '@/app/components/ui/TimeFilter';
 import { formatCurrencyAmount } from '@/lib/currencyUtils';
+import { db } from '@/lib/database';
+import { useLiveQuery } from 'dexie-react-hooks';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MONTHS = [
@@ -44,7 +46,21 @@ export const Calendar: React.FC = () => {
  const [currentDate, setCurrentDate] = useState(new Date());
  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
  const [showReminderModal, setShowReminderModal] = useState(false);
- const [reminders, setReminders] = useState<Reminder[]>([]);
+ const rawReminders = useLiveQuery(
+   () => db.settings.get('calendar_reminders').then((s) => (s?.value ?? []) as Reminder[]),
+   [],
+   [] as Reminder[]
+ );
+ const reminders: Reminder[] = useMemo(
+   () =>
+     rawReminders.map((r) => ({
+       ...r,
+       date: new Date(r.date),
+       dueDate: new Date(r.dueDate),
+       completedDate: r.completedDate ? new Date(r.completedDate) : undefined,
+     })),
+   [rawReminders]
+ );
  const [timePeriod, setTimePeriod] = useState<TimeFilterPeriod>('monthly');
  const [newReminder, setNewReminder] = useState({
  title: '',
@@ -233,7 +249,11 @@ export const Calendar: React.FC = () => {
  return activities.sort((a, b) => (a.time || '').localeCompare(b.time || ''));
  };
 
- const addReminder = () => {
+ const saveReminders = useCallback(async (updated: Reminder[]) => {
+ await db.settings.put({ key: 'calendar_reminders', value: updated, timestamp: new Date() });
+ }, []);
+
+ const addReminder = async () => {
  if (!newReminder.title.trim()) return;
 
  const reminder: Reminder = {
@@ -246,13 +266,13 @@ export const Calendar: React.FC = () => {
  status: 'pending',
  };
 
- setReminders([...reminders, reminder]);
+ await saveReminders([...reminders, reminder]);
  setNewReminder({ title: '', description: '', type: 'task', date: new Date() });
  setShowReminderModal(false);
  };
 
- const updateReminderStatus = (id: string, status: 'pending' | 'in-progress' | 'completed') => {
- setReminders(
+ const updateReminderStatus = async (id: string, status: 'pending' | 'in-progress' | 'completed') => {
+ await saveReminders(
  reminders.map((r) =>
  r.id === id
  ? { ...r, status, completedDate: status === 'completed' ? new Date() : undefined }
@@ -261,12 +281,12 @@ export const Calendar: React.FC = () => {
  );
  };
 
- const rescheduleReminder = (id: string, newDate: Date) => {
- setReminders(reminders.map((r) => (r.id === id ? { ...r, dueDate: newDate } : r)));
+ const rescheduleReminder = async (id: string, newDate: Date) => {
+ await saveReminders(reminders.map((r) => (r.id === id ? { ...r, dueDate: newDate } : r)));
  };
 
- const deleteReminder = (id: string) => {
- setReminders(reminders.filter((r) => r.id !== id));
+ const deleteReminder = async (id: string) => {
+ await saveReminders(reminders.filter((r) => r.id !== id));
  };
 
  const today = new Date();

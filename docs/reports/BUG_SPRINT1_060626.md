@@ -1,7 +1,7 @@
 # Sprint 1 Browser-Level UI Test Report
 **Date:** 2026-06-13  
 **Tester:** Automated Playwright suite (7 user personas × full scenario coverage)  
-**App:** Finora / KANAKU — React 18 + Vite 6 (port 9002), Express + Prisma backend (port 3000)  
+**App:** Kanaku / KANAKU — React 18 + Vite 6 (port 9002), Express + Prisma backend (port 3000)  
 **Total tests:** 39 across U1–U7 | **Passed:** 28 | **Failed:** 11  
 
 ---

@@ -5223,7 +5223,7 @@ erDiagram
 | Content-Security-Policy | HTTP headers on all responses |
 | Stripe webhook | Signature verified before any payment state mutation |
 
-# Kanaku / Finora — Developer Context
+# Kanaku / Kanaku — Developer Context
 
 > Living reference document. Update this file whenever a significant feature, bug fix, or architectural decision is made.
 > Last updated: 2026-06-15
@@ -5252,7 +5252,7 @@ erDiagram
 
 ## 1. Project Overview
 
-**Kanaku** (frontend brand name: **Finora**) is a personal and collaborative finance management application. It is an offline-first Progressive Web App with a Node.js/Express backend and Supabase for auth and cloud sync.
+**Kanaku** (frontend brand name: **Kanaku**) is a personal and collaborative finance management application. It is an offline-first Progressive Web App with a Node.js/Express backend and Supabase for auth and cloud sync.
 
 **Core features:** accounts, transactions, loans, goals, group expenses, investments, reports, calendar, to-do lists, AI insights, advisor booking, tax calculator, budget alerts, recurring transactions.
 

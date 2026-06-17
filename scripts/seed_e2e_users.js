@@ -21,18 +21,18 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey, {
 const prisma = new PrismaClient();
 
 const USERS = [
-  { firstName: 'Arjun',  lastName: 'Sharma',  email: 'arjun.test@finora.app',  mobile: '+91 9000000001', password: 'TestFinora@2026', persona: 'Debt Manager', role: 'user' },
-  { firstName: 'Priya',  lastName: 'Mehta',   email: 'priya.test@finora.app',   mobile: '+91 9000000002', password: 'TestFinora@2026', persona: 'Group Splitter', role: 'user' },
-  { firstName: 'Rohan',  lastName: 'Verma',   email: 'rohan.test@finora.app',   mobile: '+91 9000000003', password: 'TestFinora@2026', persona: 'Investor', role: 'user' },
-  { firstName: 'Sneha',  lastName: 'Kapoor',  email: 'sneha.test@finora.app',   mobile: '+91 9000000004', password: 'TestFinora@2026', persona: 'Goal Setter', role: 'user' },
-  { firstName: 'Dev',    lastName: 'Nair',    email: 'dev.test@finora.app',     mobile: '+91 9000000005', password: 'TestFinora@2026', persona: 'Portfolio Builder', role: 'user' },
-  { firstName: 'Isha',   lastName: 'Patel',   email: 'isha.test@finora.app',    mobile: '+91 9000000006', password: 'TestFinora@2026', persona: 'Planner', role: 'user' },
-  { firstName: 'Power',  lastName: 'User',    email: 'admin.test@finora.app',   mobile: '+91 9000000007', password: 'TestFinora@2026', persona: 'Power User', role: 'admin' },
+  { firstName: 'Arjun', lastName: 'Sharma', email: 'arjun.test@Kanaku.app', mobile: '+91 9000000001', password: 'TestKanaku@2026', persona: 'Debt Manager', role: 'user' },
+  { firstName: 'Priya', lastName: 'Mehta', email: 'priya.test@Kanaku.app', mobile: '+91 9000000002', password: 'TestKanaku@2026', persona: 'Group Splitter', role: 'user' },
+  { firstName: 'Rohan', lastName: 'Verma', email: 'rohan.test@Kanaku.app', mobile: '+91 9000000003', password: 'TestKanaku@2026', persona: 'Investor', role: 'user' },
+  { firstName: 'Sneha', lastName: 'Kapoor', email: 'sneha.test@Kanaku.app', mobile: '+91 9000000004', password: 'TestKanaku@2026', persona: 'Goal Setter', role: 'user' },
+  { firstName: 'Dev', lastName: 'Nair', email: 'dev.test@Kanaku.app', mobile: '+91 9000000005', password: 'TestKanaku@2026', persona: 'Portfolio Builder', role: 'user' },
+  { firstName: 'Isha', lastName: 'Patel', email: 'isha.test@Kanaku.app', mobile: '+91 9000000006', password: 'TestKanaku@2026', persona: 'Planner', role: 'user' },
+  { firstName: 'Power', lastName: 'User', email: 'admin.test@Kanaku.app', mobile: '+91 9000000007', password: 'TestKanaku@2026', persona: 'Power User', role: 'admin' },
 ];
 
 async function seed() {
   console.log('Starting E2E users seeding...');
-  
+
   const { data: authList, error: listErr } = await supabase.auth.admin.listUsers();
   if (listErr) {
     console.error('Cannot list auth users:', listErr.message);
@@ -43,7 +43,7 @@ async function seed() {
 
   for (const u of USERS) {
     console.log(`Processing: ${u.email}`);
-    
+
     try {
       // 1. Supabase Auth
       let authUser = authList.users.find(a => a.email?.toLowerCase() === u.email.toLowerCase());
@@ -76,7 +76,7 @@ async function seed() {
       // 2. Prisma Database
       const hashedPassword = await bcrypt.hash(u.password, 10);
       const name = `${u.firstName} ${u.lastName}`;
-      
+
       const userRow = await prisma.user.upsert({
         where: { email: u.email },
         update: {

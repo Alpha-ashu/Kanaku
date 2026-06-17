@@ -1,21 +1,21 @@
-# Finora — Advisor Terms & Conditions
+# Kanaku — Advisor Terms & Conditions
 
 **Role:** Financial Advisor
 **Effective Date:** June 13, 2026
-**Applies to:** Verified financial professionals who offer services through the Finora platform
+**Applies to:** Verified financial professionals who offer services through the Kanaku platform
 
 > These terms apply in addition to the [Master Terms & Conditions](./TERMS_MASTER.md). Advisors must carefully read and fully comply with these terms before being approved to operate on the platform.
 
 ---
 
-## Who Is a Finora Advisor?
+## Who Is a Kanaku Advisor?
 
-A Finora Advisor is a financial professional who has applied for and received approval to offer financial guidance services through the Finora platform. Advisors work with Clients (Finora users who book sessions) and are held to a higher standard of conduct than regular End Users.
+A Kanaku Advisor is a financial professional who has applied for and received approval to offer financial guidance services through the Kanaku platform. Advisors work with Clients (Kanaku users who book sessions) and are held to a higher standard of conduct than regular End Users.
 
 You are officially an Advisor only after:
 1. Submitting a complete Advisor Application with valid credentials
-2. Passing Finora's background verification process
-3. Receiving a formal approval notification from the Finora Admin team
+2. Passing Kanaku's background verification process
+3. Receiving a formal approval notification from the Kanaku Admin team
 
 ---
 
@@ -42,13 +42,13 @@ You are officially an Advisor only after:
 - View your client history and session records
 
 ### Session Tools
-- Conduct sessions via Finora's in-app chat interface
+- Conduct sessions via Kanaku's in-app chat interface
 - View client's shared financial dashboard during the session
 - Create session summaries and action items for clients
 
 ### Earnings
 - View your earnings dashboard (completed sessions + pending payouts)
-- Finora retains a **platform fee** (see your onboarding agreement for the exact %)
+- Kanaku retains a **platform fee** (see your onboarding agreement for the exact %)
 - Payouts processed weekly to your registered bank account
 - Download earnings statements and tax documents
 
@@ -72,7 +72,7 @@ You are officially an Advisor only after:
 | Keep your availability calendar updated | Prevents double-bookings and client disappointment |
 | Maintain a professional and respectful tone at all times | Required by platform conduct standards |
 | Report any suspected client fraud or illegal activity | Required for legal compliance |
-| Renew credentials before expiry and notify Finora | Expired credentials trigger automatic account review |
+| Renew credentials before expiry and notify Kanaku | Expired credentials trigger automatic account review |
 
 ---
 
@@ -81,12 +81,12 @@ You are officially an Advisor only after:
 | Don't | Consequence |
 |-------|-------------|
 | Provide advice that constitutes a regulated financial service if you are not licensed for it | Immediate suspension + legal referral |
-| Solicit clients to pay you outside the Finora platform | Permanent ban |
+| Solicit clients to pay you outside the Kanaku platform | Permanent ban |
 | Access client data beyond what has been explicitly shared with you | Permanent ban + potential legal action |
 | Share or sell client data to any third party | Permanent ban + legal action |
 | Conduct sessions while impaired or in a clearly unprofessional environment | Session termination; account review |
 | Guarantee specific financial returns or outcomes | Immediate suspension |
-| Copy or reproduce client financial data outside Finora | Data breach violation; legal action |
+| Copy or reproduce client financial data outside Kanaku | Data breach violation; legal action |
 | Create a fake advisor profile using someone else's credentials | Criminal referral |
 | Engage in any discriminatory conduct toward clients | Immediate suspension |
 | Operate multiple advisor accounts | Permanent ban of all accounts |
@@ -106,7 +106,7 @@ You are officially an Advisor only after:
 - Modify, add, or delete any client data
 - View data categories the client has not shared
 - Access client banking credentials, passwords, or PINs
-- Contact clients outside the Finora platform
+- Contact clients outside the Kanaku platform
 - Access a client's account between sessions without their active invitation
 - See which other advisors a client has worked with
 
@@ -120,7 +120,7 @@ By joining as an Advisor, you confirm that:
 - You understand that you are providing **guidance and education**, not regulated financial planning services, unless you are a licensed planner and have declared that in your profile
 - You will not make decisions on behalf of clients — you advise, clients decide
 
-Finora reserves the right to verify your credentials at any time and to require updated documentation.
+Kanaku reserves the right to verify your credentials at any time and to require updated documentation.
 
 ---
 
@@ -132,14 +132,14 @@ Finora reserves the right to verify your credentials at any time and to require 
 | Payout schedule | Weekly (every Monday for previous week's sessions) |
 | Minimum payout threshold | ₹500 or equivalent |
 | Payout method | Bank transfer to registered account |
-| Tax responsibility | You are responsible for declaring your Finora income for tax purposes |
+| Tax responsibility | You are responsible for declaring your Kanaku income for tax purposes |
 | Cancellation by you | No earnings for that session; repeated cancellations incur penalties |
 
 ---
 
 ## Rating & Performance Standards
 
-Finora monitors advisor performance. Your account may be reviewed or suspended if:
+Kanaku monitors advisor performance. Your account may be reviewed or suspended if:
 - Your average rating drops below **3.0 / 5.0** over 10+ sessions
 - Your session completion rate drops below **85%**
 - You accumulate 3 or more formal client complaints
@@ -158,13 +158,13 @@ Your application included:
 4. Fee structure
 5. Agreement to these Advisor Terms
 
-Finora's admin team reviews applications within **7 business days**. Approval is at Finora's sole discretion.
+Kanaku's admin team reviews applications within **7 business days**. Approval is at Kanaku's sole discretion.
 
 ---
 
 ## Suspension & Termination
 
-Finora may suspend or terminate your Advisor account if:
+Kanaku may suspend or terminate your Advisor account if:
 - You violate any of these terms
 - Your credentials are found to be invalid or expired
 - You receive sustained negative feedback (see Rating Standards above)
@@ -178,4 +178,4 @@ On termination, you retain access to earnings records for tax purposes for 6 mon
 
 Settings > Help & Support > Advisor Support
 
-Or email: **advisors@finora.app**
+Or email: **advisors@Kanaku.app**

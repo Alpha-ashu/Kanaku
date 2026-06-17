@@ -1,8 +1,8 @@
-# Finora — End User Terms & Conditions
+# Kanaku — End User Terms & Conditions
 
 **Role:** End User (Standard Account)
 **Effective Date:** June 13, 2026
-**Applies to:** All users with a standard Finora account
+**Applies to:** All users with a standard Kanaku account
 
 > These terms apply in addition to the [Master Terms & Conditions](./TERMS_MASTER.md).
 
@@ -10,7 +10,7 @@
 
 ## Who Is an End User?
 
-An End User is anyone who creates a Finora account to manage their **personal finances**. This includes tracking income and expenses, setting budgets, monitoring goals, scanning receipts, tracking investments, and managing loans and bills.
+An End User is anyone who creates a Kanaku account to manage their **personal finances**. This includes tracking income and expenses, setting budgets, monitoring goals, scanning receipts, tracking investments, and managing loans and bills.
 
 You do **not** need to book advisor sessions to be an End User. The End User role is the foundation of all other roles — Clients and Advisors start as End Users.
 
@@ -98,7 +98,7 @@ You do **not** need to book advisor sessions to be an End User. The End User rol
 |-------|-------------|
 | Share your account with others | Account suspension |
 | Enter deliberately false financial data | Account termination |
-| Use Finora to track funds from illegal sources | Account termination + legal referral |
+| Use Kanaku to track funds from illegal sources | Account termination + legal referral |
 | Attempt to access another user's data | Permanent ban + legal action |
 | Upload malicious files disguised as receipts | Account suspension |
 | Use automated bots to interact with the app | Account suspension |
@@ -111,7 +111,7 @@ You do **not** need to book advisor sessions to be an End User. The End User rol
 
 **What we collect:**
 - Financial transactions you enter or import
-- Receipt images you upload (stored securely in Finora cloud storage)
+- Receipt images you upload (stored securely in Kanaku cloud storage)
 - Budget and goal settings
 - Device information (for sync purposes)
 - App usage analytics (anonymized)
@@ -165,4 +165,4 @@ Free users always retain access to: manual transaction entry, basic budgets, and
 
 Settings > Help & Support > Contact Us
 
-Or email: **support@finora.app**
+Or email: **support@Kanaku.app**

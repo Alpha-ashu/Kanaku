@@ -1,4 +1,4 @@
-// Finora Auth API Test Suite — corrected route paths + delay between tests
+// Kanaku Auth API Test Suite — corrected route paths + delay between tests
 // Run: node scratch/auth_api_test.mjs
 // Routes confirmed from source:
 //   POST /api/v1/auth/register
@@ -45,7 +45,7 @@ async function apiTest(name, url, method, body, expectCode, headers = {}) {
 
 async function main() {
   console.log('=========================================');
-  console.log('   FINORA AUTH API TEST SUITE v2');
+  console.log('   Kanaku AUTH API TEST SUITE v2');
   console.log(`   Backend  : ${BASE}`);
   console.log(`   Email    : ${TEST_EMAIL}`);
   console.log(`   Delay    : ${DELAY_MS}ms between requests`);
@@ -87,7 +87,7 @@ async function main() {
 
   const r6 = await apiTest('T6: Register valid user → 201',
     `${BASE}/api/v1/auth/register`, 'POST',
-    { firstName: 'TestFinora', lastName: 'AutoTest', email: TEST_EMAIL, password: TEST_PASS }, 201);
+    { firstName: 'TestKanaku', lastName: 'AutoTest', email: TEST_EMAIL, password: TEST_PASS }, 201);
 
   let regToken = null;
   if (r6.status === 200 || r6.status === 201) {

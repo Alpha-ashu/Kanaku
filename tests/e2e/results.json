@@ -1,7 +1,7 @@
 {
   "config": {
-    "configFile": "K:\\Project\\kenku\\Finora\\playwright.config.ts",
-    "rootDir": "K:/Project/kenku/Finora/tests/e2e",
+    "configFile": "K:\\Project\\kenku\\Kanaku\\playwright.config.ts",
+    "rootDir": "K:/Project/kenku/Kanaku/tests/e2e",
     "forbidOnly": false,
     "fullyParallel": false,
     "globalSetup": null,
@@ -16,7 +16,7 @@
     "preserveOutput": "always",
     "projects": [
       {
-        "outputDir": "K:/Project/kenku/Finora/tests/e2e/screenshots",
+        "outputDir": "K:/Project/kenku/Kanaku/tests/e2e/screenshots",
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
@@ -24,7 +24,7 @@
         },
         "id": "chromium",
         "name": "chromium",
-        "testDir": "K:/Project/kenku/Finora/tests/e2e",
+        "testDir": "K:/Project/kenku/Kanaku/tests/e2e",
         "testIgnore": [],
         "testMatch": [
           "**/*.@(spec|test).?(c|m)[jt]s?(x)"
@@ -103,7 +103,7 @@
                       "errors": [],
                       "stdout": [
                         {
-                          "text": "  ℹ️  arjun.test@finora.app already registered — skipping\n"
+                          "text": "  ℹ️  arjun.test@Kanaku.app already registered — skipping\n"
                         }
                       ],
                       "stderr": [],
@@ -119,7 +119,7 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-68f44--Arjun-Sharma-Debt-Manager--chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Kanaku\\tests\\e2e\\screenshots\\01-registration-User-Regis-68f44--Arjun-Sharma-Debt-Manager--chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -157,7 +157,7 @@
                       "errors": [],
                       "stdout": [
                         {
-                          "text": "  ℹ️  priya.test@finora.app already registered — skipping\n"
+                          "text": "  ℹ️  priya.test@Kanaku.app already registered — skipping\n"
                         }
                       ],
                       "stderr": [],
@@ -173,7 +173,7 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-86b22-Priya-Mehta-Group-Splitter--chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Kanaku\\tests\\e2e\\screenshots\\01-registration-User-Regis-86b22-Priya-Mehta-Group-Splitter--chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -211,7 +211,7 @@
                       "errors": [],
                       "stdout": [
                         {
-                          "text": "  ℹ️  rohan.test@finora.app already registered — skipping\n"
+                          "text": "  ℹ️  rohan.test@Kanaku.app already registered — skipping\n"
                         }
                       ],
                       "stderr": [],
@@ -227,7 +227,7 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-cbb8e-er-U3-Rohan-Verma-Investor--chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Kanaku\\tests\\e2e\\screenshots\\01-registration-User-Regis-cbb8e-er-U3-Rohan-Verma-Investor--chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -265,7 +265,7 @@
                       "errors": [],
                       "stdout": [
                         {
-                          "text": "  ℹ️  sneha.test@finora.app already registered — skipping\n"
+                          "text": "  ℹ️  sneha.test@Kanaku.app already registered — skipping\n"
                         }
                       ],
                       "stderr": [],
@@ -281,7 +281,7 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-072dd-4-Sneha-Kapoor-Goal-Setter--chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Kanaku\\tests\\e2e\\screenshots\\01-registration-User-Regis-072dd-4-Sneha-Kapoor-Goal-Setter--chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -319,7 +319,7 @@
                       "errors": [],
                       "stdout": [
                         {
-                          "text": "  ℹ️  dev.test@finora.app already registered — skipping\n"
+                          "text": "  ℹ️  dev.test@Kanaku.app already registered — skipping\n"
                         }
                       ],
                       "stderr": [],
@@ -335,7 +335,7 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-a249b-Dev-Nair-Portfolio-Builder--chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Kanaku\\tests\\e2e\\screenshots\\01-registration-User-Regis-a249b-Dev-Nair-Portfolio-Builder--chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -373,7 +373,7 @@
                       "errors": [],
                       "stdout": [
                         {
-                          "text": "  ℹ️  isha.test@finora.app already registered — skipping\n"
+                          "text": "  ℹ️  isha.test@Kanaku.app already registered — skipping\n"
                         }
                       ],
                       "stderr": [],
@@ -389,7 +389,7 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-f3f5a-ster-U6-Isha-Patel-Planner--chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Kanaku\\tests\\e2e\\screenshots\\01-registration-User-Regis-f3f5a-ster-U6-Isha-Patel-Planner--chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -427,7 +427,7 @@
                       "errors": [],
                       "stdout": [
                         {
-                          "text": "  ℹ️  admin.test@finora.app already registered — skipping\n"
+                          "text": "  ℹ️  admin.test@Kanaku.app already registered — skipping\n"
                         }
                       ],
                       "stderr": [],
@@ -443,7 +443,7 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-User-Regis-af66e-r-U7-Power-User-Power-User--chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Kanaku\\tests\\e2e\\screenshots\\01-registration-User-Regis-af66e-r-U7-Power-User-Power-User--chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -465,10 +465,10 @@
           "column": 6,
           "specs": [
             {
-              "title": "Login U1: arjun.test@finora.app",
+              "title": "Login U1: arjun.test@Kanaku.app",
               "ok": true,
               "tags": [
-                "finora.app"
+                "Kanaku.app"
               ],
               "tests": [
                 {
@@ -493,7 +493,7 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-51622-in-U1-arjun-test-finora-app-chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Kanaku\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-51622-in-U1-arjun-test-Kanaku-app-chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -507,10 +507,10 @@
               "column": 5
             },
             {
-              "title": "Login U2: priya.test@finora.app",
+              "title": "Login U2: priya.test@Kanaku.app",
               "ok": true,
               "tags": [
-                "finora.app"
+                "Kanaku.app"
               ],
               "tests": [
                 {
@@ -535,7 +535,7 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-ee13b-in-U2-priya-test-finora-app-chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Kanaku\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-ee13b-in-U2-priya-test-Kanaku-app-chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -549,10 +549,10 @@
               "column": 5
             },
             {
-              "title": "Login U3: rohan.test@finora.app",
+              "title": "Login U3: rohan.test@Kanaku.app",
               "ok": true,
               "tags": [
-                "finora.app"
+                "Kanaku.app"
               ],
               "tests": [
                 {
@@ -577,7 +577,7 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-c071e-in-U3-rohan-test-finora-app-chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Kanaku\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-c071e-in-U3-rohan-test-Kanaku-app-chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -591,10 +591,10 @@
               "column": 5
             },
             {
-              "title": "Login U4: sneha.test@finora.app",
+              "title": "Login U4: sneha.test@Kanaku.app",
               "ok": true,
               "tags": [
-                "finora.app"
+                "Kanaku.app"
               ],
               "tests": [
                 {
@@ -619,7 +619,7 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-73e38-in-U4-sneha-test-finora-app-chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Kanaku\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-73e38-in-U4-sneha-test-Kanaku-app-chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -633,10 +633,10 @@
               "column": 5
             },
             {
-              "title": "Login U5: dev.test@finora.app",
+              "title": "Login U5: dev.test@Kanaku.app",
               "ok": true,
               "tags": [
-                "finora.app"
+                "Kanaku.app"
               ],
               "tests": [
                 {
@@ -661,7 +661,7 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-3fcc2-ogin-U5-dev-test-finora-app-chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Kanaku\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-3fcc2-ogin-U5-dev-test-Kanaku-app-chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -675,10 +675,10 @@
               "column": 5
             },
             {
-              "title": "Login U6: isha.test@finora.app",
+              "title": "Login U6: isha.test@Kanaku.app",
               "ok": true,
               "tags": [
-                "finora.app"
+                "Kanaku.app"
               ],
               "tests": [
                 {
@@ -703,7 +703,7 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-c0c09-gin-U6-isha-test-finora-app-chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Kanaku\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-c0c09-gin-U6-isha-test-Kanaku-app-chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -717,10 +717,10 @@
               "column": 5
             },
             {
-              "title": "Login U7: admin.test@finora.app",
+              "title": "Login U7: admin.test@Kanaku.app",
               "ok": true,
               "tags": [
-                "finora.app"
+                "Kanaku.app"
               ],
               "tests": [
                 {
@@ -745,7 +745,7 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-f6526-in-U7-admin-test-finora-app-chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Kanaku\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-f6526-in-U7-admin-test-Kanaku-app-chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -802,7 +802,7 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\02-u1-loans-U1-–-Debt-Loan-3f39e-1-Login-and-reach-dashboard-chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Kanaku\\tests\\e2e\\screenshots\\02-u1-loans-U1-–-Debt-Loan-3f39e-1-Login-and-reach-dashboard-chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -842,7 +842,7 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\02-u1-loans-U1-–-Debt-Loan-de794-Add-primary-savings-account-chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Kanaku\\tests\\e2e\\screenshots\\02-u1-loans-U1-–-Debt-Loan-de794-Add-primary-savings-account-chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -882,7 +882,7 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\02-u1-loans-U1-–-Debt-Loan-0129b-3-Navigate-to-Loans-section-chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Kanaku\\tests\\e2e\\screenshots\\02-u1-loans-U1-–-Debt-Loan-0129b-3-Navigate-to-Loans-section-chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -922,7 +922,7 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\02-u1-loans-U1-–-Debt-Loan-Manager-Arjun-U1-04-Add-Home-Loan-chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Kanaku\\tests\\e2e\\screenshots\\02-u1-loans-U1-–-Debt-Loan-Manager-Arjun-U1-04-Add-Home-Loan-chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -962,7 +962,7 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\02-u1-loans-U1-–-Debt-Loan-0846d-l-loan-Borrowed-from-Priya--chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Kanaku\\tests\\e2e\\screenshots\\02-u1-loans-U1-–-Debt-Loan-0846d-l-loan-Borrowed-from-Priya--chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -1010,7 +1010,7 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\02-u1-loans-U1-–-Debt-Loan-42a03-ard-shows-total-debt-figure-chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Kanaku\\tests\\e2e\\screenshots\\02-u1-loans-U1-–-Debt-Loan-42a03-ard-shows-total-debt-figure-chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -1071,7 +1071,7 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\03-u2-groups-U2-–-Group-Ex-2d843-Navigate-to-Friends-section-chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Kanaku\\tests\\e2e\\screenshots\\03-u2-groups-U2-–-Group-Ex-2d843-Navigate-to-Friends-section-chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -1115,7 +1115,7 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\03-u2-groups-U2-–-Group-Ex-595b7-2-02-Add-Arjun-U1-as-friend-chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Kanaku\\tests\\e2e\\screenshots\\03-u2-groups-U2-–-Group-Ex-595b7-2-02-Add-Arjun-U1-as-friend-chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -1159,7 +1159,7 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\03-u2-groups-U2-–-Group-Ex-9f43e-ate-to-Groups-Split-section-chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Kanaku\\tests\\e2e\\screenshots\\03-u2-groups-U2-–-Group-Ex-9f43e-ate-to-Groups-Split-section-chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -1203,7 +1203,7 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\03-u2-groups-U2-–-Group-Ex-ecd2a--Create-Goa-Trip-2026-group-chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Kanaku\\tests\\e2e\\screenshots\\03-u2-groups-U2-–-Group-Ex-ecd2a--Create-Goa-Trip-2026-group-chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -1247,7 +1247,7 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\03-u2-groups-U2-–-Group-Ex-b6bfa-oup-expense-–-Hotel-booking-chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Kanaku\\tests\\e2e\\screenshots\\03-u2-groups-U2-–-Group-Ex-b6bfa-oup-expense-–-Hotel-booking-chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -1308,7 +1308,7 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\04-u3-investments-U3-–-Inv-a7a13--01-Navigate-to-Investments-chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Kanaku\\tests\\e2e\\screenshots\\04-u3-investments-U3-–-Inv-a7a13--01-Navigate-to-Investments-chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -1352,7 +1352,7 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\04-u3-investments-U3-–-Inv-52e60-stock-–-Reliance-Industries-chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Kanaku\\tests\\e2e\\screenshots\\04-u3-investments-U3-–-Inv-52e60-stock-–-Reliance-Industries-chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -1396,7 +1396,7 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\04-u3-investments-U3-–-Inv-a4fe0-d-Mutual-Fund-–-HDFC-Midcap-chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Kanaku\\tests\\e2e\\screenshots\\04-u3-investments-U3-–-Inv-a4fe0-d-Mutual-Fund-–-HDFC-Midcap-chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -1440,7 +1440,7 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\04-u3-investments-U3-–-Inv-15e47-n-U3-04-Add-Gold-investment-chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Kanaku\\tests\\e2e\\screenshots\\04-u3-investments-U3-–-Inv-15e47-n-U3-04-Add-Gold-investment-chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -1484,7 +1484,7 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\04-u3-investments-U3-–-Inv-1aca1-ify-portfolio-summary-loads-chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Kanaku\\tests\\e2e\\screenshots\\04-u3-investments-U3-–-Inv-1aca1-ify-portfolio-summary-loads-chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -1541,7 +1541,7 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\05-u4-goals-U4-–-Goal-Setter-Sneha-U4-01-Navigate-to-Goals-chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Kanaku\\tests\\e2e\\screenshots\\05-u4-goals-U4-–-Goal-Setter-Sneha-U4-01-Navigate-to-Goals-chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -1585,7 +1585,7 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\05-u4-goals-U4-–-Goal-Sett-7582b--Create-Emergency-Fund-goal-chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Kanaku\\tests\\e2e\\screenshots\\05-u4-goals-U4-–-Goal-Sett-7582b--Create-Emergency-Fund-goal-chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -1629,7 +1629,7 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\05-u4-goals-U4-–-Goal-Sett-8b37e-Create-Europe-Vacation-goal-chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Kanaku\\tests\\e2e\\screenshots\\05-u4-goals-U4-–-Goal-Sett-8b37e-Create-Europe-Vacation-goal-chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -1673,7 +1673,7 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\05-u4-goals-U4-–-Goal-Sett-cb202-tribution-to-Emergency-Fund-chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Kanaku\\tests\\e2e\\screenshots\\05-u4-goals-U4-–-Goal-Sett-cb202-tribution-to-Emergency-Fund-chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -1713,7 +1713,7 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\05-u4-goals-U4-–-Goal-Sett-e652a-Laptop-goal-and-complete-it-chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Kanaku\\tests\\e2e\\screenshots\\05-u4-goals-U4-–-Goal-Sett-e652a-Laptop-goal-and-complete-it-chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -1770,7 +1770,7 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\06-u5-transactions-U5-–-Po-dab46-1-Add-ICICI-Savings-account-chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Kanaku\\tests\\e2e\\screenshots\\06-u5-transactions-U5-–-Po-dab46-1-Add-ICICI-Savings-account-chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -1810,7 +1810,7 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\06-u5-transactions-U5-–-Po-c789f-02-Add-Paytm-Wallet-account-chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Kanaku\\tests\\e2e\\screenshots\\06-u5-transactions-U5-–-Po-c789f-02-Add-Paytm-Wallet-account-chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -1850,7 +1850,7 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\06-u5-transactions-U5-–-Po-f2644-income-transaction-–-Salary-chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Kanaku\\tests\\e2e\\screenshots\\06-u5-transactions-U5-–-Po-f2644-income-transaction-–-Salary-chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -1894,7 +1894,7 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\06-u5-transactions-U5-–-Po-1eecb-nsactions-across-categories-chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Kanaku\\tests\\e2e\\screenshots\\06-u5-transactions-U5-–-Po-1eecb-nsactions-across-categories-chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -1938,7 +1938,7 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\06-u5-transactions-U5-–-Po-e5a59-n-accounts-–-ICICI-to-Paytm-chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Kanaku\\tests\\e2e\\screenshots\\06-u5-transactions-U5-–-Po-e5a59-n-accounts-–-ICICI-to-Paytm-chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -1982,7 +1982,7 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\06-u5-transactions-U5-–-Po-e267e-et-budget-for-Food-category-chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Kanaku\\tests\\e2e\\screenshots\\06-u5-transactions-U5-–-Po-e267e-et-budget-for-Food-category-chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -2043,7 +2043,7 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\07-u6-todos-U6-–-Collabora-6ab3c-1-Navigate-to-To-Do-section-chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Kanaku\\tests\\e2e\\screenshots\\07-u6-todos-U6-–-Collabora-6ab3c-1-Navigate-to-To-Do-section-chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -2083,7 +2083,7 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\07-u6-todos-U6-–-Collabora-fa49f-l-list-Daily-Finance-Tasks--chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Kanaku\\tests\\e2e\\screenshots\\07-u6-todos-U6-–-Collabora-fa49f-l-list-Daily-Finance-Tasks--chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -2127,7 +2127,7 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\07-u6-todos-U6-–-Collabora-1d44d-to-Daily-Finance-Tasks-list-chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Kanaku\\tests\\e2e\\screenshots\\07-u6-todos-U6-–-Collabora-1d44d-to-Daily-Finance-Tasks-list-chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -2171,7 +2171,7 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\07-u6-todos-U6-–-Collabora-e06ad--04-Mark-a-task-as-complete-chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Kanaku\\tests\\e2e\\screenshots\\07-u6-todos-U6-–-Collabora-e06ad--04-Mark-a-task-as-complete-chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -2215,7 +2215,7 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\07-u6-todos-U6-–-Collabora-e28f9-hared-To-Do-list-with-Arjun-chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Kanaku\\tests\\e2e\\screenshots\\07-u6-todos-U6-–-Collabora-e28f9-hared-To-Do-list-with-Arjun-chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -2259,7 +2259,7 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\07-u6-todos-U6-–-Collabora-c66f6-sks-to-shared-Goa-Trip-list-chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Kanaku\\tests\\e2e\\screenshots\\07-u6-todos-U6-–-Collabora-c66f6-sks-to-shared-Goa-Trip-list-chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -2316,7 +2316,7 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\08-u7-power-user-U7-–-Powe-4caff-1-Login-and-dashboard-loads-chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Kanaku\\tests\\e2e\\screenshots\\08-u7-power-user-U7-–-Powe-4caff-1-Login-and-dashboard-loads-chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -2360,7 +2360,7 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\08-u7-power-user-U7-–-Powe-0e827-ransaction-→-Verify-balance-chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Kanaku\\tests\\e2e\\screenshots\\08-u7-power-user-U7-–-Powe-0e827-ransaction-→-Verify-balance-chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -2404,7 +2404,7 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\08-u7-power-user-U7-–-Powe-44ca9--Add-expense-→-Add-transfer-chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Kanaku\\tests\\e2e\\screenshots\\08-u7-power-user-U7-–-Powe-44ca9--Add-expense-→-Add-transfer-chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -2451,7 +2451,7 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\08-u7-power-user-U7-–-Powe-e18d4--logging-–-speak-an-expense-chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Kanaku\\tests\\e2e\\screenshots\\08-u7-power-user-U7-–-Powe-e18d4--logging-–-speak-an-expense-chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -2495,7 +2495,7 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\08-u7-power-user-U7-–-Powe-f52e8--Receipt-scanner-page-loads-chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Kanaku\\tests\\e2e\\screenshots\\08-u7-power-user-U7-–-Powe-f52e8--Receipt-scanner-page-loads-chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -2539,7 +2539,7 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\08-u7-power-user-U7-–-Powe-4ad16-ate-goal-→-Add-contribution-chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Kanaku\\tests\\e2e\\screenshots\\08-u7-power-user-U7-–-Powe-4ad16-ate-goal-→-Add-contribution-chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -2583,7 +2583,7 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\08-u7-power-user-U7-–-Powe-837f5-ession-U7-07-Add-investment-chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Kanaku\\tests\\e2e\\screenshots\\08-u7-power-user-U7-–-Powe-837f5-ession-U7-07-Add-investment-chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -2627,7 +2627,7 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\08-u7-power-user-U7-–-Powe-0b37b-dd-loan-and-log-EMI-payment-chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Kanaku\\tests\\e2e\\screenshots\\08-u7-power-user-U7-–-Powe-0b37b-dd-loan-and-log-EMI-payment-chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -2671,7 +2671,7 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\08-u7-power-user-U7-–-Powe-dbe97-9-Notification-center-loads-chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Kanaku\\tests\\e2e\\screenshots\\08-u7-power-user-U7-–-Powe-dbe97-9-Notification-center-loads-chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -2718,7 +2718,7 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\08-u7-power-user-U7-–-Powe-9a9b6-herent-after-all-data-entry-chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Kanaku\\tests\\e2e\\screenshots\\08-u7-power-user-U7-–-Powe-9a9b6-herent-after-all-data-entry-chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -2762,7 +2762,7 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\08-u7-power-user-U7-–-Powe-19ac6--Export-transactions-as-CSV-chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Kanaku\\tests\\e2e\\screenshots\\08-u7-power-user-U7-–-Powe-19ac6--Export-transactions-as-CSV-chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -2868,7 +2868,7 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\test-quick-actions-Quick-A-c8ad5-ges-from-Quick-Action-modal-chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Kanaku\\tests\\e2e\\screenshots\\test-quick-actions-Quick-A-c8ad5-ges-from-Quick-Action-modal-chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -2929,7 +2929,7 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\test-refresh-redirect-P1-B-72c6e-sh-should-stay-on-Dashboard-chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Kanaku\\tests\\e2e\\screenshots\\test-refresh-redirect-P1-B-72c6e-sh-should-stay-on-Dashboard-chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -2969,7 +2969,7 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\test-refresh-redirect-P1-B-71971-h-→-should-stay-on-Accounts-chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Kanaku\\tests\\e2e\\screenshots\\test-refresh-redirect-P1-B-71971-h-→-should-stay-on-Accounts-chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -3013,7 +3013,7 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\test-refresh-redirect-P1-B-d17c8--screen-NOT-Create-Profile--chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Kanaku\\tests\\e2e\\screenshots\\test-refresh-redirect-P1-B-d17c8--screen-NOT-Create-Profile--chromium\\test-finished-1.png"
                         }
                       ]
                     }

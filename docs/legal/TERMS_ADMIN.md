@@ -1,16 +1,16 @@
-# Finora — Admin Terms & Conditions
+# Kanaku — Admin Terms & Conditions
 
 **Role:** Platform Administrator
 **Effective Date:** June 13, 2026
-**Applies to:** Finora internal staff and authorized administrators only
+**Applies to:** Kanaku internal staff and authorized administrators only
 
-> These terms apply in addition to the [Master Terms & Conditions](./TERMS_MASTER.md). Admin access is granted only to authorized Finora employees and contractors. **Admin credentials must never be shared.**
+> These terms apply in addition to the [Master Terms & Conditions](./TERMS_MASTER.md). Admin access is granted only to authorized Kanaku employees and contractors. **Admin credentials must never be shared.**
 
 ---
 
-## Who Is a Finora Admin?
+## Who Is a Kanaku Admin?
 
-A Finora Admin is a member of the Finora internal team (employee or authorized contractor) who has been granted elevated platform access to maintain operations, ensure safety, and manage the platform on behalf of the company.
+A Kanaku Admin is a member of the Kanaku internal team (employee or authorized contractor) who has been granted elevated platform access to maintain operations, ensure safety, and manage the platform on behalf of the company.
 
 Admin accounts are created **only** by other admins or by the platform owner. If you received Admin access, you are bound by these terms as a condition of your employment or contract.
 
@@ -79,7 +79,7 @@ Admin accounts are created **only** by other admins or by the platform owner. If
 | Follow the approval process for high-impact actions (e.g., mass suspensions) | Prevents accidental or unauthorized mass actions |
 | Report data breaches within 1 hour of discovery | Required by data protection law |
 | Treat all user data with strict confidentiality — no sharing, no screenshots | User data is not yours to share |
-| Stay current on Finora's internal admin training and policy updates | Platform policies evolve; admins must be current |
+| Stay current on Kanaku's internal admin training and policy updates | Platform policies evolve; admins must be current |
 
 ---
 
@@ -88,7 +88,7 @@ Admin accounts are created **only** by other admins or by the platform owner. If
 | Don't | Consequence |
 |-------|-------------|
 | Access user financial data out of personal curiosity | Immediate termination + potential legal action |
-| Share admin credentials with anyone, including other Finora staff | Credential sharing is a serious security violation |
+| Share admin credentials with anyone, including other Kanaku staff | Credential sharing is a serious security violation |
 | Grant admin access to yourself for features you are not authorized to use | Privilege escalation violation |
 | Delete audit logs or modify log records | Tampering with audit logs is a criminal offense |
 | Approve advisor applications from friends or family (conflict of interest) | Recuse yourself and escalate to another admin |
@@ -181,7 +181,7 @@ All admin disciplinary actions are logged and reviewed by the platform owner.
 
 ## Offboarding
 
-When an Admin leaves Finora (by resignation, termination, or end of contract):
+When an Admin leaves Kanaku (by resignation, termination, or end of contract):
 - Admin credentials are revoked immediately upon notice
 - All company devices must be returned within 24 hours
 - Any admin-generated reports or data downloads must be deleted and confirmed
@@ -195,7 +195,7 @@ When an Admin leaves Finora (by resignation, termination, or end of contract):
 If you become aware of a security issue, data breach, or policy violation by another admin:
 - **Internal escalation:** Report to the Platform Owner immediately
 - **Security incidents:** Use the internal security incident channel
-- **External legal concern:** Contact legal@finora.app with documentation
+- **External legal concern:** Contact legal@Kanaku.app with documentation
 
 Whistleblower protections apply to good-faith reports made in accordance with this policy.
 
@@ -203,4 +203,4 @@ Whistleblower protections apply to good-faith reports made in accordance with th
 
 ## Questions?
 
-Contact the Platform Owner directly or email: **admin-support@finora.app** (internal only)
+Contact the Platform Owner directly or email: **admin-support@Kanaku.app** (internal only)

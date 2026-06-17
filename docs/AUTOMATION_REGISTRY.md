@@ -1,6 +1,6 @@
 # Automation Registry
 
-Centralised table of every `data-testid` added to Finora/Kanaku for Playwright automation and AI agent targeting.
+Centralised table of every `data-testid` added to Kanaku/Kanaku for Playwright automation and AI agent targeting.
 
 **Naming convention:** `module-feature-element`  
 **Dynamic IDs** use template literals — e.g. `pin-setup-digit-${n}`, `transaction-type-${tab.id}-tab`.
