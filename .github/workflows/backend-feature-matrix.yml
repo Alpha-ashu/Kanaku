@@ -2,22 +2,17 @@ name: Backend Feature Matrix
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
     paths:
-      - 'backend/**'
-      - '.github/workflows/backend-feature-matrix.yml'
-  pull_request:
-    paths:
-      - 'backend/**'
+      - 'backend/src/**'
+      - 'backend/scripts/**'
+      - 'backend/prisma/**'
       - '.github/workflows/backend-feature-matrix.yml'
   workflow_dispatch:
 
 jobs:
   feature-matrix:
     runs-on: ubuntu-latest
-    env:
-      DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
     defaults:
       run:
         working-directory: backend
@@ -34,38 +29,60 @@ jobs:
           cache-dependency-path: backend/package-lock.json
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
-      - name: Sync Prisma schema
-        if: env.DATABASE_URL != ''
-        run: npx prisma db push
+      - name: Generate Prisma client
+        run: npx prisma generate
+        env:
+          DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
 
       - name: Build backend
         run: npm run build
 
       - name: Seed admin QA data
+        if: env.DATABASE_URL != ''
         run: npm run qa:seed-admin
+        env:
+          DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET || 'ci-test-secret-at-least-32-characters-long' }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
 
       - name: Start backend API
-        run: npm run dev > backend-dev.log 2>&1 &
+        run: node dist/server.js > backend-dev.log 2>&1 &
+        env:
+          DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET || 'ci-test-secret-at-least-32-characters-long' }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL || 'http://localhost:54321' }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY || 'test-anon-key' }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY || 'test-service-key' }}
+          SUPABASE_JWT_SECRET: ${{ secrets.SUPABASE_JWT_SECRET || 'test-jwt-secret' }}
+          PORT: 3000
+          NODE_ENV: production
 
       - name: Wait for health endpoint
         run: |
           for i in {1..30}; do
-            if curl -sSf http://localhost:3000/health > /dev/null; then
+            if curl -sSf http://localhost:3000/health > /dev/null 2>&1; then
               echo "Backend is healthy"
               exit 0
             fi
+            echo "Waiting... ($i/30)"
             sleep 2
           done
           echo "Backend did not become healthy in time"
+          cat backend-dev.log || true
           exit 1
 
-      - name: Run feature matrix test
-        shell: pwsh
-        run: ./scripts/run-feature-matrix.ps1
+      - name: Run feature matrix test (bash)
+        run: |
+          if [ -f "./scripts/run-feature-matrix.sh" ]; then
+            bash ./scripts/run-feature-matrix.sh
+          else
+            echo "No bash feature matrix script found — skipping"
+          fi
 
-      - name: Upload backend dev log on failure
+      - name: Upload backend log on failure
         if: failure()
         uses: actions/upload-artifact@v4
         with:

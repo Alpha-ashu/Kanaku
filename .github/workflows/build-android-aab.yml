@@ -2,9 +2,15 @@ name: Build Android AAB (Release)
 
 on:
   push:
-    branches:
-      - main
-      - master
+    branches: [main]
+    paths:
+      - "frontend/src/**"
+      - "frontend/public/**"
+      - "android/**"
+      - "frontend/package.json"
+      - "frontend/package-lock.json"
+      - "capacitor.config.*"
+      - ".github/workflows/build-android-aab.yml"
   workflow_dispatch:
     inputs:
       build_variant:
@@ -17,11 +23,8 @@ on:
           - release
 
 env:
-  NODE_VERSION: '18'
+  NODE_VERSION: '20'
   JAVA_VERSION: '17'
-  ANDROID_KEYSTORE_BASE64_SECRET_NAME: ANDROID_KEYSTORE_BASE64
-  ANDROID_KEYSTORE_PASSWORD_SECRET_NAME: ANDROID_KEYSTORE_PASSWORD
-  ANDROID_KEY_PASSWORD_SECRET_NAME: ANDROID_KEY_PASSWORD
 
 jobs:
   build:
@@ -35,6 +38,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
 
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -50,20 +55,23 @@ jobs:
           yes | sdkmanager --licenses
           sdkmanager "platforms;android-36" "build-tools;36.0.0"
 
-      - name: Install dependencies
-        run: npm install
+      - name: Install root dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Build frontend for Capacitor
+        run: npm run build:frontend
 
       - name: Run Capacitor sync
         run: npx cap sync android
 
-      - name: Decode keystore
-        if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.build_variant == 'release')
+      - name: Decode keystore (release builds)
+        if: |
+          github.event_name == 'push' ||
+          (github.event_name == 'workflow_dispatch' && github.event.inputs.build_variant == 'release')
         env:
-          KEYSTORE_BASE64: ${{ secrets[env.ANDROID_KEYSTORE_BASE64_SECRET_NAME] }}
-          KEYSTORE_PATH: android/finance-life-release.keystore
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
         run: |
-          echo "$KEYSTORE_BASE64" | base64 -d > "$KEYSTORE_PATH"
-          echo "KEYSTORE_PATH=$KEYSTORE_PATH" >> $GITHUB_ENV
+          echo "$KEYSTORE_BASE64" | base64 -d > android/finance-life-release.keystore
 
       - name: Build APK (Debug)
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.build_variant == 'debug'
@@ -72,26 +80,23 @@ jobs:
           ./gradlew assembleDebug --no-daemon
 
       - name: Build AAB (Release)
-        if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.build_variant == 'release')
+        if: |
+          github.event_name == 'push' ||
+          (github.event_name == 'workflow_dispatch' && github.event.inputs.build_variant == 'release')
         env:
-          KEYSTORE_PATH: android/finance-life-release.keystore
-          KEYSTORE_PASSWORD: ${{ secrets[env.ANDROID_KEYSTORE_PASSWORD_SECRET_NAME] }}
+          KEYSTORE_PATH: finance-life-release.keystore
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           KEY_ALIAS: finance-life
-          KEY_PASSWORD: ${{ secrets[env.ANDROID_KEY_PASSWORD_SECRET_NAME] }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
           cd android
-          # Create key.properties for signing
           cat > key.properties << EOF
-          storeFile=$KEYSTORE_PATH
+          storeFile=../$KEYSTORE_PATH
           storePassword=$KEYSTORE_PASSWORD
           keyAlias=$KEY_ALIAS
           keyPassword=$KEY_PASSWORD
           EOF
-          
-          # Build release AAB
           ./gradlew bundleRelease --no-daemon
-          
-          # Clean up key.properties
           rm -f key.properties
 
       - name: Upload Debug APK artifact
@@ -103,7 +108,9 @@ jobs:
           retention-days: 7
 
       - name: Upload Release AAB artifact
-        if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.build_variant == 'release')
+        if: |
+          github.event_name == 'push' ||
+          (github.event_name == 'workflow_dispatch' && github.event.inputs.build_variant == 'release')
         uses: actions/upload-artifact@v4
         with:
           name: app-release-aab
@@ -118,7 +125,8 @@ jobs:
         if: always()
         run: |
           echo "## Build Summary" >> $GITHUB_STEP_SUMMARY
-          echo "- Build triggered by: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Branch: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Triggered by: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
           if [ -f "android/app/build/outputs/apk/debug/app-debug.apk" ]; then
             echo "- Debug APK: ✅ Built successfully" >> $GITHUB_STEP_SUMMARY
           fi

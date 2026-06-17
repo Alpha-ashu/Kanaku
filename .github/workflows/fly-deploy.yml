@@ -1,15 +1,29 @@
-# Superseded by deploy-fly.yml (path-filtered, smarter concurrency).
+# DEPRECATED: Superseded by deploy-fly.yml which has path filtering,
+# proper build steps, and correct concurrency settings.
 # Kept as a disabled stub to preserve run history.
-name: Fly Deploy
+# Do NOT re-enable — use deploy-fly.yml instead.
+name: Fly Deploy (Deprecated)
 on:
   workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'This workflow is deprecated. Use deploy-fly.yml instead. Type "yes" to continue anyway.'
+        required: true
+        default: 'no'
+
 jobs:
-  deploy:
-    name: Deploy app
+  warn:
     runs-on: ubuntu-latest
     steps:
+      - name: Deprecation warning
+        run: |
+          echo "::warning::This workflow is deprecated. Use 'Deploy Backend → Fly.io' workflow instead."
+          if [ "${{ github.event.inputs.confirm }}" != "yes" ]; then
+            echo "::error::Deployment cancelled. Set confirm=yes to force run this deprecated workflow."
+            exit 1
+          fi
       - uses: actions/checkout@v4
       - uses: superfly/flyctl-actions/setup-flyctl@master
-      - run: flyctl deploy --remote-only
+      - run: flyctl deploy --remote-only --config fly.toml
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
