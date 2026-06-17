@@ -1,15 +1,12 @@
-# See https://fly.io/docs/app-guides/continuous-deployment-with-github-actions/
-
+# Superseded by deploy-fly.yml (path-filtered, smarter concurrency).
+# Kept as a disabled stub to preserve run history.
 name: Fly Deploy
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
 jobs:
   deploy:
     name: Deploy app
     runs-on: ubuntu-latest
-    concurrency: deploy-group    # optional: ensure only one action runs at a time
     steps:
       - uses: actions/checkout@v4
       - uses: superfly/flyctl-actions/setup-flyctl@master
