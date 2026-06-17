@@ -1,4 +1,4 @@
-const { PrismaClient } = require('./generated/prisma');
+const { PrismaClient } = require('../generated/prisma');
 const prisma = new PrismaClient();
 
 async function run() {
@@ -16,7 +16,7 @@ async function run() {
   await prisma.$executeRawUnsafe(`
     CREATE TABLE IF NOT EXISTS public.todo_lists (
       id BIGSERIAL PRIMARY KEY,
-      user_id UUID REFERENCES public."User"(id) ON DELETE CASCADE NOT NULL,
+      user_id TEXT REFERENCES public."User"(id) ON DELETE CASCADE NOT NULL,
       name TEXT NOT NULL,
       description TEXT,
       archived BOOLEAN DEFAULT false,
@@ -30,13 +30,13 @@ async function run() {
     CREATE TABLE IF NOT EXISTS public.todo_items (
       id BIGSERIAL PRIMARY KEY,
       list_id BIGINT REFERENCES public.todo_lists(id) ON DELETE CASCADE NOT NULL,
-      user_id UUID REFERENCES public."User"(id) ON DELETE CASCADE NOT NULL,
+      user_id TEXT REFERENCES public."User"(id) ON DELETE CASCADE NOT NULL,
       title TEXT NOT NULL,
       description TEXT,
       completed BOOLEAN DEFAULT false,
       priority TEXT CHECK (priority IN ('low', 'medium', 'high')) DEFAULT 'medium',
       due_date TIMESTAMPTZ,
-      created_by UUID REFERENCES public."User"(id) ON DELETE SET NULL,
+      created_by TEXT REFERENCES public."User"(id) ON DELETE SET NULL,
       created_at TIMESTAMPTZ DEFAULT NOW(),
       updated_at TIMESTAMPTZ DEFAULT NOW(),
       completed_at TIMESTAMPTZ
@@ -48,8 +48,8 @@ async function run() {
     CREATE TABLE IF NOT EXISTS public.todo_list_shares (
       id BIGSERIAL PRIMARY KEY,
       list_id BIGINT REFERENCES public.todo_lists(id) ON DELETE CASCADE NOT NULL,
-      shared_with_user_id UUID REFERENCES public."User"(id) ON DELETE CASCADE NOT NULL,
-      shared_by UUID REFERENCES public."User"(id) ON DELETE CASCADE NOT NULL,
+      shared_with_user_id TEXT REFERENCES public."User"(id) ON DELETE CASCADE NOT NULL,
+      shared_by TEXT REFERENCES public."User"(id) ON DELETE CASCADE NOT NULL,
       permission TEXT CHECK (permission IN ('view', 'edit')) DEFAULT 'view',
       shared_at TIMESTAMPTZ DEFAULT NOW(),
       UNIQUE(list_id, shared_with_user_id)
