@@ -10,6 +10,7 @@ import { clearSecurityData } from '@/lib/encryption';
 import {
   handleLogout as handleBackendLogout,
   initializeBackendSync,
+  processPendingSyncQueue,
   runWithCloudSyncSuppressed,
   subscribeToUserCloudSync,
   syncUserDataFromCloud,
@@ -595,7 +596,9 @@ const syncProfileFromBackend = async (user: User) => {
 /** Sync user data from Supabase into local Dexie DB on login */
 const syncFromSupabase = async (user: User, force = false, requestedTables?: SyncedTableName[]) => {
   try {
-    if (!requestedTables || requestedTables.length === 0) {
+    // Non-forced call with no tables: lightweight profile-only sync (e.g. TOKEN_REFRESHED).
+    // Forced call with no tables (e.g. fresh login): sync ALL core tables from the database.
+    if (!force && (!requestedTables || requestedTables.length === 0)) {
       await syncProfileFromBackend(user);
       return;
     }
@@ -993,7 +996,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             if (isFreshLogin || isAppLoad) {
               activeSyncUserId.current = nextUser.id;
               setDataReady(false);
-              setDataSyncing(false);
+              setDataSyncing(true); // full sync starts immediately below
               setDataSyncError(null);
 
               const lastUserId = localStorage.getItem('auth_last_user_id');
@@ -1014,6 +1017,25 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 setLoading(false);
               }
               initialSyncDone = true;
+
+              // Database is the source of truth: fetch ALL data on every fresh login.
+              // force=true + no requestedTables → syncFromSupabase syncs every core table,
+              // bypassing the 5-minute cooldown even if the user re-logs within that window.
+              void (async () => {
+                try {
+                  const permissions = await permissionService.fetchUserPermissions(nextUser.id, provisionalRole);
+                  if (activeSyncUserId.current === nextUser.id) setRole(permissions.role);
+                  await syncFromSupabase(nextUser, true); // undefined tables = all core tables
+                  if (activeSyncUserId.current === nextUser.id) setDataReady(true);
+                } catch (err) {
+                  if (activeSyncUserId.current === nextUser.id) {
+                    setDataSyncError(formatSupabaseError(err));
+                    setDataReady(true); // unblock UI even on failure
+                  }
+                } finally {
+                  if (activeSyncUserId.current === nextUser.id) setDataSyncing(false);
+                }
+              })();
             } else {
               if (isMounted) setLoading(false);
             }
@@ -1061,6 +1083,19 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, []);
 
   const signOut = async () => {
+    // Flush any locally queued writes before logging out so no data is lost.
+    // Give it up to 5 seconds — if it times out, proceed anyway (user intent wins).
+    if (typeof navigator !== 'undefined' && navigator.onLine) {
+      try {
+        await Promise.race([
+          processPendingSyncQueue(),
+          new Promise<void>((_, reject) => setTimeout(() => reject(new Error('flush-timeout')), 5000)),
+        ]);
+      } catch {
+        // Non-blocking — a failed flush is logged inside processPendingSyncQueue.
+      }
+    }
+
     try {
       const { data: { session: activeSession } } = await supabase.auth.getSession();
       if (activeSession) {
