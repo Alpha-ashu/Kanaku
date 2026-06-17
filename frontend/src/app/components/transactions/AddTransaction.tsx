@@ -538,6 +538,22 @@ export function AddTransaction() {
  // Create GroupExpense record so it appears in the Groups page 
  if (isExpense && expenseMode === 'group' && result?.id && groupParticipants.length > 0) {
  const perHead = formData.amount / (groupParticipants.length + 1); // +1 for current user
+ // Enrich each participant with email/phone from their Friend record so the
+ // backend can look them up and send the correct invitation email.
+ const enrichedParticipants = groupParticipants.map((p) => {
+   const friend = friends.find((f) => f.name.toLowerCase() === p.name.toLowerCase());
+   return {
+     name: p.name,
+     share: p.share && p.share > 0 ? p.share : perHead,
+     paid: false,
+     isCurrentUser: false,
+     paidAmount: 0,
+     paymentStatus: 'pending' as const,
+     friendId: friend?.id,
+     email: friend?.email,
+     phone: (friend as any)?.phone,
+   };
+ });
  const members: import('@/lib/database').GroupMember[] = [
  // Current user's share first
  {
@@ -548,20 +564,12 @@ export function AddTransaction() {
  paidAmount: perHead,
  paymentStatus: 'paid',
  },
- // Each participant
- ...groupParticipants.map((p) => ({
- name: p.name,
- share: p.share && p.share > 0 ? p.share : perHead,
- paid: false,
- isCurrentUser: false,
- paidAmount: 0,
- paymentStatus: 'pending' as const,
- friendId: friends.find((f) => f.name.toLowerCase() === p.name.toLowerCase())?.id,
- })),
+ ...enrichedParticipants,
  ];
 
+ const groupExpenseName = formData.description || formData.category || 'Group Expense';
  const groupExpenseId = await db.groupExpenses.add({
- name: formData.description || formData.category || 'Group Expense',
+ name: groupExpenseName,
  totalAmount: formData.amount,
  paidBy: formData.accountId,
  date: transactionDate,
@@ -578,10 +586,36 @@ export function AddTransaction() {
  updatedAt: now,
  });
 
+ // Push to backend immediately so invitations fire and data persists in the DB.
+ // The local Dexie record (syncStatus='pending') is the fallback if this fails.
+ try {
+   const backendResp = await backendService.api.post('/groups', {
+     name: groupExpenseName,
+     totalAmount: formData.amount,
+     paidBy: formData.accountId,
+     date: transactionDate.toISOString(),
+     category: formData.category,
+     description: formData.notes || undefined,
+     splitType: 'equal',
+     yourShare: perHead,
+     status: 'pending',
+     members: [
+       { name: 'You', share: perHead, paid: true, isCurrentUser: true },
+       ...enrichedParticipants,
+     ],
+   });
+   if (backendResp.data?.id || backendResp.data?.data?.id) {
+     const cloudId = String(backendResp.data?.id ?? backendResp.data?.data?.id);
+     await db.groupExpenses.update(groupExpenseId as number, { cloudId, syncStatus: 'synced' });
+   }
+ } catch {
+   // Keep syncStatus='pending'; background sync will retry.
+ }
+
  // Back-link: store groupExpenseId on the transaction
  await db.transactions.update(result.id, {
  groupExpenseId: groupExpenseId as number,
- groupName: formData.description || formData.category || 'Group Expense',
+ groupName: groupExpenseName,
  updatedAt: now,
  });
  } else if (isExpense && expenseMode === 'loan' && result?.id) {
