@@ -99,7 +99,7 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 12981,
+                      "duration": 9243,
                       "errors": [],
                       "stdout": [
                         {
@@ -108,7 +108,7 @@
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-17T17:17:59.209Z",
+                      "startTime": "2026-06-17T17:25:48.509Z",
                       "annotations": [
                         {
                           "type": "note",
@@ -153,7 +153,7 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 7938,
+                      "duration": 8482,
                       "errors": [],
                       "stdout": [
                         {
@@ -162,7 +162,7 @@
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-17T17:18:12.835Z",
+                      "startTime": "2026-06-17T17:25:58.404Z",
                       "annotations": [
                         {
                           "type": "note",
@@ -207,7 +207,7 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 8804,
+                      "duration": 9189,
                       "errors": [],
                       "stdout": [
                         {
@@ -216,7 +216,7 @@
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-17T17:18:20.832Z",
+                      "startTime": "2026-06-17T17:26:06.943Z",
                       "annotations": [
                         {
                           "type": "note",
@@ -261,7 +261,7 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 8734,
+                      "duration": 10077,
                       "errors": [],
                       "stdout": [
                         {
@@ -270,7 +270,7 @@
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-17T17:18:29.702Z",
+                      "startTime": "2026-06-17T17:26:16.217Z",
                       "annotations": [
                         {
                           "type": "note",
@@ -315,7 +315,7 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 8555,
+                      "duration": 9346,
                       "errors": [],
                       "stdout": [
                         {
@@ -324,7 +324,7 @@
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-17T17:18:38.524Z",
+                      "startTime": "2026-06-17T17:26:26.361Z",
                       "annotations": [
                         {
                           "type": "note",
@@ -369,7 +369,7 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 8399,
+                      "duration": 11207,
                       "errors": [],
                       "stdout": [
                         {
@@ -378,7 +378,7 @@
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-17T17:18:47.160Z",
+                      "startTime": "2026-06-17T17:26:35.778Z",
                       "annotations": [
                         {
                           "type": "note",
@@ -423,7 +423,7 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 8566,
+                      "duration": 10682,
                       "errors": [],
                       "stdout": [
                         {
@@ -432,7 +432,7 @@
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-17T17:18:55.629Z",
+                      "startTime": "2026-06-17T17:26:47.084Z",
                       "annotations": [
                         {
                           "type": "note",
@@ -482,12 +482,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 59942,
+                      "duration": 41637,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-17T17:19:04.252Z",
+                      "startTime": "2026-06-17T17:26:57.879Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -523,24 +523,81 @@
                     {
                       "workerIndex": 0,
                       "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 58809,
-                      "errors": [],
+                      "status": "failed",
+                      "duration": 10454,
+                      "error": {
+                        "message": "Error: apiRequestContext.post: connect ECONNREFUSED ::1:3000\nCall log:\n\u001b[2m  - → POST http://localhost:3000/api/v1/auth/login/challenge\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - x-pw-encoding: sha256\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 111\u001b[22m\n",
+                        "stack": "Error: apiRequestContext.post: connect ECONNREFUSED ::1:3000\nCall log:\n\u001b[2m  - → POST http://localhost:3000/api/v1/auth/login/challenge\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - x-pw-encoding: sha256\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 111\u001b[22m\n\n    at apiRequestContext.post: connect ECONNREFUSED ::1:3000\n    at tryChallenge (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:49:35)\n    at loginUser (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:60:23)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:45:7",
+                        "location": {
+                          "file": "apiRequestContext.post: connect ECONNREFUSED :",
+                          "column": 3000,
+                          "line": 1
+                        }
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "apiRequestContext.post: connect ECONNREFUSED :",
+                            "column": 3000,
+                            "line": 1
+                          },
+                          "message": "Error: apiRequestContext.post: connect ECONNREFUSED ::1:3000\nCall log:\n\u001b[2m  - → POST http://localhost:3000/api/v1/auth/login/challenge\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - x-pw-encoding: sha256\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 111\u001b[22m\n\n    at apiRequestContext.post: connect ECONNREFUSED ::1:3000\n    at tryChallenge (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:49:35)\n    at loginUser (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:60:23)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:45:7"
+                        }
+                      ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-17T17:20:04.252Z",
+                      "startTime": "2026-06-17T17:27:39.589Z",
                       "annotations": [],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-e0348-in-U2-priya-test-kanaku-app-chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-e0348-in-U2-priya-test-kanaku-app-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-e0348-in-U2-priya-test-kanaku-app-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-e0348-in-U2-priya-test-kanaku-app-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-e0348-in-U2-priya-test-kanaku-app-chromium\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "apiRequestContext.post: connect ECONNREFUSED :",
+                        "column": 3000,
+                        "line": 1
+                      }
+                    },
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 79854,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2026-06-17T17:27:56.058Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-e0348-in-U2-priya-test-kanaku-app-chromium-retry1\\test-finished-1.png"
                         }
                       ]
                     }
                   ],
-                  "status": "expected"
+                  "status": "flaky"
                 }
               ],
               "id": "180cc0718174fb543e11-0917b51b290f6047d7b1",
@@ -550,7 +607,7 @@
             },
             {
               "title": "Login U3: rohan.test@kanaku.app",
-              "ok": true,
+              "ok": false,
               "tags": [
                 "kanaku.app"
               ],
@@ -563,26 +620,121 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 0,
+                      "workerIndex": 1,
                       "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 59186,
-                      "errors": [],
+                      "status": "failed",
+                      "duration": 9911,
+                      "error": {
+                        "message": "Error: apiRequestContext.post: connect ECONNREFUSED ::1:3000\nCall log:\n\u001b[2m  - → POST http://localhost:3000/api/v1/auth/login/challenge\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - x-pw-encoding: sha256\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 111\u001b[22m\n",
+                        "stack": "Error: apiRequestContext.post: connect ECONNREFUSED ::1:3000\nCall log:\n\u001b[2m  - → POST http://localhost:3000/api/v1/auth/login/challenge\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - x-pw-encoding: sha256\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 111\u001b[22m\n\n    at apiRequestContext.post: connect ECONNREFUSED ::1:3000\n    at tryChallenge (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:49:35)\n    at loginUser (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:60:23)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:45:7",
+                        "location": {
+                          "file": "apiRequestContext.post: connect ECONNREFUSED :",
+                          "column": 3000,
+                          "line": 1
+                        }
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "apiRequestContext.post: connect ECONNREFUSED :",
+                            "column": 3000,
+                            "line": 1
+                          },
+                          "message": "Error: apiRequestContext.post: connect ECONNREFUSED ::1:3000\nCall log:\n\u001b[2m  - → POST http://localhost:3000/api/v1/auth/login/challenge\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - x-pw-encoding: sha256\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 111\u001b[22m\n\n    at apiRequestContext.post: connect ECONNREFUSED ::1:3000\n    at tryChallenge (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:49:35)\n    at loginUser (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:60:23)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:45:7"
+                        }
+                      ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-17T17:21:03.126Z",
+                      "startTime": "2026-06-17T17:29:17.055Z",
                       "annotations": [],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-45b2b-in-U3-rohan-test-kanaku-app-chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-45b2b-in-U3-rohan-test-kanaku-app-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-45b2b-in-U3-rohan-test-kanaku-app-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-45b2b-in-U3-rohan-test-kanaku-app-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-45b2b-in-U3-rohan-test-kanaku-app-chromium\\trace.zip"
                         }
-                      ]
+                      ],
+                      "errorLocation": {
+                        "file": "apiRequestContext.post: connect ECONNREFUSED :",
+                        "column": 3000,
+                        "line": 1
+                      }
+                    },
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 9959,
+                      "error": {
+                        "message": "Error: apiRequestContext.post: connect ECONNREFUSED ::1:3000\nCall log:\n\u001b[2m  - → POST http://localhost:3000/api/v1/auth/login/challenge\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - x-pw-encoding: sha256\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 111\u001b[22m\n",
+                        "stack": "Error: apiRequestContext.post: connect ECONNREFUSED ::1:3000\nCall log:\n\u001b[2m  - → POST http://localhost:3000/api/v1/auth/login/challenge\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - x-pw-encoding: sha256\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 111\u001b[22m\n\n    at apiRequestContext.post: connect ECONNREFUSED ::1:3000\n    at tryChallenge (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:49:35)\n    at loginUser (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:60:23)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:45:7",
+                        "location": {
+                          "file": "apiRequestContext.post: connect ECONNREFUSED :",
+                          "column": 3000,
+                          "line": 1
+                        }
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "apiRequestContext.post: connect ECONNREFUSED :",
+                            "column": 3000,
+                            "line": 1
+                          },
+                          "message": "Error: apiRequestContext.post: connect ECONNREFUSED ::1:3000\nCall log:\n\u001b[2m  - → POST http://localhost:3000/api/v1/auth/login/challenge\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - x-pw-encoding: sha256\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 111\u001b[22m\n\n    at apiRequestContext.post: connect ECONNREFUSED ::1:3000\n    at tryChallenge (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:49:35)\n    at loginUser (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:60:23)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:45:7"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2026-06-17T17:29:29.577Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-45b2b-in-U3-rohan-test-kanaku-app-chromium-retry1\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-45b2b-in-U3-rohan-test-kanaku-app-chromium-retry1\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-45b2b-in-U3-rohan-test-kanaku-app-chromium-retry1\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-45b2b-in-U3-rohan-test-kanaku-app-chromium-retry1\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "apiRequestContext.post: connect ECONNREFUSED :",
+                        "column": 3000,
+                        "line": 1
+                      }
                     }
                   ],
-                  "status": "expected"
+                  "status": "unexpected"
                 }
               ],
               "id": "180cc0718174fb543e11-c2cf14e8f968ddf587da",
@@ -592,7 +744,7 @@
             },
             {
               "title": "Login U4: sneha.test@kanaku.app",
-              "ok": true,
+              "ok": false,
               "tags": [
                 "kanaku.app"
               ],
@@ -605,26 +757,121 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 0,
+                      "workerIndex": 3,
                       "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 32307,
-                      "errors": [],
+                      "status": "failed",
+                      "duration": 9210,
+                      "error": {
+                        "message": "Error: apiRequestContext.post: connect ECONNREFUSED ::1:3000\nCall log:\n\u001b[2m  - → POST http://localhost:3000/api/v1/auth/login/challenge\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - x-pw-encoding: sha256\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 111\u001b[22m\n",
+                        "stack": "Error: apiRequestContext.post: connect ECONNREFUSED ::1:3000\nCall log:\n\u001b[2m  - → POST http://localhost:3000/api/v1/auth/login/challenge\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - x-pw-encoding: sha256\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 111\u001b[22m\n\n    at apiRequestContext.post: connect ECONNREFUSED ::1:3000\n    at tryChallenge (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:49:35)\n    at loginUser (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:60:23)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:45:7",
+                        "location": {
+                          "file": "apiRequestContext.post: connect ECONNREFUSED :",
+                          "column": 3000,
+                          "line": 1
+                        }
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "apiRequestContext.post: connect ECONNREFUSED :",
+                            "column": 3000,
+                            "line": 1
+                          },
+                          "message": "Error: apiRequestContext.post: connect ECONNREFUSED ::1:3000\nCall log:\n\u001b[2m  - → POST http://localhost:3000/api/v1/auth/login/challenge\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - x-pw-encoding: sha256\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 111\u001b[22m\n\n    at apiRequestContext.post: connect ECONNREFUSED ::1:3000\n    at tryChallenge (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:49:35)\n    at loginUser (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:60:23)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:45:7"
+                        }
+                      ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-17T17:22:02.376Z",
+                      "startTime": "2026-06-17T17:29:42.504Z",
                       "annotations": [],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-0fbfb-in-U4-sneha-test-kanaku-app-chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-0fbfb-in-U4-sneha-test-kanaku-app-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-0fbfb-in-U4-sneha-test-kanaku-app-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-0fbfb-in-U4-sneha-test-kanaku-app-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-0fbfb-in-U4-sneha-test-kanaku-app-chromium\\trace.zip"
                         }
-                      ]
+                      ],
+                      "errorLocation": {
+                        "file": "apiRequestContext.post: connect ECONNREFUSED :",
+                        "column": 3000,
+                        "line": 1
+                      }
+                    },
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 8809,
+                      "error": {
+                        "message": "Error: apiRequestContext.post: connect ECONNREFUSED ::1:3000\nCall log:\n\u001b[2m  - → POST http://localhost:3000/api/v1/auth/login/challenge\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - x-pw-encoding: sha256\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 111\u001b[22m\n",
+                        "stack": "Error: apiRequestContext.post: connect ECONNREFUSED ::1:3000\nCall log:\n\u001b[2m  - → POST http://localhost:3000/api/v1/auth/login/challenge\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - x-pw-encoding: sha256\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 111\u001b[22m\n\n    at apiRequestContext.post: connect ECONNREFUSED ::1:3000\n    at tryChallenge (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:49:35)\n    at loginUser (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:60:23)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:45:7",
+                        "location": {
+                          "file": "apiRequestContext.post: connect ECONNREFUSED :",
+                          "column": 3000,
+                          "line": 1
+                        }
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "apiRequestContext.post: connect ECONNREFUSED :",
+                            "column": 3000,
+                            "line": 1
+                          },
+                          "message": "Error: apiRequestContext.post: connect ECONNREFUSED ::1:3000\nCall log:\n\u001b[2m  - → POST http://localhost:3000/api/v1/auth/login/challenge\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - x-pw-encoding: sha256\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 111\u001b[22m\n\n    at apiRequestContext.post: connect ECONNREFUSED ::1:3000\n    at tryChallenge (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:49:35)\n    at loginUser (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:60:23)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:45:7"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2026-06-17T17:29:54.507Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-0fbfb-in-U4-sneha-test-kanaku-app-chromium-retry1\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-0fbfb-in-U4-sneha-test-kanaku-app-chromium-retry1\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-0fbfb-in-U4-sneha-test-kanaku-app-chromium-retry1\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-0fbfb-in-U4-sneha-test-kanaku-app-chromium-retry1\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "apiRequestContext.post: connect ECONNREFUSED :",
+                        "column": 3000,
+                        "line": 1
+                      }
                     }
                   ],
-                  "status": "expected"
+                  "status": "unexpected"
                 }
               ],
               "id": "180cc0718174fb543e11-80739b2e085265d36674",
@@ -647,10 +894,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 0,
+                      "workerIndex": 5,
                       "parallelIndex": 0,
                       "status": "failed",
-                      "duration": 9093,
+                      "duration": 8981,
                       "error": {
                         "message": "Error: apiRequestContext.post: connect ECONNREFUSED ::1:3000\nCall log:\n\u001b[2m  - → POST http://localhost:3000/api/v1/auth/login/challenge\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - x-pw-encoding: sha256\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 109\u001b[22m\n",
                         "stack": "Error: apiRequestContext.post: connect ECONNREFUSED ::1:3000\nCall log:\n\u001b[2m  - → POST http://localhost:3000/api/v1/auth/login/challenge\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - x-pw-encoding: sha256\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 109\u001b[22m\n\n    at apiRequestContext.post: connect ECONNREFUSED ::1:3000\n    at tryChallenge (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:49:35)\n    at loginUser (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:60:23)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:45:7",
@@ -673,7 +920,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-17T17:22:34.773Z",
+                      "startTime": "2026-06-17T17:30:06.339Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -704,10 +951,10 @@
                       }
                     },
                     {
-                      "workerIndex": 1,
+                      "workerIndex": 6,
                       "parallelIndex": 0,
                       "status": "failed",
-                      "duration": 9775,
+                      "duration": 8855,
                       "error": {
                         "message": "Error: apiRequestContext.post: connect ECONNREFUSED ::1:3000\nCall log:\n\u001b[2m  - → POST http://localhost:3000/api/v1/auth/login/challenge\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - x-pw-encoding: sha256\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 109\u001b[22m\n",
                         "stack": "Error: apiRequestContext.post: connect ECONNREFUSED ::1:3000\nCall log:\n\u001b[2m  - → POST http://localhost:3000/api/v1/auth/login/challenge\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - x-pw-encoding: sha256\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 109\u001b[22m\n\n    at apiRequestContext.post: connect ECONNREFUSED ::1:3000\n    at tryChallenge (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:49:35)\n    at loginUser (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:60:23)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:45:7",
@@ -730,7 +977,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 1,
-                      "startTime": "2026-06-17T17:22:47.746Z",
+                      "startTime": "2026-06-17T17:30:17.733Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -771,7 +1018,7 @@
             },
             {
               "title": "Login U6: isha.test@kanaku.app",
-              "ok": true,
+              "ok": false,
               "tags": [
                 "kanaku.app"
               ],
@@ -784,26 +1031,121 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
+                      "workerIndex": 7,
                       "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 64213,
-                      "errors": [],
+                      "status": "failed",
+                      "duration": 10392,
+                      "error": {
+                        "message": "Error: apiRequestContext.post: connect ECONNREFUSED ::1:3000\nCall log:\n\u001b[2m  - → POST http://localhost:3000/api/v1/auth/login/challenge\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - x-pw-encoding: sha256\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 110\u001b[22m\n",
+                        "stack": "Error: apiRequestContext.post: connect ECONNREFUSED ::1:3000\nCall log:\n\u001b[2m  - → POST http://localhost:3000/api/v1/auth/login/challenge\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - x-pw-encoding: sha256\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 110\u001b[22m\n\n    at apiRequestContext.post: connect ECONNREFUSED ::1:3000\n    at tryChallenge (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:49:35)\n    at loginUser (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:60:23)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:45:7",
+                        "location": {
+                          "file": "apiRequestContext.post: connect ECONNREFUSED :",
+                          "column": 3000,
+                          "line": 1
+                        }
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "apiRequestContext.post: connect ECONNREFUSED :",
+                            "column": 3000,
+                            "line": 1
+                          },
+                          "message": "Error: apiRequestContext.post: connect ECONNREFUSED ::1:3000\nCall log:\n\u001b[2m  - → POST http://localhost:3000/api/v1/auth/login/challenge\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - x-pw-encoding: sha256\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 110\u001b[22m\n\n    at apiRequestContext.post: connect ECONNREFUSED ::1:3000\n    at tryChallenge (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:49:35)\n    at loginUser (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:60:23)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:45:7"
+                        }
+                      ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-17T17:23:00.955Z",
+                      "startTime": "2026-06-17T17:30:29.773Z",
                       "annotations": [],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-80515-gin-U6-isha-test-kanaku-app-chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-80515-gin-U6-isha-test-kanaku-app-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-80515-gin-U6-isha-test-kanaku-app-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-80515-gin-U6-isha-test-kanaku-app-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-80515-gin-U6-isha-test-kanaku-app-chromium\\trace.zip"
                         }
-                      ]
+                      ],
+                      "errorLocation": {
+                        "file": "apiRequestContext.post: connect ECONNREFUSED :",
+                        "column": 3000,
+                        "line": 1
+                      }
+                    },
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 10224,
+                      "error": {
+                        "message": "Error: apiRequestContext.post: connect ECONNREFUSED ::1:3000\nCall log:\n\u001b[2m  - → POST http://localhost:3000/api/v1/auth/login/challenge\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - x-pw-encoding: sha256\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 110\u001b[22m\n",
+                        "stack": "Error: apiRequestContext.post: connect ECONNREFUSED ::1:3000\nCall log:\n\u001b[2m  - → POST http://localhost:3000/api/v1/auth/login/challenge\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - x-pw-encoding: sha256\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 110\u001b[22m\n\n    at apiRequestContext.post: connect ECONNREFUSED ::1:3000\n    at tryChallenge (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:49:35)\n    at loginUser (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:60:23)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:45:7",
+                        "location": {
+                          "file": "apiRequestContext.post: connect ECONNREFUSED :",
+                          "column": 3000,
+                          "line": 1
+                        }
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "apiRequestContext.post: connect ECONNREFUSED :",
+                            "column": 3000,
+                            "line": 1
+                          },
+                          "message": "Error: apiRequestContext.post: connect ECONNREFUSED ::1:3000\nCall log:\n\u001b[2m  - → POST http://localhost:3000/api/v1/auth/login/challenge\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - x-pw-encoding: sha256\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 110\u001b[22m\n\n    at apiRequestContext.post: connect ECONNREFUSED ::1:3000\n    at tryChallenge (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:49:35)\n    at loginUser (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:60:23)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:45:7"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2026-06-17T17:30:44.189Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-80515-gin-U6-isha-test-kanaku-app-chromium-retry1\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-80515-gin-U6-isha-test-kanaku-app-chromium-retry1\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-80515-gin-U6-isha-test-kanaku-app-chromium-retry1\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-80515-gin-U6-isha-test-kanaku-app-chromium-retry1\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "apiRequestContext.post: connect ECONNREFUSED :",
+                        "column": 3000,
+                        "line": 1
+                      }
                     }
                   ],
-                  "status": "expected"
+                  "status": "unexpected"
                 }
               ],
               "id": "180cc0718174fb543e11-b8308a26e501cfe69c44",
@@ -813,7 +1155,7 @@
             },
             {
               "title": "Login U7: admin.test@kanaku.app",
-              "ok": true,
+              "ok": false,
               "tags": [
                 "kanaku.app"
               ],
@@ -826,26 +1168,121 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
+                      "workerIndex": 9,
                       "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 30610,
-                      "errors": [],
+                      "status": "failed",
+                      "duration": 8901,
+                      "error": {
+                        "message": "Error: apiRequestContext.post: connect ECONNREFUSED ::1:3000\nCall log:\n\u001b[2m  - → POST http://localhost:3000/api/v1/auth/login/challenge\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - x-pw-encoding: sha256\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 111\u001b[22m\n",
+                        "stack": "Error: apiRequestContext.post: connect ECONNREFUSED ::1:3000\nCall log:\n\u001b[2m  - → POST http://localhost:3000/api/v1/auth/login/challenge\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - x-pw-encoding: sha256\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 111\u001b[22m\n\n    at apiRequestContext.post: connect ECONNREFUSED ::1:3000\n    at tryChallenge (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:49:35)\n    at loginUser (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:60:23)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:45:7",
+                        "location": {
+                          "file": "apiRequestContext.post: connect ECONNREFUSED :",
+                          "column": 3000,
+                          "line": 1
+                        }
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "apiRequestContext.post: connect ECONNREFUSED :",
+                            "column": 3000,
+                            "line": 1
+                          },
+                          "message": "Error: apiRequestContext.post: connect ECONNREFUSED ::1:3000\nCall log:\n\u001b[2m  - → POST http://localhost:3000/api/v1/auth/login/challenge\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - x-pw-encoding: sha256\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 111\u001b[22m\n\n    at apiRequestContext.post: connect ECONNREFUSED ::1:3000\n    at tryChallenge (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:49:35)\n    at loginUser (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:60:23)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:45:7"
+                        }
+                      ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-17T17:24:05.987Z",
+                      "startTime": "2026-06-17T17:30:57.971Z",
                       "annotations": [],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-ca1b2-in-U7-admin-test-kanaku-app-chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-ca1b2-in-U7-admin-test-kanaku-app-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-ca1b2-in-U7-admin-test-kanaku-app-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-ca1b2-in-U7-admin-test-kanaku-app-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-ca1b2-in-U7-admin-test-kanaku-app-chromium\\trace.zip"
                         }
-                      ]
+                      ],
+                      "errorLocation": {
+                        "file": "apiRequestContext.post: connect ECONNREFUSED :",
+                        "column": 3000,
+                        "line": 1
+                      }
+                    },
+                    {
+                      "workerIndex": 10,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 9632,
+                      "error": {
+                        "message": "Error: apiRequestContext.post: connect ECONNREFUSED ::1:3000\nCall log:\n\u001b[2m  - → POST http://localhost:3000/api/v1/auth/login/challenge\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - x-pw-encoding: sha256\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 111\u001b[22m\n",
+                        "stack": "Error: apiRequestContext.post: connect ECONNREFUSED ::1:3000\nCall log:\n\u001b[2m  - → POST http://localhost:3000/api/v1/auth/login/challenge\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - x-pw-encoding: sha256\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 111\u001b[22m\n\n    at apiRequestContext.post: connect ECONNREFUSED ::1:3000\n    at tryChallenge (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:49:35)\n    at loginUser (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:60:23)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:45:7",
+                        "location": {
+                          "file": "apiRequestContext.post: connect ECONNREFUSED :",
+                          "column": 3000,
+                          "line": 1
+                        }
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "apiRequestContext.post: connect ECONNREFUSED :",
+                            "column": 3000,
+                            "line": 1
+                          },
+                          "message": "Error: apiRequestContext.post: connect ECONNREFUSED ::1:3000\nCall log:\n\u001b[2m  - → POST http://localhost:3000/api/v1/auth/login/challenge\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - x-pw-encoding: sha256\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 111\u001b[22m\n\n    at apiRequestContext.post: connect ECONNREFUSED ::1:3000\n    at tryChallenge (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:49:35)\n    at loginUser (K:\\Project\\kenku\\Finora\\tests\\e2e\\helpers.ts:60:23)\n    at K:\\Project\\kenku\\Finora\\tests\\e2e\\01-registration.spec.ts:45:7"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2026-06-17T17:31:09.433Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-ca1b2-in-U7-admin-test-kanaku-app-chromium-retry1\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-ca1b2-in-U7-admin-test-kanaku-app-chromium-retry1\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-ca1b2-in-U7-admin-test-kanaku-app-chromium-retry1\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "K:\\Project\\kenku\\Finora\\tests\\e2e\\screenshots\\01-registration-Login-–-Ve-ca1b2-in-U7-admin-test-kanaku-app-chromium-retry1\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "apiRequestContext.post: connect ECONNREFUSED :",
+                        "column": 3000,
+                        "line": 1
+                      }
                     }
                   ],
-                  "status": "expected"
+                  "status": "unexpected"
                 }
               ],
               "id": "180cc0718174fb543e11-554fcda1b27df4c9671e",
@@ -860,11 +1297,11 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-06-17T17:17:57.618Z",
-    "duration": 399867.59,
-    "expected": 13,
+    "startTime": "2026-06-17T17:25:47.463Z",
+    "duration": 332776.053,
+    "expected": 8,
     "skipped": 0,
-    "unexpected": 1,
-    "flaky": 0
+    "unexpected": 5,
+    "flaky": 1
   }
 }
