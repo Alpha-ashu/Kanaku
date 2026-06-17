@@ -157,7 +157,7 @@ export const uploadImport = async (req: AuthRequest, res: Response) => {
         // eslint-disable-next-line @typescript-eslint/no-require-imports
         const ExcelJS = require('exceljs') as typeof import('exceljs');
         const workbook = new ExcelJS.Workbook();
-        await workbook.xlsx.load(file.buffer);
+        await workbook.xlsx.load(file.buffer as any);
         const worksheet = workbook.worksheets[0];
         if (!worksheet) throw new Error('No worksheet found');
         const headers: string[] = [];

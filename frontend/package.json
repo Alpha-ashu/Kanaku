@@ -82,7 +82,7 @@
     "react-popper": "2.3.0",
     "react-resizable-panels": "2.1.7",
     "react-responsive-masonry": "2.7.1",
-    "react-router-dom": "^7.13.0",
+    "react-router-dom": "^7.15.1",
     "react-slick": "0.31.0",
     "react-speech-recognition": "^4.0.1",
     "recharts": "2.15.2",
@@ -106,11 +106,30 @@
     "jsdom": "^29.0.0",
     "tailwindcss": "4.1.12",
     "typescript": "^5.3.3",
-    "vite": "6.3.5",
+    "vite": "^6.4.3",
     "vitest": "^4.1.0"
   },
   "overrides": {
-    "rollup": "^4.62.0"
+    "rollup": "^4.62.0",
+    "tar": "^7.5.16",
+    "socket.io-parser": "^4.2.6",
+    "form-data": "^4.0.6",
+    "minimatch": "^10.2.4",
+    "dompurify": "^3.4.10",
+    "flatted": "^3.4.2",
+    "path-to-regexp": "^8.4.2",
+    "express": {
+      "path-to-regexp": "^0.1.13"
+    },
+    "picomatch": "^2.3.2 || ^4.0.4",
+    "defu": "^6.1.5",
+    "effect": "^3.20.0",
+    "lodash": "^4.18.0",
+    "qs": "^6.15.2",
+    "@xmldom/xmldom": "^0.9.10",
+    "ws": "^8.17.1",
+    "follow-redirects": "^1.15.6",
+    "undici": "^6.24.0"
   },
   "engines": {
     "node": ">=18.0.0",

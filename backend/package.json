@@ -100,5 +100,21 @@
     "ts-jest": "^29.1.1",
     "ts-node-dev": "^2.0.0",
     "typescript": "^6.0.3"
+  },
+  "overrides": {
+    "tar": "^7.5.16",
+    "socket.io-parser": "^4.2.6",
+    "form-data": "^4.0.6",
+    "minimatch": "^10.2.4",
+    "flatted": "^3.4.2",
+    "path-to-regexp": "^0.1.13",
+    "picomatch": "^2.3.2 || ^4.0.4",
+    "defu": "^6.1.5",
+    "effect": "^3.20.0",
+    "qs": "^6.15.2",
+    "@xmldom/xmldom": "^0.9.10",
+    "ws": "^8.17.1",
+    "follow-redirects": "^1.15.6",
+    "undici": "^6.24.0"
   }
 }
