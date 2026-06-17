@@ -336,6 +336,12 @@ const clearLocalAuthPresentationState = (preservePinKeys = false) => {
     'KANAKU_last_full_sync_at',
   ].forEach((key) => localStorage.removeItem(key));
 
+  // Clear per-table sync timestamps so the next login always re-fetches fresh
+  // data instead of hitting the 5-minute cooldown against an empty Dexie DB.
+  Object.keys(localStorage)
+    .filter((k) => k.startsWith('KANAKU_last_sync_at_'))
+    .forEach((k) => localStorage.removeItem(k));
+
   if (!preservePinKeys) {
     pinService.clearPinData();
     clearSecurityData();
