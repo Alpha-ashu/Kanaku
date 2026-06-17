@@ -32,8 +32,8 @@ export const ContactPage: React.FC<ContactPageProps> = ({ onBack, onGetStarted, 
  {
  icon: <Mail className="w-5 h-5 text-violet-600" />,
  label:"Email",
- value:"support@KANAKU.app",
- link:"mailto:support@KANAKU.app"
+ value: import.meta.env.VITE_SUPPORT_EMAIL || '',
+ link: import.meta.env.VITE_SUPPORT_EMAIL ? `mailto:${import.meta.env.VITE_SUPPORT_EMAIL}` : null
  },
  {
  icon: <MessageSquare className="w-5 h-5 text-pink-600" />,

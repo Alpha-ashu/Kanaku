@@ -233,7 +233,7 @@ export class AuthService {
 
       // Safety: Ensure email is never empty if we are creating a new record
       // In a hybrid system, we prefer the email from the JWT/Session
-      const finalActiveEmail = email || data.email || existingUser?.email || `user-${userId.substring(0, 8)}@placeholder.KANAKU.app`;
+      const finalActiveEmail = email || data.email || existingUser?.email || `user-${userId.substring(0, 8)}@noemail.invalid`;
 
       const user = await prisma.user.upsert({
         where: { id: userId },

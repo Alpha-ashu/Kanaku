@@ -4,7 +4,7 @@ export const ENVIRONMENT_CONFIG = {
   NODE_ENV: process.env.NODE_ENV || 'production',
 
   // API configuration
-  API_BASE_URL: process.env.VITE_API_BASE_URL || 'https://api.KANAKU.app',
+  API_BASE_URL: process.env.VITE_API_BASE_URL || '',
   API_TIMEOUT: 30000, // 30 seconds
 
   // Database configuration
@@ -42,8 +42,8 @@ export const ENVIRONMENT_CONFIG = {
 
   // Mobile app settings
   MOBILE_APP_STORE_URL: {
-    ios: process.env.VITE_IOS_APP_STORE_URL || 'https://apps.apple.com/app/KANAKU',
-    android: process.env.VITE_ANDROID_APP_STORE_URL || 'https://play.google.com/store/apps/details?id=com.KANAKU'
+    ios: process.env.VITE_IOS_APP_STORE_URL || '',
+    android: process.env.VITE_ANDROID_APP_STORE_URL || ''
   }
 };
 

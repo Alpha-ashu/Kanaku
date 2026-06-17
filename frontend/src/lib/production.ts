@@ -5,7 +5,7 @@ import { showNotification } from './notifications';
 // Production environment configuration
 export const PRODUCTION_CONFIG = {
   // Database settings
-  DB_ENCRYPTION_KEY: process.env.VITE_DB_ENCRYPTION_KEY || 'default-key-change-in-production',
+  DB_ENCRYPTION_KEY: process.env.VITE_DB_ENCRYPTION_KEY || '',
   DB_BACKUP_INTERVAL: 24 * 60 * 60 * 1000, // 24 hours
   
   // Security settings

@@ -740,11 +740,11 @@ export function generateOpenApiDocument(baseUrl?: string) {
       title: 'KANAKU Backend API',
       version: '1.0.0',
       description: `# KANAKU Personal Finance API\n\n**${totalOps} operations** across **${totalPaths} paths** — fully documented end-to-end.\n\n## Authenticate\n1. \`POST /api/v1/auth/register\` or \`POST /api/v1/auth/login\`\n2. Copy the JWT from the \`Authorization\` response header\n3. Click **Authorize 🔓** → enter: \`Bearer <token>\`\n\n## Roles\n| Role | Access |\n|------|--------|\n| \`user\` | Personal finance |\n| \`advisor\` | User + advisor workspace |\n| \`manager\` | Advisor verification |\n| \`admin\` | Full system access |\n\n## Rate Limits\n| Scope | Limit |\n|-------|-------|\n| /auth/* | 5/min |\n| /bills POST | 10/min |\n| /receipts/scan | 8/min |\n| /sync/* | 100/min |\n| All other | 60/min (prod) |`,
-      contact: { name: 'KANAKU API', email: 'api@KANAKU.in' },
+      contact: { name: 'Kanaku API', email: process.env.API_CONTACT_EMAIL || '' },
     },
     servers: [
       { url: baseUrl || 'http://localhost:3000', description: 'Development' },
-      { url: 'https://api.KANAKU.in', description: 'Production' },
+      { url: process.env.API_PUBLIC_URL || '', description: 'Production' },
     ],
     tags: [
       { name: 'System' }, { name: 'Auth' }, { name: 'PIN' }, { name: 'Accounts' },

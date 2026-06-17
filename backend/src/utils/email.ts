@@ -7,7 +7,7 @@
 import sgMail from '@sendgrid/mail';
 import { logger } from '../config/logger';
 
-const FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || 'notifications@kanaku.app';
+const FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || 'shaik.social.life@gmail.com';
 const FROM_NAME = 'Kanaku';
 
 let initialized = false;

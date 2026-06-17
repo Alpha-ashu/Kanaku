@@ -193,7 +193,7 @@ async function sendInvitationEmail(args: {
   detail?: string;
 }): Promise<void> {
   const { moduleType, moduleName, email, creatorName, detail } = args;
-  const frontendUrl = (process.env.FRONTEND_URL || 'https://kanaku-fawn.vercel.app').replace(/\/$/, '');
+  const frontendUrl = (process.env.FRONTEND_URL || '').replace(/\/$/, '');
   const joinUrl = `${frontendUrl}/register?invite=${moduleType}`;
   const subject = `You were added to a Kanaku ${MODULE_LABELS[moduleType]}`;
 

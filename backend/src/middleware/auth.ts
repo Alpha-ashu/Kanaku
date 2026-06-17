@@ -43,7 +43,7 @@ const ensureUserInDb = async (userId: string, userClaims: UserClaims) => {
       update: {},
       create: {
         id: userId,
-        email: userClaims.email || `user-${userId.substring(0, 8)}@placeholder.KANAKU.app`,
+        email: userClaims.email || `user-${userId.substring(0, 8)}@noemail.invalid`,
         name: userClaims.name || userClaims.email?.split('@')[0] || 'User',
         password: 'supabase-managed-account',
         role: userClaims.role || 'user',

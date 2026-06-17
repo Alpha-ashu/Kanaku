@@ -35,8 +35,8 @@ import type {
 const AA_BASE_URL = process.env.AA_BASE_URL || 'https://aa-sandbox.setu.co';
 const AA_CLIENT_ID = process.env.AA_CLIENT_ID || '';
 const AA_CLIENT_SECRET = process.env.AA_CLIENT_SECRET || '';
-const AA_REDIRECT_URL = process.env.AA_REDIRECT_URL || 'https://app.KANAKU.in/aa/callback';
-const AA_FIU_ID = process.env.AA_FIU_ID || 'KANAKU_app';
+const AA_REDIRECT_URL = process.env.AA_REDIRECT_URL || '';
+const AA_FIU_ID = process.env.AA_FIU_ID || '';
 
 class AAService {
   /**

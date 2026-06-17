@@ -12,8 +12,8 @@ import { redisConnection } from "../config/queue";
 // Initialize SendGrid
 sgMail.setApiKey(process.env.SENDGRID_API_KEY || "");
 
-const FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || "notifications@kanaku.app";
-const FRONTEND_URL = (process.env.FRONTEND_URL || 'https://kanaku-fawn.vercel.app').replace(/\/$/, '');
+const FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || 'shaik.social.life@gmail.com';
+const FRONTEND_URL = (process.env.FRONTEND_URL || '').replace(/\/$/, '');
 
 interface EmailNotificationJob {
   notificationId: string;
