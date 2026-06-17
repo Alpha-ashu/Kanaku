@@ -95,6 +95,36 @@ export async function applyTransactionAccountImpact(
   await applyAccountBalanceDeltas(getTransactionAccountDeltas(transaction), updatedAt);
 }
 
+/**
+ * Rebuilds every account's balance from scratch using openingBalance + all
+ * non-deleted transaction deltas.  Call this after deduplication so that any
+ * double-applied impacts (from duplicate transactions) are corrected.
+ */
+export async function rebuildAccountBalances(): Promise<void> {
+  const accounts = await db.accounts.filter((a) => !a.deletedAt).toArray();
+  if (accounts.length === 0) return;
+
+  const transactions = await db.transactions.filter((t) => !t.deletedAt).toArray();
+
+  const now = new Date();
+  await db.transaction('rw', db.accounts, async () => {
+    for (const account of accounts) {
+      if (!account.id) continue;
+
+      const opening = Number(account.openingBalance ?? 0);
+      let computed = opening;
+      for (const tx of transactions) {
+        computed += getTransactionAccountDeltas(tx).get(account.id) ?? 0;
+      }
+      computed = Math.round((computed + Number.EPSILON) * 100) / 100;
+
+      if (computed !== account.balance) {
+        await db.accounts.update(account.id, { balance: computed, updatedAt: now });
+      }
+    }
+  });
+}
+
 export function buildTransactionAggregation(transactions: TransactionLike[]): TransactionAggregation {
   const summary: TransactionAggregation = {
     totalIncome: 0,

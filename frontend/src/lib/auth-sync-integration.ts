@@ -6,6 +6,7 @@ import { markOptionalBackendUnavailable, shouldSkipOptionalBackendRequests } fro
 import {
   applyTransactionAccountImpact,
   getTransactionAccountDeltas,
+  rebuildAccountBalances,
 } from '@/lib/transactionAggregation';
 import {
   clearSupabaseTemporaryUnavailable,
@@ -1168,6 +1169,10 @@ export async function deduplicateLocalData() {
     await dedupTable(db.groupExpenses, (r) =>
       `${normalizeText(r.name)}|${Number(r.totalAmount ?? 0)}|${toIsoString(r.date)?.slice(0, 10)}`
     );
+
+    // Rebuild account balances from openingBalance + all surviving transactions
+    // so any double-applied impacts from duplicate records are corrected.
+    await rebuildAccountBalances();
   });
 }
 

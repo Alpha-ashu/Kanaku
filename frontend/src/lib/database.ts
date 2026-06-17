@@ -599,6 +599,45 @@ export interface Notification {
   metadata?: Record<string, string>;
 }
 
+export interface RecurringTransaction {
+  id?: number;
+  cloudId?: string;
+  name: string;
+  type: 'expense' | 'income' | 'transfer';
+  amount: number;
+  accountId: number;
+  category: string;
+  subcategory?: string;
+  description?: string;
+  frequency: 'daily' | 'weekly' | 'biweekly' | 'monthly' | 'quarterly' | 'yearly';
+  startDate: Date;
+  endDate?: Date;
+  nextDueDate: Date;
+  lastRunDate?: Date;
+  status: 'active' | 'paused' | 'completed' | 'cancelled';
+  reminderDaysBefore?: number;
+  notes?: string;
+  transferToAccountId?: number;
+  syncStatus?: SyncStatus;
+  createdAt: Date;
+  updatedAt?: Date;
+  deletedAt?: Date;
+}
+
+export interface BudgetAlert {
+  id?: number;
+  budgetId: string;
+  category: string;
+  period: string;
+  budgetAmount: number;
+  spentAmount: number;
+  thresholdPct: number;
+  type: 'warning' | 'exceeded';
+  isRead: boolean;
+  triggeredAt: Date;
+  createdAt: Date;
+}
+
 // Database Class
 export class KANAKUDB extends Dexie {
   accounts!: Table<Account>;
@@ -988,6 +1027,8 @@ export interface SyncEventLog {
 export class OfflineSyncDB extends ProductionDB {
   syncQueue!: Table<SyncQueueItem>;
   syncEventLogs!: Table<SyncEventLog>;
+  recurringTransactions!: Table<RecurringTransaction>;
+  budgetAlerts!: Table<BudgetAlert>;
 
   constructor() {
     super();
@@ -1122,6 +1163,12 @@ export class OfflineSyncDB extends ProductionDB {
     this.version(13).stores({
       toDoLists: '++id, cloudId, ownerId, listType, createdAt, archived, syncStatus',
       toDoItems: '++id, cloudId, listId, completed, dueDate, priority, assignedTo, syncStatus',
+    });
+
+    // Version 14: Add recurring transactions and budget alerts tables
+    this.version(14).stores({
+      recurringTransactions: '++id, cloudId, accountId, type, nextDueDate, status, syncStatus',
+      budgetAlerts: '++id, budgetId, type, isRead, triggeredAt',
     });
   }
 }
