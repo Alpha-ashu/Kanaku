@@ -1,41 +1,15 @@
 version: 2
 updates:
-  # Root workspace npm dependencies
+  # Root workspace — covers all npm workspaces (root + backend + frontend)
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
       interval: "weekly"
-    groups:
-      security-patches:
-        applies-to: security-updates
-        patterns: ["*"]
-
-  # Backend npm dependencies
-  - package-ecosystem: "npm"
-    directory: "/backend"
-    schedule:
-      interval: "weekly"
-    groups:
-      security-patches:
-        applies-to: security-updates
-        patterns: ["*"]
-
-  # Frontend npm dependencies
-  - package-ecosystem: "npm"
-    directory: "/frontend"
-    schedule:
-      interval: "weekly"
-    groups:
-      security-patches:
-        applies-to: security-updates
-        patterns: ["*"]
+    open-pull-requests-limit: 0
 
   # Python receipt_ai dependencies
   - package-ecosystem: "pip"
     directory: "/backend/receipt_ai"
     schedule:
       interval: "weekly"
-    groups:
-      security-patches:
-        applies-to: security-updates
-        patterns: ["*"]
+    open-pull-requests-limit: 0

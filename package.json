@@ -208,7 +208,8 @@
     "axios": "^1.18.0",
     "postcss": "^8.5.15",
     "uuid": "^14.0.0",
-    "file-type": "^22.0.1"
+    "file-type": "^22.0.1",
+    "vite": "8.0.16"
   },
   "pnpm": {
     "overrides": {
