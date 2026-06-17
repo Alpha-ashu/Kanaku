@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { PageHeader } from '@/app/components/ui/PageHeader';
 import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
 import { Card } from '@/app/components/ui/card';
@@ -35,22 +35,33 @@ export const BudgetAlertsPage: React.FC = () => {
   const [pushAlerts, setPushAlerts] = useState(true);
   const [smsAlerts, setSmsAlerts] = useState(false);
 
-  // Live Query from Dexie DB. Seeds defaults if DB is empty.
+  // Seed default budgets if database is empty on mount
+  useEffect(() => {
+    const seedDefaults = async () => {
+      try {
+        const count = await db.budgets.count();
+        if (count === 0) {
+          const defaults = [
+            { id: '1', category: 'Dining Out', amount: 12000, period: 'monthly', threshold: 85, createdAt: new Date() },
+            { id: '2', category: 'Shopping', amount: 15000, period: 'monthly', threshold: 90, createdAt: new Date() },
+            { id: '3', category: 'Groceries', amount: 20000, period: 'monthly', threshold: 80, createdAt: new Date() },
+            { id: '4', category: 'Entertainment', amount: 8000, period: 'monthly', threshold: 75, createdAt: new Date() }
+          ];
+          await db.budgets.bulkPut(defaults as any);
+        }
+      } catch (error) {
+        console.error('Failed to seed default budgets:', error);
+      }
+    };
+    seedDefaults();
+  }, []);
+
+  // Live Query from Dexie DB.
   const limits = useLiveQuery(async () => {
     const dbBudgets = await db.budgets.toArray();
     
-    // Seed defaults if empty
     if (dbBudgets.length === 0) {
-      const defaults = [
-        { id: '1', category: 'Dining Out', amount: 12000, period: 'monthly', threshold: 85, createdAt: new Date() },
-        { id: '2', category: 'Shopping', amount: 15000, period: 'monthly', threshold: 90, createdAt: new Date() },
-        { id: '3', category: 'Groceries', amount: 20000, period: 'monthly', threshold: 80, createdAt: new Date() },
-        { id: '4', category: 'Entertainment', amount: 8000, period: 'monthly', threshold: 75, createdAt: new Date() }
-      ];
-      for (const d of defaults) {
-        await db.budgets.put(d as any);
-      }
-      return defaults.map(d => ({ ...d, spent: 0, limit: d.amount }));
+      return [];
     }
 
     const now = new Date();

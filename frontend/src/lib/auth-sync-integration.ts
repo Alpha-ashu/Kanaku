@@ -1165,6 +1165,9 @@ export async function deduplicateLocalData() {
     await dedupTable(db.friends, (r) =>
       `${normalizeText(r.name)}|${normalizeText(r.email)}|${normalizeText(r.phone)}`
     );
+    await dedupTable(db.groupExpenses, (r) =>
+      `${normalizeText(r.name)}|${Number(r.totalAmount ?? 0)}|${toIsoString(r.date)?.slice(0, 10)}`
+    );
   });
 }
 

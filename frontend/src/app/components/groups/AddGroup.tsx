@@ -116,12 +116,13 @@ export const AddGroup: React.FC = () => {
  if (!formData.name.trim()) { toast.error('Group name is required'); return; }
  if (validParticipants.length < 1) { toast.error('Add at least one participant'); return; }
  if (totalNum <= 0) { toast.error('Total amount must be greater than 0'); return; }
- 
+
  setIsSubmitting(true);
  try {
- const targetDateStr = new Date(formData.date).toDateString();
+ const expenseDate = new Date(formData.date);
+ const targetDateStr = expenseDate.toDateString();
  const existingGroup = await db.groupExpenses
-  .filter(g => 
+  .filter(g =>
    g.name.toLowerCase() === formData.name.trim().toLowerCase() &&
    new Date(g.date).toDateString() === targetDateStr &&
    !g.deletedAt
@@ -137,32 +138,77 @@ export const AddGroup: React.FC = () => {
  // Auto-save all new participant names as Friends in the DB
  await Promise.all(validParticipants.map(name => saveNewFriend(name)));
 
- // Enrich participant names with email/phone from the Friends store so the
- // backend can send invitation emails to the correct addresses.
- const enrichedMembers = validParticipants.map((name) => {
+ // Build enriched member list for both local record and backend
+ const enrichedParticipants = validParticipants.map((name) => {
    const friend = friends.find((f) => f.name.toLowerCase() === name.toLowerCase());
-   return friend?.email || (friend as any)?.phone
-     ? { name, email: friend?.email, phone: (friend as any)?.phone }
-     : name;
+   return {
+     name,
+     share: perPerson,
+     paid: false,
+     isCurrentUser: false as const,
+     paidAmount: 0,
+     paymentStatus: 'pending' as const,
+     friendId: friend?.id,
+     email: friend?.email,
+     phone: (friend as any)?.phone,
+   };
  });
- await backendService.createGroup({
- id: Date.now().toString(),
- name: formData.name,
- members: enrichedMembers as string[],
- createdAt: new Date(),
- description: formData.description,
- totalAmount: totalNum,
- amountPerPerson: perPerson,
- category: formData.category,
- date: new Date(formData.date),
+
+ const members = [
+   { name: 'You', share: perPerson, paid: true, isCurrentUser: true as const, paidAmount: perPerson, paymentStatus: 'paid' as const },
+   ...enrichedParticipants,
+ ];
+
+ const now = new Date();
+
+ // Write to Dexie first so the Groups page shows it immediately (offline-first)
+ const localId = await db.groupExpenses.add({
+   name: formData.name.trim(),
+   totalAmount: totalNum,
+   paidBy: 0,
+   date: expenseDate,
+   members,
+   description: formData.description || undefined,
+   category: formData.category,
+   splitType: 'equal',
+   yourShare: perPerson,
+   status: 'pending',
+   syncStatus: 'pending',
+   createdAt: now,
+   updatedAt: now,
  });
+
  toast.success('Group expense created! Participants saved to contacts.');
- refreshData();
  setCurrentPage('groups');
+
+ // Push to backend in background; update cloudId on success
+ try {
+   const backendResp = await backendService.api.post('/groups', {
+     name: formData.name.trim(),
+     totalAmount: totalNum,
+     paidBy: 0,
+     date: expenseDate.toISOString(),
+     category: formData.category,
+     description: formData.description || undefined,
+     splitType: 'equal',
+     yourShare: perPerson,
+     status: 'pending',
+     members: [
+       { name: 'You', share: perPerson, paid: true, isCurrentUser: true },
+       ...enrichedParticipants.map(p => ({ name: p.name, share: p.share, paid: p.paid, email: p.email, phone: p.phone })),
+     ],
+   });
+   if (backendResp.data?.id || backendResp.data?.data?.id) {
+     const cloudId = String(backendResp.data?.id ?? backendResp.data?.data?.id);
+     await db.groupExpenses.update(localId as number, { cloudId, syncStatus: 'synced' });
+   }
+ } catch {
+   // Keep syncStatus='pending'; background sync will retry
+ }
  } catch (error) {
  toast.error('Failed to create group expense');
- } finally { 
- setIsSubmitting(false); 
+ } finally {
+ setIsSubmitting(false);
  }
  };
 
