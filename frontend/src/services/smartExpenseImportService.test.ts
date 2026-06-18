@@ -6,7 +6,7 @@ import { fileURLToPath } from 'url';
 
 const fixturesDir = path.resolve(
     path.dirname(fileURLToPath(import.meta.url)),
-    '../../../tests/fixtures/imports',
+    '../../../quality/fixtures/imports',
 );
 
 const loadImportFixture = (fileName: string) =>
