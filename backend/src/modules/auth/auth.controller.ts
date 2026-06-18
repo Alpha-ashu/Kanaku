@@ -11,7 +11,7 @@ import { checkDeviceTrust, trustDevice, revokeDeviceTrust, listUserDevices } fro
 import { prisma } from '../../db/prisma';
 import { isDatabaseUnavailableError } from '../../utils/databaseAvailability';
 import { AppError } from '../../utils/AppError';
-import { generateTokens } from '../../utils/auth';
+import { generateTokens, verifyRefreshToken } from '../../utils/auth';
 
 const authService = new AuthService();
 const challengeMemoryCache = new Map<string, { payload: any; expiresAt: number }>();
@@ -234,6 +234,7 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
       message: 'Registration successful',
       data: {
         user: tokens.user,
+        expiresAt: tokens.expiresAt,
       },
     });
   } catch (error: any) {
@@ -419,6 +420,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
       data: {
         accessToken: tokens.accessToken,
         refreshToken: tokens.refreshToken,
+        expiresAt: tokens.expiresAt,
         user: input.challengeCode ? {
           id: userRecord.id,
           email: userRecord.email,
@@ -452,6 +454,63 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
     }
 
     next(AppError.unauthorized('Incorrect email or password. Please check your credentials and try again.', 'LOGIN_FAILED'));
+  }
+};
+
+// Token refresh — exchange a valid refresh token for a fresh access + refresh
+// token pair. Public (no access token required); the refresh token is the
+// credential. Profile/data endpoints never mint tokens — only login/register
+// and this endpoint do.
+export const refreshToken = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const headerToken = (req.headers['x-refresh-token'] as string | undefined) || '';
+    const bodyToken = typeof req.body?.refreshToken === 'string' ? req.body.refreshToken : '';
+    const token = (headerToken || bodyToken || '').trim();
+
+    if (!token) {
+      throw AppError.unauthorized('Refresh token is required.', 'REFRESH_TOKEN_MISSING');
+    }
+
+    let claims: ReturnType<typeof verifyRefreshToken>;
+    try {
+      claims = verifyRefreshToken(token);
+    } catch {
+      throw AppError.unauthorized('Your session has expired. Please sign in again.', 'REFRESH_TOKEN_INVALID');
+    }
+
+    // Re-load the user so role / approval / suspension changes take effect on refresh.
+    const user = await prisma.user.findUnique({ where: { id: claims.userId } });
+    if (!user) {
+      throw AppError.unauthorized('Account no longer exists. Please sign in again.', 'USER_NOT_FOUND');
+    }
+    if ((user as any).status === 'suspended') {
+      throw new AppError(403, 'ACCOUNT_SUSPENDED', 'Account suspended. Contact support.', true);
+    }
+
+    // Rotate: issue a brand-new access + refresh pair.
+    const tokens = generateTokens(user);
+    res.setHeader('Authorization', `Bearer ${tokens.accessToken}`);
+    res.setHeader('x-refresh-token', tokens.refreshToken);
+
+    res.json({
+      success: true,
+      message: 'Token refreshed',
+      data: {
+        accessToken: tokens.accessToken,
+        refreshToken: tokens.refreshToken,
+        expiresAt: tokens.expiresAt,
+        user: tokens.user,
+      },
+    });
+  } catch (error: any) {
+    if (error instanceof AppError) {
+      return next(error);
+    }
+    if (isDatabaseUnavailableError(error)) {
+      return next(new AppError(503, 'DATABASE_UNAVAILABLE', 'Our servers are temporarily unavailable. Please try again in a moment.', false));
+    }
+    logger.error('Token refresh error', { message: error?.message, stack: error?.stack });
+    return next(AppError.unauthorized('Could not refresh your session. Please sign in again.', 'REFRESH_FAILED'));
   }
 };
 

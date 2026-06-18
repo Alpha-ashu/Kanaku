@@ -32,7 +32,7 @@ The **Shape** column shows which canonical files exist (in order):
 | [`admin`](./admin/README.md) | `/api/v1/admin` | 27 | CVR | Admin console — user/role management, feature flags, and operational dashboards (admin role required). |
 | [`advisors`](./advisors/README.md) | `/api/v1/advisors` | 16 | CR | Financial advisor directory, verification, and ratings. |
 | [`ai`](./ai/README.md) | `/api/v1/ai` | 8 | CVRT | AI/LLM features — insights, NLQ, document intelligence (lazy-loaded). |
-| [`auth`](./auth/README.md) | `/api/v1/auth` | 11 | CSRT | Authentication — login, registration, token issuance, device + OTP services (public). |
+| [`auth`](./auth/README.md) | `/api/v1/auth` | 12 | CSRT | Authentication — login, registration, token issuance, device + OTP services (public). |
 | [`avatars`](./avatars/README.md) | `/api/v1/avatars` | 1 | R | Avatar gallery and user avatar assignment (public assets). |
 | [`bills`](./bills/README.md) | `/api/v1/bills` | 4 | CR | Secure bill/document uploads with file-type validation (lazy-loaded). |
 | [`bookings`](./bookings/README.md) | `/api/v1/bookings` | 9 | CVR | Advisor session bookings. |
