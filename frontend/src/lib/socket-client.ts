@@ -218,10 +218,13 @@ class SocketClient {
     try {
       const socketUrl = this.resolveSocketUrl();
       
-      // Vercel serverless environment detection: WebSockets are not supported.
-      // Gracefully disable connection to prevent console noise, errors, and performance overhead.
+      // Vercel hosts the static SPA only (no WebSocket support on the proxied
+      // origin), so we skip realtime entirely there and rely on on-demand sync.
+      // No connection is opened — there is no polling fallback or overhead.
       if (socketUrl.includes('vercel.app') || window.location.hostname.endsWith('vercel.app')) {
-        console.log('[SocketClient] WebSockets are disabled in Vercel serverless environments. Falling back to HTTP polling.');
+        if (import.meta.env.DEV) {
+          console.log('[SocketClient] Realtime disabled on Vercel (static host); using on-demand sync.');
+        }
         this.isConnected = false;
         return;
       }
@@ -577,7 +580,9 @@ class SocketClient {
     // Listen for visibility change to reconnect when tab becomes active
     document.addEventListener('visibilitychange', () => {
       if (!document.hidden && !this.isConnectedToServer()) {
-        console.log('Tab became visible, attempting to reconnect...');
+        if (import.meta.env.DEV) {
+          console.log('Tab became visible, attempting to reconnect...');
+        }
         // Reconnection will be handled by the error handler
       }
     });

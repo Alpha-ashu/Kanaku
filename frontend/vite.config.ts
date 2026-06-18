@@ -255,6 +255,8 @@ export default defineConfig(({ mode }) => {
             if (id.includes('node_modules/@mui')) return 'vendor-mui';
             if (id.includes('node_modules/recharts') || id.includes('node_modules/d3')) return 'vendor-charts';
             if (id.includes('node_modules/pdfjs-dist')) return 'vendor-pdf';
+            if (id.includes('node_modules/tesseract.js')) return 'vendor-ocr';
+            if (id.includes('node_modules/jspdf') || id.includes('node_modules/html2canvas')) return 'vendor-pdfgen';
             if (id.includes('node_modules/@capacitor')) return 'vendor-capacitor';
 
             //  Core React ecosystem
