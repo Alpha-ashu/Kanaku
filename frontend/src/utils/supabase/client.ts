@@ -1,7 +1,10 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY;
+// Falls back to the project's PUBLIC values (browser-safe anon/publishable key +
+// public project URL — both are meant to ship in the client bundle) so auth works
+// even when the Vercel env vars aren't set. Real env vars override these.
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mmwrckfqeqjfqciymemh.supabase.co';
+const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY || 'sb_publishable_QA4aNzLgHR9xanXUJaPpew_XGRicYBq';
 let hasWarnedMissingConfig = false;
 
 // Warn if someone accidentally uses the server-side secret key in the browser.
@@ -58,7 +61,7 @@ const createStubClient = (): any => {
 // In the default hybrid/custom mode the custom JWT is canonical, so we keep the
 // Supabase session non-persistent (AuthContext manages any refresh) to avoid
 // console-flooding retries when the Supabase project is paused.
-const supabaseCanonical = (import.meta.env.VITE_AUTH_CANONICAL || 'custom') === 'supabase';
+const supabaseCanonical = (import.meta.env.VITE_AUTH_CANONICAL || 'supabase') === 'supabase';
 
 const supabase = (!supabaseUrl || !supabaseKey)
 	? createStubClient()

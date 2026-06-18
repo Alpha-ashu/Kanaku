@@ -21,7 +21,7 @@ import { signIn as supabaseSignIn, signUp as supabaseSignUp } from '@/lib/supaba
 // JWT flow; 'supabase' (Option A) authenticates via Supabase Auth so the API client's
 // (already Supabase-first) token resolution carries the Supabase session.
 // See docs/AUTH_CONSOLIDATION_PLAN.md.
-const AUTH_CANONICAL = (import.meta.env.VITE_AUTH_CANONICAL || 'custom') as string;
+const AUTH_CANONICAL = (import.meta.env.VITE_AUTH_CANONICAL || 'supabase') as string;
 
 /** Internal-only logger - never leaks raw errors to the browser console in production. */
 const internalLog = {
