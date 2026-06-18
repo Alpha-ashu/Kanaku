@@ -1,8 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
-  testDir: './tests/e2e',
-  outputDir: './tests/e2e/screenshots',
+  testDir: './quality/e2e',
+  outputDir: './quality/e2e/screenshots',
   timeout: 60_000,
   expect: { timeout: 10_000 },
   fullyParallel: false,
@@ -10,8 +10,8 @@ export default defineConfig({
   retries: 1,
   reporter: [
     ['list'],
-    ['html', { outputFolder: 'tests/e2e/report', open: 'never' }],
-    ['json', { outputFile: 'tests/e2e/results.json' }],
+    ['html', { outputFolder: 'quality/e2e/report', open: 'never' }],
+    ['json', { outputFile: 'quality/e2e/results.json' }],
   ],
   use: {
     baseURL: 'http://localhost:9002',

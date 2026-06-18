@@ -1,60 +1,60 @@
 ﻿{
-    "generatedAt":  "2026-06-19T02:08:50Z",
+    "generatedAt":  "2026-06-19T02:42:59Z",
     "totalEndpoints":  238,
     "features":  {
                      "aa":  [
                                 {
                                     "method":  "POST",
                                     "endpoint":  "/api/v1/aa/consent",
-                                    "file":  "api-docs/aa/post.consent.api.json",
+                                    "file":  "docs/api/contracts/aa/post.consent.api.json",
                                     "auth":  "public"
                                 },
                                 {
                                     "method":  "GET",
                                     "endpoint":  "/api/v1/aa/consent/status/:consentHandle",
-                                    "file":  "api-docs/aa/get.consent.status.by-consentHandle.api.json",
+                                    "file":  "docs/api/contracts/aa/get.consent.status.by-consentHandle.api.json",
                                     "auth":  "public"
                                 },
                                 {
                                     "method":  "GET",
                                     "endpoint":  "/api/v1/aa/consent/artifact/:consentId",
-                                    "file":  "api-docs/aa/get.consent.artifact.by-consentId.api.json",
+                                    "file":  "docs/api/contracts/aa/get.consent.artifact.by-consentId.api.json",
                                     "auth":  "public"
                                 },
                                 {
                                     "method":  "POST",
                                     "endpoint":  "/api/v1/aa/data/session",
-                                    "file":  "api-docs/aa/post.data.session.api.json",
+                                    "file":  "docs/api/contracts/aa/post.data.session.api.json",
                                     "auth":  "public"
                                 },
                                 {
                                     "method":  "GET",
                                     "endpoint":  "/api/v1/aa/data/fetch/:sessionId",
-                                    "file":  "api-docs/aa/get.data.fetch.by-sessionId.api.json",
+                                    "file":  "docs/api/contracts/aa/get.data.fetch.by-sessionId.api.json",
                                     "auth":  "public"
                                 },
                                 {
                                     "method":  "GET",
                                     "endpoint":  "/api/v1/aa/consents",
-                                    "file":  "api-docs/aa/get.consents.api.json",
+                                    "file":  "docs/api/contracts/aa/get.consents.api.json",
                                     "auth":  "public"
                                 },
                                 {
                                     "method":  "POST",
                                     "endpoint":  "/api/v1/aa/consent/revoke/:consentId",
-                                    "file":  "api-docs/aa/post.consent.revoke.by-consentId.api.json",
+                                    "file":  "docs/api/contracts/aa/post.consent.revoke.by-consentId.api.json",
                                     "auth":  "public"
                                 },
                                 {
                                     "method":  "GET",
                                     "endpoint":  "/api/v1/aa/financial-summary",
-                                    "file":  "api-docs/aa/get.financial-summary.api.json",
+                                    "file":  "docs/api/contracts/aa/get.financial-summary.api.json",
                                     "auth":  "public"
                                 },
                                 {
                                     "method":  "POST",
                                     "endpoint":  "/api/v1/aa/notification",
-                                    "file":  "api-docs/aa/post.notification.api.json",
+                                    "file":  "docs/api/contracts/aa/post.notification.api.json",
                                     "auth":  "public"
                                 }
                             ],
@@ -62,31 +62,31 @@
                                       {
                                           "method":  "GET",
                                           "endpoint":  "/api/v1/accounts",
-                                          "file":  "api-docs/accounts/list.api.json",
+                                          "file":  "docs/api/contracts/accounts/list.api.json",
                                           "auth":  "public"
                                       },
                                       {
                                           "method":  "POST",
                                           "endpoint":  "/api/v1/accounts",
-                                          "file":  "api-docs/accounts/create.api.json",
+                                          "file":  "docs/api/contracts/accounts/create.api.json",
                                           "auth":  "public"
                                       },
                                       {
                                           "method":  "GET",
                                           "endpoint":  "/api/v1/accounts/:id",
-                                          "file":  "api-docs/accounts/get.by-id.api.json",
+                                          "file":  "docs/api/contracts/accounts/get.by-id.api.json",
                                           "auth":  "public"
                                       },
                                       {
                                           "method":  "PUT",
                                           "endpoint":  "/api/v1/accounts/:id",
-                                          "file":  "api-docs/accounts/put.by-id.api.json",
+                                          "file":  "docs/api/contracts/accounts/put.by-id.api.json",
                                           "auth":  "public"
                                       },
                                       {
                                           "method":  "DELETE",
                                           "endpoint":  "/api/v1/accounts/:id",
-                                          "file":  "api-docs/accounts/delete.by-id.api.json",
+                                          "file":  "docs/api/contracts/accounts/delete.by-id.api.json",
                                           "auth":  "public"
                                       }
                                   ],
@@ -94,163 +94,163 @@
                                    {
                                        "method":  "GET",
                                        "endpoint":  "/api/v1/admin/features",
-                                       "file":  "api-docs/admin/get.features.api.json",
+                                       "file":  "docs/api/contracts/admin/get.features.api.json",
                                        "auth":  "public"
                                    },
                                    {
                                        "method":  "GET",
                                        "endpoint":  "/api/v1/admin/ai-features",
-                                       "file":  "api-docs/admin/get.ai-features.api.json",
+                                       "file":  "docs/api/contracts/admin/get.ai-features.api.json",
                                        "auth":  "public"
                                    },
                                    {
                                        "method":  "GET",
                                        "endpoint":  "/api/v1/admin/users",
-                                       "file":  "api-docs/admin/get.users.api.json",
+                                       "file":  "docs/api/contracts/admin/get.users.api.json",
                                        "auth":  "public"
                                    },
                                    {
                                        "method":  "GET",
                                        "endpoint":  "/api/v1/admin/users/pending",
-                                       "file":  "api-docs/admin/get.users.pending.api.json",
+                                       "file":  "docs/api/contracts/admin/get.users.pending.api.json",
                                        "auth":  "public"
                                    },
                                    {
                                        "method":  "POST",
                                        "endpoint":  "/api/v1/admin/users/:advisorId/approve",
-                                       "file":  "api-docs/admin/post.users.by-advisorId.approve.api.json",
+                                       "file":  "docs/api/contracts/admin/post.users.by-advisorId.approve.api.json",
                                        "auth":  "public"
                                    },
                                    {
                                        "method":  "POST",
                                        "endpoint":  "/api/v1/admin/users/:advisorId/reject",
-                                       "file":  "api-docs/admin/post.users.by-advisorId.reject.api.json",
+                                       "file":  "docs/api/contracts/admin/post.users.by-advisorId.reject.api.json",
                                        "auth":  "public"
                                    },
                                    {
                                        "method":  "GET",
                                        "endpoint":  "/api/v1/admin/users/activity",
-                                       "file":  "api-docs/admin/get.users.activity.api.json",
+                                       "file":  "docs/api/contracts/admin/get.users.activity.api.json",
                                        "auth":  "public"
                                    },
                                    {
                                        "method":  "POST",
                                        "endpoint":  "/api/v1/admin/users/:userId/status",
-                                       "file":  "api-docs/admin/post.users.by-userId.status.api.json",
+                                       "file":  "docs/api/contracts/admin/post.users.by-userId.status.api.json",
                                        "auth":  "public"
                                    },
                                    {
                                        "method":  "POST",
                                        "endpoint":  "/api/v1/admin/users/:userId/role",
-                                       "file":  "api-docs/admin/post.users.by-userId.role.api.json",
+                                       "file":  "docs/api/contracts/admin/post.users.by-userId.role.api.json",
                                        "auth":  "public"
                                    },
                                    {
                                        "method":  "DELETE",
                                        "endpoint":  "/api/v1/admin/users/:userId",
-                                       "file":  "api-docs/admin/delete.users.by-userId.api.json",
+                                       "file":  "docs/api/contracts/admin/delete.users.by-userId.api.json",
                                        "auth":  "public"
                                    },
                                    {
                                        "method":  "GET",
                                        "endpoint":  "/api/v1/admin/users/:userId/storage",
-                                       "file":  "api-docs/admin/get.users.by-userId.storage.api.json",
+                                       "file":  "docs/api/contracts/admin/get.users.by-userId.storage.api.json",
                                        "auth":  "public"
                                    },
                                    {
                                        "method":  "GET",
                                        "endpoint":  "/api/v1/admin/stats",
-                                       "file":  "api-docs/admin/get.stats.api.json",
+                                       "file":  "docs/api/contracts/admin/get.stats.api.json",
                                        "auth":  "public"
                                    },
                                    {
                                        "method":  "GET",
                                        "endpoint":  "/api/v1/admin/cache/metrics",
-                                       "file":  "api-docs/admin/get.cache.metrics.api.json",
+                                       "file":  "docs/api/contracts/admin/get.cache.metrics.api.json",
                                        "auth":  "public"
                                    },
                                    {
                                        "method":  "POST",
                                        "endpoint":  "/api/v1/admin/features/toggle",
-                                       "file":  "api-docs/admin/post.features.toggle.api.json",
+                                       "file":  "docs/api/contracts/admin/post.features.toggle.api.json",
                                        "auth":  "public"
                                    },
                                    {
                                        "method":  "POST",
                                        "endpoint":  "/api/v1/admin/ai-features/toggle",
-                                       "file":  "api-docs/admin/post.ai-features.toggle.api.json",
+                                       "file":  "docs/api/contracts/admin/post.ai-features.toggle.api.json",
                                        "auth":  "public"
                                    },
                                    {
                                        "method":  "GET",
                                        "endpoint":  "/api/v1/admin/reports/users",
-                                       "file":  "api-docs/admin/get.reports.users.api.json",
+                                       "file":  "docs/api/contracts/admin/get.reports.users.api.json",
                                        "auth":  "public"
                                    },
                                    {
                                        "method":  "GET",
                                        "endpoint":  "/api/v1/admin/reports/revenue",
-                                       "file":  "api-docs/admin/get.reports.revenue.api.json",
+                                       "file":  "docs/api/contracts/admin/get.reports.revenue.api.json",
                                        "auth":  "public"
                                    },
                                    {
                                        "method":  "GET",
                                        "endpoint":  "/api/v1/admin/ai/overview",
-                                       "file":  "api-docs/admin/get.ai.overview.api.json",
+                                       "file":  "docs/api/contracts/admin/get.ai.overview.api.json",
                                        "auth":  "public"
                                    },
                                    {
                                        "method":  "GET",
                                        "endpoint":  "/api/v1/admin/ai/users",
-                                       "file":  "api-docs/admin/get.ai.users.api.json",
+                                       "file":  "docs/api/contracts/admin/get.ai.users.api.json",
                                        "auth":  "public"
                                    },
                                    {
                                        "method":  "GET",
                                        "endpoint":  "/api/v1/admin/ai/insights",
-                                       "file":  "api-docs/admin/get.ai.insights.api.json",
+                                       "file":  "docs/api/contracts/admin/get.ai.insights.api.json",
                                        "auth":  "public"
                                    },
                                    {
                                        "method":  "GET",
                                        "endpoint":  "/api/v1/admin/ai/patterns",
-                                       "file":  "api-docs/admin/get.ai.patterns.api.json",
+                                       "file":  "docs/api/contracts/admin/get.ai.patterns.api.json",
                                        "auth":  "public"
                                    },
                                    {
                                        "method":  "GET",
                                        "endpoint":  "/api/v1/admin/ai/accuracy",
-                                       "file":  "api-docs/admin/get.ai.accuracy.api.json",
+                                       "file":  "docs/api/contracts/admin/get.ai.accuracy.api.json",
                                        "auth":  "public"
                                    },
                                    {
                                        "method":  "GET",
                                        "endpoint":  "/api/v1/admin/ai/raw/:userId",
-                                       "file":  "api-docs/admin/get.ai.raw.by-userId.api.json",
+                                       "file":  "docs/api/contracts/admin/get.ai.raw.by-userId.api.json",
                                        "auth":  "public"
                                    },
                                    {
                                        "method":  "POST",
                                        "endpoint":  "/api/v1/admin/ai/run/features",
-                                       "file":  "api-docs/admin/post.ai.run.features.api.json",
+                                       "file":  "docs/api/contracts/admin/post.ai.run.features.api.json",
                                        "auth":  "public"
                                    },
                                    {
                                        "method":  "POST",
                                        "endpoint":  "/api/v1/admin/ai/run/predictions",
-                                       "file":  "api-docs/admin/post.ai.run.predictions.api.json",
+                                       "file":  "docs/api/contracts/admin/post.ai.run.predictions.api.json",
                                        "auth":  "public"
                                    },
                                    {
                                        "method":  "GET",
                                        "endpoint":  "/api/v1/admin/ai/config",
-                                       "file":  "api-docs/admin/get.ai.config.api.json",
+                                       "file":  "docs/api/contracts/admin/get.ai.config.api.json",
                                        "auth":  "public"
                                    },
                                    {
                                        "method":  "POST",
                                        "endpoint":  "/api/v1/admin/ai/config",
-                                       "file":  "api-docs/admin/post.ai.config.api.json",
+                                       "file":  "docs/api/contracts/admin/post.ai.config.api.json",
                                        "auth":  "public"
                                    }
                                ],
@@ -258,97 +258,97 @@
                                       {
                                           "method":  "GET",
                                           "endpoint":  "/api/v1/advisors",
-                                          "file":  "api-docs/advisors/list.api.json",
+                                          "file":  "docs/api/contracts/advisors/list.api.json",
                                           "auth":  "public"
                                       },
                                       {
                                           "method":  "GET",
                                           "endpoint":  "/api/v1/advisors/application/my",
-                                          "file":  "api-docs/advisors/get.application.my.api.json",
+                                          "file":  "docs/api/contracts/advisors/get.application.my.api.json",
                                           "auth":  "public"
                                       },
                                       {
                                           "method":  "GET",
                                           "endpoint":  "/api/v1/advisors/application/:id/document/:docType",
-                                          "file":  "api-docs/advisors/get.application.by-id.document.by-docType.api.json",
+                                          "file":  "docs/api/contracts/advisors/get.application.by-id.document.by-docType.api.json",
                                           "auth":  "public"
                                       },
                                       {
                                           "method":  "POST",
                                           "endpoint":  "/api/v1/advisors/apply",
-                                          "file":  "api-docs/advisors/post.apply.api.json",
+                                          "file":  "docs/api/contracts/advisors/post.apply.api.json",
                                           "auth":  "public"
                                       },
                                       {
                                           "method":  "PUT",
                                           "endpoint":  "/api/v1/advisors/online-status",
-                                          "file":  "api-docs/advisors/put.online-status.api.json",
+                                          "file":  "docs/api/contracts/advisors/put.online-status.api.json",
                                           "auth":  "bearer"
                                       },
                                       {
                                           "method":  "PUT",
                                           "endpoint":  "/api/v1/advisors/role-mode",
-                                          "file":  "api-docs/advisors/put.role-mode.api.json",
+                                          "file":  "docs/api/contracts/advisors/put.role-mode.api.json",
                                           "auth":  "bearer"
                                       },
                                       {
                                           "method":  "POST",
                                           "endpoint":  "/api/v1/advisors/availability",
-                                          "file":  "api-docs/advisors/post.availability.api.json",
+                                          "file":  "docs/api/contracts/advisors/post.availability.api.json",
                                           "auth":  "bearer"
                                       },
                                       {
                                           "method":  "PUT",
                                           "endpoint":  "/api/v1/advisors/availability/status",
-                                          "file":  "api-docs/advisors/put.availability.status.api.json",
+                                          "file":  "docs/api/contracts/advisors/put.availability.status.api.json",
                                           "auth":  "bearer"
                                       },
                                       {
                                           "method":  "GET",
                                           "endpoint":  "/api/v1/advisors/:id/availability",
-                                          "file":  "api-docs/advisors/get.by-id.availability.api.json",
+                                          "file":  "docs/api/contracts/advisors/get.by-id.availability.api.json",
                                           "auth":  "public"
                                       },
                                       {
                                           "method":  "DELETE",
                                           "endpoint":  "/api/v1/advisors/availability/:id",
-                                          "file":  "api-docs/advisors/delete.availability.by-id.api.json",
+                                          "file":  "docs/api/contracts/advisors/delete.availability.by-id.api.json",
                                           "auth":  "bearer"
                                       },
                                       {
                                           "method":  "GET",
                                           "endpoint":  "/api/v1/advisors/me/sessions",
-                                          "file":  "api-docs/advisors/get.me.sessions.api.json",
+                                          "file":  "docs/api/contracts/advisors/get.me.sessions.api.json",
                                           "auth":  "bearer"
                                       },
                                       {
                                           "method":  "PUT",
                                           "endpoint":  "/api/v1/advisors/sessions/:id/rate",
-                                          "file":  "api-docs/advisors/put.sessions.by-id.rate.api.json",
+                                          "file":  "docs/api/contracts/advisors/put.sessions.by-id.rate.api.json",
                                           "auth":  "public"
                                       },
                                       {
                                           "method":  "GET",
                                           "endpoint":  "/api/v1/advisors/admin/applications",
-                                          "file":  "api-docs/advisors/get.admin.applications.api.json",
+                                          "file":  "docs/api/contracts/advisors/get.admin.applications.api.json",
                                           "auth":  "bearer"
                                       },
                                       {
                                           "method":  "PUT",
                                           "endpoint":  "/api/v1/advisors/admin/:id/approve",
-                                          "file":  "api-docs/advisors/put.admin.by-id.approve.api.json",
+                                          "file":  "docs/api/contracts/advisors/put.admin.by-id.approve.api.json",
                                           "auth":  "bearer"
                                       },
                                       {
                                           "method":  "PUT",
                                           "endpoint":  "/api/v1/advisors/admin/:id/reject",
-                                          "file":  "api-docs/advisors/put.admin.by-id.reject.api.json",
+                                          "file":  "docs/api/contracts/advisors/put.admin.by-id.reject.api.json",
                                           "auth":  "bearer"
                                       },
                                       {
                                           "method":  "GET",
                                           "endpoint":  "/api/v1/advisors/:id",
-                                          "file":  "api-docs/advisors/get.by-id.api.json",
+                                          "file":  "docs/api/contracts/advisors/get.by-id.api.json",
                                           "auth":  "public"
                                       }
                                   ],
@@ -356,49 +356,49 @@
                                 {
                                     "method":  "POST",
                                     "endpoint":  "/api/v1/ai/events",
-                                    "file":  "api-docs/ai/post.events.api.json",
+                                    "file":  "docs/api/contracts/ai/post.events.api.json",
                                     "auth":  "public"
                                 },
                                 {
                                     "method":  "GET",
                                     "endpoint":  "/api/v1/ai/quota",
-                                    "file":  "api-docs/ai/get.quota.api.json",
+                                    "file":  "docs/api/contracts/ai/get.quota.api.json",
                                     "auth":  "public"
                                 },
                                 {
                                     "method":  "GET",
                                     "endpoint":  "/api/v1/ai/insights",
-                                    "file":  "api-docs/ai/get.insights.api.json",
+                                    "file":  "docs/api/contracts/ai/get.insights.api.json",
                                     "auth":  "public"
                                 },
                                 {
                                     "method":  "GET",
                                     "endpoint":  "/api/v1/ai/health-score",
-                                    "file":  "api-docs/ai/get.health-score.api.json",
+                                    "file":  "docs/api/contracts/ai/get.health-score.api.json",
                                     "auth":  "public"
                                 },
                                 {
                                     "method":  "GET",
                                     "endpoint":  "/api/v1/ai/recommendations",
-                                    "file":  "api-docs/ai/get.recommendations.api.json",
+                                    "file":  "docs/api/contracts/ai/get.recommendations.api.json",
                                     "auth":  "public"
                                 },
                                 {
                                     "method":  "GET",
                                     "endpoint":  "/api/v1/ai/fraud-alerts",
-                                    "file":  "api-docs/ai/get.fraud-alerts.api.json",
+                                    "file":  "docs/api/contracts/ai/get.fraud-alerts.api.json",
                                     "auth":  "public"
                                 },
                                 {
                                     "method":  "GET",
                                     "endpoint":  "/api/v1/ai/bill-predictions",
-                                    "file":  "api-docs/ai/get.bill-predictions.api.json",
+                                    "file":  "docs/api/contracts/ai/get.bill-predictions.api.json",
                                     "auth":  "public"
                                 },
                                 {
                                     "method":  "GET",
                                     "endpoint":  "/api/v1/ai/spending-patterns",
-                                    "file":  "api-docs/ai/get.spending-patterns.api.json",
+                                    "file":  "docs/api/contracts/ai/get.spending-patterns.api.json",
                                     "auth":  "public"
                                 }
                             ],
@@ -406,73 +406,73 @@
                                   {
                                       "method":  "POST",
                                       "endpoint":  "/api/v1/auth/check-email",
-                                      "file":  "api-docs/auth/post.check-email.api.json",
+                                      "file":  "docs/api/contracts/auth/post.check-email.api.json",
                                       "auth":  "public"
                                   },
                                   {
                                       "method":  "POST",
                                       "endpoint":  "/api/v1/auth/register",
-                                      "file":  "api-docs/auth/post.register.api.json",
+                                      "file":  "docs/api/contracts/auth/post.register.api.json",
                                       "auth":  "public"
                                   },
                                   {
                                       "method":  "POST",
                                       "endpoint":  "/api/v1/auth/login/challenge",
-                                      "file":  "api-docs/auth/post.login.challenge.api.json",
+                                      "file":  "docs/api/contracts/auth/post.login.challenge.api.json",
                                       "auth":  "public"
                                   },
                                   {
                                       "method":  "POST",
                                       "endpoint":  "/api/v1/auth/login",
-                                      "file":  "api-docs/auth/post.login.api.json",
+                                      "file":  "docs/api/contracts/auth/post.login.api.json",
                                       "auth":  "public"
                                   },
                                   {
                                       "method":  "POST",
                                       "endpoint":  "/api/v1/auth/refresh",
-                                      "file":  "api-docs/auth/post.refresh.api.json",
+                                      "file":  "docs/api/contracts/auth/post.refresh.api.json",
                                       "auth":  "public"
                                   },
                                   {
                                       "method":  "GET",
                                       "endpoint":  "/api/v1/auth/profile",
-                                      "file":  "api-docs/auth/get.profile.api.json",
+                                      "file":  "docs/api/contracts/auth/get.profile.api.json",
                                       "auth":  "bearer"
                                   },
                                   {
                                       "method":  "PUT",
                                       "endpoint":  "/api/v1/auth/profile",
-                                      "file":  "api-docs/auth/put.profile.api.json",
+                                      "file":  "docs/api/contracts/auth/put.profile.api.json",
                                       "auth":  "bearer"
                                   },
                                   {
                                       "method":  "POST",
                                       "endpoint":  "/api/v1/auth/otp/send",
-                                      "file":  "api-docs/auth/post.otp.send.api.json",
+                                      "file":  "docs/api/contracts/auth/post.otp.send.api.json",
                                       "auth":  "bearer"
                                   },
                                   {
                                       "method":  "POST",
                                       "endpoint":  "/api/v1/auth/otp/verify",
-                                      "file":  "api-docs/auth/post.otp.verify.api.json",
+                                      "file":  "docs/api/contracts/auth/post.otp.verify.api.json",
                                       "auth":  "bearer"
                                   },
                                   {
                                       "method":  "GET",
                                       "endpoint":  "/api/v1/auth/devices",
-                                      "file":  "api-docs/auth/get.devices.api.json",
+                                      "file":  "docs/api/contracts/auth/get.devices.api.json",
                                       "auth":  "bearer"
                                   },
                                   {
                                       "method":  "DELETE",
                                       "endpoint":  "/api/v1/auth/devices/:deviceId",
-                                      "file":  "api-docs/auth/delete.devices.by-deviceId.api.json",
+                                      "file":  "docs/api/contracts/auth/delete.devices.by-deviceId.api.json",
                                       "auth":  "bearer"
                                   },
                                   {
                                       "method":  "DELETE",
                                       "endpoint":  "/api/v1/auth/account",
-                                      "file":  "api-docs/auth/delete.account.api.json",
+                                      "file":  "docs/api/contracts/auth/delete.account.api.json",
                                       "auth":  "bearer"
                                   }
                               ],
@@ -480,7 +480,7 @@
                                      {
                                          "method":  "GET",
                                          "endpoint":  "/api/v1/avatars/dicebear/:style/svg",
-                                         "file":  "api-docs/avatars/get.dicebear.by-style.svg.api.json",
+                                         "file":  "docs/api/contracts/avatars/get.dicebear.by-style.svg.api.json",
                                          "auth":  "public"
                                      }
                                  ],
@@ -488,25 +488,25 @@
                                    {
                                        "method":  "GET",
                                        "endpoint":  "/api/v1/bills",
-                                       "file":  "api-docs/bills/list.api.json",
+                                       "file":  "docs/api/contracts/bills/list.api.json",
                                        "auth":  "public"
                                    },
                                    {
                                        "method":  "GET",
                                        "endpoint":  "/api/v1/bills/:id",
-                                       "file":  "api-docs/bills/get.by-id.api.json",
+                                       "file":  "docs/api/contracts/bills/get.by-id.api.json",
                                        "auth":  "public"
                                    },
                                    {
                                        "method":  "POST",
                                        "endpoint":  "/api/v1/bills",
-                                       "file":  "api-docs/bills/create.api.json",
+                                       "file":  "docs/api/contracts/bills/create.api.json",
                                        "auth":  "public"
                                    },
                                    {
                                        "method":  "DELETE",
                                        "endpoint":  "/api/v1/bills/:id",
-                                       "file":  "api-docs/bills/delete.by-id.api.json",
+                                       "file":  "docs/api/contracts/bills/delete.by-id.api.json",
                                        "auth":  "public"
                                    }
                                ],
@@ -514,55 +514,55 @@
                                       {
                                           "method":  "POST",
                                           "endpoint":  "/api/v1/bookings",
-                                          "file":  "api-docs/bookings/create.api.json",
+                                          "file":  "docs/api/contracts/bookings/create.api.json",
                                           "auth":  "public"
                                       },
                                       {
                                           "method":  "GET",
                                           "endpoint":  "/api/v1/bookings",
-                                          "file":  "api-docs/bookings/list.api.json",
+                                          "file":  "docs/api/contracts/bookings/list.api.json",
                                           "auth":  "public"
                                       },
                                       {
                                           "method":  "GET",
                                           "endpoint":  "/api/v1/bookings/:id",
-                                          "file":  "api-docs/bookings/get.by-id.api.json",
+                                          "file":  "docs/api/contracts/bookings/get.by-id.api.json",
                                           "auth":  "public"
                                       },
                                       {
                                           "method":  "PUT",
                                           "endpoint":  "/api/v1/bookings/:id/accept",
-                                          "file":  "api-docs/bookings/put.by-id.accept.api.json",
+                                          "file":  "docs/api/contracts/bookings/put.by-id.accept.api.json",
                                           "auth":  "bearer"
                                       },
                                       {
                                           "method":  "PUT",
                                           "endpoint":  "/api/v1/bookings/:id/reject",
-                                          "file":  "api-docs/bookings/put.by-id.reject.api.json",
+                                          "file":  "docs/api/contracts/bookings/put.by-id.reject.api.json",
                                           "auth":  "bearer"
                                       },
                                       {
                                           "method":  "PUT",
                                           "endpoint":  "/api/v1/bookings/:id/reschedule",
-                                          "file":  "api-docs/bookings/put.by-id.reschedule.api.json",
+                                          "file":  "docs/api/contracts/bookings/put.by-id.reschedule.api.json",
                                           "auth":  "bearer"
                                       },
                                       {
                                           "method":  "PUT",
                                           "endpoint":  "/api/v1/bookings/:id/cancel",
-                                          "file":  "api-docs/bookings/put.by-id.cancel.api.json",
+                                          "file":  "docs/api/contracts/bookings/put.by-id.cancel.api.json",
                                           "auth":  "public"
                                       },
                                       {
                                           "method":  "GET",
                                           "endpoint":  "/api/v1/bookings/workspace/clients",
-                                          "file":  "api-docs/bookings/get.workspace.clients.api.json",
+                                          "file":  "docs/api/contracts/bookings/get.workspace.clients.api.json",
                                           "auth":  "bearer"
                                       },
                                       {
                                           "method":  "POST",
                                           "endpoint":  "/api/v1/bookings/:bookingId/fee/pay",
-                                          "file":  "api-docs/bookings/post.by-bookingId.fee.pay.api.json",
+                                          "file":  "docs/api/contracts/bookings/post.by-bookingId.fee.pay.api.json",
                                           "auth":  "bearer"
                                       }
                                   ],
@@ -570,37 +570,37 @@
                                      {
                                          "method":  "GET",
                                          "endpoint":  "/api/v1/budgets",
-                                         "file":  "api-docs/budgets/list.api.json",
+                                         "file":  "docs/api/contracts/budgets/list.api.json",
                                          "auth":  "public"
                                      },
                                      {
                                          "method":  "POST",
                                          "endpoint":  "/api/v1/budgets",
-                                         "file":  "api-docs/budgets/create.api.json",
+                                         "file":  "docs/api/contracts/budgets/create.api.json",
                                          "auth":  "public"
                                      },
                                      {
                                          "method":  "GET",
                                          "endpoint":  "/api/v1/budgets/:id",
-                                         "file":  "api-docs/budgets/get.by-id.api.json",
+                                         "file":  "docs/api/contracts/budgets/get.by-id.api.json",
                                          "auth":  "public"
                                      },
                                      {
                                          "method":  "PUT",
                                          "endpoint":  "/api/v1/budgets/:id",
-                                         "file":  "api-docs/budgets/put.by-id.api.json",
+                                         "file":  "docs/api/contracts/budgets/put.by-id.api.json",
                                          "auth":  "public"
                                      },
                                      {
                                          "method":  "DELETE",
                                          "endpoint":  "/api/v1/budgets/:id",
-                                         "file":  "api-docs/budgets/delete.by-id.api.json",
+                                         "file":  "docs/api/contracts/budgets/delete.by-id.api.json",
                                          "auth":  "public"
                                      },
                                      {
                                          "method":  "POST",
                                          "endpoint":  "/api/v1/budgets/:id/recalculate",
-                                         "file":  "api-docs/budgets/post.by-id.recalculate.api.json",
+                                         "file":  "docs/api/contracts/budgets/post.by-id.recalculate.api.json",
                                          "auth":  "public"
                                      }
                                  ],
@@ -608,7 +608,7 @@
                                             {
                                                 "method":  "POST",
                                                 "endpoint":  "/api/v1/categorize",
-                                                "file":  "api-docs/categorization/create.api.json",
+                                                "file":  "docs/api/contracts/categorization/create.api.json",
                                                 "auth":  "public"
                                             }
                                         ],
@@ -616,25 +616,25 @@
                                            {
                                                "method":  "GET",
                                                "endpoint":  "/api/v1/collaborations",
-                                               "file":  "api-docs/collaboration/list.api.json",
+                                               "file":  "docs/api/contracts/collaboration/list.api.json",
                                                "auth":  "public"
                                            },
                                            {
                                                "method":  "GET",
                                                "endpoint":  "/api/v1/collaborations/pending",
-                                               "file":  "api-docs/collaboration/get.pending.api.json",
+                                               "file":  "docs/api/contracts/collaboration/get.pending.api.json",
                                                "auth":  "public"
                                            },
                                            {
                                                "method":  "GET",
                                                "endpoint":  "/api/v1/collaborations/:id",
-                                               "file":  "api-docs/collaboration/get.by-id.api.json",
+                                               "file":  "docs/api/contracts/collaboration/get.by-id.api.json",
                                                "auth":  "public"
                                            },
                                            {
                                                "method":  "DELETE",
                                                "endpoint":  "/api/v1/collaborations/:id",
-                                               "file":  "api-docs/collaboration/delete.by-id.api.json",
+                                               "file":  "docs/api/contracts/collaboration/delete.by-id.api.json",
                                                "auth":  "public"
                                            }
                                        ],
@@ -642,13 +642,13 @@
                                        {
                                            "method":  "GET",
                                            "endpoint":  "/api/v1/dashboard/summary",
-                                           "file":  "api-docs/dashboard/get.summary.api.json",
+                                           "file":  "docs/api/contracts/dashboard/get.summary.api.json",
                                            "auth":  "bearer"
                                        },
                                        {
                                            "method":  "GET",
                                            "endpoint":  "/api/v1/dashboard/cashflow",
-                                           "file":  "api-docs/dashboard/get.cashflow.api.json",
+                                           "file":  "docs/api/contracts/dashboard/get.cashflow.api.json",
                                            "auth":  "bearer"
                                        }
                                    ],
@@ -656,43 +656,43 @@
                                      {
                                          "method":  "POST",
                                          "endpoint":  "/api/v1/devices",
-                                         "file":  "api-docs/devices/create.api.json",
+                                         "file":  "docs/api/contracts/devices/create.api.json",
                                          "auth":  "public"
                                      },
                                      {
                                          "method":  "GET",
                                          "endpoint":  "/api/v1/devices",
-                                         "file":  "api-docs/devices/list.api.json",
+                                         "file":  "docs/api/contracts/devices/list.api.json",
                                          "auth":  "public"
                                      },
                                      {
                                          "method":  "GET",
                                          "endpoint":  "/api/v1/devices/:deviceId",
-                                         "file":  "api-docs/devices/get.by-deviceId.api.json",
+                                         "file":  "docs/api/contracts/devices/get.by-deviceId.api.json",
                                          "auth":  "public"
                                      },
                                      {
                                          "method":  "POST",
                                          "endpoint":  "/api/v1/devices/:deviceId/sync",
-                                         "file":  "api-docs/devices/post.by-deviceId.sync.api.json",
+                                         "file":  "docs/api/contracts/devices/post.by-deviceId.sync.api.json",
                                          "auth":  "public"
                                      },
                                      {
                                          "method":  "PUT",
                                          "endpoint":  "/api/v1/devices/:deviceId/tokens",
-                                         "file":  "api-docs/devices/put.by-deviceId.tokens.api.json",
+                                         "file":  "docs/api/contracts/devices/put.by-deviceId.tokens.api.json",
                                          "auth":  "public"
                                      },
                                      {
                                          "method":  "POST",
                                          "endpoint":  "/api/v1/devices/:deviceId/deactivate",
-                                         "file":  "api-docs/devices/post.by-deviceId.deactivate.api.json",
+                                         "file":  "docs/api/contracts/devices/post.by-deviceId.deactivate.api.json",
                                          "auth":  "public"
                                      },
                                      {
                                          "method":  "DELETE",
                                          "endpoint":  "/api/v1/devices/:deviceId",
-                                         "file":  "api-docs/devices/delete.by-deviceId.api.json",
+                                         "file":  "docs/api/contracts/devices/delete.by-deviceId.api.json",
                                          "auth":  "public"
                                      }
                                  ],
@@ -700,43 +700,43 @@
                                      {
                                          "method":  "GET",
                                          "endpoint":  "/api/v1/friends",
-                                         "file":  "api-docs/friends/list.api.json",
+                                         "file":  "docs/api/contracts/friends/list.api.json",
                                          "auth":  "public"
                                      },
                                      {
                                          "method":  "POST",
                                          "endpoint":  "/api/v1/friends",
-                                         "file":  "api-docs/friends/create.api.json",
+                                         "file":  "docs/api/contracts/friends/create.api.json",
                                          "auth":  "public"
                                      },
                                      {
                                          "method":  "POST",
                                          "endpoint":  "/api/v1/friends/bulk",
-                                         "file":  "api-docs/friends/post.bulk.api.json",
+                                         "file":  "docs/api/contracts/friends/post.bulk.api.json",
                                          "auth":  "public"
                                      },
                                      {
                                          "method":  "POST",
                                          "endpoint":  "/api/v1/friends/import",
-                                         "file":  "api-docs/friends/post.import.api.json",
+                                         "file":  "docs/api/contracts/friends/post.import.api.json",
                                          "auth":  "public"
                                      },
                                      {
                                          "method":  "GET",
                                          "endpoint":  "/api/v1/friends/:id",
-                                         "file":  "api-docs/friends/get.by-id.api.json",
+                                         "file":  "docs/api/contracts/friends/get.by-id.api.json",
                                          "auth":  "public"
                                      },
                                      {
                                          "method":  "PUT",
                                          "endpoint":  "/api/v1/friends/:id",
-                                         "file":  "api-docs/friends/put.by-id.api.json",
+                                         "file":  "docs/api/contracts/friends/put.by-id.api.json",
                                          "auth":  "public"
                                      },
                                      {
                                          "method":  "DELETE",
                                          "endpoint":  "/api/v1/friends/:id",
-                                         "file":  "api-docs/friends/delete.by-id.api.json",
+                                         "file":  "docs/api/contracts/friends/delete.by-id.api.json",
                                          "auth":  "public"
                                      }
                                  ],
@@ -744,49 +744,49 @@
                                    {
                                        "method":  "GET",
                                        "endpoint":  "/api/v1/goals",
-                                       "file":  "api-docs/goals/list.api.json",
+                                       "file":  "docs/api/contracts/goals/list.api.json",
                                        "auth":  "public"
                                    },
                                    {
                                        "method":  "POST",
                                        "endpoint":  "/api/v1/goals",
-                                       "file":  "api-docs/goals/create.api.json",
+                                       "file":  "docs/api/contracts/goals/create.api.json",
                                        "auth":  "public"
                                    },
                                    {
                                        "method":  "GET",
                                        "endpoint":  "/api/v1/goals/:id",
-                                       "file":  "api-docs/goals/get.by-id.api.json",
+                                       "file":  "docs/api/contracts/goals/get.by-id.api.json",
                                        "auth":  "public"
                                    },
                                    {
                                        "method":  "PUT",
                                        "endpoint":  "/api/v1/goals/:id",
-                                       "file":  "api-docs/goals/put.by-id.api.json",
+                                       "file":  "docs/api/contracts/goals/put.by-id.api.json",
                                        "auth":  "public"
                                    },
                                    {
                                        "method":  "DELETE",
                                        "endpoint":  "/api/v1/goals/:id",
-                                       "file":  "api-docs/goals/delete.by-id.api.json",
+                                       "file":  "docs/api/contracts/goals/delete.by-id.api.json",
                                        "auth":  "public"
                                    },
                                    {
                                        "method":  "GET",
                                        "endpoint":  "/api/v1/goals/:id/members",
-                                       "file":  "api-docs/goals/get.by-id.members.api.json",
+                                       "file":  "docs/api/contracts/goals/get.by-id.members.api.json",
                                        "auth":  "public"
                                    },
                                    {
                                        "method":  "POST",
                                        "endpoint":  "/api/v1/goals/:id/members",
-                                       "file":  "api-docs/goals/post.by-id.members.api.json",
+                                       "file":  "docs/api/contracts/goals/post.by-id.members.api.json",
                                        "auth":  "public"
                                    },
                                    {
                                        "method":  "DELETE",
                                        "endpoint":  "/api/v1/goals/:id/members/:memberId",
-                                       "file":  "api-docs/goals/delete.by-id.members.by-memberId.api.json",
+                                       "file":  "docs/api/contracts/goals/delete.by-id.members.by-memberId.api.json",
                                        "auth":  "public"
                                    }
                                ],
@@ -794,31 +794,31 @@
                                   {
                                       "method":  "GET",
                                       "endpoint":  "/api/v1/gold",
-                                      "file":  "api-docs/gold/list.api.json",
+                                      "file":  "docs/api/contracts/gold/list.api.json",
                                       "auth":  "public"
                                   },
                                   {
                                       "method":  "POST",
                                       "endpoint":  "/api/v1/gold",
-                                      "file":  "api-docs/gold/create.api.json",
+                                      "file":  "docs/api/contracts/gold/create.api.json",
                                       "auth":  "public"
                                   },
                                   {
                                       "method":  "GET",
                                       "endpoint":  "/api/v1/gold/:id",
-                                      "file":  "api-docs/gold/get.by-id.api.json",
+                                      "file":  "docs/api/contracts/gold/get.by-id.api.json",
                                       "auth":  "public"
                                   },
                                   {
                                       "method":  "PUT",
                                       "endpoint":  "/api/v1/gold/:id",
-                                      "file":  "api-docs/gold/put.by-id.api.json",
+                                      "file":  "docs/api/contracts/gold/put.by-id.api.json",
                                       "auth":  "public"
                                   },
                                   {
                                       "method":  "DELETE",
                                       "endpoint":  "/api/v1/gold/:id",
-                                      "file":  "api-docs/gold/delete.by-id.api.json",
+                                      "file":  "docs/api/contracts/gold/delete.by-id.api.json",
                                       "auth":  "public"
                                   }
                               ],
@@ -826,43 +826,43 @@
                                     {
                                         "method":  "GET",
                                         "endpoint":  "/api/v1/groups",
-                                        "file":  "api-docs/groups/list.api.json",
+                                        "file":  "docs/api/contracts/groups/list.api.json",
                                         "auth":  "public"
                                     },
                                     {
                                         "method":  "POST",
                                         "endpoint":  "/api/v1/groups/repair-all-members",
-                                        "file":  "api-docs/groups/post.repair-all-members.api.json",
+                                        "file":  "docs/api/contracts/groups/post.repair-all-members.api.json",
                                         "auth":  "public"
                                     },
                                     {
                                         "method":  "POST",
                                         "endpoint":  "/api/v1/groups",
-                                        "file":  "api-docs/groups/create.api.json",
+                                        "file":  "docs/api/contracts/groups/create.api.json",
                                         "auth":  "public"
                                     },
                                     {
                                         "method":  "GET",
                                         "endpoint":  "/api/v1/groups/:id",
-                                        "file":  "api-docs/groups/get.by-id.api.json",
+                                        "file":  "docs/api/contracts/groups/get.by-id.api.json",
                                         "auth":  "public"
                                     },
                                     {
                                         "method":  "PUT",
                                         "endpoint":  "/api/v1/groups/:id",
-                                        "file":  "api-docs/groups/put.by-id.api.json",
+                                        "file":  "docs/api/contracts/groups/put.by-id.api.json",
                                         "auth":  "public"
                                     },
                                     {
                                         "method":  "POST",
                                         "endpoint":  "/api/v1/groups/:id/repair-members",
-                                        "file":  "api-docs/groups/post.by-id.repair-members.api.json",
+                                        "file":  "docs/api/contracts/groups/post.by-id.repair-members.api.json",
                                         "auth":  "public"
                                     },
                                     {
                                         "method":  "DELETE",
                                         "endpoint":  "/api/v1/groups/:id",
-                                        "file":  "api-docs/groups/delete.by-id.api.json",
+                                        "file":  "docs/api/contracts/groups/delete.by-id.api.json",
                                         "auth":  "public"
                                     }
                                 ],
@@ -870,19 +870,19 @@
                                     {
                                         "method":  "POST",
                                         "endpoint":  "/api/v1/import/upload",
-                                        "file":  "api-docs/import/post.upload.api.json",
+                                        "file":  "docs/api/contracts/import/post.upload.api.json",
                                         "auth":  "bearer"
                                     },
                                     {
                                         "method":  "POST",
                                         "endpoint":  "/api/v1/import/confirm",
-                                        "file":  "api-docs/import/post.confirm.api.json",
+                                        "file":  "docs/api/contracts/import/post.confirm.api.json",
                                         "auth":  "bearer"
                                     },
                                     {
                                         "method":  "GET",
                                         "endpoint":  "/api/v1/import/:sessionId",
-                                        "file":  "api-docs/import/get.by-sessionId.api.json",
+                                        "file":  "docs/api/contracts/import/get.by-sessionId.api.json",
                                         "auth":  "bearer"
                                     }
                                 ],
@@ -890,31 +890,31 @@
                                          {
                                              "method":  "GET",
                                              "endpoint":  "/api/v1/investments",
-                                             "file":  "api-docs/investments/list.api.json",
+                                             "file":  "docs/api/contracts/investments/list.api.json",
                                              "auth":  "public"
                                          },
                                          {
                                              "method":  "GET",
                                              "endpoint":  "/api/v1/investments/:id",
-                                             "file":  "api-docs/investments/get.by-id.api.json",
+                                             "file":  "docs/api/contracts/investments/get.by-id.api.json",
                                              "auth":  "public"
                                          },
                                          {
                                              "method":  "POST",
                                              "endpoint":  "/api/v1/investments",
-                                             "file":  "api-docs/investments/create.api.json",
+                                             "file":  "docs/api/contracts/investments/create.api.json",
                                              "auth":  "public"
                                          },
                                          {
                                              "method":  "PUT",
                                              "endpoint":  "/api/v1/investments/:id",
-                                             "file":  "api-docs/investments/put.by-id.api.json",
+                                             "file":  "docs/api/contracts/investments/put.by-id.api.json",
                                              "auth":  "public"
                                          },
                                          {
                                              "method":  "DELETE",
                                              "endpoint":  "/api/v1/investments/:id",
-                                             "file":  "api-docs/investments/delete.by-id.api.json",
+                                             "file":  "docs/api/contracts/investments/delete.by-id.api.json",
                                              "auth":  "public"
                                          }
                                      ],
@@ -922,37 +922,37 @@
                                    {
                                        "method":  "GET",
                                        "endpoint":  "/api/v1/loans",
-                                       "file":  "api-docs/loans/list.api.json",
+                                       "file":  "docs/api/contracts/loans/list.api.json",
                                        "auth":  "public"
                                    },
                                    {
                                        "method":  "POST",
                                        "endpoint":  "/api/v1/loans",
-                                       "file":  "api-docs/loans/create.api.json",
+                                       "file":  "docs/api/contracts/loans/create.api.json",
                                        "auth":  "public"
                                    },
                                    {
                                        "method":  "GET",
                                        "endpoint":  "/api/v1/loans/:id",
-                                       "file":  "api-docs/loans/get.by-id.api.json",
+                                       "file":  "docs/api/contracts/loans/get.by-id.api.json",
                                        "auth":  "public"
                                    },
                                    {
                                        "method":  "PUT",
                                        "endpoint":  "/api/v1/loans/:id",
-                                       "file":  "api-docs/loans/put.by-id.api.json",
+                                       "file":  "docs/api/contracts/loans/put.by-id.api.json",
                                        "auth":  "public"
                                    },
                                    {
                                        "method":  "DELETE",
                                        "endpoint":  "/api/v1/loans/:id",
-                                       "file":  "api-docs/loans/delete.by-id.api.json",
+                                       "file":  "docs/api/contracts/loans/delete.by-id.api.json",
                                        "auth":  "public"
                                    },
                                    {
                                        "method":  "POST",
                                        "endpoint":  "/api/v1/loans/:id/payment",
-                                       "file":  "api-docs/loans/post.by-id.payment.api.json",
+                                       "file":  "docs/api/contracts/loans/post.by-id.payment.api.json",
                                        "auth":  "public"
                                    }
                                ],
@@ -960,49 +960,49 @@
                                            {
                                                "method":  "GET",
                                                "endpoint":  "/api/v1/notifications",
-                                               "file":  "api-docs/notifications/list.api.json",
+                                               "file":  "docs/api/contracts/notifications/list.api.json",
                                                "auth":  "public"
                                            },
                                            {
                                                "method":  "GET",
                                                "endpoint":  "/api/v1/notifications/unread/count",
-                                               "file":  "api-docs/notifications/get.unread.count.api.json",
+                                               "file":  "docs/api/contracts/notifications/get.unread.count.api.json",
                                                "auth":  "public"
                                            },
                                            {
                                                "method":  "GET",
                                                "endpoint":  "/api/v1/notifications/:id",
-                                               "file":  "api-docs/notifications/get.by-id.api.json",
+                                               "file":  "docs/api/contracts/notifications/get.by-id.api.json",
                                                "auth":  "public"
                                            },
                                            {
                                                "method":  "PUT",
                                                "endpoint":  "/api/v1/notifications/:id/read",
-                                               "file":  "api-docs/notifications/put.by-id.read.api.json",
+                                               "file":  "docs/api/contracts/notifications/put.by-id.read.api.json",
                                                "auth":  "public"
                                            },
                                            {
                                                "method":  "POST",
                                                "endpoint":  "/api/v1/notifications/mark-all-read",
-                                               "file":  "api-docs/notifications/post.mark-all-read.api.json",
+                                               "file":  "docs/api/contracts/notifications/post.mark-all-read.api.json",
                                                "auth":  "public"
                                            },
                                            {
                                                "method":  "DELETE",
                                                "endpoint":  "/api/v1/notifications/:id",
-                                               "file":  "api-docs/notifications/delete.by-id.api.json",
+                                               "file":  "docs/api/contracts/notifications/delete.by-id.api.json",
                                                "auth":  "public"
                                            },
                                            {
                                                "method":  "DELETE",
                                                "endpoint":  "/api/v1/notifications",
-                                               "file":  "api-docs/notifications/delete.api.json",
+                                               "file":  "docs/api/contracts/notifications/delete.api.json",
                                                "auth":  "public"
                                            },
                                            {
                                                "method":  "POST",
                                                "endpoint":  "/api/v1/notifications/send",
-                                               "file":  "api-docs/notifications/post.send.api.json",
+                                               "file":  "docs/api/contracts/notifications/post.send.api.json",
                                                "auth":  "bearer"
                                            }
                                        ],
@@ -1010,13 +1010,13 @@
                                  {
                                      "method":  "POST",
                                      "endpoint":  "/api/v1/otp/send",
-                                     "file":  "api-docs/otp/post.send.api.json",
+                                     "file":  "docs/api/contracts/otp/post.send.api.json",
                                      "auth":  "bearer"
                                  },
                                  {
                                      "method":  "POST",
                                      "endpoint":  "/api/v1/otp/verify",
-                                     "file":  "api-docs/otp/post.verify.api.json",
+                                     "file":  "docs/api/contracts/otp/post.verify.api.json",
                                      "auth":  "bearer"
                                  }
                              ],
@@ -1024,43 +1024,43 @@
                                       {
                                           "method":  "POST",
                                           "endpoint":  "/api/v1/payments/webhook",
-                                          "file":  "api-docs/payments/post.webhook.api.json",
+                                          "file":  "docs/api/contracts/payments/post.webhook.api.json",
                                           "auth":  "public"
                                       },
                                       {
                                           "method":  "GET",
                                           "endpoint":  "/api/v1/payments",
-                                          "file":  "api-docs/payments/list.api.json",
+                                          "file":  "docs/api/contracts/payments/list.api.json",
                                           "auth":  "public"
                                       },
                                       {
                                           "method":  "GET",
                                           "endpoint":  "/api/v1/payments/:id",
-                                          "file":  "api-docs/payments/get.by-id.api.json",
+                                          "file":  "docs/api/contracts/payments/get.by-id.api.json",
                                           "auth":  "public"
                                       },
                                       {
                                           "method":  "POST",
                                           "endpoint":  "/api/v1/payments/initiate",
-                                          "file":  "api-docs/payments/post.initiate.api.json",
+                                          "file":  "docs/api/contracts/payments/post.initiate.api.json",
                                           "auth":  "public"
                                       },
                                       {
                                           "method":  "POST",
                                           "endpoint":  "/api/v1/payments/complete",
-                                          "file":  "api-docs/payments/post.complete.api.json",
+                                          "file":  "docs/api/contracts/payments/post.complete.api.json",
                                           "auth":  "public"
                                       },
                                       {
                                           "method":  "POST",
                                           "endpoint":  "/api/v1/payments/fail",
-                                          "file":  "api-docs/payments/post.fail.api.json",
+                                          "file":  "docs/api/contracts/payments/post.fail.api.json",
                                           "auth":  "public"
                                       },
                                       {
                                           "method":  "POST",
                                           "endpoint":  "/api/v1/payments/refund",
-                                          "file":  "api-docs/payments/post.refund.api.json",
+                                          "file":  "docs/api/contracts/payments/post.refund.api.json",
                                           "auth":  "public"
                                       }
                                   ],
@@ -1068,67 +1068,67 @@
                                  {
                                      "method":  "POST",
                                      "endpoint":  "/api/v1/pin/create",
-                                     "file":  "api-docs/pin/post.create.api.json",
+                                     "file":  "docs/api/contracts/pin/post.create.api.json",
                                      "auth":  "public"
                                  },
                                  {
                                      "method":  "POST",
                                      "endpoint":  "/api/v1/pin/verify",
-                                     "file":  "api-docs/pin/post.verify.api.json",
+                                     "file":  "docs/api/contracts/pin/post.verify.api.json",
                                      "auth":  "public"
                                  },
                                  {
                                      "method":  "POST",
                                      "endpoint":  "/api/v1/pin/verify-security",
-                                     "file":  "api-docs/pin/post.verify-security.api.json",
+                                     "file":  "docs/api/contracts/pin/post.verify-security.api.json",
                                      "auth":  "public"
                                  },
                                  {
                                      "method":  "POST",
                                      "endpoint":  "/api/v1/pin/update",
-                                     "file":  "api-docs/pin/post.update.api.json",
+                                     "file":  "docs/api/contracts/pin/post.update.api.json",
                                      "auth":  "public"
                                  },
                                  {
                                      "method":  "GET",
                                      "endpoint":  "/api/v1/pin/status",
-                                     "file":  "api-docs/pin/get.status.api.json",
+                                     "file":  "docs/api/contracts/pin/get.status.api.json",
                                      "auth":  "public"
                                  },
                                  {
                                      "method":  "GET",
                                      "endpoint":  "/api/v1/pin/key-backup",
-                                     "file":  "api-docs/pin/get.key-backup.api.json",
+                                     "file":  "docs/api/contracts/pin/get.key-backup.api.json",
                                      "auth":  "public"
                                  },
                                  {
                                      "method":  "POST",
                                      "endpoint":  "/api/v1/pin/key-backup",
-                                     "file":  "api-docs/pin/post.key-backup.api.json",
+                                     "file":  "docs/api/contracts/pin/post.key-backup.api.json",
                                      "auth":  "public"
                                  },
                                  {
                                      "method":  "DELETE",
                                      "endpoint":  "/api/v1/pin/key-backup",
-                                     "file":  "api-docs/pin/delete.key-backup.api.json",
+                                     "file":  "docs/api/contracts/pin/delete.key-backup.api.json",
                                      "auth":  "public"
                                  },
                                  {
                                      "method":  "GET",
                                      "endpoint":  "/api/v1/pin/expiring-soon",
-                                     "file":  "api-docs/pin/get.expiring-soon.api.json",
+                                     "file":  "docs/api/contracts/pin/get.expiring-soon.api.json",
                                      "auth":  "public"
                                  },
                                  {
                                      "method":  "POST",
                                      "endpoint":  "/api/v1/pin/reset",
-                                     "file":  "api-docs/pin/post.reset.api.json",
+                                     "file":  "docs/api/contracts/pin/post.reset.api.json",
                                      "auth":  "public"
                                  },
                                  {
                                      "method":  "POST",
                                      "endpoint":  "/api/v1/pin/self-reset",
-                                     "file":  "api-docs/pin/post.self-reset.api.json",
+                                     "file":  "docs/api/contracts/pin/post.self-reset.api.json",
                                      "auth":  "public"
                                  }
                              ],
@@ -1136,19 +1136,19 @@
                                       {
                                           "method":  "POST",
                                           "endpoint":  "/api/v1/receipts/start",
-                                          "file":  "api-docs/receipts/post.start.api.json",
+                                          "file":  "docs/api/contracts/receipts/post.start.api.json",
                                           "auth":  "public"
                                       },
                                       {
                                           "method":  "GET",
                                           "endpoint":  "/api/v1/receipts/status/:jobId",
-                                          "file":  "api-docs/receipts/get.status.by-jobId.api.json",
+                                          "file":  "docs/api/contracts/receipts/get.status.by-jobId.api.json",
                                           "auth":  "public"
                                       },
                                       {
                                           "method":  "POST",
                                           "endpoint":  "/api/v1/receipts/scan",
-                                          "file":  "api-docs/receipts/post.scan.api.json",
+                                          "file":  "docs/api/contracts/receipts/post.scan.api.json",
                                           "auth":  "public"
                                       }
                                   ],
@@ -1156,37 +1156,37 @@
                                        {
                                            "method":  "GET",
                                            "endpoint":  "/api/v1/recurring",
-                                           "file":  "api-docs/recurring/list.api.json",
+                                           "file":  "docs/api/contracts/recurring/list.api.json",
                                            "auth":  "public"
                                        },
                                        {
                                            "method":  "POST",
                                            "endpoint":  "/api/v1/recurring",
-                                           "file":  "api-docs/recurring/create.api.json",
+                                           "file":  "docs/api/contracts/recurring/create.api.json",
                                            "auth":  "public"
                                        },
                                        {
                                            "method":  "GET",
                                            "endpoint":  "/api/v1/recurring/:id",
-                                           "file":  "api-docs/recurring/get.by-id.api.json",
+                                           "file":  "docs/api/contracts/recurring/get.by-id.api.json",
                                            "auth":  "public"
                                        },
                                        {
                                            "method":  "PUT",
                                            "endpoint":  "/api/v1/recurring/:id",
-                                           "file":  "api-docs/recurring/put.by-id.api.json",
+                                           "file":  "docs/api/contracts/recurring/put.by-id.api.json",
                                            "auth":  "public"
                                        },
                                        {
                                            "method":  "DELETE",
                                            "endpoint":  "/api/v1/recurring/:id",
-                                           "file":  "api-docs/recurring/delete.by-id.api.json",
+                                           "file":  "docs/api/contracts/recurring/delete.by-id.api.json",
                                            "auth":  "public"
                                        },
                                        {
                                            "method":  "PATCH",
                                            "endpoint":  "/api/v1/recurring/:id/toggle",
-                                           "file":  "api-docs/recurring/patch.by-id.toggle.api.json",
+                                           "file":  "docs/api/contracts/recurring/patch.by-id.toggle.api.json",
                                            "auth":  "public"
                                        }
                                    ],
@@ -1194,37 +1194,37 @@
                                       {
                                           "method":  "GET",
                                           "endpoint":  "/api/v1/sessions/:id",
-                                          "file":  "api-docs/sessions/get.by-id.api.json",
+                                          "file":  "docs/api/contracts/sessions/get.by-id.api.json",
                                           "auth":  "public"
                                       },
                                       {
                                           "method":  "POST",
                                           "endpoint":  "/api/v1/sessions/:id/messages",
-                                          "file":  "api-docs/sessions/post.by-id.messages.api.json",
+                                          "file":  "docs/api/contracts/sessions/post.by-id.messages.api.json",
                                           "auth":  "public"
                                       },
                                       {
                                           "method":  "GET",
                                           "endpoint":  "/api/v1/sessions/:id/messages",
-                                          "file":  "api-docs/sessions/get.by-id.messages.api.json",
+                                          "file":  "docs/api/contracts/sessions/get.by-id.messages.api.json",
                                           "auth":  "public"
                                       },
                                       {
                                           "method":  "POST",
                                           "endpoint":  "/api/v1/sessions/:id/start",
-                                          "file":  "api-docs/sessions/post.by-id.start.api.json",
+                                          "file":  "docs/api/contracts/sessions/post.by-id.start.api.json",
                                           "auth":  "public"
                                       },
                                       {
                                           "method":  "POST",
                                           "endpoint":  "/api/v1/sessions/:id/complete",
-                                          "file":  "api-docs/sessions/post.by-id.complete.api.json",
+                                          "file":  "docs/api/contracts/sessions/post.by-id.complete.api.json",
                                           "auth":  "public"
                                       },
                                       {
                                           "method":  "POST",
                                           "endpoint":  "/api/v1/sessions/:id/cancel",
-                                          "file":  "api-docs/sessions/post.by-id.cancel.api.json",
+                                          "file":  "docs/api/contracts/sessions/post.by-id.cancel.api.json",
                                           "auth":  "public"
                                       }
                                   ],
@@ -1232,13 +1232,13 @@
                                       {
                                           "method":  "GET",
                                           "endpoint":  "/api/v1/settings",
-                                          "file":  "api-docs/settings/list.api.json",
+                                          "file":  "docs/api/contracts/settings/list.api.json",
                                           "auth":  "public"
                                       },
                                       {
                                           "method":  "PUT",
                                           "endpoint":  "/api/v1/settings",
-                                          "file":  "api-docs/settings/update.api.json",
+                                          "file":  "docs/api/contracts/settings/update.api.json",
                                           "auth":  "public"
                                       }
                                   ],
@@ -1246,25 +1246,25 @@
                                     {
                                         "method":  "GET",
                                         "endpoint":  "/api/v1/stocks/markets",
-                                        "file":  "api-docs/stocks/get.markets.api.json",
+                                        "file":  "docs/api/contracts/stocks/get.markets.api.json",
                                         "auth":  "public"
                                     },
                                     {
                                         "method":  "GET",
                                         "endpoint":  "/api/v1/stocks/search",
-                                        "file":  "api-docs/stocks/get.search.api.json",
+                                        "file":  "docs/api/contracts/stocks/get.search.api.json",
                                         "auth":  "public"
                                     },
                                     {
                                         "method":  "GET",
                                         "endpoint":  "/api/v1/stocks/stock",
-                                        "file":  "api-docs/stocks/get.stock.api.json",
+                                        "file":  "docs/api/contracts/stocks/get.stock.api.json",
                                         "auth":  "public"
                                     },
                                     {
                                         "method":  "GET",
                                         "endpoint":  "/api/v1/stocks/batch",
-                                        "file":  "api-docs/stocks/get.batch.api.json",
+                                        "file":  "docs/api/contracts/stocks/get.batch.api.json",
                                         "auth":  "public"
                                     }
                                 ],
@@ -1272,31 +1272,31 @@
                                   {
                                       "method":  "POST",
                                       "endpoint":  "/api/v1/sync/pull",
-                                      "file":  "api-docs/sync/post.pull.api.json",
+                                      "file":  "docs/api/contracts/sync/post.pull.api.json",
                                       "auth":  "public"
                                   },
                                   {
                                       "method":  "POST",
                                       "endpoint":  "/api/v1/sync/push",
-                                      "file":  "api-docs/sync/post.push.api.json",
+                                      "file":  "docs/api/contracts/sync/post.push.api.json",
                                       "auth":  "public"
                                   },
                                   {
                                       "method":  "POST",
                                       "endpoint":  "/api/v1/sync/register-device",
-                                      "file":  "api-docs/sync/post.register-device.api.json",
+                                      "file":  "docs/api/contracts/sync/post.register-device.api.json",
                                       "auth":  "public"
                                   },
                                   {
                                       "method":  "GET",
                                       "endpoint":  "/api/v1/sync/devices",
-                                      "file":  "api-docs/sync/get.devices.api.json",
+                                      "file":  "docs/api/contracts/sync/get.devices.api.json",
                                       "auth":  "public"
                                   },
                                   {
                                       "method":  "POST",
                                       "endpoint":  "/api/v1/sync/deactivate-device",
-                                      "file":  "api-docs/sync/post.deactivate-device.api.json",
+                                      "file":  "docs/api/contracts/sync/post.deactivate-device.api.json",
                                       "auth":  "public"
                                   }
                               ],
@@ -1304,31 +1304,31 @@
                                  {
                                      "method":  "GET",
                                      "endpoint":  "/api/v1/tax",
-                                     "file":  "api-docs/tax/list.api.json",
+                                     "file":  "docs/api/contracts/tax/list.api.json",
                                      "auth":  "public"
                                  },
                                  {
                                      "method":  "POST",
                                      "endpoint":  "/api/v1/tax",
-                                     "file":  "api-docs/tax/create.api.json",
+                                     "file":  "docs/api/contracts/tax/create.api.json",
                                      "auth":  "public"
                                  },
                                  {
                                      "method":  "GET",
                                      "endpoint":  "/api/v1/tax/:id",
-                                     "file":  "api-docs/tax/get.by-id.api.json",
+                                     "file":  "docs/api/contracts/tax/get.by-id.api.json",
                                      "auth":  "public"
                                  },
                                  {
                                      "method":  "PUT",
                                      "endpoint":  "/api/v1/tax/:id",
-                                     "file":  "api-docs/tax/put.by-id.api.json",
+                                     "file":  "docs/api/contracts/tax/put.by-id.api.json",
                                      "auth":  "public"
                                  },
                                  {
                                      "method":  "DELETE",
                                      "endpoint":  "/api/v1/tax/:id",
-                                     "file":  "api-docs/tax/delete.by-id.api.json",
+                                     "file":  "docs/api/contracts/tax/delete.by-id.api.json",
                                      "auth":  "public"
                                  }
                              ],
@@ -1336,103 +1336,103 @@
                                    {
                                        "method":  "GET",
                                        "endpoint":  "/api/v1/todos",
-                                       "file":  "api-docs/todos/list.api.json",
+                                       "file":  "docs/api/contracts/todos/list.api.json",
                                        "auth":  "public"
                                    },
                                    {
                                        "method":  "POST",
                                        "endpoint":  "/api/v1/todos",
-                                       "file":  "api-docs/todos/create.api.json",
+                                       "file":  "docs/api/contracts/todos/create.api.json",
                                        "auth":  "public"
                                    },
                                    {
                                        "method":  "PUT",
                                        "endpoint":  "/api/v1/todos/:id",
-                                       "file":  "api-docs/todos/put.by-id.api.json",
+                                       "file":  "docs/api/contracts/todos/put.by-id.api.json",
                                        "auth":  "public"
                                    },
                                    {
                                        "method":  "DELETE",
                                        "endpoint":  "/api/v1/todos/:id",
-                                       "file":  "api-docs/todos/delete.by-id.api.json",
+                                       "file":  "docs/api/contracts/todos/delete.by-id.api.json",
                                        "auth":  "public"
                                    },
                                    {
                                        "method":  "GET",
                                        "endpoint":  "/api/v1/todos/lists",
-                                       "file":  "api-docs/todos/get.lists.api.json",
+                                       "file":  "docs/api/contracts/todos/get.lists.api.json",
                                        "auth":  "public"
                                    },
                                    {
                                        "method":  "POST",
                                        "endpoint":  "/api/v1/todos/lists",
-                                       "file":  "api-docs/todos/post.lists.api.json",
+                                       "file":  "docs/api/contracts/todos/post.lists.api.json",
                                        "auth":  "public"
                                    },
                                    {
                                        "method":  "PUT",
                                        "endpoint":  "/api/v1/todos/lists/:id",
-                                       "file":  "api-docs/todos/put.lists.by-id.api.json",
+                                       "file":  "docs/api/contracts/todos/put.lists.by-id.api.json",
                                        "auth":  "public"
                                    },
                                    {
                                        "method":  "DELETE",
                                        "endpoint":  "/api/v1/todos/lists/:id",
-                                       "file":  "api-docs/todos/delete.lists.by-id.api.json",
+                                       "file":  "docs/api/contracts/todos/delete.lists.by-id.api.json",
                                        "auth":  "public"
                                    },
                                    {
                                        "method":  "GET",
                                        "endpoint":  "/api/v1/todos/items",
-                                       "file":  "api-docs/todos/get.items.api.json",
+                                       "file":  "docs/api/contracts/todos/get.items.api.json",
                                        "auth":  "public"
                                    },
                                    {
                                        "method":  "GET",
                                        "endpoint":  "/api/v1/todos/lists/:listId/items",
-                                       "file":  "api-docs/todos/get.lists.by-listId.items.api.json",
+                                       "file":  "docs/api/contracts/todos/get.lists.by-listId.items.api.json",
                                        "auth":  "public"
                                    },
                                    {
                                        "method":  "POST",
                                        "endpoint":  "/api/v1/todos/items",
-                                       "file":  "api-docs/todos/post.items.api.json",
+                                       "file":  "docs/api/contracts/todos/post.items.api.json",
                                        "auth":  "public"
                                    },
                                    {
                                        "method":  "PUT",
                                        "endpoint":  "/api/v1/todos/items/:id",
-                                       "file":  "api-docs/todos/put.items.by-id.api.json",
+                                       "file":  "docs/api/contracts/todos/put.items.by-id.api.json",
                                        "auth":  "public"
                                    },
                                    {
                                        "method":  "DELETE",
                                        "endpoint":  "/api/v1/todos/items/:id",
-                                       "file":  "api-docs/todos/delete.items.by-id.api.json",
+                                       "file":  "docs/api/contracts/todos/delete.items.by-id.api.json",
                                        "auth":  "public"
                                    },
                                    {
                                        "method":  "GET",
                                        "endpoint":  "/api/v1/todos/shares",
-                                       "file":  "api-docs/todos/get.shares.api.json",
+                                       "file":  "docs/api/contracts/todos/get.shares.api.json",
                                        "auth":  "public"
                                    },
                                    {
                                        "method":  "POST",
                                        "endpoint":  "/api/v1/todos/lists/:listId/share",
-                                       "file":  "api-docs/todos/post.lists.by-listId.share.api.json",
+                                       "file":  "docs/api/contracts/todos/post.lists.by-listId.share.api.json",
                                        "auth":  "public"
                                    },
                                    {
                                        "method":  "PUT",
                                        "endpoint":  "/api/v1/todos/shares/:id",
-                                       "file":  "api-docs/todos/put.shares.by-id.api.json",
+                                       "file":  "docs/api/contracts/todos/put.shares.by-id.api.json",
                                        "auth":  "public"
                                    },
                                    {
                                        "method":  "DELETE",
                                        "endpoint":  "/api/v1/todos/shares/:id",
-                                       "file":  "api-docs/todos/delete.shares.by-id.api.json",
+                                       "file":  "docs/api/contracts/todos/delete.shares.by-id.api.json",
                                        "auth":  "public"
                                    }
                                ],
@@ -1440,37 +1440,37 @@
                                           {
                                               "method":  "GET",
                                               "endpoint":  "/api/v1/transactions",
-                                              "file":  "api-docs/transactions/list.api.json",
+                                              "file":  "docs/api/contracts/transactions/list.api.json",
                                               "auth":  "public"
                                           },
                                           {
                                               "method":  "POST",
                                               "endpoint":  "/api/v1/transactions",
-                                              "file":  "api-docs/transactions/create.api.json",
+                                              "file":  "docs/api/contracts/transactions/create.api.json",
                                               "auth":  "public"
                                           },
                                           {
                                               "method":  "GET",
                                               "endpoint":  "/api/v1/transactions/:id",
-                                              "file":  "api-docs/transactions/get.by-id.api.json",
+                                              "file":  "docs/api/contracts/transactions/get.by-id.api.json",
                                               "auth":  "public"
                                           },
                                           {
                                               "method":  "PUT",
                                               "endpoint":  "/api/v1/transactions/:id",
-                                              "file":  "api-docs/transactions/put.by-id.api.json",
+                                              "file":  "docs/api/contracts/transactions/put.by-id.api.json",
                                               "auth":  "public"
                                           },
                                           {
                                               "method":  "DELETE",
                                               "endpoint":  "/api/v1/transactions/:id",
-                                              "file":  "api-docs/transactions/delete.by-id.api.json",
+                                              "file":  "docs/api/contracts/transactions/delete.by-id.api.json",
                                               "auth":  "public"
                                           },
                                           {
                                               "method":  "GET",
                                               "endpoint":  "/api/v1/transactions/account/:accountId",
-                                              "file":  "api-docs/transactions/get.account.by-accountId.api.json",
+                                              "file":  "docs/api/contracts/transactions/get.account.by-accountId.api.json",
                                               "auth":  "public"
                                           }
                                       ],
@@ -1478,19 +1478,19 @@
                                    {
                                        "method":  "POST",
                                        "endpoint":  "/api/v1/voice/process-audio",
-                                       "file":  "api-docs/voice/post.process-audio.api.json",
+                                       "file":  "docs/api/contracts/voice/post.process-audio.api.json",
                                        "auth":  "bearer"
                                    },
                                    {
                                        "method":  "POST",
                                        "endpoint":  "/api/v1/voice/process",
-                                       "file":  "api-docs/voice/post.process.api.json",
+                                       "file":  "docs/api/contracts/voice/post.process.api.json",
                                        "auth":  "bearer"
                                    },
                                    {
                                        "method":  "POST",
                                        "endpoint":  "/api/v1/voice/learn",
-                                       "file":  "api-docs/voice/post.learn.api.json",
+                                       "file":  "docs/api/contracts/voice/post.learn.api.json",
                                        "auth":  "bearer"
                                    }
                                ],
@@ -1498,7 +1498,7 @@
                                       {
                                           "method":  "POST",
                                           "endpoint":  "/api/v1/webhooks/sendgrid",
-                                          "file":  "api-docs/webhooks/post.sendgrid.api.json",
+                                          "file":  "docs/api/contracts/webhooks/post.sendgrid.api.json",
                                           "auth":  "public"
                                       }
                                   ]

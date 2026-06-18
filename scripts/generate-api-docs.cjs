@@ -15,13 +15,13 @@
  * Heuristics (best-effort, must be reviewed by humans):
  *   - HTTP method/path: regex over `router.<method>(<path>, ...)`
  *   - Auth: presence of `authMiddleware` / `requireAuth` / `requireRole`
- *           on the line Ã¢â€ â€™ "bearer"; otherwise "public".
- *   - Step-up: presence of `securityGate(` Ã¢â€ â€™ "bearer+stepUp".
- *   - Rate limit: `destructiveLimiter` Ã¢â€ â€™ "destructive (3/min)";
- *                 `authLimiter`        Ã¢â€ â€™ "auth (20/min)";
- *                 otherwise            Ã¢â€ â€™ "default".
+ *           on the line ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ "bearer"; otherwise "public".
+ *   - Step-up: presence of `securityGate(` ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ "bearer+stepUp".
+ *   - Rate limit: `destructiveLimiter` ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ "destructive (3/min)";
+ *                 `authLimiter`        ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ "auth (20/min)";
+ *                 otherwise            ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ "default".
  *   - Validation: presence of `validateBody(<Name>)` / `validateParams` /
- *                 `validateQuery` on the line Ã¢â€ â€™ reference that schema.
+ *                 `validateQuery` on the line ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ reference that schema.
  *   - Handler:    last identifier in the args list.
  */
 
@@ -32,7 +32,7 @@ const path = require('path');
 
 const repoRoot = path.resolve(__dirname, '..');
 const modulesDir = path.join(repoRoot, 'backend', 'src', 'features');
-const apiDocsDir = path.join(repoRoot, 'api-docs');
+const apiDocsDir = path.join(repoRoot, 'docs', 'api', 'contracts');
 const indexFile = path.join(repoRoot, 'backend', 'src', 'routes', 'index.ts');
 
 // ---------- 1. Build feature -> URL prefix map from routes/index.ts ----------
@@ -198,7 +198,7 @@ function buildDoc({ feature, prefix, route }) {
                 `backend/src/features/${feature}/*.validation.ts#${v}`,
               ]),
             )
-          : 'inline or none Ã¢â‚¬â€ verify',
+          : 'inline or none ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â verify',
     },
     request: {
       headers: {
@@ -294,7 +294,7 @@ function main() {
       index[feature].push({
         method: r.method,
         endpoint: `/api/v1${prefix}${r.subpath === '/' ? '' : r.subpath}`,
-        file: `api-docs/${feature}/${fileName}`,
+        file: `docs/api/contracts/${feature}/${fileName}`,
         auth: r.auth,
       });
       if (shouldSkip(target)) {

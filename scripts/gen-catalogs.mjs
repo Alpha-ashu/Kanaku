@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 // Generates browsable, in-repo catalogs:
-//   database/docs/SCHEMA.md   ← parsed from backend/prisma/schema.prisma (source of truth)
-//   database/docs/README.md   ← §4 database-visibility map
-//   api-testing/API_CATALOG.md ← aggregated from the per-module READMEs (Phase 2)
-//   api-testing/README.md     ← §7 map + live OpenAPI + import instructions
+//   platform/database/docs/SCHEMA.md   Ã¢â€ Â parsed from backend/prisma/schema.prisma (source of truth)
+//   database/docs/README.md   Ã¢â€ Â Ã‚Â§4 database-visibility map
+//   quality/api/API_CATALOG.md Ã¢â€ Â aggregated from the per-module READMEs (Phase 2)
+//   api-testing/README.md     Ã¢â€ Â Ã‚Â§7 map + live OpenAPI + import instructions
 // Run from repo root: `node scripts/gen-catalogs.mjs`
 import fs from 'node:fs';
 import path from 'node:path';
@@ -12,7 +12,7 @@ const ROOT = process.cwd();
 const SCHEMA = path.join(ROOT, 'backend/prisma/schema.prisma');
 const MODULES = path.join(ROOT, 'backend/src/modules');
 
-// ─────────────────────────── DATABASE CATALOG (§4) ───────────────────────────
+// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ DATABASE CATALOG (Ã‚Â§4) Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 const schemaSrc = fs.readFileSync(SCHEMA, 'utf8');
 const modelNames = new Set([...schemaSrc.matchAll(/^model\s+(\w+)\s*\{/gm)].map((m) => m[1]));
 const SCALAR = (t) => !modelNames.has(t.replace(/[\[\]?]/g, ''));
@@ -50,7 +50,7 @@ while ((mm = modelRe.exec(schemaSrc))) {
       fields.push({ fname, ftype, attrs: attrs.join(', ') });
     } else {
       const rel = rest.match(/@relation\(([^)]*)\)/);
-      relations.push(`\`${fname}\` → **${ftype}**${rel ? ` (${rel[1].replace(/"/g, '')})` : ''}`);
+      relations.push(`\`${fname}\` Ã¢â€ â€™ **${ftype}**${rel ? ` (${rel[1].replace(/"/g, '')})` : ''}`);
     }
   }
   models.push({ name, fields, relations, indexes });
@@ -63,7 +63,7 @@ const dbSections = models
       .map((f) => `| \`${f.fname}\` | \`${f.ftype}\` | ${f.attrs || ''} |`)
       .join('\n');
     const rel = m.relations.length ? m.relations.map((r) => `- ${r}`).join('\n') : '_None._';
-    const idx = m.indexes.length ? m.indexes.map((i) => `\`${i}\``).join(' · ') : '_None._';
+    const idx = m.indexes.length ? m.indexes.map((i) => `\`${i}\``).join(' Ã‚Â· ') : '_None._';
     return `### ${m.name}
 
 | Column | Type | Attributes |
@@ -78,12 +78,12 @@ ${rel}
   })
   .join('\n---\n\n');
 
-const dbToc = models.map((m) => `[\`${m.name}\`](#${m.name.toLowerCase()})`).join(' · ');
+const dbToc = models.map((m) => `[\`${m.name}\`](#${m.name.toLowerCase()})`).join(' Ã‚Â· ');
 
 const schemaMd = `# Database schema catalog
 
 Auto-generated from [\`backend/prisma/schema.prisma\`](../../backend/prisma/schema.prisma)
-— the **single source of truth** (PostgreSQL via Prisma). ${models.length} models.
+Ã¢â‚¬â€ the **single source of truth** (PostgreSQL via Prisma). ${models.length} models.
 
 > Regenerate with \`npm run docs:catalogs\`. Edit the Prisma schema, not this file.
 
@@ -93,8 +93,8 @@ Auto-generated from [\`backend/prisma/schema.prisma\`](../../backend/prisma/sche
 
 ${dbSections}`;
 
-fs.mkdirSync(path.join(ROOT, 'database/docs'), { recursive: true });
-fs.writeFileSync(path.join(ROOT, 'database/docs/SCHEMA.md'), schemaMd);
+fs.mkdirSync(path.join(ROOT, 'platform/database/docs'), { recursive: true });
+fs.writeFileSync(path.join(ROOT, 'platform/platform/database/docs/SCHEMA.md'), schemaMd);
 
 const dbReadme = `# database/
 
@@ -105,28 +105,28 @@ Database visibility for KANAKU (PostgreSQL via Prisma + Supabase).
 | Concern | Location |
 |---|---|
 | **Schema (source of truth)** | [\`backend/prisma/schema.prisma\`](../backend/prisma/schema.prisma) (${models.length} models) |
-| **Schema catalog (browsable)** | [\`docs/SCHEMA.md\`](./docs/SCHEMA.md) — generated |
+| **Schema catalog (browsable)** | [\`docs/SCHEMA.md\`](./docs/SCHEMA.md) Ã¢â‚¬â€ generated |
 | **Migrations (Prisma)** | [\`backend/prisma/migrations/\`](../backend/prisma/migrations/) |
 | **Migrations / functions (Supabase)** | [\`supabase/migrations/\`](../supabase/migrations/), [\`supabase/functions/\`](../supabase/functions/) |
 | **Legacy SQL** | \`init.sql\`, \`ai_schema.sql\`, \`supabase_schema.sql\`, \`models.js\` (here) |
 
-## §4 mapping
+## Ã‚Â§4 mapping
 
-| §4 concept | Where |
+| Ã‚Â§4 concept | Where |
 |---|---|
-| schemas/ | Prisma models → \`docs/SCHEMA.md\` (per-model tables, columns, relations, indexes) |
+| schemas/ | Prisma models Ã¢â€ â€™ \`docs/SCHEMA.md\` (per-model tables, columns, relations, indexes) |
 | migrations/ | \`backend/prisma/migrations/\`, \`supabase/migrations/\` |
 | functions/ / triggers/ | \`supabase/functions/\`; triggers in SQL migrations (e.g. balance trigger on Account) |
-| policies/ (RLS) | Supabase RLS — see [[security]] / Phase 8 Supabase review |
+| policies/ (RLS) | Supabase RLS Ã¢â‚¬â€ see [[security]] / Phase 8 Supabase review |
 | seeds/ | \`backend/scripts/seed-*.cjs\` |
 | docs/ | \`docs/SCHEMA.md\` (this catalog) |
 
-**Gap:** RLS policies and DB functions/triggers are not yet centrally documented here — covered in the Phase 8 Supabase review.
+**Gap:** RLS policies and DB functions/triggers are not yet centrally documented here Ã¢â‚¬â€ covered in the Phase 8 Supabase review.
 `;
-fs.writeFileSync(path.join(ROOT, 'database/docs/README.md'), dbReadme);
+fs.writeFileSync(path.join(ROOT, 'platform/database/docs/README.md'), dbReadme);
 
-// ─────────────────────────── API CATALOG (§7) ────────────────────────────────
-// Aggregate the per-module READMEs (Phase 2) — single source for endpoints.
+// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ API CATALOG (Ã‚Â§7) Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
+// Aggregate the per-module READMEs (Phase 2) Ã¢â‚¬â€ single source for endpoints.
 const moduleDirs = fs
   .readdirSync(MODULES, { withFileTypes: true })
   .filter((e) => e.isDirectory())
@@ -146,13 +146,13 @@ for (const mod of moduleDirs) {
   totalEndpoints += rows.length;
   if (!rows.length) continue;
   apiSections.push(
-    `### \`${mod}\` — \`${base}\`\n\n${purpose}\n\n| Method | Path | Guards | Handler |\n|---|---|---|---|\n${rows.join('\n')}\n`
+    `### \`${mod}\` Ã¢â‚¬â€ \`${base}\`\n\n${purpose}\n\n| Method | Path | Guards | Handler |\n|---|---|---|---|\n${rows.join('\n')}\n`
   );
 }
 
 const apiCatalog = `# API catalog
 
-All HTTP endpoints, by feature module — aggregated from the per-module READMEs
+All HTTP endpoints, by feature module Ã¢â‚¬â€ aggregated from the per-module READMEs
 (\`backend/src/modules/*/README.md\`). **${totalEndpoints} endpoints** across
 ${apiSections.length} modules. Base prefix: \`/api/v1\`.
 
@@ -163,8 +163,8 @@ ${apiSections.length} modules. Base prefix: \`/api/v1\`.
 
 ${apiSections.join('\n---\n\n')}`;
 
-fs.mkdirSync(path.join(ROOT, 'api-testing'), { recursive: true });
-fs.writeFileSync(path.join(ROOT, 'api-testing/API_CATALOG.md'), apiCatalog);
+fs.mkdirSync(path.join(ROOT, 'quality/api'), { recursive: true });
+fs.writeFileSync(path.join(ROOT, 'quality/api/API_CATALOG.md'), apiCatalog);
 
 const apiReadme = `# api-testing/
 
@@ -174,22 +174,22 @@ Centralized API visibility for KANAKU.
 
 | File | What |
 |---|---|
-| [\`API_CATALOG.md\`](./API_CATALOG.md) | Every endpoint by feature (method, path, guards, handler) — generated |
+| [\`API_CATALOG.md\`](./API_CATALOG.md) | Every endpoint by feature (method, path, guards, handler) Ã¢â‚¬â€ generated |
 
 ## Live, machine-readable spec
 
 The backend serves an OpenAPI document and a testing guide (generated from the
-running app — always current):
+running app Ã¢â‚¬â€ always current):
 
-- \`GET /api-docs/openapi.json\` — OpenAPI 3 spec
-- \`GET /api-docs/testing-guide\` — Markdown testing guide
-- \`GET /api-docs\` — index
+- \`GET /api-docs/openapi.json\` Ã¢â‚¬â€ OpenAPI 3 spec
+- \`GET /api-docs/testing-guide\` Ã¢â‚¬â€ Markdown testing guide
+- \`GET /api-docs\` Ã¢â‚¬â€ index
 
 Source: [\`backend/src/docs/api-docs.ts\`](../backend/src/docs/api-docs.ts).
 
 ## Import into a client
 
-- **Postman / Insomnia / Bruno:** Import → URL → \`https://<host>/api-docs/openapi.json\`
+- **Postman / Insomnia / Bruno:** Import Ã¢â€ â€™ URL Ã¢â€ â€™ \`https://<host>/api-docs/openapi.json\`
   (or \`http://localhost:3000/api-docs/openapi.json\` in dev).
 - **Swagger UI:** point it at the same \`openapi.json\`.
 
@@ -204,11 +204,11 @@ refresh token in the \`x-refresh-token\` header). See
 
 \`\`\`
 api-testing/
-├── API_CATALOG.md
-├── collections/        # exported Postman/Bruno/Insomnia collections
-└── <feature>/          # per-feature saved requests (accounts, transactions, …)
+Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ API_CATALOG.md
+Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ collections/        # exported Postman/Bruno/Insomnia collections
+Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ <feature>/          # per-feature saved requests (accounts, transactions, Ã¢â‚¬Â¦)
 \`\`\`
 `;
-fs.writeFileSync(path.join(ROOT, 'api-testing/README.md'), apiReadme);
+fs.writeFileSync(path.join(ROOT, 'quality/api/README.md'), apiReadme);
 
-console.log(`Generated database/docs/SCHEMA.md (${models.length} models) + README, and api-testing/API_CATALOG.md (${totalEndpoints} endpoints) + README.`);
+console.log(`Generated platform/database/docs/SCHEMA.md (${models.length} models) + README, and quality/api/API_CATALOG.md (${totalEndpoints} endpoints) + README.`);

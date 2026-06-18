@@ -7,25 +7,32 @@ KANAKUis a full-stack finance app with a React frontend, an Express/Prisma backe
 
 ## Repo map
 
-> 🏛️ **New: see [`ARCHITECTURE_RESTRUCTURE.md`](./ARCHITECTURE_RESTRUCTURE.md) for the enterprise architecture, feature-mapping, governance rules, and migration phases.**
+> 🏛️ **See [`ARCHITECTURE_RESTRUCTURE.md`](./ARCHITECTURE_RESTRUCTURE.md) for the full enterprise architecture, feature map, governance rules, and migration phases.**
 
-- [`frontend/`](./frontend/README.md): React app, IndexedDB/Dexie layer, scanners, importers, voice flow, and UI
-- [`backend/`](./backend/README.md): Express API, auth, sync, Prisma models, sockets, and security middleware
-- [`database/`](./database/README.md): raw SQL schemas and direct DB helper scripts
-- [`api/`](./api/README.md): lightweight serverless endpoints
-- [`api-docs/`](./api-docs/README.md): **machine-readable API contracts** — one JSON per endpoint
-- [`platform/`](./platform/README.md): **system-services hub** — security, shared, database/supabase/config indexes
-- [`quality/`](./quality/README.md): **unified testing hub** — manual, automation, api, database, performance
-- [`tools/`](./tools/README.md): ad-hoc developer tooling (pipeline automation stays in `scripts/`)
+The repo root is organized into **11 purposeful top-level folders**:
+
+**Execution layer**
+- [`frontend/`](./frontend/README.md): React + Vite + Capacitor app (Dexie offline-first, scanners, importers, voice, UI)
+- [`backend/`](./backend/README.md): Express API organized by feature in `backend/src/features/`, Prisma, sockets, security middleware
+- [`api/`](./api/README.md): Vercel serverless endpoints (e.g. stock quotes)
+- [`android/`](./android/), [`supabase/`](./supabase/README.md): mobile build + Supabase CLI project
+
+> `frontend`/`backend`/`api` move under `apps/` via `scripts/migrate-to-apps-layout.ps1` (run in CI).
+
+**platform/ — system services**
+- [`platform/security/`](./platform/security/README.md), [`platform/shared/`](./platform/shared/README.md), [`platform/database/`](./platform/database/README.md), [`platform/config/`](./platform/config/credentials.ts) (+ Supabase)
+
+**quality/ — all testing in one place**
+- [`quality/`](./quality/README.md): `e2e/` (Playwright), `fixtures/` (+ `samples/`), `manual/`, `runners/`, `scenarios/`, `api/` (contract catalog + test cases), `automation/`, `database/`, `performance/`
+
+**docs/ — all documentation**
+- [`docs/api/`](./docs/api/README.md): human API docs + `contracts/` (238 machine-readable endpoint JSONs)
+- [`docs/architecture/FEATURE_MAP.md`](./docs/architecture/FEATURE_MAP.md): feature traceability across all layers
+- [`docs/onboarding/`](./docs/onboarding/README.md), [`docs/guidelines/`](./docs/guidelines/Guidelines.md), and the rest of [`docs/`](./docs/README.md)
+
+**Support**
+- [`scripts/`](./scripts/README.md): build/codegen/migration automation · [`tools/`](./tools/README.md): ad-hoc dev tooling
 - [`archive-unused/`](./archive-unused/README.md): **safe cleanup bucket** — never delete, always archive with `reason.md`
-- [`docs/architecture/FEATURE_MAP.md`](./docs/architecture/FEATURE_MAP.md): **feature traceability** across all layers
-- [`docs/onboarding/`](./docs/onboarding/README.md): start-here guide for new contributors
-- [`supabase/`](./supabase/README.md): Supabase migrations, edge functions, and setup notes
-- [`tests/`](./tests/README.md): fixtures, manual browser checks, runners, and scenario notes
-- [`samples/`](./samples/README.md): place for demo receipts, imports, and document examples
-- [`scripts/`](./scripts/README.md): top-level automation helpers
-- [`docs/`](./docs/README.md): project structure, env reference, testing guide, and historical implementation docs
-- [`resources/archive/frontend-experiments/`](./resources/archive/frontend-experiments/README.md): archived frontend backup files
 
 ## Current architecture
 

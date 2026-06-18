@@ -2,10 +2,10 @@
 
 This directory is the **source of truth for HTTP API contracts** between the Kanaku frontend, mobile app, and backend.
 
-- **One file per endpoint:** `api-docs/<feature>/<action>.api.json`
+- **One file per endpoint:** `docs/api/contracts/<feature>/<action>.api.json`
 - **Format:** see [`_template.api.json`](./_template.api.json)
 - **Sample:** [`auth/login.api.json`](./auth/login.api.json)
-- **All endpoints live under `/api/v1`** — see [Security Requirements](../ARCHITECTURE_RESTRUCTURE.md#7-governance-rules-must-follow--add-to-pr-checklist).
+- **All endpoints live under `/api/v1`** â€” see [Security Requirements](../ARCHITECTURE_RESTRUCTURE.md#7-governance-rules-must-follow--add-to-pr-checklist).
 
 ## Why JSON (not OpenAPI yet)?
 
@@ -21,19 +21,19 @@ Lightweight, diff-friendly, machine-readable for test generators, human-readable
 
 ## Backfill Status
 
-✅ **238 endpoints auto-generated across 36 modules** by `scripts/generate-api-docs.ps1` (or the Node twin `scripts/generate-api-docs.cjs`). See [`api-index.json`](./api-index.json) for the full machine-readable list.
+âœ… **238 endpoints auto-generated across 36 modules** by `scripts/generate-api-docs.ps1` (or the Node twin `scripts/generate-api-docs.cjs`). See [`api-index.json`](./api-index.json) for the full machine-readable list.
 
-Every auto-generated file carries a `"generator": { "auto": true, "version": 1, "generatedAt": "..." }` block. **Hand-edited files are detected** (missing `generator` field) and **never overwritten** by re-runs — the workflow is:
+Every auto-generated file carries a `"generator": { "auto": true, "version": 1, "generatedAt": "..." }` block. **Hand-edited files are detected** (missing `generator` field) and **never overwritten** by re-runs â€” the workflow is:
 
 1. Add or change a route in `backend/src/features/<feature>/*.routes.ts`.
 2. Re-run `pwsh -File scripts/generate-api-docs.ps1` (or `node scripts/generate-api-docs.cjs`).
-3. New endpoints get a stub doc with `description: "TODO: ..."` — fill in the description, request/response shapes, and `sideEffects`.
+3. New endpoints get a stub doc with `description: "TODO: ..."` â€” fill in the description, request/response shapes, and `sideEffects`.
 4. Once you hand-edit a file, **delete the `generator` field** so re-runs skip it.
 
 ### What the generator infers (best-effort)
 - HTTP method + path (regex over `router.<method>(...)`)
-- Auth: `authMiddleware`/`requireRole`/`requireApproved` → `bearer`; `securityGate(` → `bearer+stepUp`; else `public`
-- Rate limit: `destructiveLimiter` → 3/min, `authLimiter` → 20/min, else default
+- Auth: `authMiddleware`/`requireRole`/`requireApproved` â†’ `bearer`; `securityGate(` â†’ `bearer+stepUp`; else `public`
+- Rate limit: `destructiveLimiter` â†’ 3/min, `authLimiter` â†’ 20/min, else default
 - Validation schemas: looks for `validateBody`/`validateParams`/`validateQuery` on the route line
 - Handler name: last bare identifier in the route's argument list
 - Path params from `:name` segments

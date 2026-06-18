@@ -108,7 +108,7 @@ Write-Host "--- Cross-boundary code rewrites ---" -ForegroundColor Yellow
 
 # backend/apply_schema.cjs reads ../database -> becomes ../../database after move.
 # (We edit it at its CURRENT path; it moves with backend afterward.)
-Edit-File 'backend/apply_schema.cjs' "'../database/" "'../../database/"
+Edit-File 'backend/apply_schema.cjs' "'../platform/database/" "'../../platform/database/"
 
 # scripts/*.mjs that use repo-root-relative string paths into backend/frontend.
 # These run from repo root, so the string 'backend/...' / 'frontend/...' still

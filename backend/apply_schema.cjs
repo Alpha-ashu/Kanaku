@@ -18,7 +18,7 @@ async function runMigration() {
     await client.connect();
     console.log('Connected to Supabase database.');
 
-    const sqlPath = path.resolve(__dirname, '../database/supabase_schema.sql');
+    const sqlPath = path.resolve(__dirname, '../platform/database/supabase_schema.sql');
     const sqlQuery = fs.readFileSync(sqlPath, 'utf8');
 
     console.log('Executing SQL schema...');

@@ -34,5 +34,5 @@ npm run test:unit
 
 ## Notes
 
-- Historical `Investments.*.tsx` backup files and `patch.diff` were moved to [`resources/archive/frontend-experiments/`](../resources/archive/frontend-experiments/README.md).
+- Historical `Investments.*.tsx` backup files and `patch.diff` were moved to [`archive-unused/frontend/legacy-experiments/`](../archive-unused/frontend/legacy-experiments/README.md).
 - Roles and PIN state are backend-authoritative; do not reintroduce client-only privilege flags.

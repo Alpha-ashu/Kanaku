@@ -15,7 +15,7 @@
 $ErrorActionPreference = 'Stop'
 $repoRoot   = Split-Path -Parent $PSScriptRoot
 $modulesDir = Join-Path $repoRoot 'backend\src\features'
-$apiDocsDir = Join-Path $repoRoot 'api-docs'
+$apiDocsDir = Join-Path $repoRoot 'docs/api/contracts'
 $indexFile  = Join-Path $repoRoot 'backend\src\routes\index.ts'
 
 # ---------- 1. Build feature -> URL prefix map ----------
@@ -165,7 +165,7 @@ foreach ($featureDirInfo in Get-ChildItem -Path $modulesDir -Directory) {
       $index[$feature] += [ordered]@{
         method   = $method
         endpoint = $fullPath
-        file     = "api-docs/$feature/$action.api.json"
+        file     = "docs/api/contracts/$feature/$action.api.json"
         auth     = $meta.auth
       }
 
