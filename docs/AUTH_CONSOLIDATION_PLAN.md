@@ -122,10 +122,20 @@ migrated users **must keep their existing id** in Supabase.
    staging; verify a migrated user can sign in via `supabase.auth.signInWithPassword`.
 4. **Flip `AUTH_CANONICAL=supabase` on staging.** `authMiddleware` keeps accepting both
    token types (compatibility window) — no lockout.
-5. **Converge the frontend** to a single Supabase session + one refresh path: replace
-   the custom `TokenManager` + `/auth/refresh` usage with `supabase.auth` (the 63
-   existing `supabase.auth.*` call sites become the single path); retire the custom
-   401-retry-via-`/auth/refresh`.
+5. **Converge the frontend** — ✅ largely done:
+   - The API client was already **Supabase-first**: `resolveAuthToken()` reads the
+     Supabase session (custom token is only a fallback) and `refreshAccessToken()`
+     uses `supabase.auth.refreshSession()`. The custom `/auth/refresh` endpoint has
+     **no frontend callers**.
+   - The only custom-auth entry point was `AuthFlow` login/register (`api.auth.login`
+     / `api.auth.register`). These now route through Supabase `signIn`/`signUp` when
+     `VITE_AUTH_CANONICAL=supabase` (default `custom` = unchanged). `AuthContext`
+     already reacts to `onAuthStateChange` + `KANAKU_AUTH_CHANGE`, so flipping the
+     flag makes the whole app Supabase-canonical with no further wiring.
+   - **To enable Option A end-to-end:** set backend `AUTH_CANONICAL=supabase` +
+     `VITE_AUTH_CANONICAL=supabase`, migrate users, and verify login against local
+     Supabase before prod. Remaining: browser-test the full flow (login/refresh/
+     logout/PIN/sockets) with the app running on local Supabase.
 6. **Validate** the full matrix on staging (login, refresh, logout, PIN, sockets,
    role gates, RLS), then run the import on prod during a maintenance window.
 7. **Remove custom issuance** (`generateTokens`, `/auth/login|register|refresh`) and
