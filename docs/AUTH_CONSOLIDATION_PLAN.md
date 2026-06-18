@@ -132,8 +132,33 @@ migrated users **must keep their existing id** in Supabase.
    the `supabase-managed-account` sentinel once metrics show ~0 custom-token usage.
 8. **Rotate** `JWT_SECRET` + Supabase keys; finalize a single revocation story.
 
-### What I need from you to build steps 3–6
-- A **Supabase staging project** (URL + service-role + anon + JWT secret) wired to a
-  staging backend, and the **`measure:auth` output**. With those I can implement and
-  validate the import + the frontend convergence safely; without them, building it
-  blind risks a broken-login cutover.
+### Validating on the free tier (no paid staging project)
+A separate paid Supabase project is **not** required. Two safe options:
+
+1. **Local Supabase (recommended) — free, via Docker (you have Docker 28.5.1):**
+   ```
+   npx --yes supabase init      # creates supabase/config.toml (one-time)
+   npx --yes supabase start     # runs GoTrue Auth + Postgres locally
+   ```
+   Point a local backend at the printed local `DATABASE_URL` / keys, run
+   `npm --prefix backend run migrate:supabase-auth` (dry-run, then `--apply`), and
+   verify a migrated user can sign in via `supabase.auth.signInWithPassword`. This is
+   the real GoTrue schema, so it confirms the `auth.users`/`auth.identities` inserts
+   before prod.
+
+2. **Prod test-user (safe because the migration is additive + reversible):** because
+   local bcrypt login keeps working during the compatibility window, you can migrate a
+   **single throwaway account** on prod, confirm Supabase sign-in works for it, then
+   batch — and delete the test rows if anything's off. Real users are unaffected
+   until the frontend convergence + flag flip.
+
+### Migration tooling (ready, dry-run by default)
+- `backend/scripts/migrate-users-to-supabase-auth.cjs` (`npm --prefix backend run
+  migrate:supabase-auth`) — id-preserving insert into `auth.users` + `auth.identities`,
+  idempotent, additive, **dry-run unless `--apply`**. ⚠️ GoTrue's auth schema varies by
+  version — validate via option 1 or 2 before `--apply` against prod.
+
+### What I still need from you
+- The **`measure:auth` output** (migration size), and your call on validation path
+  (local Supabase vs prod test-user). Then I implement the login/frontend convergence
+  (steps 5–6) and we cut over.
