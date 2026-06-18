@@ -3,18 +3,17 @@ FROM node:22-alpine AS builder
 
 WORKDIR /app
 
-# Install root deps (has prisma CLI needed for generate) — skip postinstall
-COPY package*.json ./
+# Workspace manifests + root lockfile for a reproducible, hoisted install.
+# (npm ci validates the lockfile against every workspace package.json.)
+COPY package.json package-lock.json ./
+COPY frontend/package.json ./frontend/
+COPY backend/package.json ./backend/
 RUN npm ci --ignore-scripts
 
-# Install backend deps (has typescript for tsc)
-COPY backend/package*.json ./backend/
-RUN cd backend && npm ci --legacy-peer-deps
-
-# Copy source, generate prisma client, build
+# Copy source, generate prisma client, build backend workspace
 COPY . .
 RUN npx prisma generate --schema backend/prisma/schema.prisma
-RUN cd backend && npm run build
+RUN npm run build:backend
 
 # ── Stage 2: Production image ────────────────────────────────────────────────
 FROM node:22-alpine AS runner

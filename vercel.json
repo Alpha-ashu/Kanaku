@@ -2,7 +2,7 @@
   "version": 2,
   "name": "kanaku",
   "buildCommand": "npm run build:frontend",
-  "outputDirectory": "dist",
+  "outputDirectory": "frontend/dist",
   "regions": ["sin1"],
   "routes": [
     {

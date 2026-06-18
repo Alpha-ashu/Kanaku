@@ -1,7 +1,7 @@
 {
   "appId": "com.KANAKU.app",
   "appName": "KANAKU",
-  "webDir": "dist",
+  "webDir": "frontend/dist",
   "bundledWebRuntime": false,
   "server": {
     "androidScheme": "https"
