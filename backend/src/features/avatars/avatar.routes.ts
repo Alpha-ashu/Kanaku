@@ -1,10 +1,25 @@
 import { Router } from 'express';
 import { logger } from '../../config/logger';
+import { validateParams, validateQuery, z } from '../../middleware/validate';
 
 const router = Router();
 
 // Whitelist of allowed DiceBear avatar styles
-const ALLOWED_STYLES = new Set(['avataaars', 'micah', 'lorelei', 'big-smile', 'bottts']);
+const ALLOWED_STYLES = ['avataaars', 'micah', 'lorelei', 'big-smile', 'bottts'] as const;
+const ALLOWED_STYLES_SET = new Set<string>(ALLOWED_STYLES);
+
+// Strict schemas — reject anything that isn't an allow-listed style or a
+// printable-ASCII seed. Belt-and-braces with the manual checks below.
+const avatarParamsSchema = z.object({
+  style: z.enum(ALLOWED_STYLES),
+});
+
+const avatarQuerySchema = z.object({
+  seed: z.string()
+    .min(1, 'seed is required')
+    .max(100, 'seed too long')
+    .regex(/^[a-zA-Z0-9\-_ ]+$/, 'seed contains invalid characters'),
+});
 
 /**
  * Basic SVG XSS Sanitizer.
@@ -22,11 +37,15 @@ export function sanitizeSvg(svg: string): string {
  * GET /api/v1/avatars/dicebear/:style/svg
  * Secure proxy endpoint for fetching and sanitizing DiceBear avatars
  */
-router.get('/dicebear/:style/svg', async (req, res) => {
+router.get(
+  '/dicebear/:style/svg',
+  validateParams(avatarParamsSchema),
+  validateQuery(avatarQuerySchema),
+  async (req, res) => {
   const { style } = req.params;
   const seed = req.query.seed as string;
 
-  if (!ALLOWED_STYLES.has(style)) {
+  if (!ALLOWED_STYLES_SET.has(style)) {
     res.status(400).json({ error: 'Invalid or disallowed avatar style' });
     return;
   }

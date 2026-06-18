@@ -6,6 +6,894 @@ This document serves as the single source of truth for the project's architectur
 
 ---
 
+# 🟢 LIVING ARCHITECTURE REFERENCE — Authoritative Snapshot (2026-06-19)
+
+> **This block is the canonical context** for Kanaku. Read this section in full before reading anything below it; the older walkthroughs and phase logs that follow are kept for historical traceability only. When facts in older sections contradict this block, **this block wins**.
+
+## A. Repository Topology (Top-Level)
+
+```
+Kanaku/
+├── frontend/               React 18 + Vite + Capacitor (web + Android)
+│   └── src/
+│       ├── app/components/ Feature components (auth, core, transactions, loans, goals, …)
+│       ├── services/       API clients, sync engine, OCR/voice integration
+│       ├── lib/            Dexie schema, dexie-cloud bridge, utilities
+│       ├── contexts/       AuthContext, FeatureGateContext, ThemeContext, RealtimeContext
+│       ├── hooks/          useApi, useRealtime, useFeatureGate, useSync …
+│       ├── strategies/     Categorization, recurrence, OCR pipeline strategies
+│       └── pages/          Top-level route components
+├── backend/                Node.js + Express + TypeScript + Prisma
+│   └── src/
+│       ├── app.ts          Express middleware chain (see §F)
+│       ├── server.ts       Boot entry (HTTP + WebSocket)
+│       ├── features/<m>/   <module>.routes.ts | .controller.ts | .service.ts | .types.ts
+│       │   (aa, accounts, admin, advisors, ai, auth, avatars, bills, bookings, budgets,
+│       │    categorization, collaboration, dashboard, devices, friends, goals, gold,
+│       │    groups, import, investments, loans, notifications, otp, payments, pin,
+│       │    receipts, recurring, sessions, settings, stocks, sync, tax, todos,
+│       │    transactions, voice, webhooks)
+│       ├── routes/         Cross-cutting routers (docs, index, sync)
+│       ├── middleware/     auth, validate, rateLimit, requestId, errorHandler
+│       ├── security/       Helmet config, CORS, PIN/JWT helpers, AppError
+│       ├── cache/          Redis client (OTP, sessions, feature gates, idempotency)
+│       ├── sockets/        Socket.IO real-time channels (user-scoped)
+│       ├── workers/        Recurring transactions, AA polling, notification fan-out
+│       ├── receipt_ai/     FastAPI Python micro-service (hybrid OCR fallback)
+│       └── db/             Prisma singleton + transactional helpers
+├── api/                    Vercel serverless edge proxies (auth.ts, health.ts, stocks.ts …)
+├── platform/               Cross-cutting platform code (config, database adapters, security)
+├── quality/                Vitest / Jest / Playwright suites + fixtures
+├── android/                Capacitor Android shell (Gradle, signing config)
+├── supabase/               Local Supabase config + migrations
+├── docs/                   Skill files, runbooks, terms, audits, integrations
+└── scripts/                Operational scripts (seed, migrate, deploy preflight)
+```
+
+---
+
+## B. Authoritative Tech Stack (June 2026)
+
+### Frontend
+| Concern | Choice | Notes |
+|---|---|---|
+| Framework | **React 18.3** | Concurrent rendering, Suspense |
+| Language | **TypeScript 5.4** (`strict: true`) | `noImplicitAny`, no `any` in new code |
+| Build | **Vite 5** | ESBuild, code-splitting per route |
+| Styling | **TailwindCSS 3** + shadcn/ui + Framer Motion | |
+| Routing | **React Router 6** | Lazy routes per feature |
+| State | React Context + `useReducer` + Zustand for local stores | No Redux |
+| Local DB | **Dexie 4** (IndexedDB) + `dexie-cloud-addon` | Offline-first, schema v14 |
+| Network | `fetch` + custom `apiClient` (retry, dedupe, JWT refresh) | |
+| Realtime | **Socket.IO client** (user-scoped channels) + Supabase Realtime fallback | |
+| Mobile shell | **Capacitor 6** (Android first, iOS scaffold ready) | Native plugins: Camera, Filesystem, Preferences |
+| Charts | Recharts | |
+| Forms / validation | React Hook Form + **Zod 3** (shared schemas) | |
+| OCR client | **Tesseract.js 5** (WASM) + Gemini 1.5 Flash fallback | |
+| Voice | Web Speech API + Capacitor Speech plugin + Gemini NLP | |
+| Testing | **Vitest 1.6**, React Testing Library, Playwright 1.45 (E2E) | |
+
+### Backend
+| Concern | Choice | Notes |
+|---|---|---|
+| Runtime | **Node.js 22 LTS** | |
+| Language | **TypeScript 6** (strict) | Upgraded 2026-06-12 |
+| Framework | **Express 4** | Modular feature routers |
+| ORM | **Prisma 6.19.2** | snake_case `@map`, transactional balance writes |
+| DB | **PostgreSQL 16** | Production: Fly.io managed; dev: Docker |
+| Cache / sessions | **Redis 7** (Upstash in prod) | OTP, JWT denylist, feature-gate cache, idempotency keys |
+| Auth | **Supabase Auth** (identity) + **custom JWT** (authz) | Multi-strategy verify (see §E) |
+| Realtime | **Socket.IO 4** + Supabase Realtime | User-scoped, delta-based |
+| Validation | **Zod 3** middleware (`validate(schema)` per route) | |
+| Logging | **Winston** (structured JSON) + Morgan (HTTP) | |
+| Security | **Helmet 7**, **CORS** (allow-list), **express-rate-limit** (Redis store) | |
+| Background | BullMQ-style workers (recurring, AA polling, notifications) | |
+| AI (OCR) | **Tesseract** (text) + **Google Gemini 1.5 Flash** (semantic structuring) | wrapped in `withCircuitBreaker` |
+| AI (Voice) | Keyword segmentation + Gemini for ambiguous transcripts | |
+| Email | Resend (transactional) | |
+| SMS / OTP | MSG91 + Twilio (regional fallback) | |
+| Account Aggregator | **Setu AA** (RBI-licensed AA) | |
+| Tests | **Jest 30** + Supertest | 30/30 suites green (2026-06-11) |
+
+### Database & Persistence Layout
+| Layer | Where | Used for |
+|---|---|---|
+| **PostgreSQL** | Fly Postgres (prod), Docker (dev) | System of record for users, accounts, transactions, balances, loans, goals, investments, advisor data, audit, AA consent |
+| **Redis** | Upstash (prod), Docker (dev) | OTP TTL, refresh-token blocklist, feature-gate cache, idempotency keys, rate-limit counters |
+| **Dexie (IndexedDB)** | Browser/WebView | Local-first mirror, schema v14, `sync: 'pending' \| 'synced' \| 'conflict'` per record |
+| **Supabase Storage** | Cloud bucket | Receipt images, KYC documents, profile avatars |
+| **dexie-cloud** | Managed sync | User-scoped delta sync between devices |
+
+### API Surface
+- **All HTTP routes** are mounted under `/api/v1/<module>/...` (versioned).
+- **Edge proxies** in `api/` (Vercel) handle CORS and forward to Express on Fly.io.
+- **OpenAPI spec** generated from Zod schemas; published at `/api/v1/docs`.
+- **WebSocket namespace**: `wss://<host>/socket.io` with auth handshake via JWT.
+
+### DevOps / Hosting
+| Concern | Choice |
+|---|---|
+| FE hosting | Vercel (preview + prod) |
+| BE hosting | Fly.io (multi-region, single-region read replica) |
+| DB hosting | Fly Postgres (HA pair) |
+| Mobile | Capacitor Android build → Google Play (internal track) |
+| CI | GitHub Actions (`pr-checks.yml`, `deploy-fly.yml`, `deploy-vercel.yml`) |
+| Observability | Sentry (errors), Winston JSON → Fly logs, Vercel Analytics |
+| Secrets | Fly secrets, Vercel env, GitHub Actions secrets — **never in code** |
+
+---
+
+## C. Cross-Cutting Security & Data-Processing Posture
+
+Every request that touches user data must satisfy these guardrails (enforced in `app.ts` middleware chain and per-route):
+
+```
+helmet()                     → Strict security headers (CSP, HSTS, X-Frame-Options, …)
+cors({ allowlist })          → Only known origins (web, mobile, preview branches)
+rateLimit({ store: Redis })  → Global + per-route limits (login, OTP, OCR, AA)
+express.json({ limit: 1mb }) → Body parser with payload cap
+requestId middleware         → Correlation ID propagated to logs + downstream
+authenticate (per route)     → Multi-path JWT verify (custom → Supabase → API → dev bypass)
+validate(zodSchema)          → Every mutating route validates body/params/query
+ownership check              → `where: { id, userId: req.userId }` before any read/write
+prisma.$transaction          → Wraps any balance update + transaction insert pair
+errorHandler (last)          → AppError → consistent `{ success, error, code }` shape
+```
+
+### Data-at-rest
+- **Passwords**: Argon2id (memory-hard, server-side) — never SHA/MD5.
+- **PIN**: client-side SHA-256 + per-user salt before transmission, server stores Argon2id of that hash; lockout after 5 attempts.
+- **JWTs**: signed with `HS256` over a 256-bit secret in Fly secrets; rotated quarterly. Refresh tokens stored only in `httpOnly` `Secure` `SameSite=Strict` cookies.
+- **PII** (email, phone, DOB, PAN, Aadhaar): column-level note in Prisma comments; logging middleware redacts `req.body.password`, `req.body.pin`, `Authorization`, OTPs.
+- **AA data**: encrypted at rest with `AES-256-GCM`; per-user data-encryption-key wrapped by a KMS root key.
+
+### Data-in-transit
+- HTTPS only (HSTS preload-eligible header set).
+- Capacitor builds pin the production domain (no mixed content).
+- Socket.IO over WSS; handshake auth required.
+
+### Authorization model
+- **Roles**: `admin` > `manager` > `advisor` > `user` (numeric weight in JWT).
+- **Deny-by-default RBAC** since 2026-06-15: a feature is hidden unless the flag is explicitly enabled for the role.
+- **Feature gates** resolved at three levels: Module → Sub-feature → AI capability.
+- **Ownership** is always re-checked server-side, even when the client claims a `userId`.
+
+### Monetary integrity
+- All amounts stored as `Decimal(18,2)` in Postgres; never `float`.
+- Balance mutations always inside `prisma.$transaction` with a `SELECT ... FOR UPDATE` (Prisma `update` w/ `where: {id}` provides row-level lock).
+- Idempotency: mutating endpoints accept `Idempotency-Key` header backed by Redis (24h TTL).
+
+### Input-injection hardening (audit 2026-06-19)
+Full-repo sweep for SQL injection, XSS, and unvalidated user input. Findings + actions:
+
+| Surface | Status | Evidence |
+|---|---|---|
+| SQL injection | ✅ Impossible | Repo-wide scan for `$queryRawUnsafe`, `$executeRawUnsafe`, and `pool.query(... + ...)` returned **zero hits**. All DB access goes through Prisma's parameterized API or `$queryRaw` **tagged templates** (bind params, never concatenation). |
+| Stored / reflected XSS | ✅ No sinks | `frontend/src/**` has zero `dangerouslySetInnerHTML`, `innerHTML =`, `document.write`, or `eval(`. React JSX escaping handles all user text. |
+| HTTP headers | ✅ | Helmet with strict CSP + per-request nonces, HSTS, `frameAncestors 'none'`, `X-Powered-By` disabled, `Cross-Origin-Resource-Policy: same-origin`. |
+| CORS | ✅ | Allow-list (`isAllowedOrigin`) with explicit `methods` / `allowedHeaders` — no `*` wildcard. |
+| Rate limiting | ✅ | Global `/api/v1` + stricter per-route (`/bills`, `/receipts`, `/sync`). |
+| Global body sanitiser | ✅ | `app.ts` recursively strips `<script>`, event handlers, `data:` URIs, and HTML tags from every string in `req.body` before route handlers run. |
+| Zod route validation | ✅ 36 / 36 | All feature routers under `backend/src/features/**` now use `validateBody / validateQuery / validateParams` from `middleware/validate.ts`. Gap closed on 5 routers: `avatars`, `dashboard`, `devices`, `stocks`, `webhooks`. |
+| SendGrid webhook spoofing | ✅ Mitigated | New `verifySendGridSignature` middleware (`features/webhooks/sendgridSignature.ts`) performs ECDSA P-256 / SHA-256 verification over `timestamp + rawBody` with 10-minute replay window. Requires `SENDGRID_WEBHOOK_PUBLIC_KEY` env (fail-closed in production). |
+
+**Defense-in-depth:** every user input now traverses four protective layers before touching the database — CORS + rate limit → global sanitiser → route-level zod schema (strict shape/type/length/regex/enum) → Prisma parameterized query with ownership filter (`where: { userId }`).
+
+---
+
+## D. Universal Request Lifecycle (Sequence Diagram)
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant U as User (Web / Capacitor)
+    participant FE as React App
+    participant DX as Dexie (IndexedDB)
+    participant SW as Service Worker / API Client
+    participant VX as Vercel Edge (api/*)
+    participant EX as Express (Fly.io)
+    participant MW as Middleware Chain
+    participant SVC as Feature Service
+    participant TX as prisma.$transaction
+    participant PG as PostgreSQL
+    participant RD as Redis
+    participant WS as Socket.IO
+
+    U->>FE: Interact (e.g. Add Expense)
+    FE->>DX: Write record (sync='pending')
+    FE-->>U: Optimistic UI update
+    FE->>SW: enqueue API call
+    SW->>VX: POST /api/v1/transactions  (JWT, Idempotency-Key)
+    VX->>EX: forward
+    EX->>MW: helmet → cors → rateLimit(Redis) → json → requestId
+    MW->>MW: authenticate (JWT verify)
+    MW->>MW: validate(zodSchema)
+    MW->>SVC: controller(req)
+    SVC->>TX: begin
+    TX->>PG: INSERT transaction
+    TX->>PG: UPDATE account.balance
+    TX-->>SVC: committed
+    SVC->>RD: cache invalidate (dashboard:userId)
+    SVC->>WS: emit('tx:created', {userId, delta})
+    SVC-->>MW: { success:true, data }
+    MW-->>VX: JSON response
+    VX-->>SW: 201 Created
+    SW->>DX: mark record sync='synced', set serverId
+    WS-->>FE: realtime delta (other devices)
+    FE-->>U: confirm + update charts
+```
+
+---
+
+## E. Authentication & Session Flow
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant U as User
+    participant FE as React App
+    participant SB as Supabase Auth
+    participant EX as Express /api/v1/auth
+    participant RD as Redis
+    participant PG as PostgreSQL
+
+    U->>FE: Email + password
+    FE->>SB: signInWithPassword
+    SB-->>FE: Supabase JWT + refresh
+    FE->>EX: POST /auth/exchange (Supabase JWT)
+    EX->>EX: verify Supabase JWT (JWKS)
+    EX->>PG: upsert user, load role
+    EX->>EX: sign custom JWT (HS256, 15min) + refresh (7d)
+    EX->>RD: store refresh sid (denylist on logout)
+    EX-->>FE: { accessToken, refreshUserCookie }
+    FE->>FE: PIN setup / PIN auth (client SHA-256 + salt)
+    FE->>EX: POST /pin/verify { hashedPin }
+    EX->>PG: argon2.verify(stored, hashedPin)
+    EX-->>FE: { pinSessionToken (5min) }
+    Note over FE,EX: Subsequent requests carry Authorization: Bearer <accessToken>
+    Note over EX: Multi-strategy verify:<br/>1. Custom HS256<br/>2. Supabase JWKS<br/>3. Supabase /auth/v1/user<br/>4. Dev bypass (non-prod only)
+```
+
+---
+
+## F. Express Middleware Chain (must stay in this order)
+
+```mermaid
+flowchart LR
+    A[Request] --> B[helmet]
+    B --> C[cors allow-list]
+    C --> D[express-rate-limit / Redis]
+    D --> E[express.json 1mb]
+    E --> F[requestId]
+    F --> G[morgan / winston]
+    G --> H{Route under /api/v1/*}
+    H --> I[authenticate JWT]
+    I --> J[validate Zod]
+    J --> K[Controller]
+    K --> L[Service]
+    L --> M[prisma.$transaction]
+    M --> N[(Postgres)]
+    L --> O[(Redis cache)]
+    L --> P[Socket.IO emit]
+    K -->|next err| Q[404 handler]
+    Q --> R[errorHandler — last]
+    R --> S[JSON: success/error/code]
+```
+
+---
+
+## G. Feature-by-Feature Workflows (FE → API → Service → DB)
+
+### G.1 Sign-Up → Onboarding → PIN Setup → Home
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant FE as SignUpForm + PINSetup + Onboarding
+    participant SB as Supabase Auth
+    participant EX as /api/v1/auth, /pin, /settings
+    participant PG as PostgreSQL
+    participant RD as Redis
+
+    U->>FE: Fill sign-up form (Zod-validated)
+    FE->>SB: signUp(email, password)
+    SB-->>FE: user + session JWT
+    FE->>EX: POST /auth/exchange
+    EX->>PG: upsert user, default role='user'
+    EX-->>FE: custom JWT + refresh
+    U->>FE: 4-digit PIN (PINSetup.tsx)
+    FE->>FE: SHA-256(pin + salt)
+    FE->>EX: POST /pin/setup { hashedPin }
+    EX->>PG: argon2.hash + store pin_hash, set pin_attempts=0
+    EX-->>FE: { ok }
+    U->>FE: AppFeatureSlides → Profile setup
+    FE->>EX: PUT /settings/profile { country, currency, ... }
+    EX->>PG: profiles + user.currency
+    EX->>RD: cache profile (60s)
+    EX-->>FE: profile
+    FE->>FE: AuthContext.onboardingCompleted=true
+    FE-->>U: Home
+```
+
+### G.2 Add Transaction (Offline-First with Sync)
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant FE as AddTransaction.tsx
+    participant DX as Dexie (transactions, accounts)
+    participant API as /api/v1/transactions
+    participant SVC as transactions.service
+    participant TX as prisma.$transaction
+    participant WS as Socket.IO
+
+    U->>FE: amount, category, account, date
+    FE->>FE: Zod-validated DTO
+    FE->>DX: db.transactions.add({...,sync:'pending', clientId})
+    FE->>DX: db.accounts.update(id, balance ± amount)  // optimistic
+    FE-->>U: list shows item immediately
+    FE->>API: POST /transactions (Idempotency-Key=clientId)
+    API->>SVC: authenticate + validate + ownership
+    SVC->>TX: insert transactions; update accounts.balance
+    TX-->>SVC: committed (serverId)
+    SVC->>WS: emit('tx:created', {userId})
+    SVC-->>API: 201 { id, serverData }
+    API-->>FE: response
+    FE->>DX: update record (sync='synced', serverId)
+    Note over FE,DX: If offline → kept 'pending';<br/>SyncEngine retries with exponential backoff.
+```
+
+### G.3 Receipt OCR (Tesseract → Gemini Hybrid)
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant FE as AddTransaction (scan-receipt)
+    participant CAM as Capacitor Camera
+    participant TJS as Tesseract.js (WASM)
+    participant API as /api/v1/receipts/parse
+    participant CB as withCircuitBreaker
+    participant GEM as Gemini 1.5 Flash
+    participant PY as receipt_ai (FastAPI)
+    participant PG as PostgreSQL
+    participant SB as Supabase Storage
+
+    U->>FE: tap "Scan Receipt"
+    FE->>CAM: capture image
+    CAM-->>FE: blob
+    FE->>SB: upload (signed URL)
+    SB-->>FE: storage path
+    FE->>TJS: recognize(blob)  // client OCR
+    TJS-->>FE: raw text + confidence
+    FE->>API: POST /receipts/parse { text, storagePath }
+    API->>CB: call Gemini structuring
+    alt Gemini available
+        CB->>GEM: prompt(raw text → JSON schema)
+        GEM-->>CB: { merchant, amount, date, lineItems[] }
+    else Circuit open / low confidence
+        CB->>PY: fallback /parse (image)
+        PY-->>CB: structured JSON
+    end
+    CB-->>API: parsed
+    API->>PG: receipts row + link clientTxId
+    API-->>FE: parsed fields
+    FE-->>U: Pre-filled Add Transaction form
+```
+
+### G.4 Voice Command (Multi-Intent NLP)
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant FE as VoiceAICommandCenter
+    participant SR as Web Speech / Capacitor Speech
+    participant API as /api/v1/voice/parse
+    participant NLP as Keyword segmenter
+    participant GEM as Gemini (fallback)
+    participant RVW as VoiceReview.tsx
+    participant DX as Dexie + sync
+
+    U->>SR: "Add 500 lunch and transfer 1000 to mom"
+    SR-->>FE: transcript
+    FE->>API: POST /voice/parse {transcript}
+    API->>NLP: segment + classify intents
+    alt ambiguous segment
+        NLP->>GEM: enhance(text)
+        GEM-->>NLP: enriched intents
+    end
+    NLP-->>API: [{type:'expense',amount:500,...},{type:'transfer',...}]
+    API-->>FE: actions[]
+    FE->>RVW: present for review (per-row edit)
+    U->>RVW: confirm
+    RVW->>DX: write N records (sync='pending')
+    RVW->>API: POST /transactions/bulk (Idempotency-Key)
+    API-->>RVW: 201
+    RVW->>DX: mark synced
+```
+
+### G.5 Goal Contribution
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant FE as Goals.tsx / GoalDetail.tsx
+    participant DX as Dexie (goals, transactions)
+    participant API as /api/v1/goals/:id/contribute
+    participant SVC as goals.service
+    participant TX as prisma.$transaction
+    participant PG as PostgreSQL
+    participant WS as Socket.IO
+
+    U->>FE: contribute amount + account
+    FE->>DX: optimistic goal.current += amount; create txn (sync='pending')
+    FE->>API: POST /goals/:id/contribute
+    API->>SVC: ownership + zod
+    SVC->>TX: insert transactions(type=goal_contrib); update accounts.balance; update goals.current
+    TX-->>SVC: committed
+    SVC->>WS: emit('goal:progress')
+    SVC-->>API: { goal, transaction }
+    API-->>FE: 200
+    FE->>DX: sync='synced'
+```
+
+### G.6 Loan EMI Payment
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant FE as Loans.tsx (Payment Modal)
+    participant API as /api/v1/loans/:id/payments
+    participant SVC as loans.service
+    participant TX as prisma.$transaction
+    participant PG as PostgreSQL
+    participant NTF as notifications.service
+
+    U->>FE: amount, funding account, optional bill receipt
+    FE->>API: POST /loans/:id/payments + Idempotency-Key
+    API->>SVC: validate + ownership
+    SVC->>TX: insert loan_payments; insert transactions; update loans.outstanding; update accounts.balance
+    TX-->>SVC: committed
+    SVC->>NTF: enqueue "EMI paid"
+    SVC-->>API: { loan, payment }
+    API-->>FE: 200
+    FE->>FE: refresh card; show next due date
+```
+
+### G.7 Investment Add + Live Price Refresh
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant FE as AddInvestment / Investments
+    participant API_I as /api/v1/investments
+    participant API_S as /api/v1/stocks/quote
+    participant SVC as investments.service
+    participant CACHE as Redis (quotes:60s)
+    participant EXT as Stock data provider
+    participant PG as PostgreSQL
+
+    U->>FE: pick asset type → symbol autocomplete
+    FE->>API_S: GET /stocks/search?q=...
+    API_S->>EXT: ticker search
+    EXT-->>API_S: matches
+    API_S-->>FE: suggestions
+    U->>FE: submit purchase
+    FE->>API_I: POST /investments
+    API_I->>SVC: validate + ownership + tx
+    SVC->>PG: insert investments; update accounts.balance (cash out)
+    SVC-->>API_I: 201
+    Note over FE,API_S: Refresh button → batch /stocks/quote?symbols=...<br/>Redis 60s cache; on miss → EXT
+```
+
+### G.8 Group Expense / Friends Split
+
+```mermaid
+sequenceDiagram
+    participant P as Payer
+    participant FE as AddTransaction (Group)
+    participant API as /api/v1/groups, /transactions
+    participant SVC as groups.service
+    participant TX as prisma.$transaction
+    participant NTF as notifications.service
+    participant WS as Socket.IO
+
+    P->>FE: pick group + participants + amount + split rule
+    FE->>API: POST /transactions {type:'group',splits[]}
+    API->>SVC: validate; verify membership
+    SVC->>TX: insert transactions; insert group_shares per participant; ledger updates
+    TX-->>SVC: committed
+    SVC->>NTF: notify each participant
+    SVC->>WS: emit('group:expense', members[])
+    SVC-->>API: 201
+    API-->>FE: 200
+    Note over WS: Each member's app updates own Dexie via realtime delta
+```
+
+### G.9 Together (Collaborative) To-Do List
+
+```mermaid
+sequenceDiagram
+    participant O as Owner
+    participant C as Collaborator
+    participant FE_O as ToDoLists / Detail (owner)
+    participant FE_C as ToDoLists / Detail (collab)
+    participant API as /api/v1/todos
+    participant SVC as todos.service
+    participant PG as PostgreSQL
+    participant WS as Socket.IO
+
+    O->>FE_O: create list type='together' + invite emails
+    FE_O->>API: POST /todos/lists
+    API->>SVC: insert list; insert collaborators
+    SVC->>WS: emit('todo:invited', collabUserIds)
+    WS-->>FE_C: realtime invitation
+    C->>FE_C: accept
+    FE_C->>API: POST /todos/lists/:id/accept
+    O->>FE_O: add task (assignee=C)
+    FE_O->>API: POST /todos/lists/:id/items
+    API->>WS: emit('todo:item', members)
+    WS-->>FE_C: realtime new task
+    C->>FE_C: toggle complete
+    FE_C->>API: PATCH /todos/items/:id
+    API->>WS: emit('todo:item:updated')
+```
+
+### G.10 Advisor Booking End-to-End
+
+```mermaid
+sequenceDiagram
+    participant U as Client
+    participant A as Advisor
+    participant FE_U as BookAdvisor
+    participant FE_A as AdvisorWorkspace
+    participant API as /api/v1/advisors, /bookings
+    participant PG as PostgreSQL
+    participant NTF as notifications
+    participant VID as Video session (WebRTC)
+
+    U->>FE_U: search advisor → pick slot → submit
+    FE_U->>API: POST /bookings
+    API->>PG: insert bookings (status='pending')
+    API->>NTF: notify advisor
+    A->>FE_A: see request → accept
+    FE_A->>API: PATCH /bookings/:id {status:'confirmed'}
+    API->>NTF: notify client
+    Note over A,U: At slot time
+    A->>FE_A: Start session
+    FE_A->>VID: open room (token)
+    FE_A->>API: PATCH /bookings/:id {status:'in_session'}
+    A->>FE_A: end → notes
+    FE_A->>API: PATCH /bookings/:id {status:'completed', notes}
+    API->>PG: append session_notes
+```
+
+### G.11 Manager — Advisor Verification
+
+```mermaid
+sequenceDiagram
+    participant A as Advisor applicant
+    participant M as Manager
+    participant FE_A as BookAdvisor (Apply Modal)
+    participant FE_M as ManagerAdvisorVerification
+    participant API as /api/v1/advisors
+    participant SB as Supabase Storage
+    participant PG as PostgreSQL
+
+    A->>FE_A: fill form + upload PAN/Aadhaar/Cert
+    FE_A->>SB: upload docs (signed URLs)
+    FE_A->>API: POST /advisors/apply {meta, docPaths}
+    API->>PG: insert advisor_applications status='pending'
+    M->>FE_M: review queue
+    FE_M->>API: GET /advisors/applications?status=pending
+    M->>FE_M: approve or reject(reason)
+    FE_M->>API: PATCH /advisors/applications/:id
+    API->>PG: update status; if approved → promote user.role='advisor'
+    API->>NTF: notify applicant
+```
+
+### G.12 Admin Feature-Gate Toggle (Realtime Propagation)
+
+```mermaid
+sequenceDiagram
+    participant AD as Admin
+    participant FE as AdminFeaturePanel
+    participant API as /api/v1/admin/features
+    participant PG as PostgreSQL
+    participant RD as Redis (feature-gate cache)
+    participant WS as Socket.IO (global room)
+    participant U as Every connected user
+
+    AD->>FE: toggle feature for role
+    FE->>API: PUT /admin/features/:key {role, enabled}
+    API->>PG: upsert feature_flag
+    API->>RD: invalidate features:* (or update key)
+    API->>WS: broadcast('features:changed', {key,role,enabled})
+    WS-->>U: client updates FeatureGateContext live
+    U->>U: hidden/shown nav items, gated AI capabilities
+```
+
+### G.13 RBI Account Aggregator (Setu AA) Consent + Pull
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant FE as AAFlow component
+    participant API as /api/v1/aa
+    participant SETU as Setu AA (RBI-licensed AA)
+    participant FIP as FIP (bank)
+    participant WK as AA worker
+    participant PG as PostgreSQL (encrypted)
+
+    U->>FE: connect bank
+    FE->>API: POST /aa/consent {accounts}
+    API->>SETU: create consent
+    SETU-->>API: consentId + redirect URL
+    API-->>FE: redirect URL
+    U->>SETU: approve in AA app
+    SETU-->>API: webhook /aa/callback (consent active)
+    API->>PG: store consent_id (encrypted)
+    WK->>SETU: schedule FI data request
+    SETU->>FIP: fetch statements
+    FIP-->>SETU: encrypted payload
+    SETU-->>WK: data session ready
+    WK->>SETU: fetch FI data
+    SETU-->>WK: encrypted blobs
+    WK->>WK: AES-256-GCM decrypt with per-user DEK
+    WK->>PG: insert aa_statements + auto-categorize via categorization.service
+    WK->>WS: notify('aa:imported')
+```
+
+### G.14 Cross-Device Real-Time Sync
+
+```mermaid
+sequenceDiagram
+    participant D1 as Device 1
+    participant D2 as Device 2
+    participant API as /api/v1/sync
+    participant DC as dexie-cloud
+    participant WS as Socket.IO
+    participant PG as PostgreSQL
+
+    D1->>API: POST /transactions  (online)
+    API->>PG: commit
+    API->>WS: emit('tx:created', userId)
+    WS-->>D2: delta
+    D2->>API: GET /sync/delta?since=lastSeq
+    API->>PG: select changes since seq
+    API-->>D2: { tx[], accounts[], goals[], cursor }
+    D2->>DC: apply via Dexie transaction
+    Note over D1,D2: dexie-cloud handles offline replay<br/>+ conflict resolution (LWW per field with audit)
+```
+
+### G.15 Notifications Delivery
+
+```mermaid
+sequenceDiagram
+    participant SVC as Any feature service
+    participant NTF as notifications.service
+    participant PG as PostgreSQL
+    participant RD as Redis (queue)
+    participant WK as Notification worker
+    participant WS as Socket.IO
+    participant EM as Email (Resend)
+    participant SMS as SMS (MSG91/Twilio)
+    participant FE as Notifications.tsx
+
+    SVC->>NTF: enqueue({userId, type, payload, channels})
+    NTF->>PG: insert notifications (status='queued')
+    NTF->>RD: LPUSH queue
+    WK->>RD: BRPOP
+    WK->>WS: emit('notification:new', userId)
+    WS-->>FE: realtime badge
+    par parallel fan-out
+        WK->>EM: send (if email opt-in)
+    and
+        WK->>SMS: send (if SMS opt-in)
+    end
+    WK->>PG: status='delivered'
+```
+
+### G.16 Settings — Backup, Import, Clear Data
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant FE as Settings.tsx
+    participant DX as Dexie
+    participant API as /api/v1/settings/backup
+    participant SB as Supabase Storage
+    participant PG as PostgreSQL
+
+    U->>FE: Export JSON
+    FE->>DX: dump all tables (user-scoped)
+    FE-->>U: download .json
+    U->>FE: Create cloud backup
+    FE->>API: POST /settings/backup {payload}
+    API->>SB: upload encrypted blob (AES-256-GCM)
+    API->>PG: insert backups (path, ts)
+    U->>FE: Clear all data
+    FE->>DX: db.delete()  // local only
+    FE-->>U: signed out; server data intact
+```
+
+---
+
+## H. API Endpoint Index (`/api/v1/*`)
+
+> Generated from `backend/src/features/*/routes.ts`. All routes are JWT-protected unless marked PUBLIC. All mutating routes are Zod-validated.
+
+| Module | Common endpoints |
+|---|---|
+| **auth** | `POST /auth/exchange`, `POST /auth/refresh`, `POST /auth/logout`, `GET /auth/me` |
+| **pin** | `POST /pin/setup`, `POST /pin/verify`, `POST /pin/change`, `POST /pin/reset-otp` |
+| **otp** | `POST /otp/send` *(PUBLIC, rate-limited)*, `POST /otp/verify` |
+| **sessions** | `GET /sessions`, `DELETE /sessions/:id` |
+| **devices** | `GET /devices`, `DELETE /devices/:id` |
+| **settings** | `GET /settings/profile`, `PUT /settings/profile`, `POST /settings/backup`, `POST /settings/restore` |
+| **avatars** | `GET /avatars`, `PUT /avatars/me` |
+| **accounts** | `GET /accounts`, `POST /accounts`, `PATCH /accounts/:id`, `DELETE /accounts/:id` |
+| **transactions** | `GET /transactions`, `POST /transactions`, `POST /transactions/bulk`, `PATCH /transactions/:id`, `DELETE /transactions/:id` |
+| **recurring** | CRUD `/recurring` |
+| **categorization** | `POST /categorization/predict`, `POST /categorization/feedback` |
+| **goals** | CRUD `/goals` + `POST /goals/:id/contribute` |
+| **budgets** | CRUD `/budgets` |
+| **loans** | CRUD `/loans` + `POST /loans/:id/payments` |
+| **investments** | CRUD `/investments` |
+| **stocks** | `GET /stocks/search`, `GET /stocks/quote` *(cached 60s)* |
+| **gold** | `GET /gold/price` *(cached)*, `POST /gold/positions` |
+| **bills** | CRUD `/bills` + reminders |
+| **tax** | `GET /tax/summary`, `POST /tax/declarations` |
+| **dashboard** | `GET /dashboard` *(aggregated; Redis 30s)* |
+| **friends** | CRUD `/friends`, invite/accept |
+| **groups** | CRUD `/groups`, members, splits |
+| **todos** | CRUD `/todos/lists` + `/items` + collaborators |
+| **collaboration** | shared resource ACL helpers |
+| **bookings** | CRUD `/bookings` (client + advisor flows) |
+| **advisors** | `POST /advisors/apply`, `GET /advisors`, `PATCH /advisors/applications/:id` *(manager)* |
+| **payments** | `POST /payments/intent`, `POST /payments/confirm` |
+| **notifications** | `GET /notifications`, `PATCH /notifications/:id/read`, `DELETE /notifications/:id` |
+| **sync** | `GET /sync/delta`, `POST /sync/push` |
+| **import** | `POST /import/sms`, `POST /import/csv` |
+| **receipts** | `POST /receipts/parse` |
+| **voice** | `POST /voice/parse` |
+| **ai** | model + capability gates |
+| **aa** | `POST /aa/consent`, `GET /aa/status`, `POST /aa/refresh`, webhook `/aa/callback` |
+| **admin** | `GET /admin/users`, `PUT /admin/features/:key`, `GET /admin/audit` |
+| **webhooks** | Setu AA, Resend, MSG91 callbacks |
+| **docs** | `GET /docs` *(OpenAPI JSON)*, `/docs/ui` (Swagger) |
+
+---
+
+## I. Frontend Wireframe Map (Screens → Components → Services → APIs)
+
+| Screen | Component(s) | Local store (Dexie) | Service module | API endpoints |
+|---|---|---|---|---|
+| Sign In / Sign Up | `SignInForm.tsx`, `SignUpForm.tsx` | `users`, `profiles` | `services/auth` | `/auth/exchange`, `/auth/refresh` |
+| PIN Setup / Auth | `PINSetup.tsx`, `PINAuth.tsx` | `pinMeta` | `services/pin` | `/pin/setup`, `/pin/verify`, `/pin/reset-otp` |
+| Onboarding Slides | `AppFeatureSlides.tsx` | n/a | n/a | n/a |
+| Quick Action Modal | `QuickActionModal.tsx` | n/a | n/a | n/a |
+| Accounts list + Quick Tx | `Accounts.tsx`, `AddAccount.tsx` | `accounts` | `services/accounts` | `/accounts`, `/transactions` |
+| Transactions list | `Transactions.tsx` | `transactions` | `services/transactions` | `/transactions` |
+| Add / Edit Transaction | `AddTransaction.tsx` | `transactions`, `accounts` | `services/transactions`, `services/receipts`, `services/categorization` | `/transactions`, `/receipts/parse`, `/categorization/predict` |
+| Recurring | `RecurringTransactions.tsx` | `recurring` | `services/recurring` | `/recurring` |
+| Goals | `Goals.tsx`, `AddGoal.tsx`, `GoalDetail.tsx` | `goals` | `services/goals` | `/goals`, `/goals/:id/contribute` |
+| Loans | `Loans.tsx`, `AddLoan.tsx`, `AddLoanModalWithFriends.tsx` | `loans`, `loan_payments` | `services/loans` | `/loans`, `/loans/:id/payments` |
+| Investments | `Investments.tsx`, `AddInvestment.tsx`, `EditInvestment.tsx`, `WealthVaultDashboard.tsx` | `investments` | `services/investments`, `services/stocks` | `/investments`, `/stocks/*`, `/gold/*` |
+| To-Do Lists | `ToDoLists.tsx`, `ToDoListDetail.tsx` | `todoLists`, `todoItems`, `collaborators` | `services/todos` | `/todos/lists`, `/todos/items` |
+| Voice | `VoiceAICommandCenter.tsx`, `VoiceReview.tsx` | `voiceDrafts` | `services/voice` | `/voice/parse`, `/transactions/bulk` |
+| Advisor (client) | `BookAdvisor.tsx` | `bookings` | `services/advisors` | `/advisors`, `/bookings` |
+| Advisor (advisor) | `AdvisorPanel.tsx`, `AdvisorWorkspace.tsx` | `bookings`, `availability` | `services/advisors` | `/bookings`, `/advisors/availability` |
+| Manager verification | `ManagerAdvisorVerification.tsx` | n/a | `services/advisors` | `/advisors/applications` |
+| Admin features | `AdminFeaturePanel.tsx` | `featureFlagsLocal` | `services/admin` | `/admin/features` |
+| Settings | `Settings.tsx` | all (export/clear) | `services/settings` | `/settings/*`, `/settings/backup` |
+| User Profile | `UserProfile.tsx` | `profiles` | `services/settings`, `services/auth` | `/settings/profile`, `/pin/change`, OTP for email/mobile change |
+| Notifications | `Notifications.tsx` | `notifications` | `services/notifications` | `/notifications` |
+
+---
+
+## J. Local-First Sync State Machine
+
+```mermaid
+stateDiagram-v2
+    [*] --> Pending: local write
+    Pending --> Syncing: online + token valid
+    Pending --> Pending: offline (retry queue)
+    Syncing --> Synced: 2xx + serverId
+    Syncing --> Conflict: 409 (server version newer)
+    Syncing --> Failed: 4xx (non-409)
+    Syncing --> Pending: 5xx / network (backoff)
+    Conflict --> Resolved: LWW-per-field merge
+    Resolved --> Synced
+    Failed --> [*]: surfaced to user (toast)
+    Synced --> [*]
+```
+
+Rules:
+- `sync` column on every Dexie row (`pending` | `syncing` | `synced` | `conflict` | `failed`).
+- `clientId` (uuid v4) generated on FE; used as Idempotency-Key.
+- Backoff: 2s → 4s → 8s → 30s → 2m → 10m (capped).
+- Conflict resolution: last-write-wins per field, but **monetary fields always defer to server** (server is authoritative).
+
+---
+
+## K. Where to Find What (Doc Map)
+
+| Need | File |
+|---|---|
+| Day-to-day commands | `docs/DEVELOPER_QUICK_REFERENCE.md` |
+| Env vars | `docs/ENVIRONMENT_REFERENCE.md` |
+| Architecture diagrams (extended) | `docs/ARCHITECTURE_DIAGRAMS.md` |
+| Backend conventions | `docs/backend.skill.md` |
+| Frontend conventions | `docs/frontend.skill.md` |
+| Database / Prisma rules | `docs/database.skill.md` |
+| Security rules | `docs/security.skill.md` |
+| QA / test patterns | `docs/qa.skill.md` |
+| Reviewer checklist | `docs/reviewer.skill.md` |
+| Automation testids | `docs/AUTOMATION_REGISTRY.md` |
+| Roles & permissions | `docs/ROLES_AND_PERMISSIONS.md` |
+| Feature inventory | `docs/FEATURE_INVENTORY.md` |
+| Feature-gate impl | `docs/FEATURE_GATES_IMPLEMENTATION.md` |
+| API reference | `docs/API_REFERENCE.md` |
+| Third-party integrations | `docs/THIRD_PARTY_INTEGRATIONS.md` |
+| Setu AA / OTP arch | `docs/AA_OTP_ARCHITECTURE.md` |
+| AI/intelligence systems | `docs/INTELLIGENCE_SYSTEMS.md` |
+| VAPT response | `docs/VAPT_RESPONSE_06032026.md` |
+
+---
+
+## L. Change Log — 2026-06-19 (Today)
+
+### 1. `.claude/commands/README.md` — Agent Context Layer Rewrite
+- Replaced the stale README (which linked to non-existent `./project/...` paths) with a stack-aware index.
+- Added authoritative **Tech Stack table** matching this overview.
+- Catalogued every skill file (`backend.skill.md`, `frontend.skill.md`, `database.skill.md`, `security.skill.md`, `qa.skill.md`, `reviewer.skill.md`).
+- Catalogued every runbook (`api-smoke`, `db-health`, `prisma-migrate`, `sync-validate`, `receipt-test`, `security-audit`, `role-audit`, `feature-gates`, `deploy-preflight`, `docker-postgres-setup`, `advisor-flow`).
+- Mirrored reference docs from `/docs` so the agent can answer without external lookups.
+- Added a **Pre-Flight Checklist** mirroring the copilot-instructions guardrails (versioned `/api/v1`, Zod validation, auth + ownership, `prisma.$transaction` for monetary writes, Dexie sync-pending, no `any`, Helmet/CORS/rate-limit, `logger.*`, standard response shape).
+- Documented allowed automation from `settings.local.json` (npm run, Prisma 6.19.2, git, taskkill).
+
+### 2. `docs/AUTOMATION_REGISTRY.md` — Full Audit & Completion
+- Scanned all `frontend/src/**/*.{tsx,ts}` → **430 `data-testid` occurrences** across **38 files**, plus **6 forwarded `testId` props**.
+- Added previously-missing sections:
+  - **Accounts list & Transactions list — Quick Transaction Modal** (`transaction-modal-type-${opt.type}-button`).
+  - **`CategoryDropdown.tsx`** (`{testId}`, `{testId}-option-${option}`).
+- Rewrote **Shared UI Components** with per-primitive tables (`FloatingSaveBar`, `SearchableDropdown`, `CategoryDropdown`) and explicit default IDs.
+- Appended a **Coverage Audit appendix** with totals, the list of 38 covered components, and a PowerShell re-audit one-liner so future drift is detectable.
+- Result: **100% coverage** of every testid in the codebase.
+
+### 3. `.gitignore` — Modernised for Current Stack
+Reorganised into clearly-labelled sections and added coverage for:
+- **Test/coverage outputs**: `coverage/`, `*.lcov`, `.nyc_output/`, `test-results/`, `playwright-report/`, `playwright/.cache/`, `quality/**/test-results/`, `quality/**/playwright-report/`.
+- **Build caches**: `.cache/`, `.parcel-cache/`, `.turbo/`, `.vite/`, `frontend/.vite/`, `backend/dist/`, `frontend/dist/`, `.next/`, `.nuxt/`, `build/`, `out/`.
+- **Python (receipt_ai FastAPI)**: `__pycache__/`, `*.py[cod]`, `*.egg-info/`, `.pytest_cache/`, `.mypy_cache/`, `.ruff_cache/`, `backend/receipt_ai/.venv/`.
+- **Mobile**: `android/app/build/`, `android/build/`, `android/.gradle/`, `android/captures/`, `android/local.properties`; iOS placeholders (`ios/App/Pods/`, `.capacitor/`, `capacitor.config.local.json`).
+- **Cloud/deploy**: `.vercel/`, `.fly/`, `.netlify/`, `.serverless/`, `supabase/.branches/`, `supabase/.temp/`.
+- **Secrets (extended)**: `*.pfx`, `*.crt`, `*.cer`, `*.key`, `id_rsa`, `id_dsa`, `.sentryclirc`, `google-services.json`, `GoogleService-Info.plist`.
+- **DB extras**: `*.db-journal`, `backend/prisma/*.db-journal`.
+- **OS extras**: `.AppleDouble`, `.LSOverride`, `ehthumbs.db`, `Desktop.ini`, `$RECYCLE.BIN/`, `.Trash-*`.
+- **Editors**: `.zed/`, `*.code-workspace`.
+- **Misc**: `*.tgz`, `*.tar.gz`, `*.zip`, `*.pid`, runtime pid files.
+- **Agent scratch**: `.claude/commands/_*` so future scan dumps stay out of git.
+
+Smarter env handling:
+- Catch-all `.env` and `.env.*`, then explicit allow-list for `.env.example`, `.env.sample`, `*.example`, `*.sample`, `backend/.env.test` (intentionally committed).
+
+Validated post-update:
+- All env templates and `backend/.env.test` remain tracked.
+- Tracked Playwright report `.zip` archives in `quality/e2e/report/**` and `quality/e2e/screenshots/**` are whitelisted so the new `*.zip` rule doesn't fight CI artifacts.
+- No newly-tracked file is hidden by the new rules.
+
+### 4. Document Migration — `.claude/commands` → `docs/`
+- The bulk of skill/runbook/reference files were moved out of `.claude/commands/` into `docs/` (single canonical home).
+- Only `.claude/commands/README.md` and `settings.local.json` remain under `.claude/`.
+- This `KANAKU_PROJECT_OVERVIEW.md` block now points all consumers at `docs/*` for deep reference.
+
+### 5. This Document — Living Architecture Reference Block Added
+- New top-level section (this one) consolidates: repo topology, authoritative tech stack, security posture, universal request lifecycle, middleware chain, **16 feature-level mermaid sequence diagrams**, API endpoint index, wireframe map, local-first sync state machine, and doc map.
+- Older walkthroughs and phase logs below are kept verbatim for traceability.
+
+---
+
 ## 1. Project Overview
 
 ### 1.1 Vision
