@@ -34,6 +34,8 @@ export interface LoginInput {
 export interface AuthTokens {
   accessToken: string;
   refreshToken: string;
+  /** Epoch milliseconds at which the access token expires. */
+  expiresAt: number;
   user: {
     id: string;
     email: string;

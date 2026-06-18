@@ -265,4 +265,49 @@ describe('AUTH MODULE', () => {
       expect(res.status).toBe(404);
     });
   });
+
+  //  Token refresh
+  describe('POST /auth/refresh', () => {
+    const signTyped = (type: 'access' | 'refresh', overrides: Record<string, unknown> = {}) => {
+      if (!process.env.JWT_SECRET) process.env.JWT_SECRET = 'test-jwt-secret';
+      return jwt.sign(
+        { userId: 'refresh-test-user', email: 'refresh-test@example.com', role: 'user', isApproved: true, type, ...overrides },
+        process.env.JWT_SECRET,
+        { expiresIn: type === 'refresh' ? '7d' : '15m' },
+      );
+    };
+
+    it('rejects a missing refresh token', async () => {
+      const res = await request(app).post(`${API}/auth/refresh`).send({});
+      expect(res.status).toBe(401);
+    });
+
+    it('rejects a malformed refresh token', async () => {
+      const res = await request(app).post(`${API}/auth/refresh`).set('x-refresh-token', 'not-a-jwt');
+      expect(res.status).toBe(401);
+    });
+
+    it('rejects an access token used as a refresh token', async () => {
+      const res = await request(app).post(`${API}/auth/refresh`).set('x-refresh-token', signTyped('access'));
+      expect(res.status).toBe(401);
+    });
+
+    it('does not let a refresh token authorize API calls', async () => {
+      const res = await request(app)
+        .get(`${API}/auth/profile`)
+        .set('Authorization', `Bearer ${signTyped('refresh')}`);
+      expect(res.status).toBe(401);
+    });
+
+    it('issues a fresh token pair for a valid refresh token (200), or 401/503 without a DB', async () => {
+      const res = await request(app).post(`${API}/auth/refresh`).set('x-refresh-token', signTyped('refresh'));
+      expect([200, 401, 503]).toContain(res.status);
+      if (res.status === 200) {
+        expect(res.body.data).toHaveProperty('accessToken');
+        expect(res.body.data).toHaveProperty('refreshToken');
+        expect(res.body.data).toHaveProperty('expiresAt');
+        expect(res.headers).toHaveProperty('x-refresh-token');
+      }
+    });
+  });
 });

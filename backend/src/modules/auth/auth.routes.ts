@@ -4,6 +4,7 @@ import {
   register,
   login,
   loginChallenge,
+  refreshToken,
   getProfile,
   updateProfile,
   sendOtp,
@@ -45,6 +46,8 @@ router.post('/check-email', authLimiter, checkEmailAvailability);
 router.post('/register', authLimiter, register);
 router.post('/login/challenge', authLimiter, loginChallenge);
 router.post('/login', authLimiter, login);
+// Token refresh — public (refresh token is the credential), rate-limited.
+router.post('/refresh', authLimiter, refreshToken);
 router.get('/profile', authMiddleware, getProfile);
 router.put('/profile', authMiddleware, updateProfile);
 

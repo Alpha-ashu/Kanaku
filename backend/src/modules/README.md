@@ -30,11 +30,11 @@ The **Shape** column shows which canonical files exist (in order):
 | [`aa`](./aa/README.md) | `/api/v1/aa` | 9 | SVRT | RBI Account Aggregator (Setu) integration — consent flows and financial-data fetch. |
 | [`accounts`](./accounts/README.md) | `/api/v1/accounts` | 5 | CSDVR | User bank/cash/credit accounts — CRUD with feature-gated create/edit/delete. |
 | [`admin`](./admin/README.md) | `/api/v1/admin` | 27 | CVR | Admin console — user/role management, feature flags, and operational dashboards (admin role required). |
-| [`advisors`](./advisors/README.md) | `/api/v1/advisors` | 16 | CR | Financial advisor directory, verification, and ratings. |
+| [`advisors`](./advisors/README.md) | `/api/v1/advisors` | 16 | CVR | Financial advisor directory, verification, and ratings. |
 | [`ai`](./ai/README.md) | `/api/v1/ai` | 8 | CVRT | AI/LLM features — insights, NLQ, document intelligence (lazy-loaded). |
-| [`auth`](./auth/README.md) | `/api/v1/auth` | 11 | CSRT | Authentication — login, registration, token issuance, device + OTP services (public). |
+| [`auth`](./auth/README.md) | `/api/v1/auth` | 12 | CSRT | Authentication — login, registration, token issuance, device + OTP services (public). |
 | [`avatars`](./avatars/README.md) | `/api/v1/avatars` | 1 | R | Avatar gallery and user avatar assignment (public assets). |
-| [`bills`](./bills/README.md) | `/api/v1/bills` | 4 | CR | Secure bill/document uploads with file-type validation (lazy-loaded). |
+| [`bills`](./bills/README.md) | `/api/v1/bills` | 4 | CVR | Secure bill/document uploads with file-type validation (lazy-loaded). |
 | [`bookings`](./bookings/README.md) | `/api/v1/bookings` | 9 | CVR | Advisor session bookings. |
 | [`budgets`](./budgets/README.md) | `/api/v1/budgets` | 6 | CVR | Budgets and budget-alert thresholds. |
 | [`categorization`](./categorization/README.md) | `/api/v1/categorize` | 1 | CVR | Transaction auto-categorization and learning (also mounts /learn). |
@@ -48,7 +48,7 @@ The **Shape** column shows which canonical files exist (in order):
 | [`import`](./import/README.md) | `/api/v1/import` | 3 | CR | Statement/CSV import and smart expense ingestion. |
 | [`investments`](./investments/README.md) | `/api/v1/investments` | 5 | CVR | Investment holdings (stocks, MFs, etc.) and valuation. |
 | [`loans`](./loans/README.md) | `/api/v1/loans` | 6 | CVR | Loans and EMI tracking. |
-| [`notifications`](./notifications/README.md) | `/api/v1/notifications` | 8 | CSR | In-app notifications and notification preferences. |
+| [`notifications`](./notifications/README.md) | `/api/v1/notifications` | 8 | CSVR | In-app notifications and notification preferences. |
 | [`otp`](./otp/README.md) | `/api/v1/otp` | 2 | SVRT | RBI-compliant OTP generation and verification. |
 | [`payments`](./payments/README.md) | `/api/v1/payments` | 7 | CVR | Payment processing and settlement (includes provider webhook). |
 | [`pin`](./pin/README.md) | `/api/v1/pin` | 11 | SR | App PIN setup and verification. |

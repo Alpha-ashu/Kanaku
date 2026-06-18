@@ -14,6 +14,8 @@ interface CustomJwtPayload extends jwt.JwtPayload {
   role?: string;
   isApproved?: boolean;
   name?: string;
+  /** 'access' | 'refresh' — refresh tokens must not authorize API calls. */
+  type?: string;
 }
 
 /** Claims present in a Supabase-issued JWT */
@@ -189,6 +191,12 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
     if (customSecret) {
       try {
         const decoded = jwt.verify(token, customSecret) as CustomJwtPayload;
+
+        // A refresh token must never authorize API calls — only POST /auth/refresh
+        // may consume it. (Access tokens and legacy untyped tokens are accepted.)
+        if (decoded?.type === 'refresh') {
+          throw new Error('Refresh token cannot be used for API authorization');
+        }
 
         const userId = typeof decoded === 'object'
           ? (typeof decoded.userId === 'string' ? decoded.userId : decoded.sub)

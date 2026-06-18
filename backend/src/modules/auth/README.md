@@ -12,6 +12,7 @@
 | POST | `/auth/register` | public | `register` |
 | POST | `/auth/login/challenge` | public | `loginChallenge` |
 | POST | `/auth/login` | public | `login` |
+| POST | `/auth/refresh` | public | `refreshToken` |
 | GET | `/auth/profile` | auth | `getProfile` |
 | PUT | `/auth/profile` | auth | `updateProfile` |
 | POST | `/auth/otp/send` | auth | `sendOtp` |
