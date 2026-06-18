@@ -22,6 +22,7 @@
     "format": "prettier --write \"**/*.{ts,tsx,json,md}\"",
     "docs:modules": "node scripts/gen-module-readmes.mjs",
     "docs:frontend": "node scripts/gen-frontend-readmes.mjs",
+    "docs:catalogs": "node scripts/gen-catalogs.mjs",
     "test": "npm run test:unit --workspace frontend",
     "test:backend": "npm run test --workspace backend",
     "db:migrate": "cd backend && npx prisma@6.19.2 migrate dev",
