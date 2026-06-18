@@ -174,8 +174,13 @@ A separate paid Supabase project is **not** required. Two safe options:
   `email_change`, `phone_change`, `phone_change_token`, `email_change_token_current`,
   `reauthentication_token`) as non-null strings — they must be inserted as `''` or
   login fails with "Database error querying schema". The script sets them to `''`.
-- Still: run a `--apply` against a **single prod test user** + verify sign-in before
-  the full batch (GoTrue schema can vary by version).
+- **✅ Validated on PROD too:** prod GoTrue schema confirmed matching; the 4 demo
+  accounts (`user`/`admin`/`manager`/`advisor@kanaku.com`) were migrated individually
+  (`--apply --email <addr>`) and all now sign in via `supabase.auth.signInWithPassword`
+  with their original passwords, ids preserved. (`--email` filter added for staged rollout.)
+- **Remaining prod users (~11 e2e/test + 1 real):** the full batch `--apply` is a
+  mass prod write and needs **explicit authorization** — run it yourself
+  (`npm --prefix backend run migrate:supabase-auth -- --apply`) or approve the prompt.
 
 ### What I still need from you
 - The **`measure:auth` output** (migration size), and your call on validation path
