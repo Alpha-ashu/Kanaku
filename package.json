@@ -20,6 +20,7 @@
     "lint": "npm run lint --workspaces --if-present",
     "type-check": "npm run type-check --workspace frontend",
     "format": "prettier --write \"**/*.{ts,tsx,json,md}\"",
+    "docs:modules": "node scripts/gen-module-readmes.mjs",
     "test": "npm run test:unit --workspace frontend",
     "test:backend": "npm run test --workspace backend",
     "db:migrate": "cd backend && npx prisma@6.19.2 migrate dev",
