@@ -15,6 +15,13 @@ import { api, TokenManager } from '@/lib/api';
 import { PublicNavbar } from '@/app/components/ui/PublicNavbar';
 import { enableGuestMode, isGuestMode, disableGuestMode, migrateGuestDataToUser, migrateGuestLocalStorage } from '@/lib/guestMode';
 import { pinService, isPinMissing } from '@/services/pinService';
+import { signIn as supabaseSignIn, signUp as supabaseSignUp } from '@/lib/supabase-helpers';
+
+// Auth source of truth for the login UI. 'custom' (default) keeps the backend-issued
+// JWT flow; 'supabase' (Option A) authenticates via Supabase Auth so the API client's
+// (already Supabase-first) token resolution carries the Supabase session.
+// See docs/AUTH_CONSOLIDATION_PLAN.md.
+const AUTH_CANONICAL = (import.meta.env.VITE_AUTH_CANONICAL || 'custom') as string;
 
 /** Internal-only logger - never leaks raw errors to the browser console in production. */
 const internalLog = {
@@ -140,6 +147,20 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
   const handleSignIn = async (credentials: { email: string; password: string }) => {
     setIsLoading(true);
     try {
+      // Option A: authenticate via Supabase. supabase-js persists the session, which
+      // the API client uses for all backend calls + refresh.
+      if (AUTH_CANONICAL === 'supabase') {
+        const { user } = await supabaseSignIn(credentials.email, credentials.password);
+        setEmail(credentials.email);
+        setIsNewUser(false);
+        if (user) await runGuestMigrationIfNeeded(user.id);
+        localStorage.removeItem('auth_flow_step');
+        localStorage.removeItem('pending_auth_email');
+        if (user) localStorage.setItem('onboarding_completed', 'true');
+        window.dispatchEvent(new CustomEvent('KANAKU_AUTH_CHANGE'));
+        return;
+      }
+
       const response = await api.auth.login({
         email: credentials.email,
         password: credentials.password,
@@ -196,6 +217,31 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
   const handleSignUp = async (data: { firstName: string; lastName: string; email: string; mobile: string; password: string }) => {
     setIsLoading(true);
     try {
+      // Option A: register via Supabase Auth.
+      if (AUTH_CANONICAL === 'supabase') {
+        const fullName = `${data.firstName} ${data.lastName}`.trim();
+        const { user } = await supabaseSignUp(data.email, data.password, fullName);
+        setEmail(data.email);
+        setUserProfile({
+          firstName: data.firstName,
+          lastName: data.lastName,
+          email: data.email,
+          mobile: data.mobile,
+          dateOfBirth: '',
+          jobType: '',
+          jobIndustry: '',
+          monthlyIncome: '',
+        });
+        setIsNewUser(true);
+        if (user) await runGuestMigrationIfNeeded(user.id);
+        localStorage.removeItem('auth_flow_step');
+        localStorage.removeItem('pending_auth_email');
+        localStorage.removeItem('onboarding_completed');
+        window.dispatchEvent(new CustomEvent('KANAKU_AUTH_CHANGE'));
+        toast.success("Account created! Let's set up your profile.");
+        return;
+      }
+
       const response = await api.auth.register({
         name: `${data.firstName} ${data.lastName}`.trim(),
         email: data.email,

@@ -11,6 +11,7 @@
     "ensure:db-integrity": "node ./scripts/ensure-db-integrity.cjs",
     "demo:reset-users": "node ./scripts/reset-demo-users.cjs",
     "measure:auth": "node ./scripts/measure-auth-distribution.cjs",
+    "migrate:supabase-auth": "node ./scripts/migrate-users-to-supabase-auth.cjs",
     "seed:demo": "node ./scripts/seed-production-roles.cjs && node ./scripts/seed-mock-data.cjs",
     "build": "tsc",
     "start": "node dist/server.js",

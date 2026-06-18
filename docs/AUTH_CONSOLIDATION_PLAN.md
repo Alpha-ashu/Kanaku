@@ -122,18 +122,62 @@ migrated users **must keep their existing id** in Supabase.
    staging; verify a migrated user can sign in via `supabase.auth.signInWithPassword`.
 4. **Flip `AUTH_CANONICAL=supabase` on staging.** `authMiddleware` keeps accepting both
    token types (compatibility window) — no lockout.
-5. **Converge the frontend** to a single Supabase session + one refresh path: replace
-   the custom `TokenManager` + `/auth/refresh` usage with `supabase.auth` (the 63
-   existing `supabase.auth.*` call sites become the single path); retire the custom
-   401-retry-via-`/auth/refresh`.
+5. **Converge the frontend** — ✅ largely done:
+   - The API client was already **Supabase-first**: `resolveAuthToken()` reads the
+     Supabase session (custom token is only a fallback) and `refreshAccessToken()`
+     uses `supabase.auth.refreshSession()`. The custom `/auth/refresh` endpoint has
+     **no frontend callers**.
+   - The only custom-auth entry point was `AuthFlow` login/register (`api.auth.login`
+     / `api.auth.register`). These now route through Supabase `signIn`/`signUp` when
+     `VITE_AUTH_CANONICAL=supabase` (default `custom` = unchanged). `AuthContext`
+     already reacts to `onAuthStateChange` + `KANAKU_AUTH_CHANGE`, so flipping the
+     flag makes the whole app Supabase-canonical with no further wiring.
+   - **To enable Option A end-to-end:** set backend `AUTH_CANONICAL=supabase` +
+     `VITE_AUTH_CANONICAL=supabase`, migrate users, and verify login against local
+     Supabase before prod. Remaining: browser-test the full flow (login/refresh/
+     logout/PIN/sockets) with the app running on local Supabase.
 6. **Validate** the full matrix on staging (login, refresh, logout, PIN, sockets,
    role gates, RLS), then run the import on prod during a maintenance window.
 7. **Remove custom issuance** (`generateTokens`, `/auth/login|register|refresh`) and
    the `supabase-managed-account` sentinel once metrics show ~0 custom-token usage.
 8. **Rotate** `JWT_SECRET` + Supabase keys; finalize a single revocation story.
 
-### What I need from you to build steps 3–6
-- A **Supabase staging project** (URL + service-role + anon + JWT secret) wired to a
-  staging backend, and the **`measure:auth` output**. With those I can implement and
-  validate the import + the frontend convergence safely; without them, building it
-  blind risks a broken-login cutover.
+### Validating on the free tier (no paid staging project)
+A separate paid Supabase project is **not** required. Two safe options:
+
+1. **Local Supabase (recommended) — free, via Docker (you have Docker 28.5.1):**
+   ```
+   npx --yes supabase init      # creates supabase/config.toml (one-time)
+   npx --yes supabase start     # runs GoTrue Auth + Postgres locally
+   ```
+   Point a local backend at the printed local `DATABASE_URL` / keys, run
+   `npm --prefix backend run migrate:supabase-auth` (dry-run, then `--apply`), and
+   verify a migrated user can sign in via `supabase.auth.signInWithPassword`. This is
+   the real GoTrue schema, so it confirms the `auth.users`/`auth.identities` inserts
+   before prod.
+
+2. **Prod test-user (safe because the migration is additive + reversible):** because
+   local bcrypt login keeps working during the compatibility window, you can migrate a
+   **single throwaway account** on prod, confirm Supabase sign-in works for it, then
+   batch — and delete the test rows if anything's off. Real users are unaffected
+   until the frontend convergence + flag flip.
+
+### Migration tooling (✅ VALIDATED on local Supabase)
+- `backend/scripts/migrate-users-to-supabase-auth.cjs` (`npm --prefix backend run
+  migrate:supabase-auth`) — id-preserving insert into `auth.users` + `auth.identities`,
+  idempotent, additive, **dry-run unless `--apply`**.
+- **Validated end-to-end against a real local GoTrue (Docker):** seeded a bcrypt
+  user → `--apply` → the user signs in via `supabase.auth.signInWithPassword` with
+  their original password, **id preserved** (FKs intact); re-runs skip existing users.
+- **Critical finding baked into the script:** GoTrue scans several nullable token
+  columns (`confirmation_token`, `recovery_token`, `email_change_token_new`,
+  `email_change`, `phone_change`, `phone_change_token`, `email_change_token_current`,
+  `reauthentication_token`) as non-null strings — they must be inserted as `''` or
+  login fails with "Database error querying schema". The script sets them to `''`.
+- Still: run a `--apply` against a **single prod test user** + verify sign-in before
+  the full batch (GoTrue schema can vary by version).
+
+### What I still need from you
+- The **`measure:auth` output** (migration size), and your call on validation path
+  (local Supabase vs prod test-user). Then I implement the login/frontend convergence
+  (steps 5–6) and we cut over.

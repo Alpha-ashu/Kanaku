@@ -40,10 +40,9 @@ concern so new code can `import { ... } from '../security'`.
 Most modules validate via dedicated `*.validation.ts` + `validateBody`/`validateParams`. Status of the rest:
 
 - **Validated inline (not via a `*.validation.ts` file):** `auth` (controller checks), `devices` (zod in controller), `voice` + `import` (zod in routes)
-- **Edge validation added (this pass):** `advisors`, `bills`, `notifications`
+- **Edge validation added:** `advisors`, `bills`, `notifications`, `pin` (type + max-length, fields optional so each handler's specific error codes are preserved)
 - **Read-only / low-risk:** `dashboard`, `stocks`
 - **Special wire formats:** `webhooks` (provider-signed), `sync` (bulk payload), `avatars` (static)
-- **Still needs review:** `pin` — security-sensitive; body shape not obvious from the routes, intentionally left for manual review rather than guessed schemas
 
 Validation schemas use `.passthrough()` because the validate middleware replaces `req.*` with the parsed result — so they enforce types/lengths without dropping fields or rejecting otherwise-valid requests.
 
