@@ -27,13 +27,12 @@ export const errorHandler = (
   } else if (isDatabaseConnectivityError(err)) {
     appError = new AppError(503, 'DATABASE_UNAVAILABLE', 'Database is temporarily unavailable. Please try again shortly.', false);
   } else if ((err as any)?.name === 'ZodError') {
-    // Zod validation  surface the first human-readable message
-    const zodErr = err as any;
-    const firstIssue = zodErr.issues?.[0];
-    const humanMessage = firstIssue
-      ? `${firstIssue.path.join('  ')}: ${firstIssue.message}`
-      : 'Validation failed. Please check your input.';
-    appError = AppError.badRequest(humanMessage, 'VALIDATION_ERROR');
+    // Zod validation — never leak field paths or technical detail to the
+    // client. Full issue list is logged below for server-side debugging.
+    appError = AppError.badRequest(
+      'Some of your inputs look incorrect. Please review and try again.',
+      'VALIDATION_ERROR',
+    );
   } else if (err instanceof SyntaxError && (err as any).status === 400) {
     // Malformed JSON body
     appError = AppError.badRequest('Invalid JSON in request body.', 'INVALID_JSON');

@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { z, ZodError, ZodTypeAny } from 'zod';
+import { logger } from '../config/logger';
 
 const mapValidationError = (error: ZodError) =>
   error.issues.map((issue) => ({
@@ -13,10 +14,24 @@ const validate = (schema: ZodTypeAny, source: 'body' | 'query' | 'params') =>
     const result = schema.safeParse(req[source]);
 
     if (!result.success) {
+      const issues = mapValidationError(result.error);
+
+      // Full technical detail goes to the server logs only — never to the
+      // client — so an attacker cannot enumerate the schema by probing.
+      logger.warn('[Validation] request rejected', {
+        path: req.path,
+        method: req.method,
+        source,
+        requestId: (req as { id?: string }).id,
+        issues,
+      });
+
+      // Generic, user-safe response. Mirrors the global error handler shape.
       return res.status(400).json({
         success: false,
-        error: 'Validation failed',
-        details: mapValidationError(result.error),
+        error: 'Some of your inputs look incorrect. Please review and try again.',
+        code: 'VALIDATION_ERROR',
+        requestId: (req as { id?: string }).id,
       });
     }
 

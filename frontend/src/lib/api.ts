@@ -15,6 +15,7 @@ import {
 import supabase from '@/utils/supabase/client';
 import type { ApiResponse, ApiError } from '@/types';
 import { ErrorFactory, ErrorHandler } from './errorHandling';
+import { logger } from './logger';
 
 // ==================== User-friendly error message map ====================
 // Maps server error codes to simple, human-readable messages.
@@ -60,7 +61,7 @@ function getUserMessage(
   // SHA-256-then-plain-password fallback) pass showErrorToast: false and should
   // not spam the console with a "failure" that's actually a normal retry step.
   if (logToConsole) {
-    console.error(
+    logger.error(
       `[API Error] HTTP ${status} | code=${serverCode ?? 'n/a'} | ${technicalMessage}`,
     );
   }
@@ -270,7 +271,38 @@ interface RequestConfig extends RequestInit {
   showErrorToast?: boolean;
   showSuccessToast?: boolean;
   successMessage?: string;
+  /**
+   * Stable client-generated key for idempotent retries.
+   *   - Pass a Dexie record's `clientId` when persisting a local-first
+   *     write so a network retry replays the original server response
+   *     instead of creating a duplicate row.
+   *   - Omit to let the client auto-generate one for fire-and-forget
+   *     mutations (still safer than nothing).
+   * Set to `null` to explicitly opt out.
+   */
+  idempotencyKey?: string | null;
 }
+
+const MUTATING_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
+
+/**
+ * crypto.randomUUID() polyfill — falls back to a v4-style UUID built on
+ * `Math.random` for very old browsers that lack the Crypto API.
+ */
+const generateClientId = (): string => {
+  try {
+    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+      return crypto.randomUUID();
+    }
+  } catch {
+    // ignore — fall through
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+};
 
 class HTTPClient {
   private baseURL: string;
@@ -296,15 +328,29 @@ class HTTPClient {
       showErrorToast = true,
       showSuccessToast = false,
       successMessage,
+      idempotencyKey,
       ...fetchConfig
     } = { ...this.defaultConfig, ...config };
 
     // Add auth token if available
     const token = await resolveAuthToken();
+
+    // Auto-inject Idempotency-Key for mutating requests so the backend
+    // can replay the original response if the network drops mid-flight.
+    // Callers MAY override by passing `idempotencyKey: null` (explicit
+    // opt-out) or by providing their own stable key (preferred for any
+    // local-first record so retries truly replay).
+    const method = (fetchConfig.method || 'GET').toUpperCase();
+    let resolvedIdempotencyKey: string | null = null;
+    if (MUTATING_METHODS.has(method) && idempotencyKey !== null) {
+      resolvedIdempotencyKey = idempotencyKey ?? generateClientId();
+    }
+
     const headers = {
       ...this.defaultConfig.headers,
       ...fetchConfig.headers,
       ...(token && { Authorization: `Bearer ${token}` }),
+      ...(resolvedIdempotencyKey && { 'Idempotency-Key': resolvedIdempotencyKey }),
     };
     const baseCandidates = getApiBaseCandidates(this.baseURL);
 
@@ -318,6 +364,9 @@ class HTTPClient {
           const response = await fetch(buildApiUrl(apiBase, endpoint), {
             ...fetchConfig,
             headers,
+            // Send cookies (refresh-token, session) on cross-origin requests.
+            // Backend CORS already sets Access-Control-Allow-Credentials: true.
+            credentials: fetchConfig.credentials ?? 'include',
             signal: controller.signal,
           });
 
@@ -385,6 +434,7 @@ class HTTPClient {
                     const retryResponse = await fetch(buildApiUrl(apiBase, endpoint), {
                       ...fetchConfig,
                       headers: retryHeaders,
+                      credentials: fetchConfig.credentials ?? 'include',
                       signal: retryController.signal,
                     });
                     clearTimeout(retryTimeout);
@@ -455,7 +505,7 @@ class HTTPClient {
             }
 
             const timeoutMsg = USER_FRIENDLY_MESSAGES['TIMEOUT_ERROR'];
-            console.error('[API Error] Request timed out:', endpoint);
+            logger.error('[API Error] Request timed out', { endpoint });
             const timeoutError = new APIError('TIMEOUT_ERROR', timeoutMsg, 0);
             if (showErrorToast) {
               ErrorHandler.handle(ErrorFactory.fromHTTPStatus(408, timeoutMsg), true);

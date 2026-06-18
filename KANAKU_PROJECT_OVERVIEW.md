@@ -42,7 +42,8 @@ Kanaku/
 │       ├── receipt_ai/     FastAPI Python micro-service (hybrid OCR fallback)
 │       └── db/             Prisma singleton + transactional helpers
 ├── api/                    Vercel serverless edge proxies (auth.ts, health.ts, stocks.ts …)
-├── platform/               Cross-cutting platform code (config, database adapters, security)
+├── platform/               Navigation hub for cross-cutting concerns (docs/index) + raw SQL
+│   └── database/supabase_schema.sql  read by backend/apply_schema.cjs (DB bootstrap)
 ├── quality/                Vitest / Jest / Playwright suites + fixtures
 ├── android/                Capacitor Android shell (Gradle, signing config)
 ├── supabase/               Local Supabase config + migrations
@@ -176,6 +177,7 @@ Full-repo sweep for SQL injection, XSS, and unvalidated user input. Findings + a
 | Global body sanitiser | ✅ | `app.ts` recursively strips `<script>`, event handlers, `data:` URIs, and HTML tags from every string in `req.body` before route handlers run. |
 | Zod route validation | ✅ 36 / 36 | All feature routers under `backend/src/features/**` now use `validateBody / validateQuery / validateParams` from `middleware/validate.ts`. Gap closed on 5 routers: `avatars`, `dashboard`, `devices`, `stocks`, `webhooks`. |
 | SendGrid webhook spoofing | ✅ Mitigated | New `verifySendGridSignature` middleware (`features/webhooks/sendgridSignature.ts`) performs ECDSA P-256 / SHA-256 verification over `timestamp + rawBody` with 10-minute replay window. Requires `SENDGRID_WEBHOOK_PUBLIC_KEY` env (fail-closed in production). |
+| Hardcoded DB credential | ✅ Removed | `backend/apply_schema.cjs` no longer embeds a Supabase connection string in source — it now reads `process.env.DATABASE_URL` / `DIRECT_URL` (fail-closed). The previously committed password must be rotated. |
 
 **Defense-in-depth:** every user input now traverses four protective layers before touching the database — CORS + rate limit → global sanitiser → route-level zod schema (strict shape/type/length/regex/enum) → Prisma parameterized query with ownership filter (`where: { userId }`).
 
@@ -842,6 +844,56 @@ Rules:
 ---
 
 ## L. Change Log — 2026-06-19 (Today)
+
+### 0. Generic Error Handling & Console-Safe Logging (Frontend + Backend)
+Goal: never leak technical detail (stack traces, raw API messages, Zod field
+paths) into the production browser console or HTTP responses, while keeping
+verbose diagnostics in development.
+
+**Frontend**
+- New `frontend/src/lib/logger.ts` — single logger used app-wide.
+  - `debug` / `info` are **silent in production**; `warn` / `error` emit
+    redacted payloads (Error instances → `{ name, message: '[redacted]' }`;
+    plain objects → only safe keys: `code`, `status`, `statusCode`, `name`,
+    `type`, `requestId`).
+  - Provides a single seam to forward production errors to Sentry/Datadog
+    later without touching call sites.
+- New `frontend/src/components/shared/ErrorBoundary.tsx` — root-level
+  React error boundary mounted in `index.tsx` **above** `BrowserRouter`,
+  so provider/router errors no longer white-screen the user. Generic
+  "Something went wrong" UI + `Reload app` button. Per-route
+  `PageErrorBoundary` in `app/App.tsx` is unchanged.
+- Refactored `frontend/src/lib/errorHandling.ts` and
+  `frontend/src/lib/api.ts` to route every `console.error/warn/info` call
+  through the new logger. Raw API error objects are no longer dumped to
+  DevTools in production.
+- `resolveUserMessage()` and `getUserMessage()` continue to map server
+  codes / HTTP statuses to short, generic, user-safe strings via the
+  existing `USER_FRIENDLY_MESSAGES` / `API_CODE_MESSAGES` maps. Toasts
+  never contain raw `err.message`.
+
+**Backend**
+- `backend/src/middleware/validate.ts` — Zod validation failures now
+  return a **generic** body: `{ success: false, error: 'Some of your
+  inputs look incorrect…', code: 'VALIDATION_ERROR', requestId }`. The
+  full `issues[]` array is logged server-side only (`logger.warn`), so an
+  attacker can no longer enumerate the schema by probing endpoints.
+- `backend/src/middleware/error.ts` — the global error handler's
+  `ZodError` branch was tightened to surface the same generic message
+  (was previously echoing `path: message` for the first issue).
+- All other responses already flow through `AppError` →
+  `{ success, error, code, requestId }` with no `stack` / `details`
+  leakage; behaviour preserved.
+
+**Pre-flight verified**
+- All routes still served under `/api/v1`, Helmet + CORS + rate-limit
+  chain unchanged.
+- Zod validation middleware still gates every changed route.
+- Dexie → cloud sync error paths unchanged (still marked retryable, no
+  raw error surfaced to the user).
+- No new `any` introduced; `logger` and `ErrorBoundary` are fully typed.
+- TypeScript clean on all touched files (`logger.ts`, `errorHandling.ts`,
+  `api.ts`, `ErrorBoundary.tsx`, `index.tsx`, `validate.ts`, `error.ts`).
 
 ### 1. `.claude/commands/README.md` — Agent Context Layer Rewrite
 - Replaced the stale README (which linked to non-existent `./project/...` paths) with a stack-aware index.

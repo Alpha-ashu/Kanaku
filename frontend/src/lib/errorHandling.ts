@@ -4,6 +4,7 @@
  */
 
 import { toast } from 'sonner';
+import { logger } from './logger';
 
 // ==================== Toast Duration Constants (F-8) ====================
 // Centralised durations so every toast in the app is consistent.
@@ -127,8 +128,8 @@ export class ErrorHandler {
   }
 
   static handle(error: AppError, showToast: boolean = true): void {
-    // Log error
-    console.error('[Error]', error);
+    // Log error (silent in production)
+    logger.error('[Error]', { type: error.type, code: error.code });
 
     // Show toast notification
     if (showToast) {
@@ -197,7 +198,7 @@ export class ErrorHandler {
       case ErrorType.NETWORK:
         // Check connection and retry
         if (navigator.onLine) {
-          console.info('[Network] Connection appears to be restored  consider retrying the failed request.');
+          logger.info('[Network] Connection appears to be restored — consider retrying the failed request.');
         }
         break;
 
@@ -212,12 +213,10 @@ export class ErrorHandler {
   }
 
   private static logToService(error: AppError): void {
-    // Log full technical details to the console for developers
-    console.error('[Error Service] Unhandled server error:', {
+    // Log full technical details via the shared logger (silent in production).
+    logger.error('[Error Service] Unhandled server error', {
       type: error.type,
       code: error.code,
-      message: error.message,
-      details: error.details,
       timestamp: error.timestamp,
     });
     // TODO: integrate Sentry or a similar service here:
@@ -272,9 +271,9 @@ export function resolveUserMessage(error: unknown): string {
 
   const err = error as Record<string, unknown>;
 
-  // Log technical detail for developers
+  // Log technical detail for developers (silent in production)
   if (err.message || err.code || err.status) {
-    console.error('[ErrorHandling] Caught error:', {
+    logger.error('[ErrorHandling] Caught error', {
       message: err.message,
       code: err.code,
       status: err.status,
@@ -349,8 +348,8 @@ export class ValidationErrorHandler {
 
   static showErrors(errors: ValidationError[]): void {
     errors.forEach((error) => {
-      // Log technical field details for debugging
-      console.warn(`[Validation] field="${error.field}" value=${JSON.stringify(error.value)}  ${error.message}`);
+      // Log technical field details for debugging (silent in production)
+      logger.warn(`[Validation] field="${error.field}" — ${error.message}`);
       // Only show the friendly message to the user
       toast.error(error.message, { duration: TOAST_DURATION.NORMAL });
     });
@@ -464,7 +463,7 @@ export function setupGlobalErrorHandlers(): void {
 
   ErrorHandler.register(ErrorType.NETWORK, (_error) => {
     // Queue failed requests for retry when connection is restored
-    console.warn('[Network] Network error detected  queuing requests for retry when connection restores.');
+    logger.warn('[Network] Network error detected — queuing requests for retry when connection restores.');
   });
 }
 
