@@ -25,6 +25,11 @@ require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 
 const prisma = new PrismaClient();
 const APPLY = process.argv.includes('--apply');
+// `--email <addr>` limits the run to a single user (staged rollout / validation).
+const EMAIL_ARG = (() => {
+  const i = process.argv.indexOf('--email');
+  return i >= 0 && process.argv[i + 1] ? process.argv[i + 1] : null;
+})();
 const SUPABASE_MANAGED = 'supabase-managed-account';
 
 async function alreadyInAuth(id, email) {
@@ -69,8 +74,10 @@ async function migrateUser(u) {
 }
 
 async function main() {
+  const where = { password: { not: SUPABASE_MANAGED } };
+  if (EMAIL_ARG) where.email = EMAIL_ARG;
   const users = await prisma.user.findMany({
-    where: { password: { not: SUPABASE_MANAGED } },
+    where,
     select: { id: true, email: true, password: true, name: true, role: true },
   });
 
