@@ -51,7 +51,7 @@ The **Shape** column shows which canonical files exist (in order):
 | [`notifications`](./notifications/README.md) | `/api/v1/notifications` | 8 | CSVR | In-app notifications and notification preferences. |
 | [`otp`](./otp/README.md) | `/api/v1/otp` | 2 | SVRT | RBI-compliant OTP generation and verification. |
 | [`payments`](./payments/README.md) | `/api/v1/payments` | 7 | CVR | Payment processing and settlement (includes provider webhook). |
-| [`pin`](./pin/README.md) | `/api/v1/pin` | 11 | SR | App PIN setup and verification. |
+| [`pin`](./pin/README.md) | `/api/v1/pin` | 11 | SVR | App PIN setup and verification. |
 | [`receipts`](./receipts/README.md) | `/api/v1/receipts` | 3 | CVR | Receipt OCR scanning and parsing (lazy-loaded). |
 | [`recurring`](./recurring/README.md) | `/api/v1/recurring` | 6 | CVR | Recurring transactions and schedules. |
 | [`sessions`](./sessions/README.md) | `/api/v1/sessions` | 6 | CVR | Advisor↔client session lifecycle. |

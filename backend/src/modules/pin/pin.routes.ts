@@ -3,8 +3,17 @@ import jwt from 'jsonwebtoken';
 import { pinService } from './pin.service';
 import { authMiddleware, AuthRequest } from '../../middleware/auth';
 import { securityGate, generateSecurityToken } from '../../middleware/securityGate';
+import { validateBody } from '../../middleware/validate';
 import { AppError } from '../../utils/AppError';
 import { logger } from '../../config/logger';
+import {
+  createPinSchema,
+  verifyPinSchema,
+  verifySecuritySchema,
+  updatePinSchema,
+  keyBackupSchema,
+  resetPinSchema,
+} from './pin.validation';
 
 const router = Router();
 
@@ -48,7 +57,7 @@ function verifyFreshAuthToken(token: string, userId: string): boolean {
 /**
  * POST /api/v1/pin/create
  */
-router.post('/create', async (req: AuthRequest, res: Response, next: NextFunction) => {
+router.post('/create', validateBody(createPinSchema), async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const userId = requireUserId(req);
     const { pin } = req.body;
@@ -77,7 +86,7 @@ router.post('/create', async (req: AuthRequest, res: Response, next: NextFunctio
 /**
  * POST /api/v1/pin/verify
  */
-router.post('/verify', async (req: AuthRequest, res: Response, next: NextFunction) => {
+router.post('/verify', validateBody(verifyPinSchema), async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const userId = requireUserId(req);
     const { pin, deviceId } = req.body;
@@ -104,7 +113,7 @@ router.post('/verify', async (req: AuthRequest, res: Response, next: NextFunctio
  *      or /pin/create immediately before this).
  * Otherwise it returns 403 — closing the previous "issue token without proof" bypass.
  */
-router.post('/verify-security', async (req: AuthRequest, res: Response, next: NextFunction) => {
+router.post('/verify-security', validateBody(verifySecuritySchema), async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const userId = requireUserId(req);
     const { pin, freshAuthToken } = (req.body || {}) as { pin?: string; freshAuthToken?: string };
@@ -147,7 +156,7 @@ router.post('/verify-security', async (req: AuthRequest, res: Response, next: Ne
 /**
  * POST /api/v1/pin/update
  */
-router.post('/update', securityGate, async (req: AuthRequest, res: Response, next: NextFunction) => {
+router.post('/update', securityGate, validateBody(updatePinSchema), async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const userId = requireUserId(req);
     const { currentPin, newPin } = req.body;
@@ -202,7 +211,7 @@ router.get('/key-backup', async (req: AuthRequest, res: Response, next: NextFunc
 /**
  * POST /api/v1/pin/key-backup
  */
-router.post('/key-backup', securityGate, async (req: AuthRequest, res: Response, next: NextFunction) => {
+router.post('/key-backup', securityGate, validateBody(keyBackupSchema), async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const userId = requireUserId(req);
     const { backup } = req.body;
@@ -250,7 +259,7 @@ router.get('/expiring-soon', async (req: AuthRequest, res: Response, next: NextF
 /**
  * POST /api/v1/pin/reset  (admin only)
  */
-router.post('/reset', async (req: AuthRequest, res: Response, next: NextFunction) => {
+router.post('/reset', validateBody(resetPinSchema), async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     if (req.user?.role !== 'admin') {
       throw AppError.forbidden('Admin access required', 'ADMIN_REQUIRED');
