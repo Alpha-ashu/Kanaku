@@ -41,10 +41,12 @@ jobs:
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: backend/package-lock.json
+          cache-dependency-path: package-lock.json
 
+      # Workspace-aware install at the repo root (overrides the job's backend working-directory).
       - name: Install dependencies
         run: npm ci --ignore-scripts
+        working-directory: ${{ github.workspace }}
 
       - name: Generate Prisma client
         run: npx prisma generate

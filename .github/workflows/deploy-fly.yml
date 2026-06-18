@@ -30,11 +30,11 @@ jobs:
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: backend/package-lock.json
+          cache-dependency-path: package-lock.json
 
+      # Workspace-aware install at the repo root (single hoisted lockfile).
       - name: Install dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
-        working-directory: backend
 
       - name: Generate Prisma client
         run: npx prisma generate
@@ -44,8 +44,7 @@ jobs:
           DIRECT_URL: ${{ secrets.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/kanaku' }}
 
       - name: Build backend
-        run: npm run build
-        working-directory: backend
+        run: npm run build:backend
 
       - name: Setup Flyctl
         uses: superfly/flyctl-actions/setup-flyctl@master
