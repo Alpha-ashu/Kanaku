@@ -10,7 +10,9 @@ const router = Router();
 router.use(authMiddleware);
 
 router.get('/', GroupController.getGroups);
-router.post('/repair-all-members', requireRole(['admin', 'manager']), GroupController.repairAllGroupMembers);
+// User-scoped: repairs only the caller's own groups (where: { userId }), so any
+// authenticated user may run it. (Was wrongly gated to admin/manager -> 403 for users.)
+router.post('/repair-all-members', GroupController.repairAllGroupMembers);
 router.post('/', validateBody(groupCreateSchema), GroupController.createGroup);
 router.get('/:id', validateParams(groupIdParamSchema), GroupController.getGroup);
 router.put('/:id', validateParams(groupIdParamSchema), validateBody(groupUpdateSchema), GroupController.updateGroup);

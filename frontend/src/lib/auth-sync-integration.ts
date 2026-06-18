@@ -1495,7 +1495,9 @@ async function syncUserDataFromBackend(
   }
 
   if (finalTablesToSync.length === 0) {
-    console.info('[Sync] Skipping backend sync; all requested tables synced <5m ago.');
+    if (import.meta.env.DEV) {
+      console.info('[Sync] Skipping backend sync; all requested tables synced <5m ago.');
+    }
     return;
   }
 
