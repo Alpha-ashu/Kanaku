@@ -15,6 +15,10 @@ const envSchema = z.object({
     }),
   JWT_SECRET: z.string().min(32).optional(),
   SUPABASE_JWT_SECRET: z.string().min(1).optional(),
+  // Auth source of truth. 'custom' = backend-issued JWT (default, current behavior).
+  // 'supabase' = Supabase Auth canonical (Option A) — only flip after users are
+  // migrated and validated in staging. See docs/AUTH_CONSOLIDATION_PLAN.md.
+  AUTH_CANONICAL: z.enum(['custom', 'supabase']).default('custom'),
   FRONTEND_URL: z.string().url().optional(),
   LOG_LEVEL: z.enum(['error', 'warn', 'info', 'debug']).default('info'),
   // API Keys and Credentials

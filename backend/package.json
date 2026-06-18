@@ -10,6 +10,7 @@
     "ensure:cloud-sync-schema": "node ./scripts/ensure-cloud-sync-schema.cjs",
     "ensure:db-integrity": "node ./scripts/ensure-db-integrity.cjs",
     "demo:reset-users": "node ./scripts/reset-demo-users.cjs",
+    "measure:auth": "node ./scripts/measure-auth-distribution.cjs",
     "seed:demo": "node ./scripts/seed-production-roles.cjs && node ./scripts/seed-mock-data.cjs",
     "build": "tsc",
     "start": "node dist/server.js",
