@@ -77,10 +77,14 @@ caveat that it carries the larger one-time user migration.
 Supabase Auth becomes the single source of truth. Implementation proceeds via the
 staged plan above — **no cutover until migration is sized and a staging env exists.**
 
-### Progress
+### Progress (safe scaffolding landed; no behavior change)
 - **Step 1 (measure) — tooling ready:** `backend/scripts/measure-auth-distribution.cjs`
   (`npm --prefix backend run measure:auth`) reports local-bcrypt vs Supabase-managed
   user counts (read-only). Run it against the real DB to size the migration.
+- **Feature flag:** `AUTH_CANONICAL` added to `backend/src/config/env.ts`
+  (`'custom'` default = current behavior; `'supabase'` = Option A). Documented in
+  `.env.example` alongside the Supabase vars Option A needs (`SUPABASE_URL`,
+  `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_JWT_SECRET`).
 
 ### Blockers before the cutover can be implemented safely
 1. **Run the measurement** (above) so we know how many local users need importing.
@@ -89,14 +93,47 @@ staged plan above — **no cutover until migration is sized and a staging env ex
    Auth is the highest-blast-radius subsystem; it must not be cut over against prod
    without a staging dry-run.
 
-### Next implementation increments (once unblocked)
-3. Import local bcrypt users into Supabase `auth.users` (GoTrue supports bcrypt
-   `encrypted_password` import) — or stage a password-reset campaign using the
-   Phase 5 reset template.
-4. Make `authMiddleware` prefer the Supabase JWT; keep custom-JWT verification during
-   the compatibility window.
-5. Converge the frontend onto a single Supabase session + one refresh path (retire
-   `TokenManager` / `/auth/refresh` usage).
-6. Remove custom issuance (`generateTokens`, `/auth/login`, `/auth/register`,
-   `/auth/refresh`) and the `supabase-managed-account` sentinel once usage ~0.
-7. Rotate `JWT_SECRET` / Supabase keys; finalize a single revocation story.
+## Migration runbook (Option A) — to be built against a Supabase staging project
+
+> **Why staging is mandatory:** the user import touches GoTrue's internal schema
+> and must be validated end-to-end (sign-in, refresh, RLS) before prod. A wrong
+> import silently breaks login for migrated users.
+
+### The hard part: preserving user ids
+Every FK in the app (transactions, accounts, goals, …) keys on `User.id`. So
+migrated users **must keep their existing id** in Supabase.
+- `supabase.auth.admin.createUser()` **generates a new id** → unusable for migration
+  (would orphan all FKs). It also can't set a bcrypt hash with a chosen id.
+- Therefore migrate by **inserting directly into `auth.users` + `auth.identities`**
+  (service-role SQL), preserving `id` and the bcrypt `encrypted_password`, and
+  honoring GoTrue invariants:
+  - `auth.users`: `id` (= local `User.id`), `email`, `encrypted_password` (the bcrypt
+    hash), `email_confirmed_at = now()`, `aud = 'authenticated'`, `role = 'authenticated'`,
+    `instance_id = '00000000-0000-0000-0000-000000000000'`, `raw_user_meta_data` (name/role),
+    `created_at`/`updated_at`.
+  - `auth.identities`: a matching row (`provider = 'email'`, `user_id = id`,
+    `identity_data = {sub, email}`) — **required** or email sign-in fails.
+- Idempotent: skip users already present in `auth.users`; dry-run first (report only).
+
+### Ordered steps
+1. **Stand up a Supabase staging project**; point a staging backend at it.
+2. **Run `measure:auth`** to size local vs supabase-managed.
+3. **Build + dry-run the import** (`auth.users` + `auth.identities`, id-preserving) on
+   staging; verify a migrated user can sign in via `supabase.auth.signInWithPassword`.
+4. **Flip `AUTH_CANONICAL=supabase` on staging.** `authMiddleware` keeps accepting both
+   token types (compatibility window) — no lockout.
+5. **Converge the frontend** to a single Supabase session + one refresh path: replace
+   the custom `TokenManager` + `/auth/refresh` usage with `supabase.auth` (the 63
+   existing `supabase.auth.*` call sites become the single path); retire the custom
+   401-retry-via-`/auth/refresh`.
+6. **Validate** the full matrix on staging (login, refresh, logout, PIN, sockets,
+   role gates, RLS), then run the import on prod during a maintenance window.
+7. **Remove custom issuance** (`generateTokens`, `/auth/login|register|refresh`) and
+   the `supabase-managed-account` sentinel once metrics show ~0 custom-token usage.
+8. **Rotate** `JWT_SECRET` + Supabase keys; finalize a single revocation story.
+
+### What I need from you to build steps 3–6
+- A **Supabase staging project** (URL + service-role + anon + JWT secret) wired to a
+  staging backend, and the **`measure:auth` output**. With those I can implement and
+  validate the import + the frontend convergence safely; without them, building it
+  blind risks a broken-login cutover.
