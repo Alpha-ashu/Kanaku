@@ -4,6 +4,7 @@ import { prisma } from '../../db/prisma';
 import { logger } from '../../config/logger';
 import { isDatabaseUnavailableError } from '../../utils/databaseAvailability';
 import { uploadBuffer, createSignedUrl } from '../../utils/storage';
+import { sendRoleAssignedEmail } from '../../emails';
 
 // ─── Public ───────────────────────────────────────────────────────────────────
 
@@ -463,6 +464,12 @@ export const approveAdvisor = async (req: AuthRequest, res: Response) => {
     });
 
     logger.info('Advisor approved', { advisorId: id, reviewerId });
+
+    // Best-effort role-assigned email (no-op if SendGrid is unconfigured).
+    if (user.email) {
+      void sendRoleAssignedEmail(user.email, 'advisor', user.name || undefined).catch(() => {});
+    }
+
     return res.json({ success: true });
   } catch (error: any) {
     if (isDatabaseUnavailableError(error)) {

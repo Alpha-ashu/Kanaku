@@ -12,6 +12,7 @@ import { prisma } from '../../db/prisma';
 import { isDatabaseUnavailableError } from '../../utils/databaseAvailability';
 import { AppError } from '../../utils/AppError';
 import { generateTokens, verifyRefreshToken } from '../../utils/auth';
+import { sendWelcomeEmail } from '../../emails';
 
 const authService = new AuthService();
 const challengeMemoryCache = new Map<string, { payload: any; expiresAt: number }>();
@@ -225,6 +226,11 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
 
     const tokens = await authService.register(sanitizedInput);
     logger.info(`[AuthController] User registered successfully in service: ${tokens.user?.id}`);
+
+    // Best-effort welcome email (no-op if SendGrid is unconfigured).
+    if (tokens.user?.email) {
+      void sendWelcomeEmail(tokens.user.email, tokens.user.name).catch(() => {});
+    }
 
     res.setHeader('Authorization', `Bearer ${tokens.accessToken}`);
     res.setHeader('x-refresh-token', tokens.refreshToken);

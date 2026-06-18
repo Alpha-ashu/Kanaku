@@ -21,10 +21,10 @@ emails/
 
 | Event | Service | Template | Status |
 |---|---|---|---|
-| Welcome (after registration) | `sendWelcomeEmail(to, name?)` | `renderWelcomeEmail` | template ready — not yet wired into `register` |
-| Password reset | `sendPasswordResetEmail(to, resetUrl, name?)` | `renderPasswordResetEmail` | template ready — wire to a reset flow |
-| Role assigned | `sendRoleAssignedEmail(to, role, name?)` | `renderRoleAssignedEmail` | template ready — wire to admin role grant |
-| Account verification | `sendVerificationEmail(to, verifyUrl, name?)` | `renderVerificationEmail` | template ready — wire to a verify flow |
+| Welcome (after registration) | `sendWelcomeEmail(to, name?)` | `renderWelcomeEmail` | **wired** — best-effort in `auth.controller` register |
+| Role assigned | `sendRoleAssignedEmail(to, role, name?)` | `renderRoleAssignedEmail` | **wired** — best-effort on advisor approval (`advisor.controller`) |
+| Password reset | `sendPasswordResetEmail(to, resetUrl, name?)` | `renderPasswordResetEmail` | template ready — under Option A, Supabase Auth handles reset emails natively |
+| Account verification | `sendVerificationEmail(to, verifyUrl, name?)` | `renderVerificationEmail` | template ready — under Option A, Supabase Auth handles verification natively |
 | In-app notification | `sendNotificationEmail({ to, title, message, … })` | `renderNotificationEmail` | **live** via the email worker |
 | OTP delivery | `sendEmail(...)` (in `otp.service`) | inline | live |
 | Collaboration invitation | `sendEmail(...)` (in `invitation.service`) | inline | live |
