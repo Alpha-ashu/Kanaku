@@ -1,10 +1,13 @@
 import path from 'path';
 import crypto from 'crypto';
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let cachedFileTypeFromBuffer: ((buffer: Buffer) => Promise<{ mime: string; ext: string } | undefined>) | null = null;
 
-const getFileTypeFromBuffer = async () => {
+const getFileTypeFromBuffer = async (): Promise<(buffer: Buffer) => Promise<{ mime: string; ext: string } | undefined>> => {
   if (cachedFileTypeFromBuffer) return cachedFileTypeFromBuffer;
-  const mod = await import('file-type');
+  // file-type v22+ is ESM-only; use dynamic import with type assertion
+  const mod = await import('file-type' as string) as { fileTypeFromBuffer: (buffer: Buffer) => Promise<{ mime: string; ext: string } | undefined> };
   cachedFileTypeFromBuffer = mod.fileTypeFromBuffer;
   return cachedFileTypeFromBuffer;
 };

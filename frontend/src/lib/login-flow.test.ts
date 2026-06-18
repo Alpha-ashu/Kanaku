@@ -169,7 +169,8 @@ describe('api.auth.login', () => {
 
     const result = await api.auth.login(credentials);
     expect(result.success).toBe(true);
-    expect(result.data?.user?.email).toBe('user@test.com');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    expect((result.data as any)?.user?.email).toBe('user@test.com');
   });
 
   it('makes two fetch calls: /auth/login/challenge then /auth/login', async () => {
