@@ -9,19 +9,20 @@
 | Method | Path | Guards | Handler |
 |---|---|---|---|
 | GET | `/bills` | auth | `BillsController.getBills` |
-| GET | `/bills/:id` | auth | `BillsController.getBill` |
+| GET | `/bills/:id` | auth, validated | `BillsController.getBill` |
 | POST | `/bills` | auth | `—` |
-| DELETE | `/bills/:id` | auth | `BillsController.deleteBill` |
+| DELETE | `/bills/:id` | auth, validated | `BillsController.deleteBill` |
 
 ## Files
 
 - `bills.controller.ts`
 - `bills.routes.ts`
+- `bills.validation.ts`
 - `README.md`
 
 ## Canonical-shape conformance
 
-✅ controller · — service · — repository · — validation · ✅ routes · — types
+✅ controller · — service · — repository · ✅ validation · ✅ routes · — types
 
 ---
 _Auto-generated from `bills/*.routes.ts`. Regenerate with `node scripts/gen-module-readmes.mjs`. Edit the purpose line in the generator, not here._

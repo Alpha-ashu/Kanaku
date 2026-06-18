@@ -8,14 +8,14 @@
 
 | Method | Path | Guards | Handler |
 |---|---|---|---|
-| GET | `/notifications` | auth | `NotificationController.getNotifications` |
+| GET | `/notifications` | auth, validated | `NotificationController.getNotifications` |
 | GET | `/notifications/unread/count` | auth | `NotificationController.getUnreadCount` |
-| GET | `/notifications/:id` | auth | `NotificationController.getNotification` |
-| PUT | `/notifications/:id/read` | auth | `NotificationController.markAsRead` |
+| GET | `/notifications/:id` | auth, validated | `NotificationController.getNotification` |
+| PUT | `/notifications/:id/read` | auth, validated | `NotificationController.markAsRead` |
 | POST | `/notifications/mark-all-read` | auth | `NotificationController.markAllAsRead` |
-| DELETE | `/notifications/:id` | auth | `NotificationController.deleteNotification` |
+| DELETE | `/notifications/:id` | auth, validated | `NotificationController.deleteNotification` |
 | DELETE | `/notifications` | auth | `NotificationController.clearAllNotifications` |
-| POST | `/notifications/send` | auth, admin | `NotificationController.sendNotification` |
+| POST | `/notifications/send` | auth, admin, validated | `NotificationController.sendNotification` |
 
 ## Files
 
@@ -23,11 +23,12 @@
 - `notification.controller.ts`
 - `notification.routes.ts`
 - `notification.service.ts`
+- `notification.validation.ts`
 - `README.md`
 
 ## Canonical-shape conformance
 
-✅ controller · ✅ service · — repository · — validation · ✅ routes · — types
+✅ controller · ✅ service · — repository · ✅ validation · ✅ routes · — types
 
 ---
 _Auto-generated from `notifications/*.routes.ts`. Regenerate with `node scripts/gen-module-readmes.mjs`. Edit the purpose line in the generator, not here._

@@ -35,14 +35,17 @@ concern so new code can `import { ... } from '../security'`.
 
 **Rule of thumb:** never build SQL with string interpolation; use Prisma methods or tagged-template raw queries. Never pass user input to `$executeRawUnsafe` / `$queryRawUnsafe`.
 
-## Input-validation coverage gap
+## Input-validation coverage
 
-Modules with a dedicated `*.validation.ts` are validated at the edge. These modules currently **lack** one — tracked for follow-up (add Zod schemas + `validateBody`/`validateParams`):
+Most modules validate via dedicated `*.validation.ts` + `validateBody`/`validateParams`. Status of the rest:
 
-- **Has inline validation (controller-level):** `auth`
+- **Validated inline (not via a `*.validation.ts` file):** `auth` (controller checks), `devices` (zod in controller), `voice` + `import` (zod in routes)
+- **Edge validation added (this pass):** `advisors`, `bills`, `notifications`
 - **Read-only / low-risk:** `dashboard`, `stocks`
 - **Special wire formats:** `webhooks` (provider-signed), `sync` (bulk payload), `avatars` (static)
-- **Should add edge validation:** `advisors`, `bills`, `devices`, `import`, `notifications`, `pin`, `voice`
+- **Still needs review:** `pin` — security-sensitive; body shape not obvious from the routes, intentionally left for manual review rather than guessed schemas
+
+Validation schemas use `.passthrough()` because the validate middleware replaces `req.*` with the parsed result — so they enforce types/lengths without dropping fields or rejecting otherwise-valid requests.
 
 ## Penetration / security tests
 
