@@ -72,6 +72,31 @@ caveat that it carries the larger one-time user migration.
 - Auth is the highest-blast-radius subsystem — a wrong cutover logs everyone out. Mitigated by the compatibility window + feature flag + staged migration + keeping the old path verifiable until usage drops.
 - Each step is independently shippable and reversible; **no step removes a working path before its replacement is proven.**
 
-## Decision needed
-Choose **Option A (Supabase-canonical)** or **Option B (custom-canonical)**. Then I'll
-start with step 1 (measure) and the compatibility-window scaffolding — not a cutover.
+## Decision: **Option A — Supabase Auth canonical** (chosen)
+
+Supabase Auth becomes the single source of truth. Implementation proceeds via the
+staged plan above — **no cutover until migration is sized and a staging env exists.**
+
+### Progress
+- **Step 1 (measure) — tooling ready:** `backend/scripts/measure-auth-distribution.cjs`
+  (`npm --prefix backend run measure:auth`) reports local-bcrypt vs Supabase-managed
+  user counts (read-only). Run it against the real DB to size the migration.
+
+### Blockers before the cutover can be implemented safely
+1. **Run the measurement** (above) so we know how many local users need importing.
+2. **A Supabase staging/test project** to validate token verification, the
+   bcrypt-hash import into `auth.users`, and the frontend session flow end-to-end.
+   Auth is the highest-blast-radius subsystem; it must not be cut over against prod
+   without a staging dry-run.
+
+### Next implementation increments (once unblocked)
+3. Import local bcrypt users into Supabase `auth.users` (GoTrue supports bcrypt
+   `encrypted_password` import) — or stage a password-reset campaign using the
+   Phase 5 reset template.
+4. Make `authMiddleware` prefer the Supabase JWT; keep custom-JWT verification during
+   the compatibility window.
+5. Converge the frontend onto a single Supabase session + one refresh path (retire
+   `TokenManager` / `/auth/refresh` usage).
+6. Remove custom issuance (`generateTokens`, `/auth/login`, `/auth/register`,
+   `/auth/refresh`) and the `supabase-managed-account` sentinel once usage ~0.
+7. Rotate `JWT_SECRET` / Supabase keys; finalize a single revocation story.
