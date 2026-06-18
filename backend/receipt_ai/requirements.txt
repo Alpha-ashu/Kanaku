@@ -7,6 +7,8 @@ watchfiles==1.2.0
 httptools==0.8.0
 python-multipart==0.0.32
 Pillow==12.2.0
-torch>=2.5.0
+# Pinned >=2.10.0 to patch torch CVEs incl. CRITICAL CVE-2025-32434
+# (torch.load weights_only=True RCE) + CVE-2025-2953/2999/3001/3730/32434.
+torch>=2.10.0
 transformers==5.12.1
 accelerate>=0.34.0
