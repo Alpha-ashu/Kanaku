@@ -50,11 +50,13 @@ jobs:
         run: npx prisma generate
         env:
           DATABASE_URL: ${{ secrets.TEST_DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/kanaku_test' }}
+          DIRECT_URL: ${{ secrets.TEST_DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/kanaku_test' }}
 
       - name: Push schema to test DB
         run: npx prisma db push --skip-generate
         env:
           DATABASE_URL: ${{ secrets.TEST_DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/kanaku_test' }}
+          DIRECT_URL: ${{ secrets.TEST_DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/kanaku_test' }}
 
       - name: Build backend
         run: npm run build
@@ -63,6 +65,7 @@ jobs:
         run: npm run qa:seed-admin
         env:
           DATABASE_URL: ${{ secrets.TEST_DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/kanaku_test' }}
+          DIRECT_URL: ${{ secrets.TEST_DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/kanaku_test' }}
           JWT_SECRET: ${{ secrets.JWT_SECRET || 'ci-test-secret-at-least-32-characters-long' }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL || 'http://localhost:54321' }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY || 'test-service-key' }}
@@ -71,6 +74,7 @@ jobs:
         run: node dist/server.js > backend-dev.log 2>&1 &
         env:
           DATABASE_URL: ${{ secrets.TEST_DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/kanaku_test' }}
+          DIRECT_URL: ${{ secrets.TEST_DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/kanaku_test' }}
           JWT_SECRET: ${{ secrets.JWT_SECRET || 'ci-test-secret-at-least-32-characters-long' }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL || 'http://localhost:54321' }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY || 'test-anon-key' }}

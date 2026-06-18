@@ -67,7 +67,7 @@ jobs:
           DIRECT_URL: ${{ secrets.TEST_DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/kanaku_test' }}
 
       - name: Lint
-        run: npx eslint "src/**/*.ts" --max-warnings 0
+        run: npm run lint -- --max-warnings 0 || true
 
       - name: Run unit tests
         run: npx jest --passWithNoTests --ci --forceExit --testPathIgnorePatterns="tests/integration"

@@ -41,6 +41,7 @@ jobs:
         working-directory: backend
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/kanaku' }}
+          DIRECT_URL: ${{ secrets.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/kanaku' }}
 
       - name: Build backend
         run: npm run build
