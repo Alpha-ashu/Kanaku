@@ -57,4 +57,26 @@ backend/.pg-testdata/
 # SQLite dev databases (Mo-1 fix)
 backend/*.db
 backend/dev.db
+backend/prisma/*.db
+
+# Secrets / credentials (these predate the rules above and were untracked via git rm --cached)
+dexie-cloud.key
+*.pem
+*.p12
+serviceAccount*.json
+
+# Ad-hoc logs, test/build result dumps, and scratch output
+*.tsbuildinfo
+backend/jest_results*.txt
+backend/server_log*.txt
+backend/pg_server_log*.txt
+backend/postgres_test_log.txt
+backend/qa_results.txt
+backend/test-results.json
+frontend/vitest-results.json
+frontend/output*.txt
+frontend/debug.txt
+frontend/new_desktop.txt
+frontend/UTF8
+scratch/
 
