@@ -21,19 +21,19 @@ const prisma = new PrismaClient();
 const SUPABASE_MANAGED = 'supabase-managed-account';
 
 async function main() {
-  const [total, supabaseManaged, noPassword] = await Promise.all([
+  const [total, supabaseManaged, emptyPassword] = await Promise.all([
     prisma.user.count(),
     prisma.user.count({ where: { password: SUPABASE_MANAGED } }),
-    prisma.user.count({ where: { password: null } }),
+    prisma.user.count({ where: { password: '' } }),
   ]);
 
-  const local = total - supabaseManaged - noPassword;
+  const local = total - supabaseManaged - emptyPassword;
   const pct = (n) => (total ? ((n / total) * 100).toFixed(1) : '0.0');
 
   console.log('\n=== Auth distribution (read-only) ===');
   console.log(`Total users:            ${total}`);
   console.log(`Supabase-managed:       ${supabaseManaged} (${pct(supabaseManaged)}%)`);
-  console.log(`No password set:        ${noPassword} (${pct(noPassword)}%)`);
+  console.log(`Empty password:         ${emptyPassword} (${pct(emptyPassword)}%)`);
   console.log(`Local bcrypt password:  ${local} (${pct(local)}%)  <-- need migration into Supabase Auth (Option A)`);
   console.log('\nInterpretation:');
   console.log('  - High "Supabase-managed" share  -> Option A migration is small; proceed with cutover.');

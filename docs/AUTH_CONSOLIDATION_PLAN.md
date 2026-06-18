@@ -152,11 +152,20 @@ A separate paid Supabase project is **not** required. Two safe options:
    batch — and delete the test rows if anything's off. Real users are unaffected
    until the frontend convergence + flag flip.
 
-### Migration tooling (ready, dry-run by default)
+### Migration tooling (✅ VALIDATED on local Supabase)
 - `backend/scripts/migrate-users-to-supabase-auth.cjs` (`npm --prefix backend run
   migrate:supabase-auth`) — id-preserving insert into `auth.users` + `auth.identities`,
-  idempotent, additive, **dry-run unless `--apply`**. ⚠️ GoTrue's auth schema varies by
-  version — validate via option 1 or 2 before `--apply` against prod.
+  idempotent, additive, **dry-run unless `--apply`**.
+- **Validated end-to-end against a real local GoTrue (Docker):** seeded a bcrypt
+  user → `--apply` → the user signs in via `supabase.auth.signInWithPassword` with
+  their original password, **id preserved** (FKs intact); re-runs skip existing users.
+- **Critical finding baked into the script:** GoTrue scans several nullable token
+  columns (`confirmation_token`, `recovery_token`, `email_change_token_new`,
+  `email_change`, `phone_change`, `phone_change_token`, `email_change_token_current`,
+  `reauthentication_token`) as non-null strings — they must be inserted as `''` or
+  login fails with "Database error querying schema". The script sets them to `''`.
+- Still: run a `--apply` against a **single prod test user** + verify sign-in before
+  the full batch (GoTrue schema can vary by version).
 
 ### What I still need from you
 - The **`measure:auth` output** (migration size), and your call on validation path

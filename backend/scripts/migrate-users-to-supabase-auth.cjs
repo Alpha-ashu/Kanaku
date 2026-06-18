@@ -40,14 +40,19 @@ async function migrateUser(u) {
   const identityData = JSON.stringify({ sub: u.id, email: u.email, email_verified: true });
 
   // auth.users — preserve id + bcrypt hash; mark email confirmed.
+  // The token columns are nullable in the DB but GoTrue scans them as non-null
+  // strings, so they MUST be '' (NULL -> "Database error querying schema" on login).
   await prisma.$executeRaw`
     INSERT INTO auth.users (
       id, instance_id, aud, role, email, encrypted_password, email_confirmed_at,
-      raw_app_meta_data, raw_user_meta_data, created_at, updated_at
+      raw_app_meta_data, raw_user_meta_data, created_at, updated_at,
+      confirmation_token, recovery_token, email_change_token_new, email_change,
+      phone_change, phone_change_token, email_change_token_current, reauthentication_token
     ) VALUES (
       ${u.id}::uuid, '00000000-0000-0000-0000-000000000000'::uuid, 'authenticated', 'authenticated',
       ${u.email}, ${u.password}, NOW(),
-      ${appMeta}::jsonb, ${userMeta}::jsonb, NOW(), NOW()
+      ${appMeta}::jsonb, ${userMeta}::jsonb, NOW(), NOW(),
+      '', '', '', '', '', '', '', ''
     )
     ON CONFLICT (id) DO NOTHING
   `;
@@ -65,7 +70,7 @@ async function migrateUser(u) {
 
 async function main() {
   const users = await prisma.user.findMany({
-    where: { NOT: [{ password: null }, { password: SUPABASE_MANAGED }] },
+    where: { password: { not: SUPABASE_MANAGED } },
     select: { id: true, email: true, password: true, name: true, role: true },
   });
 
@@ -76,6 +81,12 @@ async function main() {
   let skipped = 0;
   for (const u of users) {
     if (!u.email) { skipped++; continue; }
+    // Only migrate real bcrypt hashes (skip empty / non-bcrypt sentinels).
+    if (!u.password || !/^\$2[aby]\$/.test(u.password)) {
+      skipped++;
+      console.log(`  skip   ${u.email} (no bcrypt password)`);
+      continue;
+    }
     const exists = await alreadyInAuth(u.id, u.email);
     if (exists) {
       skipped++;
