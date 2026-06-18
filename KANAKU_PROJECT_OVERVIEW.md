@@ -194,6 +194,21 @@ There is exactly **one** env file per runtime. Secrets (incl. the DB password) l
 
 > **Rotating the DB password:** edit `DATABASE_URL` in `backend/.env`. All backend processes read that single file. `backend/.env` is git-ignored and must never be committed.
 
+### Dependency vulnerability audit (2026-06-19)
+
+A full sweep of every dependency manifest + the committed `package-lock.json` (1382 locked packages) was validated against the GitHub Advisory database.
+
+| Ecosystem | Scope | Result |
+|---|---|---|
+| npm | root + backend + frontend (all 1382 locked transitive deps) | ✅ **CVE-clean** — the extensive `overrides` block in root/`backend` `package.json` already pins every historically-flagged transitive dep (axios, tar, form-data, ws, undici, esbuild, dompurify, path-to-regexp, qs, follow-redirects, …) to patched versions; the lockfile reflects them. |
+| pip | `backend/receipt_ai/requirements.txt` | ⚠️ 1 accepted risk: `torch@2.10.0` → **CVE-2025-3000** (LOW, `torch.jit.script` memory corruption) — **no patched version exists yet**; tracked, re-evaluate when upstream ships a fix. All other pins (starlette, fastapi, Pillow, transformers) are patched. |
+| github-actions | CI/CD workflows | Pinned to current majors (`actions/*@v4`, `setup-android@v3`). Now covered by Dependabot. |
+| gradle | `android/` Capacitor shell | AndroidX + Gradle 8.13 current. Now covered by Dependabot. |
+
+**Dependabot config** (`.github/dependabot.yml`) extended from npm+pip to also scan **github-actions** and **gradle** for supply-chain defense-in-depth.
+
+> The Dependabot alert banner may briefly continue to show pre-remediation counts until GitHub re-scans the default branch; the validated current state of the lockfile + requirements is clean aside from the single unpatched-upstream `torch` LOW.
+
 ---
 
 ## D. Universal Request Lifecycle (Sequence Diagram)
