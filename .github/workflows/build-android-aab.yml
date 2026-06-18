@@ -105,11 +105,11 @@ jobs:
           cd android
           if [ -f "../$KEYSTORE_PATH" ] && [ -n "$KEYSTORE_PASSWORD" ]; then
             cat > key.properties << EOF
-            storeFile=../$KEYSTORE_PATH
-            storePassword=$KEYSTORE_PASSWORD
-            keyAlias=$KEY_ALIAS
-            keyPassword=$KEY_PASSWORD
-            EOF
+storeFile=../$KEYSTORE_PATH
+storePassword=$KEYSTORE_PASSWORD
+keyAlias=$KEY_ALIAS
+keyPassword=$KEY_PASSWORD
+EOF
           fi
           ./gradlew bundleRelease --no-daemon
           rm -f key.properties
