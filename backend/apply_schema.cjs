@@ -1,7 +1,10 @@
 const { Client } = require('pg');
 const fs = require('fs');
 const path = require('path');
-require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
+// Load secrets from the canonical backend env file (backend/.env) — the same
+// file the API server and Prisma read. Keeping a single source of truth avoids
+// the "which .env has the DB password?" confusion.
+require('dotenv').config({ path: path.resolve(__dirname, '.env') });
 
 async function runMigration() {
   // Read the connection string from the environment — never hardcode DB

@@ -48,4 +48,5 @@ After **6 months** in archive without being restored or referenced, a quarterly 
 | Path | Reason | Date |
 |---|---|---|
 | `platform/config/credentials.ts`, `platform/database/migrations.js`, `platform/database/models.js` | Empty/example scaffolding stubs, never imported anywhere. See [`platform/reason.md`](./platform/reason.md). | 2026-06-19 |
+| `.env.example` (repo root) → `config/root.env.example` | Redundant "mega-template"; no process reads a root `.env`. Canonical env files are `backend/.env` + `frontend/.env`. See [`config/reason.md`](./config/reason.md). | 2026-06-19 |
 

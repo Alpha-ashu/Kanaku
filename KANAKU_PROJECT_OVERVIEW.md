@@ -181,6 +181,19 @@ Full-repo sweep for SQL injection, XSS, and unvalidated user input. Findings + a
 
 **Defense-in-depth:** every user input now traverses four protective layers before touching the database — CORS + rate limit → global sanitiser → route-level zod schema (strict shape/type/length/regex/enum) → Prisma parameterized query with ownership filter (`where: { userId }`).
 
+### Environment-file layout (canonical, 2026-06-19)
+
+There is exactly **one** env file per runtime. Secrets (incl. the DB password) live in the matching file below — there is no repo-root `.env` (the old root `.env.example` was archived to `archive-unused/config/`).
+
+| File | Consumed by | Key vars |
+|---|---|---|
+| `backend/.env` (template `backend/.env.example`) | API server (`server.ts` → `dotenv/config`), Prisma (`db:migrate`/`db:seed`), `apply_schema.cjs`, root `scripts/dev-full.mjs` | **`DATABASE_URL`** (DB password lives here), `JWT_SECRET`, `SUPABASE_*`, `SENDGRID_WEBHOOK_PUBLIC_KEY`, webhook/AA secrets |
+| `frontend/.env` (template `frontend/.env.example`) | Vite build/dev | `VITE_*` only |
+| `backend/.env.test` | Jest integration suite | test DB + mock keys |
+| `docker-compose.yml` | local Postgres/pgAdmin | hardcoded `environment:` (reads no `.env`) |
+
+> **Rotating the DB password:** edit `DATABASE_URL` in `backend/.env`. All backend processes read that single file. `backend/.env` is git-ignored and must never be committed.
+
 ---
 
 ## D. Universal Request Lifecycle (Sequence Diagram)
