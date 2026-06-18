@@ -1,0 +1,81 @@
+﻿{
+    "endpoint":  "/api/v1/advisors/role-mode",
+    "method":  "PUT",
+    "feature":  "advisors",
+    "description":  "TODO: describe PUT /api/v1/advisors/role-mode",
+    "auth":  "bearer",
+    "rateLimit":  "default",
+    "implementation":  {
+                           "controller":  "backend/src/features/advisors/advisors.controller.ts#manager",
+                           "route":  "backend/src/features/advisors/advisor.routes.ts",
+                           "validation":  "inline or none -- verify"
+                       },
+    "request":  {
+                    "headers":  {
+                                    "Content-Type":  "application/json",
+                                    "Authorization":  "Bearer \u003cjwt\u003e"
+                                },
+                    "params":  {
+
+                               },
+                    "query":  {
+
+                              },
+                    "body":  {
+
+                             }
+                },
+    "responses":  {
+                      "200":  {
+                                  "description":  "TODO success shape",
+                                  "body":  {
+
+                                           }
+                              },
+                      "400":  {
+                                  "description":  "Validation failed",
+                                  "body":  {
+                                               "error":  "validation_error",
+                                               "issues":  [
+
+                                                          ]
+                                           }
+                              },
+                      "429":  {
+                                  "description":  "Rate limited",
+                                  "body":  {
+                                               "error":  "too_many_requests"
+                                           }
+                              },
+                      "500":  {
+                                  "description":  "Server error",
+                                  "body":  {
+                                               "error":  "internal_error"
+                                           }
+                              },
+                      "401":  {
+                                  "description":  "Missing/invalid token",
+                                  "body":  {
+                                               "error":  "unauthorized"
+                                           }
+                              },
+                      "403":  {
+                                  "description":  "Forbidden",
+                                  "body":  {
+                                               "error":  "forbidden"
+                                           }
+                              }
+                  },
+    "sideEffects":  {
+                        "writesDb":  true,
+                        "emitsSocket":  false,
+                        "transactional":  false,
+                        "audited":  false
+                    },
+    "notes":  "",
+    "generator":  {
+                      "auto":  true,
+                      "version":  1,
+                      "generatedAt":  "2026-06-19"
+                  }
+}

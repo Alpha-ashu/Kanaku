@@ -3,7 +3,7 @@ import app from './app';
 import { logger } from './config/logger';
 import { initializeSocket } from './sockets/index';
 import { closeRedis, initRedis } from './cache/redis';
-import { startAIBackgroundJobs, stopAIBackgroundJobs } from './modules/ai/ai.engine';
+import { startAIBackgroundJobs, stopAIBackgroundJobs } from './features/ai/ai.engine';
 import { initializeNotificationWorkers } from './workers/index';
 import { startCleanupWorker, stopCleanupWorker } from './workers/cleanup.worker';
 import { getQueues } from './config/queue';
@@ -93,7 +93,7 @@ process.on('unhandledRejection', (reason: unknown) => {
 });
 
 process.on('uncaughtException', (error: Error) => {
-  logger.error('Uncaught exception — shutting down', {
+  logger.error('Uncaught exception â€” shutting down', {
     message: error.message,
     stack: error.stack,
   });

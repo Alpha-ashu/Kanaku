@@ -1,0 +1,63 @@
+{
+  "endpoint": "/api/v1/auth/login",
+  "method": "POST",
+  "feature": "auth",
+  "description": "Authenticate a user with email + password and return access + refresh JWTs.",
+  "auth": "public",
+  "rateLimit": "auth (20/min per IP)",
+  "implementation": {
+    "controller": "backend/src/features/auth/auth.controller.ts#login",
+    "route": "backend/src/features/auth/auth.routes.ts",
+    "validation": "backend/src/features/auth/auth.controller.ts (inline zod)"
+  },
+  "request": {
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "email": "string (email, required)",
+      "password": "string (min 8, required)",
+      "deviceId": "string (optional â€“ binds session to device)"
+    }
+  },
+  "responses": {
+    "200": {
+      "description": "Login successful",
+      "body": {
+        "accessToken": "string (JWT, 15m, type='access')",
+        "refreshToken": "string (JWT, 7d, type='refresh')",
+        "user": {
+          "id": "uuid",
+          "email": "string",
+          "role": "user | admin",
+          "approved": true
+        }
+      }
+    },
+    "400": {
+      "description": "Validation failed",
+      "body": { "error": "validation_error", "issues": [{ "path": "email", "message": "Invalid email" }] }
+    },
+    "401": {
+      "description": "Invalid credentials",
+      "body": { "error": "invalid_credentials" }
+    },
+    "403": {
+      "description": "Account suspended or not approved",
+      "body": { "error": "account_suspended" }
+    },
+    "429": {
+      "description": "Too many login attempts",
+      "body": { "error": "too_many_requests" }
+    }
+  },
+  "sideEffects": {
+    "writesDb": true,
+    "emitsSocket": false,
+    "transactional": true,
+    "audited": true,
+    "auditEvents": ["login_succeeded", "login_failed"]
+  },
+  "notes": "Refresh tokens are rotated on /api/v1/auth/refresh. Refresh tokens are rejected by middleware for any non-refresh route."
+}
+

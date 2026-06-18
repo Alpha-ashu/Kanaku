@@ -1,0 +1,78 @@
+﻿{
+    "endpoint":  "/api/v1/auth/profile",
+    "method":  "GET",
+    "feature":  "auth",
+    "description":  "TODO: describe GET /api/v1/auth/profile",
+    "auth":  "bearer",
+    "rateLimit":  "default",
+    "implementation":  {
+                           "controller":  "backend/src/features/auth/auth.controller.ts#getProfile",
+                           "route":  "backend/src/features/auth/auth.routes.ts",
+                           "validation":  "inline or none -- verify"
+                       },
+    "request":  {
+                    "headers":  {
+                                    "Content-Type":  "application/json",
+                                    "Authorization":  "Bearer \u003cjwt\u003e"
+                                },
+                    "params":  {
+
+                               },
+                    "query":  {
+
+                              }
+                },
+    "responses":  {
+                      "200":  {
+                                  "description":  "TODO success shape",
+                                  "body":  {
+
+                                           }
+                              },
+                      "400":  {
+                                  "description":  "Validation failed",
+                                  "body":  {
+                                               "error":  "validation_error",
+                                               "issues":  [
+
+                                                          ]
+                                           }
+                              },
+                      "429":  {
+                                  "description":  "Rate limited",
+                                  "body":  {
+                                               "error":  "too_many_requests"
+                                           }
+                              },
+                      "500":  {
+                                  "description":  "Server error",
+                                  "body":  {
+                                               "error":  "internal_error"
+                                           }
+                              },
+                      "401":  {
+                                  "description":  "Missing/invalid token",
+                                  "body":  {
+                                               "error":  "unauthorized"
+                                           }
+                              },
+                      "403":  {
+                                  "description":  "Forbidden",
+                                  "body":  {
+                                               "error":  "forbidden"
+                                           }
+                              }
+                  },
+    "sideEffects":  {
+                        "writesDb":  false,
+                        "emitsSocket":  false,
+                        "transactional":  false,
+                        "audited":  false
+                    },
+    "notes":  "",
+    "generator":  {
+                      "auto":  true,
+                      "version":  1,
+                      "generatedAt":  "2026-06-19"
+                  }
+}

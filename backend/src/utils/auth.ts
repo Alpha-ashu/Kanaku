@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import { AuthTokens } from '../modules/auth/auth.types';
+import { AuthTokens } from '../features/auth/auth.types';
 
 const getSecret = () => {
   const secret = process.env.JWT_SECRET || process.env.SUPABASE_JWT_SECRET;

@@ -1,0 +1,67 @@
+﻿{
+    "endpoint":  "/api/v1/gold/:id",
+    "method":  "GET",
+    "feature":  "gold",
+    "description":  "TODO: describe GET /api/v1/gold/:id",
+    "auth":  "public",
+    "rateLimit":  "default",
+    "implementation":  {
+                           "controller":  "backend/src/features/gold/gold.controller.ts#a",
+                           "route":  "backend/src/features/gold/gold.routes.ts",
+                           "validation":  {
+                                              "params":  "backend/src/features/gold/*.validation.ts#goldIdParamSchema"
+                                          }
+                       },
+    "request":  {
+                    "headers":  {
+                                    "Content-Type":  "application/json"
+                                },
+                    "params":  {
+                                   "id":  "string (required)"
+                               },
+                    "query":  {
+
+                              }
+                },
+    "responses":  {
+                      "200":  {
+                                  "description":  "TODO success shape",
+                                  "body":  {
+
+                                           }
+                              },
+                      "400":  {
+                                  "description":  "Validation failed",
+                                  "body":  {
+                                               "error":  "validation_error",
+                                               "issues":  [
+
+                                                          ]
+                                           }
+                              },
+                      "429":  {
+                                  "description":  "Rate limited",
+                                  "body":  {
+                                               "error":  "too_many_requests"
+                                           }
+                              },
+                      "500":  {
+                                  "description":  "Server error",
+                                  "body":  {
+                                               "error":  "internal_error"
+                                           }
+                              }
+                  },
+    "sideEffects":  {
+                        "writesDb":  false,
+                        "emitsSocket":  false,
+                        "transactional":  false,
+                        "audited":  false
+                    },
+    "notes":  "",
+    "generator":  {
+                      "auto":  true,
+                      "version":  1,
+                      "generatedAt":  "2026-06-19"
+                  }
+}

@@ -5,7 +5,7 @@
 import request from 'supertest';
 import jwt from 'jsonwebtoken';
 import { app } from '../../src/app';
-import { pinService } from '../../src/modules/pin/pin.service';
+import { pinService } from '../../src/features/pin/pin.service';
 import { generateSecurityToken } from '../../src/middleware/securityGate';
 
 const API = '/api/v1';

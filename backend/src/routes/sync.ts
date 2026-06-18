@@ -6,7 +6,7 @@
  */
 
 import express from 'express';
-import { syncService } from '../modules/sync/sync.service';
+import { syncService } from '../features/sync/sync.service';
 import { authMiddleware, AuthRequest } from '../middleware/auth';
 
 const router = express.Router();

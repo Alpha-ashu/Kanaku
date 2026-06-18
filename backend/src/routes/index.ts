@@ -1,37 +1,37 @@
 import { NextFunction, Request, Response, Router } from 'express';
-import { authRoutes } from '../modules/auth/auth.routes';
-import { syncRoutes } from '../modules/sync/sync.routes';
-import { pinRoutes } from '../modules/pin/pin.routes';
-import { transactionRoutes } from '../modules/transactions/transaction.routes';
-import { accountRoutes } from '../modules/accounts/account.routes';
-import { goalRoutes } from '../modules/goals/goal.routes';
-import { loanRoutes } from '../modules/loans/loan.routes';
-import { settingsRoutes } from '../modules/settings/settings.routes';
-import { bookingRoutes } from '../modules/bookings/booking.routes';
-import { advisorRoutes } from '../modules/advisors/advisor.routes';
-import { sessionRoutes } from '../modules/sessions/session.routes';
-import { paymentRoutes } from '../modules/payments/payment.routes';
-import { adminRoutes } from '../modules/admin/admin.routes';
-import { notificationRoutes } from '../modules/notifications/notification.routes';
-import { deviceRoutes } from '../modules/devices/device.routes';
-import { stockRoutes } from '../modules/stocks/stock.routes';
-import { friendRoutes } from '../modules/friends/friend.routes';
-import { investmentRoutes } from '../modules/investments/investment.routes';
-import { todoRoutes } from '../modules/todos/todo.routes';
-import { groupRoutes } from '../modules/groups/group.routes';
-import { dashboardRoutes } from '../modules/dashboard/dashboard.routes';
-import { categorizationRoutes, learnRouter } from '../modules/categorization/categorization.routes';
-import { avatarRoutes } from '../modules/avatars/avatar.routes';
-import voiceRoutes from '../modules/voice/voice.routes';
-import importRoutes from '../modules/import/import.routes';
-import { otpRoutes } from '../modules/otp/otp.routes';
-import { aaRoutes } from '../modules/aa/aa.routes';
-import { recurringRoutes } from '../modules/recurring/recurring.routes';
-import { budgetRoutes } from '../modules/budgets/budget.routes';
-import { taxRoutes } from '../modules/tax/tax.routes';
-import { goldRoutes } from '../modules/gold/gold.routes';
-import { collaborationRoutes } from '../modules/collaboration/collaboration.routes';
-import { webhookRoutes } from '../modules/webhooks/webhook.routes';
+import { authRoutes } from '../features/auth/auth.routes';
+import { syncRoutes } from '../features/sync/sync.routes';
+import { pinRoutes } from '../features/pin/pin.routes';
+import { transactionRoutes } from '../features/transactions/transaction.routes';
+import { accountRoutes } from '../features/accounts/account.routes';
+import { goalRoutes } from '../features/goals/goal.routes';
+import { loanRoutes } from '../features/loans/loan.routes';
+import { settingsRoutes } from '../features/settings/settings.routes';
+import { bookingRoutes } from '../features/bookings/booking.routes';
+import { advisorRoutes } from '../features/advisors/advisor.routes';
+import { sessionRoutes } from '../features/sessions/session.routes';
+import { paymentRoutes } from '../features/payments/payment.routes';
+import { adminRoutes } from '../features/admin/admin.routes';
+import { notificationRoutes } from '../features/notifications/notification.routes';
+import { deviceRoutes } from '../features/devices/device.routes';
+import { stockRoutes } from '../features/stocks/stock.routes';
+import { friendRoutes } from '../features/friends/friend.routes';
+import { investmentRoutes } from '../features/investments/investment.routes';
+import { todoRoutes } from '../features/todos/todo.routes';
+import { groupRoutes } from '../features/groups/group.routes';
+import { dashboardRoutes } from '../features/dashboard/dashboard.routes';
+import { categorizationRoutes, learnRouter } from '../features/categorization/categorization.routes';
+import { avatarRoutes } from '../features/avatars/avatar.routes';
+import voiceRoutes from '../features/voice/voice.routes';
+import importRoutes from '../features/import/import.routes';
+import { otpRoutes } from '../features/otp/otp.routes';
+import { aaRoutes } from '../features/aa/aa.routes';
+import { recurringRoutes } from '../features/recurring/recurring.routes';
+import { budgetRoutes } from '../features/budgets/budget.routes';
+import { taxRoutes } from '../features/tax/tax.routes';
+import { goldRoutes } from '../features/gold/gold.routes';
+import { collaborationRoutes } from '../features/collaboration/collaboration.routes';
+import { webhookRoutes } from '../features/webhooks/webhook.routes';
 
 const router = Router();
 
@@ -57,7 +57,7 @@ const lazyRoute =
 router.use('/auth', authRoutes);
 router.use('/avatars', avatarRoutes);
 
-// Webhook routes (public — called directly by external providers like SendGrid)
+// Webhook routes (public â€” called directly by external providers like SendGrid)
 router.use('/webhooks', webhookRoutes);
 
 // Sync and PIN routes (protected)
@@ -78,8 +78,8 @@ router.use('/categorize', categorizationRoutes);
 router.use('/learn', learnRouter);
 router.use('/voice', voiceRoutes);
 router.use('/import', importRoutes);
-router.use('/ai', lazyRoute(() => require('../modules/ai/ai.routes'), 'aiRoutes'));
-router.use('/receipts', lazyRoute(() => require('../modules/receipts/receipt.routes'), 'receiptRoutes'));
+router.use('/ai', lazyRoute(() => require('../features/ai/ai.routes'), 'aiRoutes'));
+router.use('/receipts', lazyRoute(() => require('../features/receipts/receipt.routes'), 'receiptRoutes'));
 
 // Advisor & Booking routes
 router.use('/bookings', bookingRoutes);
@@ -96,7 +96,7 @@ router.use('/notifications', notificationRoutes);
 router.use('/devices', deviceRoutes);
 
 // Secure bill uploads
-router.use('/bills', lazyRoute(() => require('../modules/bills/bills.routes'), 'billsRoutes'));
+router.use('/bills', lazyRoute(() => require('../features/bills/bills.routes'), 'billsRoutes'));
 
 // Dashboard aggregation
 router.use('/dashboard', dashboardRoutes);
@@ -110,7 +110,7 @@ router.use('/stocks', stockRoutes);
 // OTP Verification (RBI-compliant)
 router.use('/otp', otpRoutes);
 
-// Account Aggregator (RBI AA — Setu integration)
+// Account Aggregator (RBI AA â€” Setu integration)
 router.use('/aa', aaRoutes);
 
 // Sub-feature modules (Recurring, Budgets, Tax, Gold)

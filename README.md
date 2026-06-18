@@ -7,10 +7,19 @@ KANAKUis a full-stack finance app with a React frontend, an Express/Prisma backe
 
 ## Repo map
 
+> 🏛️ **New: see [`ARCHITECTURE_RESTRUCTURE.md`](./ARCHITECTURE_RESTRUCTURE.md) for the enterprise architecture, feature-mapping, governance rules, and migration phases.**
+
 - [`frontend/`](./frontend/README.md): React app, IndexedDB/Dexie layer, scanners, importers, voice flow, and UI
 - [`backend/`](./backend/README.md): Express API, auth, sync, Prisma models, sockets, and security middleware
 - [`database/`](./database/README.md): raw SQL schemas and direct DB helper scripts
 - [`api/`](./api/README.md): lightweight serverless endpoints
+- [`api-docs/`](./api-docs/README.md): **machine-readable API contracts** — one JSON per endpoint
+- [`platform/`](./platform/README.md): **system-services hub** — security, shared, database/supabase/config indexes
+- [`quality/`](./quality/README.md): **unified testing hub** — manual, automation, api, database, performance
+- [`tools/`](./tools/README.md): ad-hoc developer tooling (pipeline automation stays in `scripts/`)
+- [`archive-unused/`](./archive-unused/README.md): **safe cleanup bucket** — never delete, always archive with `reason.md`
+- [`docs/architecture/FEATURE_MAP.md`](./docs/architecture/FEATURE_MAP.md): **feature traceability** across all layers
+- [`docs/onboarding/`](./docs/onboarding/README.md): start-here guide for new contributors
 - [`supabase/`](./supabase/README.md): Supabase migrations, edge functions, and setup notes
 - [`tests/`](./tests/README.md): fixtures, manual browser checks, runners, and scenario notes
 - [`samples/`](./samples/README.md): place for demo receipts, imports, and document examples

@@ -3,7 +3,7 @@ import path from 'path';
 import dotenv from 'dotenv';
 dotenv.config();
 
-import { scanReceiptWithGemini } from './src/modules/ai/ocr.engine';
+import { scanReceiptWithGemini } from './src/features/ai/ocr.engine';
 import { processImage } from './src/utils/imageProcessing';
 
 async function testOCR() {

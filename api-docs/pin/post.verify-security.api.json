@@ -1,0 +1,70 @@
+﻿{
+    "endpoint":  "/api/v1/pin/verify-security",
+    "method":  "POST",
+    "feature":  "pin",
+    "description":  "TODO: describe POST /api/v1/pin/verify-security",
+    "auth":  "public",
+    "rateLimit":  "default",
+    "implementation":  {
+                           "controller":  "backend/src/features/pin/pin.controller.ts#a",
+                           "route":  "backend/src/features/pin/pin.routes.ts",
+                           "validation":  {
+                                              "body":  "backend/src/features/pin/*.validation.ts#verifySecuritySchema"
+                                          }
+                       },
+    "request":  {
+                    "headers":  {
+                                    "Content-Type":  "application/json"
+                                },
+                    "params":  {
+
+                               },
+                    "query":  {
+
+                              },
+                    "body":  {
+
+                             }
+                },
+    "responses":  {
+                      "200":  {
+                                  "description":  "TODO success shape",
+                                  "body":  {
+
+                                           }
+                              },
+                      "400":  {
+                                  "description":  "Validation failed",
+                                  "body":  {
+                                               "error":  "validation_error",
+                                               "issues":  [
+
+                                                          ]
+                                           }
+                              },
+                      "429":  {
+                                  "description":  "Rate limited",
+                                  "body":  {
+                                               "error":  "too_many_requests"
+                                           }
+                              },
+                      "500":  {
+                                  "description":  "Server error",
+                                  "body":  {
+                                               "error":  "internal_error"
+                                           }
+                              }
+                  },
+    "sideEffects":  {
+                        "writesDb":  true,
+                        "emitsSocket":  false,
+                        "transactional":  false,
+                        "audited":  false
+                    },
+    "notes":  "",
+    "generator":  {
+                      "auto":  true,
+                      "version":  1,
+                      "generatedAt":  "2026-06-19"
+                  }
+}

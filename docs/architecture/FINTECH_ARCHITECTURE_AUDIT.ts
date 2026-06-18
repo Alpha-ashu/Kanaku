@@ -1,7 +1,7 @@
 /**
- * ═══════════════════════════════════════════════════════════════════════════════
+ * â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
  * KANAKU CODEBASE - COMPREHENSIVE FINTECH ARCHITECTURE & SECURITY AUDIT
- * ═══════════════════════════════════════════════════════════════════════════════
+ * â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
  * 
  * Scope: Financial application architecture, banking-grade security, scalability,
  *        real-time sync, offline-first design, group finance, borrow/lend workflows
@@ -9,55 +9,55 @@
  * Audit Date: June 1, 2026
  * Architecture Level: Enterprise FinTech
  * Target Scale: 1M+ users
- * ═══════════════════════════════════════════════════════════════════════════════
+ * â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
  */
 
 /**
- * ┌─────────────────────────────────────────────────────────────────────────────┐
- * │ SECTION 1: FINANCIAL APPLICATION ARCHITECTURE ANALYSIS                      │
- * └─────────────────────────────────────────────────────────────────────────────┘
+ * â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+ * â”‚ SECTION 1: FINANCIAL APPLICATION ARCHITECTURE ANALYSIS                      â”‚
+ * â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
  */
 
 /**
  * 1.1 CURRENT STATE: Strengths & Foundation
- * ─────────────────────────────────────────────
+ * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  */
 export const financialArchitectureCurrentState = {
   strengths: [
-    '✅ Account-centric design (users have multiple accounts)',
-    '✅ Transaction atomicity via Prisma transactions',
-    '✅ Balance tracking via database triggers (immutable)',
-    '✅ Multi-currency support (USD, etc.)',
-    '✅ Decimal precision (12,2) for monetary values',
-    '✅ Account types: bank, card, cash, digital',
-    '✅ Transaction import with dedup via dedupHash',
-    '✅ Soft-delete support (deletedAt) for compliance',
-    '✅ Device-level tracking for multi-device sync',
+    'âœ… Account-centric design (users have multiple accounts)',
+    'âœ… Transaction atomicity via Prisma transactions',
+    'âœ… Balance tracking via database triggers (immutable)',
+    'âœ… Multi-currency support (USD, etc.)',
+    'âœ… Decimal precision (12,2) for monetary values',
+    'âœ… Account types: bank, card, cash, digital',
+    'âœ… Transaction import with dedup via dedupHash',
+    'âœ… Soft-delete support (deletedAt) for compliance',
+    'âœ… Device-level tracking for multi-device sync',
   ],
 
   weaknesses_and_gaps: [
-    '⚠️ No explicit double-entry bookkeeping (critical for accuracy)',
-    '⚠️ Balance computed by triggers - no reconciliation mechanism',
-    '⚠️ No transaction reversals (only soft-delete)',
-    '⚠️ No settlement states for transfers (in-transit status)',
-    '⚠️ No failed transaction recovery queue',
-    '⚠️ Group expense splits lack fractional cent handling',
-    '⚠️ No idempotency keys for API requests (duplicate TX risk)',
-    '⚠️ No transaction versioning (only version=1 field)',
-    '⚠️ Loan interest calculation not automated (manual emiAmount)',
-    '⚠️ No lock mechanism for concurrent account updates',
+    'âš ï¸ No explicit double-entry bookkeeping (critical for accuracy)',
+    'âš ï¸ Balance computed by triggers - no reconciliation mechanism',
+    'âš ï¸ No transaction reversals (only soft-delete)',
+    'âš ï¸ No settlement states for transfers (in-transit status)',
+    'âš ï¸ No failed transaction recovery queue',
+    'âš ï¸ Group expense splits lack fractional cent handling',
+    'âš ï¸ No idempotency keys for API requests (duplicate TX risk)',
+    'âš ï¸ No transaction versioning (only version=1 field)',
+    'âš ï¸ Loan interest calculation not automated (manual emiAmount)',
+    'âš ï¸ No lock mechanism for concurrent account updates',
   ],
 };
 
 /**
  * 1.2 CRITICAL ISSUES: Double-Entry Bookkeeping Missing
- * ─────────────────────────────────────────────────────
+ * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  */
 export const criticalIssue_NoDoubleEntryBookkeeping = {
   description: `
     Current: Transactions directly debit/credit account balances via triggers
     Risk: Silent accounting errors, reconciliation impossible, regulatory non-compliance
-    Impact: 🔴 CRITICAL - Every financial transaction is at risk
+    Impact: ðŸ”´ CRITICAL - Every financial transaction is at risk
   `,
 
   problem_detail: `
@@ -139,7 +139,7 @@ export const criticalIssue_NoDoubleEntryBookkeeping = {
     {
       step: 2,
       task: 'Create transaction wrapper service',
-      file_changes: 'backend/src/modules/transactions/transaction-ledger.service.ts',
+      file_changes: 'backend/src/features/transactions/transaction-ledger.service.ts',
       effort: '4 hours',
       responsibility: `
         - Accept transaction request
@@ -179,7 +179,7 @@ export const criticalIssue_NoDoubleEntryBookkeeping = {
     {
       step: 5,
       task: 'Add ledger reconciliation API endpoint',
-      file_changes: 'backend/src/modules/finance/finance.routes.ts',
+      file_changes: 'backend/src/features/finance/finance.routes.ts',
       effort: '2 hours',
       responsibility: `
         - GET /api/v1/finance/reconciliation (admin only)
@@ -214,71 +214,71 @@ export const criticalIssue_NoDoubleEntryBookkeeping = {
   `,
 
   estimated_total_effort: '17 hours',
-  priority: '🔴 CRITICAL',
+  priority: 'ðŸ”´ CRITICAL',
   affects_compliance: true,
 };
 
 /**
- * ┌─────────────────────────────────────────────────────────────────────────────┐
- * │ SECTION 2: BANKING-GRADE SECURITY ANALYSIS                                 │
- * └─────────────────────────────────────────────────────────────────────────────┘
+ * â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+ * â”‚ SECTION 2: BANKING-GRADE SECURITY ANALYSIS                                 â”‚
+ * â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
  */
 
 /**
  * 2.1 CURRENT SECURITY POSTURE: Strengths
- * ──────────────────────────────────────
+ * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  */
 export const securityCurrentState = {
   strengths: [
-    '✅ Supabase Auth + Custom JWT (dual auth)',
-    '✅ Role-Based Access Control (RBAC)',
-    '✅ Owner-only checks on resources',
-    '✅ Audit logging in place',
-    '✅ Rate limiting middleware',
-    '✅ Input validation with Zod',
-    '✅ Soft-deletes for compliance',
-    '✅ PIN-based security with hash (bcrypt implied)',
-    '✅ Device fingerprinting',
-    '✅ Helmet + CORS configured',
+    'âœ… Supabase Auth + Custom JWT (dual auth)',
+    'âœ… Role-Based Access Control (RBAC)',
+    'âœ… Owner-only checks on resources',
+    'âœ… Audit logging in place',
+    'âœ… Rate limiting middleware',
+    'âœ… Input validation with Zod',
+    'âœ… Soft-deletes for compliance',
+    'âœ… PIN-based security with hash (bcrypt implied)',
+    'âœ… Device fingerprinting',
+    'âœ… Helmet + CORS configured',
   ],
 
   critical_vulnerabilities: [
-    '🔴 No field-level encryption for sensitive data',
-    '🔴 No request idempotency (duplicate TX risk)',
-    '🔴 No database-level row security (RLS)',
-    '🔴 No API signature verification for webhooks',
-    '🔴 No secrets rotation mechanism',
-    '🔴 No rate limiting per user (only global)',
-    '🔴 No honeypot fields for bot detection',
-    '🔴 No CSRF token validation visible',
-    '🔴 No OAuth token expiry enforcement',
-    '🔴 Transaction amounts not encrypted in logs',
+    'ðŸ”´ No field-level encryption for sensitive data',
+    'ðŸ”´ No request idempotency (duplicate TX risk)',
+    'ðŸ”´ No database-level row security (RLS)',
+    'ðŸ”´ No API signature verification for webhooks',
+    'ðŸ”´ No secrets rotation mechanism',
+    'ðŸ”´ No rate limiting per user (only global)',
+    'ðŸ”´ No honeypot fields for bot detection',
+    'ðŸ”´ No CSRF token validation visible',
+    'ðŸ”´ No OAuth token expiry enforcement',
+    'ðŸ”´ Transaction amounts not encrypted in logs',
   ],
 
   important_gaps: [
-    '⚠️ No 2FA for advisor/admin operations',
-    '⚠️ No IP whitelisting for admin routes',
-    '⚠️ No concurrent session limits',
-    '⚠️ No suspicious activity detection',
-    '⚠️ No data masking in API responses (full PII returned)',
-    '⚠️ No encryption key storage (env vars only)',
-    '⚠️ No backup encryption',
-    '⚠️ No data residency enforcement',
-    '⚠️ No transaction dispute/chargeback workflow',
-    '⚠️ No activity timeline for users to verify',
+    'âš ï¸ No 2FA for advisor/admin operations',
+    'âš ï¸ No IP whitelisting for admin routes',
+    'âš ï¸ No concurrent session limits',
+    'âš ï¸ No suspicious activity detection',
+    'âš ï¸ No data masking in API responses (full PII returned)',
+    'âš ï¸ No encryption key storage (env vars only)',
+    'âš ï¸ No backup encryption',
+    'âš ï¸ No data residency enforcement',
+    'âš ï¸ No transaction dispute/chargeback workflow',
+    'âš ï¸ No activity timeline for users to verify',
   ],
 };
 
 /**
  * 2.2 CRITICAL ISSUE: Field-Level Encryption for PII
- * ────────────────────────────────────────────────────
+ * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  */
 export const criticalIssue_NoFieldEncryption = {
   description: `
     Risk: Plaintext sensitive data in database
     Fields at risk: email, phone, full names, salary, DOB, SSN (if stored)
     Compliance: GDPR, PCI-DSS, CCPA violation
-    Impact: 🔴 CRITICAL - Data breach = regulatory fines + user lawsuits
+    Impact: ðŸ”´ CRITICAL - Data breach = regulatory fines + user lawsuits
   `,
 
   affected_models: [
@@ -412,20 +412,20 @@ export const criticalIssue_NoFieldEncryption = {
   ],
 
   estimated_total_effort: '17 hours',
-  priority: '🔴 CRITICAL',
+  priority: 'ðŸ”´ CRITICAL',
   affects_compliance: true,
 };
 
 /**
  * 2.3 CRITICAL ISSUE: Request Idempotency for Transaction Safety
- * ──────────────────────────────────────────────────────────────
+ * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  */
 export const criticalIssue_NoIdempotency = {
   description: `
     Risk: Duplicate financial transactions from network failures
     Scenario: User creates $500 transaction, network times out, client retries
     Current: 2 transactions created ($1000 total)
-    Impact: 🔴 CRITICAL - User loses money, balance corruption
+    Impact: ðŸ”´ CRITICAL - User loses money, balance corruption
   `,
 
   solution: `
@@ -521,7 +521,7 @@ export const criticalIssue_NoIdempotency = {
     {
       step: 3,
       task: 'Apply idempotency middleware to sensitive routes',
-      file_changes: 'backend/src/modules/transactions/transaction.routes.ts',
+      file_changes: 'backend/src/features/transactions/transaction.routes.ts',
       effort: '2 hours',
       code: `
         router.post(
@@ -573,19 +573,19 @@ export const criticalIssue_NoIdempotency = {
   ],
 
   estimated_total_effort: '10 hours',
-  priority: '🔴 CRITICAL',
+  priority: 'ðŸ”´ CRITICAL',
   affects_compliance: true,
 };
 
 /**
- * ┌─────────────────────────────────────────────────────────────────────────────┐
- * │ SECTION 3: DATABASE DESIGN & INTEGRITY                                      │
- * └─────────────────────────────────────────────────────────────────────────────┘
+ * â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+ * â”‚ SECTION 3: DATABASE DESIGN & INTEGRITY                                      â”‚
+ * â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
  */
 
 /**
  * 3.1 CRITICAL ISSUE: Missing Constraints & Data Integrity
- * ──────────────────────────────────────────────────────────
+ * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  */
 export const criticalIssue_MissingConstraints = {
   description: `
@@ -594,7 +594,7 @@ export const criticalIssue_MissingConstraints = {
     - Negative balances (account.balance < 0 possible)
     - Duplicate transactions (no uniqueness constraint)
     - Orphaned records (soft-deletes without checks)
-    - Circular transfers (A→B→C→A possible)
+    - Circular transfers (Aâ†’Bâ†’Câ†’A possible)
     - Impossible account types (type field has no enum)
   `,
 
@@ -641,7 +641,7 @@ export const criticalIssue_MissingConstraints = {
     loan_status: {
       issue: 'No validation of status transitions',
       current: 'status String @default("active")',
-      risk: 'Active→Closed→Active loops, invalid states',
+      risk: 'Activeâ†’Closedâ†’Active loops, invalid states',
       solution: `
         enum LoanStatus {
           pending
@@ -757,7 +757,7 @@ export const criticalIssue_MissingConstraints = {
     {
       step: 3,
       task: 'Create validation layer',
-      file_changes: 'backend/src/modules/accounts/account-validation.ts',
+      file_changes: 'backend/src/features/accounts/account-validation.ts',
       effort: '3 hours',
       responsibility: `
         - Validate balance never negative
@@ -781,13 +781,13 @@ export const criticalIssue_MissingConstraints = {
   ],
 
   estimated_total_effort: '12 hours',
-  priority: '🔴 CRITICAL',
+  priority: 'ðŸ”´ CRITICAL',
   affects_compliance: true,
 };
 
 /**
  * 3.2 IMPORTANT ISSUE: Missing Composite Indexes
- * ──────────────────────────────────────────────
+ * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  */
 export const importantIssue_MissingCompositeIndexes = {
   description: `
@@ -863,7 +863,7 @@ export const importantIssue_MissingCompositeIndexes = {
     {
       step: 1,
       task: 'Analyze query patterns',
-      file_changes: 'backend/src/modules/*/[entity].queries.ts',
+      file_changes: 'backend/src/features/*/[entity].queries.ts',
       effort: '3 hours',
       responsibility: 'Identify all find queries and their filters'
     },
@@ -916,34 +916,34 @@ export const importantIssue_MissingCompositeIndexes = {
   ],
 
   estimated_total_effort: '9 hours',
-  priority: '🟡 IMPORTANT',
+  priority: 'ðŸŸ¡ IMPORTANT',
   affects_performance: true,
 };
 
 /**
- * ┌─────────────────────────────────────────────────────────────────────────────┐
- * │ SECTION 4: REAL-TIME SYNCHRONIZATION ARCHITECTURE                          │
- * └─────────────────────────────────────────────────────────────────────────────┘
+ * â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+ * â”‚ SECTION 4: REAL-TIME SYNCHRONIZATION ARCHITECTURE                          â”‚
+ * â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
  */
 
 /**
  * 4.1 CRITICAL ISSUE: Conflict Resolution in Offline-First Sync
- * ──────────────────────────────────────────────────────────────
+ * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  */
 export const criticalIssue_NoConflictResolution = {
   description: `
     Current: SyncQueue tracks pending syncs, but no conflict resolution
     Scenario: User edits transaction on Device A and Device B (offline)
     Risk: Last-write-wins (data loss), inconsistent state across devices
-    Impact: 🔴 CRITICAL - Sync conflicts corrupt user data
+    Impact: ðŸ”´ CRITICAL - Sync conflicts corrupt user data
   `,
 
   problem_detail: `
     Timeline:
-    1. Device A: Edit transaction amount $100 → $200 (offline)
+    1. Device A: Edit transaction amount $100 â†’ $200 (offline)
     2. Device B: Edit same transaction note (offline)
-    3. Device A syncs: Server sees version 1 → 2
-    4. Device B syncs: Server sees version 1 → 2 (overwrites A's change)
+    3. Device A syncs: Server sees version 1 â†’ 2
+    4. Device B syncs: Server sees version 1 â†’ 2 (overwrites A's change)
     
     Result: User's amount edit is lost, inconsistency
   `,
@@ -1064,7 +1064,7 @@ export const criticalIssue_NoConflictResolution = {
     {
       step: 4,
       task: 'Add conflict resolution API endpoint',
-      file_changes: 'backend/src/modules/sync/sync.routes.ts',
+      file_changes: 'backend/src/features/sync/sync.routes.ts',
       effort: '3 hours',
       code: `
         // Get conflicts for user
@@ -1108,13 +1108,13 @@ export const criticalIssue_NoConflictResolution = {
   ],
 
   estimated_total_effort: '20 hours',
-  priority: '🔴 CRITICAL',
+  priority: 'ðŸ”´ CRITICAL',
   affects_reliability: true,
 };
 
 /**
  * 4.2 IMPORTANT ISSUE: Sync Queue Visibility and Reliability
- * ───────────────────────────────────────────────────────────
+ * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  */
 export const importantIssue_SyncQueueGaps = {
   description: `
@@ -1126,7 +1126,7 @@ export const importantIssue_SyncQueueGaps = {
   `,
 
   missing_features: [
-    'Exponential backoff retry (1s, 2s, 4s → 5 min cap)',
+    'Exponential backoff retry (1s, 2s, 4s â†’ 5 min cap)',
     'Dead-letter queue for final failures',
     'Sync status API endpoint for frontend',
     'Priority levels (high=transaction, low=friend)',
@@ -1219,7 +1219,7 @@ export const importantIssue_SyncQueueGaps = {
     {
       step: 3,
       task: 'Add sync status endpoint',
-      file_changes: 'backend/src/modules/sync/sync.routes.ts',
+      file_changes: 'backend/src/features/sync/sync.routes.ts',
       effort: '3 hours',
       code: `
         router.get('/status', authMiddleware, async (req, res) => {
@@ -1249,7 +1249,7 @@ export const importantIssue_SyncQueueGaps = {
     {
       step: 4,
       task: 'Add admin DLQ review interface',
-      file_changes: 'backend/src/modules/admin/admin.routes.ts',
+      file_changes: 'backend/src/features/admin/admin.routes.ts',
       effort: '3 hours',
       responsibility: `
         - GET /api/v1/admin/sync-dlq (list failed syncs)
@@ -1272,19 +1272,19 @@ export const importantIssue_SyncQueueGaps = {
   ],
 
   estimated_total_effort: '16 hours',
-  priority: '🟡 IMPORTANT',
+  priority: 'ðŸŸ¡ IMPORTANT',
   affects_reliability: true,
 };
 
 /**
- * ┌─────────────────────────────────────────────────────────────────────────────┐
- * │ SECTION 5: GROUP FINANCE & BORROW/LEND WORKFLOWS                            │
- * └─────────────────────────────────────────────────────────────────────────────┘
+ * â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+ * â”‚ SECTION 5: GROUP FINANCE & BORROW/LEND WORKFLOWS                            â”‚
+ * â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
  */
 
 /**
  * 5.1 CRITICAL ISSUE: Group Expense Settlement & Reconciliation
- * ──────────────────────────────────────────────────────────────
+ * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  */
 export const criticalIssue_GroupExpenseSettlement = {
   description: `
@@ -1311,7 +1311,7 @@ export const criticalIssue_GroupExpenseSettlement = {
     Optimal settlement: 
     - C pays B $50
     - D pays A $100 + C $50 = $150? NO!
-    - Circular: D→A ($100), A→B ($0 net), B→C ($0 net)
+    - Circular: Dâ†’A ($100), Aâ†’B ($0 net), Bâ†’C ($0 net)
     
     Current system: All three pay A = inefficient, confusing
   `,
@@ -1441,7 +1441,7 @@ export const criticalIssue_GroupExpenseSettlement = {
     {
       step: 3,
       task: 'Create settlement API endpoints',
-      file_changes: 'backend/src/modules/groups/group.routes.ts',
+      file_changes: 'backend/src/features/groups/group.routes.ts',
       effort: '4 hours',
       code: `
         // Get settlement graph for user
@@ -1550,13 +1550,13 @@ export const criticalIssue_GroupExpenseSettlement = {
   ],
 
   estimated_total_effort: '19 hours',
-  priority: '🔴 CRITICAL',
+  priority: 'ðŸ”´ CRITICAL',
   affects_functionality: true,
 };
 
 /**
  * 5.2 IMPORTANT ISSUE: Loan Management & EMI Calculations
- * ────────────────────────────────────────────────────────
+ * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  */
 export const importantIssue_LoanManagement = {
   description: `
@@ -1573,7 +1573,7 @@ export const importantIssue_LoanManagement = {
     Implement loan amortization system:
     
     1. Calculate EMI from: P, R, N
-       EMI = P × [R(1+R)^N] / [(1+R)^N - 1]
+       EMI = P Ã— [R(1+R)^N] / [(1+R)^N - 1]
        
     2. Create amortization schedule on loan creation
     3. Auto-debit on EMI date (via scheduled job)
@@ -1592,7 +1592,7 @@ export const importantIssue_LoanManagement = {
         export class LoanAmortizationService {
           /**
            * Calculate EMI (Equated Monthly Installment)
-           * EMI = P × [R(1+R)^N] / [(1+R)^N - 1]
+           * EMI = P Ã— [R(1+R)^N] / [(1+R)^N - 1]
            */
           calculateEMI(
             principal: number,
@@ -1699,7 +1699,7 @@ export const importantIssue_LoanManagement = {
     {
       step: 5,
       task: 'Add loan management API',
-      file_changes: 'backend/src/modules/loans/loan.routes.ts',
+      file_changes: 'backend/src/features/loans/loan.routes.ts',
       effort: '4 hours',
       code: `
         // Get amortization schedule
@@ -1785,19 +1785,19 @@ export const importantIssue_LoanManagement = {
   ],
 
   estimated_total_effort: '20 hours',
-  priority: '🟡 IMPORTANT',
+  priority: 'ðŸŸ¡ IMPORTANT',
   affects_functionality: true,
 };
 
 /**
- * ┌─────────────────────────────────────────────────────────────────────────────┐
- * │ SECTION 6: API SECURITY & RATE LIMITING                                    │
- * └─────────────────────────────────────────────────────────────────────────────┘
+ * â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+ * â”‚ SECTION 6: API SECURITY & RATE LIMITING                                    â”‚
+ * â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
  */
 
 /**
  * 6.1 CRITICAL ISSUE: Per-User Rate Limiting
- * ──────────────────────────────────────────
+ * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  */
 export const criticalIssue_NoPerUserRateLimit = {
   description: `
@@ -1900,7 +1900,7 @@ export const criticalIssue_NoPerUserRateLimit = {
     {
       step: 3,
       task: 'Apply rate limits to sensitive endpoints',
-      file_changes: 'backend/src/modules/auth/auth.routes.ts',
+      file_changes: 'backend/src/features/auth/auth.routes.ts',
       effort: '2 hours',
       code: `
         // Login: 5 attempts per minute per IP
@@ -1928,7 +1928,7 @@ export const criticalIssue_NoPerUserRateLimit = {
     {
       step: 4,
       task: 'Apply to transaction endpoints',
-      file_changes: 'backend/src/modules/transactions/transaction.routes.ts',
+      file_changes: 'backend/src/features/transactions/transaction.routes.ts',
       effort: '2 hours',
       code: `
         // Create transaction: 10 per minute per user
@@ -1957,19 +1957,19 @@ export const criticalIssue_NoPerUserRateLimit = {
   ],
 
   estimated_total_effort: '11 hours',
-  priority: '🔴 CRITICAL',
+  priority: 'ðŸ”´ CRITICAL',
   affects_security: true,
 };
 
 /**
- * ┌─────────────────────────────────────────────────────────────────────────────┐
- * │ SECTION 7: SCALABILITY FOR 1M+ USERS                                        │
- * └─────────────────────────────────────────────────────────────────────────────┘
+ * â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+ * â”‚ SECTION 7: SCALABILITY FOR 1M+ USERS                                        â”‚
+ * â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
  */
 
 /**
  * 7.1 IMPORTANT ISSUE: Query Performance at Scale
- * ──────────────────────────────────────────────
+ * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  */
 export const importantIssue_QueryPerformance = {
   description: `
@@ -2034,7 +2034,7 @@ export const importantIssue_QueryPerformance = {
     {
       step: 1,
       task: 'Optimize user profile query',
-      file_changes: 'backend/src/modules/users/user.service.ts',
+      file_changes: 'backend/src/features/users/user.service.ts',
       effort: '3 hours',
       before: `
         // BAD: 8+ queries
@@ -2155,13 +2155,13 @@ export const importantIssue_QueryPerformance = {
   ],
 
   estimated_total_effort: '10 hours',
-  priority: '🟡 IMPORTANT',
+  priority: 'ðŸŸ¡ IMPORTANT',
   affects_performance: true,
 };
 
 /**
  * 7.2 IMPORTANT ISSUE: Horizontal Scaling Architecture
- * ────────────────────────────────────────────────────
+ * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  */
 export const importantIssue_HorizontalScaling = {
   description: `
@@ -2320,19 +2320,19 @@ export const importantIssue_HorizontalScaling = {
   ],
 
   estimated_total_effort: '11 hours',
-  priority: '🟡 IMPORTANT',
+  priority: 'ðŸŸ¡ IMPORTANT',
   affects_scalability: true,
 };
 
 /**
- * ┌─────────────────────────────────────────────────────────────────────────────┐
- * │ SECTION 8: AUDIT, COMPLIANCE & OPERATIONAL READINESS                        │
- * └─────────────────────────────────────────────────────────────────────────────┘
+ * â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+ * â”‚ SECTION 8: AUDIT, COMPLIANCE & OPERATIONAL READINESS                        â”‚
+ * â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
  */
 
 /**
  * 8.1 IMPORTANT ISSUE: Comprehensive Audit Logging
- * ──────────────────────────────────────────────────
+ * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  */
 export const importantIssue_AuditLogging = {
   description: `
@@ -2458,7 +2458,7 @@ export const importantIssue_AuditLogging = {
     {
       step: 3,
       task: 'Apply to all financial operations',
-      file_changes: 'backend/src/modules/transactions/transaction.service.ts',
+      file_changes: 'backend/src/features/transactions/transaction.service.ts',
       effort: '5 hours',
       code: `
         async createTransaction(userId: string, data: any) {
@@ -2504,7 +2504,7 @@ export const importantIssue_AuditLogging = {
     {
       step: 4,
       task: 'Create audit report API',
-      file_changes: 'backend/src/modules/audit/audit.routes.ts',
+      file_changes: 'backend/src/features/audit/audit.routes.ts',
       effort: '3 hours',
       code: `
         // Get user's audit log
@@ -2556,14 +2556,14 @@ export const importantIssue_AuditLogging = {
   ],
 
   estimated_total_effort: '14 hours',
-  priority: '🟡 IMPORTANT',
+  priority: 'ðŸŸ¡ IMPORTANT',
   affects_compliance: true,
 };
 
 /**
- * ┌─────────────────────────────────────────────────────────────────────────────┐
- * │ PRIORITY MATRIX & IMPLEMENTATION ROADMAP                                    │
- * └─────────────────────────────────────────────────────────────────────────────┘
+ * â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+ * â”‚ PRIORITY MATRIX & IMPLEMENTATION ROADMAP                                    â”‚
+ * â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
  */
 
 export const recommendationsSummary = {
@@ -2677,7 +2677,7 @@ export const recommendationsSummary = {
 
 /**
  * 8-WEEK IMPLEMENTATION ROADMAP
- * ────────────────────────────
+ * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  */
 export const implementationRoadmap = {
   week_1_2: {

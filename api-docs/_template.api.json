@@ -1,0 +1,38 @@
+{
+  "endpoint": "/api/v1/<feature>/<action>",
+  "method": "GET | POST | PUT | PATCH | DELETE",
+  "feature": "<feature-name>",
+  "description": "What this endpoint does, in one sentence.",
+  "auth": "public | bearer | bearer+stepUp",
+  "rateLimit": "default | auth (20/min) | destructive (3/min)",
+  "implementation": {
+    "controller": "backend/src/features/<feature>/<feature>.controller.ts#<handlerName>",
+    "route": "backend/src/features/<feature>/<feature>.routes.ts",
+    "validation": "backend/src/features/<feature>/<feature>.validation.ts#<schemaName>"
+  },
+  "request": {
+    "headers": {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer <jwt> (omit if auth=public)"
+    },
+    "params": {},
+    "query": {},
+    "body": {}
+  },
+  "responses": {
+    "200": { "description": "Success", "body": {} },
+    "400": { "description": "Validation failed", "body": { "error": "string", "issues": [] } },
+    "401": { "description": "Missing/invalid token", "body": { "error": "unauthorized" } },
+    "403": { "description": "Forbidden (RBAC / ownership / feature gate)", "body": { "error": "forbidden" } },
+    "429": { "description": "Rate limited", "body": { "error": "too_many_requests" } },
+    "500": { "description": "Server error", "body": { "error": "internal_error" } }
+  },
+  "sideEffects": {
+    "writesDb": false,
+    "emitsSocket": false,
+    "transactional": false,
+    "audited": false
+  },
+  "notes": ""
+}
+

@@ -1,17 +1,17 @@
 /**
- * ═══════════════════════════════════════════════════════════════════════════════
+ * â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
  * KANAKU IMPLEMENTATION GUIDE - CRITICAL SECURITY & ARCHITECTURE FIXES
- * ═══════════════════════════════════════════════════════════════════════════════
+ * â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
  * 
  * This guide provides step-by-step implementation for the 6 CRITICAL issues
  * Start with these in Week 1-2 before any feature development
- * ═══════════════════════════════════════════════════════════════════════════════
+ * â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
  */
 
 /**
- * ┌─────────────────────────────────────────────────────────────────────────────┐
- * │ CRITICAL #1: IMPLEMENT IDEMPOTENCY KEYS (HIGHEST PRIORITY - 10 HOURS)      │
- * └─────────────────────────────────────────────────────────────────────────────┘
+ * â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+ * â”‚ CRITICAL #1: IMPLEMENT IDEMPOTENCY KEYS (HIGHEST PRIORITY - 10 HOURS)      â”‚
+ * â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
  * 
  * Why First: Prevents duplicate transactions immediately (quick win)
  * Risk Mitigation: Stops user money loss from network retries
@@ -176,7 +176,7 @@ export const step1_IdempotencyImplementation = {
     {
       task_id: 'IDEM-3',
       description: 'Apply idempotency to critical routes',
-      file: 'backend/src/modules/transactions/transaction.routes.ts',
+      file: 'backend/src/features/transactions/transaction.routes.ts',
       effort: '2 hours',
       code: `
         import { Router } from 'express';
@@ -192,7 +192,7 @@ export const step1_IdempotencyImplementation = {
         transactionRoutes.post(
           '/',
           authMiddleware,
-          idempotencyMiddleware, // ← Add here
+          idempotencyMiddleware, // â† Add here
           validateRequest(createTransactionSchema),
           createTransactionHandler
         );
@@ -201,7 +201,7 @@ export const step1_IdempotencyImplementation = {
         transactionRoutes.put(
           '/:id',
           authMiddleware,
-          idempotencyMiddleware, // ← Add here
+          idempotencyMiddleware, // â† Add here
           validateRequest(updateTransactionSchema),
           updateTransactionHandler
         );
@@ -210,7 +210,7 @@ export const step1_IdempotencyImplementation = {
         transactionRoutes.delete(
           '/:id',
           authMiddleware,
-          idempotencyMiddleware, // ← Add here
+          idempotencyMiddleware, // â† Add here
           deleteTransactionHandler
         );
         
@@ -353,9 +353,9 @@ export const step1_IdempotencyImplementation = {
 };
 
 /**
- * ┌─────────────────────────────────────────────────────────────────────────────┐
- * │ CRITICAL #2: PER-USER RATE LIMITING (8 HOURS)                               │
- * └─────────────────────────────────────────────────────────────────────────────┘
+ * â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+ * â”‚ CRITICAL #2: PER-USER RATE LIMITING (8 HOURS)                               â”‚
+ * â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
  */
 
 export const step2_RateLimitingImplementation = {
@@ -601,7 +601,7 @@ export const step2_RateLimitingImplementation = {
     {
       task_id: 'RATE-3',
       description: 'Apply rate limits to critical routes',
-      file: 'backend/src/modules/auth/auth.routes.ts',
+      file: 'backend/src/features/auth/auth.routes.ts',
       effort: '2 hours',
       code: `
         import { Router } from 'express';
@@ -613,14 +613,14 @@ export const step2_RateLimitingImplementation = {
         // LOGIN: 5 attempts per minute per IP
         authRoutes.post(
           '/login',
-          ipRateLimit(5, 60), // ← Limit by IP
+          ipRateLimit(5, 60), // â† Limit by IP
           loginHandler
         );
         
         // SIGNUP: 3 new accounts per minute per IP
         authRoutes.post(
           '/signup',
-          ipRateLimit(3, 60), // ← Limit by IP
+          ipRateLimit(3, 60), // â† Limit by IP
           signupHandler
         );
         
@@ -628,7 +628,7 @@ export const step2_RateLimitingImplementation = {
         authRoutes.post(
           '/refresh',
           authMiddleware,
-          perUserRateLimit(20, 60), // ← Limit per user
+          perUserRateLimit(20, 60), // â† Limit per user
           refreshHandler
         );
       `,
@@ -662,7 +662,7 @@ export const step2_RateLimitingImplementation = {
     {
       task_id: 'RATE-4',
       description: 'Create monitoring dashboard',
-      file: 'backend/src/modules/admin/rate-limit-monitor.ts',
+      file: 'backend/src/features/admin/rate-limit-monitor.ts',
       effort: '2 hours',
       responsibility: `
         - Admin endpoint: GET /api/v1/admin/rate-limits
@@ -675,9 +675,9 @@ export const step2_RateLimitingImplementation = {
 };
 
 /**
- * ┌─────────────────────────────────────────────────────────────────────────────┐
- * │ CRITICAL #3: DATABASE CONSTRAINTS (12 HOURS)                                │
- * └─────────────────────────────────────────────────────────────────────────────┘
+ * â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+ * â”‚ CRITICAL #3: DATABASE CONSTRAINTS (12 HOURS)                                â”‚
+ * â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
  */
 
 export const step3_DatabaseConstraints = {
@@ -845,7 +845,7 @@ export const step3_DatabaseConstraints = {
 
 /**
  * IMPLEMENTATION TIMELINE
- * ━━━━━━━━━━━━━━━━━━━━━
+ * â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
  * 
  * Week 1 (Mon-Fri):
  * - Mon: IDEM (idempotency) - 10h
