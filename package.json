@@ -25,6 +25,8 @@
     "docs:catalogs": "node scripts/gen-catalogs.mjs",
     "test": "npm run test:unit --workspace frontend",
     "test:backend": "npm run test --workspace backend",
+    "test:e2e": "playwright test",
+    "test:api": "playwright test -c quality/api/e2e/playwright.api.config.ts",
     "db:migrate": "cd backend && npx prisma@6.19.2 migrate dev",
     "db:seed": "cd backend && npx prisma@6.19.2 db seed",
     "db:studio": "cd backend && npx prisma@6.19.2 studio",

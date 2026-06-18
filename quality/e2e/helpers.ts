@@ -21,7 +21,7 @@ export const USERS = {
 };
 
 export async function screenshot(page: Page, name: string) {
-  const dir = path.join('tests', 'e2e', 'screenshots');
+  const dir = path.join('quality', 'e2e', 'screenshots');
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
   await page.screenshot({ path: path.join(dir, `${name}.png`), fullPage: false, timeout: 8000 }).catch(() => null);
 }
