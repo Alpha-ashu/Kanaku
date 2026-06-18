@@ -52,25 +52,33 @@ const createStubClient = (): any => {
 	};
 };
 
-// autoRefreshToken is set to false here.
-// AuthContext.tsx is responsible for calling startAutoRefresh() only AFTER a
-// successful getSession() confirms Supabase is actually reachable, and for
-// stopping it when the component unmounts or the network goes offline.
-// This prevents the setInterval retry loop from flooding the console when the
-// Supabase project is paused or the server is unreachable.
+// Auth source of truth. When 'supabase' (Option A), Supabase Auth owns the
+// session, so it MUST be persisted + auto-refreshed (otherwise getSession()
+// returns null right after login and every API call is unauthenticated).
+// In the default hybrid/custom mode the custom JWT is canonical, so we keep the
+// Supabase session non-persistent (AuthContext manages any refresh) to avoid
+// console-flooding retries when the Supabase project is paused.
+const supabaseCanonical = (import.meta.env.VITE_AUTH_CANONICAL || 'custom') === 'supabase';
+
 const supabase = (!supabaseUrl || !supabaseKey)
 	? createStubClient()
 	: createClient(supabaseUrl, supabaseKey, {
-		auth: {
-			autoRefreshToken: false,
-			persistSession: false,
-			detectSessionInUrl: true,
-			storage: {
-				getItem: () => null,
-				setItem: () => {},
-				removeItem: () => {},
+		auth: supabaseCanonical
+			? {
+				autoRefreshToken: true,
+				persistSession: true,
+				detectSessionInUrl: true,
+			}
+			: {
+				autoRefreshToken: false,
+				persistSession: false,
+				detectSessionInUrl: true,
+				storage: {
+					getItem: () => null,
+					setItem: () => {},
+					removeItem: () => {},
+				},
 			},
-		},
 	});
 
 export default supabase;
