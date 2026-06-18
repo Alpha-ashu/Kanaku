@@ -8,7 +8,7 @@ on:
       - "frontend/public/**"
       - "android/**"
       - "frontend/package.json"
-      - "frontend/package-lock.json"
+      - "package-lock.json"
       - "capacitor.config.*"
       - ".github/workflows/build-android-aab.yml"
   workflow_dispatch:
@@ -39,7 +39,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
-          cache-dependency-path: frontend/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -59,13 +59,10 @@ jobs:
         run: chmod +x gradlew
         working-directory: android
 
-      - name: Install root dependencies
+      # Workspace-aware install at the repo root installs both workspaces (incl. frontend).
+      - name: Install dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
         working-directory: .
-
-      - name: Install frontend dependencies
-        run: npm ci --ignore-scripts --no-audit --no-fund
-        working-directory: frontend
 
       - name: Build frontend for Capacitor
         run: npm run build
