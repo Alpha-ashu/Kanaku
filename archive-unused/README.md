@@ -45,5 +45,7 @@ After **6 months** in archive without being restored or referenced, a quarterly 
 
 ## Currently archived
 
-_None yet. This directory was created on 2026-06-19 as part of the architecture restructure._
+| Path | Reason | Date |
+|---|---|---|
+| `platform/config/credentials.ts`, `platform/database/migrations.js`, `platform/database/models.js` | Empty/example scaffolding stubs, never imported anywhere. See [`platform/reason.md`](./platform/reason.md). | 2026-06-19 |
 

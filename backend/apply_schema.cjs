@@ -4,9 +4,12 @@ const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 
 async function runMigration() {
-  const connectionString = 'postgresql://postgres.mmwrckfqeqjfqciymemh:Alpha_Ashu%401@aws-1-ap-southeast-2.pooler.supabase.com:6543/postgres?pgbouncer=true';
+  // Read the connection string from the environment — never hardcode DB
+  // credentials in source (see copilot-instructions security contract).
+  const connectionString = process.env.DATABASE_URL || process.env.DIRECT_URL;
   if (!connectionString) {
-    console.error('No database URL found in .env');
+    console.error('No database URL found. Set DATABASE_URL (or DIRECT_URL) in .env');
+    process.exitCode = 1;
     return;
   }
 
