@@ -23,6 +23,7 @@
     "docs:modules": "node scripts/gen-module-readmes.mjs",
     "docs:frontend": "node scripts/gen-frontend-readmes.mjs",
     "docs:catalogs": "node scripts/gen-catalogs.mjs",
+    "docs:endpoints": "node scripts/gen-endpoint-docs.mjs",
     "test": "npm run test:unit --workspace frontend",
     "test:backend": "npm run test --workspace backend",
     "test:e2e": "playwright test",
