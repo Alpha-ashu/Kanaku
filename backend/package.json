@@ -1,4 +1,4 @@
-﻿{
+{
     "name":  "KANAKU-backend",
     "version":  "1.0.0",
     "description":  "Backend API for KANAKU with TypeScript, Express, Prisma, JWT, Socket.IO",

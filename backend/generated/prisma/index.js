@@ -997,7 +997,7 @@ const config = {
   },
   "relativeEnvPaths": {
     "rootEnvPath": null,
-    "schemaEnvPath": "../../../.env"
+    "schemaEnvPath": "../../.env"
   },
   "relativePath": "../../prisma",
   "clientVersion": "6.19.2",
@@ -1025,8 +1025,8 @@ const fs = require('fs')
 config.dirname = __dirname
 if (!fs.existsSync(path.join(__dirname, 'schema.prisma'))) {
   const alternativePaths = [
-    "backend/generated/prisma",
     "generated/prisma",
+    "prisma",
   ]
   
   const alternativePath = alternativePaths.find((altPath) => {
@@ -1056,15 +1056,15 @@ Object.assign(exports, Prisma)
 
 // file annotations for bundling tools to include these files
 path.join(__dirname, "query_engine-windows.dll.node");
-path.join(process.cwd(), "backend/generated/prisma/query_engine-windows.dll.node")
+path.join(process.cwd(), "generated/prisma/query_engine-windows.dll.node")
 
 // file annotations for bundling tools to include these files
 path.join(__dirname, "libquery_engine-rhel-openssl-1.0.x.so.node");
-path.join(process.cwd(), "backend/generated/prisma/libquery_engine-rhel-openssl-1.0.x.so.node")
+path.join(process.cwd(), "generated/prisma/libquery_engine-rhel-openssl-1.0.x.so.node")
 
 // file annotations for bundling tools to include these files
 path.join(__dirname, "libquery_engine-rhel-openssl-3.0.x.so.node");
-path.join(process.cwd(), "backend/generated/prisma/libquery_engine-rhel-openssl-3.0.x.so.node")
+path.join(process.cwd(), "generated/prisma/libquery_engine-rhel-openssl-3.0.x.so.node")
 // file annotations for bundling tools to include these files
 path.join(__dirname, "schema.prisma");
-path.join(process.cwd(), "backend/generated/prisma/schema.prisma")
+path.join(process.cwd(), "generated/prisma/schema.prisma")
