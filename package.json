@@ -41,6 +41,7 @@
     "qa:backend:seed": "npm --prefix backend run qa:seed-admin",
     "qa:backend:matrix": "npm --prefix backend run qa:matrix",
     "qa:backend": "npm --prefix backend run qa:test-features",
+    "qa:api-report": "node quality/api/runner/run-api-report.mjs",
     "clean": "rimraf frontend/dist backend/dist node_modules/.vite",
     "postinstall": "npm run db:generate"
   },

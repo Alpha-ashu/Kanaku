@@ -179,6 +179,10 @@ supabase/.temp/
 *.seed
 *.pid.lock
 
+# ----- API report runner output (regenerated on demand: npm run qa:api-report) -----
+quality/reports/api/*.xlsx
+quality/reports/api/*.json
+
 # ----- Scratch / agent output -----
 scratch/
 .claude/commands/_*
