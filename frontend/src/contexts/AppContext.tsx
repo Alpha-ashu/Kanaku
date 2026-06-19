@@ -313,7 +313,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           (txn) => txn.accountId === account.id && !txn.deletedAt && Boolean(txn.importSource || txn.importedAt),
         );
 
-        let repairedBalance = derivedBalance;
+        let repairedBalance = Number(account.openingBalance ?? 0) + derivedBalance;
         if (
           hasImportedRows
           && account.type !== 'card'

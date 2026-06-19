@@ -251,7 +251,7 @@ export function Dashboard({ setCurrentPage }: DashboardProps) {
  return { totalInvested, currentValue, totalReturns, returnsPercent, count: openInvestments.length };
  }, [getDashboardInvestmentMetrics, openInvestments]);
 
- const totalNetWorth = stats.totalBalance + investmentStats.currentValue - groupStats.borrowed;
+ const totalNetWorth = stats.totalBalance + investmentStats.currentValue + groupStats.lent - groupStats.borrowed;
  const stockSetupHint = getStockDataSetupHint();
 
  const formatCurrency = (amount: number) => formatCurrencyAmount(amount, currency, {

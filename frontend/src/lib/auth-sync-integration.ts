@@ -1177,10 +1177,11 @@ export async function deduplicateLocalData() {
 }
 
 function findMatchingAccount(remote: any, localAccounts: any[]) {
+  const remoteType = remote.type === 'credit' ? 'card' : remote.type;
   return localAccounts.find((account) =>
     !account.remoteId &&
     normalizeText(account.name) === normalizeText(remote.name) &&
-    account.type === remote.type &&
+    account.type === remoteType &&
     normalizeText(account.currency) === normalizeText(remote.currency)
   );
 }
@@ -1551,30 +1552,53 @@ async function syncUserDataFromBackend(
 
   const accountCloudToLocal = new Map<string, number>();
   const friendCloudToLocal = new Map<string, number>();
-  const groupCloudToLocal = new Map<string, number>();
-  const listCloudToLocal = new Map<string, number>();
 
   const mappedAccounts = backendAccounts.map((account: any) => {
     const cloudId = String(account.id);
-    const localId = resolveLocalBackendId(cloudId, localAccounts, () =>
-      localAccounts.find((row) =>
-        !row.cloudId &&
-        normalizeText(row.name) === normalizeText(account.name) &&
-        row.type === account.type &&
-        normalizeText(row.currency) === normalizeText(account.currency),
-      )
+    const remoteType = account.type === 'credit' ? 'card' : account.type;
+    const localRecord = localAccounts.find((row) =>
+      !row.cloudId &&
+      normalizeText(row.name) === normalizeText(account.name) &&
+      row.type === remoteType &&
+      normalizeText(row.currency) === normalizeText(account.currency)
     );
+    const localId = resolveLocalBackendId(cloudId, localAccounts, () => localRecord);
+
+    // Compute txDeltas for this account from backendTransactions
+    const txDeltas = backendTransactions
+      .filter((tx: any) => String(tx.accountId) === cloudId)
+      .reduce((sum: number, tx: any) => {
+        const amount = Math.abs(Number(tx.amount) || 0);
+        if (amount <= 0) return sum;
+        if (tx.type === 'transfer') {
+          if (String(tx.accountId) === cloudId) {
+            return sum - amount;
+          }
+          if (String(tx.transferToAccountId) === cloudId) {
+            return sum + amount;
+          }
+        }
+        if (tx.expenseMode === 'loan' && tx.loanType === 'borrowed') {
+          return sum + amount;
+        }
+        if (tx.type === 'income') {
+          return sum + amount;
+        } else {
+          return sum - amount;
+        }
+      }, 0);
 
     const next = {
       id: localId,
       cloudId,
       name: account.name,
-      type: account.type,
+      type: remoteType,
       provider: account.provider ?? undefined,
       country: account.country ?? undefined,
       balance: Number(account.balance ?? 0),
       currency: account.currency ?? 'INR',
       isActive: account.isActive ?? true,
+      openingBalance: localRecord?.openingBalance ?? (Number(account.balance ?? 0) - txDeltas),
       createdAt: toDate(account.createdAt) ?? new Date(),
       updatedAt: toDate(account.updatedAt),
       deletedAt: toDate(account.deletedAt),
@@ -1586,12 +1610,6 @@ async function syncUserDataFromBackend(
     }
 
     return next;
-  });
-
-  mappedAccounts.forEach((account) => {
-    if (account.id && account.cloudId) {
-      accountCloudToLocal.set(account.cloudId, account.id);
-    }
   });
 
   const mappedFriends = backendFriends.map((friend: any) => {
@@ -1626,296 +1644,7 @@ async function syncUserDataFromBackend(
     return next;
   });
 
-  mappedFriends.forEach((friend) => {
-    if (friend.id && friend.cloudId) {
-      friendCloudToLocal.set(friend.cloudId, friend.id);
-    }
-  });
-
-  const mappedGoals = backendGoals.map((goal: any) => ({
-    id: resolveLocalBackendId(String(goal.id), localGoals, () =>
-      localGoals.find((row) =>
-        !row.cloudId &&
-        normalizeText(row.name) === normalizeText(goal.name) &&
-        Number(row.targetAmount ?? 0) === Number(goal.targetAmount ?? 0),
-      )
-    ),
-    cloudId: String(goal.id),
-    name: goal.name,
-    description: goal.description ?? undefined,
-    targetAmount: Number(goal.targetAmount ?? 0),
-    currentAmount: Number(goal.currentAmount ?? 0),
-    targetDate: toDate(goal.targetDate) ?? new Date(),
-    category: goal.category ?? 'other',
-    isGroupGoal: goal.isGroupGoal ?? false,
-    createdAt: toDate(goal.createdAt) ?? new Date(),
-    updatedAt: toDate(goal.updatedAt),
-    deletedAt: toDate(goal.deletedAt),
-    syncStatus: 'synced' as const,
-  }));
-
-  const mappedInvestments = backendInvestments.map((investment: any) => ({
-    id: resolveLocalBackendId(String(investment.id), localInvestments, () =>
-      localInvestments.find((row) =>
-        !row.cloudId &&
-        normalizeText(row.assetName) === normalizeText(investment.assetName) &&
-        row.assetType === investment.assetType &&
-        Number(row.quantity ?? 0) === Number(investment.quantity ?? 0),
-      )
-    ),
-    cloudId: String(investment.id),
-    assetType: investment.assetType,
-    assetName: investment.assetName,
-    quantity: Number(investment.quantity ?? 0),
-    buyPrice: Number(investment.buyPrice ?? 0),
-    currentPrice: Number(investment.currentPrice ?? 0),
-    totalInvested: Number(investment.totalInvested ?? 0),
-    currentValue: Number(investment.currentValue ?? 0),
-    profitLoss: Number(investment.profitLoss ?? 0),
-    purchaseDate: toDate(investment.purchaseDate) ?? new Date(),
-    lastUpdated: toDate(investment.lastUpdated) ?? new Date(),
-    broker: investment.broker ?? undefined,
-    description: investment.description ?? undefined,
-    assetCurrency: investment.assetCurrency ?? undefined,
-    baseCurrency: investment.baseCurrency ?? undefined,
-    buyFxRate: investment.buyFxRate ?? undefined,
-    lastKnownFxRate: investment.lastKnownFxRate ?? undefined,
-    totalInvestedNative: investment.totalInvestedNative ?? undefined,
-    currentValueNative: investment.currentValueNative ?? undefined,
-    valuationVersion: investment.valuationVersion ?? undefined,
-    positionStatus: investment.positionStatus ?? undefined,
-    closedAt: toDate(investment.closedAt),
-    closePrice: investment.closePrice ?? undefined,
-    closeFxRate: investment.closeFxRate ?? undefined,
-    grossSaleValue: investment.grossSaleValue ?? undefined,
-    netSaleValue: investment.netSaleValue ?? undefined,
-    fundingAccountId: investment.fundingAccountId ? accountCloudToLocal.get(String(investment.fundingAccountId)) : undefined,
-    purchaseFees: investment.purchaseFees ?? undefined,
-    purchaseTransactionId: undefined,
-    purchaseFeeTransactionId: undefined,
-    saleTransactionId: undefined,
-    saleFeeTransactionId: undefined,
-    closingFees: investment.closingFees ?? undefined,
-    realizedProfitLoss: investment.realizedProfitLoss ?? undefined,
-    settlementAccountId: investment.settlementAccountId ? accountCloudToLocal.get(String(investment.settlementAccountId)) : undefined,
-    closeNotes: investment.closeNotes ?? undefined,
-    metadata: investment.metadata ?? undefined,
-    createdAt: toDate(investment.createdAt) ?? new Date(),
-    updatedAt: toDate(investment.updatedAt),
-    deletedAt: toDate(investment.deletedAt),
-    syncStatus: 'synced' as const,
-  }));
-
-  const mappedGroups = backendGroups.map((group: any) => {
-    const cloudId = String(group.id);
-    const localPaidBy = group.paidBy ? accountCloudToLocal.get(String(group.paidBy)) : undefined;
-    const localId = resolveLocalBackendId(cloudId, localGroups, () =>
-      localGroups.find((row) =>
-        !row.cloudId &&
-        normalizeText(row.name) === normalizeText(group.name) &&
-        Number(row.totalAmount ?? 0) === Number(group.totalAmount ?? 0),
-      )
-    );
-
-    const next = {
-      id: localId,
-      cloudId,
-      name: group.name,
-      totalAmount: Number(group.totalAmount ?? 0),
-      paidBy: localPaidBy ?? 0,
-      date: toDate(group.date) ?? new Date(),
-      members: Array.isArray(group.members)
-        ? group.members.map((member: any) => ({
-          ...member,
-          friendId: member?.friendId ? friendCloudToLocal.get(String(member.friendId)) : undefined,
-        }))
-        : [],
-      items: Array.isArray(group.items) ? group.items : [],
-      description: group.description ?? undefined,
-      category: group.category ?? undefined,
-      subcategory: group.subcategory ?? undefined,
-      splitType: group.splitType ?? undefined,
-      yourShare: group.yourShare ?? undefined,
-      expenseTransactionId: undefined,
-      createdBy: group.createdBy ?? undefined,
-      createdByName: group.createdByName ?? undefined,
-      status: group.status ?? undefined,
-      notificationStatus: group.notificationStatus ?? undefined,
-      createdAt: toDate(group.createdAt) ?? new Date(),
-      updatedAt: toDate(group.updatedAt),
-      deletedAt: toDate(group.deletedAt),
-      syncStatus: 'synced' as const,
-    };
-
-    if (next.id) {
-      groupCloudToLocal.set(cloudId, next.id);
-    }
-
-    return next;
-  });
-
-  mappedGroups.forEach((group) => {
-    if (group.id && group.cloudId) {
-      groupCloudToLocal.set(group.cloudId, group.id);
-    }
-  });
-
-  const mappedTransactions = backendTransactions.map((transaction: any) => ({
-    id: resolveLocalBackendId(String(transaction.id), localTransactions, () =>
-      localTransactions.find((row) =>
-        !row.cloudId &&
-        row.type === transaction.type &&
-        Number(row.amount ?? 0) === Number(transaction.amount ?? 0) &&
-        normalizeText(row.category) === normalizeText(transaction.category) &&
-        normalizeText(row.description) === normalizeText(transaction.description) &&
-        sameInstant(row.date, transaction.date),
-      )
-    ),
-    cloudId: String(transaction.id),
-    type: transaction.type,
-    amount: Number(transaction.amount ?? 0),
-    accountId: accountCloudToLocal.get(String(transaction.accountId)) ?? 0,
-    category: transaction.category ?? 'Other',
-    subcategory: transaction.subcategory ?? undefined,
-    description: transaction.description ?? '',
-    merchant: transaction.merchant ?? undefined,
-    date: toDate(transaction.date) ?? new Date(),
-    tags: Array.isArray(transaction.tags) ? transaction.tags : undefined,
-    attachment: transaction.attachment ?? undefined,
-    transferToAccountId: transaction.transferToAccountId ? accountCloudToLocal.get(String(transaction.transferToAccountId)) : undefined,
-    transferType: transaction.transferType ?? undefined,
-    expenseMode: transaction.expenseMode ?? undefined,
-    groupExpenseId: transaction.groupExpenseId ? groupCloudToLocal.get(String(transaction.groupExpenseId)) : undefined,
-    groupName: transaction.groupName ?? undefined,
-    splitType: transaction.splitType ?? undefined,
-    importSource: transaction.importSource ?? undefined,
-    importMetadata: transaction.importMetadata ?? undefined,
-    originalCategory: transaction.originalCategory ?? undefined,
-    importedAt: toDate(transaction.importedAt),
-    createdAt: toDate(transaction.createdAt) ?? new Date(),
-    updatedAt: toDate(transaction.updatedAt),
-    deletedAt: toDate(transaction.deletedAt),
-    syncStatus: 'synced' as const,
-    version: transaction.version ?? undefined,
-  })).filter((transaction) => transaction.accountId > 0);
-
-  const mappedLoans = backendLoans.map((loan: any) => ({
-    id: resolveLocalBackendId(String(loan.id), localLoans, () =>
-      localLoans.find((row) =>
-        !row.cloudId &&
-        normalizeText(row.name) === normalizeText(loan.name) &&
-        row.type === loan.type &&
-        Number(row.principalAmount ?? 0) === Number(loan.principalAmount ?? 0),
-      )
-    ),
-    cloudId: String(loan.id),
-    type: loan.type,
-    name: loan.name,
-    principalAmount: Number(loan.principalAmount ?? 0),
-    outstandingBalance: Number(loan.outstandingBalance ?? 0),
-    interestRate: loan.interestRate ?? undefined,
-    totalPayable: loan.totalPayable ?? undefined,
-    emiAmount: loan.emiAmount ?? undefined,
-    dueDate: toDate(loan.dueDate),
-    loanDate: toDate(loan.loanDate),
-    frequency: loan.frequency ?? undefined,
-    status: loan.status ?? 'active',
-    contactPerson: loan.contactPerson ?? undefined,
-    friendId: loan.friendId ? friendCloudToLocal.get(String(loan.friendId)) : undefined,
-    contactEmail: loan.contactEmail ?? undefined,
-    contactPhone: loan.contactPhone ?? undefined,
-    accountId: loan.accountId ? accountCloudToLocal.get(String(loan.accountId)) : undefined,
-    notes: loan.notes ?? undefined,
-    createdAt: toDate(loan.createdAt) ?? new Date(),
-    updatedAt: toDate(loan.updatedAt),
-    deletedAt: toDate(loan.deletedAt),
-    syncStatus: 'synced' as const,
-    version: loan.version ?? undefined,
-  }));
-
-  const mappedTodoLists = backendTodoLists.map((list: any) => {
-    const cloudId = String(list.id);
-    const localId = resolveLocalBackendId(cloudId, localTodoLists, () =>
-      localTodoLists.find((row) =>
-        !row.cloudId &&
-        normalizeText(row.name) === normalizeText(list.name) &&
-        row.ownerId === list.userId
-      )
-    );
-
-    const next = {
-      id: localId,
-      cloudId,
-      name: list.name,
-      description: list.description ?? undefined,
-      ownerId: list.userId,
-      createdAt: toDate(list.createdAt) ?? new Date(),
-      updatedAt: toDate(list.updatedAt),
-      archived: list.archived ?? false,
-      syncStatus: 'synced' as const,
-    };
-
-    if (next.id) {
-      listCloudToLocal.set(cloudId, next.id);
-    }
-
-    return next;
-  });
-
-  mappedTodoLists.forEach((list) => {
-    if (list.id && list.cloudId) {
-      listCloudToLocal.set(list.cloudId, list.id);
-    }
-  });
-
-  const mappedTodoItems = backendTodoItems.map((item: any) => {
-    const localListId = listCloudToLocal.get(String(item.listId));
-    const cloudId = String(item.id);
-    const localId = resolveLocalBackendId(cloudId, localTodoItems, () =>
-      localTodoItems.find((row) =>
-        !row.cloudId &&
-        row.listId === localListId &&
-        normalizeText(row.title) === normalizeText(item.title)
-      )
-    );
-
-    return {
-      id: localId,
-      cloudId,
-      listId: localListId ?? 0,
-      title: item.title,
-      description: item.description ?? undefined,
-      completed: item.completed ?? false,
-      priority: item.priority ?? 'medium',
-      dueDate: toDate(item.dueDate),
-      createdBy: item.createdBy,
-      createdAt: toDate(item.createdAt) ?? new Date(),
-      updatedAt: toDate(item.updatedAt),
-      completedAt: toDate(item.completedAt),
-      syncStatus: 'synced' as const,
-    };
-  });
-
-  const mappedTodoShares = backendTodoShares.map((share: any) => {
-    const localListId = listCloudToLocal.get(String(share.listId));
-    const cloudId = String(share.id);
-    const localId = localTodoShares.find((row) =>
-      row.listId === localListId &&
-      row.sharedWithUserId === share.sharedWithUserId
-    )?.id;
-
-    return {
-      id: localId,
-      cloudId,
-      listId: localListId ?? 0,
-      sharedWithUserId: share.sharedWithUserId,
-      permission: share.permission,
-      sharedAt: toDate(share.sharedAt) ?? new Date(),
-      sharedBy: share.sharedBy,
-      syncStatus: 'synced' as const,
-    };
-  });
-
+  // Suppress direct sync during imports/merges
   await runWithCloudSyncSuppressed(async () => {
     if (mergeTargets.has('accounts')) {
       await mergeBackendTable('accounts', backendAccounts, mappedAccounts, localAccounts);
@@ -1923,9 +1652,211 @@ async function syncUserDataFromBackend(
     if (mergeTargets.has('friends')) {
       await mergeBackendTable('friends', backendFriends, mappedFriends, localFriends);
     }
-    if (mergeTargets.has('transactions')) {
-      await mergeBackendTable('transactions', backendTransactions, mappedTransactions, localTransactions);
-    }
+
+    // Now query the DB to get the local IDs that were generated for new Accounts and Friends
+    const dbAccounts = await db.accounts.toArray();
+    dbAccounts.forEach(account => {
+      if (account.id && account.cloudId) {
+        accountCloudToLocal.set(account.cloudId, account.id);
+      }
+    });
+
+    const dbFriends = await db.friends.toArray();
+    dbFriends.forEach(friend => {
+      if (friend.id && friend.cloudId) {
+        friendCloudToLocal.set(friend.cloudId, friend.id);
+      }
+    });
+
+    // PHASE 2: Map and Merge Secondary Entities (Goals, Loans, Investments, Groups, To-Do Lists)
+    const groupCloudToLocal = new Map<string, number>();
+    const listCloudToLocal = new Map<string, number>();
+
+    const mappedGoals = backendGoals.map((goal: any) => ({
+      id: resolveLocalBackendId(String(goal.id), localGoals, () =>
+        localGoals.find((row) =>
+          !row.cloudId &&
+          normalizeText(row.name) === normalizeText(goal.name) &&
+          Number(row.targetAmount ?? 0) === Number(goal.targetAmount ?? 0),
+        )
+      ),
+      cloudId: String(goal.id),
+      name: goal.name,
+      description: goal.description ?? undefined,
+      targetAmount: Number(goal.targetAmount ?? 0),
+      currentAmount: Number(goal.currentAmount ?? 0),
+      targetDate: toDate(goal.targetDate) ?? new Date(),
+      category: goal.category ?? 'other',
+      isGroupGoal: goal.isGroupGoal ?? false,
+      createdAt: toDate(goal.createdAt) ?? new Date(),
+      updatedAt: toDate(goal.updatedAt),
+      deletedAt: toDate(goal.deletedAt),
+      syncStatus: 'synced' as const,
+    }));
+
+    const mappedInvestments = backendInvestments.map((investment: any) => ({
+      id: resolveLocalBackendId(String(investment.id), localInvestments, () =>
+        localInvestments.find((row) =>
+          !row.cloudId &&
+          normalizeText(row.assetName) === normalizeText(investment.assetName) &&
+          row.assetType === investment.assetType &&
+          Number(row.quantity ?? 0) === Number(investment.quantity ?? 0),
+        )
+      ),
+      cloudId: String(investment.id),
+      assetType: investment.assetType,
+      assetName: investment.assetName,
+      quantity: Number(investment.quantity ?? 0),
+      buyPrice: Number(investment.buyPrice ?? 0),
+      currentPrice: Number(investment.currentPrice ?? 0),
+      totalInvested: Number(investment.totalInvested ?? 0),
+      currentValue: Number(investment.currentValue ?? 0),
+      profitLoss: Number(investment.profitLoss ?? 0),
+      purchaseDate: toDate(investment.purchaseDate) ?? new Date(),
+      lastUpdated: toDate(investment.lastUpdated) ?? new Date(),
+      broker: investment.broker ?? undefined,
+      description: investment.description ?? undefined,
+      assetCurrency: investment.assetCurrency ?? undefined,
+      baseCurrency: investment.baseCurrency ?? undefined,
+      buyFxRate: investment.buyFxRate ?? undefined,
+      lastKnownFxRate: investment.lastKnownFxRate ?? undefined,
+      totalInvestedNative: investment.totalInvestedNative ?? undefined,
+      currentValueNative: investment.currentValueNative ?? undefined,
+      valuationVersion: investment.valuationVersion ?? undefined,
+      positionStatus: investment.positionStatus ?? undefined,
+      closedAt: toDate(investment.closedAt),
+      closePrice: investment.closePrice ?? undefined,
+      closeFxRate: investment.closeFxRate ?? undefined,
+      grossSaleValue: investment.grossSaleValue ?? undefined,
+      netSaleValue: investment.netSaleValue ?? undefined,
+      fundingAccountId: investment.fundingAccountId ? accountCloudToLocal.get(String(investment.fundingAccountId)) : undefined,
+      purchaseFees: investment.purchaseFees ?? undefined,
+      purchaseTransactionId: undefined,
+      purchaseFeeTransactionId: undefined,
+      saleTransactionId: undefined,
+      saleFeeTransactionId: undefined,
+      closingFees: investment.closingFees ?? undefined,
+      realizedProfitLoss: investment.realizedProfitLoss ?? undefined,
+      settlementAccountId: investment.settlementAccountId ? accountCloudToLocal.get(String(investment.settlementAccountId)) : undefined,
+      closeNotes: investment.closeNotes ?? undefined,
+      metadata: investment.metadata ?? undefined,
+      createdAt: toDate(investment.createdAt) ?? new Date(),
+      updatedAt: toDate(investment.updatedAt),
+      deletedAt: toDate(investment.deletedAt),
+      syncStatus: 'synced' as const,
+    }));
+
+    const mappedGroups = backendGroups.map((group: any) => {
+      const cloudId = String(group.id);
+      const localPaidBy = group.paidBy ? accountCloudToLocal.get(String(group.paidBy)) : undefined;
+      const localId = resolveLocalBackendId(cloudId, localGroups, () =>
+        localGroups.find((row) =>
+          !row.cloudId &&
+          normalizeText(row.name) === normalizeText(group.name) &&
+          Number(row.totalAmount ?? 0) === Number(group.totalAmount ?? 0),
+        )
+      );
+
+      const next = {
+        id: localId,
+        cloudId,
+        name: group.name,
+        totalAmount: Number(group.totalAmount ?? 0),
+        paidBy: localPaidBy ?? 0,
+        date: toDate(group.date) ?? new Date(),
+        members: Array.isArray(group.members)
+          ? group.members.map((member: any) => ({
+            ...member,
+            friendId: member?.friendId ? friendCloudToLocal.get(String(member.friendId)) : undefined,
+          }))
+          : [],
+        items: Array.isArray(group.items) ? group.items : [],
+        description: group.description ?? undefined,
+        category: group.category ?? undefined,
+        subcategory: group.subcategory ?? undefined,
+        splitType: group.splitType ?? undefined,
+        yourShare: group.yourShare ?? undefined,
+        expenseTransactionId: undefined,
+        createdBy: group.createdBy ?? undefined,
+        createdByName: group.createdByName ?? undefined,
+        status: group.status ?? undefined,
+        notificationStatus: group.notificationStatus ?? undefined,
+        createdAt: toDate(group.createdAt) ?? new Date(),
+        updatedAt: toDate(group.updatedAt),
+        deletedAt: toDate(group.deletedAt),
+        syncStatus: 'synced' as const,
+      };
+
+      if (next.id) {
+        groupCloudToLocal.set(cloudId, next.id);
+      }
+
+      return next;
+    });
+
+    const mappedLoans = backendLoans.map((loan: any) => ({
+      id: resolveLocalBackendId(String(loan.id), localLoans, () =>
+        localLoans.find((row) =>
+          !row.cloudId &&
+          normalizeText(row.name) === normalizeText(loan.name) &&
+          row.type === loan.type &&
+          Number(row.principalAmount ?? 0) === Number(loan.principalAmount ?? 0),
+        )
+      ),
+      cloudId: String(loan.id),
+      type: loan.type,
+      name: loan.name,
+      principalAmount: Number(loan.principalAmount ?? 0),
+      outstandingBalance: Number(loan.outstandingBalance ?? 0),
+      interestRate: loan.interestRate ?? undefined,
+      totalPayable: loan.totalPayable ?? undefined,
+      emiAmount: loan.emiAmount ?? undefined,
+      dueDate: toDate(loan.dueDate),
+      loanDate: toDate(loan.loanDate),
+      frequency: loan.frequency ?? undefined,
+      status: loan.status ?? 'active',
+      contactPerson: loan.contactPerson ?? undefined,
+      friendId: loan.friendId ? friendCloudToLocal.get(String(loan.friendId)) : undefined,
+      contactEmail: loan.contactEmail ?? undefined,
+      contactPhone: loan.contactPhone ?? undefined,
+      accountId: loan.accountId ? accountCloudToLocal.get(String(loan.accountId)) : undefined,
+      notes: loan.notes ?? undefined,
+      createdAt: toDate(loan.createdAt) ?? new Date(),
+      updatedAt: toDate(loan.updatedAt),
+      deletedAt: toDate(loan.deletedAt),
+      syncStatus: 'synced' as const,
+      version: loan.version ?? undefined,
+    }));
+
+    const mappedTodoLists = backendTodoLists.map((list: any) => {
+      const cloudId = String(list.id);
+      const localId = resolveLocalBackendId(cloudId, localTodoLists, () =>
+        localTodoLists.find((row) =>
+          !row.cloudId &&
+          normalizeText(row.name) === normalizeText(list.name) &&
+          row.ownerId === list.userId
+        )
+      );
+
+      const next = {
+        id: localId,
+        cloudId,
+        name: list.name,
+        description: list.description ?? undefined,
+        ownerId: list.userId,
+        createdAt: toDate(list.createdAt) ?? new Date(),
+        updatedAt: toDate(list.updatedAt),
+        archived: list.archived ?? false,
+        syncStatus: 'synced' as const,
+      };
+
+      if (next.id) {
+        listCloudToLocal.set(cloudId, next.id);
+      }
+
+      return next;
+    });
+
     if (mergeTargets.has('loans')) {
       await mergeBackendTable('loans', backendLoans, mappedLoans, localLoans);
     }
@@ -1938,17 +1869,118 @@ async function syncUserDataFromBackend(
     if (mergeTargets.has('group_expenses')) {
       await mergeBackendTable('group_expenses', backendGroups, mappedGroups, localGroups);
     }
-
     if (mergeTargets.has('to_do_lists')) {
       await mergeBackendTable('to_do_lists', backendTodoLists, mappedTodoLists, localTodoLists);
-      
-      const dbLists = await db.toDoLists.toArray();
-      for (const list of dbLists) {
-        if (list.id && list.cloudId) {
-          listCloudToLocal.set(list.cloudId, list.id);
-        }
-      }
+    }
 
+    // Now retrieve the newly merged groups and todo lists to get their local IDs
+    const dbGroups = await db.groupExpenses.toArray();
+    dbGroups.forEach(group => {
+      if (group.id && group.cloudId) {
+        groupCloudToLocal.set(group.cloudId, group.id);
+      }
+    });
+
+    const dbLists = await db.toDoLists.toArray();
+    dbLists.forEach(list => {
+      if (list.id && list.cloudId) {
+        listCloudToLocal.set(list.cloudId, list.id);
+      }
+    });
+
+    // PHASE 3: Map and Merge Transactions and To-Do Items/Shares (which depend on Accounts, Groups, and To-Do Lists)
+    const mappedTransactions = backendTransactions.map((transaction: any) => ({
+      id: resolveLocalBackendId(String(transaction.id), localTransactions, () =>
+        localTransactions.find((row) =>
+          !row.cloudId &&
+          row.type === transaction.type &&
+          Number(row.amount ?? 0) === Number(transaction.amount ?? 0) &&
+          normalizeText(row.category) === normalizeText(transaction.category) &&
+          normalizeText(row.description) === normalizeText(transaction.description) &&
+          sameInstant(row.date, transaction.date),
+        )
+      ),
+      cloudId: String(transaction.id),
+      type: transaction.type,
+      amount: Number(transaction.amount ?? 0),
+      accountId: accountCloudToLocal.get(String(transaction.accountId)) ?? 0,
+      category: transaction.category ?? 'Other',
+      subcategory: transaction.subcategory ?? undefined,
+      description: transaction.description ?? '',
+      merchant: transaction.merchant ?? undefined,
+      date: toDate(transaction.date) ?? new Date(),
+      tags: Array.isArray(transaction.tags) ? transaction.tags : undefined,
+      attachment: transaction.attachment ?? undefined,
+      transferToAccountId: transaction.transferToAccountId ? accountCloudToLocal.get(String(transaction.transferToAccountId)) : undefined,
+      transferType: transaction.transferType ?? undefined,
+      expenseMode: transaction.expenseMode ?? undefined,
+      groupExpenseId: transaction.groupExpenseId ? groupCloudToLocal.get(String(transaction.groupExpenseId)) : undefined,
+      groupName: transaction.groupName ?? undefined,
+      splitType: transaction.splitType ?? undefined,
+      importSource: transaction.importSource ?? undefined,
+      importMetadata: transaction.importMetadata ?? undefined,
+      originalCategory: transaction.originalCategory ?? undefined,
+      importedAt: toDate(transaction.importedAt),
+      createdAt: toDate(transaction.createdAt) ?? new Date(),
+      updatedAt: toDate(transaction.updatedAt),
+      deletedAt: toDate(transaction.deletedAt),
+      syncStatus: 'synced' as const,
+      version: transaction.version ?? undefined,
+    })).filter((transaction) => transaction.accountId > 0);
+
+    const mappedTodoItems = backendTodoItems.map((item: any) => {
+      const localListId = listCloudToLocal.get(String(item.listId));
+      const cloudId = String(item.id);
+      const localId = resolveLocalBackendId(cloudId, localTodoItems, () =>
+        localTodoItems.find((row) =>
+          !row.cloudId &&
+          row.listId === localListId &&
+          normalizeText(row.title) === normalizeText(item.title)
+        )
+      );
+
+      return {
+        id: localId,
+        cloudId,
+        listId: localListId ?? 0,
+        title: item.title,
+        description: item.description ?? undefined,
+        completed: item.completed ?? false,
+        priority: item.priority ?? 'medium',
+        dueDate: toDate(item.dueDate),
+        createdBy: item.createdBy,
+        createdAt: toDate(item.createdAt) ?? new Date(),
+        updatedAt: toDate(item.updatedAt),
+        completedAt: toDate(item.completedAt),
+        syncStatus: 'synced' as const,
+      };
+    });
+
+    const mappedTodoShares = backendTodoShares.map((share: any) => {
+      const localListId = listCloudToLocal.get(String(share.listId));
+      const cloudId = String(share.id);
+      const localId = localTodoShares.find((row) =>
+        row.listId === localListId &&
+        row.sharedWithUserId === share.sharedWithUserId
+      )?.id;
+
+      return {
+        id: localId,
+        cloudId,
+        listId: localListId ?? 0,
+        sharedWithUserId: share.sharedWithUserId,
+        permission: share.permission,
+        sharedAt: toDate(share.sharedAt) ?? new Date(),
+        sharedBy: share.sharedBy,
+        syncStatus: 'synced' as const,
+      };
+    });
+
+    if (mergeTargets.has('transactions')) {
+      await mergeBackendTable('transactions', backendTransactions, mappedTransactions, localTransactions);
+    }
+
+    if (mergeTargets.has('to_do_lists')) {
       const finalTodoItems = mappedTodoItems.map(item => {
         const resolvedListId = listCloudToLocal.get(String(backendTodoItems.find((bi: any) => String(bi.id) === item.cloudId)?.listId));
         return {
@@ -2102,6 +2134,7 @@ export async function syncUserDataFromCloud(
     const localAccountIdSet = new Set(localAccounts.map(a => Number(a.id)));
 
     const mappedAccounts = remoteAccounts.map((account: any) => {
+      const remoteType = account.type === 'credit' ? 'card' : account.type;
       const resolvedId = resolveLocalId(account, localAccounts, (rows) => findMatchingAccount(account, rows));
       const remoteNumericId = Number(account.id);
       // Only use the remote numeric ID as local key if no existing local record would be overwritten
@@ -2112,16 +2145,43 @@ export async function syncUserDataFromCloud(
       const localId = resolvedId ?? (hasConflict ? undefined : remoteNumericId);
       accountRemoteToLocal.set(remoteNumericId, resolvedId ?? remoteNumericId);
 
+      // Compute txDeltas from remoteTransactions for this account
+      const txDeltas = remoteTransactions
+        .filter((tx: any) => Number(tx.account_id) === remoteNumericId)
+        .reduce((sum: number, tx: any) => {
+          const amount = Math.abs(Number(tx.amount) || 0);
+          if (amount <= 0) return sum;
+          if (tx.type === 'transfer') {
+            if (Number(tx.account_id) === remoteNumericId) {
+              return sum - amount;
+            }
+            if (Number(tx.transfer_to_account_id) === remoteNumericId) {
+              return sum + amount;
+            }
+          }
+          if (tx.expense_mode === 'loan' && tx.loan_type === 'borrowed') {
+            return sum + amount;
+          }
+          if (tx.type === 'income') {
+            return sum + amount;
+          } else {
+            return sum - amount;
+          }
+        }, 0);
+
+      const localRecord = localAccounts.find(r => r.id === localId);
+
       return {
         id: localId,
         remoteId: Number(account.id),
         name: account.name,
-        type: account.type,
+        type: remoteType,
         provider: account.provider ?? undefined,
         country: account.country ?? undefined,
         balance: Number(account.balance ?? 0),
         currency: account.currency ?? 'INR',
         isActive: account.is_active ?? true,
+        openingBalance: localRecord?.openingBalance ?? (Number(account.balance ?? 0) - txDeltas),
         createdAt: toDate(account.created_at) ?? new Date(),
         updatedAt: toDate(account.updated_at),
         deletedAt: toDate(account.deleted_at),

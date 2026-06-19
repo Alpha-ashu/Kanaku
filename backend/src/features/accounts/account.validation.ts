@@ -5,7 +5,7 @@ export const accountCreateSchema = z.object({
   type: z.string().trim().min(1, 'Account type is required').max(60),
   provider: z.string().trim().max(120).optional(),
   country: z.string().trim().max(60).optional(),
-  balance: z.coerce.number().min(0, 'Balance cannot be negative').optional(),
+  balance: z.coerce.number().optional(),
   currency: z.string().trim().length(3, 'Currency must be a 3-letter ISO code').optional(),
   clientRequestId: z.string().trim().optional(),
 });
