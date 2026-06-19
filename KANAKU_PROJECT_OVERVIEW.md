@@ -868,10 +868,50 @@ Rules:
 | Setu AA / OTP arch | `docs/AA_OTP_ARCHITECTURE.md` |
 | AI/intelligence systems | `docs/INTELLIGENCE_SYSTEMS.md` |
 | VAPT response | `docs/VAPT_RESPONSE_06032026.md` |
+| **Structured docs set (PRD→TRD→UI/UX→Flow→Schema→Plan)** | `docs/00_DOCS_INDEX.md` (entry point) |
+| **Full feature list (every feature + sub-feature)** | `docs/01_Product_Requirement_Document_PRD/Feature_List.csv` |
+| **Per-module deep feature spec** | `docs/01_Product_Requirement_Document_PRD/Detailed_Feature_Specifications.md` |
+| **Complete endpoint catalog (36 modules)** | `docs/02_Technical_Requirement_Document_TRD/API_Specifications.md` |
+| **Exact Zod request/response schemas** | `docs/02_Technical_Requirement_Document_TRD/Request_Response_Schemas.md` |
+| **OpenAPI 3.1 spec (Swagger/Redoc-ready) + viewer** | `docs/02_Technical_Requirement_Document_TRD/openapi.yaml` + `api-viewer.html` |
+| **Screen → component → service → API map** | `docs/03_UI_UX_Design/Screen_Component_Map.md` |
+| **End-to-end app flow + per-module sequence diagrams** | `docs/04_App_Flow/App_Flow.md`, `Module_Sequence_Diagrams.md` |
+| **DB schema (48 Prisma models) + Dexie v15 local tables** | `docs/05_Backend_Data_Schema/Database_Schema.md`, `Tables_Definition.md` |
+| **AI prompt pack + guardrails (codebase-accurate)** | `docs/06_Implementation_Plan/Prompts_For_AI.md` |
 
 ---
 
 ## L. Change Log — 2026-06-19 (Today)
+
+### -1. Structured Documentation Set (`docs/00_*` → `06_*`) + OpenAPI Spec
+A numbered, version-controlled documentation hierarchy was generated **directly
+from the live codebase** (not templated), covering the app end-to-end so no
+feature is missed:
+
+- **01 PRD** — `Feature_List.csv` (every feature + sub-feature across all 36
+  modules with roles, Dexie table, endpoint), `Detailed_Feature_Specifications.md`
+  (per-module purpose → flow → data → endpoints → edge cases), plus
+  `PRD_Main`, `User_Stories`, `Acceptance_Criteria`.
+- **02 TRD** — `API_Specifications.md` (complete endpoint catalog mined from
+  `backend/src/features/*/*.routes.ts`), `Request_Response_Schemas.md` (exact
+  shapes transcribed from every `*.validation.ts`), **`openapi.yaml`** (OpenAPI
+  3.1 — validated: 139 paths / 36 schemas / 36 tags) + **`api-viewer.html`**
+  (Redoc + Swagger UI via CDN, file://-aware), `Tech_Stack.md`, `Architecture_Diagram.md`.
+- **03 UI/UX** — `Screen_Component_Map.md` (every screen → component → Dexie
+  table → service → `/api/v1` endpoint), wireframe notes, sequence diagrams.
+- **04 App Flow** — `App_Flow.md` (end-to-end) + `Module_Sequence_Diagrams.md`
+  (20 Mermaid diagrams for modules not already in §G).
+- **05 Schema** — `Database_Schema.md` (all **48 Prisma models** by domain),
+  `Tables_Definition.md` (**Dexie schema v15**, 40+ local tables + version
+  history), `ER_Diagram.md`, `API_Data_Contracts.md`.
+- **06 Plan** — `Roadmap`, `Sprint_Plan`, `Task_Breakdown`, and a rewritten
+  **`Prompts_For_AI.md`** whose guardrails mirror `copilot-instructions` and the
+  real Route→Controller→Service / Zod / `prisma.$transaction` / Dexie-cloud
+  conventions.
+
+Entry point: `docs/00_DOCS_INDEX.md`. Binary placeholders (`Feature_List.xlsx`,
+wireframe `*.png`) are kept version-control-friendly as CSV + README notes.
+This block remains authoritative; the doc set defers to it on any conflict.
 
 ### 0. Generic Error Handling & Console-Safe Logging (Frontend + Backend)
 Goal: never leak technical detail (stack traces, raw API messages, Zod field

@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Kanaku API — Reference</title>
+    <link rel="icon" href="data:," />
+    <style>
+      :root { color-scheme: light dark; }
+      * { box-sizing: border-box; }
+      body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+      .topbar {
+        display: flex; align-items: center; gap: 12px;
+        padding: 10px 16px; background: #0f172a; color: #fff;
+        position: sticky; top: 0; z-index: 10;
+      }
+      .topbar strong { font-size: 15px; letter-spacing: .3px; }
+      .topbar .spacer { flex: 1; }
+      .topbar a, .topbar button {
+        color: #cbd5e1; background: transparent; border: 1px solid #334155;
+        border-radius: 8px; padding: 6px 12px; font-size: 13px; cursor: pointer;
+        text-decoration: none;
+      }
+      .topbar a.active, .topbar button.active { color: #fff; background: #1e293b; border-color: #475569; }
+      #frame { width: 100%; height: calc(100vh - 49px); border: 0; }
+      .hint { padding: 24px; max-width: 720px; margin: 0 auto; line-height: 1.6; }
+      code { background: rgba(127,127,127,.18); padding: 1px 6px; border-radius: 6px; }
+    </style>
+  </head>
+  <body>
+    <div class="topbar">
+      <strong>Kanaku API Reference</strong>
+      <span class="spacer"></span>
+      <button id="btn-redoc" class="active" type="button">Redoc</button>
+      <button id="btn-swagger" type="button">Swagger UI</button>
+      <a href="./openapi.yaml" download>Download spec</a>
+    </div>
+
+    <!-- Redoc view -->
+    <div id="redoc-host"></div>
+
+    <!-- Swagger view -->
+    <div id="swagger-host" style="display:none">
+      <div id="swagger-ui"></div>
+    </div>
+
+    <!-- Fallback hint shown if specs cannot be fetched from file:// -->
+    <div id="hint" class="hint" style="display:none">
+      <h2>Open this via a local web server</h2>
+      <p>
+        Browsers block <code>fetch()</code> of <code>openapi.yaml</code> from the
+        <code>file://</code> protocol. Serve this folder and reopen:
+      </p>
+      <pre><code># from docs/02_Technical_Requirement_Document_TRD/
+python -m http.server 8088
+# then open http://localhost:8088/api-viewer.html</code></pre>
+    </div>
+
+    <!-- Redoc (standalone) -->
+    <script src="https://cdn.redoc.ly/redoc/latest/bundles/redoc.standalone.js"></script>
+    <!-- Swagger UI -->
+    <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css" />
+    <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
+
+    <script>
+      const SPEC_URL = './openapi.yaml';
+      const redocHost = document.getElementById('redoc-host');
+      const swaggerHost = document.getElementById('swagger-host');
+      const hint = document.getElementById('hint');
+      const btnRedoc = document.getElementById('btn-redoc');
+      const btnSwagger = document.getElementById('btn-swagger');
+      let swaggerInited = false;
+
+      if (location.protocol === 'file:') {
+        // Most CDN renderers can't fetch the spec from file://; guide the user.
+        redocHost.style.display = 'none';
+        hint.style.display = 'block';
+      } else {
+        Redoc.init(SPEC_URL, { theme: { colors: { primary: { main: '#0f172a' } } }, hideDownloadButton: false }, redocHost);
+      }
+
+      function showRedoc() {
+        redocHost.style.display = location.protocol === 'file:' ? 'none' : 'block';
+        hint.style.display = location.protocol === 'file:' ? 'block' : 'none';
+        swaggerHost.style.display = 'none';
+        btnRedoc.classList.add('active'); btnSwagger.classList.remove('active');
+      }
+      function showSwagger() {
+        redocHost.style.display = 'none';
+        hint.style.display = 'none';
+        swaggerHost.style.display = 'block';
+        btnSwagger.classList.add('active'); btnRedoc.classList.remove('active');
+        if (!swaggerInited && location.protocol !== 'file:') {
+          window.ui = SwaggerUIBundle({ url: SPEC_URL, dom_id: '#swagger-ui', deepLinking: true, presets: [SwaggerUIBundle.presets.apis] });
+          swaggerInited = true;
+        } else if (location.protocol === 'file:') {
+          swaggerHost.style.display = 'none';
+          hint.style.display = 'block';
+        }
+      }
+
+      btnRedoc.addEventListener('click', showRedoc);
+      btnSwagger.addEventListener('click', showSwagger);
+    </script>
+  </body>
+</html>
+

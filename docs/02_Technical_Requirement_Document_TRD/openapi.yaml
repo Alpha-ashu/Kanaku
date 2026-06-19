@@ -1,0 +1,1303 @@
+openapi: 3.1.0
+info:
+  title: Kanaku API
+  version: "1.0.0"
+  description: >-
+    Financial-grade, offline-first expense tracker. All routes are mounted under
+    `/api/v1`, JWT-protected unless marked PUBLIC, Zod-validated on mutating
+    routes, ownership-checked, and monetary writes are wrapped in
+    `prisma.$transaction`. Schemas are transcribed from
+    `backend/src/features/*/*.validation.ts`. Amounts are stored as
+    `Decimal(18,2)` server-side. Generated as a static companion to the live
+    spec served at `GET /api/v1/docs`.
+servers:
+  - url: https://api.kanaku.app/api/v1
+    description: Production (Fly.io via Vercel edge proxy)
+  - url: http://localhost:4000/api/v1
+    description: Local dev
+
+security:
+  - bearerAuth: []
+
+tags:
+  - { name: auth }
+  - { name: pin }
+  - { name: otp }
+  - { name: sessions }
+  - { name: devices }
+  - { name: settings }
+  - { name: avatars }
+  - { name: accounts }
+  - { name: transactions }
+  - { name: recurring }
+  - { name: categorization }
+  - { name: goals }
+  - { name: budgets }
+  - { name: loans }
+  - { name: investments }
+  - { name: stocks }
+  - { name: gold }
+  - { name: bills }
+  - { name: tax }
+  - { name: dashboard }
+  - { name: friends }
+  - { name: groups }
+  - { name: todos }
+  - { name: collaboration }
+  - { name: advisors }
+  - { name: bookings }
+  - { name: payments }
+  - { name: notifications }
+  - { name: sync }
+  - { name: import }
+  - { name: receipts }
+  - { name: voice }
+  - { name: ai }
+  - { name: aa }
+  - { name: admin }
+  - { name: webhooks }
+
+paths:
+  # ---------------- auth ----------------
+  /auth/check-email:
+    post:
+      tags: [auth]
+      summary: Check email availability (PUBLIC)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, properties: { email: { type: string, format: email } }, required: [email] }
+      responses:
+        "200": { $ref: "#/components/responses/Success" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /auth/register:
+    post:
+      tags: [auth]
+      summary: Register (PUBLIC, strong password)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/RegisterInput" }
+      responses:
+        "201": { $ref: "#/components/responses/AuthTokensResponse" }
+        "400": { $ref: "#/components/responses/ValidationError" }
+  /auth/login/challenge:
+    post:
+      tags: [auth]
+      summary: Login step 1 — issue 6-digit challenge (PUBLIC)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/LoginInput" }
+      responses:
+        "200": { $ref: "#/components/responses/Success" }
+  /auth/login:
+    post:
+      tags: [auth]
+      summary: Login step 2 — exchange challenge for tokens (PUBLIC)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/LoginInput"
+                - type: object
+                  properties: { challengeCode: { type: string } }
+      responses:
+        "200": { $ref: "#/components/responses/AuthTokensResponse" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+  /auth/refresh:
+    post: { tags: [auth], summary: Rotate refresh token, responses: { "200": { $ref: "#/components/responses/AuthTokensResponse" } } }
+  /auth/logout:
+    post: { tags: [auth], summary: Logout (denylist refresh), responses: { "204": { description: No Content } } }
+  /auth/profile:
+    get: { tags: [auth], summary: Get profile, responses: { "200": { $ref: "#/components/responses/Success" } } }
+    put:
+      tags: [auth]
+      summary: Update profile
+      requestBody: { content: { application/json: { schema: { $ref: "#/components/schemas/User" } } } }
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+  /auth/otp/send:
+    post: { tags: [auth], summary: Send OTP for email/mobile change, responses: { "200": { $ref: "#/components/responses/Success" } } }
+  /auth/otp/verify:
+    post: { tags: [auth], summary: Verify OTP, responses: { "200": { $ref: "#/components/responses/Success" } } }
+  /auth/account:
+    delete: { tags: [auth], summary: Delete account (destructive, rate-limited), responses: { "204": { description: No Content } } }
+
+  # ---------------- pin ----------------
+  /pin/create:
+    post:
+      tags: [pin]
+      summary: Create PIN
+      requestBody: { content: { application/json: { schema: { $ref: "#/components/schemas/PinCreate" } } } }
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+  /pin/verify:
+    post:
+      tags: [pin]
+      summary: Verify PIN (lockout after 5)
+      requestBody: { content: { application/json: { schema: { $ref: "#/components/schemas/PinVerify" } } } }
+      responses: { "200": { $ref: "#/components/responses/Success" }, "401": { $ref: "#/components/responses/Unauthorized" } }
+  /pin/verify-security:
+    post: { tags: [pin], summary: Verify security answer, responses: { "200": { $ref: "#/components/responses/Success" } } }
+  /pin/update:
+    post:
+      tags: [pin]
+      summary: Change PIN (securityGate)
+      requestBody: { content: { application/json: { schema: { $ref: "#/components/schemas/PinUpdate" } } } }
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+  /pin/status:
+    get: { tags: [pin], summary: PIN status, responses: { "200": { $ref: "#/components/responses/Success" } } }
+  /pin/key-backup:
+    get: { tags: [pin], summary: Get encryption key backup, responses: { "200": { $ref: "#/components/responses/Success" } } }
+    post: { tags: [pin], summary: Store encryption key backup, responses: { "200": { $ref: "#/components/responses/Success" } } }
+    delete: { tags: [pin], summary: Delete key backup, responses: { "204": { description: No Content } } }
+  /pin/expiring-soon:
+    get: { tags: [pin], summary: PIN expiry warning, responses: { "200": { $ref: "#/components/responses/Success" } } }
+  /pin/reset:
+    post: { tags: [pin], summary: Reset PIN via OTP, responses: { "200": { $ref: "#/components/responses/Success" } } }
+  /pin/self-reset:
+    post: { tags: [pin], summary: Self reset PIN (securityGate), responses: { "200": { $ref: "#/components/responses/Success" } } }
+
+  # ---------------- otp ----------------
+  /otp/send:
+    post:
+      tags: [otp]
+      summary: Send OTP
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/OtpSend" } } } }
+      responses: { "200": { $ref: "#/components/responses/Success" }, "429": { $ref: "#/components/responses/RateLimited" } }
+  /otp/verify:
+    post:
+      tags: [otp]
+      summary: Verify OTP
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/OtpVerify" } } } }
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+
+  # ---------------- accounts ----------------
+  /accounts:
+    get:
+      tags: [accounts]
+      summary: List accounts (cached)
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+    post:
+      tags: [accounts]
+      summary: Create account (feature-gated)
+      parameters: [{ $ref: "#/components/parameters/IdempotencyKey" }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/AccountCreate" } } } }
+      responses: { "201": { $ref: "#/components/responses/Success" }, "400": { $ref: "#/components/responses/ValidationError" } }
+  /accounts/{id}:
+    parameters: [{ $ref: "#/components/parameters/IdPath" }]
+    get: { tags: [accounts], summary: Get account (cached), responses: { "200": { $ref: "#/components/responses/Success" }, "404": { $ref: "#/components/responses/NotFound" } } }
+    put:
+      tags: [accounts]
+      summary: Update account
+      requestBody: { content: { application/json: { schema: { $ref: "#/components/schemas/AccountUpdate" } } } }
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+    delete: { tags: [accounts], summary: Delete account, responses: { "204": { description: No Content } } }
+
+  # ---------------- transactions ----------------
+  /transactions:
+    get:
+      tags: [transactions]
+      summary: List transactions
+      parameters:
+        - { name: accountId, in: query, schema: { type: string } }
+        - { name: startDate, in: query, schema: { type: string } }
+        - { name: endDate, in: query, schema: { type: string } }
+        - { name: category, in: query, schema: { type: string } }
+        - { name: page, in: query, schema: { type: integer, minimum: 1 } }
+        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 200 } }
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+    post:
+      tags: [transactions]
+      summary: Create transaction (atomic balance)
+      parameters: [{ $ref: "#/components/parameters/IdempotencyKey" }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/TransactionCreate" } } } }
+      responses: { "201": { $ref: "#/components/responses/Success" }, "400": { $ref: "#/components/responses/ValidationError" } }
+  /transactions/bulk:
+    post:
+      tags: [transactions]
+      summary: Bulk create (voice/import, max 100)
+      parameters: [{ $ref: "#/components/parameters/IdempotencyKey" }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [transactions]
+              properties:
+                transactions:
+                  type: array
+                  minItems: 1
+                  maxItems: 100
+                  items: { $ref: "#/components/schemas/TransactionCreate" }
+      responses: { "201": { $ref: "#/components/responses/Success" } }
+  /transactions/{id}:
+    parameters: [{ $ref: "#/components/parameters/IdPath" }]
+    patch:
+      tags: [transactions]
+      summary: Update transaction (atomic recalc)
+      requestBody: { content: { application/json: { schema: { $ref: "#/components/schemas/TransactionUpdate" } } } }
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+    delete: { tags: [transactions], summary: Delete transaction (atomic recalc), responses: { "204": { description: No Content } } }
+
+  # ---------------- recurring ----------------
+  /recurring:
+    get:
+      tags: [recurring]
+      summary: List recurring
+      parameters:
+        - { name: status, in: query, schema: { type: string, enum: [active, paused, cancelled] } }
+        - { name: interval, in: query, schema: { type: string, enum: [weekly, monthly, yearly] } }
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+    post:
+      tags: [recurring]
+      summary: Create recurring
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/RecurringCreate" } } } }
+      responses: { "201": { $ref: "#/components/responses/Success" } }
+  /recurring/{id}:
+    parameters: [{ $ref: "#/components/parameters/IdPath" }]
+    get: { tags: [recurring], summary: Get recurring, responses: { "200": { $ref: "#/components/responses/Success" } } }
+    put: { tags: [recurring], summary: Update recurring, responses: { "200": { $ref: "#/components/responses/Success" } } }
+    delete: { tags: [recurring], summary: Delete recurring, responses: { "204": { description: No Content } } }
+  /recurring/{id}/toggle:
+    patch:
+      tags: [recurring]
+      summary: Toggle active/paused
+      parameters: [{ $ref: "#/components/parameters/IdPath" }]
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+
+  # ---------------- categorization ----------------
+  /categorization:
+    post:
+      tags: [categorization]
+      summary: Predict category
+      requestBody: { required: true, content: { application/json: { schema: { type: object, required: [text], properties: { text: { type: string, maxLength: 500 } } } } } }
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+  /categorization/learn:
+    post:
+      tags: [categorization]
+      summary: Learn from correction
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/CategorizationLearn" } } } }
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+
+  # ---------------- goals ----------------
+  /goals:
+    get: { tags: [goals], summary: List goals (cached), responses: { "200": { $ref: "#/components/responses/Success" } } }
+    post:
+      tags: [goals]
+      summary: Create goal (idempotent)
+      parameters: [{ $ref: "#/components/parameters/IdempotencyKey" }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/GoalCreate" } } } }
+      responses: { "201": { $ref: "#/components/responses/Success" } }
+  /goals/{id}:
+    parameters: [{ $ref: "#/components/parameters/IdPath" }]
+    get: { tags: [goals], summary: Get goal, responses: { "200": { $ref: "#/components/responses/Success" } } }
+    put: { tags: [goals], summary: Update goal, responses: { "200": { $ref: "#/components/responses/Success" } } }
+    delete: { tags: [goals], summary: Delete goal, responses: { "204": { description: No Content } } }
+  /goals/{id}/members:
+    parameters: [{ $ref: "#/components/parameters/IdPath" }]
+    get: { tags: [goals], summary: List goal members, responses: { "200": { $ref: "#/components/responses/Success" } } }
+    post:
+      tags: [goals]
+      summary: Add goal member (idempotent)
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/GoalMemberAdd" } } } }
+      responses: { "201": { $ref: "#/components/responses/Success" } }
+  /goals/{id}/members/{memberId}:
+    delete:
+      tags: [goals]
+      summary: Remove goal member
+      parameters:
+        - { $ref: "#/components/parameters/IdPath" }
+        - { name: memberId, in: path, required: true, schema: { type: string } }
+      responses: { "204": { description: No Content } }
+
+  # ---------------- budgets ----------------
+  /budgets:
+    get:
+      tags: [budgets]
+      summary: List budgets
+      parameters:
+        - { name: period, in: query, schema: { type: string, enum: [weekly, monthly, yearly] } }
+        - { name: category, in: query, schema: { type: string } }
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+    post:
+      tags: [budgets]
+      summary: Create budget
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/BudgetCreate" } } } }
+      responses: { "201": { $ref: "#/components/responses/Success" } }
+  /budgets/{id}:
+    parameters: [{ $ref: "#/components/parameters/IdPath" }]
+    get: { tags: [budgets], summary: Get budget, responses: { "200": { $ref: "#/components/responses/Success" } } }
+    put: { tags: [budgets], summary: Update budget, responses: { "200": { $ref: "#/components/responses/Success" } } }
+    delete: { tags: [budgets], summary: Delete budget, responses: { "204": { description: No Content } } }
+  /budgets/{id}/recalculate:
+    post:
+      tags: [budgets]
+      summary: Recalculate spent
+      parameters: [{ $ref: "#/components/parameters/IdPath" }]
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+
+  # ---------------- loans ----------------
+  /loans:
+    get: { tags: [loans], summary: List loans (cached), responses: { "200": { $ref: "#/components/responses/Success" } } }
+    post:
+      tags: [loans]
+      summary: Create loan (idempotent)
+      parameters: [{ $ref: "#/components/parameters/IdempotencyKey" }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/LoanCreate" } } } }
+      responses: { "201": { $ref: "#/components/responses/Success" } }
+  /loans/{id}:
+    parameters: [{ $ref: "#/components/parameters/IdPath" }]
+    get: { tags: [loans], summary: Get loan, responses: { "200": { $ref: "#/components/responses/Success" } } }
+    put: { tags: [loans], summary: Update loan, responses: { "200": { $ref: "#/components/responses/Success" } } }
+    delete: { tags: [loans], summary: Delete loan, responses: { "204": { description: No Content } } }
+  /loans/{id}/payments:
+    post:
+      tags: [loans]
+      summary: Record EMI payment (atomic)
+      parameters: [{ $ref: "#/components/parameters/IdPath" }, { $ref: "#/components/parameters/IdempotencyKey" }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/LoanPayment" } } } }
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+
+  # ---------------- investments ----------------
+  /investments:
+    get: { tags: [investments], summary: List investments, responses: { "200": { $ref: "#/components/responses/Success" } } }
+    post:
+      tags: [investments]
+      summary: Create investment
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/InvestmentCreate" } } } }
+      responses: { "201": { $ref: "#/components/responses/Success" } }
+  /investments/{id}:
+    parameters: [{ $ref: "#/components/parameters/IdPath" }]
+    get: { tags: [investments], summary: Get investment, responses: { "200": { $ref: "#/components/responses/Success" } } }
+    put: { tags: [investments], summary: Update investment, responses: { "200": { $ref: "#/components/responses/Success" } } }
+    delete: { tags: [investments], summary: Delete investment, responses: { "204": { description: No Content } } }
+
+  # ---------------- stocks ----------------
+  /stocks/markets:
+    get: { tags: [stocks], summary: List markets, responses: { "200": { $ref: "#/components/responses/Success" } } }
+  /stocks/search:
+    get:
+      tags: [stocks]
+      summary: Search symbols
+      parameters: [{ name: q, in: query, schema: { type: string } }]
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+  /stocks/stock:
+    get:
+      tags: [stocks]
+      summary: Quote (cached 60s)
+      parameters: [{ name: symbol, in: query, schema: { type: string } }]
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+  /stocks/batch:
+    get:
+      tags: [stocks]
+      summary: Batch quotes
+      parameters: [{ name: symbols, in: query, schema: { type: string } }]
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+
+  # ---------------- gold ----------------
+  /gold:
+    get:
+      tags: [gold]
+      summary: List gold assets
+      parameters: [{ name: type, in: query, schema: { type: string, enum: [gold, jewelry, coin] } }]
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+    post:
+      tags: [gold]
+      summary: Create gold asset
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/GoldCreate" } } } }
+      responses: { "201": { $ref: "#/components/responses/Success" } }
+  /gold/{id}:
+    parameters: [{ $ref: "#/components/parameters/IdPath" }]
+    get: { tags: [gold], summary: Get gold asset, responses: { "200": { $ref: "#/components/responses/Success" } } }
+    put: { tags: [gold], summary: Update gold asset, responses: { "200": { $ref: "#/components/responses/Success" } } }
+    delete: { tags: [gold], summary: Delete gold asset, responses: { "204": { description: No Content } } }
+
+  # ---------------- bills ----------------
+  /bills:
+    get: { tags: [bills], summary: List bills, responses: { "200": { $ref: "#/components/responses/Success" } } }
+    post:
+      tags: [bills]
+      summary: Upload bill (multipart, rate-limited)
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema: { type: object, properties: { file: { type: string, format: binary }, transactionId: { type: string } } }
+      responses: { "201": { $ref: "#/components/responses/Success" } }
+  /bills/{id}:
+    parameters: [{ $ref: "#/components/parameters/IdPath" }]
+    get: { tags: [bills], summary: Get bill, responses: { "200": { $ref: "#/components/responses/Success" } } }
+    delete: { tags: [bills], summary: Delete bill, responses: { "204": { description: No Content } } }
+
+  # ---------------- tax ----------------
+  /tax:
+    get:
+      tags: [tax]
+      summary: List tax calculations
+      parameters: [{ name: year, in: query, schema: { type: integer } }]
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+    post:
+      tags: [tax]
+      summary: Create tax calculation
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/TaxCalcCreate" } } } }
+      responses: { "201": { $ref: "#/components/responses/Success" } }
+  /tax/{id}:
+    parameters: [{ $ref: "#/components/parameters/IdPath" }]
+    get: { tags: [tax], summary: Get tax calculation, responses: { "200": { $ref: "#/components/responses/Success" } } }
+    put: { tags: [tax], summary: Update tax calculation, responses: { "200": { $ref: "#/components/responses/Success" } } }
+    delete: { tags: [tax], summary: Delete tax calculation, responses: { "204": { description: No Content } } }
+
+  # ---------------- dashboard ----------------
+  /dashboard/summary:
+    get: { tags: [dashboard], summary: Aggregated summary (cached 30s), responses: { "200": { $ref: "#/components/responses/Success" } } }
+  /dashboard/cashflow:
+    get: { tags: [dashboard], summary: Cashflow, responses: { "200": { $ref: "#/components/responses/Success" } } }
+
+  # ---------------- friends ----------------
+  /friends:
+    get: { tags: [friends], summary: List friends, responses: { "200": { $ref: "#/components/responses/Success" } } }
+    post:
+      tags: [friends]
+      summary: Create friend (email OR phone required)
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/FriendCreate" } } } }
+      responses: { "201": { $ref: "#/components/responses/Success" } }
+  /friends/bulk:
+    post:
+      tags: [friends]
+      summary: Bulk create (max 200)
+      requestBody: { required: true, content: { application/json: { schema: { type: object, properties: { friends: { type: array, items: { $ref: "#/components/schemas/FriendCreate" } } } } } } }
+      responses: { "201": { $ref: "#/components/responses/Success" } }
+  /friends/import:
+    post:
+      tags: [friends]
+      summary: Import friends CSV (multipart)
+      requestBody: { required: true, content: { multipart/form-data: { schema: { type: object, properties: { file: { type: string, format: binary } } } } } }
+      responses: { "201": { $ref: "#/components/responses/Success" } }
+  /friends/{id}:
+    parameters: [{ $ref: "#/components/parameters/IdPath" }]
+    get: { tags: [friends], summary: Get friend, responses: { "200": { $ref: "#/components/responses/Success" } } }
+    put: { tags: [friends], summary: Update friend, responses: { "200": { $ref: "#/components/responses/Success" } } }
+    delete: { tags: [friends], summary: Delete friend, responses: { "204": { description: No Content } } }
+
+  # ---------------- groups ----------------
+  /groups:
+    get: { tags: [groups], summary: List groups, responses: { "200": { $ref: "#/components/responses/Success" } } }
+    post:
+      tags: [groups]
+      summary: Create group expense
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/GroupCreate" } } } }
+      responses: { "201": { $ref: "#/components/responses/Success" } }
+  /groups/repair-all-members:
+    post: { tags: [groups], summary: Repair all group members, responses: { "200": { $ref: "#/components/responses/Success" } } }
+  /groups/{id}:
+    parameters: [{ $ref: "#/components/parameters/IdPath" }]
+    get: { tags: [groups], summary: Get group, responses: { "200": { $ref: "#/components/responses/Success" } } }
+    put: { tags: [groups], summary: Update group, responses: { "200": { $ref: "#/components/responses/Success" } } }
+    delete: { tags: [groups], summary: Delete group, responses: { "204": { description: No Content } } }
+  /groups/{id}/repair-members:
+    post:
+      tags: [groups]
+      summary: Repair group members
+      parameters: [{ $ref: "#/components/parameters/IdPath" }]
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+
+  # ---------------- todos ----------------
+  /todos:
+    get: { tags: [todos], summary: List todos, responses: { "200": { $ref: "#/components/responses/Success" } } }
+    post:
+      tags: [todos]
+      summary: Create todo
+      requestBody: { required: true, content: { application/json: { schema: { type: object, required: [title], properties: { title: { type: string }, completed: { type: boolean } } } } } }
+      responses: { "201": { $ref: "#/components/responses/Success" } }
+  /todos/{id}:
+    parameters: [{ $ref: "#/components/parameters/IdPath" }]
+    put: { tags: [todos], summary: Update todo, responses: { "200": { $ref: "#/components/responses/Success" } } }
+    delete: { tags: [todos], summary: Delete todo, responses: { "204": { description: No Content } } }
+  /todos/lists:
+    get: { tags: [todos], summary: List todo lists, responses: { "200": { $ref: "#/components/responses/Success" } } }
+    post: { tags: [todos], summary: Create todo list (together/individual), responses: { "201": { $ref: "#/components/responses/Success" } } }
+  /todos/lists/{id}:
+    parameters: [{ $ref: "#/components/parameters/IdPath" }]
+    put: { tags: [todos], summary: Update todo list, responses: { "200": { $ref: "#/components/responses/Success" } } }
+    delete: { tags: [todos], summary: Delete todo list, responses: { "204": { description: No Content } } }
+  /todos/lists/{listId}/items:
+    get:
+      tags: [todos]
+      summary: List items in list
+      parameters: [{ name: listId, in: path, required: true, schema: { type: string } }]
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+  /todos/items:
+    get: { tags: [todos], summary: All todo items, responses: { "200": { $ref: "#/components/responses/Success" } } }
+    post: { tags: [todos], summary: Create item (assignee), responses: { "201": { $ref: "#/components/responses/Success" } } }
+  /todos/items/{id}:
+    parameters: [{ $ref: "#/components/parameters/IdPath" }]
+    put: { tags: [todos], summary: Update item, responses: { "200": { $ref: "#/components/responses/Success" } } }
+    delete: { tags: [todos], summary: Delete item, responses: { "204": { description: No Content } } }
+  /todos/lists/{listId}/share:
+    post:
+      tags: [todos]
+      summary: Share list with collaborator
+      parameters: [{ name: listId, in: path, required: true, schema: { type: string } }]
+      responses: { "201": { $ref: "#/components/responses/Success" } }
+
+  # ---------------- collaboration ----------------
+  /collaboration:
+    get:
+      tags: [collaboration]
+      summary: List collaborations
+      parameters:
+        - { name: moduleType, in: query, schema: { type: string, enum: [group_expense, todo_list, goal] } }
+        - { name: status, in: query, schema: { type: string, enum: [REGISTERED, PENDING_REGISTRATION] } }
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+  /collaboration/pending:
+    get: { tags: [collaboration], summary: Pending collaborations, responses: { "200": { $ref: "#/components/responses/Success" } } }
+  /collaboration/{id}:
+    parameters: [{ $ref: "#/components/parameters/IdPath" }]
+    get: { tags: [collaboration], summary: Get collaboration, responses: { "200": { $ref: "#/components/responses/Success" } } }
+    delete: { tags: [collaboration], summary: Revoke collaboration, responses: { "204": { description: No Content } } }
+
+  # ---------------- advisors ----------------
+  /advisors:
+    get: { tags: [advisors], summary: List advisors, responses: { "200": { $ref: "#/components/responses/Success" } } }
+  /advisors/apply:
+    post:
+      tags: [advisors]
+      summary: Apply as advisor (multipart KYC docs)
+      requestBody: { required: true, content: { multipart/form-data: { schema: { type: object } } } }
+      responses: { "201": { $ref: "#/components/responses/Success" } }
+  /advisors/application/my:
+    get: { tags: [advisors], summary: My application, responses: { "200": { $ref: "#/components/responses/Success" } } }
+  /advisors/availability:
+    post: { tags: [advisors], summary: Set availability (advisor), responses: { "201": { $ref: "#/components/responses/Success" } } }
+  /advisors/me/sessions:
+    get: { tags: [advisors], summary: My advisor sessions, responses: { "200": { $ref: "#/components/responses/Success" } } }
+  /advisors/admin/applications:
+    get: { tags: [advisors], summary: Pending applications (admin/manager), responses: { "200": { $ref: "#/components/responses/Success" } } }
+  /advisors/admin/{id}/approve:
+    put:
+      tags: [advisors]
+      summary: Approve application (admin/manager)
+      parameters: [{ $ref: "#/components/parameters/IdPath" }]
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+  /advisors/admin/{id}/reject:
+    put:
+      tags: [advisors]
+      summary: Reject application (admin/manager)
+      parameters: [{ $ref: "#/components/parameters/IdPath" }]
+      requestBody: { content: { application/json: { schema: { type: object, properties: { reason: { type: string } } } } } }
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+  /advisors/{id}:
+    parameters: [{ $ref: "#/components/parameters/IdPath" }]
+    get: { tags: [advisors], summary: Get advisor, responses: { "200": { $ref: "#/components/responses/Success" } } }
+
+  # ---------------- bookings ----------------
+  /bookings:
+    get: { tags: [bookings], summary: List bookings, responses: { "200": { $ref: "#/components/responses/Success" } } }
+    post:
+      tags: [bookings]
+      summary: Create booking
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/BookingCreate" } } } }
+      responses: { "201": { $ref: "#/components/responses/Success" } }
+  /bookings/{id}:
+    parameters: [{ $ref: "#/components/parameters/IdPath" }]
+    get: { tags: [bookings], summary: Get booking, responses: { "200": { $ref: "#/components/responses/Success" } } }
+
+  # ---------------- sessions (advisor chat) ----------------
+  /sessions/{id}:
+    parameters: [{ $ref: "#/components/parameters/IdPath" }]
+    get: { tags: [sessions], summary: Get session, responses: { "200": { $ref: "#/components/responses/Success" } } }
+  /sessions/{id}/messages:
+    parameters: [{ $ref: "#/components/parameters/IdPath" }]
+    get: { tags: [sessions], summary: Get messages, responses: { "200": { $ref: "#/components/responses/Success" } } }
+    post:
+      tags: [sessions]
+      summary: Send message
+      requestBody: { required: true, content: { application/json: { schema: { type: object, required: [message], properties: { message: { type: string, maxLength: 4000 } } } } } }
+      responses: { "201": { $ref: "#/components/responses/Success" } }
+  /sessions/{id}/start:
+    post: { tags: [sessions], summary: Start session, parameters: [{ $ref: "#/components/parameters/IdPath" }], responses: { "200": { $ref: "#/components/responses/Success" } } }
+  /sessions/{id}/complete:
+    post:
+      tags: [sessions]
+      summary: Complete session
+      parameters: [{ $ref: "#/components/parameters/IdPath" }]
+      requestBody: { content: { application/json: { schema: { type: object, properties: { notes: { type: string, maxLength: 2000 } } } } } }
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+  /sessions/{id}/cancel:
+    post:
+      tags: [sessions]
+      summary: Cancel session
+      parameters: [{ $ref: "#/components/parameters/IdPath" }]
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+
+  # ---------------- payments ----------------
+  /payments:
+    get: { tags: [payments], summary: List payments, responses: { "200": { $ref: "#/components/responses/Success" } } }
+  /payments/webhook:
+    post:
+      tags: [payments]
+      summary: Provider webhook (PUBLIC, signature verified)
+      security: []
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+  /payments/initiate:
+    post:
+      tags: [payments]
+      summary: Initiate payment
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/PaymentInitiate" } } } }
+      responses: { "201": { $ref: "#/components/responses/Success" } }
+  /payments/complete:
+    post: { tags: [payments], summary: Complete payment, responses: { "200": { $ref: "#/components/responses/Success" } } }
+  /payments/fail:
+    post: { tags: [payments], summary: Fail payment, responses: { "200": { $ref: "#/components/responses/Success" } } }
+  /payments/refund:
+    post: { tags: [payments], summary: Refund payment, responses: { "200": { $ref: "#/components/responses/Success" } } }
+
+  # ---------------- notifications ----------------
+  /notifications:
+    get:
+      tags: [notifications]
+      summary: List notifications
+      parameters:
+        - { name: unread, in: query, schema: { type: string } }
+        - { name: limit, in: query, schema: { type: string } }
+        - { name: page, in: query, schema: { type: string } }
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+    delete: { tags: [notifications], summary: Clear all, responses: { "204": { description: No Content } } }
+  /notifications/unread/count:
+    get: { tags: [notifications], summary: Unread count, responses: { "200": { $ref: "#/components/responses/Success" } } }
+  /notifications/{id}/read:
+    put:
+      tags: [notifications]
+      summary: Mark as read
+      parameters: [{ $ref: "#/components/parameters/IdPath" }]
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+  /notifications/mark-all-read:
+    post: { tags: [notifications], summary: Mark all read, responses: { "200": { $ref: "#/components/responses/Success" } } }
+  /notifications/{id}:
+    delete: { tags: [notifications], summary: Delete notification, parameters: [{ $ref: "#/components/parameters/IdPath" }], responses: { "204": { description: No Content } } }
+  /notifications/send:
+    post:
+      tags: [notifications]
+      summary: Send notification (admin)
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/NotificationSend" } } } }
+      responses: { "201": { $ref: "#/components/responses/Success" } }
+
+  # ---------------- sync ----------------
+  /sync/pull:
+    post: { tags: [sync], summary: Pull deltas, responses: { "200": { $ref: "#/components/responses/Success" } } }
+  /sync/push:
+    post:
+      tags: [sync]
+      summary: Push changes (idempotent)
+      parameters: [{ $ref: "#/components/parameters/IdempotencyKey" }]
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+  /sync/register-device:
+    post: { tags: [sync], summary: Register device, responses: { "200": { $ref: "#/components/responses/Success" } } }
+  /sync/devices:
+    get: { tags: [sync], summary: List sync devices, responses: { "200": { $ref: "#/components/responses/Success" } } }
+  /sync/deactivate-device:
+    post: { tags: [sync], summary: Deactivate device, responses: { "200": { $ref: "#/components/responses/Success" } } }
+
+  # ---------------- import ----------------
+  /import/upload:
+    post:
+      tags: [import]
+      summary: Upload statement (multipart, feature-gated)
+      requestBody: { required: true, content: { multipart/form-data: { schema: { type: object, properties: { file: { type: string, format: binary } } } } } }
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+  /import/confirm:
+    post: { tags: [import], summary: Confirm import, responses: { "200": { $ref: "#/components/responses/Success" } } }
+  /import/{sessionId}:
+    get:
+      tags: [import]
+      summary: Get import session
+      parameters: [{ name: sessionId, in: path, required: true, schema: { type: string } }]
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+
+  # ---------------- receipts ----------------
+  /receipts/parse:
+    post:
+      tags: [receipts]
+      summary: Parse receipt (Tesseract → Gemini hybrid)
+      parameters: [{ name: provider, in: query, schema: { type: string, enum: [auto, donut], default: auto } }]
+      requestBody: { content: { multipart/form-data: { schema: { type: object, properties: { image: { type: string, format: binary } } } } } }
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+
+  # ---------------- voice ----------------
+  /voice/process-audio:
+    post:
+      tags: [voice]
+      summary: Process voice audio (AI-gated, multipart)
+      requestBody: { content: { multipart/form-data: { schema: { type: object, properties: { audio: { type: string, format: binary } } } } } }
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+  /voice/process:
+    post:
+      tags: [voice]
+      summary: Process transcript (multi-intent)
+      requestBody: { required: true, content: { application/json: { schema: { type: object, properties: { transcript: { type: string } } } } } }
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+  /voice/learn:
+    post: { tags: [voice], summary: Learn from correction, responses: { "200": { $ref: "#/components/responses/Success" } } }
+
+  # ---------------- ai ----------------
+  /ai/events:
+    post:
+      tags: [ai]
+      summary: Capture AI event
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/AiEvent" } } } }
+      responses: { "201": { $ref: "#/components/responses/Success" } }
+  /ai/quota:
+    get: { tags: [ai], summary: AI quota, responses: { "200": { $ref: "#/components/responses/Success" } } }
+  /ai/insights:
+    get: { tags: [ai], summary: Insights (aiAutomation), responses: { "200": { $ref: "#/components/responses/Success" } } }
+  /ai/health-score:
+    get: { tags: [ai], summary: Health score, responses: { "200": { $ref: "#/components/responses/Success" } } }
+  /ai/recommendations:
+    get: { tags: [ai], summary: Recommendations (smartCategorization), responses: { "200": { $ref: "#/components/responses/Success" } } }
+  /ai/fraud-alerts:
+    get: { tags: [ai], summary: Fraud alerts (anomalyDetection), responses: { "200": { $ref: "#/components/responses/Success" } } }
+  /ai/bill-predictions:
+    get: { tags: [ai], summary: Bill predictions (subscriptionDetection), responses: { "200": { $ref: "#/components/responses/Success" } } }
+  /ai/spending-patterns:
+    get: { tags: [ai], summary: Spending patterns, responses: { "200": { $ref: "#/components/responses/Success" } } }
+
+  # ---------------- aa (Setu Account Aggregator) ----------------
+  /aa/consent:
+    post:
+      tags: [aa]
+      summary: Create AA consent
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/AaCreateConsent" } } } }
+      responses: { "201": { $ref: "#/components/responses/Success" } }
+  /aa/consent/status/{consentHandle}:
+    get:
+      tags: [aa]
+      summary: Consent status
+      parameters: [{ name: consentHandle, in: path, required: true, schema: { type: string } }]
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+  /aa/consent/artifact/{consentId}:
+    get:
+      tags: [aa]
+      summary: Consent artifact
+      parameters: [{ name: consentId, in: path, required: true, schema: { type: string } }]
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+  /aa/data/session:
+    post:
+      tags: [aa]
+      summary: Create data session
+      requestBody: { required: true, content: { application/json: { schema: { type: object, required: [consentId], properties: { consentId: { type: string } } } } } }
+      responses: { "201": { $ref: "#/components/responses/Success" } }
+  /aa/data/fetch/{sessionId}:
+    get:
+      tags: [aa]
+      summary: Fetch FI data
+      parameters: [{ name: sessionId, in: path, required: true, schema: { type: string } }]
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+  /aa/consents:
+    get: { tags: [aa], summary: List consents, responses: { "200": { $ref: "#/components/responses/Success" } } }
+  /aa/consent/revoke/{consentId}:
+    post:
+      tags: [aa]
+      summary: Revoke consent
+      parameters: [{ name: consentId, in: path, required: true, schema: { type: string } }]
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+  /aa/financial-summary:
+    get: { tags: [aa], summary: Financial summary, responses: { "200": { $ref: "#/components/responses/Success" } } }
+  /aa/notification:
+    post:
+      tags: [aa]
+      summary: AA webhook (PUBLIC)
+      security: []
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/AaNotification" } } } }
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+
+  # ---------------- admin ----------------
+  /admin/features:
+    get: { tags: [admin], summary: Feature flags, responses: { "200": { $ref: "#/components/responses/Success" } } }
+  /admin/features/toggle:
+    post: { tags: [admin], summary: Toggle feature flag (admin), responses: { "200": { $ref: "#/components/responses/Success" } } }
+  /admin/users:
+    get: { tags: [admin], summary: List users, responses: { "200": { $ref: "#/components/responses/Success" } } }
+  /admin/users/{userId}/role:
+    post:
+      tags: [admin]
+      summary: Update user role
+      parameters: [{ name: userId, in: path, required: true, schema: { type: string } }]
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+  /admin/users/{userId}/status:
+    post:
+      tags: [admin]
+      summary: Toggle user status
+      parameters: [{ name: userId, in: path, required: true, schema: { type: string } }]
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+  /admin/stats:
+    get: { tags: [admin], summary: Platform stats, responses: { "200": { $ref: "#/components/responses/Success" } } }
+  /admin/cache/metrics:
+    get:
+      tags: [admin]
+      summary: Cache metrics
+      parameters: [{ name: reset, in: query, schema: { type: string, enum: ["true", "false"] } }]
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+
+  # ---------------- webhooks ----------------
+  /webhooks/sendgrid:
+    post:
+      tags: [webhooks]
+      summary: SendGrid event webhook (PUBLIC, ECDSA P-256 verified)
+      security: []
+      responses: { "200": { $ref: "#/components/responses/Success" }, "401": { $ref: "#/components/responses/Unauthorized" } }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    IdPath:
+      name: id
+      in: path
+      required: true
+      schema: { type: string, minLength: 1 }
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: false
+      schema: { type: string, format: uuid }
+      description: Dedupe key (24h TTL in Redis); set to the client-generated record id.
+
+  responses:
+    Success:
+      description: Standard success envelope
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/SuccessEnvelope" }
+    ValidationError:
+      description: Zod validation failure (generic; issues logged server-side only)
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "#/components/schemas/ErrorEnvelope"
+              - type: object
+                properties: { code: { const: VALIDATION_ERROR } }
+    Unauthorized:
+      description: Missing/invalid/expired token
+      content: { application/json: { schema: { $ref: "#/components/schemas/ErrorEnvelope" } } }
+    NotFound:
+      description: Resource not found or not owned by caller
+      content: { application/json: { schema: { $ref: "#/components/schemas/ErrorEnvelope" } } }
+    RateLimited:
+      description: Too many requests
+      content: { application/json: { schema: { $ref: "#/components/schemas/ErrorEnvelope" } } }
+    AuthTokensResponse:
+      description: Auth tokens + user
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/AuthTokens" }
+
+  schemas:
+    SuccessEnvelope:
+      type: object
+      required: [success]
+      properties:
+        success: { type: boolean, const: true }
+        data: {}
+        requestId: { type: string }
+    ErrorEnvelope:
+      type: object
+      required: [success, error, code]
+      properties:
+        success: { type: boolean, const: false }
+        error: { type: string, description: Human-safe message (no stack/schema leak) }
+        code: { type: string }
+        requestId: { type: string }
+
+    Money:
+      type: number
+      multipleOf: 0.01
+      description: Decimal(18,2); server-authoritative.
+
+    RegisterInput:
+      type: object
+      required: [email, name, password]
+      properties:
+        email: { type: string, format: email }
+        name: { type: string }
+        password: { type: string, description: "8+ chars incl. upper, lower, digit, special" }
+        role: { type: string, enum: [user, advisor] }
+        phone: { type: string }
+        mobile: { type: string }
+    LoginInput:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string }
+    AuthTokens:
+      type: object
+      properties:
+        accessToken: { type: string }
+        refreshToken: { type: string }
+        expiresAt: { type: integer, description: epoch ms }
+        user:
+          type: object
+          properties:
+            id: { type: string }
+            email: { type: string }
+            name: { type: string }
+            role: { type: string }
+            isApproved: { type: boolean }
+    User:
+      type: object
+      properties:
+        id: { type: string }
+        email: { type: string, format: email }
+        name: { type: string }
+        firstName: { type: [string, "null"] }
+        lastName: { type: [string, "null"] }
+        gender: { type: [string, "null"] }
+        country: { type: [string, "null"] }
+        state: { type: [string, "null"] }
+        city: { type: [string, "null"] }
+        dateOfBirth: { type: [string, "null"], format: date }
+        jobType: { type: [string, "null"] }
+        monthlyIncome: { type: [number, "null"] }
+        role: { type: string }
+        isApproved: { type: boolean }
+        createdAt: { type: string, format: date-time }
+
+    PinCreate: { type: object, properties: { pin: { type: string, minLength: 1, maxLength: 64 } } }
+    PinVerify: { type: object, properties: { pin: { type: string, minLength: 1, maxLength: 64 }, deviceId: { type: string, maxLength: 200 } } }
+    PinUpdate: { type: object, properties: { currentPin: { type: string, maxLength: 64 }, newPin: { type: string, maxLength: 64 } } }
+
+    OtpSend:
+      type: object
+      required: [destination, purpose]
+      properties:
+        destination: { type: string, minLength: 5, maxLength: 100 }
+        channel: { type: string, enum: [sms, email], default: email }
+        purpose: { type: string, enum: [signup, login, reset_password, aa_consent, sensitive_action] }
+    OtpVerify:
+      type: object
+      required: [destination, purpose, otp]
+      properties:
+        destination: { type: string, minLength: 5, maxLength: 100 }
+        purpose: { type: string, enum: [signup, login, reset_password, aa_consent, sensitive_action] }
+        otp: { type: string, pattern: "^\\d{6}$" }
+
+    AccountCreate:
+      type: object
+      required: [name, type]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 120 }
+        type: { type: string, minLength: 1, maxLength: 60, description: "bank|card|cash|digital" }
+        provider: { type: string, maxLength: 120 }
+        country: { type: string, maxLength: 60 }
+        balance: { allOf: [{ $ref: "#/components/schemas/Money" }], minimum: 0 }
+        currency: { type: string, minLength: 3, maxLength: 3 }
+        clientRequestId: { type: string }
+    AccountUpdate:
+      allOf: [{ $ref: "#/components/schemas/AccountCreate" }]
+      description: Partial of AccountCreate; at least one field required.
+
+    TransactionCreate:
+      type: object
+      required: [accountId, type, amount, category, date]
+      properties:
+        accountId: { type: string, minLength: 1 }
+        type: { type: string, enum: [income, expense, transfer, withdrawal] }
+        amount: { allOf: [{ $ref: "#/components/schemas/Money" }], minimum: 0, exclusiveMinimum: true, maximum: 999999999 }
+        category: { type: string, minLength: 1, maxLength: 80 }
+        subcategory: { type: string, maxLength: 80 }
+        description: { type: string, maxLength: 200 }
+        merchant: { type: string, maxLength: 120 }
+        date: { type: string, format: date-time }
+        tags: { type: array, items: { type: string, maxLength: 40 } }
+        transferToAccountId: { type: string }
+        transferType: { type: string, enum: [self-transfer, other-transfer] }
+        expenseMode: { type: string, enum: [individual, group, loan] }
+        groupExpenseId: { type: string }
+        groupName: { type: string, maxLength: 100 }
+        splitType: { type: string, enum: [equal, custom] }
+        loanType: { type: string, enum: [borrowed, lent] }
+        contactName: { type: string, maxLength: 100 }
+        interestRate: { type: number, minimum: 0, maximum: 100 }
+        loanCategory: { type: string, maxLength: 80 }
+        bankName: { type: string, maxLength: 100 }
+        tenureMonths: { type: integer, minimum: 1, maximum: 600 }
+        emiAmount: { type: number, minimum: 0 }
+        downPayment: { type: number, minimum: 0 }
+        receivedAccount: { type: string }
+        emiDeductionAccountId: { type: string }
+        notes: { type: string, maxLength: 500 }
+      description: >-
+        If type=transfer, transferToAccountId is required (superRefine). clientId
+        (uuid) is sent as Idempotency-Key.
+    TransactionUpdate:
+      allOf: [{ $ref: "#/components/schemas/TransactionCreate" }]
+      description: Partial; at least one field required.
+
+    RecurringCreate:
+      type: object
+      required: [title, amount, category, interval, nextDueDate]
+      properties:
+        title: { type: string, minLength: 1, maxLength: 100 }
+        amount: { allOf: [{ $ref: "#/components/schemas/Money" }], minimum: 0, exclusiveMinimum: true, maximum: 999999999 }
+        category: { type: string, minLength: 1, maxLength: 80 }
+        subcategory: { type: string, maxLength: 80 }
+        interval: { type: string, enum: [weekly, monthly, yearly] }
+        nextDueDate: { type: string, format: date-time }
+        autoProcess: { type: boolean }
+        accountId: { type: string }
+        description: { type: string, maxLength: 200 }
+        merchant: { type: string, maxLength: 120 }
+        clientRequestId: { type: string }
+
+    CategorizationLearn:
+      type: object
+      required: [text]
+      properties:
+        text: { type: string, minLength: 1, maxLength: 500 }
+        category: { type: string, maxLength: 120 }
+        category_id: { type: string, maxLength: 120 }
+        subcategory: { type: string, maxLength: 120 }
+        subcategory_id: { type: string, maxLength: 120 }
+      description: One of category / category_id is required.
+
+    GoalCreate:
+      type: object
+      required: [name, targetAmount, targetDate]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 120 }
+        targetAmount: { allOf: [{ $ref: "#/components/schemas/Money" }], exclusiveMinimum: true, minimum: 0 }
+        targetDate: { type: string, format: date-time }
+        category: { type: string, maxLength: 80 }
+        isGroupGoal: { type: boolean }
+        clientRequestId: { type: string }
+    GoalMemberAdd:
+      type: object
+      required: [email]
+      properties:
+        email: { type: string, format: email }
+        name: { type: string, maxLength: 120 }
+
+    BudgetCreate:
+      type: object
+      required: [category, amount, period]
+      properties:
+        category: { type: string, minLength: 1, maxLength: 80 }
+        amount: { allOf: [{ $ref: "#/components/schemas/Money" }], exclusiveMinimum: true, minimum: 0, maximum: 999999999 }
+        period: { type: string, enum: [weekly, monthly, yearly] }
+        threshold: { type: integer, minimum: 1, maximum: 100 }
+        startDate: { type: string, format: date-time }
+        endDate: { type: string, format: date-time }
+        alertEnabled: { type: boolean }
+        alertChannels: { type: array, items: { type: string, enum: [app, email, push] } }
+        clientRequestId: { type: string }
+
+    LoanCreate:
+      type: object
+      required: [type, name, principalAmount]
+      properties:
+        type: { type: string, minLength: 1, maxLength: 60 }
+        name: { type: string, minLength: 1, maxLength: 120 }
+        principalAmount: { allOf: [{ $ref: "#/components/schemas/Money" }], exclusiveMinimum: true, minimum: 0 }
+        interestRate: { type: number, minimum: 0 }
+        emiAmount: { type: number, minimum: 0 }
+        dueDate: { type: string, format: date-time }
+        frequency: { type: string, maxLength: 40 }
+        contactPerson: { type: string, maxLength: 120 }
+        clientRequestId: { type: string }
+    LoanPayment:
+      type: object
+      required: [amount]
+      properties:
+        amount: { allOf: [{ $ref: "#/components/schemas/Money" }], exclusiveMinimum: true, minimum: 0 }
+        accountId: { type: string }
+        notes: { type: string, maxLength: 200 }
+
+    InvestmentCreate:
+      type: object
+      required: [assetType, assetName, quantity, buyPrice, currentPrice, purchaseDate]
+      properties:
+        assetType: { type: string }
+        assetName: { type: string }
+        quantity: { type: number, exclusiveMinimum: true, minimum: 0 }
+        buyPrice: { type: number, minimum: 0 }
+        currentPrice: { type: number, minimum: 0 }
+        totalInvested: { type: number, minimum: 0 }
+        currentValue: { type: number, minimum: 0 }
+        profitLoss: { type: number }
+        purchaseDate: { type: string }
+        lastUpdated: { type: string }
+        metadata: {}
+
+    GoldCreate:
+      type: object
+      required: [type, quantity, unit, purchasePrice, currentPrice, purchaseDate]
+      properties:
+        type: { type: string, enum: [gold, jewelry, coin] }
+        quantity: { type: number, exclusiveMinimum: true, minimum: 0 }
+        unit: { type: string, enum: [gram, ounce, kg] }
+        purchasePrice: { type: number, exclusiveMinimum: true, minimum: 0 }
+        currentPrice: { type: number, minimum: 0 }
+        purchaseDate: { type: string, format: date-time }
+        purityPercentage: { type: number, minimum: 0, maximum: 100 }
+        location: { type: string, maxLength: 200 }
+        certificateNumber: { type: string, maxLength: 100 }
+        notes: { type: string, maxLength: 500 }
+        clientRequestId: { type: string }
+
+    TaxCalcCreate:
+      type: object
+      required: [year, totalIncome, totalExpense, netProfit, taxableIncome, estimatedTax, taxRate]
+      properties:
+        year: { type: integer, minimum: 2000, maximum: 2100 }
+        regime: { type: string, maxLength: 50 }
+        country: { type: string, maxLength: 50 }
+        totalIncome: { type: number, minimum: 0 }
+        totalExpense: { type: number, minimum: 0 }
+        netProfit: { type: number }
+        taxableIncome: { type: number, minimum: 0 }
+        estimatedTax: { type: number, minimum: 0 }
+        taxRate: { type: number, minimum: 0, maximum: 100 }
+        deductions: { type: number, minimum: 0 }
+        currency: { type: string, maxLength: 10 }
+        notes: { type: string, maxLength: 500 }
+        metadata: { type: object }
+        clientRequestId: { type: string }
+
+    FriendCreate:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 120 }
+        email: { type: [string, "null"], maxLength: 255 }
+        phone: { type: [string, "null"], maxLength: 40 }
+      description: Controller enforces email OR phone required.
+
+    GroupCreate:
+      type: object
+      required: [name, totalAmount, date, members]
+      properties:
+        name: { type: string, minLength: 1 }
+        totalAmount: { type: number, minimum: 0 }
+        paidBy: { oneOf: [{ type: string }, { type: number }] }
+        date: { type: string }
+        members:
+          type: array
+          items:
+            oneOf:
+              - { type: string }
+              - $ref: "#/components/schemas/GroupMember"
+        items: { type: array, items: { $ref: "#/components/schemas/GroupItem" } }
+        description: { type: string }
+        category: { type: string }
+        splitType: { type: string, enum: [equal, custom] }
+        yourShare: { type: number }
+        status: { type: string, enum: [pending, settled] }
+    GroupMember:
+      type: object
+      required: [name, share]
+      properties:
+        name: { type: string, minLength: 1 }
+        share: { type: number, minimum: 0 }
+        paid: { type: boolean }
+        friendId: { oneOf: [{ type: string }, { type: number }] }
+        email: { type: string }
+        phone: { type: string }
+        isCurrentUser: { type: boolean }
+        paidAmount: { type: number }
+        paymentStatus: { type: string }
+    GroupItem:
+      type: object
+      required: [name, amount]
+      properties:
+        name: { type: string, minLength: 1 }
+        amount: { type: number, minimum: 0 }
+        sharedBy: { type: array, items: { type: string } }
+
+    BookingCreate:
+      type: object
+      required: [advisorId, sessionType, proposedDate, proposedTime, duration, amount]
+      properties:
+        advisorId: { type: string, minLength: 1 }
+        sessionType: { type: string, minLength: 1, maxLength: 60 }
+        description: { type: string, maxLength: 1000 }
+        proposedDate: { type: string, minLength: 1 }
+        proposedTime: { type: string, minLength: 1 }
+        duration: { type: integer, minimum: 1, maximum: 600 }
+        amount: { type: number, minimum: 0 }
+
+    PaymentInitiate:
+      type: object
+      required: [sessionId, paymentMethod]
+      properties:
+        sessionId: { type: string, minLength: 1 }
+        paymentMethod: { type: string, minLength: 1 }
+        description: { type: string, maxLength: 500 }
+
+    NotificationSend:
+      type: object
+      required: [userId, title, message]
+      properties:
+        userId: { type: string, minLength: 1, maxLength: 100 }
+        title: { type: string, minLength: 1, maxLength: 300 }
+        message: { type: string, minLength: 1, maxLength: 5000 }
+        type: { type: string, maxLength: 50 }
+        category: { type: string, maxLength: 100 }
+        deepLink: { type: string, maxLength: 2000 }
+
+    AiEvent:
+      type: object
+      required: [eventType]
+      properties:
+        eventType: { type: string, minLength: 3, maxLength: 80 }
+        metadata: { type: object, default: {} }
+
+    AaCreateConsent:
+      type: object
+      required: [vua, fiTypes, purpose, dataRange]
+      properties:
+        vua: { type: string, minLength: 3, maxLength: 100 }
+        fiTypes:
+          type: array
+          minItems: 1
+          items: { type: string, enum: [DEPOSIT, TERM_DEPOSIT, RECURRING_DEPOSIT, MUTUAL_FUNDS, SIP, INSURANCE, CREDIT_CARD, EQUITIES] }
+        consentTypes: { type: array, minItems: 1, items: { type: string }, default: [TRANSACTIONS, SUMMARY] }
+        purpose:
+          type: object
+          required: [code, text]
+          properties:
+            code: { type: string, minLength: 1, maxLength: 10 }
+            text: { type: string, minLength: 1, maxLength: 200 }
+        dataRange:
+          type: object
+          required: [from, to]
+          properties:
+            from: { type: string, pattern: "^\\d{4}-\\d{2}-\\d{2}$" }
+            to: { type: string, pattern: "^\\d{4}-\\d{2}-\\d{2}$" }
+        consentMode: { type: string, enum: [VIEW, STORE, QUERY], default: VIEW }
+        fetchType: { type: string, enum: [ONETIME, PERIODIC], default: ONETIME }
+    AaNotification:
+      type: object
+      required: [type, timestamp]
+      properties:
+        type: { type: string, enum: [CONSENT_STATUS_UPDATE, FI_DATA_READY, SESSION_STATUS_UPDATE] }
+        consentId: { type: string }
+        consentHandle: { type: string }
+        sessionId: { type: string }
+        status: { type: string }
+        timestamp: { type: string }
+
