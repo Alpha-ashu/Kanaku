@@ -1,4 +1,7 @@
 name: CI — Lint, Type-check & Test
+# Env values below are literal CI fixtures (local Postgres service + stubbed Supabase),
+# not GitHub secrets. Do not wrap them in ${{ secrets.* }} — undefined secrets produce
+# false "Context access might be invalid" lint warnings.
 
 on:
   push:

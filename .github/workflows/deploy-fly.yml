@@ -1,4 +1,6 @@
 name: Deploy Backend → Fly.io
+# DATABASE_URL below is a build-time placeholder for `prisma generate` (it does not connect);
+# the real database URL is provided as a Fly.io runtime secret, not a GitHub Actions secret.
 
 on:
   push:

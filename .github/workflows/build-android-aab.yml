@@ -1,4 +1,6 @@
 name: Build Android AAB (Release)
+# Optional signing secrets are read at runtime via `toJSON(secrets)` + jq rather than direct
+# `secrets.NAME` access, so the linter does not flag references to (possibly undefined) secrets.
 
 on:
   push:

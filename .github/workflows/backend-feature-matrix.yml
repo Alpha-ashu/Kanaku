@@ -1,4 +1,5 @@
 name: Backend Feature Matrix
+# CI secrets use literal test values; no GitHub secrets context is referenced.
 
 on:
   push:
