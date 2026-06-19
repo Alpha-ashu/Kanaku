@@ -6,7 +6,7 @@
 
 Kanaku is a **financial-grade, offline-first** expense & wealth tracker. This document is the single source of truth for **where things live and why**. It maps the *target* enterprise architecture onto the *current* repo so we get clarity **without breaking the production build, mobile builds, or deployment pipelines** (Vercel, Fly.io, Capacitor/Android, Prisma, Supabase).
 
-> Ã°Å¸Â§Â­ **Stakeholders:** start with the **[Feature Map](docs/architecture/FEATURE_MAP.md)** Ã¢â‚¬â€ it traces every feature across UI, backend, database, API, and tests in one table.
+> Ã°Å¸Â§Â­ **Stakeholders:** start with the **[Feature Map](architecture/FEATURE_MAP.md)** Ã¢â‚¬â€ it traces every feature across UI, backend, database, API, and tests in one table.
 
 ---
 
@@ -239,7 +239,7 @@ A complete, guarded codemod ships at `scripts/migrate-to-apps-layout.ps1`:
 Ã¢Å“â€ **Clean** Ã¢â‚¬â€ clear ownership per feature.
 Ã¢Å“â€ **Secure** Ã¢â‚¬â€ security controls indexed and discoverable (`platform/security/README.md` Ã¢â€ â€™ `backend/src/security/`).
 Ã¢Å“â€ **Scalable** Ã¢â‚¬â€ adding a feature = copy the template, no central file to edit.
-Ã¢Å“â€ **Easy to understand** Ã¢â‚¬â€ stakeholder map in Ã‚Â§1 + [Feature Map](docs/architecture/FEATURE_MAP.md).
+Ã¢Å“â€ **Easy to understand** Ã¢â‚¬â€ stakeholder map in Ã‚Â§1 + [Feature Map](architecture/FEATURE_MAP.md).
 Ã¢Å“â€ **Easy to test** Ã¢â‚¬â€ every API has a docs file AND a test file in the same shape; unified hub at `quality/`.
 Ã¢Å“â€ **Audit-friendly** Ã¢â‚¬â€ `SECURITY_AUDIT_REPORT.md` + `backend/src/security/README.md` + `docs/api/contracts/` give auditors a single read path.
 Ã¢Å“â€ **Safe** Ã¢â‚¬â€ nothing ever deleted; `archive-unused/` is the only sink.
@@ -248,13 +248,13 @@ A complete, guarded codemod ships at `scripts/migrate-to-apps-layout.ps1`:
 
 ## 9. Quick Links
 
-- Feature traceability map: [`docs/architecture/FEATURE_MAP.md`](docs/architecture/FEATURE_MAP.md)
-- Backend feature index: [`backend/src/features/README.md`](backend/src/features/README.md)
-- Platform hub: [`platform/README.md`](platform/README.md) Ã‚Â· Security: [`platform/security/README.md`](platform/security/README.md)
-- Quality (testing) hub: [`quality/README.md`](quality/README.md)
-- API contracts index: [`docs/api/contracts/api-index.json`](docs/api/contracts/api-index.json) Ã‚Â· [`docs/api/contracts/README.md`](docs/api/contracts/README.md)
-- API catalog (generated): [`quality/api/API_CATALOG.md`](quality/api/API_CATALOG.md)
-- Master docs: [`docs/MASTER_DOCUMENTATION.md`](docs/MASTER_DOCUMENTATION.md)
+- Feature traceability map: [`docs/architecture/FEATURE_MAP.md`](architecture/FEATURE_MAP.md)
+- Backend feature index: [`backend/src/features/README.md`](../backend/src/features/README.md)
+- Platform hub: [`platform/README.md`](../platform/README.md) Ã‚Â· Security: [`platform/security/README.md`](../platform/security/README.md)
+- Quality (testing) hub: [`quality/README.md`](../quality/README.md)
+- API contracts index: [`docs/api/contracts/api-index.json`](api/contracts/api-index.json) Ã‚Â· [`docs/api/contracts/README.md`](api/contracts/README.md)
+- API catalog (generated): [`quality/api/API_CATALOG.md`](../quality/api/API_CATALOG.md)
+- Master docs: [`docs/MASTER_DOCUMENTATION.md`](MASTER_DOCUMENTATION.md)
 - Production readiness: [`PRODUCTION_READINESS.md`](PRODUCTION_READINESS.md)
 - Security policy: [`SECURITY.md`](SECURITY.md)
 
@@ -290,7 +290,7 @@ A stakeholder proposal asked to move `frontend/`Ã¢â€ â€™`apps/fronten
 | Co-locate one SPA + one Express app into per-feature physical trees | Ã¢ÂÅ’ scope | Single Vite entry + single Prisma `rootDir`; this is an Nx/Turborepo migration, not a refactor |
 | Consolidate index folders, add `platform/`+`quality/`, feature map | Ã¢Å“â€¦ done | Ã‚Â§10 above |
 
-> The **conceptual** model the proposal wants (apps / features / platform / quality / docs) is delivered as the **logical view** in [`FEATURE_MAP.md`](docs/architecture/FEATURE_MAP.md) + the `platform/` and `quality/` hubs Ã¢â‚¬â€ without the breakage.
+> The **conceptual** model the proposal wants (apps / features / platform / quality / docs) is delivered as the **logical view** in [`FEATURE_MAP.md`](architecture/FEATURE_MAP.md) + the `platform/` and `quality/` hubs Ã¢â‚¬â€ without the breakage.
 
 ### Migration mapping (old Ã¢â€ â€™ target) for a future, CI-verified `apps/` move
 

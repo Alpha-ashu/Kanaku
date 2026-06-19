@@ -1,6 +1,7 @@
 import { randomUUID } from 'crypto';
 import { logger } from '../../config/logger';
 import { prisma } from '../../db/prisma';
+import { encryptForUser, isCryptoConfigured } from '../../security/crypto';
 import type {
   CreateConsentRequest,
   ConsentResponse,
@@ -345,7 +346,23 @@ class AAService {
 
         processedData.push(fiRecord);
 
-        // Store raw data (RBI-compliant: only store what consent allows)
+        // Store raw data (RBI-compliant: only store what consent allows).
+        // C5: the full FI payload (a bank statement) is PII and MUST be
+        // encrypted at rest with AES-256-GCM under a per-user key. We
+        // refuse to persist plaintext when crypto is configured; in
+        // non-prod without a key we fall back to plaintext with a warning
+        // so local testing still works.
+        const fiSerialized = JSON.stringify(fi);
+        let dataJsonToStore = fiSerialized;
+        if (isCryptoConfigured()) {
+          dataJsonToStore = encryptForUser(userId, fiSerialized, { aad: 'aa.financial_data' });
+        } else if (process.env.NODE_ENV === 'production') {
+          logger.error('[AA] AA_ENCRYPTION_ROOT_KEY missing — refusing to persist plaintext FI data in production.');
+          throw new Error('AA encryption key not configured');
+        } else {
+          logger.warn('[AA] Persisting FI data UNENCRYPTED (non-production, no AA_ENCRYPTION_ROOT_KEY).');
+        }
+
         await prisma.aaFinancialData.create({
           data: {
             id: randomUUID(),
@@ -354,7 +371,7 @@ class AAService {
             sessionId,
             accountType: fiRecord.account.type,
             maskedAccountNumber: fiRecord.account.maskedAccNumber,
-            dataJson: JSON.stringify(fi),
+            dataJson: dataJsonToStore,
           },
         });
 
@@ -496,6 +513,43 @@ class AAService {
     });
 
     return { accounts, transactions };
+  }
+
+  /**
+   * Read back the full (decrypted) FI payload for a single stored record.
+   *
+   * Use this instead of reading `dataJson` directly anywhere — the column
+   * holds AES-256-GCM ciphertext (C5). Ownership is enforced via the
+   * `userId` filter so one user can never decrypt another's statement.
+   * Tampering or a rotated root key surfaces as a thrown error, which we
+   * convert to `null` so callers degrade gracefully.
+   */
+  async getDecryptedFinancialData(recordId: string, userId: string): Promise<unknown | null> {
+    const record = await prisma.aaFinancialData.findFirst({
+      where: { id: recordId, userId },
+      select: { dataJson: true },
+    });
+    if (!record?.dataJson) return null;
+
+    // Legacy/plaintext rows (written before C5) are valid JSON and will
+    // parse directly; encrypted rows are base64 and must be decrypted.
+    try {
+      return JSON.parse(record.dataJson);
+    } catch {
+      // Not plaintext JSON — assume ciphertext.
+    }
+
+    try {
+      const { decryptForUser } = await import('../../security/crypto');
+      const plaintext = decryptForUser(userId, record.dataJson, { aad: 'aa.financial_data' });
+      return JSON.parse(plaintext);
+    } catch (err) {
+      logger.error('[AA] Failed to decrypt FI data', {
+        recordId,
+        error: err instanceof Error ? err.message : String(err),
+      });
+      return null;
+    }
   }
 }
 

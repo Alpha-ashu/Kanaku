@@ -4,7 +4,7 @@
 **Effective Date:** June 13, 2026
 **Applies to:** End Users who book sessions with Kanaku-verified financial advisors
 
-> These terms apply in addition to the [Master Terms & Conditions](./TERMS_MASTER.md) and the [End User Terms](./TERMS_END_USER.md). As a Client, you retain all End User rights and take on additional responsibilities.
+> These terms apply in addition to the [Master Terms & Conditions](TERMS_MASTER.md) and the [End User Terms](TERMS_END_USER.md). As a Client, you retain all End User rights and take on additional responsibilities.
 
 ---
 

@@ -5,6 +5,7 @@ import {
   login,
   loginChallenge,
   refreshToken,
+  logout,
   getProfile,
   updateProfile,
   sendOtp,
@@ -48,6 +49,9 @@ router.post('/login/challenge', authLimiter, loginChallenge);
 router.post('/login', authLimiter, login);
 // Token refresh — public (refresh token is the credential), rate-limited.
 router.post('/refresh', authLimiter, refreshToken);
+// Logout — clears the HttpOnly refresh cookie and revokes the token.
+// Auth-optional: a user with an expired access token can still log out.
+router.post('/logout', logout);
 router.get('/profile', authMiddleware, getProfile);
 router.put('/profile', authMiddleware, updateProfile);
 

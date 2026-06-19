@@ -4,7 +4,7 @@
 **Effective Date:** June 13, 2026
 **Applies to:** All users with a standard Kanaku account
 
-> These terms apply in addition to the [Master Terms & Conditions](./TERMS_MASTER.md).
+> These terms apply in addition to the [Master Terms & Conditions](TERMS_MASTER.md).
 
 ---
 

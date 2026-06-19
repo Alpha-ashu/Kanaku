@@ -11,7 +11,8 @@ import { checkDeviceTrust, trustDevice, revokeDeviceTrust, listUserDevices } fro
 import { prisma } from '../../db/prisma';
 import { isDatabaseUnavailableError } from '../../utils/databaseAvailability';
 import { AppError } from '../../utils/AppError';
-import { generateTokens, verifyRefreshToken } from '../../utils/auth';
+import { generateTokens, verifyRefreshToken, REFRESH_TOKEN_TTL_SECONDS } from '../../utils/auth';
+import { setRefreshCookie, clearRefreshCookie, readRefreshCookie } from '../../security/refreshCookie';
 import { sendWelcomeEmail } from '../../emails';
 
 const authService = new AuthService();
@@ -235,6 +236,11 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
     res.setHeader('Authorization', `Bearer ${tokens.accessToken}`);
     res.setHeader('x-refresh-token', tokens.refreshToken);
 
+    // C3: also deliver the refresh token as an HttpOnly cookie so the SPA
+    // never has to read/store it in JS. The header is kept temporarily for
+    // backward-compat with older clients until they migrate.
+    setRefreshCookie(res, tokens.refreshToken, REFRESH_TOKEN_TTL_SECONDS);
+
     res.status(201).json({
       success: true,
       message: 'Registration successful',
@@ -420,6 +426,10 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
     res.setHeader('Authorization', `Bearer ${tokens.accessToken}`);
     res.setHeader('x-refresh-token', tokens.refreshToken);
 
+    // C3: HttpOnly refresh cookie (preferred). Header retained for
+    // backward-compat during client migration.
+    setRefreshCookie(res, tokens.refreshToken, REFRESH_TOKEN_TTL_SECONDS);
+
     res.json({
       success: true,
       message: 'Login successful',
@@ -469,9 +479,13 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
 // and this endpoint do.
 export const refreshToken = async (req: Request, res: Response, next: NextFunction) => {
   try {
+    // Preference order: HttpOnly cookie (most secure) → header → body.
+    // The cookie path is what new clients use; header/body remain for
+    // backward-compat with clients that have not migrated yet.
+    const cookieToken = readRefreshCookie(req) || '';
     const headerToken = (req.headers['x-refresh-token'] as string | undefined) || '';
     const bodyToken = typeof req.body?.refreshToken === 'string' ? req.body.refreshToken : '';
-    const token = (headerToken || bodyToken || '').trim();
+    const token = (cookieToken || headerToken || bodyToken || '').trim();
 
     if (!token) {
       throw AppError.unauthorized('Refresh token is required.', 'REFRESH_TOKEN_MISSING');
@@ -497,6 +511,9 @@ export const refreshToken = async (req: Request, res: Response, next: NextFuncti
     const tokens = generateTokens(user);
     res.setHeader('Authorization', `Bearer ${tokens.accessToken}`);
     res.setHeader('x-refresh-token', tokens.refreshToken);
+
+    // C3: rotate the HttpOnly cookie too.
+    setRefreshCookie(res, tokens.refreshToken, REFRESH_TOKEN_TTL_SECONDS);
 
     res.json({
       success: true,
@@ -751,7 +768,41 @@ export const revokeDevice = async (req: AuthRequest, res: Response, next: NextFu
   }
 };
 
-//  Account Deletion 
+//  Logout
+
+/**
+ * POST /api/v1/auth/logout
+ *
+ * Clears the HttpOnly refresh cookie and best-effort revokes the
+ * presented refresh token from the DB so it cannot be replayed. Always
+ * returns 200 — logout must never fail the client.
+ */
+export const logout = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const cookieToken = readRefreshCookie(req) || '';
+    const headerToken = (req.headers['x-refresh-token'] as string | undefined) || '';
+    const token = (cookieToken || headerToken).trim();
+
+    // Revoke the stored refresh token (if we track it) so it cannot be
+    // reused even if it was captured.
+    if (token) {
+      await prisma.refreshToken.deleteMany({ where: { token } }).catch(() => null);
+    }
+    if (req.userId) {
+      invalidateUserSnapshotCache(req.userId);
+    }
+
+    clearRefreshCookie(res);
+    res.json({ success: true, message: 'Logged out successfully' });
+  } catch (error) {
+    // Even on error, clear the cookie and report success.
+    clearRefreshCookie(res);
+    res.json({ success: true, message: 'Logged out' });
+    void next;
+  }
+};
+
+//  Account Deletion
 
 export const deleteAccount = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
@@ -759,6 +810,9 @@ export const deleteAccount = async (req: AuthRequest, res: Response, next: NextF
 
     logger.info(`[AuthController] Account deletion request for userId: ${req.userId}`);
     await authService.deleteAccount(req.userId);
+
+    // Clear the refresh cookie — the account is gone.
+    clearRefreshCookie(res);
 
     res.json({
       success: true,

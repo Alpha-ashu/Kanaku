@@ -15,7 +15,7 @@ client â”€â”€â–¶ Helmet â–¸ CORS â–¸ RateLimit â–¸ Aut
 | Concern | Code | Stakeholder doc |
 |---|---|---|
 | **Authentication** (Supabase + custom JWT) | `backend/src/middleware/auth.ts`, `backend/src/features/auth/` | [docs/security/](../../docs/security/) |
-| **Authorization** (RBAC, ownership, approval) | `backend/src/middleware/rbac.ts` | [SECURITY.md](../../SECURITY.md) |
+| **Authorization** (RBAC, ownership, approval) | `backend/src/middleware/rbac.ts` | [SECURITY.md](../../docs/SECURITY.md) |
 | **Feature gates** | `backend/src/middleware/featureGate.ts` | [docs/FEATURE_GATES_IMPLEMENTATION.md](../../docs/FEATURE_GATES_IMPLEMENTATION.md) |
 | **Step-up / sensitive ops** | `backend/src/middleware/securityGate.ts` | â€“ |
 | **Input validation (zod)** | `backend/src/middleware/validate.ts` + per-feature `*.validation.ts` | [api-docs/](../../api-docs/README.md) |
@@ -23,14 +23,14 @@ client â”€â”€â–¶ Helmet â–¸ CORS â–¸ RateLimit â–¸ Aut
 | **Rate limiting** | `backend/src/middleware/rateLimit.ts` | â€“ |
 | **Headers (Helmet, CSP)** | `backend/src/app.ts` | â€“ |
 | **CORS** | `backend/src/app.ts` | â€“ |
-| **Audit logging** | `backend/src/utils/auditLogger.ts` | [SECURITY_AUDIT_REPORT.md](../../SECURITY_AUDIT_REPORT.md) |
-| **Secrets** | env + `platform/config/credentials.ts` | [SECURITY.md](../../SECURITY.md) |
+| **Audit logging** | `backend/src/utils/auditLogger.ts` | [SECURITY_AUDIT_REPORT.md](../../docs/SECURITY_AUDIT_REPORT.md) |
+| **Secrets** | env + `platform/config/credentials.ts` | [SECURITY.md](../../docs/SECURITY.md) |
 | **Penetration tests** | `backend/tests/integration/security*.test.ts` | `npm run test:security` |
 
 ## Reports & audits
 
-- [`SECURITY.md`](../../SECURITY.md) â€” policy & disclosure.
-- [`SECURITY_AUDIT_REPORT.md`](../../SECURITY_AUDIT_REPORT.md) â€” latest audit.
-- [`BACKEND_HARDENING_IMPLEMENTATION.md`](../../BACKEND_HARDENING_IMPLEMENTATION.md) â€” hardening log.
+- [`SECURITY.md`](../../docs/SECURITY.md) â€” policy & disclosure.
+- [`SECURITY_AUDIT_REPORT.md`](../../docs/SECURITY_AUDIT_REPORT.md) â€” latest audit.
+- [`BACKEND_HARDENING_IMPLEMENTATION.md`](../../docs/BACKEND_HARDENING_IMPLEMENTATION.md) â€” hardening log.
 - [`docs/security/`](../../docs/security/) â€” deep-dive design docs.
 

@@ -12,7 +12,7 @@ Used for:
 
 Repo locations:
 
-- [`supabase/`](../../supabase/README.md)
+- [`supabase/`](../supabase/README.md)
 - [`database/supabase_schema.sql`](../../database/supabase_schema.sql)
 
 ## Prisma + PostgreSQL
@@ -38,9 +38,9 @@ Used for:
 
 Repo locations:
 
-- [`frontend/src/services/receiptScannerService.ts`](../../frontend/src/services/receiptScannerService.ts)
-- [`frontend/src/services/cloudReceiptScanService.ts`](../../frontend/src/services/cloudReceiptScanService.ts)
-- [`frontend/src/services/ocrService.ts`](../../frontend/src/services/ocrService.ts)
+- [`frontend/src/services/receiptScannerService.ts`](../frontend/src/services/receiptScannerService.ts)
+- [`frontend/src/services/cloudReceiptScanService.ts`](../frontend/src/services/cloudReceiptScanService.ts)
+- [`frontend/src/services/ocrService.ts`](../frontend/src/services/ocrService.ts)
 
 ## AI parsing
 
@@ -63,7 +63,7 @@ Used for:
 
 Repo locations:
 
-- [`api/stocks.ts`](../../api/stocks.ts)
+- [`api/stocks.ts`](../api/stocks.ts)
 - frontend services that consume market data
 
 ## Storage / file access
@@ -75,7 +75,7 @@ Used for:
 
 Repo locations:
 
-- [`backend/src/utils/storage.ts`](../../backend/src/utils/storage.ts)
+- [`backend/src/utils/storage.ts`](../backend/src/utils/storage.ts)
 - receipt/document services in `frontend/src/services/`
 
 ## Integration rules

@@ -4,7 +4,7 @@
 **Effective Date:** June 13, 2026
 **Applies to:** Kanaku internal staff and authorized administrators only
 
-> These terms apply in addition to the [Master Terms & Conditions](./TERMS_MASTER.md). Admin access is granted only to authorized Kanaku employees and contractors. **Admin credentials must never be shared.**
+> These terms apply in addition to the [Master Terms & Conditions](TERMS_MASTER.md). Admin access is granted only to authorized Kanaku employees and contractors. **Admin credentials must never be shared.**
 
 ---
 

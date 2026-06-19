@@ -76,22 +76,22 @@ export class TransactionRepository {
     });
   }
 
-  async createWithBalanceUpdate(data: any, deltas: Map<string, number>) {
+  async createWithBalanceUpdate(data: any, deltas: Map<string, Prisma.Decimal>) {
     return prisma.$transaction(async (tx) => {
       const created = await tx.transaction.create({ data });
-      
+
       for (const [accountId, delta] of deltas.entries()) {
         await tx.account.update({
           where: { id: accountId },
           data: { balance: { increment: delta } },
         });
       }
-      
+
       return this.normalizeTransaction(created);
     });
   }
 
-  async updateWithBalanceUpdate(id: string, data: any, deltas: Map<string, number>) {
+  async updateWithBalanceUpdate(id: string, data: any, deltas: Map<string, Prisma.Decimal>) {
     return prisma.$transaction(async (tx) => {
       const updated = await tx.transaction.update({
         where: { id },
@@ -109,7 +109,7 @@ export class TransactionRepository {
     });
   }
 
-  async deleteWithBalanceUpdate(id: string, deltas: Map<string, number>) {
+  async deleteWithBalanceUpdate(id: string, deltas: Map<string, Prisma.Decimal>) {
     return prisma.$transaction(async (tx) => {
       const deleted = await tx.transaction.update({
         where: { id },

@@ -878,6 +878,7 @@ Rules:
 | **End-to-end app flow + per-module sequence diagrams** | `docs/04_App_Flow/App_Flow.md`, `Module_Sequence_Diagrams.md` |
 | **DB schema (48 Prisma models) + Dexie v15 local tables** | `docs/05_Backend_Data_Schema/Database_Schema.md`, `Tables_Definition.md` |
 | **AI prompt pack + guardrails (codebase-accurate)** | `docs/06_Implementation_Plan/Prompts_For_AI.md` |
+| **Feature Rulebook (binding governance for ALL new features)** | `docs/RULEBOOK.md` (read first) + `docs/FEATURE_TEMPLATE.md` (fill per feature) |
 
 ---
 

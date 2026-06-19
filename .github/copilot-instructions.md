@@ -2,6 +2,15 @@
 
 You are building a financial-grade app. Follow these constraints for every task.
 
+## 📕 Rulebook (read FIRST for any new feature)
+Before creating or changing any feature, route, screen, table, or migration, you
+**MUST** consult and comply with **`docs/RULEBOOK.md`** (derived from the app
+Terms & Conditions `docs/TERMS_*.md` + these guardrails). For a new feature, fill
+**`docs/FEATURE_TEMPLATE.md`** and satisfy **every** applicable box in the
+Rulebook's §9 *Definition of Done* before shipping. If a rule blocks the feature,
+the rule wins — escalate, do not bypass. Precedence: Law → Terms →
+`KANAKU_PROJECT_OVERVIEW.md` → `docs/RULEBOOK.md` → skill docs → individual PRs.
+
 ## Architecture Guardrails
 - React 18 + TypeScript frontend on Vite + Capacitor.
 - Node.js/Express backend with Prisma/PostgreSQL.

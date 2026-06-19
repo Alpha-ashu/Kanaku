@@ -11,6 +11,12 @@ import { getCircuitBreakerStatus } from './utils/circuitBreaker';
 import { sanitize } from './utils/sanitize';
 import { logger } from './config/logger';
 import { prisma } from './db/prisma';
+import { requestTimeout } from './middleware/timeout';
+import { authMiddleware, type AuthRequest } from './middleware/auth';
+import { requireRole } from './middleware/rbac';
+import { metricsMiddleware, getMetricsSnapshot } from './middleware/metrics';
+import { getCacheMetricsSnapshot } from './cache/redis';
+import { isCryptoConfigured } from './security/crypto';
 
 import { isAllowedOrigin } from './config/cors';
 
@@ -24,6 +30,14 @@ app.use((req, res, next) => {
   next();
 });
 
+// Hard request timeout — prevents a stuck DB query / hung upstream call
+// from holding a worker indefinitely. Configurable via REQUEST_TIMEOUT_MS.
+app.use(requestTimeout(Number(process.env.REQUEST_TIMEOUT_MS) || undefined));
+
+// Lightweight in-memory metrics — counters + p50/p95/p99 latency per
+// route, scrapable via /api/v1/health/metrics (admin only).
+app.use(metricsMiddleware);
+
 app.use((req, res, next) => {
   logger.info(`[REQ] ${req.method} ${req.path}`, { requestId: (req as any).id });
   next();
@@ -32,18 +46,46 @@ app.use((req, res, next) => {
 // Disable X-Powered-By header to prevent server fingerprinting
 app.disable('x-powered-by');
 
+// Per-request CSP nonce — exposed on `res.locals.cspNonce` so server-side
+// rendered templates (Swagger UI, error pages) can attach it to inline
+// `<script>` / `<style>` tags. In production we drop `'unsafe-inline'`
+// and rely on the nonce; in dev we keep `'unsafe-inline'` to make
+// Vite HMR + Tailwind JIT painless.
+app.use((req, res, next) => {
+  res.locals.cspNonce = randomUUID().replace(/-/g, '');
+  next();
+});
+
+const isProd = process.env.NODE_ENV === 'production';
+
 // Add helmet for secure HTTP headers
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-      fontSrc: ["'self'", "data:", "https://fonts.gstatic.com"],
-      imgSrc: ["'self'", "data:", "https://*.supabase.co"],
-      connectSrc: ["'self'", "https://*.supabase.co"],
+app.use((req, res, next) => {
+  const nonce = res.locals.cspNonce as string;
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        styleSrc: isProd
+          ? ["'self'", `'nonce-${nonce}'`, 'https://fonts.googleapis.com']
+          : ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+        scriptSrc: isProd
+          ? ["'self'", `'nonce-${nonce}'`]
+          : ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+        fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com'],
+        imgSrc: ["'self'", 'data:', 'blob:', 'https://*.supabase.co'],
+        connectSrc: ["'self'", 'https://*.supabase.co', 'wss:', 'https:'],
+        objectSrc: ["'none'"],
+        frameAncestors: ["'none'"],
+        baseUri: ["'self'"],
+        formAction: ["'self'"],
+      },
     },
-  },
-  crossOriginResourcePolicy: { policy: "same-origin" },
-}));
+    crossOriginResourcePolicy: { policy: 'same-origin' },
+    // HSTS — 2-year max-age, includeSubDomains, preload-eligible.
+    hsts: isProd ? { maxAge: 63_072_000, includeSubDomains: true, preload: true } : false,
+    referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+  })(req, res, next);
+});
 
 // Ensure same-origin policies and legacy XSS filter protection are set explicitly
 app.use((req, res, next) => {
@@ -144,33 +186,64 @@ app.use('/api/v1/sync', authenticatedRateLimit({
   message: 'Too many sync requests. Please try again later.',
 }));
 
-// Health check
-app.get('/health', async (req, res) => {
-  let dbStatus = 'unknown';
-  let dbError: any = null;
+// Public liveness probe — minimal information disclosure.
+// Detailed diagnostics (DB error messages, Redis status, circuit breaker
+// state) are reserved for the authenticated /api/v1/health/deep route.
+app.get('/health', (_req, res) => {
+  res.json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+  });
+});
+
+// Authenticated deep healthcheck for ops dashboards / Fly health probes
+// running with a service token. Does NOT leak raw error messages — only
+// boolean status + safe codes — so it can be polled by external monitors
+// holding a valid JWT.
+app.get('/api/v1/health/deep', authMiddleware, async (req: AuthRequest, res) => {
+  let dbStatus: 'connected' | 'error' = 'error';
+  let dbCode: string | undefined;
 
   try {
     await prisma.$queryRaw`SELECT 1`;
     dbStatus = 'connected';
-  } catch (err: unknown) {
-    dbStatus = 'error';
-    dbError = {
-      message: err instanceof Error ? err.message : String(err),
-      code: (err as NodeJS.ErrnoException)?.code,
-    };
+  } catch (err) {
+    dbCode = (err as NodeJS.ErrnoException)?.code ?? 'DB_QUERY_FAILED';
+    logger.warn('[health/deep] DB probe failed', {
+      requestId: (req as any).id,
+      code: dbCode,
+    });
   }
 
   res.json({
-    status: 'ok',
+    status: dbStatus === 'connected' ? 'ok' : 'degraded',
     timestamp: new Date().toISOString(),
     services: {
       redis: getRedisStatus(),
       circuitBreakers: getCircuitBreakerStatus(),
-      database: {
-        status: dbStatus,
-        error: dbError,
-      }
+      database: { status: dbStatus, code: dbCode },
+      crypto: { configured: isCryptoConfigured() },
     },
+  });
+});
+
+/**
+ * GET /api/v1/health/metrics
+ *
+ * Admin-only Prometheus-shaped snapshot of:
+ *   - per-route request counters + p50/p95/p99 latency
+ *   - cache hit-rate by prefix
+ *   - circuit-breaker state
+ *
+ * Designed as a drop-in for `prom-client` later — JSON shape mirrors
+ * what a Histogram + Counter would produce.
+ */
+app.get('/api/v1/health/metrics', authMiddleware, requireRole('admin'), (_req, res) => {
+  res.json({
+    timestamp: new Date().toISOString(),
+    requests: getMetricsSnapshot(),
+    cache: getCacheMetricsSnapshot(),
+    circuitBreakers: getCircuitBreakerStatus(),
   });
 });
 

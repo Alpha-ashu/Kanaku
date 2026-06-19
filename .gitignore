@@ -1,82 +1,203 @@
-node_modules
+# =============================================================================
+# Kanaku — Root .gitignore
+# Stack: React 18 + Vite + Capacitor (Android) | Node/Express + Prisma + Postgres
+#        Supabase | Dexie | Vitest/Jest/Playwright | FastAPI (receipt_ai)
+# =============================================================================
 
-# Environment variables
+# ----- Dependencies -----
+node_modules
+node_modules/
+**/node_modules/
+.pnp
+.pnp.js
+jspm_packages/
+
+# ----- Environment variables -----
+# Ignore all .env* by default, then explicitly re-include the templates
 .env
+.env.*
+!.env.example
+!.env.sample
+!.env.*.example
+!.env.*.sample
+
+# Legacy explicit entries (kept for clarity)
 .env.local
-.env.*.local
 .env.development
 .env.production
+.env.staging
+.env.test
 .env.vercel
 
-# Backend env
+# Per-package env files
 backend/.env
-backend/.env.local
-
-# Frontend env
+backend/.env.*
+!backend/.env.example
 frontend/.env
-frontend/.env.local
+frontend/.env.*
+!frontend/.env.example
 
-# Logs
-logs
-backend/logs/
+# ----- Logs -----
+logs/
 *.log
 npm-debug.log*
 pnpm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+lerna-debug.log*
+backend/logs/
+frontend/logs/
 
-# Build outputs
-dist
-dist-ssr
+# ----- Build outputs -----
+dist/
+dist-ssr/
+build/
+out/
 *.local
+*.tsbuildinfo
+.next/
+.nuxt/
+.cache/
+.parcel-cache/
+.turbo/
+.vite/
+frontend/.vite/
+backend/dist/
+frontend/dist/
 
-# OS files
+# ----- Test & coverage outputs -----
+coverage/
+*.lcov
+**/coverage/
+backend/coverage/
+frontend/coverage/
+.nyc_output/
+
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/
+quality/**/test-results/
+quality/**/playwright-report/
+
+# Vitest / Jest scratch
+backend/jest_results*.txt
+backend/test-results.json
+frontend/vitest-results.json
+
+# ----- OS files -----
 .DS_Store
+.AppleDouble
+.LSOverride
 Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.directory
+.Trash-*
 
-# IDE
+# ----- IDE / Editors -----
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
-.idea
+.idea/
+.zed/
+*.code-workspace
 *.swp
 *.swo
 *~
 
-# Android signing secrets
+# ----- Mobile (Capacitor / Android / iOS) -----
+# Most Android ignores live in android/.gitignore; these are belt-and-braces.
+android/app/build/
+android/build/
+android/.gradle/
+android/captures/
+android/local.properties
+android/key.properties
 *.keystore
 *.jks
-android/key.properties
+
+# iOS (if/when added)
+ios/App/Pods/
+ios/App/build/
+ios/DerivedData/
+ios/App/App/public/
+.capacitor/
+capacitor.config.local.json
+
+# ----- Secrets / credentials -----
 secure/
-
-backend/generated/
-backend/.pg-testdata/
-
-# SQLite dev databases (Mo-1 fix)
-backend/*.db
-backend/dev.db
-backend/prisma/*.db
-
-# Secrets / credentials (these predate the rules above and were untracked via git rm --cached)
 dexie-cloud.key
 *.pem
 *.p12
+*.pfx
+*.crt
+*.cer
+*.key
+!*.public.key
+id_rsa
+id_dsa
 serviceAccount*.json
+.sentryclirc
+google-services.json
+GoogleService-Info.plist
 
-# Ad-hoc logs, test/build result dumps, and scratch output
-*.tsbuildinfo
-backend/jest_results*.txt
-backend/server_log*.txt
-backend/pg_server_log*.txt
-backend/postgres_test_log.txt
-backend/qa_results.txt
-backend/test-results.json
-frontend/vitest-results.json
+# ----- Database / Prisma / Postgres dev data -----
+backend/generated/
+backend/.pg-testdata/
+backend/.pg-testdata2/
+backend/*.db
+backend/*.db-journal
+backend/dev.db
+backend/prisma/*.db
+backend/prisma/*.db-journal
+
+# ----- Receipt AI (Python / FastAPI) -----
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+backend/receipt_ai/.venv/
+backend/receipt_ai/venv/
+
+# ----- Cloud / deploy -----
+.vercel/
+.fly/
+.netlify/
+.serverless/
+supabase/.branches/
+supabase/.temp/
+
+# ----- Docker / runtime -----
+*.pid
+*.seed
+*.pid.lock
+
+# ----- Scratch / agent output -----
+scratch/
+.claude/commands/_*
 frontend/output*.txt
 frontend/debug.txt
 frontend/new_desktop.txt
 frontend/UTF8
-scratch/
+backend/server_log*.txt
+backend/pg_server_log*.txt
+backend/postgres_test_log.txt
+backend/qa_results.txt
+
+# ----- Archives / tarballs -----
+*.tgz
+*.tar.gz
+*.zip
+# Playwright HTML report bundles and trace.zip files are checked in for CI artifacts
+!quality/e2e/report/**/*.zip
+!quality/e2e/screenshots/**/*.zip
+!frontend/public/**/*.zip
+
 

@@ -1,12 +1,14 @@
 import { Router } from 'express';
 import { authMiddleware } from '../../middleware/auth';
 import { validateBody, validateParams, validateQuery } from '../../middleware/validate';
+import { idempotency } from '../../middleware/idempotency';
 import * as TransactionController from './transaction.controller';
 import { responseCache } from '../../middleware/cache';
 import { CACHE_TTL_SECONDS } from '../../cache/cache-policy';
 import { requireFeature } from '../../middleware/featureGate';
 import {
 	transactionAccountParamSchema,
+	transactionBulkCreateSchema,
 	transactionCreateValidatedSchema,
 	transactionIdParamSchema,
 	transactionQuerySchema,
@@ -27,8 +29,16 @@ router.get(
 router.post(
 	'/',
 	requireFeature('transactions', 'addTransaction'),
+	idempotency({ scope: 'transactions.create' }),
 	validateBody(transactionCreateValidatedSchema),
 	TransactionController.createTransaction
+);
+router.post(
+	'/bulk',
+	requireFeature('transactions', 'addTransaction'),
+	idempotency({ scope: 'transactions.bulk' }),
+	validateBody(transactionBulkCreateSchema),
+	TransactionController.createTransactionsBulk
 );
 router.get(
 	'/:id',

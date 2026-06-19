@@ -5,7 +5,37 @@ import { AppError } from '../../utils/AppError';
 
 const router = Router();
 
-// All sync routes require authentication
+/**
+ * Server-advertised Dexie schema version. Bump together with the
+ * frontend `LOCAL_SCHEMA_VERSION` in `lib/syncSchemaGuard.ts` whenever
+ * a breaking schema change ships.
+ *
+ * `minSupportedClientVersion` is the floor below which the backend will
+ * refuse to accept push payloads — older clients are guaranteed to be
+ * prompted to reload before they can corrupt data.
+ */
+const SERVER_SCHEMA_VERSION = 14;
+const MIN_SUPPORTED_CLIENT_VERSION = 14;
+
+/**
+ * GET /api/v1/sync/meta
+ *
+ * Public (auth-optional) — the schema guard runs on app boot before
+ * any user-scoped data is touched. Returning a tiny shape lets the
+ * client decide whether to halt sync and prompt for reload.
+ */
+router.get('/meta', (_req, res) => {
+  res.json({
+    success: true,
+    data: {
+      schemaVersion: SERVER_SCHEMA_VERSION,
+      minSupportedClientVersion: MIN_SUPPORTED_CLIENT_VERSION,
+      serverTime: new Date().toISOString(),
+    },
+  });
+});
+
+// All other sync routes require authentication.
 router.use(authMiddleware);
 
 // NOTE: sync routes keep their in-handler validation (clear, tested error

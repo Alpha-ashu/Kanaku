@@ -119,7 +119,7 @@ Otherwise → `403 SECURITY_PROOF_REQUIRED`.
 | 4 | **`GET /investments/:id`** | [investment.routes.ts](backend/src/modules/investments/investment.routes.ts), [investment.controller.ts](backend/src/modules/investments/investment.controller.ts) | New single-record fetch, scoped to owner + `deletedAt: null`. |
 | 5 | **`GET /groups/:id`** | [group.routes.ts](backend/src/modules/groups/group.routes.ts), [group.controller.ts](backend/src/modules/groups/group.controller.ts) | New single-record fetch with creator-or-member access check, returns full `buildGroupResponse` shape. |
 | 6 | **Booking duplicate guard** | [booking.controller.ts](backend/src/modules/bookings/booking.controller.ts) | `createBooking` now checks for an existing pending/accepted request with the same client + advisor + slot + type and returns it (HTTP 200) instead of creating a duplicate. |
-| 7 | **Calendar reminder persistence** | [Calendar.tsx](frontend/src/app/components/features/Calendar.tsx) | Reminders moved from in-memory `useState` to `db.settings['calendar_reminders']` via `useLiveQuery` — survive navigation and refresh. |
+| 7 | **Calendar reminder persistence** | [Calendar.tsx](../frontend/src/app/components/features/Calendar.tsx) | Reminders moved from in-memory `useState` to `db.settings['calendar_reminders']` via `useLiveQuery` — survive navigation and refresh. |
 
 ---
 

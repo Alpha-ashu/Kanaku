@@ -4,7 +4,7 @@
 **Effective Date:** June 13, 2026
 **Applies to:** Verified financial professionals who offer services through the Kanaku platform
 
-> These terms apply in addition to the [Master Terms & Conditions](./TERMS_MASTER.md). Advisors must carefully read and fully comply with these terms before being approved to operate on the platform.
+> These terms apply in addition to the [Master Terms & Conditions](TERMS_MASTER.md). Advisors must carefully read and fully comply with these terms before being approved to operate on the platform.
 
 ---
 

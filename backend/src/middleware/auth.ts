@@ -185,7 +185,12 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
       return res.status(401).json({ error: 'No token provided' });
     }
 
-    const customSecret = process.env.JWT_SECRET || process.env.SUPABASE_JWT_SECRET || '';
+    // In production we require an explicit JWT_SECRET. Outside production
+    // we still tolerate a fallback to SUPABASE_JWT_SECRET so a developer
+    // without a dedicated secret can still verify custom-issued tokens.
+    const customSecret = process.env.NODE_ENV === 'production'
+      ? (process.env.JWT_SECRET || '')
+      : (process.env.JWT_SECRET || process.env.SUPABASE_JWT_SECRET || '');
 
     // 1. Try Custom JWT first (fast, local)
     if (customSecret) {

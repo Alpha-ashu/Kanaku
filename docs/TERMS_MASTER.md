@@ -30,10 +30,10 @@ Kanaku has four distinct user roles, each with its own permissions, features, an
 
 | Role | Who They Are | Document |
 |------|-------------|----------|
-| **End User** | Standard users managing personal finances | [End User Terms](./TERMS_END_USER.md) |
-| **Client** | Users who book sessions with financial advisors | [Client Terms](./TERMS_CLIENT.md) |
-| **Advisor** | Verified financial professionals offering guidance | [Advisor Terms](./TERMS_ADVISOR.md) |
-| **Admin** | Platform staff managing governance and operations | [Admin Terms](./TERMS_ADMIN.md) |
+| **End User** | Standard users managing personal finances | [End User Terms](TERMS_END_USER.md) |
+| **Client** | Users who book sessions with financial advisors | [Client Terms](TERMS_CLIENT.md) |
+| **Advisor** | Verified financial professionals offering guidance | [Advisor Terms](TERMS_ADVISOR.md) |
+| **Admin** | Platform staff managing governance and operations | [Admin Terms](TERMS_ADMIN.md) |
 
 All users must comply with both this Master Terms document and their role-specific terms.
 
@@ -80,7 +80,7 @@ Kanaku uses AI to scan receipts, categorize transactions, and support voice logg
 ## 7. Payments & Subscriptions
 
 - Some features require a paid subscription. Pricing is shown clearly before purchase.
-- Advisor sessions may involve fees paid through the platform. See [Client Terms](./TERMS_CLIENT.md) and [Advisor Terms](./TERMS_ADVISOR.md) for details.
+- Advisor sessions may involve fees paid through the platform. See [Client Terms](TERMS_CLIENT.md) and [Advisor Terms](TERMS_ADVISOR.md) for details.
 - Refunds are processed according to our Refund Policy (available in Settings > Help).
 - We reserve the right to change pricing with 30 days' notice.
 
@@ -122,7 +122,7 @@ For questions about these terms:
 ---
 
 *For role-specific terms, please read your assigned document:*
-- [End User Terms](./TERMS_END_USER.md)
-- [Client Terms](./TERMS_CLIENT.md)
-- [Advisor Terms](./TERMS_ADVISOR.md)
-- [Admin Terms](./TERMS_ADMIN.md)
+- [End User Terms](TERMS_END_USER.md)
+- [Client Terms](TERMS_CLIENT.md)
+- [Advisor Terms](TERMS_ADVISOR.md)
+- [Admin Terms](TERMS_ADMIN.md)

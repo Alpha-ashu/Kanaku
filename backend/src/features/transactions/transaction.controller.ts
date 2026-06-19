@@ -35,6 +35,25 @@ export const createTransaction = async (req: AuthRequest, res: Response, next: N
   }
 };
 
+/**
+ * POST /api/v1/transactions/bulk
+ *
+ * Accepts up to 100 transactions in a single call. Returns 207-style
+ * partial success: `created` array + `failed` array with per-index
+ * error details. Idempotent via the Idempotency-Key header.
+ */
+export const createTransactionsBulk = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const userId = getUserId(req);
+    const items = Array.isArray(req.body?.transactions) ? req.body.transactions : [];
+    const result = await transactionService.createTransactionsBulk(userId, items);
+    const status = result.failed.length === 0 ? 201 : 207;
+    res.status(status).json({ success: true, data: result });
+  } catch (error) {
+    handleTransactionDatabaseError(error, next);
+  }
+};
+
 export const getTransaction = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const userId = getUserId(req);

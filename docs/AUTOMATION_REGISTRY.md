@@ -115,6 +115,16 @@ Centralised table of every `data-testid` added to Kanaku/Kanaku for Playwright a
 
 ---
 
+## Accounts List & Transactions List — Quick Transaction Modal (`Accounts.tsx`, `Transactions.tsx`)
+
+Both list pages render the same in-page modal that lets the user pick a transaction type (expense / income / transfer) before jumping into the full Add Transaction flow.
+
+| Automation ID | Screen | Element Type | Notes |
+|---|---|---|---|
+| `transaction-modal-type-${opt.type}-button` | Accounts list & Transactions list | button | Dynamic per option (`expense`, `income`, `transfer`); resolves to e.g. `transaction-modal-type-expense-button`. Identical markup in `core/Accounts.tsx` and `core/Transactions.tsx`. |
+
+---
+
 ## Accounts — Add Account (`AddAccount.tsx`)
 
 | Automation ID | Screen | Element Type | Notes |
@@ -245,15 +255,28 @@ Centralised table of every `data-testid` added to Kanaku/Kanaku for Playwright a
 
 ---
 
-## Shared UI Components (`FloatingSaveBar.tsx`, `SearchableDropdown.tsx`)
+## Shared UI Components (`FloatingSaveBar.tsx`, `SearchableDropdown.tsx`, `CategoryDropdown.tsx`)
 
-| Automation ID | Screen | Element Type | Notes |
-|---|---|---|---|
-| `floating-save-bar-discard-button` | Any (Form bottom) | button | Default ID for FloatingSaveBar discard; customizable via `discardTestId` |
-| `floating-save-bar-save-button` | Any (Form bottom) | button | Default ID for FloatingSaveBar save; customizable via `saveTestId` |
-| `[custom-id]` | Any (Dropdown) | button | Customizable trigger button via `testId` |
-| `[custom-id]-search-input` | Any (Dropdown Portal) | input[type=text] | Dropdown search field |
-| `[custom-id]-option-${option.value}` | Any (Dropdown Portal) | button | Dropdown item option |
+These primitives accept a `testId` (or `saveTestId` / `discardTestId`) prop and forward it down to their internal elements. The host screen is responsible for passing a stable, unique id.
+
+### `FloatingSaveBar`
+| Automation ID | Element Type | Notes |
+|---|---|---|
+| `floating-save-bar-discard-button` | button | Default for `discardTestId` prop; override via `discardTestId="<custom>"` |
+| `floating-save-bar-save-button` | button | Default for `saveTestId` prop; override via `saveTestId="<custom>"` |
+
+### `SearchableDropdown` (when `testId="<id>"` is supplied)
+| Automation ID | Element Type | Notes |
+|---|---|---|
+| `<id>` | button | Trigger button (collapsed state and portal anchor both expose this) |
+| `<id>-search-input` | input[type=text] | Portal search field |
+| `<id>-option-${opt.value}` | button | One per option in the open list |
+
+### `CategoryDropdown` (when `testId="<id>"` is supplied)
+| Automation ID | Element Type | Notes |
+|---|---|---|
+| `<id>` | button | Trigger button |
+| `<id>-option-${option}` | button | One per category option (only emitted while the dropdown is open) |
 
 ---
 
@@ -638,3 +661,31 @@ await page.getByTestId('transaction-preset-500-button').click();
 await page.getByTestId('admin-feature-transactions-toggle-button').click();
 await page.getByTestId('admin-feature-transactions-role-user-button').click();
 ```
+
+---
+
+## Coverage Audit (June 2026)
+
+This registry is verified against `frontend/src/**/*.{tsx,ts}` and currently covers **every** `data-testid` and forwarded `testId` prop in the codebase.
+
+| Metric | Count |
+|---|---|
+| Source files containing testids | 38 |
+| Raw `data-testid={...}` occurrences | 430 |
+| Unique static testids | 311 |
+| Unique dynamic (`${...}`) testid templates | 107 |
+| `testId` props forwarded to shared primitives | 6 |
+
+**Components fully documented (38/38)** — `SignInForm`, `SignUpForm`, `PINSetup`, `PINAuth`, `AppFeatureSlides`, `Sidebar`, `BottomNav`, `QuickActionModal`, `Accounts` (list), `AddAccount`, `Transactions` (list), `AddTransaction`, `ToDoLists`, `ToDoListDetail`, `RecurringTransactions`, `VoiceAICommandCenter`, `VoiceReview`, `Loans`, `AddLoan`, `AddLoanModalWithFriends`, `Goals`, `AddGoal`, `GoalDetail`, `Investments`, `AddInvestment`, `EditInvestment`, `WealthVaultDashboard`, `BookAdvisor`, `AdvisorPanel`, `AdvisorWorkspace`, `ManagerAdvisorVerification`, `AdminFeaturePanel`, `Settings`, `UserProfile`, `Notifications`, `FloatingSaveBar`, `SearchableDropdown`, `CategoryDropdown`.
+
+### Re-auditing
+Run this PowerShell snippet from repo root to re-verify coverage after any UI change:
+
+```powershell
+Get-ChildItem frontend\src -Recurse -Include *.tsx,*.ts |
+  Select-String -Pattern 'data-testid|testId\s*[:=]' |
+  Group-Object { $_.Path } |
+  Sort-Object Name |
+  ForEach-Object { '{0}  ({1})' -f $_.Name, $_.Count }
+```
+

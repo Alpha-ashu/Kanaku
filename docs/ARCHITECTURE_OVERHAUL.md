@@ -96,7 +96,7 @@ would require rewriting that surface and is not worth it.
 | Security controls | [`backend/src/security/README.md`](../backend/src/security/README.md) |
 | Email workflows | [`backend/src/emails/README.md`](../backend/src/emails/README.md) |
 | Authentication flow | [`backend/src/modules/auth/README.md`](../backend/src/modules/auth/README.md) |
-| Security review | below + [`../SECURITY_AUDIT_REPORT.md`](../SECURITY_AUDIT_REPORT.md) |
+| Security review | below + [`../SECURITY_AUDIT_REPORT.md`](SECURITY_AUDIT_REPORT.md) |
 
 Regenerate docs: `npm run docs:modules`, `npm run docs:frontend`, `npm run docs:catalogs`.
 

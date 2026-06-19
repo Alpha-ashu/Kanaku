@@ -3,25 +3,35 @@ import { accountRepository } from '../accounts/account.repository';
 import { AppError } from '../../utils/AppError';
 import { cacheDeleteByPrefix } from '../../cache/redis';
 import { eventBus } from '../../utils/eventBus';
+import { Prisma } from '../../db/prisma-client';
+import { add, isPositive, neg, parseMoney, roundMoney, ZERO } from '../../utils/money';
 
 export class TransactionService {
-  private addBalanceDelta(deltas: Map<string, number>, accountId: string | null | undefined, delta: number) {
-    if (!accountId || !Number.isFinite(delta) || delta === 0) return;
-    deltas.set(accountId, Math.round(((deltas.get(accountId) ?? 0) + delta) * 100) / 100);
+  /**
+   * Accumulate per-account balance deltas as `Prisma.Decimal` to preserve
+   * exact precision. The previous implementation used JS `number` and
+   * `Math.round` which silently lost sub-cent precision and could drift
+   * a balance under load.
+   */
+  private addBalanceDelta(deltas: Map<string, Prisma.Decimal>, accountId: string | null | undefined, delta: Prisma.Decimal) {
+    if (!accountId) return;
+    if (delta.isZero()) return;
+    const current = deltas.get(accountId) ?? ZERO;
+    deltas.set(accountId, roundMoney(add(current, delta)));
   }
 
-  private getBalanceImpactDeltas(transaction: TransactionWithTags & { type?: string | null; amount?: any; accountId?: string | null; transferToAccountId?: string | null }): Map<string, number> {
-    const deltas = new Map<string, number>();
-    const amount = Math.round(Number(transaction.amount ?? 0) * 100) / 100;
-    if (!Number.isFinite(amount) || amount <= 0 || !transaction.accountId) return deltas;
+  private getBalanceImpactDeltas(transaction: TransactionWithTags & { type?: string | null; amount?: any; accountId?: string | null; transferToAccountId?: string | null }): Map<string, Prisma.Decimal> {
+    const deltas = new Map<string, Prisma.Decimal>();
+    const amount = roundMoney(parseMoney(transaction.amount ?? 0));
+    if (!isPositive(amount) || !transaction.accountId) return deltas;
 
     if (transaction.type === 'transfer') {
-      this.addBalanceDelta(deltas, transaction.accountId, -amount);
+      this.addBalanceDelta(deltas, transaction.accountId, neg(amount));
       this.addBalanceDelta(deltas, transaction.transferToAccountId, amount);
     } else if (transaction.type === 'income') {
       this.addBalanceDelta(deltas, transaction.accountId, amount);
     } else if (transaction.type === 'expense') {
-      this.addBalanceDelta(deltas, transaction.accountId, -amount);
+      this.addBalanceDelta(deltas, transaction.accountId, neg(amount));
     }
     return deltas;
   }
@@ -105,6 +115,8 @@ export class TransactionService {
     if (!Number.isFinite(numAmount) || numAmount <= 0) {
       throw AppError.badRequest('Amount must be a positive number', 'INVALID_AMOUNT');
     }
+    // Keep the Decimal form for precise arithmetic and DB writes.
+    const decimalAmount = roundMoney(parseMoney(amount));
 
     const txDate = new Date(date);
     if (isNaN(txDate.getTime())) {
@@ -139,13 +151,13 @@ export class TransactionService {
     }
 
     const serializedTags = transactionRepository.serializeTags(tags);
-    const balanceDeltas = this.getBalanceImpactDeltas({ type, amount: numAmount, accountId, transferToAccountId });
+    const balanceDeltas = this.getBalanceImpactDeltas({ type, amount: decimalAmount, accountId, transferToAccountId });
 
     const newTx = await transactionRepository.createWithBalanceUpdate({
       userId,
       accountId,
       type,
-      amount: numAmount,
+      amount: decimalAmount,
       category,
       subcategory: subcategory || null,
       description: description || null,
@@ -190,11 +202,11 @@ export class TransactionService {
     }
 
     const type = body.type !== undefined ? body.type : existing.type;
-    const amount = body.amount !== undefined ? Number(body.amount) : Number(existing.amount);
+    const amount = body.amount !== undefined ? roundMoney(parseMoney(body.amount)) : roundMoney(parseMoney(existing.amount));
     const accountId = body.accountId !== undefined ? body.accountId : existing.accountId;
     const transferToAccountId = body.transferToAccountId !== undefined ? body.transferToAccountId : existing.transferToAccountId;
 
-    if (body.amount !== undefined && (isNaN(amount) || amount <= 0)) {
+    if (body.amount !== undefined && !isPositive(amount)) {
       throw AppError.badRequest('Amount must be a positive number', 'INVALID_AMOUNT');
     }
 
@@ -218,14 +230,14 @@ export class TransactionService {
 
     // Calculate balance impacts
     const oldDeltas = this.getBalanceImpactDeltas(existing as any);
-    const reversedDeltas = new Map<string, number>();
+    const reversedDeltas = new Map<string, Prisma.Decimal>();
     for (const [accId, delta] of oldDeltas.entries()) {
-      this.addBalanceDelta(reversedDeltas, accId, -delta);
+      this.addBalanceDelta(reversedDeltas, accId, neg(delta));
     }
 
     const newDeltas = this.getBalanceImpactDeltas({ type, amount, accountId, transferToAccountId });
 
-    const mergedDeltas = new Map<string, number>();
+    const mergedDeltas = new Map<string, Prisma.Decimal>();
     for (const [accId, delta] of reversedDeltas.entries()) {
       this.addBalanceDelta(mergedDeltas, accId, delta);
     }
@@ -276,9 +288,9 @@ export class TransactionService {
 
     // Calculate balance impacts for deletion (reverting original impact)
     const oldDeltas = this.getBalanceImpactDeltas(existing as any);
-    const reversedDeltas = new Map<string, number>();
+    const reversedDeltas = new Map<string, Prisma.Decimal>();
     for (const [accId, delta] of oldDeltas.entries()) {
-      this.addBalanceDelta(reversedDeltas, accId, -delta);
+      this.addBalanceDelta(reversedDeltas, accId, neg(delta));
     }
 
     await transactionRepository.deleteWithBalanceUpdate(id, reversedDeltas);
@@ -294,6 +306,48 @@ export class TransactionService {
         accountId: existing.accountId,
       },
     });
+  }
+
+  /**
+   * Bulk create transactions in a best-effort sequential mode. Each item
+   * is created in its own DB transaction so a single bad row does not
+   * abort the entire batch — failures are reported per-index.
+   *
+   * Used by:
+   *   - VoiceReview (multi-intent voice command, doc G.4)
+   *   - SMS / CSV import flows
+   *
+   * The wrapping idempotency middleware on POST /transactions/bulk
+   * guarantees that a retried network call with the same Idempotency-Key
+   * will replay the original response instead of double-inserting.
+   */
+  async createTransactionsBulk(userId: string, items: any[]) {
+    const created: any[] = [];
+    const failed: { index: number; error: string; code?: string }[] = [];
+
+    for (let i = 0; i < items.length; i++) {
+      try {
+        const tx = await this.createTransaction(userId, items[i]);
+        created.push(tx);
+      } catch (err) {
+        const appErr = err as AppError | Error;
+        failed.push({
+          index: i,
+          error: appErr instanceof AppError ? appErr.message : appErr.message,
+          code: appErr instanceof AppError ? appErr.code : 'UNKNOWN_ERROR',
+        });
+      }
+    }
+
+    return {
+      created,
+      failed,
+      summary: {
+        total: items.length,
+        succeeded: created.length,
+        failedCount: failed.length,
+      },
+    };
   }
 }
 

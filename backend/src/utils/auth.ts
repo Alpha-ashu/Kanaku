@@ -2,8 +2,14 @@ import jwt from 'jsonwebtoken';
 import { AuthTokens } from '../features/auth/auth.types';
 
 const getSecret = () => {
-  const secret = process.env.JWT_SECRET || process.env.SUPABASE_JWT_SECRET;
-  if (!secret) throw new Error('JWT_SECRET or SUPABASE_JWT_SECRET environment variable is required');
+  // In production the custom JWT secret is authoritative and required —
+  // never fall back to the Supabase secret (which would blur the
+  // identity-vs-authorization boundary). env.ts already fails boot if
+  // JWT_SECRET is missing in production, so this is defence in depth.
+  const secret = process.env.NODE_ENV === 'production'
+    ? process.env.JWT_SECRET
+    : (process.env.JWT_SECRET || process.env.SUPABASE_JWT_SECRET);
+  if (!secret) throw new Error('JWT_SECRET environment variable is required');
   return secret;
 };
 

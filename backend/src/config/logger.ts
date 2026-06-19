@@ -1,7 +1,19 @@
 import winston from 'winston';
+import { redact } from '../utils/redact';
 
 const isVercel = process.env.VERCEL === '1' || !!process.env.NOW_REGION;
 const isProduction = process.env.NODE_ENV === 'production';
+
+/**
+ * Custom Winston format that deep-redacts PII / secret fields from every
+ * structured log payload before it is serialized. Critical for fintech
+ * apps where passwords, PINs, OTPs, and JWTs must never appear in logs.
+ */
+const redactFormat = winston.format((info) => {
+  const { level, message, timestamp, stack, ...meta } = info as Record<string, unknown>;
+  const safeMeta = redact(meta) as Record<string, unknown>;
+  return { level, message, timestamp, stack, ...safeMeta } as winston.Logform.TransformableInfo;
+});
 
 const transports: winston.transport[] = [
   new winston.transports.Console(),
@@ -24,6 +36,7 @@ const logger = winston.createLogger({
   format: winston.format.combine(
     winston.format.timestamp(),
     winston.format.errors({ stack: true }),
+    redactFormat(),
     winston.format.json()
   ),
   transports,

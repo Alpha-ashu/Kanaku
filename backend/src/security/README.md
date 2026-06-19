@@ -52,4 +52,4 @@ Validation schemas use `.passthrough()` because the validate middleware replaces
 
 ## Ownership
 
-Security-sensitive changes (auth, tokens, validation, raw SQL) require review. See repo-root [`SECURITY.md`](../../../SECURITY.md) and `SECURITY_AUDIT_REPORT.md`.
+Security-sensitive changes (auth, tokens, validation, raw SQL) require review. See repo-root [`SECURITY.md`](../../../docs/SECURITY.md) and `SECURITY_AUDIT_REPORT.md`.

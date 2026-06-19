@@ -4,11 +4,11 @@ Use environment files by ownership boundary. Do not put every variable into one 
 
 ## Files
 
-- Root: [`/.env.example`](../../.env.example)
+- Root: [`/.env.example`](../.env.example)
   Use for repo-level local orchestration and root Vite/dev commands.
-- Backend: [`/backend/.env.example`](../../backend/.env.example)
+- Backend: [`/backend/.env.example`](../backend/.env.example)
   Use for server secrets, DB connectivity, storage, upload policy, and backend integrations.
-- Frontend: [`/frontend/.env.example`](../../frontend/.env.example)
+- Frontend: [`/frontend/.env.example`](../frontend/.env.example)
   Use for browser-safe public configuration only.
 
 ## Rules

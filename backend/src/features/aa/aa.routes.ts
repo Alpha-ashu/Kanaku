@@ -1,4 +1,4 @@
-import { Router, Response, NextFunction } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import { authMiddleware, AuthRequest } from '../../middleware/auth';
 import { validateBody, validateParams } from '../../middleware/validate';
 import { rateLimit } from '../../middleware/rateLimit';
@@ -14,6 +14,8 @@ import { aaService } from './aa.service';
 import { otpService } from '../otp/otp.service';
 import { AppError } from '../../utils/AppError';
 import { logger } from '../../config/logger';
+import { verifyWebhookSignature } from '../../security/webhookSignature';
+import { audit } from '../../utils/auditLogger';
 
 const router = Router();
 
@@ -25,7 +27,58 @@ router.use(rateLimit({
   message: 'Too many Account Aggregator requests. Please try again later.',
 }));
 
-// All AA routes require authentication
+/**
+ * POST /api/v1/aa/notification — Setu AA callback (Step: consent/data status).
+ *
+ * MUST be registered BEFORE `authMiddleware` because the AA system calls
+ * it machine-to-machine with no user JWT. Authenticity is enforced via an
+ * HMAC signature over the raw body using WEBHOOK_SETU_SECRET instead.
+ *
+ * Without this, an attacker could POST a forged "consent ACTIVE" event and
+ * trick the app into believing a bank link was approved. (Previously this
+ * route sat behind authMiddleware and was therefore both unreachable by
+ * Setu and unverified.)
+ */
+router.post('/notification', validateBody(aaNotificationSchema), async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const secret = process.env.WEBHOOK_SETU_SECRET;
+
+    // In production the secret is mandatory; in dev we allow an unsigned
+    // call so local testing against a mock AA still works, but we log it.
+    if (secret) {
+      const valid = verifyWebhookSignature(req, secret, {
+        headerName: process.env.WEBHOOK_SETU_SIGNATURE_HEADER || 'x-setu-signature',
+        algorithm: 'sha256',
+        encoding: 'hex',
+      });
+      if (!valid) {
+        audit({
+          event: 'security.webhook_invalid_signature',
+          ip: req.ip || undefined,
+          resource: 'aa.notification',
+          action: 'POST /api/v1/aa/notification',
+        });
+        return res.status(401).json({ success: false, message: 'Invalid signature', code: 'WEBHOOK_SIGNATURE_INVALID' });
+      }
+    } else if (process.env.NODE_ENV === 'production') {
+      logger.error('[AA] WEBHOOK_SETU_SECRET not configured — rejecting webhook in production.');
+      return res.status(503).json({ success: false, message: 'Webhook verification not configured', code: 'WEBHOOK_NOT_CONFIGURED' });
+    } else {
+      logger.warn('[AA] WEBHOOK_SETU_SECRET not set — accepting UNVERIFIED webhook in non-production.');
+    }
+
+    const payload = req.body;
+    logger.info('[AA] Webhook notification received', { type: payload?.type });
+
+    await aaService.handleNotification(payload);
+
+    res.json({ success: true, message: 'Notification processed.' });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// All remaining AA routes require user authentication.
 router.use(authMiddleware);
 
 /**
@@ -212,24 +265,6 @@ router.get('/financial-summary', async (req: AuthRequest, res: Response, next: N
 
     const summary = await aaService.getUserFinancialSummary(userId);
     res.json({ success: true, data: summary });
-  } catch (error) {
-    next(error);
-  }
-});
-
-/**
- * POST /api/v1/aa/notification
- * Webhook endpoint for AA notifications (Setu callback)
- * This endpoint is called by the AA system, not by the user
- */
-router.post('/notification', validateBody(aaNotificationSchema), async (req: AuthRequest, res: Response, next: NextFunction) => {
-  try {
-    const payload = req.body;
-    logger.info('[AA] Webhook notification received', payload);
-
-    await aaService.handleNotification(payload);
-
-    res.json({ success: true, message: 'Notification processed.' });
   } catch (error) {
     next(error);
   }

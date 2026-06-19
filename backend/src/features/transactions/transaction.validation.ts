@@ -79,3 +79,16 @@ export const transactionIdParamSchema = z.object({
 export const transactionAccountParamSchema = z.object({
   accountId: z.string().trim().min(1),
 });
+
+/**
+ * Bulk-create schema — used by the voice multi-intent flow (G.4) and
+ * CSV/SMS import. Capped at 100 items per request to bound transactional
+ * work and prevent abusive payloads.
+ */
+export const transactionBulkCreateSchema = z.object({
+  transactions: z
+    .array(transactionCreateValidatedSchema)
+    .min(1, 'At least one transaction is required')
+    .max(100, 'Bulk create accepts at most 100 transactions per request'),
+});
+

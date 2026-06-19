@@ -5,7 +5,7 @@ New to Kanaku? Read these in order.
 1. **What is Kanaku** â€” [`../../README.md`](../../README.md)
 2. **Architecture (the big picture)** â€” [`../../ARCHITECTURE_RESTRUCTURE.md`](../../ARCHITECTURE_RESTRUCTURE.md)
 3. **Feature map (find any feature end-to-end)** â€” [`../architecture/FEATURE_MAP.md`](../architecture/FEATURE_MAP.md)
-4. **Developer context & rules** â€” [`../../KANAKU_DEVELOPER_CONTEXT.md`](../../KANAKU_DEVELOPER_CONTEXT.md)
+4. **Developer context & rules** â€” [`../../KANAKU_DEVELOPER_CONTEXT.md`](../../KANAKU_PROJECT_OVERVIEW.md)
 5. **Contributing** â€” [`../CONTRIBUTING.md`](../CONTRIBUTING.md)
 6. **Guidelines (AI + design system)** â€” [`../guidelines/Guidelines.md`](../guidelines/Guidelines.md)
 7. **Quick reference** â€” [`../DEVELOPER_QUICK_REFERENCE.md`](../DEVELOPER_QUICK_REFERENCE.md)

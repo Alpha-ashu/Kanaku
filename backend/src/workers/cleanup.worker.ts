@@ -8,8 +8,82 @@
 import cron, { ScheduledTask } from 'node-cron';
 import { prisma } from '../db/prisma';
 import { logger } from '../config/logger';
+import { audit } from '../utils/auditLogger';
 
 let cleanupJob: ScheduledTask | null = null;
+
+/**
+ * Phase 2 of the GDPR account-deletion flow.
+ *
+ * `DELETE /api/v1/settings/account` soft-deletes a user by setting
+ * `status = 'pending_deletion'` and stamping
+ * `syncToken = 'delete_after:<ISO>'`. This task finds users whose grace
+ * window has elapsed and performs the irreversible hard delete.
+ *
+ * Postgres `ON DELETE CASCADE` (declared on every child relation in
+ * schema.prisma) takes care of accounts, transactions, goals, loans,
+ * etc. — so deleting the `User` row removes all owned data atomically.
+ *
+ * Supabase Auth user + Storage objects are NOT removed here (different
+ * system); that is left to a follow-up integration. We emit an audit row
+ * for each executed deletion so there is a durable compliance record.
+ */
+export const runAccountDeletionSweep = async (): Promise<void> => {
+  const now = new Date();
+  const prefix = 'delete_after:';
+
+  try {
+    // Find candidates: pending_deletion users with an elapsed timer.
+    const candidates = await prisma.user.findMany({
+      where: {
+        status: 'pending_deletion',
+        syncToken: { startsWith: prefix },
+      },
+      select: { id: true, email: true, syncToken: true, role: true },
+      take: 100, // bound the batch
+    });
+
+    let deleted = 0;
+    for (const user of candidates) {
+      const iso = (user.syncToken || '').slice(prefix.length);
+      const dueAt = new Date(iso);
+      if (Number.isNaN(dueAt.getTime()) || dueAt > now) {
+        continue; // not due yet (or malformed marker — skip, don't crash)
+      }
+
+      // Never auto-delete an admin via this path — defence in depth.
+      if (user.role === 'admin') {
+        logger.warn('[deletion-sweep] Skipping admin account flagged for deletion', { userId: user.id });
+        continue;
+      }
+
+      try {
+        await prisma.user.delete({ where: { id: user.id } });
+        deleted += 1;
+        audit({
+          event: 'gdpr.account_delete_executed',
+          userId: user.id,
+          resource: 'user',
+          resourceId: user.id,
+          meta: { scheduledFor: iso },
+        });
+      } catch (err) {
+        logger.error('[deletion-sweep] Failed to hard-delete user', {
+          userId: user.id,
+          error: err instanceof Error ? err.message : String(err),
+        });
+      }
+    }
+
+    if (deleted > 0) {
+      logger.info('[deletion-sweep] Hard-deleted expired accounts', { deleted });
+    }
+  } catch (error) {
+    logger.error('[deletion-sweep] Account deletion sweep failed', {
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+};
 
 /**
  * Run all cleanup tasks and return a summary report.
@@ -62,6 +136,9 @@ export const runCleanupTasks = async (): Promise<void> => {
       error: error instanceof Error ? error.message : String(error),
     });
   }
+
+  // 5. GDPR hard-delete sweep (runs after the generic cleanup).
+  await runAccountDeletionSweep();
 };
 
 /**
