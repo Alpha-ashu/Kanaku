@@ -47,7 +47,9 @@ jobs:
         run: npm run build:backend
 
       - name: Setup Flyctl
-        uses: superfly/flyctl-actions/setup-flyctl@master
+        # Pinned to the stable v1 release tag instead of the mutable @master
+        # branch to avoid pulling unreviewed action code at deploy time.
+        uses: superfly/flyctl-actions/setup-flyctl@v1
 
       - name: Deploy to Fly.io
         run: flyctl deploy --remote-only --config fly.toml
