@@ -94,11 +94,11 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 65100,
+                      "duration": 99401,
                       "errors": [],
                       "stdout": [
                         {
-                          "text": "\n=== Starting Simultaneous Validation for User: qa+mqkvfh5e5c7038@kanaku.test ===\n"
+                          "text": "\n=== Starting Simultaneous Validation for User: qa+mql0mm1d404b5a@kanaku.test ===\n"
                         },
                         {
                           "text": "\n--- Step 1: Navigating to Sign Up Form ---\n"
@@ -110,22 +110,13 @@
                           "text": "[Browser Console] debug: [vite] connected.\n"
                         },
                         {
+                          "text": "[Browser Console] debug: [vite] connecting...\n"
+                        },
+                        {
+                          "text": "[Browser Console] debug: [vite] connected.\n"
+                        },
+                        {
                           "text": "[Browser Console] info: %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold\n"
-                        },
-                        {
-                          "text": "[Browser Console] log: [onAuthStateChange Event] {event: INITIAL_SESSION, userId: undefined, email: undefined}\n"
-                        },
-                        {
-                          "text": "[Browser Console] log: [AppContent Render] {user: null, authLoading: false, onboardingCompleted: false, isNewUser: true, hasProfileData: false}\n"
-                        },
-                        {
-                          "text": "[Browser Console] log: [AppContent Render] {user: null, authLoading: false, onboardingCompleted: false, isNewUser: true, hasProfileData: false}\n"
-                        },
-                        {
-                          "text": "[Browser Console] log: [AppContent Render] {user: null, authLoading: false, onboardingCompleted: false, isNewUser: true, hasProfileData: false}\n"
-                        },
-                        {
-                          "text": "[Browser Console] log: [AppContent Render] {user: null, authLoading: false, onboardingCompleted: false, isNewUser: true, hasProfileData: false}\n"
                         },
                         {
                           "text": "[Browser Console] debug: [vite] connecting...\n"
@@ -137,37 +128,10 @@
                           "text": "[Browser Console] info: %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold\n"
                         },
                         {
-                          "text": "[Browser Console] log: [onAuthStateChange Event] {event: INITIAL_SESSION, userId: undefined, email: undefined}\n"
-                        },
-                        {
-                          "text": "[Browser Console] log: [AppContent Render] {user: null, authLoading: false, onboardingCompleted: false, isNewUser: true, hasProfileData: false}\n"
-                        },
-                        {
-                          "text": "[Browser Console] log: [AppContent Render] {user: null, authLoading: false, onboardingCompleted: false, isNewUser: true, hasProfileData: false}\n"
-                        },
-                        {
-                          "text": "[Browser Console] log: [AppContent Render] {user: null, authLoading: false, onboardingCompleted: false, isNewUser: true, hasProfileData: false}\n"
-                        },
-                        {
-                          "text": "[Browser Console] log: [AppContent Render] {user: null, authLoading: false, onboardingCompleted: false, isNewUser: true, hasProfileData: false}\n"
-                        },
-                        {
-                          "text": "[Browser Console] log: [AppContent Render] {user: null, authLoading: false, onboardingCompleted: false, isNewUser: true, hasProfileData: false}\n"
-                        },
-                        {
-                          "text": "[Browser Console] log: [AppContent Render] {user: null, authLoading: false, onboardingCompleted: false, isNewUser: true, hasProfileData: false}\n"
-                        },
-                        {
-                          "text": "[Browser Console] log: [AppContent Render] {user: null, authLoading: false, onboardingCompleted: false, isNewUser: true, hasProfileData: false}\n"
-                        },
-                        {
-                          "text": "[Browser Console] log: [AppContent Render] {user: null, authLoading: false, onboardingCompleted: false, isNewUser: true, hasProfileData: false}\n"
-                        },
-                        {
                           "text": "Filling registration details...\n"
                         },
                         {
-                          "text": "[API Request] POST -> http://localhost:9002/api/v1/auth/check-email \nPayload: {\n  \"email\": \"qa+mqkvfh5e5c7038@kanaku.test\"\n}\n"
+                          "text": "[API Request] POST -> http://localhost:9002/api/v1/auth/check-email \nPayload: {\n  \"email\": \"qa+mql0mm1d404b5a@kanaku.test\"\n}\n"
                         },
                         {
                           "text": "[API Response] 200 <- http://localhost:9002/api/v1/auth/check-email \nBody: {\n  \"available\": true\n}\n"
@@ -179,58 +143,28 @@
                           "text": "\n--- Step 2: Submitting Registration Form ---\n"
                         },
                         {
-                          "text": "[Browser Console] log: [onAuthStateChange Event] {event: SIGNED_IN, userId: 837c1b2e-8f9f-426c-956a-853b0fc59b96, email: qa+mqkvfh5e5c7038@kanaku.test}\n"
-                        },
-                        {
-                          "text": "[API Request] GET -> http://localhost:9002/api/v1/auth/profile?includePrivate=true \n"
-                        },
-                        {
-                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: false, isNewUser: true, hasProfileData: false}\n"
-                        },
-                        {
-                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: false, isNewUser: true, hasProfileData: false}\n"
-                        },
-                        {
-                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: false, isNewUser: true, hasProfileData: false}\n"
-                        },
-                        {
-                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: false, isNewUser: true, hasProfileData: false}\n"
-                        },
-                        {
-                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: false, isNewUser: true, hasProfileData: false}\n"
-                        },
-                        {
-                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: false, isNewUser: true, hasProfileData: false}\n"
-                        },
-                        {
                           "text": "Signup success screen bypassed or already transitioned to onboarding.\n"
                         },
                         {
                           "text": "\n--- Step 3: Validating Registration in Postgres Database ---\n"
                         },
                         {
+                          "text": "[API Request] GET -> http://localhost:9002/api/v1/auth/profile?includePrivate=true \n"
+                        },
+                        {
                           "text": "Waiting for database User record to sync... Attempt 1/15\n"
-                        },
-                        {
-                          "text": "[API Response] 200 <- http://localhost:9002/api/v1/auth/profile?includePrivate=true \nBody: {\n  \"success\": true,\n  \"data\": {\n    \"id\": \"837c1b2e-8f9f-426c-956a-853b0fc59b96\",\n    \"email\": \"qa+mqkvfh5e5c7038@kanaku.test\",\n    \"name\": \"QA Mqkvfh5e\",\n    \"firstName\": \"QA\",\n    \"lastName\": \"Mqkvfh5e\",\n    \"fullName\": \"QA Mqkvfh5e\",\n    \"gender\": \"\",\n    \"country\": \"\",\n    \"state\": \"\",\n    \"city\": \"\",\n    \"mobileNumber\": \"\",\n    \"avatarUrl\": null,\n    \"currency\": \"USD\",\n    \"language\": \"en\",\n    \"updatedAt\": \"2026-06-19T11:54:39.558Z\",\n    \"pinEnabled\": false,\n    \"dateOfBirth\": \"\",\n    \"jobType\": \"\",\n    \"monthlyIncome\": 0,\n    \"role\": \"user\",\n    \"isApproved\": false\n  }\n}\n"
-                        },
-                        {
-                          "text": "[Browser Console] log: Socket reconnected\n"
-                        },
-                        {
-                          "text": "[Browser Console] log: Socket connected successfully\n"
                         },
                         {
                           "text": "Database User query result: FOUND\n"
                         },
                         {
-                          "text": "Database User ID: 837c1b2e-8f9f-426c-956a-853b0fc59b96\n"
+                          "text": "Database User ID: d508038c-f667-42fb-88e3-e434a551b0fa\n"
                         },
                         {
-                          "text": "Database User Email: qa+mqkvfh5e5c7038@kanaku.test\n"
+                          "text": "Database User Email: qa+mql0mm1d404b5a@kanaku.test\n"
                         },
                         {
-                          "text": "Database User Name: QA Mqkvfh5e\n"
+                          "text": "Database User Name: QA Mql0mm1d\n"
                         },
                         {
                           "text": "Database User Role: user\n"
@@ -243,6 +177,15 @@
                         },
                         {
                           "text": "Waiting for Profile Setup onboarding screen...\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: Socket reconnected\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: Socket connected successfully\n"
+                        },
+                        {
+                          "text": "[API Response] 200 <- http://localhost:9002/api/v1/auth/profile?includePrivate=true \nBody: {\n  \"success\": true,\n  \"data\": {\n    \"id\": \"d508038c-f667-42fb-88e3-e434a551b0fa\",\n    \"email\": \"qa+mql0mm1d404b5a@kanaku.test\",\n    \"name\": \"QA Mql0mm1d\",\n    \"firstName\": \"QA\",\n    \"lastName\": \"Mql0mm1d\",\n    \"fullName\": \"QA Mql0mm1d\",\n    \"gender\": \"\",\n    \"country\": \"\",\n    \"state\": \"\",\n    \"city\": \"\",\n    \"mobileNumber\": \"\",\n    \"avatarUrl\": null,\n    \"currency\": \"USD\",\n    \"language\": \"en\",\n    \"updatedAt\": \"2026-06-19T14:20:20.366Z\",\n    \"pinEnabled\": false,\n    \"dateOfBirth\": \"\",\n    \"jobType\": \"\",\n    \"monthlyIncome\": 0,\n    \"role\": \"user\",\n    \"isApproved\": false\n  }\n}\n"
                         },
                         {
                           "text": "Selecting gender \"male\"...\n"
@@ -275,25 +218,10 @@
                           "text": "Waiting for App Feature Slides...\n"
                         },
                         {
-                          "text": "[Browser Console] log: [onAuthStateChange Event] {event: USER_UPDATED, userId: 837c1b2e-8f9f-426c-956a-853b0fc59b96, email: qa+mqkvfh5e5c7038@kanaku.test}\n"
-                        },
-                        {
                           "text": "[Browser Console] log: Socket already connected\n"
                         },
                         {
-                          "text": "[API Request] PUT -> http://localhost:9002/api/v1/auth/profile \nPayload: {\n  \"firstName\": \"QA\",\n  \"lastName\": \"Mqkvfh5e\",\n  \"gender\": \"male\",\n  \"country\": \"India\",\n  \"state\": \"\",\n  \"city\": \"\",\n  \"monthlyIncome\": 100000,\n  \"dateOfBirth\": \"2000-01-01\",\n  \"jobType\": \"Full-time Employment\",\n  \"avatarId\": \"new-1\",\n  \"avatarUrl\": \"/api/v1/avatars/dicebear/avataaars/svg?seed=Xavier\"\n}\n"
-                        },
-                        {
-                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: false, isNewUser: true, hasProfileData: true}\n"
-                        },
-                        {
-                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: false, isNewUser: true, hasProfileData: true}\n"
-                        },
-                        {
-                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: true}\n"
-                        },
-                        {
-                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: true}\n"
+                          "text": "[API Request] PUT -> http://localhost:9002/api/v1/auth/profile \nPayload: {\n  \"firstName\": \"QA\",\n  \"lastName\": \"Mql0mm1d\",\n  \"gender\": \"male\",\n  \"country\": \"India\",\n  \"state\": \"\",\n  \"city\": \"\",\n  \"monthlyIncome\": 100000,\n  \"dateOfBirth\": \"2000-01-01\",\n  \"jobType\": \"Full-time Employment\",\n  \"avatarId\": \"new-1\",\n  \"avatarUrl\": \"/api/v1/avatars/dicebear/avataaars/svg?seed=Xavier\"\n}\n"
                         },
                         {
                           "text": "Skipping slides...\n"
@@ -302,10 +230,7 @@
                           "text": "Completing slides...\n"
                         },
                         {
-                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: true}\n"
-                        },
-                        {
-                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: true}\n"
+                          "text": "[Browser Console] verbose: [DOM] Password forms should have (optionally hidden) username fields for accessibility: (More info: https://goo.gl/9p2vKq) %o\n"
                         },
                         {
                           "text": "Waiting for PIN setup screen...\n"
@@ -314,7 +239,10 @@
                           "text": "Entering new PIN...\n"
                         },
                         {
-                          "text": "[Browser Console] verbose: [DOM] Password forms should have (optionally hidden) username fields for accessibility: (More info: https://goo.gl/9p2vKq) %o\n"
+                          "text": "[Browser Console] info: Supabase sync timed out after 12000ms. Retrying...\n"
+                        },
+                        {
+                          "text": "[API Request] PUT -> http://localhost:9002/api/v1/auth/profile \nPayload: {\n  \"firstName\": \"QA\",\n  \"lastName\": \"Mql0mm1d\",\n  \"phone\": null,\n  \"mobile\": null,\n  \"gender\": \"male\",\n  \"country\": \"India\",\n  \"state\": null,\n  \"city\": null,\n  \"dateOfBirth\": \"2000-01-01\",\n  \"jobType\": \"Full-time Employment\",\n  \"monthlyIncome\": 100000,\n  \"annualIncome\": 1200000,\n  \"avatarUrl\": \"/api/v1/avatars/dicebear/avataaars/svg?seed=Xavier\",\n  \"avatarId\": \"new-1\"\n}\n"
                         },
                         {
                           "text": "Waiting for Confirm PIN screen...\n"
@@ -323,52 +251,25 @@
                           "text": "Confirming PIN...\n"
                         },
                         {
-                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: true}\n"
-                        },
-                        {
-                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: true}\n"
-                        },
-                        {
                           "text": "[API Request] POST -> http://localhost:9002/api/v1/pin/create \nPayload: {\n  \"pin\": \"023f5351b94db0bdcde8dd21da240ac75adc1fc82371c516543b25485cb900de\"\n}\n"
                         },
                         {
-                          "text": "[API Response] 200 <- http://localhost:9002/api/v1/auth/profile \nBody: {\n  \"success\": true,\n  \"message\": \"Profile updated successfully\",\n  \"data\": {\n    \"id\": \"837c1b2e-8f9f-426c-956a-853b0fc59b96\",\n    \"email\": \"qa+mqkvfh5e5c7038@kanaku.test\",\n    \"name\": \"QA Mqkvfh5e\",\n    \"firstName\": \"QA\",\n    \"lastName\": \"Mqkvfh5e\",\n    \"fullName\": \"QA Mqkvfh5e\",\n    \"gender\": \"male\",\n    \"country\": \"India\",\n    \"state\": \"\",\n    \"city\": \"\",\n    \"mobileNumber\": \"\",\n    \"avatarId\": \"new-1\",\n    \"avatarUrl\": \"/api/v1/avatars/dicebear/avataaars/svg?seed=Xavier\",\n    \"currency\": \"INR\",\n    \"language\": \"en\",\n    \"updatedAt\": \"2026-06-19T11:54:56.381Z\",\n    \"pinEnabled\": false,\n    \"dateOfBirth\": \"2000-01-01\",\n    \"jobType\": \"Full-time Employment\",\n    \"monthlyIncome\": 100000,\n    \"role\": \"user\",\n    \"isApproved\": false,\n    \"salary\": 1200000\n  }\n}\n"
+                          "text": "[API Response] 200 <- http://localhost:9002/api/v1/auth/profile \nBody: {\n  \"success\": true,\n  \"message\": \"Profile updated successfully\",\n  \"data\": {\n    \"id\": \"d508038c-f667-42fb-88e3-e434a551b0fa\",\n    \"email\": \"qa+mql0mm1d404b5a@kanaku.test\",\n    \"name\": \"QA Mql0mm1d\",\n    \"firstName\": \"QA\",\n    \"lastName\": \"Mql0mm1d\",\n    \"fullName\": \"QA Mql0mm1d\",\n    \"gender\": \"male\",\n    \"country\": \"India\",\n    \"state\": \"\",\n    \"city\": \"\",\n    \"mobileNumber\": \"\",\n    \"avatarId\": \"new-1\",\n    \"avatarUrl\": \"/api/v1/avatars/dicebear/avataaars/svg?seed=Xavier\",\n    \"currency\": \"INR\",\n    \"language\": \"en\",\n    \"updatedAt\": \"2026-06-19T14:20:43.994Z\",\n    \"pinEnabled\": false,\n    \"dateOfBirth\": \"2000-01-01\",\n    \"jobType\": \"Full-time Employment\",\n    \"monthlyIncome\": 100000,\n    \"role\": \"user\",\n    \"isApproved\": false,\n    \"salary\": 1200000\n  }\n}\n"
                         },
                         {
-                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: true}\n"
+                          "text": "[API Response] 200 <- http://localhost:9002/api/v1/auth/profile \nBody: {\n  \"success\": true,\n  \"message\": \"Profile updated successfully\",\n  \"data\": {\n    \"id\": \"d508038c-f667-42fb-88e3-e434a551b0fa\",\n    \"email\": \"qa+mql0mm1d404b5a@kanaku.test\",\n    \"name\": \"QA Mql0mm1d\",\n    \"firstName\": \"QA\",\n    \"lastName\": \"Mql0mm1d\",\n    \"fullName\": \"QA Mql0mm1d\",\n    \"gender\": \"male\",\n    \"country\": \"India\",\n    \"state\": \"\",\n    \"city\": \"\",\n    \"mobileNumber\": \"\",\n    \"avatarId\": \"new-1\",\n    \"avatarUrl\": \"/api/v1/avatars/dicebear/avataaars/svg?seed=Xavier\",\n    \"currency\": \"INR\",\n    \"language\": \"en\",\n    \"updatedAt\": \"2026-06-19T14:20:47.289Z\",\n    \"pinEnabled\": false,\n    \"dateOfBirth\": \"2000-01-01\",\n    \"jobType\": \"Full-time Employment\",\n    \"monthlyIncome\": 100000,\n    \"role\": \"user\",\n    \"isApproved\": false,\n    \"salary\": 1200000\n  }\n}\n"
                         },
                         {
-                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: true}\n"
-                        },
-                        {
-                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: true}\n"
-                        },
-                        {
-                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: true}\n"
-                        },
-                        {
-                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: true}\n"
-                        },
-                        {
-                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: true}\n"
-                        },
-                        {
-                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: true}\n"
-                        },
-                        {
-                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: true}\n"
-                        },
-                        {
-                          "text": "[API Response] 200 <- http://localhost:9002/api/v1/pin/create \nBody: {\n  \"success\": true,\n  \"message\": \"PIN created successfully\",\n  \"expiresAt\": \"2026-09-17T11:55:01.293Z\"\n}\n"
+                          "text": "[API Response] 200 <- http://localhost:9002/api/v1/pin/create \nBody: {\n  \"success\": true,\n  \"message\": \"PIN created successfully\",\n  \"expiresAt\": \"2026-09-17T14:20:55.052Z\"\n}\n"
                         },
                         {
                           "text": "[API Request] POST -> http://localhost:9002/api/v1/pin/verify-security \nPayload: {}\n"
                         },
                         {
-                          "text": "[API Request] POST -> http://localhost:9002/api/v1/pin/key-backup \nPayload: {\n  \"backup\": \"023f5351b94db0bdcde8dd21da240ac75adc1fc82371c516543b25485cb900de|8f00e7b86b07c0305cc579c1a7cf4a14\"\n}\n"
+                          "text": "[API Request] POST -> http://localhost:9002/api/v1/pin/key-backup \nPayload: {\n  \"backup\": \"023f5351b94db0bdcde8dd21da240ac75adc1fc82371c516543b25485cb900de|5c12cfb8f384ae7d713f1fc996675410\"\n}\n"
                         },
                         {
-                          "text": "[API Response] 200 <- http://localhost:9002/api/v1/pin/verify-security \nBody: {\n  \"success\": true,\n  \"securityToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI4MzdjMWIyZS04ZjlmLTQyNmMtOTU2YS04NTNiMGZjNTliOTYiLCJ0eXBlIjoic2VjdXJpdHlfdmVyaWZpY2F0aW9uIiwidGltZXN0YW1wIjoxNzgxODcwMTA1NDgwLCJpYXQiOjE3ODE4NzAxMDUsImV4cCI6MTc4MTg3MDQwNX0.KAAmaEIpVjpFKMy8AX5dMJGUTRZzrNaDZUZ4vzP_LIU\"\n}\n"
+                          "text": "[API Response] 200 <- http://localhost:9002/api/v1/pin/verify-security \nBody: {\n  \"success\": true,\n  \"securityToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkNTA4MDM4Yy1mNjY3LTQyZmItODhlMy1lNDM0YTU1MWIwZmEiLCJ0eXBlIjoic2VjdXJpdHlfdmVyaWZpY2F0aW9uIiwidGltZXN0YW1wIjoxNzgxODc4ODU5MTM5LCJpYXQiOjE3ODE4Nzg4NTksImV4cCI6MTc4MTg3OTE1OX0.f3AGeqYA6ku0uJMzBmpzut-YgFzztmb3Sg4m73RljqA\"\n}\n"
                         },
                         {
                           "text": "[Browser Console] error: Failed to load resource: the server responded with a status of 403 (Forbidden)\n"
@@ -377,19 +278,7 @@
                           "text": "[Browser Console] warning: PIN key backup refresh failed during setup: Additional security verification required\n"
                         },
                         {
-                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: true}\n"
-                        },
-                        {
-                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: true}\n"
-                        },
-                        {
-                          "text": "[API Response] 403 <- http://localhost:9002/api/v1/pin/key-backup \nBody: {\n  \"success\": false,\n  \"error\": \"Additional security verification required\",\n  \"code\": \"SECURITY_VERIFICATION_REQUIRED\",\n  \"requestId\": \"761c9d57-4588-4a76-ad52-0f681470e34e\"\n}\n"
-                        },
-                        {
-                          "text": "[Browser Console] info: [BackendService] Deduplicating concurrent GET request: /ai/insights\n"
-                        },
-                        {
-                          "text": "[Browser Console] info: [Sync] Skipping backend sync; all requested tables synced <5m ago.\n"
+                          "text": "[API Response] 403 <- http://localhost:9002/api/v1/pin/key-backup \nBody: {\n  \"success\": false,\n  \"error\": \"Additional security verification required\",\n  \"code\": \"SECURITY_VERIFICATION_REQUIRED\",\n  \"requestId\": \"b6aa1ed9-2730-4d71-8e5a-58a50f3c352b\"\n}\n"
                         },
                         {
                           "text": "Successfully reached Dashboard.\n"
@@ -398,13 +287,19 @@
                           "text": "\n--- Step 5: Validating Profile and PIN in Postgres Database ---\n"
                         },
                         {
+                          "text": "[Browser Console] info: [BackendService] Deduplicating concurrent GET request: /ai/insights\n"
+                        },
+                        {
+                          "text": "[Browser Console] info: [Sync] Skipping backend sync; all requested tables synced <5m ago.\n"
+                        },
+                        {
                           "text": "Database Profile query result: FOUND\n"
                         },
                         {
                           "text": "Database Profile First Name: QA\n"
                         },
                         {
-                          "text": "Database Profile Last Name: Mqkvfh5e\n"
+                          "text": "Database Profile Last Name: Mql0mm1d\n"
                         },
                         {
                           "text": "Database Profile Phone: null\n"
@@ -416,34 +311,16 @@
                           "text": "Database PIN Active Status: true\n"
                         },
                         {
-                          "text": "Database PIN Hash: $2a$12$GDxmfXw6k8ojF1A5O/PmRepPlsg/1O.1Sq2Fn8Rv3ypdtAFHY3BNG\n"
+                          "text": "Database PIN Hash: $2a$12$M1dXVAjKj4fbDv.snZupV.nLsiF5wM/zy4/JB8zG1oeBNejB65m5W\n"
                         },
                         {
                           "text": "\n--- Step 6: Logging Out via UI ---\n"
                         },
                         {
-                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: true}\n"
-                        },
-                        {
-                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: true}\n"
-                        },
-                        {
-                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: true}\n"
-                        },
-                        {
-                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: true}\n"
-                        },
-                        {
-                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: true}\n"
-                        },
-                        {
-                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: true}\n"
-                        },
-                        {
                           "text": "[Browser Console] log: [UserProfile] Component mounted, isLoading: true\n"
                         },
                         {
-                          "text": "[Browser Console] log: [UserProfile] fetchProfileData called, user: 837c1b2e-8f9f-426c-956a-853b0fc59b96\n"
+                          "text": "[Browser Console] log: [UserProfile] fetchProfileData called, user: d508038c-f667-42fb-88e3-e434a551b0fa\n"
                         },
                         {
                           "text": "[Browser Console] log: [UserProfile] Fetching from backend API...\n"
@@ -452,7 +329,7 @@
                           "text": "[Browser Console] log: [UserProfile] Component mounted, isLoading: true\n"
                         },
                         {
-                          "text": "[Browser Console] log: [UserProfile] fetchProfileData called, user: 837c1b2e-8f9f-426c-956a-853b0fc59b96\n"
+                          "text": "[Browser Console] log: [UserProfile] fetchProfileData called, user: d508038c-f667-42fb-88e3-e434a551b0fa\n"
                         },
                         {
                           "text": "[Browser Console] log: [UserProfile] Fetching from backend API...\n"
@@ -461,43 +338,28 @@
                           "text": "[API Request] GET -> http://localhost:9002/api/v1/auth/profile?includePrivate=true \n"
                         },
                         {
-                          "text": "[Browser Console] log: [UserProfile] Received data from backend: {id: 837c1b2e-8f9f-426c-956a-853b0fc59b96, email: qa+mqkvfh5e5c7038@kanaku.test, name: QA Mqkvfh5e, firstName: QA, lastName: Mqkvfh5e}\n"
+                          "text": "[Browser Console] log: [UserProfile] Received data from backend: {id: d508038c-f667-42fb-88e3-e434a551b0fa, email: qa+mql0mm1d404b5a@kanaku.test, name: QA Mql0mm1d, firstName: QA, lastName: Mql0mm1d}\n"
                         },
                         {
-                          "text": "[Browser Console] log: [UserProfile] Received data from backend: {id: 837c1b2e-8f9f-426c-956a-853b0fc59b96, email: qa+mqkvfh5e5c7038@kanaku.test, name: QA Mqkvfh5e, firstName: QA, lastName: Mqkvfh5e}\n"
+                          "text": "[Browser Console] log: [UserProfile] Received data from backend: {id: d508038c-f667-42fb-88e3-e434a551b0fa, email: qa+mql0mm1d404b5a@kanaku.test, name: QA Mql0mm1d, firstName: QA, lastName: Mql0mm1d}\n"
                         },
                         {
-                          "text": "[API Response] 200 <- http://localhost:9002/api/v1/auth/profile?includePrivate=true \nBody: {\n  \"success\": true,\n  \"data\": {\n    \"id\": \"837c1b2e-8f9f-426c-956a-853b0fc59b96\",\n    \"email\": \"qa+mqkvfh5e5c7038@kanaku.test\",\n    \"name\": \"QA Mqkvfh5e\",\n    \"firstName\": \"QA\",\n    \"lastName\": \"Mqkvfh5e\",\n    \"fullName\": \"QA Mqkvfh5e\",\n    \"gender\": \"male\",\n    \"country\": \"India\",\n    \"state\": \"\",\n    \"city\": \"\",\n    \"mobileNumber\": \"\",\n    \"avatarId\": \"new-1\",\n    \"avatarUrl\": \"/api/v1/avatars/dicebear/avataaars/svg?seed=Xavier\",\n    \"currency\": \"INR\",\n    \"language\": \"en\",\n    \"updatedAt\": \"2026-06-19T11:54:56.381Z\",\n    \"pinEnabled\": true,\n    \"dateOfBirth\": \"2000-01-01\",\n    \"jobType\": \"Full-time Employment\",\n    \"monthlyIncome\": 100000,\n    \"role\": \"user\",\n    \"isApproved\": false,\n    \"salary\": 1200000\n  }\n}\n"
+                          "text": "[API Response] 200 <- http://localhost:9002/api/v1/auth/profile?includePrivate=true \nBody: {\n  \"success\": true,\n  \"data\": {\n    \"id\": \"d508038c-f667-42fb-88e3-e434a551b0fa\",\n    \"email\": \"qa+mql0mm1d404b5a@kanaku.test\",\n    \"name\": \"QA Mql0mm1d\",\n    \"firstName\": \"QA\",\n    \"lastName\": \"Mql0mm1d\",\n    \"fullName\": \"QA Mql0mm1d\",\n    \"gender\": \"male\",\n    \"country\": \"India\",\n    \"state\": \"\",\n    \"city\": \"\",\n    \"mobileNumber\": \"\",\n    \"avatarId\": \"new-1\",\n    \"avatarUrl\": \"/api/v1/avatars/dicebear/avataaars/svg?seed=Xavier\",\n    \"currency\": \"INR\",\n    \"language\": \"en\",\n    \"updatedAt\": \"2026-06-19T14:20:47.289Z\",\n    \"pinEnabled\": true,\n    \"dateOfBirth\": \"2000-01-01\",\n    \"jobType\": \"Full-time Employment\",\n    \"monthlyIncome\": 100000,\n    \"role\": \"user\",\n    \"isApproved\": false,\n    \"salary\": 1200000\n  }\n}\n"
                         },
                         {
                           "text": "[Browser Console] log: \" Starting sign out process...\n"
                         },
                         {
-                          "text": "[Browser Console] log: [onAuthStateChange Event] {event: SIGNED_OUT, userId: undefined, email: undefined}\n"
-                        },
-                        {
                           "text": "[Browser Console] log: Socket disconnected\n"
                         },
                         {
                           "text": "[Browser Console] log: Socket disconnected\n"
                         },
                         {
-                          "text": "[Browser Console] log: [AppContent Render] {user: null, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: true}\n"
+                          "text": "Successfully logged out and redirected to landing page.\n"
                         },
                         {
-                          "text": "[Browser Console] log: [AppContent Render] {user: null, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: true}\n"
-                        },
-                        {
-                          "text": "[Browser Console] log: [AppContent Render] {user: null, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: true}\n"
-                        },
-                        {
-                          "text": "[Browser Console] log: [AppContent Render] {user: null, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: true}\n"
-                        },
-                        {
-                          "text": "[Browser Console] log: [AppContent Render] {user: null, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: false}\n"
-                        },
-                        {
-                          "text": "[Browser Console] log: [AppContent Render] {user: null, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: false}\n"
+                          "text": "\n--- Step 7: Logging Back In via UI ---\n"
                         },
                         {
                           "text": "[Browser Console] log: ... Sign out completed successfully\n"
@@ -515,85 +377,19 @@
                           "text": "[Browser Console] info: %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold\n"
                         },
                         {
-                          "text": "[Browser Console] log: [onAuthStateChange Event] {event: INITIAL_SESSION, userId: undefined, email: undefined}\n"
-                        },
-                        {
-                          "text": "[Browser Console] log: [AppContent Render] {user: null, authLoading: false, onboardingCompleted: false, isNewUser: true, hasProfileData: false}\n"
-                        },
-                        {
-                          "text": "[Browser Console] log: [AppContent Render] {user: null, authLoading: false, onboardingCompleted: false, isNewUser: true, hasProfileData: false}\n"
-                        },
-                        {
-                          "text": "[Browser Console] log: [AppContent Render] {user: null, authLoading: false, onboardingCompleted: false, isNewUser: true, hasProfileData: false}\n"
-                        },
-                        {
-                          "text": "[Browser Console] log: [AppContent Render] {user: null, authLoading: false, onboardingCompleted: false, isNewUser: true, hasProfileData: false}\n"
-                        },
-                        {
-                          "text": "[Browser Console] log: [AppContent Render] {user: null, authLoading: false, onboardingCompleted: false, isNewUser: true, hasProfileData: false}\n"
-                        },
-                        {
-                          "text": "[Browser Console] log: [AppContent Render] {user: null, authLoading: false, onboardingCompleted: false, isNewUser: true, hasProfileData: false}\n"
-                        },
-                        {
-                          "text": "[Browser Console] log: [AppContent Render] {user: null, authLoading: false, onboardingCompleted: false, isNewUser: true, hasProfileData: false}\n"
-                        },
-                        {
-                          "text": "[Browser Console] log: [AppContent Render] {user: null, authLoading: false, onboardingCompleted: false, isNewUser: true, hasProfileData: false}\n"
-                        },
-                        {
-                          "text": "Successfully logged out and redirected to landing page.\n"
-                        },
-                        {
-                          "text": "\n--- Step 7: Logging Back In via UI ---\n"
-                        },
-                        {
-                          "text": "[Browser Console] log: [AppContent Render] {user: null, authLoading: false, onboardingCompleted: false, isNewUser: true, hasProfileData: false}\n"
-                        },
-                        {
-                          "text": "[Browser Console] log: [AppContent Render] {user: null, authLoading: false, onboardingCompleted: false, isNewUser: true, hasProfileData: false}\n"
-                        },
-                        {
                           "text": "Entering PIN for login validation...\n"
-                        },
-                        {
-                          "text": "[Browser Console] log: [onAuthStateChange Event] {event: SIGNED_IN, userId: 837c1b2e-8f9f-426c-956a-853b0fc59b96, email: qa+mqkvfh5e5c7038@kanaku.test}\n"
                         },
                         {
                           "text": "[API Request] GET -> http://localhost:9002/api/v1/auth/profile?includePrivate=true \n"
                         },
                         {
-                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: false, isNewUser: true, hasProfileData: false}\n"
-                        },
-                        {
-                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: false, isNewUser: true, hasProfileData: false}\n"
-                        },
-                        {
-                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: false}\n"
-                        },
-                        {
-                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: false}\n"
-                        },
-                        {
-                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: false}\n"
-                        },
-                        {
-                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: false}\n"
-                        },
-                        {
                           "text": "[API Request] GET -> http://localhost:9002/api/v1/pin/status \n"
                         },
                         {
-                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: false}\n"
+                          "text": "[API Response] 200 <- http://localhost:9002/api/v1/pin/status \nBody: {\n  \"success\": true,\n  \"message\": \"PIN is active\",\n  \"expiresAt\": \"2026-09-17T14:20:55.052Z\",\n  \"hasBackup\": false\n}\n"
                         },
                         {
-                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: false}\n"
-                        },
-                        {
-                          "text": "[API Response] 200 <- http://localhost:9002/api/v1/pin/status \nBody: {\n  \"success\": true,\n  \"message\": \"PIN is active\",\n  \"expiresAt\": \"2026-09-17T11:55:01.293Z\",\n  \"hasBackup\": false\n}\n"
-                        },
-                        {
-                          "text": "[API Response] 200 <- http://localhost:9002/api/v1/auth/profile?includePrivate=true \nBody: {\n  \"success\": true,\n  \"data\": {\n    \"id\": \"837c1b2e-8f9f-426c-956a-853b0fc59b96\",\n    \"email\": \"qa+mqkvfh5e5c7038@kanaku.test\",\n    \"name\": \"QA Mqkvfh5e\",\n    \"firstName\": \"QA\",\n    \"lastName\": \"Mqkvfh5e\",\n    \"fullName\": \"QA Mqkvfh5e\",\n    \"gender\": \"male\",\n    \"country\": \"India\",\n    \"state\": \"\",\n    \"city\": \"\",\n    \"mobileNumber\": \"\",\n    \"avatarId\": \"new-1\",\n    \"avatarUrl\": \"/api/v1/avatars/dicebear/avataaars/svg?seed=Xavier\",\n    \"currency\": \"INR\",\n    \"language\": \"en\",\n    \"updatedAt\": \"2026-06-19T11:54:56.381Z\",\n    \"pinEnabled\": true,\n    \"dateOfBirth\": \"2000-01-01\",\n    \"jobType\": \"Full-time Employment\",\n    \"monthlyIncome\": 100000,\n    \"role\": \"user\",\n    \"isApproved\": false,\n    \"salary\": 1200000\n  }\n}\n"
+                          "text": "[API Response] 200 <- http://localhost:9002/api/v1/auth/profile?includePrivate=true \nBody: {\n  \"success\": true,\n  \"data\": {\n    \"id\": \"d508038c-f667-42fb-88e3-e434a551b0fa\",\n    \"email\": \"qa+mql0mm1d404b5a@kanaku.test\",\n    \"name\": \"QA Mql0mm1d\",\n    \"firstName\": \"QA\",\n    \"lastName\": \"Mql0mm1d\",\n    \"fullName\": \"QA Mql0mm1d\",\n    \"gender\": \"male\",\n    \"country\": \"India\",\n    \"state\": \"\",\n    \"city\": \"\",\n    \"mobileNumber\": \"\",\n    \"avatarId\": \"new-1\",\n    \"avatarUrl\": \"/api/v1/avatars/dicebear/avataaars/svg?seed=Xavier\",\n    \"currency\": \"INR\",\n    \"language\": \"en\",\n    \"updatedAt\": \"2026-06-19T14:20:47.289Z\",\n    \"pinEnabled\": true,\n    \"dateOfBirth\": \"2000-01-01\",\n    \"jobType\": \"Full-time Employment\",\n    \"monthlyIncome\": 100000,\n    \"role\": \"user\",\n    \"isApproved\": false,\n    \"salary\": 1200000\n  }\n}\n"
                         },
                         {
                           "text": "[API Request] POST -> http://localhost:9002/api/v1/pin/verify \nPayload: {\n  \"pin\": \"023f5351b94db0bdcde8dd21da240ac75adc1fc82371c516543b25485cb900de\"\n}\n"
@@ -605,36 +401,24 @@
                           "text": "[Browser Console] log: Socket connected successfully\n"
                         },
                         {
-                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: true}\n"
-                        },
-                        {
-                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: true}\n"
-                        },
-                        {
-                          "text": "[API Response] 200 <- http://localhost:9002/api/v1/pin/verify \nBody: {\n  \"success\": true,\n  \"message\": \"PIN verified successfully\",\n  \"expiresAt\": \"2026-09-17T11:55:01.293Z\"\n}\n"
-                        },
-                        {
-                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: true}\n"
-                        },
-                        {
-                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: true}\n"
-                        },
-                        {
-                          "text": "Successfully completed login and PIN verification.\n"
-                        },
-                        {
-                          "text": "\n=== E2E Flow Completed Successfully! ===\n"
+                          "text": "[API Response] 200 <- http://localhost:9002/api/v1/pin/verify \nBody: {\n  \"success\": true,\n  \"message\": \"PIN verified successfully\",\n  \"expiresAt\": \"2026-09-17T14:20:55.052Z\"\n}\n"
                         },
                         {
                           "text": "[Browser Console] info: [BackendService] Deduplicating concurrent GET request: /ai/insights\n"
                         },
                         {
                           "text": "[Browser Console] info: [Sync] Skipping backend sync; all requested tables synced <5m ago.\n"
+                        },
+                        {
+                          "text": "Successfully completed login and PIN verification.\n"
+                        },
+                        {
+                          "text": "\n=== E2E Flow Completed Successfully! ===\n"
                         }
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-19T11:54:23.150Z",
+                      "startTime": "2026-06-19T14:19:53.845Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -660,8 +444,8 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-06-19T11:54:21.505Z",
-    "duration": 68355.08,
+    "startTime": "2026-06-19T14:19:52.387Z",
+    "duration": 103968.142,
     "expected": 1,
     "skipped": 0,
     "unexpected": 0,

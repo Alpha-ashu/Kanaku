@@ -2695,44 +2695,77 @@ export async function updateTransactionWithBackendSync(localId: number, updates:
     throw new Error('Transaction not found');
   }
 
-  if (isBackendFirstSyncMode() && existing.cloudId) {
-    const transferTargetAccount = updates.transferToAccountId != null
-      ? await db.accounts.get(Number(updates.transferToAccountId))
-      : null;
+  if (isBackendFirstSyncMode()) {
+    if (existing.cloudId) {
+      try {
+        const transferTargetAccount = updates.transferToAccountId != null
+          ? await db.accounts.get(Number(updates.transferToAccountId))
+          : null;
 
-    if (updates.transferToAccountId != null && !transferTargetAccount?.cloudId) {
-      throw new Error('Transfer destination account must be synced before updating a backend transaction');
+        if (updates.transferToAccountId != null && !transferTargetAccount?.cloudId) {
+          throw new Error('Transfer destination account must be synced before updating a backend transaction');
+        }
+
+        const response = await apiClient.put(`/transactions/${existing.cloudId}`, {
+          type: updates.type ?? existing.type,
+          amount: Number(updates.amount ?? existing.amount ?? 0),
+          category: updates.category ?? existing.category,
+          subcategory: updates.subcategory ?? existing.subcategory,
+          description: updates.description ?? existing.description,
+          merchant: updates.merchant ?? existing.merchant,
+          date: toIsoString(updates.date ?? existing.date) ?? new Date().toISOString(),
+          tags: Array.isArray(updates.tags) ? updates.tags : (existing.tags ?? []),
+          transferToAccountId: transferTargetAccount?.cloudId ?? undefined,
+          transferType: updates.transferType ?? existing.transferType,
+        }, {
+          showErrorToast: false,
+        });
+
+        const remote = response.data as any;
+        await db.transactions.update(localId, {
+          ...updates,
+          cloudId: remote?.id ?? existing.cloudId,
+          createdAt: toDate(remote?.createdAt) ?? existing.createdAt,
+          updatedAt: toDate(remote?.updatedAt) ?? new Date(),
+          syncStatus: 'synced' as const,
+          version: remote?.version ?? existing.version,
+        });
+        return;
+      } catch (backendError: any) {
+        const isUnavailable =
+          backendError?.status === 503 ||
+          backendError?.status === 0 ||
+          backendError?.code === 'DATABASE_UNAVAILABLE' ||
+          backendError?.code === 'NETWORK_ERROR' ||
+          backendError?.code === 'TIMEOUT_ERROR';
+
+        if (!isUnavailable) throw backendError;
+
+        console.warn('[updateTransactionWithBackendSync] Backend unavailable, updating locally and queuing for sync.');
+        markOptionalBackendUnavailable();
+        await db.transactions.update(localId, {
+          ...updates,
+          syncStatus: 'pending' as const,
+          updatedAt: new Date(),
+        });
+        queueRecordUpsertSync('transactions', localId, toNumber(existing.remoteId));
+        return;
+      }
+    } else {
+      console.info('[updateTransactionWithBackendSync] No cloudId found, updating locally and queuing for sync.');
+      await db.transactions.update(localId, {
+        ...updates,
+        syncStatus: 'pending' as const,
+        updatedAt: new Date(),
+      });
+      queueRecordUpsertSync('transactions', localId, toNumber(existing.remoteId));
+      return;
     }
-
-    const response = await apiClient.put(`/transactions/${existing.cloudId}`, {
-      type: updates.type ?? existing.type,
-      amount: Number(updates.amount ?? existing.amount ?? 0),
-      category: updates.category ?? existing.category,
-      subcategory: updates.subcategory ?? existing.subcategory,
-      description: updates.description ?? existing.description,
-      merchant: updates.merchant ?? existing.merchant,
-      date: toIsoString(updates.date ?? existing.date) ?? new Date().toISOString(),
-      tags: Array.isArray(updates.tags) ? updates.tags : (existing.tags ?? []),
-      transferToAccountId: transferTargetAccount?.cloudId ?? undefined,
-      transferType: updates.transferType ?? existing.transferType,
-    }, {
-      showErrorToast: false,
-    });
-
-    const remote = response.data as any;
-    await db.transactions.update(localId, {
-      ...updates,
-      cloudId: remote?.id ?? existing.cloudId,
-      createdAt: toDate(remote?.createdAt) ?? existing.createdAt,
-      updatedAt: toDate(remote?.updatedAt) ?? new Date(),
-      syncStatus: 'synced' as const,
-      version: remote?.version ?? existing.version,
-    });
-    return;
   }
 
   await db.transactions.update(localId, {
     ...updates,
+    syncStatus: 'pending' as const,
     updatedAt: new Date(),
   });
 
@@ -2748,11 +2781,15 @@ export async function deleteTransactionWithBackendSync(localId: number) {
   }
 
   if (isBackendFirstSyncMode() && existing.cloudId) {
-    await apiClient.delete(`/transactions/${existing.cloudId}`, {
-      showErrorToast: false,
-    });
-    await db.transactions.delete(localId);
-    return;
+    try {
+      await apiClient.delete(`/transactions/${existing.cloudId}`, {
+        showErrorToast: false,
+      });
+      await db.transactions.delete(localId);
+      return;
+    } catch (backendError: any) {
+      console.warn('[deleteTransactionWithBackendSync] Backend error or unavailable, performing local delete and queuing for sync:', backendError);
+    }
   }
 
   await db.transactions.delete(localId);
@@ -2931,6 +2968,12 @@ export async function updateAccountWithBackendSync(accountId: number, updates: a
         nextUpdates = { ...nextUpdates, syncStatus: 'pending' as const };
         queueRecordUpsertSync('accounts', accountId, toNumber(existing?.remoteId));
       }
+    } else {
+      console.info('[updateAccountWithBackendSync] No cloudId found, updating locally and queuing for sync.');
+      nextUpdates = { ...nextUpdates, syncStatus: 'pending' as const };
+      await db.accounts.update(accountId, nextUpdates);
+      queueRecordUpsertSync('accounts', accountId, toNumber(existing?.remoteId));
+      return;
     }
 
     await db.accounts.update(accountId, nextUpdates);
@@ -2939,10 +2982,11 @@ export async function updateAccountWithBackendSync(accountId: number, updates: a
 
   await db.accounts.update(accountId, {
     ...updates,
+    syncStatus: 'pending' as const,
     updatedAt: new Date(),
   });
 
-  queueRecordUpsertSync('accounts', accountId, toNumber(updates?.remoteId));
+  queueRecordUpsertSync('accounts', accountId, toNumber(updates?.remoteId ?? existing?.remoteId));
 }
 
 export async function saveGoalWithBackendSync(goal: any) {
@@ -3110,6 +3154,12 @@ export async function updateToDoListWithBackendSync(listId: number, updates: any
         nextUpdates = { ...nextUpdates, syncStatus: 'pending' as const };
         queueRecordUpsertSync('to_do_lists', listId);
       }
+    } else {
+      console.info('[updateToDoListWithBackendSync] No cloudId found, updating locally and queuing for sync.');
+      nextUpdates = { ...nextUpdates, syncStatus: 'pending' as const };
+      await db.toDoLists.update(listId, nextUpdates);
+      queueRecordUpsertSync('to_do_lists', listId);
+      return;
     }
 
     await db.toDoLists.update(listId, nextUpdates);
@@ -3118,6 +3168,7 @@ export async function updateToDoListWithBackendSync(listId: number, updates: any
 
   await db.toDoLists.update(listId, {
     ...updates,
+    syncStatus: 'pending' as const,
     updatedAt: new Date(),
   });
   queueRecordUpsertSync('to_do_lists', listId);
@@ -3273,6 +3324,12 @@ export async function updateToDoItemWithBackendSync(itemId: number, updates: any
         nextUpdates = { ...nextUpdates, syncStatus: 'pending' as const };
         queueRecordUpsertSync('to_do_items', itemId);
       }
+    } else {
+      console.info('[updateToDoItemWithBackendSync] No cloudId found, updating locally and queuing for sync.');
+      nextUpdates = { ...nextUpdates, syncStatus: 'pending' as const };
+      await db.toDoItems.update(itemId, nextUpdates);
+      queueRecordUpsertSync('to_do_items', itemId);
+      return;
     }
 
     await db.toDoItems.update(itemId, nextUpdates);
@@ -3281,6 +3338,7 @@ export async function updateToDoItemWithBackendSync(itemId: number, updates: any
 
   await db.toDoItems.update(itemId, {
     ...updates,
+    syncStatus: 'pending' as const,
     updatedAt: new Date(),
   });
   queueRecordUpsertSync('to_do_items', itemId);
@@ -3387,32 +3445,42 @@ export async function updateToDoListShareWithBackendSync(shareId: number, permis
     throw new Error('Share not found');
   }
 
-  if (isBackendFirstSyncMode() && existing.cloudId) {
-    try {
-      const response = await apiClient.put<any>(`/todos/shares/${existing.cloudId}`, {
-        permission,
-      }, {
-        showErrorToast: false,
-      });
+  if (isBackendFirstSyncMode()) {
+    if (existing.cloudId) {
+      try {
+        const response = await apiClient.put<any>(`/todos/shares/${existing.cloudId}`, {
+          permission,
+        }, {
+          showErrorToast: false,
+        });
 
-      const remote = response.data?.data || response.data;
-      await db.toDoListShares.update(shareId, {
-        permission: remote?.permission || permission,
-        syncStatus: 'synced' as const,
-      });
-      return;
-    } catch (backendError: any) {
-      const isUnavailable =
-        backendError?.status === 503 ||
-        backendError?.status === 0 ||
-        backendError?.code === 'DATABASE_UNAVAILABLE' ||
-        backendError?.code === 'NETWORK_ERROR' ||
-        backendError?.code === 'TIMEOUT_ERROR';
+        const remote = response.data?.data || response.data;
+        await db.toDoListShares.update(shareId, {
+          permission: remote?.permission || permission,
+          syncStatus: 'synced' as const,
+        });
+        return;
+      } catch (backendError: any) {
+        const isUnavailable =
+          backendError?.status === 503 ||
+          backendError?.status === 0 ||
+          backendError?.code === 'DATABASE_UNAVAILABLE' ||
+          backendError?.code === 'NETWORK_ERROR' ||
+          backendError?.code === 'TIMEOUT_ERROR';
 
-      if (!isUnavailable) throw backendError;
+        if (!isUnavailable) throw backendError;
 
-      console.warn('[updateToDoListShareWithBackendSync] Backend unavailable.');
-      markOptionalBackendUnavailable();
+        console.warn('[updateToDoListShareWithBackendSync] Backend unavailable.');
+        markOptionalBackendUnavailable();
+        await db.toDoListShares.update(shareId, {
+          permission,
+          syncStatus: 'pending' as const,
+        });
+        queueRecordUpsertSync('to_do_list_shares', shareId);
+        return;
+      }
+    } else {
+      console.info('[updateToDoListShareWithBackendSync] No cloudId found, updating locally and queuing for sync.');
       await db.toDoListShares.update(shareId, {
         permission,
         syncStatus: 'pending' as const,
@@ -3422,7 +3490,7 @@ export async function updateToDoListShareWithBackendSync(shareId: number, permis
     }
   }
 
-  await db.toDoListShares.update(shareId, { permission });
+  await db.toDoListShares.update(shareId, { permission, syncStatus: 'pending' as const });
   queueRecordUpsertSync('to_do_list_shares', shareId);
 }
 

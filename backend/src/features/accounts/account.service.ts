@@ -24,9 +24,7 @@ export class AccountService {
       throw AppError.badRequest('Missing required fields: name and type are mandatory.', 'MISSING_FIELDS');
     }
 
-    if (balance !== undefined && Number(balance) < 0) {
-      throw AppError.badRequest('Account balance cannot be negative', 'INVALID_BALANCE');
-    }
+    // Allow negative balances for credit card and overdraft accounts
 
     // Idempotency check
     if (clientRequestId) {
@@ -86,8 +84,8 @@ export class AccountService {
     // Validate balance: must be non-negative and finite
     if (data.balance !== undefined) {
       const numBalance = Number(data.balance);
-      if (!Number.isFinite(numBalance) || numBalance < 0) {
-        throw AppError.badRequest('Account balance must be a non-negative number', 'INVALID_BALANCE');
+      if (!Number.isFinite(numBalance)) {
+        throw AppError.badRequest('Account balance must be a finite number', 'INVALID_BALANCE');
       }
     }
 
