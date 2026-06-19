@@ -2913,11 +2913,12 @@ export async function saveAccountWithBackendSync(account: any) {
 export async function updateAccountWithBackendSync(accountId: number, updates: any) {
   initializeBackendSync();
 
+  const existing = await db.accounts.get(accountId);
+  if (!existing) {
+    throw new Error('Account not found');
+  }
+
   if (isBackendFirstSyncMode()) {
-    const existing = await db.accounts.get(accountId);
-    if (!existing) {
-      throw new Error('Account not found');
-    }
 
     let nextUpdates = {
       ...updates,
