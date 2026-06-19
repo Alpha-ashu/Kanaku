@@ -49,7 +49,7 @@ export const getSettings = async (req: AuthRequest, res: Response) => {
       });
     }
 
-    res.json(settings);
+    res.json({ success: true, data: settings });
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch settings' });
   }
@@ -91,7 +91,7 @@ export const updateSettings = async (req: AuthRequest, res: Response) => {
       });
     }
 
-    res.json(userSettings);
+    res.json({ success: true, data: userSettings });
   } catch (error) {
     console.error('Failed to update settings:', error);
     res.status(500).json({ error: 'Failed to update settings' });

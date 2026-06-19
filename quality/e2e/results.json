@@ -94,11 +94,11 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 99401,
+                      "duration": 72945,
                       "errors": [],
                       "stdout": [
                         {
-                          "text": "\n=== Starting Simultaneous Validation for User: qa+mql0mm1d404b5a@kanaku.test ===\n"
+                          "text": "\n=== Starting Simultaneous Validation for User: qa+mql423cibe68dd@kanaku.test ===\n"
                         },
                         {
                           "text": "\n--- Step 1: Navigating to Sign Up Form ---\n"
@@ -131,7 +131,7 @@
                           "text": "Filling registration details...\n"
                         },
                         {
-                          "text": "[API Request] POST -> http://localhost:9002/api/v1/auth/check-email \nPayload: {\n  \"email\": \"qa+mql0mm1d404b5a@kanaku.test\"\n}\n"
+                          "text": "[API Request] POST -> http://localhost:9002/api/v1/auth/check-email \nPayload: {\n  \"email\": \"qa+mql423cibe68dd@kanaku.test\"\n}\n"
                         },
                         {
                           "text": "[API Response] 200 <- http://localhost:9002/api/v1/auth/check-email \nBody: {\n  \"available\": true\n}\n"
@@ -155,16 +155,19 @@
                           "text": "Waiting for database User record to sync... Attempt 1/15\n"
                         },
                         {
+                          "text": "Waiting for database User record to sync... Attempt 2/15\n"
+                        },
+                        {
                           "text": "Database User query result: FOUND\n"
                         },
                         {
-                          "text": "Database User ID: d508038c-f667-42fb-88e3-e434a551b0fa\n"
+                          "text": "Database User ID: ecdaf403-27df-4494-8a7f-5a745fa3df25\n"
                         },
                         {
-                          "text": "Database User Email: qa+mql0mm1d404b5a@kanaku.test\n"
+                          "text": "Database User Email: qa+mql423cibe68dd@kanaku.test\n"
                         },
                         {
-                          "text": "Database User Name: QA Mql0mm1d\n"
+                          "text": "Database User Name: QA Mql423ci\n"
                         },
                         {
                           "text": "Database User Role: user\n"
@@ -185,7 +188,7 @@
                           "text": "[Browser Console] log: Socket connected successfully\n"
                         },
                         {
-                          "text": "[API Response] 200 <- http://localhost:9002/api/v1/auth/profile?includePrivate=true \nBody: {\n  \"success\": true,\n  \"data\": {\n    \"id\": \"d508038c-f667-42fb-88e3-e434a551b0fa\",\n    \"email\": \"qa+mql0mm1d404b5a@kanaku.test\",\n    \"name\": \"QA Mql0mm1d\",\n    \"firstName\": \"QA\",\n    \"lastName\": \"Mql0mm1d\",\n    \"fullName\": \"QA Mql0mm1d\",\n    \"gender\": \"\",\n    \"country\": \"\",\n    \"state\": \"\",\n    \"city\": \"\",\n    \"mobileNumber\": \"\",\n    \"avatarUrl\": null,\n    \"currency\": \"USD\",\n    \"language\": \"en\",\n    \"updatedAt\": \"2026-06-19T14:20:20.366Z\",\n    \"pinEnabled\": false,\n    \"dateOfBirth\": \"\",\n    \"jobType\": \"\",\n    \"monthlyIncome\": 0,\n    \"role\": \"user\",\n    \"isApproved\": false\n  }\n}\n"
+                          "text": "[API Response] 200 <- http://localhost:9002/api/v1/auth/profile?includePrivate=true \nBody: {\n  \"success\": true,\n  \"data\": {\n    \"id\": \"ecdaf403-27df-4494-8a7f-5a745fa3df25\",\n    \"email\": \"qa+mql423cibe68dd@kanaku.test\",\n    \"name\": \"QA Mql423ci\",\n    \"firstName\": \"QA\",\n    \"lastName\": \"Mql423ci\",\n    \"fullName\": \"QA Mql423ci\",\n    \"gender\": \"\",\n    \"country\": \"\",\n    \"state\": \"\",\n    \"city\": \"\",\n    \"mobileNumber\": \"\",\n    \"avatarUrl\": null,\n    \"currency\": \"USD\",\n    \"language\": \"en\",\n    \"updatedAt\": \"2026-06-19T15:56:12.449Z\",\n    \"pinEnabled\": false,\n    \"dateOfBirth\": \"\",\n    \"jobType\": \"\",\n    \"monthlyIncome\": 0,\n    \"role\": \"user\",\n    \"isApproved\": false\n  }\n}\n"
                         },
                         {
                           "text": "Selecting gender \"male\"...\n"
@@ -221,7 +224,7 @@
                           "text": "[Browser Console] log: Socket already connected\n"
                         },
                         {
-                          "text": "[API Request] PUT -> http://localhost:9002/api/v1/auth/profile \nPayload: {\n  \"firstName\": \"QA\",\n  \"lastName\": \"Mql0mm1d\",\n  \"gender\": \"male\",\n  \"country\": \"India\",\n  \"state\": \"\",\n  \"city\": \"\",\n  \"monthlyIncome\": 100000,\n  \"dateOfBirth\": \"2000-01-01\",\n  \"jobType\": \"Full-time Employment\",\n  \"avatarId\": \"new-1\",\n  \"avatarUrl\": \"/api/v1/avatars/dicebear/avataaars/svg?seed=Xavier\"\n}\n"
+                          "text": "[API Request] PUT -> http://localhost:9002/api/v1/auth/profile \nPayload: {\n  \"firstName\": \"QA\",\n  \"lastName\": \"Mql423ci\",\n  \"gender\": \"male\",\n  \"country\": \"India\",\n  \"state\": \"\",\n  \"city\": \"\",\n  \"monthlyIncome\": 100000,\n  \"dateOfBirth\": \"2000-01-01\",\n  \"jobType\": \"Full-time Employment\",\n  \"avatarId\": \"new-1\",\n  \"avatarUrl\": \"/api/v1/avatars/dicebear/avataaars/svg?seed=Xavier\"\n}\n"
                         },
                         {
                           "text": "Skipping slides...\n"
@@ -239,12 +242,6 @@
                           "text": "Entering new PIN...\n"
                         },
                         {
-                          "text": "[Browser Console] info: Supabase sync timed out after 12000ms. Retrying...\n"
-                        },
-                        {
-                          "text": "[API Request] PUT -> http://localhost:9002/api/v1/auth/profile \nPayload: {\n  \"firstName\": \"QA\",\n  \"lastName\": \"Mql0mm1d\",\n  \"phone\": null,\n  \"mobile\": null,\n  \"gender\": \"male\",\n  \"country\": \"India\",\n  \"state\": null,\n  \"city\": null,\n  \"dateOfBirth\": \"2000-01-01\",\n  \"jobType\": \"Full-time Employment\",\n  \"monthlyIncome\": 100000,\n  \"annualIncome\": 1200000,\n  \"avatarUrl\": \"/api/v1/avatars/dicebear/avataaars/svg?seed=Xavier\",\n  \"avatarId\": \"new-1\"\n}\n"
-                        },
-                        {
                           "text": "Waiting for Confirm PIN screen...\n"
                         },
                         {
@@ -254,22 +251,19 @@
                           "text": "[API Request] POST -> http://localhost:9002/api/v1/pin/create \nPayload: {\n  \"pin\": \"023f5351b94db0bdcde8dd21da240ac75adc1fc82371c516543b25485cb900de\"\n}\n"
                         },
                         {
-                          "text": "[API Response] 200 <- http://localhost:9002/api/v1/auth/profile \nBody: {\n  \"success\": true,\n  \"message\": \"Profile updated successfully\",\n  \"data\": {\n    \"id\": \"d508038c-f667-42fb-88e3-e434a551b0fa\",\n    \"email\": \"qa+mql0mm1d404b5a@kanaku.test\",\n    \"name\": \"QA Mql0mm1d\",\n    \"firstName\": \"QA\",\n    \"lastName\": \"Mql0mm1d\",\n    \"fullName\": \"QA Mql0mm1d\",\n    \"gender\": \"male\",\n    \"country\": \"India\",\n    \"state\": \"\",\n    \"city\": \"\",\n    \"mobileNumber\": \"\",\n    \"avatarId\": \"new-1\",\n    \"avatarUrl\": \"/api/v1/avatars/dicebear/avataaars/svg?seed=Xavier\",\n    \"currency\": \"INR\",\n    \"language\": \"en\",\n    \"updatedAt\": \"2026-06-19T14:20:43.994Z\",\n    \"pinEnabled\": false,\n    \"dateOfBirth\": \"2000-01-01\",\n    \"jobType\": \"Full-time Employment\",\n    \"monthlyIncome\": 100000,\n    \"role\": \"user\",\n    \"isApproved\": false,\n    \"salary\": 1200000\n  }\n}\n"
+                          "text": "[API Response] 200 <- http://localhost:9002/api/v1/auth/profile \nBody: {\n  \"success\": true,\n  \"message\": \"Profile updated successfully\",\n  \"data\": {\n    \"id\": \"ecdaf403-27df-4494-8a7f-5a745fa3df25\",\n    \"email\": \"qa+mql423cibe68dd@kanaku.test\",\n    \"name\": \"QA Mql423ci\",\n    \"firstName\": \"QA\",\n    \"lastName\": \"Mql423ci\",\n    \"fullName\": \"QA Mql423ci\",\n    \"gender\": \"male\",\n    \"country\": \"India\",\n    \"state\": \"\",\n    \"city\": \"\",\n    \"mobileNumber\": \"\",\n    \"avatarId\": \"new-1\",\n    \"avatarUrl\": \"/api/v1/avatars/dicebear/avataaars/svg?seed=Xavier\",\n    \"currency\": \"INR\",\n    \"language\": \"en\",\n    \"updatedAt\": \"2026-06-19T15:56:33.877Z\",\n    \"pinEnabled\": false,\n    \"dateOfBirth\": \"2000-01-01\",\n    \"jobType\": \"Full-time Employment\",\n    \"monthlyIncome\": 100000,\n    \"role\": \"user\",\n    \"isApproved\": false,\n    \"salary\": 1200000\n  }\n}\n"
                         },
                         {
-                          "text": "[API Response] 200 <- http://localhost:9002/api/v1/auth/profile \nBody: {\n  \"success\": true,\n  \"message\": \"Profile updated successfully\",\n  \"data\": {\n    \"id\": \"d508038c-f667-42fb-88e3-e434a551b0fa\",\n    \"email\": \"qa+mql0mm1d404b5a@kanaku.test\",\n    \"name\": \"QA Mql0mm1d\",\n    \"firstName\": \"QA\",\n    \"lastName\": \"Mql0mm1d\",\n    \"fullName\": \"QA Mql0mm1d\",\n    \"gender\": \"male\",\n    \"country\": \"India\",\n    \"state\": \"\",\n    \"city\": \"\",\n    \"mobileNumber\": \"\",\n    \"avatarId\": \"new-1\",\n    \"avatarUrl\": \"/api/v1/avatars/dicebear/avataaars/svg?seed=Xavier\",\n    \"currency\": \"INR\",\n    \"language\": \"en\",\n    \"updatedAt\": \"2026-06-19T14:20:47.289Z\",\n    \"pinEnabled\": false,\n    \"dateOfBirth\": \"2000-01-01\",\n    \"jobType\": \"Full-time Employment\",\n    \"monthlyIncome\": 100000,\n    \"role\": \"user\",\n    \"isApproved\": false,\n    \"salary\": 1200000\n  }\n}\n"
-                        },
-                        {
-                          "text": "[API Response] 200 <- http://localhost:9002/api/v1/pin/create \nBody: {\n  \"success\": true,\n  \"message\": \"PIN created successfully\",\n  \"expiresAt\": \"2026-09-17T14:20:55.052Z\"\n}\n"
+                          "text": "[API Response] 200 <- http://localhost:9002/api/v1/pin/create \nBody: {\n  \"success\": true,\n  \"message\": \"PIN created successfully\",\n  \"expiresAt\": \"2026-09-17T15:56:38.971Z\"\n}\n"
                         },
                         {
                           "text": "[API Request] POST -> http://localhost:9002/api/v1/pin/verify-security \nPayload: {}\n"
                         },
                         {
-                          "text": "[API Request] POST -> http://localhost:9002/api/v1/pin/key-backup \nPayload: {\n  \"backup\": \"023f5351b94db0bdcde8dd21da240ac75adc1fc82371c516543b25485cb900de|5c12cfb8f384ae7d713f1fc996675410\"\n}\n"
+                          "text": "[API Request] POST -> http://localhost:9002/api/v1/pin/key-backup \nPayload: {\n  \"backup\": \"023f5351b94db0bdcde8dd21da240ac75adc1fc82371c516543b25485cb900de|8e1539c7aab7961582374252eba3e68a\"\n}\n"
                         },
                         {
-                          "text": "[API Response] 200 <- http://localhost:9002/api/v1/pin/verify-security \nBody: {\n  \"success\": true,\n  \"securityToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkNTA4MDM4Yy1mNjY3LTQyZmItODhlMy1lNDM0YTU1MWIwZmEiLCJ0eXBlIjoic2VjdXJpdHlfdmVyaWZpY2F0aW9uIiwidGltZXN0YW1wIjoxNzgxODc4ODU5MTM5LCJpYXQiOjE3ODE4Nzg4NTksImV4cCI6MTc4MTg3OTE1OX0.f3AGeqYA6ku0uJMzBmpzut-YgFzztmb3Sg4m73RljqA\"\n}\n"
+                          "text": "[API Response] 200 <- http://localhost:9002/api/v1/pin/verify-security \nBody: {\n  \"success\": true,\n  \"securityToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlY2RhZjQwMy0yN2RmLTQ0OTQtOGE3Zi01YTc0NWZhM2RmMjUiLCJ0eXBlIjoic2VjdXJpdHlfdmVyaWZpY2F0aW9uIiwidGltZXN0YW1wIjoxNzgxODg0NjAzMTgxLCJpYXQiOjE3ODE4ODQ2MDMsImV4cCI6MTc4MTg4NDkwM30.FQInEhoxjGQoVRvOn5OEOENrXcs6lx08jD2UOxA4BEc\"\n}\n"
                         },
                         {
                           "text": "[Browser Console] error: Failed to load resource: the server responded with a status of 403 (Forbidden)\n"
@@ -278,13 +272,7 @@
                           "text": "[Browser Console] warning: PIN key backup refresh failed during setup: Additional security verification required\n"
                         },
                         {
-                          "text": "[API Response] 403 <- http://localhost:9002/api/v1/pin/key-backup \nBody: {\n  \"success\": false,\n  \"error\": \"Additional security verification required\",\n  \"code\": \"SECURITY_VERIFICATION_REQUIRED\",\n  \"requestId\": \"b6aa1ed9-2730-4d71-8e5a-58a50f3c352b\"\n}\n"
-                        },
-                        {
-                          "text": "Successfully reached Dashboard.\n"
-                        },
-                        {
-                          "text": "\n--- Step 5: Validating Profile and PIN in Postgres Database ---\n"
+                          "text": "[API Response] 403 <- http://localhost:9002/api/v1/pin/key-backup \nBody: {\n  \"success\": false,\n  \"error\": \"Additional security verification required\",\n  \"code\": \"SECURITY_VERIFICATION_REQUIRED\",\n  \"requestId\": \"a0418a15-c87a-4206-9ad1-0cbfc75bc7d7\"\n}\n"
                         },
                         {
                           "text": "[Browser Console] info: [BackendService] Deduplicating concurrent GET request: /ai/insights\n"
@@ -293,13 +281,19 @@
                           "text": "[Browser Console] info: [Sync] Skipping backend sync; all requested tables synced <5m ago.\n"
                         },
                         {
+                          "text": "Successfully reached Dashboard.\n"
+                        },
+                        {
+                          "text": "\n--- Step 5: Validating Profile and PIN in Postgres Database ---\n"
+                        },
+                        {
                           "text": "Database Profile query result: FOUND\n"
                         },
                         {
                           "text": "Database Profile First Name: QA\n"
                         },
                         {
-                          "text": "Database Profile Last Name: Mql0mm1d\n"
+                          "text": "Database Profile Last Name: Mql423ci\n"
                         },
                         {
                           "text": "Database Profile Phone: null\n"
@@ -311,7 +305,7 @@
                           "text": "Database PIN Active Status: true\n"
                         },
                         {
-                          "text": "Database PIN Hash: $2a$12$M1dXVAjKj4fbDv.snZupV.nLsiF5wM/zy4/JB8zG1oeBNejB65m5W\n"
+                          "text": "Database PIN Hash: $2a$12$FONqYVZyl7fmzgVoDKSRJuSfvcMT./8Wsx4d447VaYjfbKk5oxeNq\n"
                         },
                         {
                           "text": "\n--- Step 6: Logging Out via UI ---\n"
@@ -320,7 +314,7 @@
                           "text": "[Browser Console] log: [UserProfile] Component mounted, isLoading: true\n"
                         },
                         {
-                          "text": "[Browser Console] log: [UserProfile] fetchProfileData called, user: d508038c-f667-42fb-88e3-e434a551b0fa\n"
+                          "text": "[Browser Console] log: [UserProfile] fetchProfileData called, user: ecdaf403-27df-4494-8a7f-5a745fa3df25\n"
                         },
                         {
                           "text": "[Browser Console] log: [UserProfile] Fetching from backend API...\n"
@@ -329,7 +323,7 @@
                           "text": "[Browser Console] log: [UserProfile] Component mounted, isLoading: true\n"
                         },
                         {
-                          "text": "[Browser Console] log: [UserProfile] fetchProfileData called, user: d508038c-f667-42fb-88e3-e434a551b0fa\n"
+                          "text": "[Browser Console] log: [UserProfile] fetchProfileData called, user: ecdaf403-27df-4494-8a7f-5a745fa3df25\n"
                         },
                         {
                           "text": "[Browser Console] log: [UserProfile] Fetching from backend API...\n"
@@ -338,13 +332,13 @@
                           "text": "[API Request] GET -> http://localhost:9002/api/v1/auth/profile?includePrivate=true \n"
                         },
                         {
-                          "text": "[Browser Console] log: [UserProfile] Received data from backend: {id: d508038c-f667-42fb-88e3-e434a551b0fa, email: qa+mql0mm1d404b5a@kanaku.test, name: QA Mql0mm1d, firstName: QA, lastName: Mql0mm1d}\n"
+                          "text": "[Browser Console] log: [UserProfile] Received data from backend: {id: ecdaf403-27df-4494-8a7f-5a745fa3df25, email: qa+mql423cibe68dd@kanaku.test, name: QA Mql423ci, firstName: QA, lastName: Mql423ci}\n"
                         },
                         {
-                          "text": "[Browser Console] log: [UserProfile] Received data from backend: {id: d508038c-f667-42fb-88e3-e434a551b0fa, email: qa+mql0mm1d404b5a@kanaku.test, name: QA Mql0mm1d, firstName: QA, lastName: Mql0mm1d}\n"
+                          "text": "[Browser Console] log: [UserProfile] Received data from backend: {id: ecdaf403-27df-4494-8a7f-5a745fa3df25, email: qa+mql423cibe68dd@kanaku.test, name: QA Mql423ci, firstName: QA, lastName: Mql423ci}\n"
                         },
                         {
-                          "text": "[API Response] 200 <- http://localhost:9002/api/v1/auth/profile?includePrivate=true \nBody: {\n  \"success\": true,\n  \"data\": {\n    \"id\": \"d508038c-f667-42fb-88e3-e434a551b0fa\",\n    \"email\": \"qa+mql0mm1d404b5a@kanaku.test\",\n    \"name\": \"QA Mql0mm1d\",\n    \"firstName\": \"QA\",\n    \"lastName\": \"Mql0mm1d\",\n    \"fullName\": \"QA Mql0mm1d\",\n    \"gender\": \"male\",\n    \"country\": \"India\",\n    \"state\": \"\",\n    \"city\": \"\",\n    \"mobileNumber\": \"\",\n    \"avatarId\": \"new-1\",\n    \"avatarUrl\": \"/api/v1/avatars/dicebear/avataaars/svg?seed=Xavier\",\n    \"currency\": \"INR\",\n    \"language\": \"en\",\n    \"updatedAt\": \"2026-06-19T14:20:47.289Z\",\n    \"pinEnabled\": true,\n    \"dateOfBirth\": \"2000-01-01\",\n    \"jobType\": \"Full-time Employment\",\n    \"monthlyIncome\": 100000,\n    \"role\": \"user\",\n    \"isApproved\": false,\n    \"salary\": 1200000\n  }\n}\n"
+                          "text": "[API Response] 200 <- http://localhost:9002/api/v1/auth/profile?includePrivate=true \nBody: {\n  \"success\": true,\n  \"data\": {\n    \"id\": \"ecdaf403-27df-4494-8a7f-5a745fa3df25\",\n    \"email\": \"qa+mql423cibe68dd@kanaku.test\",\n    \"name\": \"QA Mql423ci\",\n    \"firstName\": \"QA\",\n    \"lastName\": \"Mql423ci\",\n    \"fullName\": \"QA Mql423ci\",\n    \"gender\": \"male\",\n    \"country\": \"India\",\n    \"state\": \"\",\n    \"city\": \"\",\n    \"mobileNumber\": \"\",\n    \"avatarId\": \"new-1\",\n    \"avatarUrl\": \"/api/v1/avatars/dicebear/avataaars/svg?seed=Xavier\",\n    \"currency\": \"INR\",\n    \"language\": \"en\",\n    \"updatedAt\": \"2026-06-19T15:56:33.877Z\",\n    \"pinEnabled\": true,\n    \"dateOfBirth\": \"2000-01-01\",\n    \"jobType\": \"Full-time Employment\",\n    \"monthlyIncome\": 100000,\n    \"role\": \"user\",\n    \"isApproved\": false,\n    \"salary\": 1200000\n  }\n}\n"
                         },
                         {
                           "text": "[Browser Console] log: \" Starting sign out process...\n"
@@ -354,12 +348,6 @@
                         },
                         {
                           "text": "[Browser Console] log: Socket disconnected\n"
-                        },
-                        {
-                          "text": "Successfully logged out and redirected to landing page.\n"
-                        },
-                        {
-                          "text": "\n--- Step 7: Logging Back In via UI ---\n"
                         },
                         {
                           "text": "[Browser Console] log: ... Sign out completed successfully\n"
@@ -377,6 +365,12 @@
                           "text": "[Browser Console] info: %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold\n"
                         },
                         {
+                          "text": "Successfully logged out and redirected to landing page.\n"
+                        },
+                        {
+                          "text": "\n--- Step 7: Logging Back In via UI ---\n"
+                        },
+                        {
                           "text": "Entering PIN for login validation...\n"
                         },
                         {
@@ -386,10 +380,10 @@
                           "text": "[API Request] GET -> http://localhost:9002/api/v1/pin/status \n"
                         },
                         {
-                          "text": "[API Response] 200 <- http://localhost:9002/api/v1/pin/status \nBody: {\n  \"success\": true,\n  \"message\": \"PIN is active\",\n  \"expiresAt\": \"2026-09-17T14:20:55.052Z\",\n  \"hasBackup\": false\n}\n"
+                          "text": "[API Response] 200 <- http://localhost:9002/api/v1/auth/profile?includePrivate=true \nBody: {\n  \"success\": true,\n  \"data\": {\n    \"id\": \"ecdaf403-27df-4494-8a7f-5a745fa3df25\",\n    \"email\": \"qa+mql423cibe68dd@kanaku.test\",\n    \"name\": \"QA Mql423ci\",\n    \"firstName\": \"QA\",\n    \"lastName\": \"Mql423ci\",\n    \"fullName\": \"QA Mql423ci\",\n    \"gender\": \"male\",\n    \"country\": \"India\",\n    \"state\": \"\",\n    \"city\": \"\",\n    \"mobileNumber\": \"\",\n    \"avatarId\": \"new-1\",\n    \"avatarUrl\": \"/api/v1/avatars/dicebear/avataaars/svg?seed=Xavier\",\n    \"currency\": \"INR\",\n    \"language\": \"en\",\n    \"updatedAt\": \"2026-06-19T15:56:33.877Z\",\n    \"pinEnabled\": true,\n    \"dateOfBirth\": \"2000-01-01\",\n    \"jobType\": \"Full-time Employment\",\n    \"monthlyIncome\": 100000,\n    \"role\": \"user\",\n    \"isApproved\": false,\n    \"salary\": 1200000\n  }\n}\n"
                         },
                         {
-                          "text": "[API Response] 200 <- http://localhost:9002/api/v1/auth/profile?includePrivate=true \nBody: {\n  \"success\": true,\n  \"data\": {\n    \"id\": \"d508038c-f667-42fb-88e3-e434a551b0fa\",\n    \"email\": \"qa+mql0mm1d404b5a@kanaku.test\",\n    \"name\": \"QA Mql0mm1d\",\n    \"firstName\": \"QA\",\n    \"lastName\": \"Mql0mm1d\",\n    \"fullName\": \"QA Mql0mm1d\",\n    \"gender\": \"male\",\n    \"country\": \"India\",\n    \"state\": \"\",\n    \"city\": \"\",\n    \"mobileNumber\": \"\",\n    \"avatarId\": \"new-1\",\n    \"avatarUrl\": \"/api/v1/avatars/dicebear/avataaars/svg?seed=Xavier\",\n    \"currency\": \"INR\",\n    \"language\": \"en\",\n    \"updatedAt\": \"2026-06-19T14:20:47.289Z\",\n    \"pinEnabled\": true,\n    \"dateOfBirth\": \"2000-01-01\",\n    \"jobType\": \"Full-time Employment\",\n    \"monthlyIncome\": 100000,\n    \"role\": \"user\",\n    \"isApproved\": false,\n    \"salary\": 1200000\n  }\n}\n"
+                          "text": "[API Response] 200 <- http://localhost:9002/api/v1/pin/status \nBody: {\n  \"success\": true,\n  \"message\": \"PIN is active\",\n  \"expiresAt\": \"2026-09-17T15:56:38.971Z\",\n  \"hasBackup\": false\n}\n"
                         },
                         {
                           "text": "[API Request] POST -> http://localhost:9002/api/v1/pin/verify \nPayload: {\n  \"pin\": \"023f5351b94db0bdcde8dd21da240ac75adc1fc82371c516543b25485cb900de\"\n}\n"
@@ -401,7 +395,7 @@
                           "text": "[Browser Console] log: Socket connected successfully\n"
                         },
                         {
-                          "text": "[API Response] 200 <- http://localhost:9002/api/v1/pin/verify \nBody: {\n  \"success\": true,\n  \"message\": \"PIN verified successfully\",\n  \"expiresAt\": \"2026-09-17T14:20:55.052Z\"\n}\n"
+                          "text": "[API Response] 200 <- http://localhost:9002/api/v1/pin/verify \nBody: {\n  \"success\": true,\n  \"message\": \"PIN verified successfully\",\n  \"expiresAt\": \"2026-09-17T15:56:38.971Z\"\n}\n"
                         },
                         {
                           "text": "[Browser Console] info: [BackendService] Deduplicating concurrent GET request: /ai/insights\n"
@@ -418,7 +412,7 @@
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-19T14:19:53.845Z",
+                      "startTime": "2026-06-19T15:55:56.126Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -444,8 +438,8 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-06-19T14:19:52.387Z",
-    "duration": 103968.142,
+    "startTime": "2026-06-19T15:55:55.389Z",
+    "duration": 75210.57400000001,
     "expected": 1,
     "skipped": 0,
     "unexpected": 0,

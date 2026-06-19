@@ -98,8 +98,8 @@ describe('LOANS MODULE', () => {
       if (res.status === 201) {
         expect(res.body.success).toBe(true);
         expect(res.body.data).toHaveProperty('id');
-        expect(res.body.data.principalAmount).toBe(50000);
-        expect(res.body.data.outstandingBalance).toBe(50000);
+        expect(Number(res.body.data.principalAmount)).toBe(50000);
+        expect(Number(res.body.data.outstandingBalance)).toBe(50000);
         expect(res.body.data.status).toBe('active');
       }
     });

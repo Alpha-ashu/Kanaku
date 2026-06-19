@@ -75,7 +75,7 @@ export const exportUserData = async (req: AuthRequest, res: Response, next: Next
       prisma.goal.findMany({ where: { userId }, take: 1000 }),
       prisma.goalContribution.findMany({ where: { userId }, take: 50_000 }),
       prisma.loan.findMany({ where: { userId }, take: 1000 }),
-      prisma.loanPayment.findMany({ where: { userId }, take: 50_000 }),
+      prisma.loanPayment.findMany({ where: { loan: { userId } }, take: 50_000 }),
       prisma.investment.findMany({ where: { userId }, take: 5000 }),
       prisma.todo.findMany({ where: { userId }, take: 5000 }),
       prisma.friend.findMany({ where: { userId }, take: 5000 }),

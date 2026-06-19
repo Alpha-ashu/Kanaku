@@ -687,7 +687,7 @@ class BackendService {
   // ===== SETTINGS =====
   async getSettings() {
     const response = await this.api.get('/settings');
-    return response.data;
+    return response.data?.data;
   }
 
   async updateSettings(settings: {
@@ -698,7 +698,7 @@ class BackendService {
     settings?: Record<string, any>;
   }) {
     const response = await this.api.put('/settings', settings);
-    return response.data;
+    return response.data?.data;
   }
 
   // ===== GLOBAL FEATURE FLAGS =====
