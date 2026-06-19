@@ -82,8 +82,8 @@ jobs:
           if [ -n "$KEYSTORE_BASE64" ]; then
             echo "$KEYSTORE_BASE64" | base64 -d > android/finance-life-release.keystore
           else
-            echo "WARNING: ANDROID_KEYSTORE_BASE64 not set, creating placeholder"
-            touch android/finance-life-release.keystore
+            echo "WARNING: ANDROID_KEYSTORE_BASE64 not set, generating self-signed keystore for dummy release build"
+            keytool -genkey -v -keystore android/finance-life-release.keystore -alias finance-life -keyalg RSA -keysize 2048 -validity 10000 -storepass dummypass -keypass dummypass -dname "CN=Dummy, O=Dummy, C=US"
           fi
 
       - name: Build APK (Debug)
@@ -103,8 +103,11 @@ jobs:
           KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
           cd android
-          if [ -f "$KEYSTORE_PATH" ] && [ -n "$KEYSTORE_PASSWORD" ]; then
+          if [ -n "$KEYSTORE_PASSWORD" ]; then
                printf 'storeFile=../%s\nstorePassword=%s\nkeyAlias=%s\nkeyPassword=%s\n' "$KEYSTORE_PATH" "$KEYSTORE_PASSWORD" "$KEY_ALIAS" "$KEY_PASSWORD" > key.properties
+          else
+               echo "WARNING: ANDROID_KEYSTORE_PASSWORD not set, creating dummy key.properties for self-signed build"
+               printf 'storeFile=../%s\nstorePassword=dummypass\nkeyAlias=finance-life\nkeyPassword=dummypass\n' "$KEYSTORE_PATH" > key.properties
           fi
           ./gradlew bundleRelease --no-daemon
           rm -f key.properties
