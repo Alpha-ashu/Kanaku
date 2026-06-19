@@ -13,7 +13,7 @@ Numbered folders preserve reading order. All docs are Markdown for easy editing 
 | 03 | `03_UI_UX_Design/` | **Screen_Component_Map.md** (every screen→component→service→API), Wireframes, Sequence_Diagrams |
 | 04 | `04_App_Flow/` | **App_Flow.md** (end-to-end), **Module_Sequence_Diagrams.md** (per-module Mermaid), User_Journey, Sequence_Diagrams, Flowcharts |
 | 05 | `05_Backend_Data_Schema/` | **Database_Schema.md** (48 models), **Tables_Definition.md** (Dexie v15), ER_Diagram, API_Data_Contracts |
-| 06 | `06_Implementation_Plan/` | Roadmap, Sprint_Plan, Task_Breakdown, Prompts_For_AI |
+| 06 | `06_Implementation_Plan/` | Roadmap, Sprint_Plan, Task_Breakdown, Prompts_For_AI, **Sprint_2026-07_Hardening.md** (security/reliability follow-ups) |
 
 ## Traceability
 - Feature IDs in `Feature_List.csv` (e.g. `F-TXN-02`) are referenced from `Detailed_Feature_Specifications.md` and `API_Specifications.md`.
