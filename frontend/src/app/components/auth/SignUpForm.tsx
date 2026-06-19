@@ -228,7 +228,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
     if (!isFirstNameValid) newErrors.firstName = 'Required';
     if (!isLastNameValid) newErrors.lastName = 'Required';
     if (!isEmailFormatValid) newErrors.email = 'Invalid email address';
-    else if (emailTaken === true) newErrors.email = 'This email is already registered';
+    else if (emailTaken === true) newErrors.email = 'This email can’t be used for a new account';
     if (!isMobileValid) newErrors.mobile = 'Invalid mobile number';
     if (!isPasswordValid) newErrors.password = 'Password does not meet requirements';
     if (!isConfirmPasswordValid) newErrors.confirmPassword = 'Passwords do not match';
@@ -455,7 +455,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
           </div>
         )}
         {touched.email && emailTaken === true && (
-          <p className="mt-1 text-xs text-red-500 pl-1">This email is already registered. <button type="button" className="underline font-semibold" onClick={onSwitchToSignIn}>Sign in instead</button></p>
+          <p className="mt-1 text-xs text-red-500 pl-1">This email can&apos;t be used for a new account. <button type="button" className="underline font-semibold" onClick={onSwitchToSignIn}>Sign in instead</button></p>
         )}
         {touched.email && !isEmailFormatValid && emailTaken !== true && <p className="mt-1 text-xs text-red-500 pl-1">Please enter a valid email address</p>}
       </div>

@@ -95,44 +95,53 @@ enumeration info" requirement while still guiding a real user to sign in.
 
 | Test | Type | Status |
 |---|---|---|
-| `frontend/src/lib/supabase-helpers.test.ts` (5 cases) | Vitest unit | ✅ 5 passed |
+| `frontend/src/lib/supabase-helpers.test.ts` (8 cases) | Vitest unit | ✅ 8 passed |
 | `frontend` `tsc --noEmit` | Type-check | ✅ passed |
+| `backend` `tsc --noEmit` | Type-check | ✅ auth.controller clean (one pre-existing, unrelated error in settings.gdpr.controller.ts) |
 | `quality/e2e/auth-duplicate-registration.spec.ts` | UI E2E (Playwright) | ⏳ recorded; needs live stack (`npm run dev`) |
 | `quality/e2e/simultaneous-validation.spec.ts` | UI+API+DB E2E | ⏳ needs live stack; logs every `/auth` + `/pin` request/response |
 
-New unit test asserts: new user resolves; obfuscated duplicate throws
-`EMAIL_EXISTS`; explicit 422 duplicate throws `EMAIL_EXISTS`; message is generic
-(no "already registered/exists"); unrelated errors re-throw unchanged.
+Unit tests assert: new user resolves; obfuscated duplicate throws `EMAIL_EXISTS`;
+explicit 422 duplicate throws `EMAIL_EXISTS`; message is generic (no "already
+registered/exists"); unrelated errors re-throw unchanged; the Supabase `session`
+is passed through (so callers can detect confirmation-required); and
+`resendSignupConfirmation` calls Supabase resend + propagates errors.
 
 ---
 
-## 5. Additional findings (logged for decision — NOT auto-changed)
+## 5. Additional findings & their resolution
 
-These are real but are design trade-offs or carry regression risk, so they are
-recorded rather than silently changed:
+Decisions taken with the user 2026-06-19: keep email confirmation ON + add a
+confirmation screen (F4); harden check-email (F1/F2); defer F3.
 
-- **F1 — `check-email` is an enumeration oracle (low/med).** `POST
-  /api/v1/auth/check-email` returns `{ available: false }` for existing emails,
-  and `SignUpForm` shows "This email is already registered" inline. This directly
-  contradicts the "no enumeration" goal but is also a real UX affordance.
-  *Recommendation:* gate behind rate-limiting + captcha, or drop the inline
-  "already registered" wording in favour of the generic message.
-- **F2 — `check-email` queries `prisma.user`, not Supabase Auth (med).** A
-  Supabase-only account (created but profile not yet synced) has no `prisma.user`
-  row, so `check-email` can answer `available: true` for an email that actually
-  exists in Supabase Auth. The signup guard (this fix) is the reliable gate; the
-  inline check is best-effort only.
-- **F3 — duplicate **phone** during onboarding is swallowed (med).**
-  `AuthFlow.handleSalarySetupComplete` calls `api.auth.updateProfile` in a
-  try/catch that only `warn`s, so a `PHONE_EXISTS` 409 does not surface to the
-  user and onboarding proceeds. *Recommendation:* surface the generic message and
-  let the user correct the phone.
-- **F4 — Supabase email-confirmation vs. login (med/high).** If confirmations are
-  ON, a brand-new signup has `session: null` until the email is confirmed, and
-  `signInWithPassword` fails with "Email not confirmed" — a plausible cause of the
-  "can't log in" symptom. *Decision needed:* either turn confirmations OFF for
-  this product, or add an explicit "check your email to confirm" screen instead
-  of routing straight to onboarding.
+- **F1 — `check-email` enumeration wording — ADDRESSED.** The inline
+  `SignUpForm` message no longer says "This email is already registered"; it now
+  reads "This email can't be used for a new account" (generic, keeps the
+  "Sign in instead" affordance). *Still recommended:* rate-limit + captcha on the
+  endpoint for full enumeration hardening.
+- **F2 — `check-email` only queried `prisma.user` — ADDRESSED.**
+  `checkEmailAvailability` now also checks `public.profiles` (by email), so
+  Supabase-synced accounts are detected. Residual gap (unconfirmed/unsynced
+  Supabase-only accounts) is documented in code; the signup duplicate guard
+  remains the authoritative gate.
+- **F3 — duplicate **phone** during onboarding is swallowed — DEFERRED.**
+  `AuthFlow.handleSalarySetupComplete` still only `warn`s on `PHONE_EXISTS`.
+  Left for a later pass per the user's decision. *Recommendation when picked up:*
+  surface the generic message and let the user correct the phone.
+- **F4 — Supabase email-confirmation vs. login — ADDRESSED (confirmations kept ON).**
+  - Signup: when Supabase returns no `session` (confirmation required), the flow
+    now shows a dedicated **"Confirm your email"** screen (`AuthStep
+    'email-confirm'`) with a **Resend confirmation email** button
+    (`resendSignupConfirmation`) and **Back to Sign In** — instead of advancing
+    into onboarding with no session.
+  - Login: a Supabase `email_not_confirmed` error is detected *before* the
+    generic 400→invalid-credentials mapping and routes the user to the same
+    confirmation screen with a clear message (no more misleading "incorrect
+    password"). This was the likely cause of the "can't log in" symptom.
+  - Operational note: the Supabase project must keep "Confirm email" ON and have
+    a working email sender for confirmation links to arrive — at audit time the
+    configured sender was reportedly still unverified, which would block
+    confirmation emails from being delivered.
 
 ---
 

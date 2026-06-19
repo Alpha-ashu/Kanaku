@@ -124,6 +124,21 @@ export async function signUp(email: string, password: string, fullName?: string)
   return data;
 }
 
+/**
+ * Re-send the signup confirmation email. Used by the "Confirm your email"
+ * screen so a user who didn't receive (or lost) the original link can request
+ * another without re-registering.
+ */
+export async function resendSignupConfirmation(email: string) {
+  const appUrl = import.meta.env.VITE_APP_URL || window.location.origin;
+  const { error } = await supabase.auth.resend({
+    type: 'signup',
+    email,
+    options: { emailRedirectTo: appUrl },
+  });
+  if (error) throw error;
+}
+
 export async function signIn(email: string, password: string) {
   const { data, error } = await supabase.auth.signInWithPassword({
     email,

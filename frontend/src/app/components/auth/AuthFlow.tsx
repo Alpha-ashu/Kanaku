@@ -15,7 +15,8 @@ import { api, TokenManager } from '@/lib/api';
 import { PublicNavbar } from '@/app/components/ui/PublicNavbar';
 import { enableGuestMode, isGuestMode, disableGuestMode, migrateGuestDataToUser, migrateGuestLocalStorage } from '@/lib/guestMode';
 import { pinService, isPinMissing } from '@/services/pinService';
-import { signIn as supabaseSignIn, signUp as supabaseSignUp, DUPLICATE_ACCOUNT_MESSAGE } from '@/lib/supabase-helpers';
+import { signIn as supabaseSignIn, signUp as supabaseSignUp, resendSignupConfirmation, DUPLICATE_ACCOUNT_MESSAGE } from '@/lib/supabase-helpers';
+import { MailCheck } from 'lucide-react';
 
 // Auth source of truth for the login UI. 'custom' (default) keeps the backend-issued
 // JWT flow; 'supabase' (Option A) authenticates via Supabase Auth so the API client's
@@ -43,6 +44,7 @@ type AuthStep =
  | 'welcome'
  | 'signin'
  | 'signup'
+ | 'email-confirm'
  | 'otp-verify'
  | 'profile-setup'
  | 'salary-setup'
@@ -88,6 +90,7 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
  const [isLoading, setIsLoading] = useState(false);
  const [showGuestCaution, setShowGuestCaution] = useState(false);
  const [psDob, setPsDob] = useState('');
+ const [resendLoading, setResendLoading] = useState(false);
 
  useEffect(() => {
    if (userProfile?.dateOfBirth) {
@@ -201,6 +204,21 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
         error?.name === 'AuthRetryableFetchError' ||
         error?.message?.includes('aborted') ||
         error?.message?.includes('fetch');
+      // Supabase returns code 'email_not_confirmed' (HTTP 400) when the account
+      // exists but the confirmation link hasn't been clicked. Detect this BEFORE
+      // the generic 400 → invalid-credentials mapping, and route the user to the
+      // confirmation screen (with a resend option) instead of a misleading
+      // "incorrect password" message.
+      const isEmailNotConfirmed =
+        error?.code === 'email_not_confirmed' ||
+        error?.message?.toLowerCase().includes('not confirmed');
+      if (isEmailNotConfirmed) {
+        setEmail(credentials.email);
+        setIsNewUser(true);
+        setStep('email-confirm');
+        toast.error('Please confirm your email before signing in. We can resend the link below.');
+        return;
+      }
       const isInvalidCredentials =
         error?.message?.toLowerCase().includes('invalid login credentials') ||
         error?.status === 400 ||
@@ -220,7 +238,7 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
       // Option A: register via Supabase Auth.
       if (AUTH_CANONICAL === 'supabase') {
         const fullName = `${data.firstName} ${data.lastName}`.trim();
-        const { user } = await supabaseSignUp(data.email, data.password, fullName);
+        const { user, session } = await supabaseSignUp(data.email, data.password, fullName);
         setEmail(data.email);
         setUserProfile({
           firstName: data.firstName,
@@ -233,6 +251,22 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
           monthlyIncome: '',
         });
         setIsNewUser(true);
+
+        // Email confirmation ON → Supabase returns no session until the user
+        // clicks the confirmation link. We must NOT advance into onboarding (the
+        // user isn't authenticated yet); show the "confirm your email" screen and
+        // halt the SignUpForm so it never shows its success screen.
+        if (!session) {
+          localStorage.removeItem('auth_flow_step');
+          localStorage.removeItem('pending_auth_email');
+          localStorage.removeItem('onboarding_completed');
+          setStep('email-confirm');
+          toast.success('Account created! Please confirm your email to continue.');
+          const halt = new Error('EMAIL_CONFIRMATION_REQUIRED') as Error & { code?: string };
+          halt.code = 'EMAIL_CONFIRMATION_REQUIRED';
+          throw halt;
+        }
+
         if (user) await runGuestMigrationIfNeeded(user.id);
         localStorage.removeItem('auth_flow_step');
         localStorage.removeItem('pending_auth_email');
@@ -287,6 +321,12 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
       window.dispatchEvent(new CustomEvent('KANAKU_AUTH_CHANGE'));
       toast.success("Account created! Let's set up your profile.");
     } catch (error: any) {
+      // Not an error — signup succeeded but needs email confirmation. The step
+      // is already switched and a success toast shown; re-throw only to halt the
+      // SignUpForm (so it doesn't render its own success screen).
+      if (error?.code === 'EMAIL_CONFIRMATION_REQUIRED') {
+        throw error;
+      }
       const isNetworkError = error?.name === 'AuthRetryableFetchError' || error?.message?.includes('aborted');
       const isServerError = error?.status === 500 || error?.message?.toLowerCase().includes('internal server error');
       const isDuplicateUser =
@@ -491,6 +531,21 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
  const deviceId = `device_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
  localStorage.setItem('device_id', deviceId);
  return deviceId;
+ };
+
+ const handleResendConfirmation = async () => {
+ if (!email || resendLoading) return;
+ setResendLoading(true);
+ try {
+ await resendSignupConfirmation(email);
+ toast.success('Confirmation email sent. Please check your inbox (and spam).');
+ } catch (error: any) {
+ // Generic, non-enumerable: never reveal whether the address exists/was already confirmed.
+ internalLog.warn('handleResendConfirmation', error);
+ toast.success('If that email needs confirmation, we just sent a new link.');
+ } finally {
+ setResendLoading(false);
+ }
  };
 
 
@@ -918,6 +973,42 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
  </div>
  );
 
+ // Confirm-your-email Screen (shown when Supabase requires email confirmation)
+ const renderEmailConfirm = () => (
+ <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50/50 flex items-center justify-center p-4">
+ <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8 text-center">
+ <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600">
+ <MailCheck size={32} />
+ </div>
+ <h2 className="text-2xl font-bold text-gray-900 mb-2">Confirm your email</h2>
+ <p className="text-sm text-gray-600 leading-relaxed mb-1">
+ We&apos;ve sent a confirmation link to
+ </p>
+ <p className="text-sm font-semibold text-gray-900 mb-4 break-all">{email}</p>
+ <p className="text-sm text-gray-500 leading-relaxed mb-6">
+ Click the link in that email to activate your account, then sign in. The link
+ may take a minute to arrive — remember to check your spam folder.
+ </p>
+
+ <button
+ type="button"
+ onClick={handleResendConfirmation}
+ disabled={resendLoading}
+ className="w-full py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 disabled:opacity-50 transition-colors mb-3"
+ >
+ {resendLoading ? 'Sending…' : 'Resend confirmation email'}
+ </button>
+ <button
+ type="button"
+ onClick={() => setStep('signin')}
+ className="w-full py-3 bg-white border border-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-colors"
+ >
+ Back to Sign In
+ </button>
+ </div>
+ </div>
+ );
+
  // Completion Screen
  const renderComplete = () => (
  <div className="min-h-screen bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center p-4">
@@ -1138,6 +1229,8 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
  onBack={() => setStep('signup')}
  />
  );
+ case 'email-confirm':
+ return renderEmailConfirm();
  case 'profile-setup':
  return renderProfileSetup();
  case 'salary-setup':

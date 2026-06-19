@@ -16,10 +16,13 @@
  */
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { signUpMock } = vi.hoisted(() => ({ signUpMock: vi.fn() }));
+const { signUpMock, resendMock } = vi.hoisted(() => ({
+  signUpMock: vi.fn(),
+  resendMock: vi.fn(),
+}));
 
 vi.mock('@/utils/supabase/client', () => ({
-  default: { auth: { signUp: signUpMock } },
+  default: { auth: { signUp: signUpMock, resend: resendMock } },
 }));
 
 // supabase-helpers imports apiClient from '@/lib/api' for the data helpers we
@@ -28,10 +31,11 @@ vi.mock('@/lib/api', () => ({
   apiClient: { get: vi.fn(), post: vi.fn(), put: vi.fn(), delete: vi.fn() },
 }));
 
-import { signUp, DUPLICATE_ACCOUNT_MESSAGE } from './supabase-helpers';
+import { signUp, resendSignupConfirmation, DUPLICATE_ACCOUNT_MESSAGE } from './supabase-helpers';
 
 beforeEach(() => {
   signUpMock.mockReset();
+  resendMock.mockReset();
 });
 
 describe('signUp duplicate-email guard', () => {
@@ -89,6 +93,33 @@ describe('signUp duplicate-email guard', () => {
 
     await expect(signUp('x@example.com', 'Str0ng!Pass')).rejects.toMatchObject({
       message: 'network down',
+    });
+  });
+
+  it('passes through the session so callers can detect confirmation-required', async () => {
+    // Confirmations ON for a NEW user → no error, real identity, session: null.
+    const data = { user: { id: 'u2', identities: [{ id: 'idp1' }] }, session: null };
+    signUpMock.mockResolvedValue({ data, error: null });
+
+    const result = await signUp('new@example.com', 'Str0ng!Pass');
+    expect(result.session).toBeNull();
+    expect(result.user.identities).toHaveLength(1);
+  });
+});
+
+describe('resendSignupConfirmation', () => {
+  it('asks Supabase to resend the signup confirmation email', async () => {
+    resendMock.mockResolvedValue({ error: null });
+    await expect(resendSignupConfirmation('user@example.com')).resolves.toBeUndefined();
+    expect(resendMock).toHaveBeenCalledWith(
+      expect.objectContaining({ type: 'signup', email: 'user@example.com' }),
+    );
+  });
+
+  it('propagates a resend error to the caller', async () => {
+    resendMock.mockResolvedValue({ error: { message: 'rate limited' } });
+    await expect(resendSignupConfirmation('user@example.com')).rejects.toMatchObject({
+      message: 'rate limited',
     });
   });
 });
