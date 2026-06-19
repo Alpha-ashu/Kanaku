@@ -103,7 +103,7 @@ jobs:
           KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
           cd android
-          if [ -f "../$KEYSTORE_PATH" ] && [ -n "$KEYSTORE_PASSWORD" ]; then
+          if [ -f "$KEYSTORE_PATH" ] && [ -n "$KEYSTORE_PASSWORD" ]; then
                printf 'storeFile=../%s\nstorePassword=%s\nkeyAlias=%s\nkeyPassword=%s\n' "$KEYSTORE_PATH" "$KEYSTORE_PASSWORD" "$KEY_ALIAS" "$KEY_PASSWORD" > key.properties
           fi
           ./gradlew bundleRelease --no-daemon
