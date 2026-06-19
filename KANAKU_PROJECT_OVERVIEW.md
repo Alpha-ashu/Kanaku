@@ -53,6 +53,61 @@ Kanaku/
 
 ---
 
+## A1. Recent Hardening & Fixes (2026-06-19)
+
+> Logged here because these changes alter request validation, monetary
+> persistence, AI behaviour, and client request volume. Treat as authoritative.
+
+### 1. Onboarding `PUT /api/v1/auth/profile` 500 → numeric overflow fixed
+- **Root cause:** `User.salary` is `Decimal(12, 2)` (max ≈ 9,999,999,999.99). An
+  oversized onboarding salary produced an annual value of ~100 billion (11
+  digits) → Prisma overflow → 500, which blocked profile persistence (and made
+  saved details appear "not reflected" after login).
+- **Fixes:**
+  - New `backend/src/features/auth/auth.validation.ts` (`updateProfileSchema`)
+    wired via `validateBody` on `PUT /auth/profile`. Bounds `monthlyIncome` ≤
+    `MAX_MONTHLY_INCOME` and `salary` ≤ `MAX_ANNUAL_INCOME` (1,000,000,000),
+    enforces a `gender` enum, and length-bounds all free-text fields.
+  - Defensive clamp in `auth.service.updateProfile` so the derived annual salary
+    can never overflow the column even via other code paths.
+
+### 2. SQL-injection hardening on user-supplied text
+- Prisma already parameterises every query (incl. tagged-template `$executeRaw`),
+  so prior payloads were stored, not executed. They are now rejected at the edge.
+- New `containsSqlInjection()` in `backend/src/utils/sanitize.ts`.
+- Applied to profile text fields and to account `name`/`type`/`provider`/`country`
+  (`account.validation.ts`). Covers the onboarding salary, location, bank/account
+  name, and balance inputs.
+- Unit coverage: `backend/src/features/auth/input-hardening.test.ts`.
+
+### 3. Settings blob is server-authoritative for money
+- `settings.controller.ts` now normalises the free-form settings JSON and clamps
+  `monthlyBudget` to a column-safe range (kills the `8333333333` overflow value).
+
+### 4. AI insights now reflect declared financials (not just transactions)
+- **Root cause:** Every agent derived income only from 30–90 days of
+  transactions; a new user (no transactions) scored `healthScore 20`,
+  `savings 0%`, `DTI 1.00`, `EMI 0` regardless of declared salary/balances.
+- New `backend/src/features/ai/financial-baseline.ts` resolves income from
+  transactions → declared profile income (`profiles.monthly_income` / `User.salary`)
+  and sums active account balances.
+- `agents.ts` updated: Financial Health Score (adds **Months of Runway** from
+  balances), Loan Approval (DTI falls back to declared income; reports `0.00`
+  instead of a misleading `1.00` when there is no debt), plus Goal, Budget, and
+  Investment agents.
+
+### 5. Frontend request-volume reduction
+- `frontend/src/lib/api.ts` adds a short-TTL GET **response cache** on top of the
+  existing 2s concurrent-dedup + 30s profile cache: `/settings` 15s,
+  `/admin/features` & `/admin/ai-features` 60s, `/notifications` 10s, with a
+  per-call `cacheTtlMs` override. The cache is flushed on every
+  POST/PUT/PATCH/DELETE and via `api.clearCache()`, so writes never read stale
+  data. This collapses the navigation-burst repeats seen in the network log.
+- DiceBear avatar SVGs are already served with a 1-week `immutable` cache header
+  from the backend proxy, so they are browser-cached after first paint.
+
+---
+
 ## B. Authoritative Tech Stack (June 2026)
 
 ### Frontend

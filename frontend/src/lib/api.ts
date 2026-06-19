@@ -109,6 +109,42 @@ let profilePublicRequestInFlight: Promise<ApiResponse<any>> | null = null;
 // Generic in-flight dedup map: prevents concurrent identical GET requests (e.g. on startup burst)
 const inflightGetRequests = new Map<string, Promise<ApiResponse<any>>>();
 
+// ── Short-TTL GET response cache ──────────────────────────────────────────
+// Some stable, low-volatility endpoints are re-requested every time a
+// component mounts (e.g. on each route navigation). The 2s in-flight dedup
+// only collapses *concurrent* calls; mounts that are seconds apart still hit
+// the network. This cache returns a recent response for an allow-listed set
+// of endpoints, so navigating around the app doesn't refire the same GETs.
+// Any mutation (POST/PUT/PATCH/DELETE) flushes the cache to avoid staleness.
+interface CachedGetEntry {
+  expiresAt: number;
+  response: ApiResponse<any>;
+}
+const getResponseCache = new Map<string, CachedGetEntry>();
+
+// Endpoint prefix → cache TTL (ms). Keep TTLs short; these are convenience
+// caches to absorb navigation bursts, not a source of truth.
+const GET_CACHE_TTL_BY_PREFIX: Array<{ prefix: string; ttlMs: number }> = [
+  { prefix: '/settings', ttlMs: 15_000 },
+  { prefix: '/admin/features', ttlMs: 60_000 },
+  { prefix: '/admin/ai-features', ttlMs: 60_000 },
+  { prefix: '/notifications', ttlMs: 10_000 },
+];
+
+const resolveGetCacheTtl = (endpoint: string): number => {
+  const path = endpoint.split('?')[0];
+  for (const { prefix, ttlMs } of GET_CACHE_TTL_BY_PREFIX) {
+    if (path === prefix || path.startsWith(`${prefix}/`) || path.startsWith(prefix)) {
+      return ttlMs;
+    }
+  }
+  return 0;
+};
+
+const clearGetResponseCache = (): void => {
+  getResponseCache.clear();
+};
+
 // In-memory token store — avoids writing JWTs to extra localStorage keys.
 // The Supabase session (sb-*-auth-token) is the authoritative source.
 // Custom tokens issued by our own backend (e.g. for tests) fall back here.
@@ -281,6 +317,14 @@ interface RequestConfig extends RequestInit {
    * Set to `null` to explicitly opt out.
    */
   idempotencyKey?: string | null;
+  /**
+   * Override the short-TTL GET response cache for this call.
+   *   - a positive number caches the successful response for that many ms
+   *   - `0` disables caching for this call
+   * When omitted, an endpoint-based default is used (see
+   * GET_CACHE_TTL_BY_PREFIX). Only applies to GET requests.
+   */
+  cacheTtlMs?: number;
 }
 
 const MUTATING_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
@@ -531,17 +575,35 @@ class HTTPClient {
   }
 
   async get<T>(endpoint: string, config?: RequestConfig): Promise<ApiResponse<T>> {
-    // Deduplicate identical concurrent GET requests.
-    // Two calls for the same endpoint within GET_DEDUP_TTL_MS share one network request.
+    // 1. Short-TTL response cache: return a recent response for allow-listed
+    //    (or explicitly opted-in) stable endpoints so navigating around the
+    //    app doesn't refire identical GETs.
+    const ttl = config?.cacheTtlMs ?? resolveGetCacheTtl(endpoint);
+    if (ttl > 0) {
+      const cached = getResponseCache.get(endpoint);
+      if (cached && cached.expiresAt > Date.now()) {
+        return cached.response as ApiResponse<T>;
+      }
+    }
+
+    // 2. Deduplicate identical concurrent GET requests.
+    //    Two calls for the same endpoint within GET_DEDUP_TTL_MS share one network request.
     const dedupKey = endpoint;
     const existing = inflightGetRequests.get(dedupKey);
     if (existing) {
       return existing as Promise<ApiResponse<T>>;
     }
-    const req = this.request<T>(endpoint, { ...config, method: 'GET' }).finally(() => {
-      // Remove from map after a short window so future calls still dedup during burst
-      setTimeout(() => inflightGetRequests.delete(dedupKey), GET_DEDUP_TTL_MS);
-    });
+    const req = this.request<T>(endpoint, { ...config, method: 'GET' })
+      .then((response) => {
+        if (ttl > 0 && response?.success) {
+          getResponseCache.set(endpoint, { expiresAt: Date.now() + ttl, response });
+        }
+        return response;
+      })
+      .finally(() => {
+        // Remove from map after a short window so future calls still dedup during burst
+        setTimeout(() => inflightGetRequests.delete(dedupKey), GET_DEDUP_TTL_MS);
+      });
     inflightGetRequests.set(dedupKey, req as Promise<ApiResponse<any>>);
     return req;
   }
@@ -551,6 +613,7 @@ class HTTPClient {
     data?: unknown,
     config?: RequestConfig
   ): Promise<ApiResponse<T>> {
+    clearGetResponseCache();
     return this.request<T>(endpoint, {
       ...config,
       method: 'POST',
@@ -563,6 +626,7 @@ class HTTPClient {
     data?: unknown,
     config?: RequestConfig
   ): Promise<ApiResponse<T>> {
+    clearGetResponseCache();
     return this.request<T>(endpoint, {
       ...config,
       method: 'PUT',
@@ -575,6 +639,7 @@ class HTTPClient {
     data?: unknown,
     config?: RequestConfig
   ): Promise<ApiResponse<T>> {
+    clearGetResponseCache();
     return this.request<T>(endpoint, {
       ...config,
       method: 'PATCH',
@@ -583,6 +648,7 @@ class HTTPClient {
   }
 
   async delete<T>(endpoint: string, config?: RequestConfig): Promise<ApiResponse<T>> {
+    clearGetResponseCache();
     return this.request<T>(endpoint, { ...config, method: 'DELETE' });
   }
 
@@ -624,6 +690,7 @@ export const api = {
     // Also flush the generic GET dedup map so callers (e.g. tests) can force
     // a fresh network request on the next call.
     inflightGetRequests.clear();
+    clearGetResponseCache();
   },
   // Authentication
   auth: {

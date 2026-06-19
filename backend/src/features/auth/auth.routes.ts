@@ -16,6 +16,8 @@ import {
   checkEmailAvailability,
 } from './auth.controller';
 import { rateLimit } from '../../middleware/rateLimit';
+import { validateBody } from '../../middleware/validate';
+import { updateProfileSchema } from './auth.validation';
 
 const router = Router();
 
@@ -53,7 +55,7 @@ router.post('/refresh', authLimiter, refreshToken);
 // Auth-optional: a user with an expired access token can still log out.
 router.post('/logout', logout);
 router.get('/profile', authMiddleware, getProfile);
-router.put('/profile', authMiddleware, updateProfile);
+router.put('/profile', authMiddleware, validateBody(updateProfileSchema), updateProfile);
 
 // OTP routes (authenticated - user must have valid JWT)
 router.post('/otp/send', authMiddleware, sendOtp);

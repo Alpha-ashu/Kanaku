@@ -6,6 +6,7 @@
 
 import { prisma } from '../../db/prisma';
 import { logger } from '../../config/logger';
+import { getFinancialBaseline } from './financial-baseline';
 
 //  Type Definitions 
 
@@ -120,21 +121,25 @@ export async function runExpenseCategorizationAgent(userId: string): Promise<Age
 export async function runGoalRecommendationAgent(userId: string): Promise<AgentResult> {
   const start = Date.now();
   try {
-    const [transactions, goals] = await Promise.all([
+    const [transactions, goals, baseline] = await Promise.all([
       safeQuery(() => (prisma as any).transaction.findMany({
         where: { userId, date: { gte: dateRangeStart(30) } },
         select: { type: true, amount: true },
       }), []),
       safeQuery(() => (prisma as any).goal?.findMany?.({ where: { userId } }), []),
+      getFinancialBaseline(userId),
     ]);
 
-    const income = transactions.filter((t: any) => t.type === 'income').reduce((s: number, t: any) => s + Number(t.amount), 0);
+    const txIncome = transactions.filter((t: any) => t.type === 'income').reduce((s: number, t: any) => s + Number(t.amount), 0);
     const expenses = transactions.filter((t: any) => t.type === 'expense').reduce((s: number, t: any) => s + Number(t.amount), 0);
+    // Prefer observed income; fall back to declared onboarding income so a
+    // new user still gets a meaningful savings rate.
+    const income = txIncome > 0 ? txIncome : baseline.declaredMonthlyIncome;
     const savingsRate = income > 0 ? ((income - expenses) / income) * 100 : 0;
 
     const recommendations: Recommendation[] = [];
 
-    if (savingsRate < 10) {
+    if (income > 0 && savingsRate < 10) {
       recommendations.push({
         type: 'goal_suggestion',
         title: 'Low Savings Rate Detected',
@@ -185,7 +190,10 @@ export async function runBudgetOptimizationAgent(userId: string): Promise<AgentR
       _sum: { amount: true },
     }), { _sum: { amount: 0 } });
 
-    const monthlyIncome = Number(income._sum?.amount ?? 0);
+    const baseline = await getFinancialBaseline(userId);
+    const txMonthlyIncome = Number(income._sum?.amount ?? 0);
+    // Fall back to declared onboarding income when there is no income history.
+    const monthlyIncome = txMonthlyIncome > 0 ? txMonthlyIncome : baseline.declaredMonthlyIncome;
 
     // Group by category
     const byCategory: Record<string, number> = {};
@@ -397,7 +405,7 @@ export async function runFraudDetectionAgent(userId: string): Promise<AgentResul
 export async function runFinancialHealthScoreAgent(userId: string): Promise<AgentResult> {
   const start = Date.now();
   try {
-    const [incomeAgg, expenseAgg, goals, loans] = await Promise.all([
+    const [incomeAgg, expenseAgg, goals, loans, baseline] = await Promise.all([
       safeQuery(() => (prisma as any).transaction.aggregate({
         where: { userId, type: 'income', date: { gte: dateRangeStart(30) } },
         _sum: { amount: true },
@@ -408,18 +416,28 @@ export async function runFinancialHealthScoreAgent(userId: string): Promise<Agen
       }), { _sum: { amount: 0 } }),
       safeQuery(() => (prisma as any).goal?.findMany?.({ where: { userId } }) ?? [], []),
       safeQuery(() => (prisma as any).loan?.findMany?.({ where: { userId, status: 'active' } }) ?? [], []),
+      getFinancialBaseline(userId),
     ]);
 
-    const income = Number(incomeAgg._sum?.amount ?? 0);
+    const txIncome = Number(incomeAgg._sum?.amount ?? 0);
     const expenses = Number(expenseAgg._sum?.amount ?? 0);
+    // Prefer observed income; fall back to declared onboarding income so the
+    // score is grounded in the user's real financial profile from day one.
+    const income = txIncome > 0 ? txIncome : baseline.declaredMonthlyIncome;
     const savingsRate = income > 0 ? ((income - expenses) / income) : 0;
 
+    // Emergency-fund coverage: how many months of income the user holds in
+    // their accounts today. Rewards real liquidity even before any
+    // transactions exist.
+    const monthsOfRunway = income > 0 ? baseline.totalBalance / income : 0;
+
     // Scoring (0-100)
-    let savingsScore = Math.min(30, Math.round(savingsRate * 150)); // 20% savings = 30pts
-    let debtScore = loans.length === 0 ? 20 : Math.max(0, 20 - loans.length * 3);
-    let goalScore = goals.length > 0 ? Math.min(20, goals.length * 5) : 0;
-    let consistencyScore = income > 0 ? 15 : 0; // Simplistic: has income
-    let emergencyScore = savingsRate > 0.1 ? 15 : Math.round(savingsRate * 100);
+    const savingsScore = Math.max(0, Math.min(30, Math.round(savingsRate * 150))); // 20% savings = 30pts
+    const debtScore = loans.length === 0 ? 20 : Math.max(0, 20 - loans.length * 3);
+    const goalScore = goals.length > 0 ? Math.min(20, goals.length * 5) : 0;
+    const consistencyScore = income > 0 ? 15 : 0; // Has a known income (observed or declared)
+    // Emergency score: up to 15 pts for >=3 months of runway, scaled otherwise.
+    const emergencyScore = Math.max(0, Math.min(15, Math.round((monthsOfRunway / 3) * 15)));
 
     const total = savingsScore + debtScore + goalScore + consistencyScore + emergencyScore;
 
@@ -449,6 +467,7 @@ export async function runFinancialHealthScoreAgent(userId: string): Promise<Agen
         insights: [
           { category: 'health', label: 'Financial Health Score', value: total },
           { category: 'health', label: 'Savings Rate', value: `${(savingsRate * 100).toFixed(1)}%` },
+          { category: 'health', label: 'Months of Runway', value: monthsOfRunway.toFixed(1) },
           { category: 'health', label: 'Active Loans', value: loans.length },
           { category: 'health', label: 'Active Goals', value: goals.length },
         ],
@@ -465,7 +484,7 @@ export async function runFinancialHealthScoreAgent(userId: string): Promise<Agen
 export async function runInvestmentSuggestionAgent(userId: string): Promise<AgentResult> {
   const start = Date.now();
   try {
-    const [incomeAgg, expenseAgg] = await Promise.all([
+    const [incomeAgg, expenseAgg, baseline] = await Promise.all([
       safeQuery(() => (prisma as any).transaction.aggregate({
         where: { userId, type: 'income', date: { gte: dateRangeStart(30) } },
         _sum: { amount: true },
@@ -474,9 +493,11 @@ export async function runInvestmentSuggestionAgent(userId: string): Promise<Agen
         where: { userId, type: 'expense', date: { gte: dateRangeStart(30) } },
         _sum: { amount: true },
       }), { _sum: { amount: 0 } }),
+      getFinancialBaseline(userId),
     ]);
 
-    const income = Number(incomeAgg._sum?.amount ?? 0);
+    const txIncome = Number(incomeAgg._sum?.amount ?? 0);
+    const income = txIncome > 0 ? txIncome : baseline.declaredMonthlyIncome;
     const expenses = Number(expenseAgg._sum?.amount ?? 0);
     const surplus = income - expenses;
 
@@ -499,19 +520,27 @@ export async function runInvestmentSuggestionAgent(userId: string): Promise<Agen
 export async function runLoanApprovalAgent(userId: string): Promise<AgentResult> {
   const start = Date.now();
   try {
-    const [incomeAgg, loans] = await Promise.all([
+    const [incomeAgg, loans, baseline] = await Promise.all([
       safeQuery(() => (prisma as any).transaction.aggregate({
         where: { userId, type: 'income', date: { gte: dateRangeStart(90) } },
         _sum: { amount: true },
       }), { _sum: { amount: 0 } }),
       safeQuery(() => (prisma as any).loan?.findMany?.({ where: { userId, status: 'active' }, select: { principalAmount: true } }) ?? [], []),
+      getFinancialBaseline(userId),
     ]);
 
-    const avgMonthlyIncome = Number(incomeAgg._sum?.amount ?? 0) / 3;
+    const txMonthlyIncome = Number(incomeAgg._sum?.amount ?? 0) / 3;
+    // Fall back to declared onboarding income so DTI/EMI are realistic for
+    // users without 90 days of income history.
+    const avgMonthlyIncome = txMonthlyIncome > 0 ? txMonthlyIncome : baseline.declaredMonthlyIncome;
     const totalDebt = loans.reduce((s: number, l: any) => s + Number(l.principalAmount), 0);
-    const debtToIncomeRatio = avgMonthlyIncome > 0 ? totalDebt / avgMonthlyIncome : 1;
+    // DTI is undefined without income and without debt — report 0 rather than
+    // a misleading 1.00 when the user simply has no loans.
+    const debtToIncomeRatio = avgMonthlyIncome > 0
+      ? totalDebt / avgMonthlyIncome
+      : (totalDebt > 0 ? 1 : 0);
 
-    let approvalLikelihood = 100;
+    let approvalLikelihood = avgMonthlyIncome > 0 ? 100 : 50;
     approvalLikelihood -= Math.min(60, debtToIncomeRatio * 30);
     approvalLikelihood = Math.max(0, Math.round(approvalLikelihood));
 

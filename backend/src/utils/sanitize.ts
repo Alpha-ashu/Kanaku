@@ -49,7 +49,33 @@ export function sanitize(input: string): string {
     .trim();
 }
 
-//  AI / OCR specific 
+//  SQL-injection guard
+
+/**
+ * Signatures that should never appear in a legitimate name, location,
+ * bank/account label, or other short free-text field. Prisma already
+ * parameterises every query (so these are not executable), but we reject
+ * them at the edge to keep stored data clean and defend against any future
+ * raw-SQL path. Tuned to avoid false positives on ordinary text.
+ */
+const SQL_INJECTION_PATTERNS: RegExp[] = [
+  /\b(?:select|insert|update|delete|drop|alter|truncate|create|exec(?:ute)?|union)\b[\s\S]*\b(?:from|into|table|database|where|select)\b/i,
+  /\bunion\b\s+\bselect\b/i,
+  /\bor\b\s+\d+\s*=\s*\d+/i, // classic " OR 1=1"
+  /--\s|\/\*|\*\//, // SQL comment markers
+  /;\s*(?:drop|delete|update|insert|select|alter|truncate)\b/i,
+  /\bxp_cmdshell\b/i,
+];
+
+/**
+ * Returns `true` when the text contains a likely SQL-injection attempt.
+ */
+export const containsSqlInjection = (text: string): boolean => {
+  if (typeof text !== 'string' || text.length === 0) return false;
+  return SQL_INJECTION_PATTERNS.some((re) => re.test(text));
+};
+
+//  AI / OCR specific
 
 /**
  * Returns `true` when the text contains a likely prompt-injection

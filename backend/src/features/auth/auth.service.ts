@@ -161,6 +161,21 @@ export class AuthService {
       }
     }
 
+    // Defensive clamp: `User.salary` is Decimal(12, 2) (max 9,999,999,999.99).
+    // Without this, an oversized salary overflows the column and Prisma throws,
+    // returning a 500 during onboarding. Clamp the monthly figure so the derived
+    // annual value (monthly * 12) always fits the column. Negative/NaN -> null.
+    const MAX_ANNUAL_INCOME = 1_000_000_000; // 1 billion / year
+    const MAX_MONTHLY_INCOME = Math.floor(MAX_ANNUAL_INCOME / 12);
+    if (monthlyIncomeVal !== null && monthlyIncomeVal !== undefined) {
+      const n = Number(monthlyIncomeVal);
+      if (!Number.isFinite(n) || n < 0) {
+        monthlyIncomeVal = null;
+      } else {
+        monthlyIncomeVal = Math.min(n, MAX_MONTHLY_INCOME);
+      }
+    }
+
     // Standardize dateOfBirth - fall back to DB if omitted (undefined)
     let dobVal = data.dateOfBirth;
     if (dobVal === undefined) {
