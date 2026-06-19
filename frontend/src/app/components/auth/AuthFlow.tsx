@@ -15,7 +15,7 @@ import { api, TokenManager } from '@/lib/api';
 import { PublicNavbar } from '@/app/components/ui/PublicNavbar';
 import { enableGuestMode, isGuestMode, disableGuestMode, migrateGuestDataToUser, migrateGuestLocalStorage } from '@/lib/guestMode';
 import { pinService, isPinMissing } from '@/services/pinService';
-import { signIn as supabaseSignIn, signUp as supabaseSignUp } from '@/lib/supabase-helpers';
+import { signIn as supabaseSignIn, signUp as supabaseSignUp, DUPLICATE_ACCOUNT_MESSAGE } from '@/lib/supabase-helpers';
 
 // Auth source of truth for the login UI. 'custom' (default) keeps the backend-issued
 // JWT flow; 'supabase' (Option A) authenticates via Supabase Auth so the API client's
@@ -299,15 +299,18 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
       let errMsg = error.message || 'Failed to create account';
       if (isNetworkError) {
         errMsg = 'Cannot connect to server. Please try again later.';
-      } else if (isDuplicateUser) {
-        errMsg = 'This email is already registered. Sign in instead or use a different email.';
-      } else if (isDuplicatePhone) {
-        errMsg = 'This phone number is already registered to another account. Please use a different phone number.';
+      } else if (isDuplicateUser || isDuplicatePhone) {
+        // Generic, non-enumerable message — never confirms which detail is taken.
+        errMsg = DUPLICATE_ACCOUNT_MESSAGE;
       } else if (isServerError) {
         errMsg = 'Signup is temporarily unavailable (server error). Please try again in a moment.';
       }
 
       toast.error(errMsg);
+      // Re-throw so the SignUpForm halts and never shows its "Account Created"
+      // success screen for a failed/duplicate registration. The parent owns the
+      // user-facing message (toast above); the form only needs to stop.
+      throw error;
     } finally {
       setIsLoading(false);
     }

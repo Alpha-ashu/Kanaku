@@ -69,6 +69,16 @@ export async function getCurrentUser() {
   return user;
 }
 
+/**
+ * Generic, non-enumerable message shown when an account cannot be created
+ * because the email (or, server-side, the phone) is already taken. It is
+ * deliberately vague: it never confirms to an attacker that a specific email
+ * exists, while still guiding a legitimate user to sign in or try other
+ * details. See quality/reports for the duplicate-registration test record.
+ */
+export const DUPLICATE_ACCOUNT_MESSAGE =
+  "We couldn't create your account with these details. If you already have an account, please sign in — otherwise try a different email or phone number.";
+
 export async function signUp(email: string, password: string, fullName?: string) {
   const appUrl = import.meta.env.VITE_APP_URL || window.location.origin;
   const { data, error } = await supabase.auth.signUp({
@@ -82,7 +92,35 @@ export async function signUp(email: string, password: string, fullName?: string)
       },
     },
   });
-  if (error) throw error;
+
+  // When email confirmations are OFF, Supabase surfaces a real error for a
+  // duplicate signup (code: user_already_exists / status 422).
+  if (error) {
+    const status = (error as any)?.status;
+    const code = (error as any)?.code;
+    if (status === 422 || code === 'user_already_exists') {
+      const dupErr = new Error(DUPLICATE_ACCOUNT_MESSAGE) as Error & { code?: string };
+      dupErr.code = 'EMAIL_EXISTS';
+      throw dupErr;
+    }
+    throw error;
+  }
+
+  // SECURITY / BUGFIX: When email confirmations are ON, Supabase deliberately
+  // does NOT return an error for a duplicate signup (anti-enumeration). It
+  // instead returns an obfuscated user whose `identities` array is empty and
+  // with no active session. If we treat that as success the duplicate email
+  // silently proceeds into onboarding ("account created"), which is the bug
+  // reported by users. Detect the fake-success and block it.
+  const identities = (data?.user as any)?.identities;
+  const isObfuscatedDuplicate =
+    !!data?.user && Array.isArray(identities) && identities.length === 0;
+  if (isObfuscatedDuplicate) {
+    const dupErr = new Error(DUPLICATE_ACCOUNT_MESSAGE) as Error & { code?: string };
+    dupErr.code = 'EMAIL_EXISTS';
+    throw dupErr;
+  }
+
   return data;
 }
 

@@ -254,6 +254,8 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
     const fullMobile = `${countryCode} ${formData.mobile.trim()}`;
     try {
       if (onSubmit) {
+        // onSubmit (AuthFlow) re-throws on failure, so a duplicate/failed signup
+        // skips setIsSuccess and the success screen is never shown.
         await onSubmit({
           firstName: formData.firstName,
           lastName: formData.lastName,
@@ -282,9 +284,14 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
         }, 1500);
       }
     } catch (error: any) {
+      // When a parent onSubmit handler is supplied (AuthFlow), it owns the
+      // user-facing message (toast) and re-throws purely to stop the form, so
+      // we must NOT show the success screen and should not duplicate the error.
+      if (onSubmit) return;
+      const genericDuplicate = "We couldn't create your account with these details. If you already have an account, please sign in — otherwise try a different email or phone number.";
       const codeMap: Record<string, string> = {
-        EMAIL_EXISTS: 'This email is already registered. Please sign in instead.',
-        PHONE_EXISTS: 'This phone number is already registered to another account. Please use a different phone number.',
+        EMAIL_EXISTS: genericDuplicate,
+        PHONE_EXISTS: genericDuplicate,
         MISSING_FIELDS: 'Please fill in all required fields.',
         INVALID_EMAIL: 'Please enter a valid email address.',
         PASSWORD_TOO_SHORT: 'Password must be at least 8 characters long.',

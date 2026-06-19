@@ -207,25 +207,26 @@ export async function registerUser(page: Page, user: typeof USERS.U1) {
   await submitBtn.click();
   await screenshot(page, `register_${user.firstName}_after_submit`);
 
-  // For already-registered users, handleSignUp fires toast.error("already registered")
-  // within ~2s, then SignUpForm shows "Account Created Successfully!" (app bug: success shown
-  // even for duplicate). The toast text contains "already" and is visible for ~4s.
-  // Detect duplicate early before the toast dismisses.
-  const earlyDuplicateText = page.getByText(/already registered|already.*email|phone.*already|already.*use/i).first();
+  // For already-registered users, handleSignUp fires toast.error with the generic
+  // DUPLICATE_ACCOUNT_MESSAGE ("...If you already have an account, please sign in
+  // — otherwise try a different email or phone number") and re-throws so the form
+  // halts. As of the duplicate-email fix the success screen is NEVER shown for a
+  // duplicate. The toast text contains "already have an account" / "different email".
+  const earlyDuplicateText = page.getByText(/already registered|already have an account|different email|already.*email|phone.*already|already.*use/i).first();
   if (await isElementVisible(earlyDuplicateText, 5000)) {
     return 'already_exists';
   }
 
-  // "Account Created Successfully!" appears for BOTH real registrations and duplicates.
-  // For REAL new users the app navigates away (onboarding) within ~3s.
-  // For DUPLICATE users the app stays on the success screen indefinitely (no auth change).
+  // "Account Created Successfully!" now appears ONLY for real new registrations.
+  // The app then navigates away (onboarding) within ~3s. If the success screen
+  // never appears AND no duplicate toast was seen, fall through to error checks.
   const accountCreatedText = page.getByText(/Account Created Successfully/i).first();
   if (await isElementVisible(accountCreatedText, 5000)) {
-    // Wait to see if the app navigates away (real new user) or stays stuck (duplicate)
+    // Confirm the app navigates away (real new user).
     const dashEl = page.locator('[data-nav-id]').first();
     const navigatedAway = await dashEl.waitFor({ state: 'visible', timeout: 5000 }).then(() => true).catch(() => false);
     if (!navigatedAway) {
-      // Still on success screen with no dashboard → duplicate user (app bug: success shown incorrectly)
+      // Stuck on success with no dashboard → treat as not-registered (regression guard).
       return 'already_exists';
     }
     return 'registered';
