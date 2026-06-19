@@ -51,14 +51,14 @@ jobs:
       - name: Generate Prisma client
         run: npx prisma generate
         env:
-          DATABASE_URL: ${{ secrets[format('{0}', 'TEST_DATABASE_URL')] || 'postgresql://postgres:postgres@localhost:5432/kanaku_test' }}
-          DIRECT_URL: ${{ secrets[format('{0}', 'TEST_DATABASE_URL')] || 'postgresql://postgres:postgres@localhost:5432/kanaku_test' }}
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/kanaku_test
+          DIRECT_URL: postgresql://postgres:postgres@localhost:5432/kanaku_test
 
       - name: Push schema to test DB
         run: npx prisma db push --skip-generate
         env:
-          DATABASE_URL: ${{ secrets[format('{0}', 'TEST_DATABASE_URL')] || 'postgresql://postgres:postgres@localhost:5432/kanaku_test' }}
-          DIRECT_URL: ${{ secrets[format('{0}', 'TEST_DATABASE_URL')] || 'postgresql://postgres:postgres@localhost:5432/kanaku_test' }}
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/kanaku_test
+          DIRECT_URL: postgresql://postgres:postgres@localhost:5432/kanaku_test
 
       - name: Build backend
         run: npm run build
@@ -66,22 +66,22 @@ jobs:
       - name: Seed admin QA data
         run: npm run qa:seed-admin
         env:
-          DATABASE_URL: ${{ secrets[format('{0}', 'TEST_DATABASE_URL')] || 'postgresql://postgres:postgres@localhost:5432/kanaku_test' }}
-          DIRECT_URL: ${{ secrets[format('{0}', 'TEST_DATABASE_URL')] || 'postgresql://postgres:postgres@localhost:5432/kanaku_test' }}
-          JWT_SECRET: ${{ secrets[format('{0}', 'JWT_SECRET')] || 'ci-test-secret-at-least-32-characters-long' }}
-          SUPABASE_URL: ${{ secrets[format('{0}', 'SUPABASE_URL')] || 'http://localhost:54321' }}
-          SUPABASE_SERVICE_KEY: ${{ secrets[format('{0}', 'SUPABASE_SERVICE_KEY')] || 'test-service-key' }}
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/kanaku_test
+          DIRECT_URL: postgresql://postgres:postgres@localhost:5432/kanaku_test
+          JWT_SECRET: ci-test-secret-at-least-32-characters-long
+          SUPABASE_URL: http://localhost:54321
+          SUPABASE_SERVICE_KEY: test-service-key
 
       - name: Start backend API
         run: node dist/server.js > backend-dev.log 2>&1 &
         env:
-          DATABASE_URL: ${{ secrets[format('{0}', 'TEST_DATABASE_URL')] || 'postgresql://postgres:postgres@localhost:5432/kanaku_test' }}
-          DIRECT_URL: ${{ secrets[format('{0}', 'TEST_DATABASE_URL')] || 'postgresql://postgres:postgres@localhost:5432/kanaku_test' }}
-          JWT_SECRET: ${{ secrets[format('{0}', 'JWT_SECRET')] || 'ci-test-secret-at-least-32-characters-long' }}
-          SUPABASE_URL: ${{ secrets[format('{0}', 'SUPABASE_URL')] || 'http://localhost:54321' }}
-          SUPABASE_ANON_KEY: ${{ secrets[format('{0}', 'SUPABASE_ANON_KEY')] || 'test-anon-key' }}
-          SUPABASE_SERVICE_KEY: ${{ secrets[format('{0}', 'SUPABASE_SERVICE_KEY')] || 'test-service-key' }}
-          SUPABASE_JWT_SECRET: ${{ secrets[format('{0}', 'SUPABASE_JWT_SECRET')] || 'test-jwt-secret' }}
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/kanaku_test
+          DIRECT_URL: postgresql://postgres:postgres@localhost:5432/kanaku_test
+          JWT_SECRET: ci-test-secret-at-least-32-characters-long
+          SUPABASE_URL: http://localhost:54321
+          SUPABASE_ANON_KEY: test-anon-key
+          SUPABASE_SERVICE_KEY: test-service-key
+          SUPABASE_JWT_SECRET: test-jwt-secret
           PORT: 3000
           NODE_ENV: production
 

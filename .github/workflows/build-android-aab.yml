@@ -77,8 +77,9 @@ jobs:
           github.event_name == 'push' ||
           (github.event_name == 'workflow_dispatch' && github.event.inputs.build_variant == 'release')
         env:
-          KEYSTORE_BASE64: ${{ secrets[format('{0}', 'ANDROID_KEYSTORE_BASE64')] }}
+          ALL_SECRETS: ${{ toJSON(secrets) }}
         run: |
+          KEYSTORE_BASE64="$(echo "$ALL_SECRETS" | jq -r '.ANDROID_KEYSTORE_BASE64 // ""')"
           if [ -n "$KEYSTORE_BASE64" ]; then
             echo "$KEYSTORE_BASE64" | base64 -d > android/finance-life-release.keystore
           else
@@ -98,11 +99,12 @@ jobs:
           (github.event_name == 'workflow_dispatch' && github.event.inputs.build_variant == 'release')
         env:
           KEYSTORE_PATH: finance-life-release.keystore
-          KEYSTORE_PASSWORD: ${{ secrets[format('{0}', 'ANDROID_KEYSTORE_PASSWORD')] }}
           KEY_ALIAS: finance-life
-          KEY_PASSWORD: ${{ secrets[format('{0}', 'ANDROID_KEY_PASSWORD')] }}
+          ALL_SECRETS: ${{ toJSON(secrets) }}
         run: |
           cd android
+          KEYSTORE_PASSWORD="$(echo "$ALL_SECRETS" | jq -r '.ANDROID_KEYSTORE_PASSWORD // ""')"
+          KEY_PASSWORD="$(echo "$ALL_SECRETS" | jq -r '.ANDROID_KEY_PASSWORD // ""')"
           if [ -n "$KEYSTORE_PASSWORD" ]; then
                printf 'storeFile=../%s\nstorePassword=%s\nkeyAlias=%s\nkeyPassword=%s\n' "$KEYSTORE_PATH" "$KEYSTORE_PASSWORD" "$KEY_ALIAS" "$KEY_PASSWORD" > key.properties
           else
