@@ -16,7 +16,7 @@ const API_BASE = getConfiguredApiBase();
 // Inner timeout MUST be shorter than the AuthContext outer race (5000ms) so the
 // service can fall back gracefully to a cached role instead of hard-rejecting.
 // 4s is enough for local backends; Vercel cold-starts are handled separately.
-const PROFILE_LOOKUP_TIMEOUT_MS = 4000;
+const PROFILE_LOOKUP_TIMEOUT_MS = 10000;
 const ROLE_CACHE_KEY = 'auth_role_cache';
 
 const getRoleFromEmail = (email?: string | null): UserRole | null => {

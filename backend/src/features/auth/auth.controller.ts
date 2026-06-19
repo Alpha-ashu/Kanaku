@@ -577,10 +577,10 @@ export const getProfile = async (req: AuthRequest, res: Response, next: NextFunc
 
     logger.info(`[AuthController] Profile cache miss. Triggering database lookups for userId: ${req.userId}`);
     const [userRes, profileRes, settingsRes, pinRes] = await Promise.allSettled([
-      withTimeout(authService.getUser(req.userId), 1500, 'User profile lookup'),
-      withTimeout(prisma.profiles.findUnique({ where: { id: req.userId } }), 1500, 'Profiles lookup'),
-      withTimeout(prisma.userSettings.findUnique({ where: { userId: req.userId } }), 1500, 'UserSettings lookup'),
-      withTimeout(prisma.userPin.findUnique({ where: { userId: req.userId } }), 1500, 'UserPin lookup')
+      withTimeout(authService.getUser(req.userId), 5000, 'User profile lookup'),
+      withTimeout(prisma.profiles.findUnique({ where: { id: req.userId } }), 5000, 'Profiles lookup'),
+      withTimeout(prisma.userSettings.findUnique({ where: { userId: req.userId } }), 5000, 'UserSettings lookup'),
+      withTimeout(prisma.userPin.findUnique({ where: { userId: req.userId } }), 5000, 'UserPin lookup')
     ]);
 
     const userResult = userRes;

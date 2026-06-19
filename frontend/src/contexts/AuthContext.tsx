@@ -847,6 +847,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           console.warn('Error during custom auth change handler:', err);
         }
       } else {
+        const { data: { session: supabaseSession } } = await supabase.auth.getSession();
+        if (supabaseSession) {
+          return;
+        }
+
         if (isMounted) {
           setUser(null);
           setSession(null);

@@ -80,7 +80,7 @@
           "specs": [
             {
               "title": "Registration, Onboarding, PIN, Logout, and Login E2E Flow",
-              "ok": false,
+              "ok": true,
               "tags": [],
               "tests": [
                 {
@@ -93,31 +93,12 @@
                     {
                       "workerIndex": 0,
                       "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 39170,
-                      "error": {
-                        "message": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('select#gender') to be visible\u001b[22m\n",
-                        "stack": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('select#gender') to be visible\u001b[22m\n\n    at K:\\Project\\kenku\\Finora\\quality\\e2e\\simultaneous-validation.spec.ts:215:43",
-                        "location": {
-                          "file": "K:\\Project\\kenku\\Finora\\quality\\e2e\\simultaneous-validation.spec.ts",
-                          "column": 43,
-                          "line": 215
-                        },
-                        "snippet": "\u001b[0m \u001b[90m 213 |\u001b[39m     console\u001b[33m.\u001b[39mlog(\u001b[32m'Waiting for Profile Setup onboarding screen...'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 214 |\u001b[39m     \u001b[36mtry\u001b[39m {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 215 |\u001b[39m       \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'select#gender'\u001b[39m)\u001b[33m.\u001b[39mwaitFor({ state\u001b[33m:\u001b[39m \u001b[32m'visible'\u001b[39m\u001b[33m,\u001b[39m timeout\u001b[33m:\u001b[39m \u001b[35m20000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                                           \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 216 |\u001b[39m     } \u001b[36mcatch\u001b[39m (err) {\n \u001b[90m 217 |\u001b[39m       console\u001b[33m.\u001b[39mlog(\u001b[32m'Timeout waiting for select#gender. Printing storage content:'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 218 |\u001b[39m       \u001b[36mconst\u001b[39m localStorageContent \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mevaluate(() \u001b[33m=>\u001b[39m \u001b[33mJSON\u001b[39m\u001b[33m.\u001b[39mstringify(localStorage))\u001b[33m;\u001b[39m\u001b[0m"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "K:\\Project\\kenku\\Finora\\quality\\e2e\\simultaneous-validation.spec.ts",
-                            "column": 43,
-                            "line": 215
-                          },
-                          "message": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('select#gender') to be visible\u001b[22m\n\n\n  213 |     console.log('Waiting for Profile Setup onboarding screen...');\n  214 |     try {\n> 215 |       await page.locator('select#gender').waitFor({ state: 'visible', timeout: 20000 });\n      |                                           ^\n  216 |     } catch (err) {\n  217 |       console.log('Timeout waiting for select#gender. Printing storage content:');\n  218 |       const localStorageContent = await page.evaluate(() => JSON.stringify(localStorage));\n    at K:\\Project\\kenku\\Finora\\quality\\e2e\\simultaneous-validation.spec.ts:215:43"
-                        }
-                      ],
+                      "status": "passed",
+                      "duration": 65100,
+                      "errors": [],
                       "stdout": [
                         {
-                          "text": "\n=== Starting Simultaneous Validation for User: qa+mqkpxt5gb8dc91@kanaku.test ===\n"
+                          "text": "\n=== Starting Simultaneous Validation for User: qa+mqkvfh5e5c7038@kanaku.test ===\n"
                         },
                         {
                           "text": "\n--- Step 1: Navigating to Sign Up Form ---\n"
@@ -132,6 +113,21 @@
                           "text": "[Browser Console] info: %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold\n"
                         },
                         {
+                          "text": "[Browser Console] log: [onAuthStateChange Event] {event: INITIAL_SESSION, userId: undefined, email: undefined}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: null, authLoading: false, onboardingCompleted: false, isNewUser: true, hasProfileData: false}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: null, authLoading: false, onboardingCompleted: false, isNewUser: true, hasProfileData: false}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: null, authLoading: false, onboardingCompleted: false, isNewUser: true, hasProfileData: false}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: null, authLoading: false, onboardingCompleted: false, isNewUser: true, hasProfileData: false}\n"
+                        },
+                        {
                           "text": "[Browser Console] debug: [vite] connecting...\n"
                         },
                         {
@@ -141,10 +137,37 @@
                           "text": "[Browser Console] info: %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold\n"
                         },
                         {
+                          "text": "[Browser Console] log: [onAuthStateChange Event] {event: INITIAL_SESSION, userId: undefined, email: undefined}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: null, authLoading: false, onboardingCompleted: false, isNewUser: true, hasProfileData: false}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: null, authLoading: false, onboardingCompleted: false, isNewUser: true, hasProfileData: false}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: null, authLoading: false, onboardingCompleted: false, isNewUser: true, hasProfileData: false}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: null, authLoading: false, onboardingCompleted: false, isNewUser: true, hasProfileData: false}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: null, authLoading: false, onboardingCompleted: false, isNewUser: true, hasProfileData: false}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: null, authLoading: false, onboardingCompleted: false, isNewUser: true, hasProfileData: false}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: null, authLoading: false, onboardingCompleted: false, isNewUser: true, hasProfileData: false}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: null, authLoading: false, onboardingCompleted: false, isNewUser: true, hasProfileData: false}\n"
+                        },
+                        {
                           "text": "Filling registration details...\n"
                         },
                         {
-                          "text": "[API Request] POST -> http://localhost:9002/api/v1/auth/check-email \nPayload: {\n  \"email\": \"qa+mqkpxt5gb8dc91@kanaku.test\"\n}\n"
+                          "text": "[API Request] POST -> http://localhost:9002/api/v1/auth/check-email \nPayload: {\n  \"email\": \"qa+mqkvfh5e5c7038@kanaku.test\"\n}\n"
                         },
                         {
                           "text": "[API Response] 200 <- http://localhost:9002/api/v1/auth/check-email \nBody: {\n  \"available\": true\n}\n"
@@ -156,10 +179,31 @@
                           "text": "\n--- Step 2: Submitting Registration Form ---\n"
                         },
                         {
+                          "text": "[Browser Console] log: [onAuthStateChange Event] {event: SIGNED_IN, userId: 837c1b2e-8f9f-426c-956a-853b0fc59b96, email: qa+mqkvfh5e5c7038@kanaku.test}\n"
+                        },
+                        {
                           "text": "[API Request] GET -> http://localhost:9002/api/v1/auth/profile?includePrivate=true \n"
                         },
                         {
-                          "text": "UI reports Account Created Successfully.\n"
+                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: false, isNewUser: true, hasProfileData: false}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: false, isNewUser: true, hasProfileData: false}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: false, isNewUser: true, hasProfileData: false}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: false, isNewUser: true, hasProfileData: false}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: false, isNewUser: true, hasProfileData: false}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: false, isNewUser: true, hasProfileData: false}\n"
+                        },
+                        {
+                          "text": "Signup success screen bypassed or already transitioned to onboarding.\n"
                         },
                         {
                           "text": "\n--- Step 3: Validating Registration in Postgres Database ---\n"
@@ -168,19 +212,25 @@
                           "text": "Waiting for database User record to sync... Attempt 1/15\n"
                         },
                         {
-                          "text": "[API Response] 200 <- http://localhost:9002/api/v1/auth/profile?includePrivate=true \nBody: {\n  \"success\": true,\n  \"data\": {\n    \"id\": \"44129a86-0667-4b35-9aef-d30512b6eaf5\",\n    \"email\": \"qa+mqkpxt5gb8dc91@kanaku.test\",\n    \"name\": \"QA Mqkpxt5g\",\n    \"firstName\": \"QA\",\n    \"lastName\": \"Mqkpxt5g\",\n    \"fullName\": \"QA Mqkpxt5g\",\n    \"gender\": \"\",\n    \"country\": \"\",\n    \"state\": \"\",\n    \"city\": \"\",\n    \"mobileNumber\": \"\",\n    \"avatarUrl\": null,\n    \"currency\": \"USD\",\n    \"language\": \"en\",\n    \"updatedAt\": \"2026-06-19T09:20:54.358Z\",\n    \"pinEnabled\": false,\n    \"dateOfBirth\": \"\",\n    \"jobType\": \"\",\n    \"monthlyIncome\": 0,\n    \"role\": \"user\",\n    \"isApproved\": false\n  }\n}\n"
+                          "text": "[API Response] 200 <- http://localhost:9002/api/v1/auth/profile?includePrivate=true \nBody: {\n  \"success\": true,\n  \"data\": {\n    \"id\": \"837c1b2e-8f9f-426c-956a-853b0fc59b96\",\n    \"email\": \"qa+mqkvfh5e5c7038@kanaku.test\",\n    \"name\": \"QA Mqkvfh5e\",\n    \"firstName\": \"QA\",\n    \"lastName\": \"Mqkvfh5e\",\n    \"fullName\": \"QA Mqkvfh5e\",\n    \"gender\": \"\",\n    \"country\": \"\",\n    \"state\": \"\",\n    \"city\": \"\",\n    \"mobileNumber\": \"\",\n    \"avatarUrl\": null,\n    \"currency\": \"USD\",\n    \"language\": \"en\",\n    \"updatedAt\": \"2026-06-19T11:54:39.558Z\",\n    \"pinEnabled\": false,\n    \"dateOfBirth\": \"\",\n    \"jobType\": \"\",\n    \"monthlyIncome\": 0,\n    \"role\": \"user\",\n    \"isApproved\": false\n  }\n}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: Socket reconnected\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: Socket connected successfully\n"
                         },
                         {
                           "text": "Database User query result: FOUND\n"
                         },
                         {
-                          "text": "Database User ID: 44129a86-0667-4b35-9aef-d30512b6eaf5\n"
+                          "text": "Database User ID: 837c1b2e-8f9f-426c-956a-853b0fc59b96\n"
                         },
                         {
-                          "text": "Database User Email: qa+mqkpxt5gb8dc91@kanaku.test\n"
+                          "text": "Database User Email: qa+mqkvfh5e5c7038@kanaku.test\n"
                         },
                         {
-                          "text": "Database User Name: QA Mqkpxt5g\n"
+                          "text": "Database User Name: QA Mqkvfh5e\n"
                         },
                         {
                           "text": "Database User Role: user\n"
@@ -195,223 +245,407 @@
                           "text": "Waiting for Profile Setup onboarding screen...\n"
                         },
                         {
+                          "text": "Selecting gender \"male\"...\n"
+                        },
+                        {
+                          "text": "Filling Date of Birth \"2000-01-01\"...\n"
+                        },
+                        {
+                          "text": "Selecting Job Type \"Full-time Employment\"...\n"
+                        },
+                        {
+                          "text": "Filling Annual Salary \"1200000\"...\n"
+                        },
+                        {
+                          "text": "Clicking \"Continue to Bank Account Setup\"...\n"
+                        },
+                        {
+                          "text": "Waiting for Country and Language onboarding screen...\n"
+                        },
+                        {
+                          "text": "Clicking skip on Country and Language step...\n"
+                        },
+                        {
+                          "text": "Waiting for Onboarding Complete screen...\n"
+                        },
+                        {
+                          "text": "Clicking Complete Setup...\n"
+                        },
+                        {
+                          "text": "Waiting for App Feature Slides...\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [onAuthStateChange Event] {event: USER_UPDATED, userId: 837c1b2e-8f9f-426c-956a-853b0fc59b96, email: qa+mqkvfh5e5c7038@kanaku.test}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: Socket already connected\n"
+                        },
+                        {
+                          "text": "[API Request] PUT -> http://localhost:9002/api/v1/auth/profile \nPayload: {\n  \"firstName\": \"QA\",\n  \"lastName\": \"Mqkvfh5e\",\n  \"gender\": \"male\",\n  \"country\": \"India\",\n  \"state\": \"\",\n  \"city\": \"\",\n  \"monthlyIncome\": 100000,\n  \"dateOfBirth\": \"2000-01-01\",\n  \"jobType\": \"Full-time Employment\",\n  \"avatarId\": \"new-1\",\n  \"avatarUrl\": \"/api/v1/avatars/dicebear/avataaars/svg?seed=Xavier\"\n}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: false, isNewUser: true, hasProfileData: true}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: false, isNewUser: true, hasProfileData: true}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: true}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: true}\n"
+                        },
+                        {
+                          "text": "Skipping slides...\n"
+                        },
+                        {
+                          "text": "Completing slides...\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: true}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: true}\n"
+                        },
+                        {
+                          "text": "Waiting for PIN setup screen...\n"
+                        },
+                        {
+                          "text": "Entering new PIN...\n"
+                        },
+                        {
+                          "text": "[Browser Console] verbose: [DOM] Password forms should have (optionally hidden) username fields for accessibility: (More info: https://goo.gl/9p2vKq) %o\n"
+                        },
+                        {
+                          "text": "Waiting for Confirm PIN screen...\n"
+                        },
+                        {
+                          "text": "Confirming PIN...\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: true}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: true}\n"
+                        },
+                        {
+                          "text": "[API Request] POST -> http://localhost:9002/api/v1/pin/create \nPayload: {\n  \"pin\": \"023f5351b94db0bdcde8dd21da240ac75adc1fc82371c516543b25485cb900de\"\n}\n"
+                        },
+                        {
+                          "text": "[API Response] 200 <- http://localhost:9002/api/v1/auth/profile \nBody: {\n  \"success\": true,\n  \"message\": \"Profile updated successfully\",\n  \"data\": {\n    \"id\": \"837c1b2e-8f9f-426c-956a-853b0fc59b96\",\n    \"email\": \"qa+mqkvfh5e5c7038@kanaku.test\",\n    \"name\": \"QA Mqkvfh5e\",\n    \"firstName\": \"QA\",\n    \"lastName\": \"Mqkvfh5e\",\n    \"fullName\": \"QA Mqkvfh5e\",\n    \"gender\": \"male\",\n    \"country\": \"India\",\n    \"state\": \"\",\n    \"city\": \"\",\n    \"mobileNumber\": \"\",\n    \"avatarId\": \"new-1\",\n    \"avatarUrl\": \"/api/v1/avatars/dicebear/avataaars/svg?seed=Xavier\",\n    \"currency\": \"INR\",\n    \"language\": \"en\",\n    \"updatedAt\": \"2026-06-19T11:54:56.381Z\",\n    \"pinEnabled\": false,\n    \"dateOfBirth\": \"2000-01-01\",\n    \"jobType\": \"Full-time Employment\",\n    \"monthlyIncome\": 100000,\n    \"role\": \"user\",\n    \"isApproved\": false,\n    \"salary\": 1200000\n  }\n}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: true}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: true}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: true}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: true}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: true}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: true}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: true}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: true}\n"
+                        },
+                        {
+                          "text": "[API Response] 200 <- http://localhost:9002/api/v1/pin/create \nBody: {\n  \"success\": true,\n  \"message\": \"PIN created successfully\",\n  \"expiresAt\": \"2026-09-17T11:55:01.293Z\"\n}\n"
+                        },
+                        {
+                          "text": "[API Request] POST -> http://localhost:9002/api/v1/pin/verify-security \nPayload: {}\n"
+                        },
+                        {
+                          "text": "[API Request] POST -> http://localhost:9002/api/v1/pin/key-backup \nPayload: {\n  \"backup\": \"023f5351b94db0bdcde8dd21da240ac75adc1fc82371c516543b25485cb900de|8f00e7b86b07c0305cc579c1a7cf4a14\"\n}\n"
+                        },
+                        {
+                          "text": "[API Response] 200 <- http://localhost:9002/api/v1/pin/verify-security \nBody: {\n  \"success\": true,\n  \"securityToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI4MzdjMWIyZS04ZjlmLTQyNmMtOTU2YS04NTNiMGZjNTliOTYiLCJ0eXBlIjoic2VjdXJpdHlfdmVyaWZpY2F0aW9uIiwidGltZXN0YW1wIjoxNzgxODcwMTA1NDgwLCJpYXQiOjE3ODE4NzAxMDUsImV4cCI6MTc4MTg3MDQwNX0.KAAmaEIpVjpFKMy8AX5dMJGUTRZzrNaDZUZ4vzP_LIU\"\n}\n"
+                        },
+                        {
+                          "text": "[Browser Console] error: Failed to load resource: the server responded with a status of 403 (Forbidden)\n"
+                        },
+                        {
+                          "text": "[Browser Console] warning: PIN key backup refresh failed during setup: Additional security verification required\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: true}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: true}\n"
+                        },
+                        {
+                          "text": "[API Response] 403 <- http://localhost:9002/api/v1/pin/key-backup \nBody: {\n  \"success\": false,\n  \"error\": \"Additional security verification required\",\n  \"code\": \"SECURITY_VERIFICATION_REQUIRED\",\n  \"requestId\": \"761c9d57-4588-4a76-ad52-0f681470e34e\"\n}\n"
+                        },
+                        {
+                          "text": "[Browser Console] info: [BackendService] Deduplicating concurrent GET request: /ai/insights\n"
+                        },
+                        {
+                          "text": "[Browser Console] info: [Sync] Skipping backend sync; all requested tables synced <5m ago.\n"
+                        },
+                        {
+                          "text": "Successfully reached Dashboard.\n"
+                        },
+                        {
+                          "text": "\n--- Step 5: Validating Profile and PIN in Postgres Database ---\n"
+                        },
+                        {
+                          "text": "Database Profile query result: FOUND\n"
+                        },
+                        {
+                          "text": "Database Profile First Name: QA\n"
+                        },
+                        {
+                          "text": "Database Profile Last Name: Mqkvfh5e\n"
+                        },
+                        {
+                          "text": "Database Profile Phone: null\n"
+                        },
+                        {
+                          "text": "Database UserPin query result: FOUND\n"
+                        },
+                        {
+                          "text": "Database PIN Active Status: true\n"
+                        },
+                        {
+                          "text": "Database PIN Hash: $2a$12$GDxmfXw6k8ojF1A5O/PmRepPlsg/1O.1Sq2Fn8Rv3ypdtAFHY3BNG\n"
+                        },
+                        {
+                          "text": "\n--- Step 6: Logging Out via UI ---\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: true}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: true}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: true}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: true}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: true}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: true}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [UserProfile] Component mounted, isLoading: true\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [UserProfile] fetchProfileData called, user: 837c1b2e-8f9f-426c-956a-853b0fc59b96\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [UserProfile] Fetching from backend API...\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [UserProfile] Component mounted, isLoading: true\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [UserProfile] fetchProfileData called, user: 837c1b2e-8f9f-426c-956a-853b0fc59b96\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [UserProfile] Fetching from backend API...\n"
+                        },
+                        {
+                          "text": "[API Request] GET -> http://localhost:9002/api/v1/auth/profile?includePrivate=true \n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [UserProfile] Received data from backend: {id: 837c1b2e-8f9f-426c-956a-853b0fc59b96, email: qa+mqkvfh5e5c7038@kanaku.test, name: QA Mqkvfh5e, firstName: QA, lastName: Mqkvfh5e}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [UserProfile] Received data from backend: {id: 837c1b2e-8f9f-426c-956a-853b0fc59b96, email: qa+mqkvfh5e5c7038@kanaku.test, name: QA Mqkvfh5e, firstName: QA, lastName: Mqkvfh5e}\n"
+                        },
+                        {
+                          "text": "[API Response] 200 <- http://localhost:9002/api/v1/auth/profile?includePrivate=true \nBody: {\n  \"success\": true,\n  \"data\": {\n    \"id\": \"837c1b2e-8f9f-426c-956a-853b0fc59b96\",\n    \"email\": \"qa+mqkvfh5e5c7038@kanaku.test\",\n    \"name\": \"QA Mqkvfh5e\",\n    \"firstName\": \"QA\",\n    \"lastName\": \"Mqkvfh5e\",\n    \"fullName\": \"QA Mqkvfh5e\",\n    \"gender\": \"male\",\n    \"country\": \"India\",\n    \"state\": \"\",\n    \"city\": \"\",\n    \"mobileNumber\": \"\",\n    \"avatarId\": \"new-1\",\n    \"avatarUrl\": \"/api/v1/avatars/dicebear/avataaars/svg?seed=Xavier\",\n    \"currency\": \"INR\",\n    \"language\": \"en\",\n    \"updatedAt\": \"2026-06-19T11:54:56.381Z\",\n    \"pinEnabled\": true,\n    \"dateOfBirth\": \"2000-01-01\",\n    \"jobType\": \"Full-time Employment\",\n    \"monthlyIncome\": 100000,\n    \"role\": \"user\",\n    \"isApproved\": false,\n    \"salary\": 1200000\n  }\n}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: \" Starting sign out process...\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [onAuthStateChange Event] {event: SIGNED_OUT, userId: undefined, email: undefined}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: Socket disconnected\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: Socket disconnected\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: null, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: true}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: null, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: true}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: null, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: true}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: null, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: true}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: null, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: false}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: null, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: false}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: ... Sign out completed successfully\n"
+                        },
+                        {
+                          "text": "[Browser Console] warning: Another connection wants to delete database 'KANAKUDB'. Closing db now to resume the delete request.\n"
+                        },
+                        {
+                          "text": "[Browser Console] debug: [vite] connecting...\n"
+                        },
+                        {
+                          "text": "[Browser Console] debug: [vite] connected.\n"
+                        },
+                        {
+                          "text": "[Browser Console] info: %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [onAuthStateChange Event] {event: INITIAL_SESSION, userId: undefined, email: undefined}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: null, authLoading: false, onboardingCompleted: false, isNewUser: true, hasProfileData: false}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: null, authLoading: false, onboardingCompleted: false, isNewUser: true, hasProfileData: false}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: null, authLoading: false, onboardingCompleted: false, isNewUser: true, hasProfileData: false}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: null, authLoading: false, onboardingCompleted: false, isNewUser: true, hasProfileData: false}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: null, authLoading: false, onboardingCompleted: false, isNewUser: true, hasProfileData: false}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: null, authLoading: false, onboardingCompleted: false, isNewUser: true, hasProfileData: false}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: null, authLoading: false, onboardingCompleted: false, isNewUser: true, hasProfileData: false}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: null, authLoading: false, onboardingCompleted: false, isNewUser: true, hasProfileData: false}\n"
+                        },
+                        {
+                          "text": "Successfully logged out and redirected to landing page.\n"
+                        },
+                        {
+                          "text": "\n--- Step 7: Logging Back In via UI ---\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: null, authLoading: false, onboardingCompleted: false, isNewUser: true, hasProfileData: false}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: null, authLoading: false, onboardingCompleted: false, isNewUser: true, hasProfileData: false}\n"
+                        },
+                        {
+                          "text": "Entering PIN for login validation...\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [onAuthStateChange Event] {event: SIGNED_IN, userId: 837c1b2e-8f9f-426c-956a-853b0fc59b96, email: qa+mqkvfh5e5c7038@kanaku.test}\n"
+                        },
+                        {
+                          "text": "[API Request] GET -> http://localhost:9002/api/v1/auth/profile?includePrivate=true \n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: false, isNewUser: true, hasProfileData: false}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: false, isNewUser: true, hasProfileData: false}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: false}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: false}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: false}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: false}\n"
+                        },
+                        {
+                          "text": "[API Request] GET -> http://localhost:9002/api/v1/pin/status \n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: false}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: false}\n"
+                        },
+                        {
+                          "text": "[API Response] 200 <- http://localhost:9002/api/v1/pin/status \nBody: {\n  \"success\": true,\n  \"message\": \"PIN is active\",\n  \"expiresAt\": \"2026-09-17T11:55:01.293Z\",\n  \"hasBackup\": false\n}\n"
+                        },
+                        {
+                          "text": "[API Response] 200 <- http://localhost:9002/api/v1/auth/profile?includePrivate=true \nBody: {\n  \"success\": true,\n  \"data\": {\n    \"id\": \"837c1b2e-8f9f-426c-956a-853b0fc59b96\",\n    \"email\": \"qa+mqkvfh5e5c7038@kanaku.test\",\n    \"name\": \"QA Mqkvfh5e\",\n    \"firstName\": \"QA\",\n    \"lastName\": \"Mqkvfh5e\",\n    \"fullName\": \"QA Mqkvfh5e\",\n    \"gender\": \"male\",\n    \"country\": \"India\",\n    \"state\": \"\",\n    \"city\": \"\",\n    \"mobileNumber\": \"\",\n    \"avatarId\": \"new-1\",\n    \"avatarUrl\": \"/api/v1/avatars/dicebear/avataaars/svg?seed=Xavier\",\n    \"currency\": \"INR\",\n    \"language\": \"en\",\n    \"updatedAt\": \"2026-06-19T11:54:56.381Z\",\n    \"pinEnabled\": true,\n    \"dateOfBirth\": \"2000-01-01\",\n    \"jobType\": \"Full-time Employment\",\n    \"monthlyIncome\": 100000,\n    \"role\": \"user\",\n    \"isApproved\": false,\n    \"salary\": 1200000\n  }\n}\n"
+                        },
+                        {
+                          "text": "[API Request] POST -> http://localhost:9002/api/v1/pin/verify \nPayload: {\n  \"pin\": \"023f5351b94db0bdcde8dd21da240ac75adc1fc82371c516543b25485cb900de\"\n}\n"
+                        },
+                        {
                           "text": "[Browser Console] log: Socket reconnected\n"
                         },
                         {
                           "text": "[Browser Console] log: Socket connected successfully\n"
                         },
                         {
-                          "text": "Timeout waiting for select#gender. Printing storage content:\n"
+                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: true}\n"
                         },
                         {
-                          "text": "localStorage: {\n  \"KANAKU_global_migration_v1\": \"done\",\n  \"KANAKU_last_sync_at_transactions\": \"1781860861644\",\n  \"KANAKU_last_sync_at_goals\": \"1781860861644\",\n  \"sb-mmwrckfqeqjfqciymemh-auth-token\": \"{\\\"access_token\\\":\\\"eyJhbGciOiJFUzI1NiIsImtpZCI6IjZjMmI4OTJlLTJkNzctNDQwNi05OTA1LWFhZmMwYTQxMDE1MCIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL21td3Jja2ZxZXFqZnFjaXltZW1oLnN1cGFiYXNlLmNvL2F1dGgvdjEiLCJzdWIiOiI0NDEyOWE4Ni0wNjY3LTRiMzUtOWFlZi1kMzA1MTJiNmVhZjUiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzgxODY0NDUzLCJpYXQiOjE3ODE4NjA4NTMsImVtYWlsIjoicWErbXFrcHh0NWdiOGRjOTFAa2FuYWt1LnRlc3QiLCJwaG9uZSI6IiIsImFwcF9tZXRhZGF0YSI6eyJwcm92aWRlciI6ImVtYWlsIiwicHJvdmlkZXJzIjpbImVtYWlsIl19LCJ1c2VyX21ldGFkYXRhIjp7ImVtYWlsIjoicWErbXFrcHh0NWdiOGRjOTFAa2FuYWt1LnRlc3QiLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiZnVsbF9uYW1lIjoiUUEgTXFrcHh0NWciLCJwaG9uZV92ZXJpZmllZCI6ZmFsc2UsInJvbGUiOiJjdXN0b21lciIsInN1YiI6IjQ0MTI5YTg2LTA2NjctNGIzNS05YWVmLWQzMDUxMmI2ZWFmNSJ9LCJyb2xlIjoiYXV0aGVudGljYXRlZCIsImFhbCI6ImFhbDEiLCJhbXIiOlt7Im1ldGhvZCI6InBhc3N3b3JkIiwidGltZXN0YW1wIjoxNzgxODYwODUzfV0sInNlc3Npb25faWQiOiIyZTZlZTg5NS0zN2QzLTRlNzctYWJjMS1iZmU5ZDU0YjhkZTkiLCJpc19hbm9ueW1vdXMiOmZhbHNlfQ.fBMXsvbBQNv-_082uIY2iBMi7uHqtbxRsI7AlhKPYTKnfuL_4VEn0xdY8bxBqqUshFc1B8lFcpPh3Z_LVBWPfg\\\",\\\"token_type\\\":\\\"bearer\\\",\\\"expires_in\\\":3600,\\\"expires_at\\\":1781864453,\\\"refresh_token\\\":\\\"6rh5rxe73rwb\\\",\\\"user\\\":{\\\"id\\\":\\\"44129a86-0667-4b35-9aef-d30512b6eaf5\\\",\\\"aud\\\":\\\"authenticated\\\",\\\"role\\\":\\\"authenticated\\\",\\\"email\\\":\\\"qa+mqkpxt5gb8dc91@kanaku.test\\\",\\\"email_confirmed_at\\\":\\\"2026-06-19T09:20:52.944417198Z\\\",\\\"phone\\\":\\\"\\\",\\\"last_sign_in_at\\\":\\\"2026-06-19T09:20:52.962051088Z\\\",\\\"app_metadata\\\":{\\\"provider\\\":\\\"email\\\",\\\"providers\\\":[\\\"email\\\"]},\\\"user_metadata\\\":{\\\"email\\\":\\\"qa+mqkpxt5gb8dc91@kanaku.test\\\",\\\"email_verified\\\":true,\\\"full_name\\\":\\\"QA Mqkpxt5g\\\",\\\"phone_verified\\\":false,\\\"role\\\":\\\"customer\\\",\\\"sub\\\":\\\"44129a86-0667-4b35-9aef-d30512b6eaf5\\\"},\\\"identities\\\":[{\\\"identity_id\\\":\\\"eac31e02-3ed7-4df3-8c7c-773abfa4bf2f\\\",\\\"id\\\":\\\"44129a86-0667-4b35-9aef-d30512b6eaf5\\\",\\\"user_id\\\":\\\"44129a86-0667-4b35-9aef-d30512b6eaf5\\\",\\\"identity_data\\\":{\\\"email\\\":\\\"qa+mqkpxt5gb8dc91@kanaku.test\\\",\\\"email_verified\\\":true,\\\"full_name\\\":\\\"QA Mqkpxt5g\\\",\\\"phone_verified\\\":false,\\\"role\\\":\\\"customer\\\",\\\"sub\\\":\\\"44129a86-0667-4b35-9aef-d30512b6eaf5\\\"},\\\"provider\\\":\\\"email\\\",\\\"last_sign_in_at\\\":\\\"2026-06-19T09:20:52.924556906Z\\\",\\\"created_at\\\":\\\"2026-06-19T09:20:52.925081Z\\\",\\\"updated_at\\\":\\\"2026-06-19T09:20:52.925081Z\\\",\\\"email\\\":\\\"qa+mqkpxt5gb8dc91@kanaku.test\\\"}],\\\"created_at\\\":\\\"2026-06-19T09:20:52.884516Z\\\",\\\"updated_at\\\":\\\"2026-06-19T09:20:53.007865Z\\\",\\\"is_anonymous\\\":false}}\",\n  \"device_id\": \"2585198f-fb44-4503-b82d-a7f607559618\",\n  \"auth_role_cache\": \"{\\\"userId\\\":\\\"44129a86-0667-4b35-9aef-d30512b6eaf5\\\",\\\"role\\\":\\\"user\\\",\\\"isApproved\\\":false,\\\"fetchedAt\\\":\\\"2026-06-19T09:20:56.657Z\\\"}\",\n  \"KANAKU_last_sync_at_friends\": \"1781860861644\",\n  \"KANAKU_last_sync_at_to_do_items\": \"1781860861644\",\n  \"KANAKU_last_sync_at_accounts\": \"1781860861644\",\n  \"KANAKU_last_sync_at_investments\": \"1781860861644\",\n  \"KANAKU_last_sync_at_group_expenses\": \"1781860861644\",\n  \"KANAKU_last_sync_at_to_do_list_shares\": \"1781860861644\",\n  \"currency\": \"INR\",\n  \"feature_schema_version\": \"v2_role_access_fix\",\n  \"visibleFeatures\": \"{\\\"accounts\\\":false,\\\"transactions\\\":false,\\\"loans\\\":false,\\\"goals\\\":false,\\\"groups\\\":false,\\\"investments\\\":false,\\\"reports\\\":false,\\\"calendar\\\":false,\\\"todoLists\\\":false,\\\"transfer\\\":false,\\\"taxCalculator\\\":false,\\\"bookAdvisor\\\":false,\\\"adminPanel\\\":false,\\\"managerPanel\\\":false,\\\"advisorPanel\\\":false,\\\"notifications\\\":true,\\\"userProfile\\\":true,\\\"settings\\\":true,\\\"clientManagement\\\":false,\\\"aiManagement\\\":false,\\\"dashboard\\\":true,\\\"aiInsights\\\":false,\\\"dataExport\\\":false,\\\"recurringTransactions\\\":false,\\\"budgetAlerts\\\":false}\",\n  \"KANAKU_last_full_sync_at\": \"1781860861644\",\n  \"auth_last_user_id\": \"44129a86-0667-4b35-9aef-d30512b6eaf5\",\n  \"KANAKU_global_migration_v2\": \"done\",\n  \"language\": \"en\",\n  \"KANAKU_last_sync_at_to_do_lists\": \"1781860861644\",\n  \"KANAKU_last_sync_at_loans\": \"1781860861644\"\n}\n"
+                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: true}\n"
                         },
                         {
-                          "text": "sessionStorage: {}\n"
+                          "text": "[API Response] 200 <- http://localhost:9002/api/v1/pin/verify \nBody: {\n  \"success\": true,\n  \"message\": \"PIN verified successfully\",\n  \"expiresAt\": \"2026-09-17T11:55:01.293Z\"\n}\n"
                         },
                         {
-                          "text": "\n  <div id=\"root\"><div class=\"relative min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50/50 flex items-center justify-center p-4 pt-24 select-none overflow-hidden\"><div class=\"absolute inset-0 pointer-events-none overflow-hidden\"><div class=\"absolute -top-[15%] -left-[10%] w-[60vw] h-[60vw] md:w-[40vw] md:h-[40vw] bg-blue-200/30 rounded-full blur-[80px]\" style=\"transform: translateX(-17.1765px) translateY(17.1765px) scale(0.909412);\"></div><div class=\"absolute top-[40%] -right-[10%] w-[50vw] h-[50vw] md:w-[35vw] md:h-[35vw] bg-indigo-200/25 rounded-full blur-[80px]\" style=\"transform: translateX(-29.1062px) translateY(48.5104px) scale(0.902979);\"></div><div class=\"absolute -bottom-[10%] left-[20%] w-[40vw] h-[40vw] bg-purple-200/20 rounded-full blur-[80px]\" style=\"transform: translateX(9.49826px) translateY(6.0813px);\"></div></div><header class=\"fixed top-6 inset-x-4 z-50 pointer-events-none\"><div class=\"max-w-6xl mx-auto pointer-events-auto h-16 rounded-full bg-white/10 backdrop-blur-2xl border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.1)] px-6 lg:px-10 flex items-center justify-between transition-all duration-300 ring-1 ring-black/5\"><div class=\"flex items-center gap-3 cursor-pointer group\"><div class=\"w-10 h-10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300\"><svg viewBox=\"0 0 100 100\" xmlns=\"http://www.w3.org/2000/svg\" class=\"w-8 h-8 drop-shadow-md\"><defs><linearGradient id=\"KANAKU-top--r9-\" x1=\"0%\" y1=\"100%\" x2=\"0%\" y2=\"0%\"><stop offset=\"0%\" stop-color=\"#f97316\"></stop><stop offset=\"100%\" stop-color=\"#e11d48\"></stop></linearGradient><linearGradient id=\"KANAKU-right--r9-\" x1=\"0%\" y1=\"0%\" x2=\"100%\" y2=\"0%\"><stop offset=\"0%\" stop-color=\"#f43f5e\"></stop><stop offset=\"100%\" stop-color=\"#f59e0b\"></stop></linearGradient><linearGradient id=\"KANAKU-bottom--r9-\" x1=\"0%\" y1=\"0%\" x2=\"0%\" y2=\"100%\"><stop offset=\"0%\" stop-color=\"#34d399\"></stop><stop offset=\"100%\" stop-color=\"#0ea5e9\"></stop></linearGradient><linearGradient id=\"KANAKU-left--r9-\" x1=\"100%\" y1=\"0%\" x2=\"0%\" y2=\"0%\"><stop offset=\"0%\" stop-color=\"#06b6d4\"></stop><stop offset=\"100%\" stop-color=\"#8b5cf6\"></stop></linearGradient></defs><g style=\"mix-blend-mode: normal;\"><path d=\"M 50 65 Q 95 35, 50 0 Q 5 35, 50 65 Z\" fill=\"url(#KANAKU-top--r9-)\" opacity=\"0.9\"></path><path d=\"M 35 50 Q 65 5, 100 50 Q 65 95, 35 50 Z\" fill=\"url(#KANAKU-right--r9-)\" opacity=\"0.9\"></path><path d=\"M 50 35 Q 5 65, 50 100 Q 95 65, 50 35 Z\" fill=\"url(#KANAKU-bottom--r9-)\" opacity=\"0.9\"></path><path d=\"M 65 50 Q 35 95, 0 50 Q 35 5, 65 50 Z\" fill=\"url(#KANAKU-left--r9-)\" opacity=\"0.9\"></path></g></svg></div><span class=\"text-xl font-extrabold text-gray-900 tracking-tight\">KANAKU</span></div><nav class=\"hidden md:flex items-center gap-9\"><button class=\"text-sm font-semibold transition-all duration-200 hover:scale-105 active:scale-95 text-gray-600 hover:text-gray-900\">Home</button><button class=\"text-sm font-semibold transition-all duration-200 hover:scale-105 active:scale-95 text-gray-600 hover:text-gray-900\">About</button><button class=\"text-sm font-semibold transition-all duration-200 hover:scale-105 active:scale-95 text-gray-600 hover:text-gray-900\">Features</button><button class=\"text-sm font-semibold transition-all duration-200 hover:scale-105 active:scale-95 text-gray-600 hover:text-gray-900\">Pricing</button><button class=\"text-sm font-semibold transition-all duration-200 hover:scale-105 active:scale-95 text-gray-600 hover:text-gray-900\">Privacy</button><button class=\"text-sm font-semibold transition-all duration-200 hover:scale-105 active:scale-95 text-gray-600 hover:text-gray-900\">Terms</button><button class=\"text-sm font-semibold transition-all duration-200 hover:scale-105 active:scale-95 text-gray-600 hover:text-gray-900\">Support</button></nav><div class=\"hidden md:flex items-center gap-4\"><button class=\"px-5 py-2 text-sm font-semibold text-gray-600 hover:text-gray-800 transition-colors\">Log In</button><button class=\"px-6 py-2.5 rounded-full bg-blue-600 text-white text-sm font-bold hover:bg-blue-500 transition-all duration-300 shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 group\">Get Started</button></div><button class=\"md:hidden p-2 rounded-full hover:bg-black/5 transition-colors\" aria-label=\"Menu\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-menu w-6 h-6 text-gray-700\"><line x1=\"4\" x2=\"20\" y1=\"12\" y2=\"12\"></line><line x1=\"4\" x2=\"20\" y1=\"6\" y2=\"6\"></line><line x1=\"4\" x2=\"20\" y1=\"18\" y2=\"18\"></line></svg></button></div></header><div class=\"bg-white/80 backdrop-blur-xl rounded-3xl shadow-[0_20px_50px_rgba(37,99,235,0.06)] border border-white/60 w-full max-w-md overflow-hidden relative z-10\" style=\"opacity: 1; transform: none;\"><div class=\"h-1.5 w-full bg-gradient-to-r from-blue-500 to-indigo-600\"></div><div class=\"p-6 sm:p-8 border-b border-gray-100/50\"><button class=\"text-gray-500 hover:text-gray-800 transition-colors mb-5 flex items-center gap-1.5 text-sm font-semibold group animate-none\"><span class=\"group-hover:-translate-x-0.5 transition-transform\">←</span> Back</button><h2 class=\"text-2xl font-bold text-gray-900 tracking-tight\">Create Account</h2><p class=\"text-gray-500 mt-1.5 text-sm font-medium\">Join KANAKU to start mastering your wealth.</p></div><div class=\"p-6 sm:p-8 pt-6\"><div class=\"text-center py-12 px-6 flex flex-col items-center justify-center space-y-4 animate-fade-in bg-white/80 backdrop-blur-md rounded-2xl border border-gray-100 shadow-xl\"><div class=\"w-16 h-16 bg-emerald-50 border border-emerald-200 rounded-full flex items-center justify-center text-emerald-500 shadow-md\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"36\" height=\"36\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-check animate-bounce\"><path d=\"M20 6 9 17l-5-5\"></path></svg></div><h2 class=\"text-xl font-bold text-gray-900\">Account Created Successfully!</h2><p class=\"text-sm text-gray-500 animate-pulse\">Preparing your financial dashboard...</p></div></div></div></div><section aria-label=\"Notifications alt+T\" tabindex=\"-1\" aria-live=\"polite\" aria-relevant=\"additions text\" aria-atomic=\"false\"></section></div>\n  <script type=\"module\" src=\"/src/index.tsx\"></script>\n\n  <!-- Loading animation -->\n  <style>\n    @keyframes spin {\n      0% {\n        transform: rotate(0deg);\n      }\n\n      100% {\n        transform: rotate(360deg);\n      }\n    }\n  </style>\n\n\n\n\n"
+                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: true}\n"
+                        },
+                        {
+                          "text": "[Browser Console] log: [AppContent Render] {user: qa+mqkvfh5e5c7038@kanaku.test, authLoading: false, onboardingCompleted: true, isNewUser: false, hasProfileData: true}\n"
+                        },
+                        {
+                          "text": "Successfully completed login and PIN verification.\n"
+                        },
+                        {
+                          "text": "\n=== E2E Flow Completed Successfully! ===\n"
+                        },
+                        {
+                          "text": "[Browser Console] info: [BackendService] Deduplicating concurrent GET request: /ai/insights\n"
+                        },
+                        {
+                          "text": "[Browser Console] info: [Sync] Skipping backend sync; all requested tables synced <5m ago.\n"
                         }
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-19T09:20:41.757Z",
+                      "startTime": "2026-06-19T11:54:23.150Z",
                       "annotations": [],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\quality\\e2e\\screenshots\\simultaneous-validation-Si-047cf-N-Logout-and-Login-E2E-Flow-chromium\\test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "K:\\Project\\kenku\\Finora\\quality\\e2e\\screenshots\\simultaneous-validation-Si-047cf-N-Logout-and-Login-E2E-Flow-chromium\\video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "K:\\Project\\kenku\\Finora\\quality\\e2e\\screenshots\\simultaneous-validation-Si-047cf-N-Logout-and-Login-E2E-Flow-chromium\\error-context.md"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "K:\\Project\\kenku\\Finora\\quality\\e2e\\screenshots\\simultaneous-validation-Si-047cf-N-Logout-and-Login-E2E-Flow-chromium\\error-context.md"
-                        },
-                        {
-                          "name": "trace",
-                          "contentType": "application/zip",
-                          "path": "K:\\Project\\kenku\\Finora\\quality\\e2e\\screenshots\\simultaneous-validation-Si-047cf-N-Logout-and-Login-E2E-Flow-chromium\\trace.zip"
+                          "path": "K:\\Project\\kenku\\Finora\\quality\\e2e\\screenshots\\simultaneous-validation-Si-047cf-N-Logout-and-Login-E2E-Flow-chromium\\test-finished-1.png"
                         }
-                      ],
-                      "errorLocation": {
-                        "file": "K:\\Project\\kenku\\Finora\\quality\\e2e\\simultaneous-validation.spec.ts",
-                        "column": 43,
-                        "line": 215
-                      }
-                    },
-                    {
-                      "workerIndex": 1,
-                      "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 40098,
-                      "error": {
-                        "message": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('select#gender') to be visible\u001b[22m\n",
-                        "stack": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('select#gender') to be visible\u001b[22m\n\n    at K:\\Project\\kenku\\Finora\\quality\\e2e\\simultaneous-validation.spec.ts:215:43",
-                        "location": {
-                          "file": "K:\\Project\\kenku\\Finora\\quality\\e2e\\simultaneous-validation.spec.ts",
-                          "column": 43,
-                          "line": 215
-                        },
-                        "snippet": "\u001b[0m \u001b[90m 213 |\u001b[39m     console\u001b[33m.\u001b[39mlog(\u001b[32m'Waiting for Profile Setup onboarding screen...'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 214 |\u001b[39m     \u001b[36mtry\u001b[39m {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 215 |\u001b[39m       \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'select#gender'\u001b[39m)\u001b[33m.\u001b[39mwaitFor({ state\u001b[33m:\u001b[39m \u001b[32m'visible'\u001b[39m\u001b[33m,\u001b[39m timeout\u001b[33m:\u001b[39m \u001b[35m20000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                                           \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 216 |\u001b[39m     } \u001b[36mcatch\u001b[39m (err) {\n \u001b[90m 217 |\u001b[39m       console\u001b[33m.\u001b[39mlog(\u001b[32m'Timeout waiting for select#gender. Printing storage content:'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 218 |\u001b[39m       \u001b[36mconst\u001b[39m localStorageContent \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mevaluate(() \u001b[33m=>\u001b[39m \u001b[33mJSON\u001b[39m\u001b[33m.\u001b[39mstringify(localStorage))\u001b[33m;\u001b[39m\u001b[0m"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "K:\\Project\\kenku\\Finora\\quality\\e2e\\simultaneous-validation.spec.ts",
-                            "column": 43,
-                            "line": 215
-                          },
-                          "message": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('select#gender') to be visible\u001b[22m\n\n\n  213 |     console.log('Waiting for Profile Setup onboarding screen...');\n  214 |     try {\n> 215 |       await page.locator('select#gender').waitFor({ state: 'visible', timeout: 20000 });\n      |                                           ^\n  216 |     } catch (err) {\n  217 |       console.log('Timeout waiting for select#gender. Printing storage content:');\n  218 |       const localStorageContent = await page.evaluate(() => JSON.stringify(localStorage));\n    at K:\\Project\\kenku\\Finora\\quality\\e2e\\simultaneous-validation.spec.ts:215:43"
-                        }
-                      ],
-                      "stdout": [
-                        {
-                          "text": "\n=== Starting Simultaneous Validation for User: qa+mqkpyqj2399dd0@kanaku.test ===\n"
-                        },
-                        {
-                          "text": "\n--- Step 1: Navigating to Sign Up Form ---\n"
-                        },
-                        {
-                          "text": "[Browser Console] debug: [vite] connecting...\n"
-                        },
-                        {
-                          "text": "[Browser Console] debug: [vite] connected.\n"
-                        },
-                        {
-                          "text": "[Browser Console] info: %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold\n"
-                        },
-                        {
-                          "text": "[Browser Console] debug: [vite] connecting...\n"
-                        },
-                        {
-                          "text": "[Browser Console] debug: [vite] connected.\n"
-                        },
-                        {
-                          "text": "[Browser Console] info: %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold\n"
-                        },
-                        {
-                          "text": "Filling registration details...\n"
-                        },
-                        {
-                          "text": "[API Request] POST -> http://localhost:9002/api/v1/auth/check-email \nPayload: {\n  \"email\": \"qa+mqkpyqj2399dd0@kanaku.test\"\n}\n"
-                        },
-                        {
-                          "text": "[API Response] 200 <- http://localhost:9002/api/v1/auth/check-email \nBody: {\n  \"available\": true\n}\n"
-                        },
-                        {
-                          "text": "Form Submit Button state text: \"Create Account ✓ Ready\"\n"
-                        },
-                        {
-                          "text": "\n--- Step 2: Submitting Registration Form ---\n"
-                        },
-                        {
-                          "text": "[API Request] GET -> http://localhost:9002/api/v1/auth/profile?includePrivate=true \n"
-                        },
-                        {
-                          "text": "UI reports Account Created Successfully.\n"
-                        },
-                        {
-                          "text": "\n--- Step 3: Validating Registration in Postgres Database ---\n"
-                        },
-                        {
-                          "text": "Waiting for database User record to sync... Attempt 1/15\n"
-                        },
-                        {
-                          "text": "Database User query result: FOUND\n"
-                        },
-                        {
-                          "text": "Database User ID: c66660ab-235c-48ea-b42b-be915382d59a\n"
-                        },
-                        {
-                          "text": "Database User Email: qa+mqkpyqj2399dd0@kanaku.test\n"
-                        },
-                        {
-                          "text": "Database User Name: QA Mqkpyqj2\n"
-                        },
-                        {
-                          "text": "Database User Role: user\n"
-                        },
-                        {
-                          "text": "Database User Status: verified\n"
-                        },
-                        {
-                          "text": "\n--- Step 4: Completing Onboarding and Setting up PIN ---\n"
-                        },
-                        {
-                          "text": "Waiting for Profile Setup onboarding screen...\n"
-                        },
-                        {
-                          "text": "[API Response] 200 <- http://localhost:9002/api/v1/auth/profile?includePrivate=true \nBody: {\n  \"success\": true,\n  \"data\": {\n    \"id\": \"c66660ab-235c-48ea-b42b-be915382d59a\",\n    \"email\": \"qa+mqkpyqj2399dd0@kanaku.test\",\n    \"name\": \"QA Mqkpyqj2\",\n    \"firstName\": \"QA\",\n    \"lastName\": \"Mqkpyqj2\",\n    \"fullName\": \"QA Mqkpyqj2\",\n    \"gender\": \"\",\n    \"country\": \"\",\n    \"state\": \"\",\n    \"city\": \"\",\n    \"mobileNumber\": \"\",\n    \"avatarUrl\": null,\n    \"currency\": \"USD\",\n    \"language\": \"en\",\n    \"updatedAt\": null,\n    \"pinEnabled\": false,\n    \"dateOfBirth\": \"\",\n    \"jobType\": \"\",\n    \"monthlyIncome\": 0,\n    \"role\": \"user\",\n    \"isApproved\": false\n  }\n}\n"
-                        },
-                        {
-                          "text": "[Browser Console] log: Socket reconnected\n"
-                        },
-                        {
-                          "text": "[Browser Console] log: Socket connected successfully\n"
-                        },
-                        {
-                          "text": "Timeout waiting for select#gender. Printing storage content:\n"
-                        },
-                        {
-                          "text": "localStorage: {\n  \"KANAKU_global_migration_v1\": \"done\",\n  \"KANAKU_last_sync_at_transactions\": \"1781860907090\",\n  \"KANAKU_last_sync_at_goals\": \"1781860907090\",\n  \"sb-mmwrckfqeqjfqciymemh-auth-token\": \"{\\\"access_token\\\":\\\"eyJhbGciOiJFUzI1NiIsImtpZCI6IjZjMmI4OTJlLTJkNzctNDQwNi05OTA1LWFhZmMwYTQxMDE1MCIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL21td3Jja2ZxZXFqZnFjaXltZW1oLnN1cGFiYXNlLmNvL2F1dGgvdjEiLCJzdWIiOiJjNjY2NjBhYi0yMzVjLTQ4ZWEtYjQyYi1iZTkxNTM4MmQ1OWEiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzgxODY0NDk3LCJpYXQiOjE3ODE4NjA4OTcsImVtYWlsIjoicWErbXFrcHlxajIzOTlkZDBAa2FuYWt1LnRlc3QiLCJwaG9uZSI6IiIsImFwcF9tZXRhZGF0YSI6eyJwcm92aWRlciI6ImVtYWlsIiwicHJvdmlkZXJzIjpbImVtYWlsIl19LCJ1c2VyX21ldGFkYXRhIjp7ImVtYWlsIjoicWErbXFrcHlxajIzOTlkZDBAa2FuYWt1LnRlc3QiLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiZnVsbF9uYW1lIjoiUUEgTXFrcHlxajIiLCJwaG9uZV92ZXJpZmllZCI6ZmFsc2UsInJvbGUiOiJjdXN0b21lciIsInN1YiI6ImM2NjY2MGFiLTIzNWMtNDhlYS1iNDJiLWJlOTE1MzgyZDU5YSJ9LCJyb2xlIjoiYXV0aGVudGljYXRlZCIsImFhbCI6ImFhbDEiLCJhbXIiOlt7Im1ldGhvZCI6InBhc3N3b3JkIiwidGltZXN0YW1wIjoxNzgxODYwODk3fV0sInNlc3Npb25faWQiOiI5ZDk4ZjgyNC02OWUzLTRlNzEtYTc4Mi0xNGE1NGRkMTEzODkiLCJpc19hbm9ueW1vdXMiOmZhbHNlfQ.V9atFpKgKuaDglowPnv_YtHDJK-5xDIkv2X3gcml9taUCDa6wiAMw9RCFl0MMMCEk4cRIHlKYTff-B5FzolJJw\\\",\\\"token_type\\\":\\\"bearer\\\",\\\"expires_in\\\":3600,\\\"expires_at\\\":1781864497,\\\"refresh_token\\\":\\\"n4d72piuerrv\\\",\\\"user\\\":{\\\"id\\\":\\\"c66660ab-235c-48ea-b42b-be915382d59a\\\",\\\"aud\\\":\\\"authenticated\\\",\\\"role\\\":\\\"authenticated\\\",\\\"email\\\":\\\"qa+mqkpyqj2399dd0@kanaku.test\\\",\\\"email_confirmed_at\\\":\\\"2026-06-19T09:21:37.951174695Z\\\",\\\"phone\\\":\\\"\\\",\\\"last_sign_in_at\\\":\\\"2026-06-19T09:21:37.955502904Z\\\",\\\"app_metadata\\\":{\\\"provider\\\":\\\"email\\\",\\\"providers\\\":[\\\"email\\\"]},\\\"user_metadata\\\":{\\\"email\\\":\\\"qa+mqkpyqj2399dd0@kanaku.test\\\",\\\"email_verified\\\":true,\\\"full_name\\\":\\\"QA Mqkpyqj2\\\",\\\"phone_verified\\\":false,\\\"role\\\":\\\"customer\\\",\\\"sub\\\":\\\"c66660ab-235c-48ea-b42b-be915382d59a\\\"},\\\"identities\\\":[{\\\"identity_id\\\":\\\"677e097b-103d-4fff-bccb-aae9ed3780b4\\\",\\\"id\\\":\\\"c66660ab-235c-48ea-b42b-be915382d59a\\\",\\\"user_id\\\":\\\"c66660ab-235c-48ea-b42b-be915382d59a\\\",\\\"identity_data\\\":{\\\"email\\\":\\\"qa+mqkpyqj2399dd0@kanaku.test\\\",\\\"email_verified\\\":true,\\\"full_name\\\":\\\"QA Mqkpyqj2\\\",\\\"phone_verified\\\":false,\\\"role\\\":\\\"customer\\\",\\\"sub\\\":\\\"c66660ab-235c-48ea-b42b-be915382d59a\\\"},\\\"provider\\\":\\\"email\\\",\\\"last_sign_in_at\\\":\\\"2026-06-19T09:21:37.948435198Z\\\",\\\"created_at\\\":\\\"2026-06-19T09:21:37.948481Z\\\",\\\"updated_at\\\":\\\"2026-06-19T09:21:37.948481Z\\\",\\\"email\\\":\\\"qa+mqkpyqj2399dd0@kanaku.test\\\"}],\\\"created_at\\\":\\\"2026-06-19T09:21:37.943968Z\\\",\\\"updated_at\\\":\\\"2026-06-19T09:21:37.959695Z\\\",\\\"is_anonymous\\\":false}}\",\n  \"device_id\": \"447aa9de-4554-4411-a422-6d60289e1d55\",\n  \"auth_role_cache\": \"{\\\"userId\\\":\\\"c66660ab-235c-48ea-b42b-be915382d59a\\\",\\\"role\\\":\\\"user\\\",\\\"isApproved\\\":false,\\\"fetchedAt\\\":\\\"2026-06-19T09:21:41.823Z\\\"}\",\n  \"KANAKU_last_sync_at_friends\": \"1781860907090\",\n  \"KANAKU_last_sync_at_to_do_items\": \"1781860907090\",\n  \"KANAKU_last_sync_at_accounts\": \"1781860907090\",\n  \"KANAKU_last_sync_at_investments\": \"1781860907090\",\n  \"KANAKU_last_sync_at_group_expenses\": \"1781860907090\",\n  \"KANAKU_last_sync_at_to_do_list_shares\": \"1781860907090\",\n  \"currency\": \"INR\",\n  \"feature_schema_version\": \"v2_role_access_fix\",\n  \"visibleFeatures\": \"{\\\"accounts\\\":false,\\\"transactions\\\":false,\\\"loans\\\":false,\\\"goals\\\":false,\\\"groups\\\":false,\\\"investments\\\":false,\\\"reports\\\":false,\\\"calendar\\\":false,\\\"todoLists\\\":false,\\\"transfer\\\":false,\\\"taxCalculator\\\":false,\\\"bookAdvisor\\\":false,\\\"adminPanel\\\":false,\\\"managerPanel\\\":false,\\\"advisorPanel\\\":false,\\\"notifications\\\":true,\\\"userProfile\\\":true,\\\"settings\\\":true,\\\"clientManagement\\\":false,\\\"aiManagement\\\":false,\\\"dashboard\\\":true,\\\"aiInsights\\\":false,\\\"dataExport\\\":false,\\\"recurringTransactions\\\":false,\\\"budgetAlerts\\\":false}\",\n  \"KANAKU_last_full_sync_at\": \"1781860907090\",\n  \"auth_last_user_id\": \"c66660ab-235c-48ea-b42b-be915382d59a\",\n  \"KANAKU_global_migration_v2\": \"done\",\n  \"language\": \"en\",\n  \"KANAKU_last_sync_at_to_do_lists\": \"1781860907090\",\n  \"KANAKU_last_sync_at_loans\": \"1781860907090\"\n}\n"
-                        },
-                        {
-                          "text": "sessionStorage: {}\n"
-                        },
-                        {
-                          "text": "\n  <div id=\"root\"><div class=\"relative min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50/50 flex items-center justify-center p-4 pt-24 select-none overflow-hidden\"><div class=\"absolute inset-0 pointer-events-none overflow-hidden\"><div class=\"absolute -top-[15%] -left-[10%] w-[60vw] h-[60vw] md:w-[40vw] md:h-[40vw] bg-blue-200/30 rounded-full blur-[80px]\" style=\"transform: translateX(-6.70267px) translateY(6.70267px) scale(0.944324);\"></div><div class=\"absolute top-[40%] -right-[10%] w-[50vw] h-[50vw] md:w-[35vw] md:h-[35vw] bg-indigo-200/25 rounded-full blur-[80px]\" style=\"transform: translateX(-25.7733px) translateY(42.9555px) scale(0.914089);\"></div><div class=\"absolute -bottom-[10%] left-[20%] w-[40vw] h-[40vw] bg-purple-200/20 rounded-full blur-[80px]\" style=\"transform: translateX(22.2942px) translateY(21.0099px);\"></div></div><header class=\"fixed top-6 inset-x-4 z-50 pointer-events-none\"><div class=\"max-w-6xl mx-auto pointer-events-auto h-16 rounded-full bg-white/10 backdrop-blur-2xl border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.1)] px-6 lg:px-10 flex items-center justify-between transition-all duration-300 ring-1 ring-black/5\"><div class=\"flex items-center gap-3 cursor-pointer group\"><div class=\"w-10 h-10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300\"><svg viewBox=\"0 0 100 100\" xmlns=\"http://www.w3.org/2000/svg\" class=\"w-8 h-8 drop-shadow-md\"><defs><linearGradient id=\"KANAKU-top--r9-\" x1=\"0%\" y1=\"100%\" x2=\"0%\" y2=\"0%\"><stop offset=\"0%\" stop-color=\"#f97316\"></stop><stop offset=\"100%\" stop-color=\"#e11d48\"></stop></linearGradient><linearGradient id=\"KANAKU-right--r9-\" x1=\"0%\" y1=\"0%\" x2=\"100%\" y2=\"0%\"><stop offset=\"0%\" stop-color=\"#f43f5e\"></stop><stop offset=\"100%\" stop-color=\"#f59e0b\"></stop></linearGradient><linearGradient id=\"KANAKU-bottom--r9-\" x1=\"0%\" y1=\"0%\" x2=\"0%\" y2=\"100%\"><stop offset=\"0%\" stop-color=\"#34d399\"></stop><stop offset=\"100%\" stop-color=\"#0ea5e9\"></stop></linearGradient><linearGradient id=\"KANAKU-left--r9-\" x1=\"100%\" y1=\"0%\" x2=\"0%\" y2=\"0%\"><stop offset=\"0%\" stop-color=\"#06b6d4\"></stop><stop offset=\"100%\" stop-color=\"#8b5cf6\"></stop></linearGradient></defs><g style=\"mix-blend-mode: normal;\"><path d=\"M 50 65 Q 95 35, 50 0 Q 5 35, 50 65 Z\" fill=\"url(#KANAKU-top--r9-)\" opacity=\"0.9\"></path><path d=\"M 35 50 Q 65 5, 100 50 Q 65 95, 35 50 Z\" fill=\"url(#KANAKU-right--r9-)\" opacity=\"0.9\"></path><path d=\"M 50 35 Q 5 65, 50 100 Q 95 65, 50 35 Z\" fill=\"url(#KANAKU-bottom--r9-)\" opacity=\"0.9\"></path><path d=\"M 65 50 Q 35 95, 0 50 Q 35 5, 65 50 Z\" fill=\"url(#KANAKU-left--r9-)\" opacity=\"0.9\"></path></g></svg></div><span class=\"text-xl font-extrabold text-gray-900 tracking-tight\">KANAKU</span></div><nav class=\"hidden md:flex items-center gap-9\"><button class=\"text-sm font-semibold transition-all duration-200 hover:scale-105 active:scale-95 text-gray-600 hover:text-gray-900\">Home</button><button class=\"text-sm font-semibold transition-all duration-200 hover:scale-105 active:scale-95 text-gray-600 hover:text-gray-900\">About</button><button class=\"text-sm font-semibold transition-all duration-200 hover:scale-105 active:scale-95 text-gray-600 hover:text-gray-900\">Features</button><button class=\"text-sm font-semibold transition-all duration-200 hover:scale-105 active:scale-95 text-gray-600 hover:text-gray-900\">Pricing</button><button class=\"text-sm font-semibold transition-all duration-200 hover:scale-105 active:scale-95 text-gray-600 hover:text-gray-900\">Privacy</button><button class=\"text-sm font-semibold transition-all duration-200 hover:scale-105 active:scale-95 text-gray-600 hover:text-gray-900\">Terms</button><button class=\"text-sm font-semibold transition-all duration-200 hover:scale-105 active:scale-95 text-gray-600 hover:text-gray-900\">Support</button></nav><div class=\"hidden md:flex items-center gap-4\"><button class=\"px-5 py-2 text-sm font-semibold text-gray-600 hover:text-gray-800 transition-colors\">Log In</button><button class=\"px-6 py-2.5 rounded-full bg-blue-600 text-white text-sm font-bold hover:bg-blue-500 transition-all duration-300 shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 group\">Get Started</button></div><button class=\"md:hidden p-2 rounded-full hover:bg-black/5 transition-colors\" aria-label=\"Menu\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-menu w-6 h-6 text-gray-700\"><line x1=\"4\" x2=\"20\" y1=\"12\" y2=\"12\"></line><line x1=\"4\" x2=\"20\" y1=\"6\" y2=\"6\"></line><line x1=\"4\" x2=\"20\" y1=\"18\" y2=\"18\"></line></svg></button></div></header><div class=\"bg-white/80 backdrop-blur-xl rounded-3xl shadow-[0_20px_50px_rgba(37,99,235,0.06)] border border-white/60 w-full max-w-md overflow-hidden relative z-10\" style=\"opacity: 1; transform: none;\"><div class=\"h-1.5 w-full bg-gradient-to-r from-blue-500 to-indigo-600\"></div><div class=\"p-6 sm:p-8 border-b border-gray-100/50\"><button class=\"text-gray-500 hover:text-gray-800 transition-colors mb-5 flex items-center gap-1.5 text-sm font-semibold group animate-none\"><span class=\"group-hover:-translate-x-0.5 transition-transform\">←</span> Back</button><h2 class=\"text-2xl font-bold text-gray-900 tracking-tight\">Create Account</h2><p class=\"text-gray-500 mt-1.5 text-sm font-medium\">Join KANAKU to start mastering your wealth.</p></div><div class=\"p-6 sm:p-8 pt-6\"><div class=\"text-center py-12 px-6 flex flex-col items-center justify-center space-y-4 animate-fade-in bg-white/80 backdrop-blur-md rounded-2xl border border-gray-100 shadow-xl\"><div class=\"w-16 h-16 bg-emerald-50 border border-emerald-200 rounded-full flex items-center justify-center text-emerald-500 shadow-md\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"36\" height=\"36\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-check animate-bounce\"><path d=\"M20 6 9 17l-5-5\"></path></svg></div><h2 class=\"text-xl font-bold text-gray-900\">Account Created Successfully!</h2><p class=\"text-sm text-gray-500 animate-pulse\">Preparing your financial dashboard...</p></div></div></div></div><section aria-label=\"Notifications alt+T\" tabindex=\"-1\" aria-live=\"polite\" aria-relevant=\"additions text\" aria-atomic=\"false\"></section></div>\n  <script type=\"module\" src=\"/src/index.tsx\"></script>\n\n  <!-- Loading animation -->\n  <style>\n    @keyframes spin {\n      0% {\n        transform: rotate(0deg);\n      }\n\n      100% {\n        transform: rotate(360deg);\n      }\n    }\n  </style>\n\n\n\n\n"
-                        }
-                      ],
-                      "stderr": [],
-                      "retry": 1,
-                      "startTime": "2026-06-19T09:21:24.832Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "K:\\Project\\kenku\\Finora\\quality\\e2e\\screenshots\\simultaneous-validation-Si-047cf-N-Logout-and-Login-E2E-Flow-chromium-retry1\\test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "K:\\Project\\kenku\\Finora\\quality\\e2e\\screenshots\\simultaneous-validation-Si-047cf-N-Logout-and-Login-E2E-Flow-chromium-retry1\\video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "K:\\Project\\kenku\\Finora\\quality\\e2e\\screenshots\\simultaneous-validation-Si-047cf-N-Logout-and-Login-E2E-Flow-chromium-retry1\\error-context.md"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "K:\\Project\\kenku\\Finora\\quality\\e2e\\screenshots\\simultaneous-validation-Si-047cf-N-Logout-and-Login-E2E-Flow-chromium-retry1\\error-context.md"
-                        },
-                        {
-                          "name": "trace",
-                          "contentType": "application/zip",
-                          "path": "K:\\Project\\kenku\\Finora\\quality\\e2e\\screenshots\\simultaneous-validation-Si-047cf-N-Logout-and-Login-E2E-Flow-chromium-retry1\\trace.zip"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "K:\\Project\\kenku\\Finora\\quality\\e2e\\simultaneous-validation.spec.ts",
-                        "column": 43,
-                        "line": 215
-                      }
+                      ]
                     }
                   ],
-                  "status": "unexpected"
+                  "status": "expected"
                 }
               ],
               "id": "787ae649b1721a9f6cea-331b152eac7f26a97326",
@@ -426,11 +660,11 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-06-19T09:20:40.902Z",
-    "duration": 86325.065,
-    "expected": 0,
+    "startTime": "2026-06-19T11:54:21.505Z",
+    "duration": 68355.08,
+    "expected": 1,
     "skipped": 0,
-    "unexpected": 1,
+    "unexpected": 0,
     "flaky": 0
   }
 }
