@@ -30,7 +30,26 @@
   "responses": {
     "200": {
       "description": "TODO success shape",
-      "body": {}
+      "body": {
+        "success": true,
+        "data": {
+          "id": "3ffa4fa8-e27f-4f8e-9a4d-a405bd1750c2",
+          "userId": "9aef2b9b-ecc8-4698-a24f-c0fb18fb5a19",
+          "deviceId": null,
+          "name": "Emergency Fund",
+          "description": null,
+          "targetAmount": "100000",
+          "currentAmount": "0",
+          "targetDate": "2027-01-01T00:00:00.000Z",
+          "category": "string",
+          "isGroupGoal": false,
+          "syncStatus": "synced",
+          "clientRequestId": "string",
+          "createdAt": "2026-06-20T08:00:33.378Z",
+          "updatedAt": "2026-06-20T08:00:33.378Z",
+          "deletedAt": null
+        }
+      }
     },
     "201": {
       "description": "Created",
@@ -120,6 +139,7 @@
     "auto": true,
     "version": 1,
     "generatedAt": "2026-06-19",
-    "enrichedAt": "2026-06-20"
+    "enrichedAt": "2026-06-20",
+    "expectedBackfilledAt": "2026-06-20"
   }
 }

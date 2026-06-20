@@ -33,7 +33,39 @@
   "responses": {
     "200": {
       "description": "TODO success shape",
-      "body": {}
+      "body": {
+        "success": true,
+        "data": {
+          "id": "1c6de0a2-30bc-4f24-b7f6-0979d662675c",
+          "userId": "9aef2b9b-ecc8-4698-a24f-c0fb18fb5a19",
+          "deviceId": null,
+          "type": "borrowed",
+          "name": "Home Loan",
+          "principalAmount": "500000",
+          "outstandingBalance": "500000",
+          "interestRate": "8.5",
+          "emiAmount": "4800",
+          "dueDate": "2026-07-05T00:00:00.000Z",
+          "frequency": "monthly",
+          "status": "active",
+          "contactPerson": "string",
+          "syncStatus": "synced",
+          "clientRequestId": "string",
+          "totalPayable": null,
+          "loanDate": null,
+          "contactEmail": null,
+          "contactPhone": null,
+          "bankName": null,
+          "tenureMonths": null,
+          "downPayment": null,
+          "loanCategory": null,
+          "notes": null,
+          "createdAt": "2026-06-20T08:00:48.716Z",
+          "updatedAt": "2026-06-20T08:00:48.716Z",
+          "deletedAt": null,
+          "payments": []
+        }
+      }
     },
     "201": {
       "description": "Created",
@@ -125,6 +157,7 @@
     "auto": true,
     "version": 1,
     "generatedAt": "2026-06-19",
-    "enrichedAt": "2026-06-20"
+    "enrichedAt": "2026-06-20",
+    "expectedBackfilledAt": "2026-06-20"
   }
 }

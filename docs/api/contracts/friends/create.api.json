@@ -29,7 +29,23 @@
   "responses": {
     "200": {
       "description": "TODO success shape",
-      "body": {}
+      "body": {
+        "success": true,
+        "data": {
+          "id": "cf1c6026-81e5-4256-9fcd-f1bed088b00e",
+          "userId": "9aef2b9b-ecc8-4698-a24f-c0fb18fb5a19",
+          "deviceId": null,
+          "name": "Raj Kumar",
+          "email": "user@example.com",
+          "phone": "string",
+          "avatar": null,
+          "notes": null,
+          "syncStatus": "synced",
+          "createdAt": "2026-06-20T08:00:27.753Z",
+          "updatedAt": "2026-06-20T08:00:27.753Z",
+          "deletedAt": null
+        }
+      }
     },
     "201": {
       "description": "Added",
@@ -115,6 +131,7 @@
     "auto": true,
     "version": 1,
     "generatedAt": "2026-06-19",
-    "enrichedAt": "2026-06-20"
+    "enrichedAt": "2026-06-20",
+    "expectedBackfilledAt": "2026-06-20"
   }
 }
