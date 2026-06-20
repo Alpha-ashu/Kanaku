@@ -34,7 +34,24 @@
   "responses": {
     "200": {
       "description": "TODO success shape",
-      "body": {}
+      "body": {
+        "success": true,
+        "data": {
+          "id": "00000000-0000-0000-0000-000000000000",
+          "bio": "string",
+          "specializations": [
+            "string"
+          ],
+          "qualifications": [
+            "string"
+          ],
+          "yearsExperience": 0,
+          "languages": [
+            "string"
+          ],
+          "hourlyRate": 0
+        }
+      }
     },
     "201": {
       "description": "Application submitted",
@@ -120,6 +137,8 @@
     "auto": true,
     "version": 1,
     "generatedAt": "2026-06-19",
-    "enrichedAt": "2026-06-20"
+    "enrichedAt": "2026-06-20",
+    "responseSource": "documented-default",
+    "finalizedAt": "2026-06-20"
   }
 }

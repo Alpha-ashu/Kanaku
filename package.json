@@ -47,6 +47,8 @@
     "qa:contract-audit": "node scripts/audit-api-contracts.mjs",
     "qa:contract-enrich": "node scripts/enrich-api-contracts.mjs",
     "qa:contract-enrich-zod": "node scripts/enrich-contracts-from-validation.mjs",
+    "qa:contract-finalize": "node scripts/finalize-contract-responses.mjs",
+    "qa:admin-capture": "node scripts/qa-admin-capture.mjs",
     "qa:regression": "node scripts/qa-regression-diff.mjs",
     "qa:reports": "npm run qa:ui-inventory && npm run qa:contract-audit",
     "clean": "rimraf frontend/dist backend/dist node_modules/.vite",

@@ -24,7 +24,10 @@
   "responses": {
     "200": {
       "description": "TODO success shape",
-      "body": {}
+      "body": {
+        "success": true,
+        "message": "collaboration deleted successfully"
+      }
     },
     "400": {
       "description": "Validation failed",
@@ -57,6 +60,8 @@
     "auto": true,
     "version": 1,
     "generatedAt": "2026-06-19",
-    "enrichedAt": "2026-06-20"
+    "enrichedAt": "2026-06-20",
+    "responseSource": "documented-default",
+    "finalizedAt": "2026-06-20"
   }
 }

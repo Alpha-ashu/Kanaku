@@ -28,7 +28,15 @@
   "responses": {
     "200": {
       "description": "TODO success shape",
-      "body": {}
+      "body": {
+        "success": true,
+        "data": {
+          "id": "00000000-0000-0000-0000-000000000000",
+          "destination": "string",
+          "purpose": "signup",
+          "otp": "string"
+        }
+      }
     },
     "400": {
       "description": "Validation failed",
@@ -74,6 +82,8 @@
     "version": 1,
     "generatedAt": "2026-06-19",
     "enrichedAt": "2026-06-20",
-    "zodEnrichedAt": "2026-06-20"
+    "zodEnrichedAt": "2026-06-20",
+    "responseSource": "documented-default",
+    "finalizedAt": "2026-06-20"
   }
 }

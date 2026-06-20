@@ -35,7 +35,21 @@
   "responses": {
     "200": {
       "description": "TODO success shape",
-      "body": {}
+      "body": {
+        "success": true,
+        "data": {
+          "id": "00000000-0000-0000-0000-000000000000",
+          "amount": 0,
+          "spent": 0,
+          "threshold": 1,
+          "alertEnabled": false,
+          "alertChannels": [
+            "app"
+          ],
+          "startDate": "2026-06-20T08:14:56.672Z",
+          "endDate": "2026-06-20T08:14:56.672Z"
+        }
+      }
     },
     "400": {
       "description": "Validation failed",
@@ -69,6 +83,8 @@
     "version": 1,
     "generatedAt": "2026-06-19",
     "enrichedAt": "2026-06-20",
-    "zodEnrichedAt": "2026-06-20"
+    "zodEnrichedAt": "2026-06-20",
+    "responseSource": "documented-default",
+    "finalizedAt": "2026-06-20"
   }
 }

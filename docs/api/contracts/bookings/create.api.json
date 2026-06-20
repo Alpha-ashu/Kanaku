@@ -29,7 +29,19 @@
   "responses": {
     "200": {
       "description": "TODO success shape",
-      "body": {}
+      "body": {
+        "success": true,
+        "data": {
+          "id": "00000000-0000-0000-0000-000000000000",
+          "advisorId": "uuid",
+          "sessionType": "video",
+          "description": "string",
+          "proposedDate": "2026-07-01",
+          "proposedTime": "18:00",
+          "duration": 60,
+          "amount": 1499
+        }
+      }
     },
     "201": {
       "description": "Booking created",
@@ -118,6 +130,8 @@
     "auto": true,
     "version": 1,
     "generatedAt": "2026-06-19",
-    "enrichedAt": "2026-06-20"
+    "enrichedAt": "2026-06-20",
+    "responseSource": "documented-default",
+    "finalizedAt": "2026-06-20"
   }
 }

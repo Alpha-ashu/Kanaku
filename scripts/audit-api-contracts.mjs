@@ -57,7 +57,7 @@ function evaluate(c) {
     'description': !!c.description && !/^TODO/i.test(c.description),
     'auth': !!c.auth,
     'implementation': !isEmpty(c.implementation),
-    'request.body': !isWrite || !isEmpty(c.request?.body),
+    'request.body': !isWrite || !isEmpty(c.request?.body) || c.request?.noBody === true,
     'path params': !hasPathParams || !isEmpty(c.request?.params),
     'expected response': !!successKey && !isEmpty(successBody),
     'error responses': Object.keys(c.responses || {}).some((k) => /^[45]\d\d$/.test(k)),

@@ -24,7 +24,31 @@
   "responses": {
     "200": {
       "description": "TODO success shape",
-      "body": {}
+      "body": {
+        "success": true,
+        "data": {
+          "id": "54efeef6-c5bd-4798-b8c4-d8b923105357",
+          "userId": "7c42a22b-30b8-4f8f-ad0f-e0b2a15872a7",
+          "year": 2000,
+          "regime": "string",
+          "country": "string",
+          "totalIncome": "0",
+          "totalExpense": "0",
+          "netProfit": "0",
+          "taxableIncome": "0",
+          "estimatedTax": "0",
+          "taxRate": "0",
+          "deductions": "0",
+          "currency": "string",
+          "notes": "string",
+          "metadata": {},
+          "clientRequestId": "string",
+          "syncStatus": "synced",
+          "createdAt": "2026-06-20T10:31:28.993Z",
+          "updatedAt": "2026-06-20T10:31:28.993Z",
+          "deletedAt": null
+        }
+      }
     },
     "400": {
       "description": "Validation failed",
@@ -57,6 +81,7 @@
     "auto": true,
     "version": 1,
     "generatedAt": "2026-06-19",
-    "enrichedAt": "2026-06-20"
+    "enrichedAt": "2026-06-20",
+    "expectedBackfilledAt": "2026-06-20"
   }
 }

@@ -35,7 +35,23 @@
   "responses": {
     "200": {
       "description": "TODO success shape",
-      "body": {}
+      "body": {
+        "success": true,
+        "data": {
+          "id": "00000000-0000-0000-0000-000000000000",
+          "type": "gold",
+          "quantity": 0,
+          "unit": "gram",
+          "purchasePrice": 0,
+          "currentPrice": 0,
+          "purchaseDate": "2026-06-20T08:14:56.695Z",
+          "purityPercentage": 0,
+          "location": "string",
+          "certificateNumber": "string",
+          "notes": "string",
+          "clientRequestId": "string"
+        }
+      }
     },
     "400": {
       "description": "Validation failed",
@@ -69,6 +85,8 @@
     "version": 1,
     "generatedAt": "2026-06-19",
     "enrichedAt": "2026-06-20",
-    "zodEnrichedAt": "2026-06-20"
+    "zodEnrichedAt": "2026-06-20",
+    "responseSource": "documented-default",
+    "finalizedAt": "2026-06-20"
   }
 }

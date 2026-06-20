@@ -104,6 +104,12 @@ function main() {
     if (isWrite && isEmpty(c.request.body) && route.body && !isEmpty(examples[route.body])) {
       c.request.body = examples[route.body]; bodies++; changed = true;
     }
+    // A write route with no validateBody() legitimately takes no body (action
+    // endpoints like .../approve, .../revoke/:id, .../online-status) — mark it so
+    // the auditor doesn't flag an empty body as a gap.
+    if (isWrite && isEmpty(c.request.body) && !route.body && c.request.noBody !== true) {
+      c.request.noBody = true; changed = true;
+    }
     if (isEmpty(c.request.query) && route.query && !isEmpty(examples[route.query])) {
       c.request.query = examples[route.query]; queries++; changed = true;
     }

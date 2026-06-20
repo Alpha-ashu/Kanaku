@@ -38,7 +38,28 @@
   "responses": {
     "200": {
       "description": "TODO success shape",
-      "body": {}
+      "body": {
+        "success": true,
+        "data": {
+          "id": "00000000-0000-0000-0000-000000000000",
+          "accountId": "uuid",
+          "type": "expense",
+          "amount": 450,
+          "category": "Food & Dining",
+          "subcategory": "string",
+          "description": "Lunch at cafe",
+          "merchant": "Swiggy",
+          "date": "2026-06-09",
+          "tags": [
+            "work"
+          ],
+          "transferToAccountId": "uuid",
+          "transferType": "self-transfer",
+          "expenseMode": "individual",
+          "groupExpenseId": "uuid",
+          "dedupHash": "string"
+        }
+      }
     },
     "201": {
       "description": "Created",
@@ -128,6 +149,8 @@
     "auto": true,
     "version": 1,
     "generatedAt": "2026-06-19",
-    "enrichedAt": "2026-06-20"
+    "enrichedAt": "2026-06-20",
+    "responseSource": "documented-default",
+    "finalizedAt": "2026-06-20"
   }
 }

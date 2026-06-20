@@ -16,12 +16,25 @@
     },
     "params": {},
     "query": {},
-    "body": {}
+    "body": [
+      {
+        "email": "user@example.com",
+        "event": "delivered",
+        "timestamp": 1700000000,
+        "sg_event_id": "ZGVsaXZlcnk...",
+        "sg_message_id": "14c5d75ce93.dfd.64b469.filter0001.16648.5515E0B88.0"
+      }
+    ]
   },
   "responses": {
     "200": {
       "description": "TODO success shape",
-      "body": {}
+      "body": {
+        "success": true,
+        "data": {
+          "id": "00000000-0000-0000-0000-000000000000"
+        }
+      }
     },
     "400": {
       "description": "Validation failed",
@@ -54,6 +67,8 @@
     "auto": true,
     "version": 1,
     "generatedAt": "2026-06-19",
-    "enrichedAt": "2026-06-20"
+    "enrichedAt": "2026-06-20",
+    "responseSource": "documented-default",
+    "finalizedAt": "2026-06-20"
   }
 }

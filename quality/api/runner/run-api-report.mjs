@@ -44,6 +44,11 @@ const MAX = process.env.QA_MAX ? Number(process.env.QA_MAX) : Infinity;
 // Read-only run: fire GETs only, skip seeding — capture responses with zero DB
 // writes (e.g. to safely run as a real/demo account without polluting its data).
 const READONLY = process.env.QA_READONLY === '1' || process.env.QA_READONLY === 'true';
+// Capture-writes run: exercise create/update/delete to record their real 2xx
+// responses. Best run as a FRESH throwaway user (the default) so the created
+// records live in a disposable account — no demo-data pollution. Orders each
+// feature create-first / delete-last so by-id ops hit the just-created resource.
+const CAPTURE_WRITES = process.env.QA_CAPTURE_WRITES === '1' || process.env.QA_CAPTURE_WRITES === 'true';
 const REQUEST_TIMEOUT_MS = 15000;
 
 const sha256Hex = (v) => createHash('sha256').update(v, 'utf8').digest('hex');
@@ -260,11 +265,24 @@ async function main() {
   log(READONLY ? `• Read-only run: skipped seeding; discovered ids for ${Object.keys(reg).join(', ') || 'none'}; only GET endpoints will be fired.\n`
               : `✓ Seeded resources: ${Object.entries(reg).filter(([, v]) => v).map(([k]) => k).join(', ') || 'none'}\n`);
 
-  // Flatten endpoints
+  // Flatten endpoints. In capture-writes mode, order each feature create-first
+  // (POST collection) → reads/updates → delete-last, so by-id ops resolve to the
+  // resource we just created and the delete (cleanup + capture) runs last.
+  const opPriority = (ep) => {
+    const m = ep.method.toUpperCase();
+    const hasParam = /[:{]/.test(ep.endpoint);
+    if (m === 'POST' && !hasParam) return 0;
+    if (m === 'DELETE') return 9;
+    if (m === 'GET') return 3;
+    return 5;
+  };
   let endpoints = [];
   for (const [feature, list] of Object.entries(index.features || {})) {
     if (ONLY && !feature.includes(ONLY)) continue;
-    for (const ep of list) endpoints.push({ feature, ...ep });
+    const ordered = CAPTURE_WRITES
+      ? [...list].map((ep, i) => ({ ep, i })).sort((a, b) => opPriority(a.ep) - opPriority(b.ep) || a.i - b.i).map((x) => x.ep)
+      : list;
+    for (const ep of ordered) endpoints.push({ feature, ...ep });
   }
   if (Number.isFinite(MAX)) endpoints = endpoints.slice(0, MAX);
 
@@ -288,7 +306,7 @@ async function main() {
       result = 'SKIP'; status = ''; respBody = { skipped: 'session-breaking endpoint (run manually)' };
     } else if (READONLY && isWrite) {
       result = 'SKIP'; status = ''; respBody = { skipped: 'read-only run (QA_READONLY=1)' };
-    } else if (isDelete && !INCLUDE_DESTRUCTIVE) {
+    } else if (isDelete && !INCLUDE_DESTRUCTIVE && !CAPTURE_WRITES) {
       result = 'SKIP'; status = ''; respBody = { skipped: 'DELETE skipped (set QA_INCLUDE_DESTRUCTIVE=1)' };
     } else if (isWrite && !IS_LOCAL && !ALLOW_REMOTE_WRITES) {
       result = 'SKIP'; status = ''; respBody = { skipped: 'write skipped on non-local host' };
@@ -302,6 +320,13 @@ async function main() {
       const res = await http(method, reqPath, { token, body });
       status = res.status; respBody = res.body; latency = res.latency;
       result = classify(status);
+
+      // Capture-writes: remember the id of a just-created resource so this
+      // feature's by-id reads/updates/deletes (ordered after) can target it.
+      if (CAPTURE_WRITES && method === 'POST' && !/[:{]/.test(ep.endpoint) && status >= 200 && status < 300) {
+        const newId = res.body?.data?.id ?? res.body?.data?.[ep.feature.replace(/s$/, '')]?.id ?? res.body?.id;
+        if (newId) reg[`${ep.feature.replace(/s$/, '')}Id`] = newId;
+      }
 
       // API-vs-DB record-count comparison for list GETs (collection paths, no params).
       if (method === 'GET' && !/[:{]/.test(ep.endpoint) && Array.isArray(res.body?.data)) {

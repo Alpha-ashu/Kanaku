@@ -28,7 +28,11 @@
   "responses": {
     "200": {
       "description": "TODO success shape",
-      "body": {}
+      "body": {
+        "success": true,
+        "message": "OTP sent to your email.",
+        "expiresIn": 90
+      }
     },
     "400": {
       "description": "Validation failed",
@@ -74,6 +78,7 @@
     "version": 1,
     "generatedAt": "2026-06-19",
     "enrichedAt": "2026-06-20",
-    "zodEnrichedAt": "2026-06-20"
+    "zodEnrichedAt": "2026-06-20",
+    "expectedBackfilledAt": "2026-06-20"
   }
 }
