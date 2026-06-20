@@ -41,6 +41,9 @@ const INCLUDE_DESTRUCTIVE = process.env.QA_INCLUDE_DESTRUCTIVE === 'true' || pro
 const ALLOW_REMOTE_WRITES = process.env.QA_ALLOW_REMOTE_WRITES === 'true' || process.env.QA_ALLOW_REMOTE_WRITES === '1';
 const ONLY = process.env.QA_ONLY || '';
 const MAX = process.env.QA_MAX ? Number(process.env.QA_MAX) : Infinity;
+// Read-only run: fire GETs only, skip seeding — capture responses with zero DB
+// writes (e.g. to safely run as a real/demo account without polluting its data).
+const READONLY = process.env.QA_READONLY === '1' || process.env.QA_READONLY === 'true';
 const REQUEST_TIMEOUT_MS = 15000;
 
 const sha256Hex = (v) => createHash('sha256').update(v, 'utf8').digest('hex');
@@ -229,8 +232,9 @@ async function main() {
   const auth = await authenticate();
   if (!auth.token) log('⚠ Could not obtain an access token — protected endpoints will return 401 (recorded as actual).');
   else log(`✓ Authenticated (userId: ${auth.userId || 'unknown'})`);
-  const reg = await seed(auth.token);
-  log(`✓ Seeded resources: ${Object.entries(reg).filter(([, v]) => v).map(([k]) => k).join(', ') || 'none'}\n`);
+  const reg = READONLY ? {} : await seed(auth.token);
+  log(READONLY ? '• Read-only run: skipped seeding; only GET endpoints will be fired.\n'
+              : `✓ Seeded resources: ${Object.entries(reg).filter(([, v]) => v).map(([k]) => k).join(', ') || 'none'}\n`);
 
   // Flatten endpoints
   let endpoints = [];
@@ -258,6 +262,8 @@ async function main() {
     if (SESSION_BREAKERS.has(`${method} ${ep.endpoint.replace(/:[^/]+/g, (m) => `{${m.slice(1)}}`)}`) ||
         SESSION_BREAKERS.has(`${method} ${ep.endpoint}`)) {
       result = 'SKIP'; status = ''; respBody = { skipped: 'session-breaking endpoint (run manually)' };
+    } else if (READONLY && isWrite) {
+      result = 'SKIP'; status = ''; respBody = { skipped: 'read-only run (QA_READONLY=1)' };
     } else if (isDelete && !INCLUDE_DESTRUCTIVE) {
       result = 'SKIP'; status = ''; respBody = { skipped: 'DELETE skipped (set QA_INCLUDE_DESTRUCTIVE=1)' };
     } else if (isWrite && !IS_LOCAL && !ALLOW_REMOTE_WRITES) {
