@@ -202,7 +202,7 @@ export const BudgetAlertsPage: React.FC = () => {
             subtitle="Configure intelligent warning thresholds, notification mediums, and inspect breach reports"
             icon={<Bell className="text-rose-600" size={20} />}
           >
-            <button
+            <button data-testid="budget-alerts-page-add-budget"
               onClick={() => setShowAddModal(true)}
               className="flex items-center gap-2 px-4 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition-colors font-medium text-xs font-black uppercase tracking-widest"
             >
@@ -249,9 +249,9 @@ export const BudgetAlertsPage: React.FC = () => {
                 const isNear = pct >= limit.threshold;
 
                 return (
-                  <Card key={limit.id} variant="glass" className="p-6 border-white/40 shadow-sm relative group/card">
+                  <Card data-testid={`budget-alerts-page-card-${limit.id}`} key={limit.id} variant="glass" className="p-6 border-white/40 shadow-sm relative group/card">
                     <div className="absolute right-4 top-4 opacity-0 group-hover/card:opacity-100 transition-opacity">
-                      <button
+                      <button data-testid={`budget-alerts-page-delete-budget-${limit.id}`}
                         onClick={() => handleDeleteBudget(limit.id)}
                         className="p-1.5 hover:bg-rose-50 text-rose-500 rounded-lg transition-colors"
                         title="Delete Budget"
@@ -287,7 +287,7 @@ export const BudgetAlertsPage: React.FC = () => {
                         <span className="text-xs font-bold text-slate-500">Tune warning point:</span>
                       </div>
                       <div className="flex items-center gap-3">
-                        <input
+                        <input data-testid={`budget-alerts-page-input-${limit.id}`}
                           type="range"
                           min="50"
                           max="95"
@@ -310,7 +310,7 @@ export const BudgetAlertsPage: React.FC = () => {
             <h3 className="text-lg font-black text-slate-900 tracking-tight">Delivery Channels</h3>
             
             {/* Channels Card */}
-            <Card variant="glass" className="p-6 border-white/40 shadow-sm space-y-4">
+            <Card data-testid="budget-alerts-page-card-2" variant="glass" className="p-6 border-white/40 shadow-sm space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
@@ -321,7 +321,7 @@ export const BudgetAlertsPage: React.FC = () => {
                     <p className="text-[9px] text-slate-400 font-medium">Daily digest summaries</p>
                   </div>
                 </div>
-                <button
+                <button data-testid="budget-alerts-page-button"
                   onClick={() => handleToggleChannel('budget_alert_email', emailAlerts, 'Email')}
                   className={`w-10 h-5 rounded-full relative transition-all ${emailAlerts ? 'bg-indigo-600' : 'bg-slate-300'}`}
                 >
@@ -339,7 +339,7 @@ export const BudgetAlertsPage: React.FC = () => {
                     <p className="text-[9px] text-slate-400 font-medium">Instant phone notifications</p>
                   </div>
                 </div>
-                <button
+                <button data-testid="budget-alerts-page-button-2"
                   onClick={() => handleToggleChannel('budget_alert_push', pushAlerts, 'Push')}
                   className={`w-10 h-5 rounded-full relative transition-all ${pushAlerts ? 'bg-indigo-600' : 'bg-slate-300'}`}
                 >
@@ -357,7 +357,7 @@ export const BudgetAlertsPage: React.FC = () => {
                     <p className="text-[9px] text-slate-400 font-medium">Text notifications</p>
                   </div>
                 </div>
-                <button
+                <button data-testid="budget-alerts-page-button-3"
                   onClick={() => handleToggleChannel('budget_alert_sms', smsAlerts, 'SMS')}
                   className={`w-10 h-5 rounded-full relative transition-all ${smsAlerts ? 'bg-indigo-600' : 'bg-slate-300'}`}
                 >
@@ -376,7 +376,7 @@ export const BudgetAlertsPage: React.FC = () => {
                 </div>
               ) : (
                 alerts.map(alert => (
-                  <Card
+                  <Card data-testid={`budget-alerts-page-card-3-${alert.id}`}
                     key={alert.id}
                     variant="glass"
                     className={`p-4 border-white/40 shadow-sm border-l-4 ${alert.type === 'critical' ? 'border-l-rose-500 bg-rose-50/20' : 'border-l-amber-500 bg-amber-50/20'}`}
@@ -386,7 +386,7 @@ export const BudgetAlertsPage: React.FC = () => {
                         <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">{alert.category} • {alert.timestamp}</span>
                         <p className="text-xs text-slate-700 font-medium leading-relaxed mt-1">{alert.message}</p>
                       </div>
-                      <button
+                      <button data-testid={`budget-alerts-page-dismiss-${alert.id}`}
                         onClick={() => handleDismissAlert(alert.category)}
                         className="text-[10px] font-black text-indigo-600 uppercase tracking-wider hover:text-indigo-800 shrink-0"
                       >
@@ -404,7 +404,7 @@ export const BudgetAlertsPage: React.FC = () => {
       {/* Add Budget Modal */}
       {showAddModal && (
         <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
-          <div 
+          <div data-testid="budget-alerts-page-div" 
             className="absolute inset-0 bg-black/50" 
             onClick={() => setShowAddModal(false)} 
           />
@@ -415,7 +415,7 @@ export const BudgetAlertsPage: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Category *
                 </label>
-                <input
+                <input data-testid="budget-alerts-page-e-g-food-shopping"
                   type="text"
                   name="category"
                   value={newCategory}
@@ -428,7 +428,7 @@ export const BudgetAlertsPage: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Limit Amount *
                 </label>
-                <input
+                <input data-testid="budget-alerts-page-e-g-5000"
                   type="number"
                   name="amount"
                   value={newLimit || ''}
@@ -438,13 +438,13 @@ export const BudgetAlertsPage: React.FC = () => {
                 />
               </div>
               <div className="flex gap-3 pt-4">
-                <button
+                <button data-testid="budget-alerts-page-cancel"
                   onClick={() => setShowAddModal(false)}
                   className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl hover:bg-gray-50 transition-colors font-medium text-gray-700"
                 >
                   Cancel
                 </button>
-                <button
+                <button data-testid="budget-alerts-page-save-budget"
                   onClick={handleAddBudget}
                   className="flex-1 px-4 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition-colors font-medium"
                 >

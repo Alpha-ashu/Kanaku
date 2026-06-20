@@ -159,13 +159,13 @@ export const OnboardingStep4: React.FC<OnboardingStep4Props> = ({
  </div>
 
  <div className="flex space-x-3">
- <button
+ <button data-testid="onboarding-step4-back"
  onClick={onBack}
  className="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors font-medium"
  >
  Back
  </button>
- <button
+ <button data-testid="onboarding-step4-try-again"
  onClick={retryOnboarding}
  className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium"
  >
@@ -255,7 +255,7 @@ export const OnboardingStep4: React.FC<OnboardingStep4Props> = ({
  )}
 
  <div className="flex space-x-3">
- <button
+ <button data-testid="onboarding-step4-back-2"
  onClick={onBack}
  disabled={isSyncing}
  className="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"

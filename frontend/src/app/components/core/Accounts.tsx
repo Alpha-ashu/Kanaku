@@ -346,7 +346,7 @@ export const Accounts: React.FC = () => {
                         subtitle="Manage your wallets and payment sources"
                     >
                         {canCreate && (
-                        <Button
+                        <Button data-testid="accounts-button"
                             onClick={() => setCurrentPage("add-account")}
                             className="shadow-lg bg-gray-900 hover:bg-gray-800 text-white h-12 px-6 rounded-2xl font-bold flex items-center gap-2"
                         >
@@ -370,7 +370,7 @@ export const Accounts: React.FC = () => {
                             };
 
                             return (
-                                <button
+                                <button data-testid={`accounts-button-2-${tab.id}`}
                                     key={tab.id}
                                     onClick={() => setActiveTab(tab.id as AssetType)}
                                     className={cn(
@@ -479,7 +479,7 @@ export const Accounts: React.FC = () => {
                                                 isActive ? 'scale-100 opacity-100' : 'scale-95 opacity-70'
                                             )}
                                         >
-                                            <Card
+                                            <Card data-testid={`accounts-card-${account.id}`}
                                                 variant={isActive ? "flat" : "default"}
                                                 noPadding
                                                 className={cn(
@@ -527,7 +527,7 @@ export const Accounts: React.FC = () => {
                                                             {isActive ? (
                                                                 <>
                                                                     {canEdit && (
-                                                                    <button
+                                                                    <button data-testid={`accounts-edit-account-${account.id}`}
                                                                         onClick={(e) => handleEditAccount(account, e)}
                                                                         className="w-7 h-7 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-all active:scale-90 border border-white/10"
                                                                         aria-label={`Edit ${account.name} account`}
@@ -535,7 +535,7 @@ export const Accounts: React.FC = () => {
                                                                     ><Edit2 size={11} /></button>
                                                                     )}
                                                                     {canDelete && (
-                                                                    <button
+                                                                    <button data-testid={`accounts-delete-account-${account.id}`}
                                                                         onClick={(e) => { e.stopPropagation(); handleDeleteAccount(account.id!, account.name); }}
                                                                         className="w-7 h-7 flex items-center justify-center rounded-full bg-red-500/40 hover:bg-red-500/70 text-white transition-all active:scale-90 border border-red-400/20"
                                                                         aria-label={`Delete ${account.name} account`}
@@ -579,7 +579,7 @@ export const Accounts: React.FC = () => {
                                                         )}
 
                                                         <div className="flex gap-1.5 flex-shrink-0">
-                                                            <Button size="sm"
+                                                            <Button data-testid={`accounts-add-${account.id}`} size="sm"
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
                                                                     setActiveCardAccountId(account.id!);
@@ -589,7 +589,7 @@ export const Accounts: React.FC = () => {
                                                                 <Plus size={11} className="mr-0.5" />Add
                                                             </Button>
                                                             {canImport && (account.type === 'bank' || account.type === 'card') && (
-                                                                <Button size="sm"
+                                                                <Button data-testid={`accounts-import-${account.id}`} size="sm"
                                                                     onClick={(e) => { e.stopPropagation(); setStatementImportOpen({ accountId: account.id!, accountName: account.name, accountType: account.type }); }}
                                                                     className={cn(
                                                                         "h-7 px-2.5 rounded-full text-[10px] font-semibold",
@@ -619,7 +619,7 @@ export const Accounts: React.FC = () => {
                             >
                                 <div className="flex gap-2 justify-center items-center h-5 mb-1.5">
                                     {filteredAccounts.map((account) => (
-                                        <button
+                                        <button data-testid={`accounts-go-to-account-${`dot-mobile-${account.id}`}`}
                                             key={`dot-mobile-${account.id}`}
                                             onClick={() => handleCardClick(account.id!)}
                                             className={cn(
@@ -675,7 +675,7 @@ export const Accounts: React.FC = () => {
                                                     isActive ? 'scale-100 opacity-100' : 'scale-90 opacity-50'
                                                 )}
                                             >
-                                                <Card
+                                                <Card data-testid={`accounts-card-2-${account.id}`}
                                                     variant="flat"
                                                     noPadding
                                                     className={cn(
@@ -730,7 +730,7 @@ export const Accounts: React.FC = () => {
                                                                             - ACTIVE
                                                                         </motion.span>
                                                                         {canEdit && (
-                                                                        <button
+                                                                        <button data-testid={`accounts-edit-account-2-${account.id}`}
                                                                             onClick={(e) => handleEditAccount(account, e)}
                                                                             className="w-8 h-8 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-all active:scale-90 border border-white/10"
                                                                             aria-label={`Edit ${account.name} account`}
@@ -738,7 +738,7 @@ export const Accounts: React.FC = () => {
                                                                         ><Edit2 size={13} /></button>
                                                                         )}
                                                                         {canDelete && (
-                                                                        <button
+                                                                        <button data-testid={`accounts-delete-account-2-${account.id}`}
                                                                             onClick={(e) => { e.stopPropagation(); handleDeleteAccount(account.id!, account.name); }}
                                                                             className="w-8 h-8 flex items-center justify-center rounded-full bg-red-500/40 hover:bg-red-500/70 text-white transition-all active:scale-90 border border-red-400/20"
                                                                             aria-label={`Delete ${account.name} account`}
@@ -790,7 +790,7 @@ export const Accounts: React.FC = () => {
                                                             )}
 
                                                             <div className="flex gap-2 flex-shrink-0">
-                                                                <Button size="sm"
+                                                                <Button data-testid={`accounts-add-2-${account.id}`} size="sm"
                                                                     onClick={(e) => {
                                                                         e.stopPropagation();
                                                                         setActiveCardAccountId(account.id!);
@@ -800,7 +800,7 @@ export const Accounts: React.FC = () => {
                                                                     <Plus size={13} className="mr-1" />Add
                                                                 </Button>
                                                                 {canImport && (account.type === 'bank' || account.type === 'card') && (
-                                                                    <Button size="sm"
+                                                                    <Button data-testid={`accounts-import-2-${account.id}`} size="sm"
                                                                         onClick={(e) => { e.stopPropagation(); setStatementImportOpen({ accountId: account.id!, accountName: account.name, accountType: account.type }); }}
                                                                         className={cn(
                                                                             "h-7 px-2.5 rounded-full text-[10px] font-semibold",
@@ -835,7 +835,7 @@ export const Accounts: React.FC = () => {
                                 >
                                     <div className="flex gap-2 justify-center items-center h-5 mb-1.5">
                                         {filteredAccounts.map((account) => (
-                                            <button
+                                            <button data-testid={`accounts-go-to-account-2-${`dot-${account.id}`}`}
                                                 key={`dot-${account.id}`}
                                                 onClick={() => handleCardClick(account.id!)}
                                                 className={cn(
@@ -861,9 +861,9 @@ export const Accounts: React.FC = () => {
                             {/* Transaction History - Subscribed to Carousel Scroll */}
                             {selectedAccount && (
                                     <div className="mt-4 w-full px-2 sm:px-0">
-                                        <Card className="bg-white/80 backdrop-blur-xl border-white/60 overflow-hidden shadow-2xl">
+                                        <Card data-testid="accounts-card-3" className="bg-white/80 backdrop-blur-xl border-white/60 overflow-hidden shadow-2xl">
                                             <div className="max-h-[400px] sm:max-h-[500px] overflow-y-auto">
-                                                <table className="w-full">
+                                                <table data-testid="accounts-table" className="w-full">
                                                     <thead className="bg-white/80 sticky top-0 z-10 backdrop-blur-sm">
                                                         <tr>
                                                             <th className="px-3 sm:px-4 md:px-8 py-3 sm:py-4 md:py-5 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
@@ -944,7 +944,7 @@ export const Accounts: React.FC = () => {
 
                 <div className="lg:hidden mt-6">
                     {selectedAccount && (
-                        <Card className="bg-white/80 backdrop-blur-xl border-white/60 overflow-hidden shadow-2xl">
+                        <Card data-testid="accounts-card-4" className="bg-white/80 backdrop-blur-xl border-white/60 overflow-hidden shadow-2xl">
                             <div className="max-h-[400px] overflow-y-auto">
                                 <div className="block lg:hidden">
                                     {accountTransactions.length > 0 ? (
@@ -1025,7 +1025,7 @@ export const Accounts: React.FC = () => {
                         exit={{ opacity: 0 }}
                     >
                         {/* Backdrop */}
-                        <div
+                        <div data-testid="accounts-div"
                             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
                             onClick={() => { setEditModalOpen(false); setEditingAccount(null); }}
                         />
@@ -1048,7 +1048,7 @@ export const Accounts: React.FC = () => {
                                     <h2 className="text-xl font-black text-slate-900 tracking-tight">Edit Account</h2>
                                     <p className="text-xs text-slate-500 font-medium mt-0.5">Update your account details</p>
                                 </div>
-                                <button
+                                <button data-testid="accounts-close-edit-account-dialog"
                                     onClick={() => { setEditModalOpen(false); setEditingAccount(null); }}
                                     className="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 transition-all active:scale-90"
                                     aria-label="Close edit account dialog"
@@ -1062,7 +1062,7 @@ export const Accounts: React.FC = () => {
                                 {/* Account Name */}
                                 <div className="space-y-2">
                                     <label className="block text-xs font-bold text-slate-900 ml-1 uppercase tracking-wider">Account Name</label>
-                                    <input
+                                    <input data-testid="accounts-e-g-hdfc-savings"
                                         type="text"
                                         value={editingAccount.name}
                                         onChange={(e) => setEditingAccount(prev => prev ? { ...prev, name: e.target.value } : null)}
@@ -1084,7 +1084,7 @@ export const Accounts: React.FC = () => {
                                             const Icon = type.icon;
                                             const isSelected = editingAccount.type === type.id;
                                             return (
-                                                <button
+                                                <button data-testid={`accounts-button-3-${type.id}`}
                                                     key={type.id}
                                                     onClick={() => setEditingAccount(prev => prev ? { ...prev, type: type.id } : null)}
                                                     className={cn(
@@ -1111,7 +1111,7 @@ export const Accounts: React.FC = () => {
                                     {/* Opening Balance */}
                                     <div className="space-y-2">
                                         <label className="block text-xs font-bold text-slate-900 ml-1 uppercase tracking-wider">Opening Balance ({currency})</label>
-                                        <input
+                                        <input data-testid="accounts-0-00"
                                             type="number"
                                             value={editingAccount.openingBalance || ''}
                                             onChange={(e) => setEditingAccount(prev => prev ? { ...prev, openingBalance: parseFloat(e.target.value) || 0 } : null)}
@@ -1124,7 +1124,7 @@ export const Accounts: React.FC = () => {
                                     {/* Balance */}
                                     <div className="space-y-2">
                                         <label className="block text-xs font-bold text-slate-900 ml-1 uppercase tracking-wider">Current Balance ({currency})</label>
-                                        <input
+                                        <input data-testid="accounts-0-00-2"
                                             type="number"
                                             value={editingAccount.balance}
                                             onChange={(e) => setEditingAccount(prev => prev ? { ...prev, balance: parseFloat(e.target.value) || 0 } : null)}
@@ -1141,7 +1141,7 @@ export const Accounts: React.FC = () => {
                                         <p className="text-sm font-bold text-slate-900">Active Account</p>
                                         <p className="text-[10px] text-slate-500 font-medium">Show this account in your portfolio</p>
                                     </div>
-                                    <button
+                                    <button data-testid="accounts-toggle-account-active-state"
                                         onClick={() => setEditingAccount(prev => prev ? { ...prev, isActive: !prev.isActive } : null)}
                                         className={cn(
                                             "relative w-12 h-6.5 rounded-full transition-all duration-300 shadow-inner",
@@ -1162,13 +1162,13 @@ export const Accounts: React.FC = () => {
                             {/* Fixed Actions Footer - Inside Modal but absolutely positioned */}
                             <div className="absolute bottom-0 left-0 right-0 p-6 bg-white/95 backdrop-blur-md border-t border-slate-50 z-20">
                                 <div className="flex gap-3">
-                                    <button
+                                    <button data-testid="accounts-cancel"
                                         onClick={() => { setEditModalOpen(false); setEditingAccount(null); }}
                                         className="flex-1 py-4 rounded-2xl border-2 border-slate-200 text-sm font-bold text-slate-600 hover:bg-slate-50 active:scale-95 transition-all"
                                     >
                                         Cancel
                                     </button>
-                                    <button
+                                    <button data-testid="accounts-button-4"
                                         onClick={handleSaveEdit}
                                         disabled={isSavingEdit || !editingAccount.name.trim()}
                                         className="flex-[1.5] py-4 rounded-2xl bg-slate-900 text-white text-sm font-bold shadow-xl shadow-slate-900/20 active:scale-95 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
@@ -1203,7 +1203,7 @@ export const Accounts: React.FC = () => {
             {/* Transaction Type Picker Modal */}
             {showTransactionTypeModal && (
                 <div className="fixed inset-0 flex items-center justify-center z-[60] p-4 sm:p-6">
-                    <div
+                    <div data-testid="accounts-div-2"
                         className="absolute inset-0 bg-black/60 backdrop-blur-sm"
                         onClick={() => setShowTransactionTypeModal(false)}
                     />
@@ -1249,7 +1249,7 @@ export const Accounts: React.FC = () => {
                             ))}
                         </div>
 
-                        <Button
+                        <Button data-testid="accounts-cancel-2"
                             variant="ghost"
                             className="w-full mt-6 rounded-xl hover:bg-slate-100 text-slate-500 font-bold"
                             onClick={() => setShowTransactionTypeModal(false)}

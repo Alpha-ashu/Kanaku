@@ -108,7 +108,7 @@ export const AdminAdvisorVerification: React.FC = () => {
           <Shield size={48} className="mx-auto text-red-400 mb-4" />
           <h2 className="text-2xl font-bold text-gray-900">Access Denied</h2>
           <p className="text-gray-500 mt-2">Only admins and managers can access advisor verification.</p>
-          <button type="button" onClick={() => setCurrentPage('dashboard')} className="mt-6 px-6 py-2 bg-blue-600 text-white rounded-xl font-medium">
+          <button data-testid="admin-advisor-verification-go-to-dashboard" type="button" onClick={() => setCurrentPage('dashboard')} className="mt-6 px-6 py-2 bg-blue-600 text-white rounded-xl font-medium">
             Go to Dashboard
           </button>
         </div>
@@ -180,13 +180,13 @@ export const AdminAdvisorVerification: React.FC = () => {
 
         {/* Header */}
         <div className="flex items-center gap-4">
-          <button type="button" onClick={goBack} aria-label="Go back" className="p-2 hover:bg-gray-100 rounded-xl transition-colors md:!hidden">
+          <button data-testid="admin-advisor-verification-go-back" type="button" onClick={goBack} aria-label="Go back" className="p-2 hover:bg-gray-100 rounded-xl transition-colors md:!hidden">
             <ChevronLeft size={20} className="text-gray-600" />
           </button>
           <h1 className="text-xl font-black text-slate-900 tracking-tight leading-none flex-1">
             Advisor Verification
           </h1>
-          <button
+          <button data-testid="admin-advisor-verification-refresh"
             type="button"
             onClick={fetchApplications}
             disabled={loading}
@@ -231,7 +231,7 @@ export const AdminAdvisorVerification: React.FC = () => {
             { id: 'rejected', label: `Rejected (${rejected.length})` },
             { id: 'all', label: 'All' },
           ] as { id: FilterTab; label: string }[]).map((tab) => (
-            <button
+            <button data-testid={`admin-advisor-verification-button-${tab.id}`}
               key={tab.id}
               type="button"
               onClick={() => setActiveTab(tab.id)}
@@ -296,7 +296,7 @@ export const AdminAdvisorVerification: React.FC = () => {
 
                       {/* Actions */}
                       <div className="flex items-center gap-2 shrink-0">
-                        <button
+                        <button data-testid={`admin-advisor-verification-is-expanded-collapse-details-${app.applicationId}`}
                           type="button"
                           onClick={() => setExpandedId(isExpanded ? null : app.applicationId)}
                           className="p-2 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors"
@@ -307,7 +307,7 @@ export const AdminAdvisorVerification: React.FC = () => {
 
                         {app.status === 'PENDING' && (
                           <>
-                            <button
+                            <button data-testid={`admin-advisor-verification-approve-${app.applicationId}`}
                               type="button"
                               onClick={() => handleApprove(app.userId, app.fullName)}
                               disabled={processingId === app.userId}
@@ -316,7 +316,7 @@ export const AdminAdvisorVerification: React.FC = () => {
                               {processingId === app.userId ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} />}
                               Approve
                             </button>
-                            <button
+                            <button data-testid={`admin-advisor-verification-reject-${app.applicationId}`}
                               type="button"
                               onClick={() => setRejectModal({ userId: app.userId, name: app.fullName })}
                               disabled={processingId === app.userId}
@@ -329,7 +329,7 @@ export const AdminAdvisorVerification: React.FC = () => {
                         )}
 
                         {app.status === 'APPROVED' && (
-                          <button
+                          <button data-testid={`admin-advisor-verification-revoke-${app.applicationId}`}
                             type="button"
                             onClick={() => setRejectModal({ userId: app.userId, name: app.fullName })}
                             disabled={processingId === app.userId}
@@ -341,7 +341,7 @@ export const AdminAdvisorVerification: React.FC = () => {
                         )}
 
                         {app.status === 'REJECTED' && (
-                          <button
+                          <button data-testid={`admin-advisor-verification-approve-2-${app.applicationId}`}
                             type="button"
                             onClick={() => handleApprove(app.userId, app.fullName)}
                             disabled={processingId === app.userId}
@@ -404,7 +404,7 @@ export const AdminAdvisorVerification: React.FC = () => {
                                 ].map((doc) => {
                                   const key = `${app.applicationId}-${doc.type}`;
                                   return doc.has ? (
-                                    <button
+                                    <button data-testid={`admin-advisor-verification-button-2-${doc.type}`}
                                       key={doc.type}
                                       type="button"
                                       onClick={() => openDocument(app.applicationId, doc.type)}
@@ -456,7 +456,7 @@ export const AdminAdvisorVerification: React.FC = () => {
                   </div>
                 </div>
                 <label htmlFor="reject-reason" className="block text-sm font-medium text-gray-700 mb-2">Reason (optional)</label>
-                <textarea
+                <textarea data-testid="admin-advisor-verification-explain-why-this-application"
                   id="reject-reason"
                   value={rejectReason}
                   onChange={(e) => setRejectReason(e.target.value)}
@@ -465,14 +465,14 @@ export const AdminAdvisorVerification: React.FC = () => {
                   placeholder="Explain why this application is being rejected..."
                 />
                 <div className="flex gap-3 mt-4">
-                  <button
+                  <button data-testid="admin-advisor-verification-cancel"
                     type="button"
                     onClick={() => { setRejectModal(null); setRejectReason(''); }}
                     className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-bold text-gray-700 hover:bg-gray-50"
                   >
                     Cancel
                   </button>
-                  <button
+                  <button data-testid="admin-advisor-verification-confirm-reject"
                     type="button"
                     onClick={handleReject}
                     disabled={processingId !== null}

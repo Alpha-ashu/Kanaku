@@ -218,7 +218,7 @@ export const ToDoLists: React.FC = () => {
   const renderListCard = (list: ToDoList, isShared = false) => {
     const isTogether = list.listType === 'together';
     return (
-      <div
+      <div data-testid="to-do-lists-div"
         key={list.id}
         onClick={() => handleOpenList(list.id!)}
         className="premium-glass-card p-4 flex items-center gap-4 cursor-pointer hover:shadow-md transition-all group"
@@ -341,7 +341,7 @@ export const ToDoLists: React.FC = () => {
       {/* Create Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 pb-[calc(var(--bottom-nav-height)+1.25rem)] sm:pb-4">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => { setShowCreateModal(false); resetModal(); }} />
+          <div data-testid="to-do-lists-div-2" className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => { setShowCreateModal(false); resetModal(); }} />
           <div className="relative bg-white rounded-2xl w-full max-w-md shadow-2xl z-10 overflow-hidden max-h-[90vh] flex flex-col">
             <div className="flex items-center justify-between p-5 border-b border-slate-100 shrink-0">
               <h3 className="text-base font-black text-slate-900">Create New List</h3>

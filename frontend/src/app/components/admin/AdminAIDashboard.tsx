@@ -357,7 +357,7 @@ export const AdminAIDashboard: React.FC = () => {
   <ShieldAlert size={40} className="mx-auto mb-3 text-red-400" />
   <h2 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h2>
   <p className="text-gray-600 mb-4">Only admins can access the AI Intelligence Dashboard.</p>
-  <button
+  <button data-testid="admin-aidashboard-go-to-dashboard"
   onClick={() => setCurrentPage('dashboard')}
   className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
   >
@@ -375,7 +375,7 @@ export const AdminAIDashboard: React.FC = () => {
  {/* Header */}
  <div className="flex flex-col md:flex-row md:items-center gap-4 justify-between">
  <div className="flex items-start gap-3">
- <button
+ <button data-testid="admin-aidashboard-back-to-admin-panel"
  onClick={() => setCurrentPage('admin-feature-panel')}
  className="md:!hidden p-2 hover:bg-gray-100 rounded-lg transition-colors mt-0.5 md:mt-0"
  aria-label="Back to admin panel"
@@ -392,7 +392,7 @@ export const AdminAIDashboard: React.FC = () => {
  </div>
  {/* Action buttons */}
  <div className="flex flex-wrap items-center gap-2 pl-[3.25rem] md:pl-0 shrink-0">
- <button
+ <button data-testid="admin-aidashboard-refresh"
  id="ai-refresh-btn"
  onClick={() => void handleRefresh()}
  disabled={refreshing || state === 'loading'}
@@ -401,7 +401,7 @@ export const AdminAIDashboard: React.FC = () => {
  <RefreshCw size={14} className={refreshing ? 'animate-spin' : ''} />
  Refresh
  </button>
- <button
+ <button data-testid="admin-aidashboard-button"
  id="ai-run-features-btn"
  onClick={() => void handleRunFeatures()}
  disabled={runningFeatures}
@@ -410,7 +410,7 @@ export const AdminAIDashboard: React.FC = () => {
  <Play size={14} className={runningFeatures ? 'animate-pulse' : ''} />
  {runningFeatures ? 'Running...' : 'Run Features'}
  </button>
- <button
+ <button data-testid="admin-aidashboard-button-2"
  id="ai-run-predictions-btn"
  onClick={() => void handleRunPredictions()}
  disabled={runningPredictions}
@@ -424,7 +424,7 @@ export const AdminAIDashboard: React.FC = () => {
 
  {/* Loading */}
  {state === 'loading' && (
- <Card>
+ <Card data-testid="admin-aidashboard-card">
  <div className="flex flex-col items-center justify-center py-16 gap-3">
  <div className="w-10 h-10 border-2 border-gray-200 border-t-indigo-500 rounded-full animate-spin" />
  <p className="text-sm text-gray-500">Loading AI telemetry...</p>
@@ -447,7 +447,7 @@ export const AdminAIDashboard: React.FC = () => {
  {state === 'ready' && overview && patterns && accuracy && (
  <>
  {/* KPI overview row */}
- <Card>
+ <Card data-testid="admin-aidashboard-card-2">
  <SectionHeading icon={<Activity size={18} />} title="AI Overview" iconColor="text-blue-500" />
  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
  <StatMini
@@ -487,7 +487,7 @@ export const AdminAIDashboard: React.FC = () => {
  </Card>
 
  {/* AI Accuracy */}
- <Card>
+ <Card data-testid="admin-aidashboard-card-3">
  <SectionHeading icon={<Target size={18} />} title="AI Accuracy Monitor" iconColor="text-emerald-500" />
  <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
  {[
@@ -515,7 +515,7 @@ export const AdminAIDashboard: React.FC = () => {
   { id: 'insights', label: `AI Insights Feed (${insights.length})` },
   { id: 'ai-config', label: 'AI Settings & Deployment' },
   ] as const).map((tab) => (
- <button
+ <button data-testid={`admin-aidashboard-button-3-${tab.id}`}
  key={tab.id}
  onClick={() => setActiveTab(tab.id)}
  className={[
@@ -652,7 +652,7 @@ export const AdminAIDashboard: React.FC = () => {
  {activeTab === 'users' && (
  <div className="space-y-5">
  <div className="overflow-x-auto rounded-xl">
- <table className="min-w-full text-sm">
+ <table data-testid="admin-aidashboard-table" className="min-w-full text-sm">
  <thead>
  <tr className="border-b border-gray-100">
  {['User', 'Spend Score', 'Risk Score', 'Risk', 'Savings Rate', 'Top Category', 'Avg Spend', ''].map((h) => (
@@ -702,7 +702,7 @@ export const AdminAIDashboard: React.FC = () => {
  </td>
  <td className="py-3 pr-4 text-gray-700 text-xs">{formatCurrency(u.avgSpend)}</td>
  <td className="py-3">
- <button
+ <button data-testid={`admin-aidashboard-inspect-${u.userId}`}
  id={`inspect-user-${u.userId}`}
  onClick={() => {
  setSelectedUserId(u.userId);
@@ -732,7 +732,7 @@ export const AdminAIDashboard: React.FC = () => {
  {/* Filter chips */}
  <div className="flex flex-wrap gap-2">
  {uniqueTypes.slice(0, 7).map((type) => (
- <button
+ <button data-testid={`admin-aidashboard-button-4-${type}`}
  key={type}
  onClick={() => setInsightFilter(type)}
  className={[
@@ -802,19 +802,19 @@ export const AdminAIDashboard: React.FC = () => {
  <div className="grid gap-4 sm:grid-cols-2">
  <div>
  <label className="block text-xs font-semibold text-slate-600 mb-1">OCR Provider</label>
- <select
+ <select data-testid="admin-aidashboard-select"
  value={aiConfig.ocr.provider}
  onChange={(e) => updateConfigField('ocr', 'provider', e.target.value)}
  className="w-full text-xs border border-slate-200 rounded-lg p-2.5 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
  >
- <option value="tesseract">Tesseract-only (Offline/Local heuristic parsing)</option>
- <option value="gemini">Gemini-only (Direct multimodal LLM scanning)</option>
- <option value="hybrid">Hybrid (Tesseract OCR + Gemini 1.5 JSON mapper)</option>
+ <option data-testid="admin-aidashboard-tesseract-only-offline-local" value="tesseract">Tesseract-only (Offline/Local heuristic parsing)</option>
+ <option data-testid="admin-aidashboard-gemini-only-direct-multimodal" value="gemini">Gemini-only (Direct multimodal LLM scanning)</option>
+ <option data-testid="admin-aidashboard-hybrid-tesseract-ocr-gemini" value="hybrid">Hybrid (Tesseract OCR + Gemini 1.5 JSON mapper)</option>
  </select>
  </div>
  <div>
  <label className="block text-xs font-semibold text-slate-600 mb-1">Gemini Model Version</label>
- <input
+ <input data-testid="admin-aidashboard-e-g-gemini-1"
  type="text"
  value={aiConfig.ocr.model}
  onChange={(e) => updateConfigField('ocr', 'model', e.target.value)}
@@ -826,7 +826,7 @@ export const AdminAIDashboard: React.FC = () => {
  <label className="block text-xs font-semibold text-slate-600 mb-1">
  Confidence Acceptance Threshold: <span className="font-mono text-indigo-600 font-bold">{Math.round(aiConfig.ocr.confidenceThreshold * 100)}%</span>
  </label>
- <input
+ <input data-testid="admin-aidashboard-input"
  type="range"
  min="0"
  max="1"
@@ -840,7 +840,7 @@ export const AdminAIDashboard: React.FC = () => {
  <div className="grid grid-cols-2 gap-3">
  <div>
  <label className="block text-xs font-semibold text-slate-600 mb-1">Max Retries</label>
- <input
+ <input data-testid="admin-aidashboard-input-2"
  type="number"
  min="1"
  max="10"
@@ -851,7 +851,7 @@ export const AdminAIDashboard: React.FC = () => {
  </div>
  <div>
  <label className="block text-xs font-semibold text-slate-600 mb-1">Timeout (ms)</label>
- <input
+ <input data-testid="admin-aidashboard-input-3"
  type="number"
  step="1000"
  value={aiConfig.ocr.timeoutMs}
@@ -871,7 +871,7 @@ export const AdminAIDashboard: React.FC = () => {
  <h4 className="font-semibold text-slate-800 text-sm">2. Smart Spreadsheet Import Pipeline</h4>
  </div>
  <label className="relative inline-flex items-center cursor-pointer">
- <input
+ <input data-testid="admin-aidashboard-checkbox"
  type="checkbox"
  checked={aiConfig.import.enabled}
  onChange={(e) => updateConfigField('import', 'enabled', e.target.checked)}
@@ -892,7 +892,7 @@ export const AdminAIDashboard: React.FC = () => {
  const exists = aiConfig.import.formats.includes(ext);
  return (
  <label key={ext} className="flex items-center gap-1.5 text-xs text-slate-700 cursor-pointer">
- <input
+ <input data-testid={`admin-aidashboard-checkbox-2-${ext}`}
  type="checkbox"
  checked={exists}
  onChange={(e) => {
@@ -912,7 +912,7 @@ export const AdminAIDashboard: React.FC = () => {
  <div>
  <label className="block text-xs font-semibold text-slate-600 mb-1">Duplicate Entry Detection Window</label>
  <div className="flex items-center gap-2">
- <input
+ <input data-testid="admin-aidashboard-input-4"
  type="number"
  min="0"
  max="60"
@@ -936,7 +936,7 @@ export const AdminAIDashboard: React.FC = () => {
  ].map((item) => (
  <div key={item.key}>
  <label className="block text-[11px] font-semibold text-slate-500 mb-1 capitalize">{item.label}</label>
- <input
+ <input data-testid={`admin-aidashboard-e-g-amount-value-${item.key}`}
  type="text"
  defaultValue={aiConfig.import.columnAliases[item.key].join(', ')}
  onBlur={(e) => updateImportAlias(item.key, e.target.value)}
@@ -960,7 +960,7 @@ export const AdminAIDashboard: React.FC = () => {
  <h4 className="font-semibold text-slate-800 text-sm">3. Voice Financial NLP Assistant</h4>
  </div>
  <label className="relative inline-flex items-center cursor-pointer">
- <input
+ <input data-testid="admin-aidashboard-checkbox-3"
  type="checkbox"
  checked={aiConfig.voice.enabled}
  onChange={(e) => updateConfigField('voice', 'enabled', e.target.checked)}
@@ -975,19 +975,19 @@ export const AdminAIDashboard: React.FC = () => {
  <div className="grid gap-4 sm:grid-cols-2">
  <div>
  <label className="block text-xs font-semibold text-slate-600 mb-1">ASR Speech Engine Provider</label>
- <select
+ <select data-testid="admin-aidashboard-select-2"
  value={aiConfig.voice.provider}
  onChange={(e) => updateConfigField('voice', 'provider', e.target.value)}
  className="w-full text-xs border border-slate-200 rounded-lg p-2.5 bg-white focus:outline-none focus:ring-1 focus:ring-violet-500"
  >
- <option value="webkit">Web Speech API (Chrome local browser speech recognition)</option>
- <option value="whisper">OpenAI Whisper-1 API (Requires backend API key)</option>
- <option value="gemini">Google Gemini Audio Multimodal (Requires backend API key)</option>
+ <option data-testid="admin-aidashboard-web-speech-api-chrome" value="webkit">Web Speech API (Chrome local browser speech recognition)</option>
+ <option data-testid="admin-aidashboard-open-ai-whisper-1" value="whisper">OpenAI Whisper-1 API (Requires backend API key)</option>
+ <option data-testid="admin-aidashboard-google-gemini-audio-multimodal" value="gemini">Google Gemini Audio Multimodal (Requires backend API key)</option>
  </select>
  </div>
  <div>
  <label className="block text-xs font-semibold text-slate-600 mb-1">ASR Model Name (Gemini/Whisper)</label>
- <input
+ <input data-testid="admin-aidashboard-e-g-gemini-1-2"
  type="text"
  value={aiConfig.voice.model}
  onChange={(e) => updateConfigField('voice', 'model', e.target.value)}
@@ -997,7 +997,7 @@ export const AdminAIDashboard: React.FC = () => {
  </div>
  <div>
  <label className="block text-xs font-semibold text-slate-600 mb-1">Default Input Language</label>
- <input
+ <input data-testid="admin-aidashboard-e-g-en-us"
  type="text"
  value={aiConfig.voice.language}
  onChange={(e) => updateConfigField('voice', 'language', e.target.value)}
@@ -1009,7 +1009,7 @@ export const AdminAIDashboard: React.FC = () => {
  <label className="block text-xs font-semibold text-slate-600 mb-1">
  Auto-save Confidence threshold: <span className="font-mono text-violet-600 font-bold">{Math.round(aiConfig.voice.autoSaveThreshold * 100)}%</span>
  </label>
- <input
+ <input data-testid="admin-aidashboard-input-5"
  type="range"
  min="0"
  max="1"
@@ -1040,7 +1040,7 @@ export const AdminAIDashboard: React.FC = () => {
  <div className="bg-white border border-slate-200 rounded-xl p-3 grid gap-3 sm:grid-cols-3 items-end">
  <div>
  <label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase">Keyword</label>
- <input
+ <input data-testid="admin-aidashboard-e-g-starbucks-fuel"
  type="text"
  value={newKeyword}
  onChange={(e) => setNewKeyword(e.target.value)}
@@ -1050,26 +1050,26 @@ export const AdminAIDashboard: React.FC = () => {
  </div>
  <div>
  <label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase">Map to Category</label>
- <select
+ <select data-testid="admin-aidashboard-select-3"
  value={newKeywordCategory}
  onChange={(e) => setNewKeywordCategory(e.target.value)}
  className="w-full text-xs border border-slate-200 rounded-lg p-2 bg-white focus:outline-none"
  >
- <option value="Food & Dining">Food & Dining</option>
- <option value="Transport">Transport</option>
- <option value="Housing">Housing</option>
- <option value="Shopping">Shopping</option>
- <option value="Health">Health</option>
- <option value="Entertainment">Entertainment</option>
- <option value="Bills">Bills</option>
- <option value="Groceries">Groceries</option>
- <option value="Education">Education</option>
- <option value="Salary">Salary</option>
- <option value="Business">Business</option>
- <option value="Others">Others</option>
+ <option data-testid="admin-aidashboard-food-dining" value="Food & Dining">Food & Dining</option>
+ <option data-testid="admin-aidashboard-transport" value="Transport">Transport</option>
+ <option data-testid="admin-aidashboard-housing" value="Housing">Housing</option>
+ <option data-testid="admin-aidashboard-shopping" value="Shopping">Shopping</option>
+ <option data-testid="admin-aidashboard-health" value="Health">Health</option>
+ <option data-testid="admin-aidashboard-entertainment" value="Entertainment">Entertainment</option>
+ <option data-testid="admin-aidashboard-bills" value="Bills">Bills</option>
+ <option data-testid="admin-aidashboard-groceries" value="Groceries">Groceries</option>
+ <option data-testid="admin-aidashboard-education" value="Education">Education</option>
+ <option data-testid="admin-aidashboard-salary" value="Salary">Salary</option>
+ <option data-testid="admin-aidashboard-business" value="Business">Business</option>
+ <option data-testid="admin-aidashboard-others" value="Others">Others</option>
  </select>
  </div>
- <button
+ <button data-testid="admin-aidashboard-add-rule"
  type="button"
  onClick={addKeywordRule}
  className="w-full text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 py-2.5 px-3 rounded-lg flex items-center justify-center gap-1.5 transition-colors"
@@ -1080,7 +1080,7 @@ export const AdminAIDashboard: React.FC = () => {
 
  {/* Search keyword rules */}
  <div className="flex gap-2">
- <input
+ <input data-testid="admin-aidashboard-search-keyword-mappings"
  type="text"
  value={keywordSearch}
  onChange={(e) => setKeywordSearch(e.target.value)}
@@ -1101,7 +1101,7 @@ export const AdminAIDashboard: React.FC = () => {
  <span className="font-mono text-xs font-semibold text-slate-800">{kw}</span>
  <div className="flex items-center gap-3">
  <span className="text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded-lg border border-slate-200">{cat as string}</span>
- <button
+ <button data-testid={`admin-aidashboard-delete-rule-${kw}`}
  type="button"
  onClick={() => deleteKeywordRule(kw)}
  className="text-slate-400 hover:text-red-600 p-1 transition-colors"
@@ -1126,7 +1126,7 @@ export const AdminAIDashboard: React.FC = () => {
  <label className="block text-xs font-semibold text-slate-600 mb-1">
  Rollout Target Percentage: <span className="font-mono text-slate-700 font-bold">{aiConfig.deployment.rolloutPercentage}%</span>
  </label>
- <input
+ <input data-testid="admin-aidashboard-input-6"
  type="range"
  min="0"
  max="100"
@@ -1139,7 +1139,7 @@ export const AdminAIDashboard: React.FC = () => {
  </div>
  <div>
  <label className="block text-xs font-semibold text-slate-600 mb-1">Active Release Version</label>
- <input
+ <input data-testid="admin-aidashboard-e-g-v1-0"
  type="text"
  value={aiConfig.deployment.activeVersion}
  onChange={(e) => updateConfigField('deployment', 'activeVersion', e.target.value)}
@@ -1149,20 +1149,20 @@ export const AdminAIDashboard: React.FC = () => {
  </div>
  <div>
  <label className="block text-xs font-semibold text-slate-600 mb-1">Target Environment</label>
- <select
+ <select data-testid="admin-aidashboard-select-4"
  value={aiConfig.deployment.environment}
  onChange={(e) => updateConfigField('deployment', 'environment', e.target.value)}
  className="w-full text-xs border border-slate-200 rounded-lg p-2.5 bg-white focus:outline-none"
  >
- <option value="dev">Development / Sandbox</option>
- <option value="test">QA / Testing</option>
- <option value="staging">Staging / Pre-prod</option>
- <option value="prod">Production</option>
+ <option data-testid="admin-aidashboard-development-sandbox" value="dev">Development / Sandbox</option>
+ <option data-testid="admin-aidashboard-qa-testing" value="test">QA / Testing</option>
+ <option data-testid="admin-aidashboard-staging-pre-prod" value="staging">Staging / Pre-prod</option>
+ <option data-testid="admin-aidashboard-production" value="prod">Production</option>
  </select>
  </div>
  <div>
  <label className="block text-xs font-semibold text-slate-600 mb-1">Beta Testers (Emails, separated by commas)</label>
- <textarea
+ <textarea data-testid="admin-aidashboard-user1-example-com-user2"
  value={aiConfig.deployment.betaUsers.join(', ')}
  onChange={(e) => {
  const list = e.target.value.split(',').map(s => s.trim()).filter(Boolean);
@@ -1182,7 +1182,7 @@ export const AdminAIDashboard: React.FC = () => {
  <AlertCircle size={14} className="shrink-0" />
  <span>Deploying configs updates these values globally for all users instantly.</span>
  </div>
- <button
+ <button data-testid="admin-aidashboard-button-5"
  type="button"
  onClick={handleSaveConfig}
  disabled={savingConfig}
@@ -1206,7 +1206,7 @@ export const AdminAIDashboard: React.FC = () => {
  </div>
 
  {/* Raw AI Data Viewer */}
- <Card>
+ <Card data-testid="admin-aidashboard-card-4">
  <div id="raw-viewer">
  <SectionHeading icon={<Database size={18} />} title="Raw AI Data Viewer" iconColor="text-gray-500" />
  <p className="text-xs text-gray-500 mb-4">
@@ -1237,7 +1237,7 @@ export const AdminAIDashboard: React.FC = () => {
  ] as const
  ).map(({ key, label, data, icon }) => (
  <div key={key} className="rounded-xl border border-gray-100 overflow-hidden">
- <button
+ <button data-testid={`admin-aidashboard-button-6-${key}`}
  onClick={() => setExpandedRaw(expandedRaw === key ? null : key)}
  className="flex w-full items-center gap-2 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
  >

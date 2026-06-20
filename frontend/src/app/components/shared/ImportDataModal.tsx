@@ -321,7 +321,7 @@ export const ImportDataModal: React.FC<ImportDataModalProps> = ({
  }
  }}
  >
- <motion.div
+ <motion.div data-testid="import-data-modal-div"
  ref={modalRef}
  initial={{ opacity: 0, y: 16, scale: 0.98 }}
  animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -343,7 +343,7 @@ export const ImportDataModal: React.FC<ImportDataModalProps> = ({
  Import CSV or JSON from other expense trackers with preview, mapping, and duplicate checks.
  </p>
  </div>
- <button
+ <button data-testid="import-data-modal-close-import-modal"
  ref={closeButtonRef}
  type="button"
  onClick={onClose}
@@ -436,7 +436,7 @@ export const ImportDataModal: React.FC<ImportDataModalProps> = ({
  )}
 
  {!importReport && !selectedFile && !isParsing && (
- <div
+ <div data-testid="import-data-modal-upload-a-csv-or"
  className="flex h-full min-h-[360px] flex-col items-center justify-center rounded-[28px] border-2 border-dashed border-gray-300 bg-white/90 px-6 py-10 text-center sm:py-16"
  role="button"
  tabIndex={0}
@@ -468,7 +468,7 @@ export const ImportDataModal: React.FC<ImportDataModalProps> = ({
  )}
 
  {isParsing && (
- <div className="flex h-full flex-col items-center justify-center py-16 text-center" role="status" aria-live="polite">
+ <div data-testid="import-data-modal-div-2" className="flex h-full flex-col items-center justify-center py-16 text-center" role="status" aria-live="polite">
  <Loader2 size={36} className="animate-spin text-gray-500" />
  <h4 className="mt-4 text-lg font-semibold text-gray-900">Preparing preview</h4>
  <p className="mt-1 text-sm text-gray-500">Parsing rows, matching categories, and checking duplicates.</p>
@@ -556,14 +556,14 @@ export const ImportDataModal: React.FC<ImportDataModalProps> = ({
  <div>
  <p className="text-xs font-bold uppercase tracking-[0.22em] text-gray-400">Import Into Account</p>
  {accounts.length > 0 ? (
- <select
+ <select data-testid="import-data-modal-select-import-target-account"
  value={fallbackAccountId}
  onChange={(event) => handleFallbackAccountChange(Number(event.target.value))}
  className="mt-2 h-12 w-full rounded-2xl border border-gray-200 bg-white px-4 text-sm font-medium text-gray-900 outline-none transition focus:border-black/20 focus:ring-4 focus:ring-black/10"
  aria-label="Select import target account"
  >
  {accounts.map((account) => (
- <option key={account.id} value={account.id}>
+ <option data-testid={`import-data-modal-option-${account.id}`} key={account.id} value={account.id}>
  {account.name} ({account.currency} {account.balance.toFixed(2)})
  </option>
  ))}
@@ -580,7 +580,7 @@ export const ImportDataModal: React.FC<ImportDataModalProps> = ({
 
  <div className="flex flex-col justify-between rounded-[24px] border border-gray-200 bg-white px-4 py-4">
  <label className="flex items-center gap-3 text-sm font-medium text-gray-700">
- <input
+ <input data-testid="import-data-modal-checkbox"
  type="checkbox"
  checked={skipDuplicates}
  onChange={(event) => setSkipDuplicates(event.target.checked)}
@@ -611,7 +611,7 @@ export const ImportDataModal: React.FC<ImportDataModalProps> = ({
  Review mappings before import. Showing {visibleRows.length} of {rows.length} rows.
  </p>
  </div>
- <button
+ <button data-testid="import-data-modal-re-scan"
  type="button"
  onClick={() => selectedFile && handleFileSelection(selectedFile)}
  className="flex min-h-10 items-center gap-2 rounded-full border border-gray-200 px-3 py-1.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-black/10"
@@ -640,7 +640,7 @@ export const ImportDataModal: React.FC<ImportDataModalProps> = ({
  <label className="text-xs font-semibold uppercase tracking-[0.12em] text-gray-500">
  Category
  </label>
- <select
+ <select data-testid={`import-data-modal-category-for-row-${row.id}`}
  value={row.category}
  onChange={(event) => handleCategoryChange(row.id, event.target.value)}
  className="mt-1 h-11 w-full rounded-xl border border-gray-200 bg-white px-3 text-sm text-gray-900 outline-none transition focus:border-black/20 focus:ring-4 focus:ring-black/10"
@@ -650,7 +650,7 @@ export const ImportDataModal: React.FC<ImportDataModalProps> = ({
  .concat(row.category)
  .filter((value, index, array) => array.indexOf(value) === index)
  .map((value) => (
- <option key={value} value={value}>
+ <option data-testid={`import-data-modal-option-2-${value}`} key={value} value={value}>
  {value}
  </option>
  ))}
@@ -661,7 +661,7 @@ export const ImportDataModal: React.FC<ImportDataModalProps> = ({
  </div>
 
  <div className="max-h-[48vh] overflow-auto hidden lg:block">
- <table className="min-w-full divide-y divide-gray-100 text-sm">
+ <table data-testid="import-data-modal-table" className="min-w-full divide-y divide-gray-100 text-sm">
  <caption className="sr-only">
  Import preview table with date, amount, account, category, status, and description columns.
  </caption>
@@ -697,7 +697,7 @@ export const ImportDataModal: React.FC<ImportDataModalProps> = ({
  )}
  </td>
  <td className="px-4 py-3">
- <select
+ <select data-testid={`import-data-modal-category-for-row-2-${row.id}`}
  value={row.category}
  onChange={(event) => handleCategoryChange(row.id, event.target.value)}
  className="h-11 min-w-[200px] rounded-2xl border border-gray-200 bg-white px-3 text-sm font-medium text-gray-900 outline-none transition focus:border-black/20 focus:ring-4 focus:ring-black/10"
@@ -707,7 +707,7 @@ export const ImportDataModal: React.FC<ImportDataModalProps> = ({
  .concat(row.category)
  .filter((value, index, array) => array.indexOf(value) === index)
  .map((value) => (
- <option key={value} value={value}>
+ <option data-testid={`import-data-modal-option-3-${value}`} key={value} value={value}>
  {value}
  </option>
  ))}
@@ -755,14 +755,14 @@ export const ImportDataModal: React.FC<ImportDataModalProps> = ({
  <div className="flex gap-3">
  {importReport ? (
  <>
- <button
+ <button data-testid="import-data-modal-import-another-file"
  type="button"
  onClick={resetImportState}
  className="min-h-11 rounded-full border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-black/10"
  >
  Import Another File
  </button>
- <button
+ <button data-testid="import-data-modal-close"
  type="button"
  onClick={onClose}
  className="min-h-11 rounded-full bg-black px-5 py-2 text-sm font-semibold text-white transition hover:bg-gray-900 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-black/20"
@@ -772,14 +772,14 @@ export const ImportDataModal: React.FC<ImportDataModalProps> = ({
  </>
  ) : (
  <>
- <button
+ <button data-testid="import-data-modal-button"
  type="button"
  onClick={openFilePicker}
  className="min-h-11 rounded-full border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-black/10"
  >
  {selectedFile ? 'Change File' : 'Choose File'}
  </button>
- <button
+ <button data-testid="import-data-modal-button-2"
  type="button"
  onClick={handleImport}
  aria-live="polite"
@@ -804,7 +804,7 @@ export const ImportDataModal: React.FC<ImportDataModalProps> = ({
  </div>
  </div>
 
- <input
+ <input data-testid="import-data-modal-choose-import-file"
  ref={fileInputRef}
  type="file"
  accept=".csv,.json"

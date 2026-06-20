@@ -53,9 +53,9 @@ export const SimpleAutoTest: React.FC = () => {
  <AppCard className="p-4 sm:p-6">
  <h2 className="text-lg font-semibold mb-4">Auto-Button Test</h2>
  <div className="auto-flex flex-wrap gap-2 sm:gap-3">
- <button className="auto-btn bg-blue-600 text-white rounded px-4 py-2">Auto Button</button>
- <button className="auto-btn-sm bg-green-600 text-white rounded px-3 py-2">Small Auto</button>
- <button className="auto-btn-lg bg-purple-600 text-white rounded px-6 py-3">Large Auto</button>
+ <button data-testid="simple-auto-test-auto-button" className="auto-btn bg-blue-600 text-white rounded px-4 py-2">Auto Button</button>
+ <button data-testid="simple-auto-test-small-auto" className="auto-btn-sm bg-green-600 text-white rounded px-3 py-2">Small Auto</button>
+ <button data-testid="simple-auto-test-large-auto" className="auto-btn-lg bg-purple-600 text-white rounded px-6 py-3">Large Auto</button>
  </div>
  </AppCard>
  </AppSection>

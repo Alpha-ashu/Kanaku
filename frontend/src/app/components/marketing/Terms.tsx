@@ -121,7 +121,7 @@ export const Terms: React.FC<TermsProps> = ({
  <p className="text-violet-100 mb-8 max-w-md mx-auto">
  Our legal team is here to clarify any points. Drop us a message and we'll get back to you within 24 hours.
  </p>
- <a
+ <a data-testid="terms-contact-legal-team"
  href={import.meta.env.VITE_LEGAL_EMAIL ? `mailto:${import.meta.env.VITE_LEGAL_EMAIL}` : '#'}
  className="inline-flex items-center gap-2 bg-white text-violet-600 px-8 py-4 rounded-2xl font-bold hover:bg-violet-50 transition-colors"
  >

@@ -112,7 +112,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
  </div>
 
  {/* Auth Form */}
- <form onSubmit={handleSubmit} className="space-y-6">
+ <form data-testid="auth-page-form" onSubmit={handleSubmit} className="space-y-6">
  {/* Full Name (Signup only) */}
  {!isLogin && (
  <div>
@@ -123,7 +123,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
  <User className="h-5 w-5 text-gray-400" />
  </div>
- <input
+ <input data-testid="auth-page-john-doe"
  type="text"
  value={fullName}
  onChange={(e) => setFullName(e.target.value)}
@@ -144,7 +144,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
  <Mail className="h-5 w-5 text-gray-400" />
  </div>
- <input
+ <input data-testid="auth-page-you-example-com"
  type="email"
  value={email}
  onChange={(e) => setEmail(e.target.value)}
@@ -164,7 +164,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
  <Lock className="h-5 w-5 text-gray-400" />
  </div>
- <input
+ <input data-testid="auth-page-input"
  type={showPassword ? 'text' : 'password'}
  value={password}
  onChange={(e) => setPassword(e.target.value)}
@@ -173,7 +173,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
  required
  minLength={6}
  />
- <button
+ <button data-testid="auth-page-button"
  type="button"
  onClick={() => setShowPassword(!showPassword)}
  className="absolute inset-y-0 right-0 pr-3 flex items-center"
@@ -197,7 +197,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
  </div>
 
  {/* Submit Button */}
- <button
+ <button data-testid="auth-page-button-2"
  type="submit"
  disabled={loading}
  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
@@ -217,7 +217,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
  <div className="mt-6 text-center">
  <p className="text-sm text-gray-600">
  {isLogin ?"Don't have an account?" : 'Already have an account?'}
- <button
+ <button data-testid="auth-page-button-3"
  onClick={() => {
  setIsLogin(!isLogin);
  setFullName('');
@@ -235,11 +235,11 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
  <div className="mt-4 text-center">
  <p className="text-xs text-gray-500">
  By continuing, you agree to our{' '}
- <button onClick={() => setCurrentView('terms')} className="text-blue-600 hover:underline">
+ <button data-testid="auth-page-terms-of-service" onClick={() => setCurrentView('terms')} className="text-blue-600 hover:underline">
  Terms of Service
  </button>{' '}
  and{' '}
- <button onClick={() => setCurrentView('privacy')} className="text-blue-600 hover:underline">
+ <button data-testid="auth-page-privacy-policy" onClick={() => setCurrentView('privacy')} className="text-blue-600 hover:underline">
  Privacy Policy
  </button>.
  </p>

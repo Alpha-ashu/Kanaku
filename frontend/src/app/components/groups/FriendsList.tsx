@@ -111,13 +111,13 @@ export const FriendsList: React.FC = () => {
       <div className="space-y-6">
         <div className="flex flex-row flex-wrap items-center justify-between gap-4 w-full">
           <div className="flex items-center gap-3">
-            <button onClick={() => setCurrentPage('groups')} title="Back" className="p-2 text-slate-600 hover:bg-slate-50 rounded-xl transition-all">
+            <button data-testid="friends-list-back" onClick={() => setCurrentPage('groups')} title="Back" className="p-2 text-slate-600 hover:bg-slate-50 rounded-xl transition-all">
               <ArrowLeft size={20} />
             </button>
             <h1 className="text-xl font-black text-slate-900 tracking-tight leading-none">Manage Friends</h1>
           </div>
           <div className="flex gap-2">
-            <input
+            <input data-testid="friends-list-input"
               ref={fileInputRef}
               type="file"
               accept=".csv,text/csv"
@@ -127,7 +127,7 @@ export const FriendsList: React.FC = () => {
                 if (file) void handleImportCsv(file);
               }}
             />
-            <Button
+            <Button data-testid="friends-list-button"
               variant="secondary"
               disabled={importing}
               onClick={() => fileInputRef.current?.click()}
@@ -136,7 +136,7 @@ export const FriendsList: React.FC = () => {
               {importing ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
               <span>Import CSV</span>
             </Button>
-            <Button
+            <Button data-testid="friends-list-button-2"
               onClick={() => setCurrentPage('add-friends')}
               className="bg-gray-900 hover:bg-gray-800 text-white h-11 px-4 rounded-xl font-bold flex items-center gap-2"
             >
@@ -148,7 +148,7 @@ export const FriendsList: React.FC = () => {
 
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-          <input
+          <input data-testid="friends-list-search-friends-by-name"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search friends by name or email"
@@ -171,7 +171,7 @@ export const FriendsList: React.FC = () => {
                 key={friend.id}
                 className="flex items-center justify-between gap-4 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm hover:shadow-md transition-shadow"
               >
-                <button
+                <button data-testid={`friends-list-button-3-${friend.id}`}
                   type="button"
                   onClick={() => openFriendProfile(friend.id)}
                   className="flex flex-1 items-center gap-3 text-left min-w-0"
@@ -205,7 +205,7 @@ export const FriendsList: React.FC = () => {
                       {friend.outstandingAmount > 0 ? formatCurrency(friend.outstandingAmount) : 'Settled'}
                     </p>
                   </div>
-                  <button
+                  <button data-testid={`friends-list-remove-friend-${friend.id}`}
                     type="button"
                     onClick={() => setDeleteTarget(friend)}
                     title="Remove friend"

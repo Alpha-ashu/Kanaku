@@ -164,7 +164,7 @@ export const BillUpload: React.FC<BillUploadProps> = ({ transactionId, onBillsCh
  or click to browse (JPG, PNG, WebP, PDF, DOC/DOCX, XLS/XLSX, CSV - Max 10MB)
  </p>
  <label className="inline-block">
- <input
+ <input data-testid="bill-upload-select-bill-files"
  type="file"
  multiple
  accept="image/jpeg,image/png,image/webp,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv"
@@ -212,7 +212,7 @@ export const BillUpload: React.FC<BillUploadProps> = ({ transactionId, onBillsCh
  </div>
 
  <div className="flex gap-2 ml-2">
- <button
+ <button data-testid={`bill-upload-download-bill-${bill.id}`}
  onClick={() => handleDownloadBill(bill)}
  title="Download bill"
  aria-label="Download bill"
@@ -220,7 +220,7 @@ export const BillUpload: React.FC<BillUploadProps> = ({ transactionId, onBillsCh
  >
  <Download size={18} />
  </button>
- <button
+ <button data-testid={`bill-upload-delete-bill-${bill.id}`}
  onClick={() => handleDeleteBill(bill.id!)}
  title="Delete bill"
  aria-label="Delete bill"

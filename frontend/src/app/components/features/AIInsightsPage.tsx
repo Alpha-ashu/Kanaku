@@ -242,7 +242,7 @@ export const AIInsightsPage: React.FC = () => {
                 Insights are computed from your actual transactions, budgets, and goals — updated in real time as you add data.
               </p>
             </div>
-            <button
+            <button data-testid="aiinsights-page-refresh-analysis"
               onClick={() => setLastRefreshed(new Date())}
               className="bg-white text-indigo-900 px-6 py-4 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-purple-50 active:scale-95 transition-all shadow-lg text-center shrink-0"
             >
@@ -269,7 +269,7 @@ export const AIInsightsPage: React.FC = () => {
               const Icon = insight.icon;
               return (
                 <motion.div key={insight.id} variants={itemVariants}>
-                  <Card variant="glass" className="h-full border-white/40 flex flex-col p-8 hover:shadow-xl transition-shadow duration-300">
+                  <Card data-testid={`aiinsights-page-card-${insight.id}`} variant="glass" className="h-full border-white/40 flex flex-col p-8 hover:shadow-xl transition-shadow duration-300">
                     <div className="flex items-center justify-between mb-6">
                       <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${insight.color}`}>
                         <Icon size={22} />

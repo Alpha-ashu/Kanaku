@@ -408,9 +408,9 @@ export const VoiceReview: React.FC = () => {
  aria-label="Select account for transactions"
  data-testid="voice-review-account-select"
  >
- <option value={0}>Select an account</option>
+ <option data-testid="voice-review-select-an-account" value={0}>Select an account</option>
  {accounts.map((account) => (
- <option key={account.id} value={account.id}>
+ <option data-testid={`voice-review-option-${account.id}`} key={account.id} value={account.id}>
  {account.name} ({currency} {account.balance.toFixed(2)})
  </option>
  ))}
@@ -446,12 +446,12 @@ export const VoiceReview: React.FC = () => {
  aria-label="Select transaction type"
  data-testid={`voice-review-intent-select-${index}`}
  >
- <option value="expense">Expense</option>
- <option value="income">Income</option>
- <option value="transfer">Transfer</option>
- <option value="goal">Goal Contribution</option>
- <option value="group">Group Expense</option>
- <option value="investment">Investment</option>
+ <option data-testid={`voice-review-expense-${`${item.intent}-${index}-${item.description}`}`} value="expense">Expense</option>
+ <option data-testid={`voice-review-income-${`${item.intent}-${index}-${item.description}`}`} value="income">Income</option>
+ <option data-testid={`voice-review-transfer-${`${item.intent}-${index}-${item.description}`}`} value="transfer">Transfer</option>
+ <option data-testid={`voice-review-goal-contribution-${`${item.intent}-${index}-${item.description}`}`} value="goal">Goal Contribution</option>
+ <option data-testid={`voice-review-group-expense-${`${item.intent}-${index}-${item.description}`}`} value="group">Group Expense</option>
+ <option data-testid={`voice-review-investment-${`${item.intent}-${index}-${item.description}`}`} value="investment">Investment</option>
  </select>
  <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${getIntentBadgeClasses(item.intent)}`}>
  {item.intent === 'goal'
@@ -558,9 +558,9 @@ export const VoiceReview: React.FC = () => {
  className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
  data-testid={`voice-review-goal-select-${index}`}
  >
- <option value="">Choose a goal</option>
+ <option data-testid={`voice-review-choose-a-goal-${`${item.intent}-${index}-${item.description}`}`} value="">Choose a goal</option>
  {goals.map((goal) => (
- <option key={goal.id} value={goal.id}>
+ <option data-testid={`voice-review-option-2-${goal.id}`} key={goal.id} value={goal.id}>
  {goal.name}
  </option>
  ))}

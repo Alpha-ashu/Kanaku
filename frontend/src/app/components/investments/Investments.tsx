@@ -276,7 +276,7 @@ export const Investments: React.FC = () => {
  {/* Stats */}
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
- <Card variant="glass" className="p-4 sm:p-6 relative overflow-hidden">
+ <Card data-testid="investments-card" variant="glass" className="p-4 sm:p-6 relative overflow-hidden">
  <div className="relative z-10">
  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-black rounded-2xl flex items-center justify-center mb-2 sm:mb-4 shadow-sm">
  <TrendingUp className="text-white" size={18} />
@@ -290,7 +290,7 @@ export const Investments: React.FC = () => {
  </motion.div>
 
  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
- <Card variant="glass" className="p-4 sm:p-6 relative overflow-hidden">
+ <Card data-testid="investments-card-2" variant="glass" className="p-4 sm:p-6 relative overflow-hidden">
  <div className="relative z-10">
  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-black rounded-2xl flex items-center justify-center mb-2 sm:mb-4 shadow-sm">
  <BarChart3 className="text-white" size={18} />
@@ -304,7 +304,7 @@ export const Investments: React.FC = () => {
  </motion.div>
 
  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
- <Card variant={portfolioStats.profitLoss >= 0 ? 'mesh-green' : 'mesh-red'} className="p-4 sm:p-6 relative overflow-hidden">
+ <Card data-testid="investments-card-3" variant={portfolioStats.profitLoss >= 0 ? 'mesh-green' : 'mesh-red'} className="p-4 sm:p-6 relative overflow-hidden">
  <div className="relative z-10">
  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center mb-2 sm:mb-4">
  {portfolioStats.profitLoss >= 0
@@ -327,7 +327,7 @@ export const Investments: React.FC = () => {
  {/* Charts */}
  {openInvestments.length > 0 && (
  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
- <Card variant="glass" className="p-6">
+ <Card data-testid="investments-card-4" variant="glass" className="p-6">
  <h3 className="text-lg font-display font-bold text-gray-900 mb-4">Asset Allocation</h3>
  <ResponsiveContainer width="100%" height={250}>
  <PieChart>
@@ -350,7 +350,7 @@ export const Investments: React.FC = () => {
  </ResponsiveContainer>
  </Card>
 
- <Card variant="glass" className="p-6">
+ <Card data-testid="investments-card-5" variant="glass" className="p-6">
  <h3 className="text-lg font-display font-bold text-gray-900 mb-4">Top Performers</h3>
  <div className="space-y-3">
  {[...openInvestments]
@@ -382,7 +382,7 @@ export const Investments: React.FC = () => {
 
  
  {openInvestments.length > 0 && (
- <Card variant="glass" className="overflow-hidden hidden sm:block">
+ <Card data-testid="investments-card-6" variant="glass" className="overflow-hidden hidden sm:block">
  <div className="flex items-center justify-between px-6 py-3 bg-white border-b border-gray-200">
  <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">
  Portfolio Holdings
@@ -401,7 +401,7 @@ export const Investments: React.FC = () => {
  </button>
  </div>
  <div className="overflow-x-auto">
- <table className="w-full">
+ <table data-testid="investments-table" className="w-full">
  <thead className="bg-white/50">
  <tr>
  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Asset</th>
@@ -500,7 +500,7 @@ export const Investments: React.FC = () => {
  const metrics = getMetrics(inv);
  const isProfit = metrics.profitLoss >= 0;
  return (
- <Card key={inv.id} variant="glass" className="p-4">
+ <Card data-testid={`investments-card-7-${inv.id}`} key={inv.id} variant="glass" className="p-4">
  {/* Row 1: name + actions */}
  <div className="flex items-start justify-between gap-2 mb-3">
  <div className="min-w-0">
@@ -581,14 +581,14 @@ export const Investments: React.FC = () => {
  )}
 
  {openInvestments.length === 0 && completedInvestments.length > 0 && (
- <Card variant="glass" className="p-8 text-center">
+ <Card data-testid="investments-card-8" variant="glass" className="p-8 text-center">
  <h3 className="text-xl font-display font-bold text-gray-900">No open holdings</h3>
  <p className="text-gray-500 mt-2">All your tracked positions are completed. Add a new investment to start another order.</p>
  </Card>
  )}
 
  {completedInvestments.length > 0 && (
- <Card variant="glass" className="p-6">
+ <Card data-testid="investments-card-9" variant="glass" className="p-6">
  <div className="flex items-center justify-between gap-3 mb-4">
  <div>
  <h3 className="text-lg font-display font-bold text-gray-900">Completed Orders</h3>
@@ -633,7 +633,7 @@ export const Investments: React.FC = () => {
 
  {/* Empty state */}
  {investments.length === 0 && (
- <Card variant="glass" className="p-12 text-center border-2 border-dashed border-gray-300">
+ <Card data-testid="investments-card-10" variant="glass" className="p-12 text-center border-2 border-dashed border-gray-300">
  <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.3 }}>
  <div className="w-20 h-20 bg-black rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
  <BarChart3 className="text-white" size={32} />

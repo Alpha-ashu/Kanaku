@@ -109,7 +109,7 @@ export function NotificationToast({
         </p>
 
         {notification.action && (
-          <button
+          <button data-testid="notification-toast-button"
             onClick={notification.action.onClick}
             className={`
               text-sm font-medium mt-2
@@ -126,7 +126,7 @@ export function NotificationToast({
         )}
       </div>
 
-      <button
+      <button data-testid="notification-toast-dismiss-notification"
         onClick={() => {
           setIsExiting(true);
           setTimeout(() => {

@@ -101,7 +101,7 @@ export const ContactPage: React.FC<ContactPageProps> = ({ onBack, onGetStarted, 
  <div>
  <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">{info.label}</p>
  {info.link ? (
- <a href={info.link} className="text-sm font-bold text-gray-900 hover:text-violet-600 transition-colors">{info.value}</a>
+ <a data-testid={`contact-page-link-${i}`} href={info.link} className="text-sm font-bold text-gray-900 hover:text-violet-600 transition-colors">{info.value}</a>
  ) : (
  <p className="text-sm font-bold text-gray-900">{info.value}</p>
  )}
@@ -117,11 +117,11 @@ export const ContactPage: React.FC<ContactPageProps> = ({ onBack, onGetStarted, 
  transition={{ delay: 0.3 }}
  className="lg:col-span-2 bg-white p-8 lg:p-12 rounded-[3rem] shadow-2xl shadow-gray-200/60 border border-gray-100"
  >
- <form onSubmit={handleSubmit} className="space-y-6">
+ <form data-testid="contact-page-form" onSubmit={handleSubmit} className="space-y-6">
  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
  <div className="space-y-2">
  <label className="text-sm font-bold text-gray-700 ml-1">Full Name</label>
- <input
+ <input data-testid="contact-page-jane-doe"
  required
  type="text"
  placeholder="Jane Doe"
@@ -130,7 +130,7 @@ export const ContactPage: React.FC<ContactPageProps> = ({ onBack, onGetStarted, 
  </div>
  <div className="space-y-2">
  <label className="text-sm font-bold text-gray-700 ml-1">Email Address</label>
- <input
+ <input data-testid="contact-page-jane-example-com"
  required
  type="email"
  placeholder="jane@example.com"
@@ -140,14 +140,14 @@ export const ContactPage: React.FC<ContactPageProps> = ({ onBack, onGetStarted, 
  </div>
  <div className="space-y-2">
  <label className="text-sm font-bold text-gray-700 ml-1">Message</label>
- <textarea
+ <textarea data-testid="contact-page-how-can-we-help"
  required
  rows={5}
  placeholder="How can we help you?"
  className="w-full px-6 py-4 rounded-2xl bg-white border border-gray-100 focus:bg-white focus:ring-4 focus:ring-violet-50 focus:border-violet-300 transition-all outline-none text-sm font-medium resize-none"
  />
  </div>
- <button
+ <button data-testid="contact-page-button"
  disabled={isSubmitting}
  className="w-full py-5 rounded-2xl bg-gray-900 text-white font-bold text-sm lg:text-base hover:bg-gray-800 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 shadow-xl shadow-gray-200"
  >

@@ -261,7 +261,7 @@ function SidebarTrigger({
  const { toggleSidebar } = useSidebar();
 
  return (
- <Button
+ <Button data-testid="sidebar-button"
  data-sidebar="trigger"
  data-slot="sidebar-trigger"
  variant="ghost"
@@ -283,7 +283,7 @@ function SidebarRail({ className, ...props }: React.ComponentProps<"button">) {
  const { toggleSidebar } = useSidebar();
 
  return (
- <button
+ <button data-testid="sidebar-toggle-sidebar"
  data-sidebar="rail"
  data-slot="sidebar-rail"
  aria-label="Toggle Sidebar"
@@ -323,7 +323,7 @@ function SidebarInput({
  ...props
 }: React.ComponentProps<typeof Input>) {
  return (
- <Input
+ <Input data-testid="sidebar-input"
  data-slot="sidebar-input"
  data-sidebar="input"
  className={cn("bg-background h-8 w-full shadow-none", className)}

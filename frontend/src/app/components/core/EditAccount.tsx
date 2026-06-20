@@ -104,7 +104,7 @@ export const EditAccount: React.FC<{ accountId?: number }> = ({ accountId: propA
  </div>
  <h3 className="text-xl font-bold text-slate-900">Account Not Found</h3>
  <p className="text-slate-500 mt-2 mb-6 max-w-xs">The account you're trying to edit doesn't exist or has been deleted.</p>
- <button 
+ <button data-testid="edit-account-go-back" 
  onClick={() => setCurrentPage('accounts')}
  className="px-6 py-2.5 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-all"
  >
@@ -119,7 +119,7 @@ export const EditAccount: React.FC<{ accountId?: number }> = ({ accountId: propA
  {/* Header Section */}
  <div className="px-4 sm:px-6 lg:px-8 xl:px-12 pt-6 lg:pt-8 pb-4">
  <div className="flex items-center gap-4 mb-2">
- <button
+ <button data-testid="edit-account-back"
  onClick={() => setCurrentPage('accounts')}
  title="Back"
  className="lg:!hidden p-2.5 hover:bg-white rounded-xl transition-all border border-transparent hover:border-slate-200 text-slate-600"
@@ -190,7 +190,7 @@ export const EditAccount: React.FC<{ accountId?: number }> = ({ accountId: propA
  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-slate-900">
  <Edit2 size={18} />
  </div>
- <input
+ <input data-testid="edit-account-e-g-hdfc-salary"
  type="text"
  value={account.name}
  onChange={(e) => setAccount({ ...account, name: e.target.value })}
@@ -211,7 +211,7 @@ export const EditAccount: React.FC<{ accountId?: number }> = ({ accountId: propA
  const Icon = type.icon;
  const isSelected = account.type === type.id;
  return (
- <button
+ <button data-testid={`edit-account-button-${type.id}`}
  key={type.id}
  type="button"
  onClick={() => setAccount({ ...account, type: type.id })}
@@ -250,7 +250,7 @@ export const EditAccount: React.FC<{ accountId?: number }> = ({ accountId: propA
  <div className="absolute left-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-900 font-bold text-sm">
  {currency}
  </div>
- <input
+ <input data-testid="edit-account-opening-balance"
  type="number"
  step="0.01"
  value={account.openingBalance || ''}
@@ -270,7 +270,7 @@ export const EditAccount: React.FC<{ accountId?: number }> = ({ accountId: propA
  <div className="absolute left-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-900 font-bold text-sm">
  {currency}
  </div>
- <input
+ <input data-testid="edit-account-current-balance"
  type="number"
  step="0.01"
  value={account.balance || ''}
@@ -289,7 +289,7 @@ export const EditAccount: React.FC<{ accountId?: number }> = ({ accountId: propA
  <label className="block text-sm font-bold text-slate-900 ml-1">Payment Network</label>
  <div className="flex flex-wrap gap-2">
  {CARD_NETWORKS.map((network) => (
- <button
+ <button data-testid={`edit-account-button-2-${network.id}`}
  key={network.id}
  type="button"
  onClick={() => setAccount({ ...account, subType: network.id })}
@@ -310,7 +310,7 @@ export const EditAccount: React.FC<{ accountId?: number }> = ({ accountId: propA
  <label className="block text-sm font-bold text-slate-900 ml-1">Card Theme</label>
  <div className="flex flex-wrap gap-3">
  {CARD_COLORS.map((color) => (
- <button
+ <button data-testid={`edit-account-button-3-${color.id}`}
  key={color.id}
  type="button"
  onClick={() => setAccount({ ...account, colorId: color.id })}
@@ -334,7 +334,7 @@ export const EditAccount: React.FC<{ accountId?: number }> = ({ accountId: propA
  {/* Floating Action Bar (Bottom Fixed) */}
  <div className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-t border-slate-100 p-4 sm:p-6 z-50">
  <div className="max-w-3xl mx-auto flex gap-3 sm:gap-4">
- <button
+ <button data-testid="edit-account-button-4"
  type="button"
  onClick={() => setCurrentPage('accounts')}
  className="flex-1 sm:flex-none sm:px-10 py-4 border-2 border-slate-200 rounded-2xl font-bold text-slate-600 hover:bg-slate-50 transition-all flex items-center justify-center gap-2"
@@ -342,7 +342,7 @@ export const EditAccount: React.FC<{ accountId?: number }> = ({ accountId: propA
  <X size={18} />
  <span>Cancel</span>
  </button>
- <button
+ <button data-testid="edit-account-button-5"
  onClick={() => handleSubmit()}
  disabled={saving}
  className="flex-[2] sm:flex-1 py-4 bg-slate-900 text-white rounded-2xl font-bold hover:bg-slate-800 transition-all shadow-xl shadow-slate-900/20 disabled:opacity-50 flex items-center justify-center gap-2"

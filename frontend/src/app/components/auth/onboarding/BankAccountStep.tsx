@@ -87,7 +87,7 @@ export const BankAccountStep: React.FC<BankAccountStepProps> = ({
  const showBankList = !data.bankName || searchQuery !== data.bankName;
 
  return (
- <form onSubmit={handleSubmit} className="space-y-5">
+ <form data-testid="bank-account-step-form" onSubmit={handleSubmit} className="space-y-5">
  <div className="text-center mb-2">
  <h3 className="text-xl font-bold text-gray-900 mb-1">Bank Account Setup</h3>
  <p className="text-sm text-gray-500">
@@ -104,7 +104,7 @@ export const BankAccountStep: React.FC<BankAccountStepProps> = ({
  {/* Search input */}
  <div className="relative">
  <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
- <input
+ <input data-testid="bank-account-step-search-your-bank"
  type="text"
  value={searchQuery}
  onChange={e => {
@@ -132,7 +132,7 @@ export const BankAccountStep: React.FC<BankAccountStepProps> = ({
   </div>
   <div className="flex items-center gap-2">
     <CheckCircle2 size={18} className="text-blue-500 flex-shrink-0" />
-    <button
+    <button data-testid="bank-account-step-clear-selection"
       type="button"
       onClick={() => {
         onUpdate({ bankName: '' });
@@ -151,7 +151,7 @@ export const BankAccountStep: React.FC<BankAccountStepProps> = ({
  {showBankList && filteredBanks.length > 0 && (
  <div className="mt-3 space-y-2 max-h-[220px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-gray-200">
  {filteredBanks.map(bank => (
- <button
+ <button data-testid={`bank-account-step-button-${bank.name}`}
  key={bank.name}
  type="button"
  onClick={() => handleSelectBank(bank)}
@@ -188,7 +188,7 @@ export const BankAccountStep: React.FC<BankAccountStepProps> = ({
  <label htmlFor="accountHolderName" className="block text-sm font-medium text-gray-700 mb-1">
  Account Name <span className="text-gray-400 font-normal">(as in bank records)</span>
  </label>
- <input
+ <input data-testid="bank-account-step-e-g-savings-account"
  type="text"
  id="accountHolderName"
  value={data.accountHolderName}
@@ -210,7 +210,7 @@ export const BankAccountStep: React.FC<BankAccountStepProps> = ({
  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 font-medium text-sm">
  {currencyPrefix}
  </span>
- <input
+ <input data-testid="bank-account-step-0"
  type="number"
  id="currentBalance"
  value={data.currentBalance}
@@ -232,14 +232,14 @@ export const BankAccountStep: React.FC<BankAccountStepProps> = ({
  {/* Actions */}
  <div className="space-y-3 pt-1">
  <div className="flex gap-3">
- <button
+ <button data-testid="bank-account-step-back"
  type="button"
  onClick={onBack}
  className="flex-1 bg-gray-100 text-gray-800 py-3 px-4 rounded-xl hover:bg-gray-200 transition-colors font-semibold"
  >
  Back
  </button>
- <button
+ <button data-testid="bank-account-step-continue"
  type="submit"
  className="flex-1 bg-blue-600 text-white py-3 px-4 rounded-xl hover:bg-blue-700 transition-colors font-semibold shadow-md border-b-4 border-blue-700 active:border-b-0 active:mt-1"
  >
@@ -247,7 +247,7 @@ export const BankAccountStep: React.FC<BankAccountStepProps> = ({
  </button>
  </div>
  {onSkip && (
- <button
+ <button data-testid="bank-account-step-skip-for-now-i"
  type="button"
  onClick={onSkip}
  className="w-full flex items-center justify-center gap-2 text-sm text-gray-400 hover:text-gray-600 transition-colors py-1"

@@ -55,7 +55,7 @@ const StockRow: React.FC<{
  const positive = quote.change >= 0;
  const cur = quote.currency || 'INR';
  return (
- <motion.button
+ <motion.button data-testid="live-market-button"
  layout
  initial={{ opacity: 0, y: 8 }}
  animate={{ opacity: 1, y: 0 }}
@@ -144,7 +144,7 @@ const StockDetail: React.FC<{
  )}>
  <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-white/10 blur-2xl pointer-events-none" />
  <div className="flex items-center gap-3 mb-4 relative">
- <button
+ <button data-testid="live-market-close-details"
  type="button"
  onClick={onClose}
  aria-label={`Close ${quote.companyName} details`}
@@ -158,7 +158,7 @@ const StockDetail: React.FC<{
  <h3 className="text-white font-display font-bold text-lg leading-tight truncate">{quote.companyName}</h3>
  </div>
  <div className="flex flex-col-reverse items-end gap-2 shrink-0 sm:flex-row sm:items-center">
- <button
+ <button data-testid="live-market-add-to-portfolio"
  type="button"
  onClick={() => onAddToPortfolio(quote)}
  aria-label={`Add ${quote.companyName} to portfolio`}
@@ -559,7 +559,7 @@ export const LiveMarket: React.FC = () => {
  )}
  </div>
  </div>
- <button
+ <button data-testid="live-market-refresh-market-data"
  type="button"
  onClick={() => loadQuotes(pageSymbols, true)}
  disabled={refreshing || loading}
@@ -575,7 +575,7 @@ export const LiveMarket: React.FC = () => {
  <div className="px-4 py-2 border-b border-gray-100 shrink-0 overflow-x-auto scrollbar-hide">
  <div className="flex gap-1.5 min-w-max">
  {MARKET_TABS.map((market) => (
- <button
+ <button data-testid={`live-market-button-2-${market}`}
  key={market}
  onClick={() => handleMarketChange(market)}
  className={cn(
@@ -595,7 +595,7 @@ export const LiveMarket: React.FC = () => {
  <div className="px-4 py-2.5 border-b border-gray-100 shrink-0">
  <div className="relative">
  <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
- <input
+ <input data-testid="live-market-search-stocks"
  type="text"
  value={searchQuery}
  onChange={e => setSearchQuery(e.target.value)}
@@ -603,7 +603,7 @@ export const LiveMarket: React.FC = () => {
  className="w-full pl-8 pr-8 py-2 text-xs bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-gray-300 focus:bg-white transition-colors"
  />
  {searchQuery && (
- <button
+ <button data-testid="live-market-clear-market-search"
  type="button"
  onClick={() => { setSearchQuery(''); setSearchResults([]); }}
  aria-label="Clear market search"
@@ -635,7 +635,7 @@ export const LiveMarket: React.FC = () => {
  key={r.symbol}
  className="flex items-center justify-between gap-3 px-4 py-2.5 transition-colors hover:bg-gray-50 focus-within:bg-white"
  >
- <button
+ <button data-testid={`live-market-button-3-${r.symbol}`}
  type="button"
  onClick={() => void handleOpenSearchResult(r)}
  className="min-w-0 flex-1 text-left"
@@ -645,7 +645,7 @@ export const LiveMarket: React.FC = () => {
  </p>
  <p className="text-xs text-gray-400 truncate">{r.companyName} {r.exchange}</p>
  </button>
- <button
+ <button data-testid={`live-market-add-${r.symbol}`}
  type="button"
  onClick={() => void handleAddInvestment(r)}
  className="shrink-0 text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-medium hover:bg-gray-900 hover:text-white transition-colors"
@@ -686,7 +686,7 @@ export const LiveMarket: React.FC = () => {
  {setupHint}
  </p>
  )}
- <button
+ <button data-testid="live-market-retry"
  onClick={() => { setStockProxyDisabled(false); loadQuotes(pageSymbols); }}
  className="text-xs bg-gray-900 text-white px-4 py-1.5 rounded-lg font-bold hover:bg-gray-800 transition-colors"
  >
@@ -707,7 +707,7 @@ export const LiveMarket: React.FC = () => {
  <div className="h-2 w-14 bg-gray-100 rounded animate-pulse" />
  </div>
  </div>
- <button
+ <button data-testid={`live-market-remove-from-watchlist-${symbol}`}
  type="button"
  onClick={() => handleRemove(symbol)}
  aria-label={`Remove ${displaySymbol(symbol)} from watchlist`}
@@ -724,7 +724,7 @@ export const LiveMarket: React.FC = () => {
  <StockRow quote={q} onClick={setSelected} />
  </div>
  {!defaultWL.includes(symbol) && (
- <button
+ <button data-testid={`live-market-remove-from-watchlist-2-${symbol}`}
  type="button"
  onClick={() => handleRemove(symbol)}
  aria-label={`Remove ${displaySymbol(symbol)} from watchlist`}
@@ -750,7 +750,7 @@ export const LiveMarket: React.FC = () => {
  </div>
 
  <div className="flex items-center gap-2">
- <button
+ <button data-testid="live-market-previous-market-page"
  type="button"
  onClick={() => setCurrentPageIndex(prev => Math.max(1, prev - 1))}
  disabled={currentPage <= 1}
@@ -771,7 +771,7 @@ export const LiveMarket: React.FC = () => {
  }
 
  return (
- <button
+ <button data-testid={`live-market-go-to-page-${`mobile-page-${item.value}`}`}
  key={`mobile-page-${item.value}`}
  type="button"
  onClick={() => setCurrentPageIndex(item.value)}
@@ -791,7 +791,7 @@ export const LiveMarket: React.FC = () => {
  </div>
  <div className="hidden items-center gap-1 sm:flex">
  {visiblePageNumbers.map((page) => (
- <button
+ <button data-testid={`live-market-go-to-page-2-${page}`}
  key={page}
  type="button"
  onClick={() => setCurrentPageIndex(page)}
@@ -811,7 +811,7 @@ export const LiveMarket: React.FC = () => {
  <span className="min-w-[88px] text-center text-[11px] font-semibold text-gray-500">
  Page {currentPage} / {totalPages}
  </span>
- <button
+ <button data-testid="live-market-next-market-page"
  type="button"
  onClick={() => setCurrentPageIndex(prev => Math.min(totalPages, prev + 1))}
  disabled={currentPage >= totalPages}
@@ -822,7 +822,7 @@ export const LiveMarket: React.FC = () => {
  <ChevronRight size={14} className="mx-auto" />
  </button>
  <div className="hidden items-center gap-1 md:flex">
- <input
+ <input data-testid="live-market-jump-to-market-page"
  type="number"
  min={1}
  max={totalPages}
@@ -837,7 +837,7 @@ export const LiveMarket: React.FC = () => {
  aria-label="Jump to market page"
  title="Jump to page"
  />
- <button
+ <button data-testid="live-market-go"
  type="button"
  onClick={goToPage}
  className="h-7 rounded-lg border border-gray-200 px-2 text-[11px] font-semibold text-gray-600 hover:bg-gray-50"

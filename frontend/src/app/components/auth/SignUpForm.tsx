@@ -327,7 +327,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form data-testid="sign-up-form-form" onSubmit={handleSubmit} className="space-y-4">
       {errors.general && (
         <div className="bg-red-50 border border-red-200 rounded-xl p-3">
           <p className="text-sm text-red-600 text-center">{errors.general}</p>
@@ -434,7 +434,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
               const prefix = formData.email.split('@')[0];
               const suggestion = `${prefix}@${domain}`;
               return (
-                <button
+                <button data-testid={`sign-up-form-use-${domain}`}
                   key={domain}
                   type="button"
                   className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors"
@@ -455,7 +455,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
           </div>
         )}
         {touched.email && emailTaken === true && (
-          <p className="mt-1 text-xs text-red-500 pl-1">This email can&apos;t be used for a new account. <button type="button" className="underline font-semibold" onClick={onSwitchToSignIn}>Sign in instead</button></p>
+          <p className="mt-1 text-xs text-red-500 pl-1">This email can&apos;t be used for a new account. <button data-testid="sign-up-form-sign-in-instead" type="button" className="underline font-semibold" onClick={onSwitchToSignIn}>Sign in instead</button></p>
         )}
         {touched.email && !isEmailFormatValid && emailTaken !== true && <p className="mt-1 text-xs text-red-500 pl-1">Please enter a valid email address</p>}
       </div>
@@ -483,7 +483,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
               }}
             >
               {countryCodes.map(c => (
-                <option key={c.code} value={c.code} className="text-gray-900 font-medium">
+                <option data-testid={`sign-up-form-option-${c.code}`} key={c.code} value={c.code} className="text-gray-900 font-medium">
                   {c.code}
                 </option>
               ))}

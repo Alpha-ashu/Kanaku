@@ -9,6 +9,7 @@ interface TimeFilterProps {
  value: TimeFilterPeriod;
  onChange: (period: TimeFilterPeriod) => void;
  className?: string;
+ testId?: string;
 }
 
 const filterOptions: { id: TimeFilterPeriod; label: string }[] = [
@@ -18,11 +19,11 @@ const filterOptions: { id: TimeFilterPeriod; label: string }[] = [
  { id: 'yearly', label: 'Yearly' },
 ];
 
-export const TimeFilter: React.FC<TimeFilterProps> = ({ value, onChange, className }) => {
+export const TimeFilter: React.FC<TimeFilterProps> = ({ value, onChange, className, testId }) => {
  return (
- <div className={cn('flex items-center justify-center gap-1 sm:gap-2 p-1.5 bg-gray-100/80 backdrop-blur-sm rounded-2xl w-full max-w-md mx-auto overflow-x-auto scrollbar-hide', className)}>
+ <div data-testid={testId} className={cn('flex items-center justify-center gap-1 sm:gap-2 p-1.5 bg-gray-100/80 backdrop-blur-sm rounded-2xl w-full max-w-md mx-auto overflow-x-auto scrollbar-hide', className)}>
  {filterOptions.map((option) => (
- <button
+ <button data-testid={`time-filter-button-${option.id}`}
  key={option.id}
  onClick={() => onChange(option.id)}
  className={cn(

@@ -45,7 +45,7 @@ export const ModalWrapper: React.FC<ModalWrapperProps> = ({
  if (event.target === event.currentTarget) onClose();
  }}
  >
- <div
+ <div data-testid="modal-wrapper-div"
  ref={panelRef}
  role="dialog"
  aria-modal="true"
@@ -61,7 +61,7 @@ export const ModalWrapper: React.FC<ModalWrapperProps> = ({
  <h2 id="modal-title" className="text-lg font-semibold text-slate-950">{title}</h2>
  {subtitle && <p className="mt-1 text-sm text-slate-500">{subtitle}</p>}
  </div>
- <button
+ <button data-testid="modal-wrapper-close-modal"
  type="button"
  onClick={onClose}
  className="flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:bg-slate-50 hover:text-slate-950"

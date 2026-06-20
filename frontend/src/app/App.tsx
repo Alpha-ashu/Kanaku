@@ -179,7 +179,7 @@ class PageErrorBoundary extends React.Component<
               </span>
             </div>
           ) : (
-            <button
+            <button data-testid="app-try-again"
               onClick={() => {
                 this.setState({ error: null, attemptCount: 0 });
               }}
@@ -916,7 +916,7 @@ const AppContent: React.FC = () => {
                     <p className="text-amber-700">
                       Showing last saved data. Changes will sync when the connection is restored.
                     </p>
-                    <button
+                    <button data-testid="app-button"
                       type="button"
                       onClick={() => void triggerDataSync()}
                       disabled={dataSyncing}

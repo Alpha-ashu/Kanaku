@@ -90,7 +90,7 @@ export const PWAInstallPrompt: React.FC = () => {
  <p className="text-xs text-blue-100 mt-0.5">Quick access from your home screen</p>
  </div>
  </div>
- <button
+ <button data-testid="pwainstall-prompt-dismiss-install-prompt"
  type="button"
  onClick={handleDismiss}
  aria-label="Dismiss install prompt"
@@ -118,7 +118,7 @@ export const PWAInstallPrompt: React.FC = () => {
  ))}
  </ul>
 
- <button
+ <button data-testid="pwainstall-prompt-button"
  onClick={handleInstall}
  disabled={isInstalling}
  className="w-full py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-blue-500/30"

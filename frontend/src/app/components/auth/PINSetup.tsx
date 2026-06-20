@@ -204,11 +204,11 @@ export const PINSetup: React.FC<PINSetupProps> = ({
     : 'Choose a 6-digit PIN to secure your account';
 
   return (
-    <div 
+    <div data-testid="pinsetup-div" 
       className="fixed inset-0 z-50 overflow-y-auto bg-white flex items-center justify-center p-4"
       onClick={() => hiddenInputRef.current?.focus()}
     >
-      <form
+      <form data-testid="pinsetup-form"
         style={{ position: 'absolute', opacity: 0, pointerEvents: 'none', width: 0, height: 0, overflow: 'hidden' }}
         autoComplete="off"
         onSubmit={e => e.preventDefault()}
@@ -258,7 +258,7 @@ export const PINSetup: React.FC<PINSetupProps> = ({
           </div>
 
           {/* PIN digit boxes */}
-          <div className="flex justify-center gap-3 cursor-pointer" onClick={() => hiddenInputRef.current?.focus()}>
+          <div data-testid="pinsetup-div-2" className="flex justify-center gap-3 cursor-pointer" onClick={() => hiddenInputRef.current?.focus()}>
             {Array.from({ length: 6 }, (_, i) => {
               const isActive = i === currentPinVal.length;
               const isFilled = i < currentPinVal.length;

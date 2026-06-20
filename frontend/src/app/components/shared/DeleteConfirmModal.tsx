@@ -54,14 +54,14 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
  </div>
 
  <div className="flex gap-3 p-4 bg-white/50 border-t border-gray-200/50">
- <button
+ <button data-testid="delete-confirm-modal-cancel"
  onClick={onCancel}
  disabled={isLoading}
  className="flex-1 px-4 py-2.5 bg-gray-200/80 text-gray-800 rounded-xl hover:bg-gray-300 disabled:bg-gray-200 font-medium transition-colors backdrop-blur-sm"
  >
  Cancel
  </button>
- <button
+ <button data-testid="delete-confirm-modal-button"
  onClick={onConfirm}
  disabled={isLoading}
  className={`flex-1 px-4 py-2.5 rounded-xl font-medium transition-colors flex items-center justify-center gap-2 shadow-lg ${

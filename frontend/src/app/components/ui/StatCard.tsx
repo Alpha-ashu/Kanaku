@@ -38,7 +38,7 @@ export const StatCard: React.FC<StatCardProps> = ({
  animate={{ opacity: 1, y: 0 }}
  transition={{ duration: 0.4, delay }}
  >
- <Card
+ <Card data-testid="stat-card-card"
  variant={variant}
  className={cn(
  'p-6 relative overflow-hidden group hover:shadow-xl transition-all duration-300',

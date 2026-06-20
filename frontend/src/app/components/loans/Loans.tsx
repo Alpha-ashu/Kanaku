@@ -208,7 +208,7 @@ export const Loans: React.FC = () => {
  {/* Stats */}
  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
- <Card variant="glass" className="p-4 sm:p-6 relative overflow-hidden group border-none bg-white shadow-xl shadow-slate-200/50">
+ <Card data-testid="loans-card" variant="glass" className="p-4 sm:p-6 relative overflow-hidden group border-none bg-white shadow-xl shadow-slate-200/50">
  <div className="absolute -top-12 -right-12 w-32 h-32 bg-red-500/10 rounded-full blur-2xl group-hover:bg-red-500/20 transition-all duration-500" />
  <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-rose-500/5 rounded-full blur-xl" />
  <div className="relative z-10">
@@ -224,7 +224,7 @@ export const Loans: React.FC = () => {
  </motion.div>
 
  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
- <Card variant="glass" className="p-6 relative overflow-hidden group border-none bg-white shadow-xl shadow-slate-200/50">
+ <Card data-testid="loans-card-2" variant="glass" className="p-6 relative overflow-hidden group border-none bg-white shadow-xl shadow-slate-200/50">
  <div className="absolute -top-12 -right-12 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl group-hover:bg-emerald-500/20 transition-all duration-500" />
  <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-green-500/5 rounded-full blur-xl" />
  <div className="relative z-10">
@@ -240,7 +240,7 @@ export const Loans: React.FC = () => {
  </motion.div>
 
  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
- <Card variant="glass" className="p-6 relative overflow-hidden group border-none bg-white shadow-xl shadow-slate-200/50">
+ <Card data-testid="loans-card-3" variant="glass" className="p-6 relative overflow-hidden group border-none bg-white shadow-xl shadow-slate-200/50">
  <div className="absolute -top-12 -right-12 w-32 h-32 bg-slate-500/10 rounded-full blur-2xl group-hover:bg-slate-500/20 transition-all duration-500" />
  <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-slate-500/5 rounded-full blur-xl" />
  <div className="relative z-10">
@@ -256,7 +256,7 @@ export const Loans: React.FC = () => {
  </motion.div>
 
  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
- <Card variant="mesh-red" className="p-6 relative overflow-hidden group border-none shadow-xl shadow-red-200/40">
+ <Card data-testid="loans-card-4" variant="mesh-red" className="p-6 relative overflow-hidden group border-none shadow-xl shadow-red-200/40">
  <div className="absolute -top-12 -right-12 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-all duration-500" />
  <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-white/5 rounded-full blur-xl" />
  <div className="relative z-10">
@@ -274,7 +274,7 @@ export const Loans: React.FC = () => {
 
  {loanStats.overdueCount > 0 && (
  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
- <Card variant="glass" className="p-4 flex items-start gap-3 border-2 border-red-200">
+ <Card data-testid="loans-card-5" variant="glass" className="p-4 flex items-start gap-3 border-2 border-red-200">
  <AlertCircle className="text-red-600 flex-shrink-0 mt-1" size={20} />
  <div>
  <p className="font-display font-bold text-red-900">Overdue Payments</p>
@@ -290,7 +290,7 @@ export const Loans: React.FC = () => {
  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
  {['borrowed', 'lent', 'emi'].map((type, idx) => (
  <motion.div key={type} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.1 }}>
- <Card variant="glass" className="p-6">
+ <Card data-testid={`loans-card-6-${type}`} variant="glass" className="p-6">
  <h3 className="text-xl font-display font-bold text-gray-900 mb-4 capitalize">{type === 'emi' ? 'EMI Loans' : `${type} Loans`}</h3>
  <div className="space-y-3">
  {loans
@@ -507,7 +507,7 @@ export const Loans: React.FC = () => {
  <span className="inline-block mt-1 px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[9px] font-black uppercase rounded-lg">Settled</span>
  </div>
  {canDelete && (
- <button
+ <button data-testid={`loans-delete-record-${loan.id}`}
  onClick={() => handleDeleteLoan(loan.id!, loan.name)}
  className="p-1.5 hover:bg-red-50 rounded-lg transition-colors text-gray-300 hover:text-red-600"
  title="Delete record"
@@ -519,7 +519,7 @@ export const Loans: React.FC = () => {
  <div className="flex items-center justify-between mt-auto">
  <p className="text-[10px] font-bold text-gray-400 uppercase">Paid: {formatCurrency(loan.principalAmount)}</p>
  {loanPayments.some(p => p.loanId === loan.id && p.documentId) && (
- <button
+ <button data-testid={`loans-view-bill-${loan.id}`}
  onClick={() => handleViewBill(loan.id!)}
  className="px-3 py-1.5 bg-white border border-gray-200 text-gray-600 rounded-lg hover:bg-gray-50 transition-all text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5 shadow-sm"
  >
@@ -544,14 +544,14 @@ export const Loans: React.FC = () => {
  <div className="p-6">
  <div className="flex items-center justify-between mb-4">
  <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest">Payment Bills</h3>
- <button onClick={() => setShowBillListForLoan(null)} className="p-1 text-gray-400 hover:text-gray-600"><X size={18} /></button>
+ <button data-testid="loans-button" onClick={() => setShowBillListForLoan(null)} className="p-1 text-gray-400 hover:text-gray-600"><X size={18} /></button>
  </div>
  <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
  {loanPayments
  .filter(p => p.loanId === showBillListForLoan && p.documentId)
  .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
  .map(p => (
- <button
+ <button data-testid={`loans-button-2-${p.id}`}
  key={p.id}
  onClick={() => openBill(p.documentId!)}
  className="w-full flex items-center justify-between p-3 bg-white hover:bg-gray-100 rounded-xl transition-all border border-transparent hover:border-gray-200 group text-left"
@@ -654,7 +654,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ loanId, accounts, onClose }
  Make Payment
  </h3>
  
- <form onSubmit={handleSubmit} className="space-y-5">
+ <form data-testid="loans-form" onSubmit={handleSubmit} className="space-y-5">
  <div>
  <label htmlFor="loan-payment-amount" className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Amount</label>
  <div className="relative">
@@ -682,7 +682,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ loanId, accounts, onClose }
  className="w-full px-4 py-3 bg-white border border-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:bg-white transition-all font-bold text-gray-900 text-sm"
  >
  {accounts.map(acc => (
- <option key={acc.id} value={acc.id}>{acc.name}</option>
+ <option data-testid={`loans-option-${acc.id}`} key={acc.id} value={acc.id}>{acc.name}</option>
  ))}
  </select>
  </div>

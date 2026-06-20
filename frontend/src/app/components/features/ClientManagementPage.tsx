@@ -174,7 +174,7 @@ export const ClientManagementPage: React.FC = () => {
  {/* Filter bar */}
  <div className="mb-6 relative">
  <Search size={18} className="absolute left-4 top-4 text-slate-400" />
- <input
+ <input data-testid="client-management-page-search-clients-by-name"
  type="text"
  placeholder="Search clients by name, email, phone..."
  value={searchQuery}
@@ -203,7 +203,7 @@ export const ClientManagementPage: React.FC = () => {
  )}
  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
  {filteredClients.map(client => (
- <Card key={client.id} variant="glass" className="p-6 border-white/40 shadow-sm flex flex-col justify-between">
+ <Card data-testid={`client-management-page-card-${client.id}`} key={client.id} variant="glass" className="p-6 border-white/40 shadow-sm flex flex-col justify-between">
  <div>
  <div className="flex items-start justify-between mb-4">
  <div>
@@ -240,14 +240,14 @@ export const ClientManagementPage: React.FC = () => {
 
  <div className="flex items-center gap-3">
  {client.status === 'pending' ? (
- <button
+ <button data-testid={`client-management-page-verify-kyc-${client.id}`}
  onClick={() => handleApproveClient(client.id, client.name)}
  className="bg-teal-600 text-white px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-teal-700 active:scale-95 transition-all shadow-sm flex items-center gap-1"
  >
  <ShieldCheck size={12} /> Verify KYC
  </button>
  ) : (
- <button
+ <button data-testid={`client-management-page-audit-portfolio-${client.id}`}
  onClick={() => handleAuditPortfolio(client.name)}
  className="bg-slate-50 text-slate-600 border border-slate-100 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-100 active:scale-95 transition-all flex items-center gap-1 group"
  >

@@ -149,7 +149,7 @@ export const AdminDashboard: React.FC = () => {
           </div>
           <h2 className="text-2xl font-black text-gray-900 mb-2 tracking-tight">Access Denied</h2>
           <p className="text-gray-500 mb-6 font-medium">Only administrators can access the system feature matrix.</p>
-          <button onClick={() => setCurrentPage('dashboard')} className="w-full py-3 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-all">
+          <button data-testid="admin-dashboard-return-to-dashboard" onClick={() => setCurrentPage('dashboard')} className="w-full py-3 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-all">
             Return to Dashboard
           </button>
         </div>
@@ -171,7 +171,7 @@ export const AdminDashboard: React.FC = () => {
  <div className="space-y-6">
  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
  <div className="flex items-center gap-4">
- <button onClick={goBack} className="lg:!hidden p-2 hover:bg-gray-100 rounded-xl transition-colors">
+ <button data-testid="admin-dashboard-button" onClick={goBack} className="lg:!hidden p-2 hover:bg-gray-100 rounded-xl transition-colors">
  <ChevronLeft size={20} />
  </button>
  <div>
@@ -186,7 +186,7 @@ export const AdminDashboard: React.FC = () => {
  { id: 'overview', label: 'Overview' },
  { id: 'users', label: 'User Activity' }
  ].map(tab => (
- <button
+ <button data-testid={`admin-dashboard-button-2-${tab.id}`}
  key={tab.id}
  onClick={() => setActiveTab(tab.id as any)}
  className={cn(
@@ -298,7 +298,7 @@ export const AdminDashboard: React.FC = () => {
  </p>
  </div>
  </div>
- <button
+ <button data-testid="admin-dashboard-manage-feature-matrix"
  onClick={() => setCurrentPage('admin-feature-panel')}
  className="mt-8 w-full py-4 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-indigo-600 transition-all shadow-xl shadow-slate-200 active:scale-95 text-center shrink-0"
  >
@@ -320,7 +320,7 @@ export const AdminDashboard: React.FC = () => {
  </div>
  <div className="flex-1 overflow-y-auto">
  {users.map(user => (
- <button
+ <button data-testid={`admin-dashboard-button-3-${user.id}`}
  key={user.id}
  onClick={() => fetchUserActivity(user)}
  className={cn(
@@ -375,17 +375,17 @@ export const AdminDashboard: React.FC = () => {
  </div>
  </div>
  <div className="flex items-center gap-2 flex-shrink-0 flex-wrap justify-end">
- <select
+ <select data-testid="admin-dashboard-select"
  value={selectedUser.role}
  onChange={(e) => handleRoleChange(selectedUser, e.target.value as any)}
  className="bg-slate-50 border border-slate-200 text-slate-800 text-xs font-bold rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all cursor-pointer"
  >
- <option value="user">User</option>
- <option value="advisor">Advisor</option>
- <option value="manager">Manager</option>
- <option value="admin">Admin</option>
+ <option data-testid="admin-dashboard-user" value="user">User</option>
+ <option data-testid="admin-dashboard-advisor" value="advisor">Advisor</option>
+ <option data-testid="admin-dashboard-manager" value="manager">Manager</option>
+ <option data-testid="admin-dashboard-admin" value="admin">Admin</option>
  </select>
- <button
+ <button data-testid="admin-dashboard-button-4"
  onClick={() => handleToggleStatus(selectedUser)}
  className={cn(
  "px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-1.5",
@@ -397,7 +397,7 @@ export const AdminDashboard: React.FC = () => {
  {selectedUser.status === 'blocked' ? <CheckCircle2 size={12} /> : <Ban size={12} />}
  {selectedUser.status === 'blocked' ? 'Unblock' : 'Block'}
  </button>
- <button
+ <button data-testid="admin-dashboard-delete"
  onClick={() => setDeleteConfirm({ open: true, user: selectedUser })}
  className="px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest bg-rose-50 text-rose-600 hover:bg-rose-100 transition-all flex items-center gap-1.5"
  >
@@ -548,14 +548,14 @@ export const AdminDashboard: React.FC = () => {
           </p>
         </div>
         <div className="flex gap-3">
-          <button
+          <button data-testid="admin-dashboard-cancel"
             onClick={() => setDeleteConfirm({ open: false, user: null })}
             disabled={deleteLoading}
             className="flex-1 px-4 py-3 rounded-xl text-sm font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition-all disabled:opacity-50"
           >
             Cancel
           </button>
-          <button
+          <button data-testid="admin-dashboard-button-5"
             onClick={() => handleDeleteUser(deleteConfirm.user!)}
             disabled={deleteLoading}
             className="flex-1 px-4 py-3 rounded-xl text-sm font-bold bg-rose-600 text-white hover:bg-rose-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2"

@@ -150,20 +150,20 @@ export const TaxCalculator: React.FC<{ onBack?: () => void }> = ({ onBack }) => 
  {/* Input Form */}
  <div className="lg:col-span-2 space-y-6">
  <div className="bg-white rounded-2xl border border-gray-200 p-8">
- <form onSubmit={(e) => { e.preventDefault(); calculateTax(); }} className="space-y-6">
+ <form data-testid="tax-calculator-page-form" onSubmit={(e) => { e.preventDefault(); calculateTax(); }} className="space-y-6">
  {/* Year Selection */}
  <div>
  <label className="block text-sm font-medium text-gray-700 mb-2">
  Financial Year
  </label>
- <select
+ <select data-testid="tax-calculator-page-select-tax-year"
  value={year}
  onChange={(e) => setYear(parseInt(e.target.value))}
  className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-gray-300 focus:bg-white"
  aria-label="Select tax year"
  >
  {[2024, 2023, 2022, 2021].map((y) => (
- <option key={y} value={y}>{y}</option>
+ <option data-testid={`tax-calculator-page-option-${y}`} key={y} value={y}>{y}</option>
  ))}
  </select>
  </div>
@@ -173,7 +173,7 @@ export const TaxCalculator: React.FC<{ onBack?: () => void }> = ({ onBack }) => 
  <label className="block text-sm font-medium text-gray-700 mb-2">
  Country
  </label>
- <select
+ <select data-testid="tax-calculator-page-select-country"
  value={country}
  onChange={(e) => {
  setCountry(e.target.value);
@@ -182,8 +182,8 @@ export const TaxCalculator: React.FC<{ onBack?: () => void }> = ({ onBack }) => 
  className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-gray-300 focus:bg-white"
  aria-label="Select country"
  >
- <option value="India">India</option>
- <option value="US">United States</option>
+ <option data-testid="tax-calculator-page-india" value="India">India</option>
+ <option data-testid="tax-calculator-page-united-states" value="US">United States</option>
  </select>
  </div>
 
@@ -192,18 +192,18 @@ export const TaxCalculator: React.FC<{ onBack?: () => void }> = ({ onBack }) => 
  <label className="block text-sm font-medium text-gray-700 mb-2">
  Filing Status
  </label>
- <select
+ <select data-testid="tax-calculator-page-select-filing-status"
  value={filingStatus}
  onChange={(e) => setFilingStatus(e.target.value)}
  className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-gray-300 focus:bg-white"
  aria-label="Select filing status"
  >
  {country === 'India' ? (
- <option value="standard">Standard</option>
+ <option data-testid="tax-calculator-page-standard" value="standard">Standard</option>
  ) : (
  <>
- <option value="single">Single</option>
- <option value="married">Married Filing Jointly</option>
+ <option data-testid="tax-calculator-page-single" value="single">Single</option>
+ <option data-testid="tax-calculator-page-married-filing-jointly" value="married">Married Filing Jointly</option>
  </>
  )}
  </select>
@@ -216,7 +216,7 @@ export const TaxCalculator: React.FC<{ onBack?: () => void }> = ({ onBack }) => 
  </label>
  <div className="flex items-center">
  <span className="text-gray-600 mr-3 text-lg">{currency}</span>
- <input
+ <input data-testid="tax-calculator-page-0-00"
  type="number"
  step="0.01"
  value={totalIncome || ''}
@@ -235,7 +235,7 @@ export const TaxCalculator: React.FC<{ onBack?: () => void }> = ({ onBack }) => 
  </label>
  <div className="flex items-center">
  <span className="text-gray-600 mr-3 text-lg">{currency}</span>
- <input
+ <input data-testid="tax-calculator-page-0-00-2"
  type="number"
  step="0.01"
  value={deductions || ''}
@@ -248,14 +248,14 @@ export const TaxCalculator: React.FC<{ onBack?: () => void }> = ({ onBack }) => 
 
  {/* Buttons */}
  <div className="flex gap-4 pt-6">
- <button
+ <button data-testid="tax-calculator-page-cancel"
  type="button"
  onClick={handleBack}
  className="flex-1 px-6 py-3 border-2 border-gray-200 rounded-xl hover:bg-white transition-colors font-medium text-gray-700"
  >
  Cancel
  </button>
- <button
+ <button data-testid="tax-calculator-page-calculate-tax"
  type="submit"
  className="flex-1 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition-colors font-medium"
  >

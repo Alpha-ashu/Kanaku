@@ -38,7 +38,7 @@ export const ModeSelectionView: React.FC<{
  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Choose an action</p>
  <div className="grid grid-cols-1 gap-3">
  {isOcrEnabled && (
-  <button
+  <button data-testid="receipt-scanner-views-button"
   onClick={() => onSelectMode('scan')}
   className="flex items-center gap-4 p-5 rounded-[24px] bg-slate-900 text-white hover:bg-slate-800 active:scale-[0.98] transition-all shadow-xl shadow-slate-200"
   >
@@ -52,7 +52,7 @@ export const ModeSelectionView: React.FC<{
   </button>
  )}
 
- <button
+ <button data-testid="receipt-scanner-views-button-2"
  onClick={() => onSelectMode('attachment')}
  className="flex items-center gap-4 p-5 rounded-[24px] bg-slate-50 text-slate-900 hover:bg-slate-100 active:scale-[0.98] transition-all border border-slate-100"
  >
@@ -80,7 +80,7 @@ export const SourcePickerView: React.FC<{
 }> = ({ mode, onCameraClick, onUploadClick, onBack }) => (
  <div className="space-y-4 pt-2">
  <div className="flex items-center gap-2">
- <button
+ <button data-testid="receipt-scanner-views-back"
  onClick={onBack}
  className="text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-slate-700 transition-colors"
  >
@@ -100,14 +100,14 @@ export const SourcePickerView: React.FC<{
  )}
 
  <div className="grid grid-cols-2 gap-4">
- <SelectionCard
+ <SelectionCard testId="receipt-scanner-views-card"
  onClick={onCameraClick}
  icon={<Camera size={24} />}
  label="Camera"
  sublabel="Take Photo"
  className="bg-slate-900 text-white hover:bg-slate-800 shadow-xl shadow-slate-200"
  />
- <SelectionCard
+ <SelectionCard testId="receipt-scanner-views-card-2"
  onClick={onUploadClick}
  icon={<Upload size={24} />}
  label="Gallery"
@@ -128,14 +128,14 @@ export const FileSelectionView: React.FC<{
 }> = ({ onUploadClick, onCameraClick, onDeviceOnly, onDeviceOnlyChange }) => (
  <div className="space-y-6 pt-2">
  <div className="grid grid-cols-2 gap-4">
- <SelectionCard
+ <SelectionCard testId="receipt-scanner-views-card-3"
  onClick={onUploadClick}
  icon={<Upload size={24} />}
  label="Upload"
  sublabel="Gallery/Files"
  className="bg-slate-50 text-slate-900 hover:bg-slate-100"
  />
- <SelectionCard
+ <SelectionCard testId="receipt-scanner-views-card-4"
  onClick={onCameraClick}
  icon={<Camera size={24} />}
  label="Camera"
@@ -155,7 +155,7 @@ export const FileSelectionView: React.FC<{
  </div>
  </div>
  <label className="relative inline-flex items-center cursor-pointer">
- <input
+ <input data-testid="receipt-scanner-views-checkbox"
  type="checkbox"
  checked={onDeviceOnly}
  onChange={(e) => onDeviceOnlyChange(e.target.checked)}
@@ -173,8 +173,9 @@ const SelectionCard: React.FC<{
  label: string;
  sublabel: string;
  className?: string;
-}> = ({ onClick, icon, label, sublabel, className }) => (
- <button
+ testId?: string;
+}> = ({ onClick, icon, label, sublabel, className, testId }) => (
+ <button data-testid={testId}
  onClick={onClick}
  className={cn(
 "flex flex-col items-center justify-center gap-3 rounded-[32px] p-8 transition-all active:scale-95 border border-transparent",
@@ -221,14 +222,14 @@ export const PreviewView: React.FC<{
  </div>
 
  <div className="flex gap-3">
- <button
+ <button data-testid="receipt-scanner-views-change"
  onClick={onChange}
  disabled={isScanning}
  className="flex-[0.4] flex items-center justify-center gap-2 rounded-xl border border-gray-200 py-3 text-sm font-semibold text-gray-600 transition-colors hover:bg-gray-50 disabled:opacity-40"
  >
  <RefreshCw size={14} /> Change
  </button>
- <button
+ <button data-testid="receipt-scanner-views-button-4"
  onClick={onScan}
  disabled={isScanning}
  className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-black py-3 text-sm font-bold text-white shadow-lg transition-colors hover:bg-gray-900 disabled:opacity-40"
@@ -482,7 +483,7 @@ const ValidationWarning: React.FC<{
  <p className="text-[10px] font-bold text-red-800/60 mb-2 uppercase tracking-widest">Detected Candidates:</p>
  <div className="flex flex-wrap gap-2">
  {amountCandidates.map((candidate, i) => (
- <button
+ <button data-testid={`receipt-scanner-views-button-5-${i}`}
  key={i}
  onClick={() => onSelectCandidate(candidate)}
  className="px-3 py-1.5 bg-white border border-red-100 rounded-lg text-sm font-bold text-red-600 hover:bg-red-50 transition-colors shadow-sm"
@@ -627,7 +628,7 @@ const AmountField: React.FC<{
  </label>
  <div className="flex items-center gap-2">
  <span className={cn("text-sm font-bold", hasError ?"text-red-500" :"text-gray-500")}>{currency}</span>
- <input
+ <input data-testid="receipt-scanner-views-0-00"
  type="number"
  step="0.01"
  value={amount || ''}
@@ -650,7 +651,7 @@ const TextField: React.FC<{
  <label className="mb-1 block text-[10px] font-bold uppercase tracking-widest text-gray-400">
  {label}
  </label>
- <input
+ <input data-testid="receipt-scanner-views-placeholder"
  type="text"
  value={value}
  onChange={(event) => onChange(event.target.value)}
@@ -670,7 +671,7 @@ const NumberField: React.FC<{
  <label className="mb-1 block text-[10px] font-bold uppercase tracking-widest text-gray-400">
  {label}
  </label>
- <input
+ <input data-testid="receipt-scanner-views-label"
  type="number"
  step="0.01"
  value={value || ''}
@@ -692,7 +693,7 @@ const DateField: React.FC<{
  <label className="mb-1 block text-[10px] font-bold uppercase tracking-widest text-gray-400">
  {label}
  </label>
- <input
+ <input data-testid="receipt-scanner-views-label-2"
  type="date"
  value={value ? toLocalDateKey(value) ?? '' : ''}
  onChange={(event) => {
@@ -717,7 +718,7 @@ const SelectField: React.FC<{
  <label className="mb-1 block text-[10px] font-bold uppercase tracking-widest text-gray-400">
  {label}
  </label>
- <select
+ <select data-testid="receipt-scanner-views-label-3"
  value={value}
  onChange={(event) => onChange(normalizeCategorySelection(event.target.value, 'expense'))}
  className="w-full appearance-none bg-transparent text-sm font-medium text-gray-900 focus:outline-none"
@@ -725,7 +726,7 @@ const SelectField: React.FC<{
  title={label}
  >
  {options.map((category) => (
- <option key={category} value={category}>
+ <option data-testid={`receipt-scanner-views-option-${category}`} key={category} value={category}>
  {category}
  </option>
  ))}
@@ -759,20 +760,20 @@ const SubcategoryField: React.FC<{
  </label>
  {subcategories.length > 0 ? (
  <>
- <select
+ <select data-testid="receipt-scanner-views-subcategory"
  value={showCustomInput ? '__custom__' : (value || '')}
  onChange={(e) => handleSelectChange(e.target.value)}
  className="w-full appearance-none bg-transparent text-sm font-medium text-gray-900 focus:outline-none"
  aria-label="Subcategory"
  >
- <option value="">- Select subcategory -</option>
+ <option data-testid="receipt-scanner-views-select-subcategory" value="">- Select subcategory -</option>
  {subcategories.map((sub) => (
- <option key={sub} value={sub}>{sub}</option>
+ <option data-testid={`receipt-scanner-views-option-2-${sub}`} key={sub} value={sub}>{sub}</option>
  ))}
- <option value="__custom__">Other (type custom)...</option>
+ <option data-testid="receipt-scanner-views-other-type-custom" value="__custom__">Other (type custom)...</option>
  </select>
  {showCustomInput && (
- <input
+ <input data-testid="receipt-scanner-views-type-custom-subcategory"
  type="text"
  value={value}
  onChange={(e) => onChange(e.target.value)}
@@ -783,7 +784,7 @@ const SubcategoryField: React.FC<{
  )}
  </>
  ) : (
- <input
+ <input data-testid="receipt-scanner-views-e-g-restaurant-groceries"
  type="text"
  value={value}
  onChange={(e) => onChange(e.target.value)}
@@ -812,7 +813,7 @@ const AccountSelector: React.FC<{
  <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-gray-400">
  Charge to Account *
  </label>
- <select
+ <select data-testid="receipt-scanner-views-charge-to-account"
  value={selectedId || ''}
  onChange={(event) => {
  const parsed = parseInt(event.target.value, 10);
@@ -822,9 +823,9 @@ const AccountSelector: React.FC<{
  aria-label="Charge to account"
  title="Charge to account"
  >
- <option value="">Select an account</option>
+ <option data-testid="receipt-scanner-views-select-an-account" value="">Select an account</option>
  {accounts.map((account) => (
- <option key={account.id} value={account.id}>
+ <option data-testid={`receipt-scanner-views-option-3-${account.id}`} key={account.id} value={account.id}>
  {account.name} ({currency} {account.balance.toFixed(2)})
  </option>
  ))}
@@ -840,13 +841,13 @@ const ActionButtons: React.FC<{
  isDisabled: boolean;
 }> = ({ onRescan, onSubmit, isFormPrefillMode, expenseMode, isDisabled }) => (
  <div className="flex gap-2.5">
- <button
+ <button data-testid="receipt-scanner-views-rescan"
  onClick={onRescan}
  className="flex shrink-0 items-center justify-center gap-2 rounded-xl border border-gray-200 px-5 py-3 text-sm font-semibold text-gray-600 transition-colors hover:bg-gray-50 active:scale-95"
  >
  <RefreshCw size={14} /> Rescan
  </button>
- <button
+ <button data-testid="receipt-scanner-views-button-6"
  onClick={onSubmit}
  disabled={isDisabled}
  className="flex flex-1 items-center justify-center rounded-xl bg-gray-900 py-3 text-sm font-bold text-white shadow-lg transition-colors hover:bg-black disabled:opacity-40 active:scale-[0.98]"

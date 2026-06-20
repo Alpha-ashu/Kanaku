@@ -219,7 +219,7 @@ export const AddGroup: React.FC = () => {
  <header className="px-4 lg:px-6 py-4 bg-white border-b border-slate-100">
  <div className="flex flex-row flex-wrap items-center justify-between gap-4 w-full">
  <div className="flex items-center gap-3">
- <button onClick={() => setCurrentPage('groups')} title="Back" className="lg:!hidden p-2 text-slate-600 hover:bg-slate-50 rounded-xl transition-all">
+ <button data-testid="add-group-back" onClick={() => setCurrentPage('groups')} title="Back" className="lg:!hidden p-2 text-slate-600 hover:bg-slate-50 rounded-xl transition-all">
  <ArrowLeft size={20} />
  </button>
  <h1 className="text-xl font-black text-slate-900 tracking-tight leading-none">New Group Expense</h1>
@@ -239,7 +239,7 @@ export const AddGroup: React.FC = () => {
  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Group / Expense Name</label>
  <div className="relative">
  <Tag className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
- <input 
+ <input data-testid="add-group-e-g-weekend-trip" 
  type="text" 
  value={formData.name} 
  onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))} 
@@ -252,7 +252,7 @@ export const AddGroup: React.FC = () => {
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
  <div className="space-y-2">
  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Category</label>
- <SearchableDropdown
+ <SearchableDropdown testId="add-group-category"
  options={groupCategoryOptions}
  value={formData.category}
  onChange={val => setFormData(prev => ({ ...prev, category: val }))}
@@ -273,7 +273,7 @@ export const AddGroup: React.FC = () => {
  return `${day}-${months[date.getMonth()]}-${date.getFullYear()}`;
  })()}
  </div>
- <input
+ <input data-testid="add-group-expense-date"
  type="date"
  value={formData.date}
  onChange={e => setFormData(prev => ({ ...prev, date: e.target.value }))}
@@ -288,7 +288,7 @@ export const AddGroup: React.FC = () => {
  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Description (Optional)</label>
  <div className="relative">
  <AlignLeft className="absolute left-2.5 top-3 text-slate-300" size={14} />
- <textarea 
+ <textarea data-testid="add-group-what-was-this-for" 
  value={formData.description} 
  onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))} 
  className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-900 text-xs min-h-[60px] resize-none" 
@@ -305,7 +305,7 @@ export const AddGroup: React.FC = () => {
  </label>
  <div className="flex gap-2">
  {friends && friends.length > 0 && (
- <button 
+ <button data-testid="add-group-friends" 
  type="button" 
  onClick={() => { setShowFriendPicker(!showFriendPicker); setShowNewPersonInput(false); }}
  className="text-[8px] font-black uppercase text-violet-600 bg-violet-50 px-2.5 py-1.5 rounded-lg flex items-center gap-1"
@@ -313,7 +313,7 @@ export const AddGroup: React.FC = () => {
  <Users size={10} /> Friends
  </button>
  )}
- <button 
+ <button data-testid="add-group-new-person" 
  type="button" 
  onClick={() => { setShowNewPersonInput(!showNewPersonInput); setShowFriendPicker(false); }}
  className="text-[8px] font-black uppercase text-indigo-600 bg-indigo-50 px-2.5 py-1.5 rounded-lg flex items-center gap-1"
@@ -331,7 +331,7 @@ export const AddGroup: React.FC = () => {
  {friends.map(f => {
  const already = formData.participants.some(p => p.toLowerCase() === f.name.toLowerCase());
  return (
- <button 
+ <button data-testid={`add-group-button-${f.id}`} 
  key={f.id}
  type="button"
  onClick={() => !already && addFriend(f.name)}
@@ -355,7 +355,7 @@ export const AddGroup: React.FC = () => {
  {showNewPersonInput && (
  <div className="flex items-center gap-2 p-2.5 bg-indigo-50/60 rounded-xl border border-indigo-100 animate-in slide-in-from-top-2">
  <UserPlus size={14} className="text-indigo-400 shrink-0" />
- <input
+ <input data-testid="add-group-type-name-press-enter"
  type="text"
  value={newPersonInput}
  onChange={e => setNewPersonInput(e.target.value)}
@@ -364,10 +364,10 @@ export const AddGroup: React.FC = () => {
  placeholder="Type name & press Enter"
  autoFocus
  />
- <button type="button" onClick={confirmNewPerson} title="Confirm" className="p-1.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all">
+ <button data-testid="add-group-confirm" type="button" onClick={confirmNewPerson} title="Confirm" className="p-1.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all">
  <Check size={12} strokeWidth={3} />
  </button>
- <button type="button" onClick={() => { setShowNewPersonInput(false); setNewPersonInput(''); }} title="Cancel" className="p-1.5 text-slate-400 hover:text-slate-600 transition-all">
+ <button data-testid="add-group-cancel" type="button" onClick={() => { setShowNewPersonInput(false); setNewPersonInput(''); }} title="Cancel" className="p-1.5 text-slate-400 hover:text-slate-600 transition-all">
  <X size={12} strokeWidth={3} />
  </button>
  </div>
@@ -388,7 +388,7 @@ export const AddGroup: React.FC = () => {
  <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-[10px] font-black text-indigo-500 uppercase">
  {p ? p.charAt(0) : <Plus size={12} />}
  </div>
- <input 
+ <input data-testid={`add-group-person-${i}`} 
  type="text" 
  value={p} 
  onChange={e => updateParticipant(i, e.target.value)}
@@ -396,7 +396,7 @@ export const AddGroup: React.FC = () => {
  className="flex-1 bg-transparent border-none p-0 text-[11px] font-bold text-slate-900 focus:ring-0" 
  placeholder={`Person ${i + 1}`} 
  />
- <button type="button" onClick={() => removeParticipant(i)} title="Remove participant" className="text-slate-300 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-all">
+ <button data-testid={`add-group-remove-participant-${i}`} type="button" onClick={() => removeParticipant(i)} title="Remove participant" className="text-slate-300 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-all">
  <Trash2 size={14} />
  </button>
  </div>
@@ -424,7 +424,7 @@ export const AddGroup: React.FC = () => {
  </div>
  
  {/* Center: Input */}
- <input
+ <input data-testid="add-group-0"
  type="number"
  name="totalAmount"
  value={amountStr}
@@ -437,7 +437,7 @@ export const AddGroup: React.FC = () => {
  {/* Right Side: Clear Button */}
  <div className="w-20 sm:w-28 flex justify-start pl-2 sm:pl-4">
  {amountStr && (
- <button
+ <button data-testid="add-group-clear-amount"
  onClick={() => { setAmountStr(''); setFormData(prev => ({ ...prev, totalAmount: 0 })); }}
  title="Clear amount"
  className="p-2 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-full transition-all animate-in fade-in zoom-in-50"
@@ -450,7 +450,7 @@ export const AddGroup: React.FC = () => {
 
  <div className="flex flex-wrap justify-center gap-3 mt-8 max-w-sm">
  {[100, 500, 1000, 2000, 5000].map(amt => (
- <button 
+ <button data-testid={`add-group-button-2-${amt}`} 
  key={amt} 
  type="button"
  onClick={() => { 

@@ -100,7 +100,7 @@ export const ToDoListShare: React.FC = () => {
       {/* Header */}
       <header className="px-4 lg:px-6 py-4 bg-white border-b border-slate-100">
         <div className="flex items-center gap-3">
-          <button
+          <button data-testid="to-do-list-share-back"
             onClick={() => setCurrentPage('todo-list-detail')}
             className="lg:!hidden p-2 text-slate-600 hover:bg-slate-50 rounded-xl transition-all"
             title="Back"
@@ -133,7 +133,7 @@ export const ToDoListShare: React.FC = () => {
                 Add friends to your contacts to share lists with them.
               </p>
             </div>
-            <button
+            <button data-testid="to-do-list-share-add-friends"
               onClick={() => setCurrentPage('add-friends')}
               className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-indigo-700 active:scale-95 transition-all shadow-lg shadow-indigo-100"
             >
@@ -146,7 +146,7 @@ export const ToDoListShare: React.FC = () => {
           <div className="premium-glass-card p-5 space-y-4">
             <div className="flex items-center justify-between">
               <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Share With</p>
-              <button
+              <button data-testid="to-do-list-share-add-friend"
                 onClick={() => setCurrentPage('add-friends')}
                 className="flex items-center gap-1.5 text-[9px] font-black text-indigo-600 hover:text-indigo-700 uppercase tracking-widest"
               >
@@ -157,15 +157,15 @@ export const ToDoListShare: React.FC = () => {
 
             {/* Friend Picker */}
             <div className="relative">
-              <select
+              <select data-testid="to-do-list-share-select-friend-to-share"
                 value={selectedFriendEmail}
                 onChange={e => setSelectedFriendEmail(e.target.value)}
                 aria-label="Select friend to share with"
                 className="w-full bg-slate-50 border-none rounded-xl py-3 pl-4 pr-10 font-bold text-slate-900 text-sm appearance-none focus:ring-2 focus:ring-indigo-200 outline-none"
               >
-                <option value="">Choose a friend…</option>
+                <option data-testid="to-do-list-share-choose-a-friend" value="">Choose a friend…</option>
                 {friends.map(f => (
-                  <option key={f.id} value={f.email}>
+                  <option data-testid={`to-do-list-share-option-${f.id}`} key={f.id} value={f.email}>
                     {f.name} {f.email ? `(${f.email})` : ''}
                   </option>
                 ))}
@@ -178,7 +178,7 @@ export const ToDoListShare: React.FC = () => {
               <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Permission Level</p>
               <div className="grid grid-cols-2 gap-2">
                 {(['view', 'edit'] as const).map(p => (
-                  <button
+                  <button data-testid={`to-do-list-share-button-${p}`}
                     key={p}
                     onClick={() => setPermission(p)}
                     className={cn(
@@ -200,7 +200,7 @@ export const ToDoListShare: React.FC = () => {
               </p>
             </div>
 
-            <button
+            <button data-testid="to-do-list-share-button-2"
               onClick={handleShareList}
               disabled={isSharing || !selectedFriendEmail}
               className="w-full py-3 bg-indigo-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-indigo-700 active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-indigo-100"
@@ -240,14 +240,14 @@ export const ToDoListShare: React.FC = () => {
                 </div>
 
                 <div className="flex items-center gap-1 shrink-0">
-                  <button
+                  <button data-testid={`to-do-list-share-share-permission-view-upgrade-${share.id}`}
                     onClick={() => handleUpdatePermission(share.id!, share.permission === 'view' ? 'edit' : 'view')}
                     title={share.permission === 'view' ? 'Upgrade to Edit' : 'Downgrade to View'}
                     className="p-2 text-slate-300 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
                   >
                     {share.permission === 'view' ? <Edit size={14} /> : <Lock size={14} />}
                   </button>
-                  <button
+                  <button data-testid={`to-do-list-share-remove-access-${share.id}`}
                     onClick={() => handleRemoveShare(share.id!)}
                     title="Remove access"
                     className="p-2 text-slate-300 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"

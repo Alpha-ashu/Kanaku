@@ -50,7 +50,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
     }
 
     return (
-      <div
+      <div data-testid="error-boundary-div"
         role="alert"
         style={{
           minHeight: '100vh',
@@ -69,7 +69,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
         <p style={{ opacity: 0.8, marginBottom: '20px', maxWidth: '420px' }}>
           We hit an unexpected problem. Please try again in a moment.
         </p>
-        <button
+        <button data-testid="error-boundary-reload-app"
           type="button"
           onClick={this.handleReload}
           style={{

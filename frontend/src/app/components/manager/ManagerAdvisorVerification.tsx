@@ -289,7 +289,7 @@ export const ManagerAdvisorVerification: React.FC = () => {
  <AnimatePresence>
  {selectedApp && (
  <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 lg:p-8">
- <motion.div 
+ <motion.div data-testid="manager-advisor-verification-div" 
  initial={{ opacity: 0 }}
  animate={{ opacity: 1 }}
  exit={{ opacity: 0 }}
@@ -314,7 +314,7 @@ export const ManagerAdvisorVerification: React.FC = () => {
  <p className="text-slate-500 font-medium">Application ID: {selectedApp.id.slice(0, 8)}</p>
  </div>
  </div>
- <button 
+ <button data-testid="manager-advisor-verification-button" 
  onClick={() => setSelectedApp(null)}
  className="p-3 hover:bg-slate-50 rounded-2xl transition-all"
  >

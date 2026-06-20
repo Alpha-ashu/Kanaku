@@ -131,22 +131,22 @@ export const PayEMI: React.FC = () => {
  <p className="text-sm text-gray-500">Create a loan or EMI in Loans section to pay here</p>
  </div>
  ) : (
- <form onSubmit={handleSubmit} className="space-y-6">
+ <form data-testid="pay-emi-form" onSubmit={handleSubmit} className="space-y-6">
  {/* Select EMI Loan */}
  <div>
  <label className="block text-sm font-medium text-gray-700 mb-2">
  Select EMI Loan <span className="text-red-500">*</span>
  </label>
- <select
+ <select data-testid="pay-emi-select-loan"
  value={selectedLoanId || ''}
  onChange={(e) => setSelectedLoanId(Number(e.target.value) || null)}
  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
  aria-label="Select loan"
  required
  >
- <option value="">Choose a loan...</option>
+ <option data-testid="pay-emi-choose-a-loan" value="">Choose a loan...</option>
  {loans.map(loan => (
- <option key={loan.id} value={loan.id}>
+ <option data-testid={`pay-emi-outstanding-${loan.id}`} key={loan.id} value={loan.id}>
  {loan.name} - Outstanding: {formatCurrency(loan.outstandingBalance)}
  </option>
  ))}
@@ -186,7 +186,7 @@ export const PayEMI: React.FC = () => {
  <DollarSign size={16} className="inline mr-2" />
  Payment Amount <span className="text-red-500">*</span>
  </label>
- <input
+ <input data-testid="pay-emi-enter-amount"
  type="number"
  step="0.01"
  min="0"
@@ -209,7 +209,7 @@ export const PayEMI: React.FC = () => {
  <Calendar size={16} className="inline mr-2" />
  Payment Date
  </label>
- <input
+ <input data-testid="pay-emi-payment-date"
  type="date"
  value={paymentDate}
  onChange={(e) => setPaymentDate(e.target.value)}
@@ -223,7 +223,7 @@ export const PayEMI: React.FC = () => {
  <label className="block text-sm font-medium text-gray-700 mb-2">
  Notes (Optional)
  </label>
- <textarea
+ <textarea data-testid="pay-emi-add-notes-about-this"
  value={notes}
  onChange={(e) => setNotes(e.target.value)}
  placeholder="Add notes about this payment"
@@ -233,7 +233,7 @@ export const PayEMI: React.FC = () => {
  </div>
 
  {/* Submit Button */}
- <button
+ <button data-testid="pay-emi-button"
  type="submit"
  disabled={isProcessing || !selectedLoanId}
  className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-semibold py-3 rounded-lg transition-colors flex items-center justify-center gap-2"

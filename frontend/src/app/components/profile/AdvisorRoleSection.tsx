@@ -188,7 +188,7 @@ export const AdvisorRoleSection: React.FC<Props> = ({ userRole, userName, userEm
       <label className="block text-sm font-semibold text-gray-700 mb-1.5">
         {label} {required && <span className="text-red-500">*</span>}
       </label>
-      <div
+      <div data-testid="advisor-role-section-div"
         onClick={() => inputRef.current?.click()}
         className={cn(
           'flex items-center gap-3 px-4 py-3 border-2 border-dashed rounded-xl cursor-pointer transition-colors',
@@ -200,7 +200,7 @@ export const AdvisorRoleSection: React.FC<Props> = ({ userRole, userName, userEm
           {file ? file.name : 'Click to upload (PDF, JPG, PNG)'}
         </span>
         {file && (
-          <button
+          <button data-testid="advisor-role-section-button"
             type="button"
             onClick={(ev) => { ev.stopPropagation(); setFile(null); }}
             className="ml-auto text-gray-400 hover:text-red-500"
@@ -209,7 +209,7 @@ export const AdvisorRoleSection: React.FC<Props> = ({ userRole, userName, userEm
           </button>
         )}
       </div>
-      <input
+      <input data-testid="advisor-role-section-upload"
         ref={inputRef}
         type="file"
         accept=".pdf,.jpg,.jpeg,.png,.webp"
@@ -245,7 +245,7 @@ export const AdvisorRoleSection: React.FC<Props> = ({ userRole, userName, userEm
               <p className="font-semibold text-gray-900 text-sm">Role Mode</p>
               <p className="text-xs text-gray-500 mt-0.5">Switch between user and advisor experience</p>
             </div>
-            <button
+            <button data-testid="advisor-role-section-button-2"
               type="button"
               onClick={handleSwitchMode}
               disabled={switchingMode}
@@ -267,7 +267,7 @@ export const AdvisorRoleSection: React.FC<Props> = ({ userRole, userName, userEm
               {(Object.keys(ONLINE_STATUS_CONFIG) as OnlineStatus[]).map((s) => {
                 const cfg = ONLINE_STATUS_CONFIG[s];
                 return (
-                  <button
+                  <button data-testid={`advisor-role-section-button-3-${s}`}
                     key={s}
                     type="button"
                     onClick={() => handleStatusChange(s)}
@@ -295,7 +295,7 @@ export const AdvisorRoleSection: React.FC<Props> = ({ userRole, userName, userEm
   return (
     <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
       {/* Toggle header */}
-      <button
+      <button data-testid="advisor-role-section-button-4"
         type="button"
         onClick={() => setExpanded((p) => !p)}
         className="w-full flex items-center gap-4 px-6 py-4 hover:bg-gray-50 transition-colors text-left"
@@ -377,7 +377,7 @@ export const AdvisorRoleSection: React.FC<Props> = ({ userRole, userName, userEm
                           </p>
                         </div>
                       </div>
-                      <button
+                      <button data-testid="advisor-role-section-resubmit-application"
                         type="button"
                         onClick={() => setShowForm(true)}
                         className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold text-sm transition-colors"
@@ -389,10 +389,10 @@ export const AdvisorRoleSection: React.FC<Props> = ({ userRole, userName, userEm
                 </div>
               ) : showForm ? (
                 // Application form
-                <form onSubmit={handleSubmit} className="space-y-5">
+                <form data-testid="advisor-role-section-form" onSubmit={handleSubmit} className="space-y-5">
                   <div className="flex items-center justify-between">
                     <h4 className="font-bold text-gray-900">Advisor Application</h4>
-                    <button type="button" onClick={() => setShowForm(false)} className="text-xs text-gray-500 hover:text-gray-700">
+                    <button data-testid="advisor-role-section-cancel" type="button" onClick={() => setShowForm(false)} className="text-xs text-gray-500 hover:text-gray-700">
                       Cancel
                     </button>
                   </div>
@@ -403,7 +403,7 @@ export const AdvisorRoleSection: React.FC<Props> = ({ userRole, userName, userEm
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
                         <label htmlFor="adv-fullName" className="block text-sm font-semibold text-gray-700 mb-1">Full Name <span className="text-red-500">*</span></label>
-                        <input
+                        <input data-testid="advisor-role-section-input"
                           id="adv-fullName"
                           type="text"
                           required
@@ -414,7 +414,7 @@ export const AdvisorRoleSection: React.FC<Props> = ({ userRole, userName, userEm
                       </div>
                       <div>
                         <label htmlFor="adv-phone" className="block text-sm font-semibold text-gray-700 mb-1">Mobile Number <span className="text-red-500">*</span></label>
-                        <input
+                        <input data-testid="advisor-role-section-91-xxxxx-xxxxx"
                           id="adv-phone"
                           type="tel"
                           required
@@ -427,7 +427,7 @@ export const AdvisorRoleSection: React.FC<Props> = ({ userRole, userName, userEm
                     </div>
                     <div>
                       <label htmlFor="adv-email" className="block text-sm font-semibold text-gray-700 mb-1">Email Address</label>
-                      <input
+                      <input data-testid="advisor-role-section-input-2"
                         id="adv-email"
                         type="email"
                         value={formData.email}
@@ -443,7 +443,7 @@ export const AdvisorRoleSection: React.FC<Props> = ({ userRole, userName, userEm
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
                         <label htmlFor="adv-experience" className="block text-sm font-semibold text-gray-700 mb-1">Years of Experience <span className="text-red-500">*</span></label>
-                        <input
+                        <input data-testid="advisor-role-section-0"
                           id="adv-experience"
                           type="number"
                           required
@@ -457,7 +457,7 @@ export const AdvisorRoleSection: React.FC<Props> = ({ userRole, userName, userEm
                       </div>
                       <div>
                         <label htmlFor="adv-expertise" className="block text-sm font-semibold text-gray-700 mb-1">Area of Expertise <span className="text-red-500">*</span></label>
-                        <select
+                        <select data-testid="advisor-role-section-area-of-expertise"
                           id="adv-expertise"
                           required
                           title="Area of Expertise"
@@ -465,21 +465,21 @@ export const AdvisorRoleSection: React.FC<Props> = ({ userRole, userName, userEm
                           onChange={(e) => setFormData((p) => ({ ...p, expertise: e.target.value }))}
                           className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white"
                         >
-                          <option value="">Select expertise</option>
-                          <option value="Financial Planning">Financial Planning</option>
-                          <option value="Investment Advisory">Investment Advisory</option>
-                          <option value="Tax Planning">Tax Planning</option>
-                          <option value="Insurance Advisory">Insurance Advisory</option>
-                          <option value="Retirement Planning">Retirement Planning</option>
-                          <option value="Wealth Management">Wealth Management</option>
-                          <option value="Debt Management">Debt Management</option>
-                          <option value="Other">Other</option>
+                          <option data-testid="advisor-role-section-select-expertise" value="">Select expertise</option>
+                          <option data-testid="advisor-role-section-financial-planning" value="Financial Planning">Financial Planning</option>
+                          <option data-testid="advisor-role-section-investment-advisory" value="Investment Advisory">Investment Advisory</option>
+                          <option data-testid="advisor-role-section-tax-planning" value="Tax Planning">Tax Planning</option>
+                          <option data-testid="advisor-role-section-insurance-advisory" value="Insurance Advisory">Insurance Advisory</option>
+                          <option data-testid="advisor-role-section-retirement-planning" value="Retirement Planning">Retirement Planning</option>
+                          <option data-testid="advisor-role-section-wealth-management" value="Wealth Management">Wealth Management</option>
+                          <option data-testid="advisor-role-section-debt-management" value="Debt Management">Debt Management</option>
+                          <option data-testid="advisor-role-section-other" value="Other">Other</option>
                         </select>
                       </div>
                     </div>
                     <div>
                       <label htmlFor="adv-org" className="block text-sm font-semibold text-gray-700 mb-1">Organization Name <span className="text-gray-400 font-normal">(Optional)</span></label>
-                      <input
+                      <input data-testid="advisor-role-section-company-or-firm-name"
                         id="adv-org"
                         type="text"
                         placeholder="Company or firm name"
@@ -490,7 +490,7 @@ export const AdvisorRoleSection: React.FC<Props> = ({ userRole, userName, userEm
                     </div>
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-1">Professional Bio <span className="text-red-500">*</span></label>
-                      <textarea
+                      <textarea data-testid="advisor-role-section-describe-your-professional-background"
                         required
                         rows={4}
                         value={formData.bio}
@@ -518,7 +518,7 @@ export const AdvisorRoleSection: React.FC<Props> = ({ userRole, userName, userEm
 
                   {/* Declaration */}
                   <label className="flex items-start gap-3 cursor-pointer">
-                    <input
+                    <input data-testid="advisor-role-section-checkbox"
                       type="checkbox"
                       checked={formData.confirmed}
                       onChange={(e) => setFormData((p) => ({ ...p, confirmed: e.target.checked }))}
@@ -529,7 +529,7 @@ export const AdvisorRoleSection: React.FC<Props> = ({ userRole, userName, userEm
                     </span>
                   </label>
 
-                  <button
+                  <button data-testid="advisor-role-section-button-5"
                     type="submit"
                     disabled={submitting}
                     className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-sm transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
@@ -590,7 +590,7 @@ export const AdvisorRoleSection: React.FC<Props> = ({ userRole, userName, userEm
                     </div>
                   </div>
 
-                  <button
+                  <button data-testid="advisor-role-section-apply-now"
                     type="button"
                     onClick={() => setShowForm(true)}
                     className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-sm transition-colors flex items-center justify-center gap-2"

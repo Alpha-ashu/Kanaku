@@ -118,7 +118,7 @@ function Carousel({
  canScrollNext,
  }}
  >
- <div
+ <div data-testid="carousel-div"
  onKeyDownCapture={handleKeyDown}
  className={cn("relative", className)}
  role="region"
@@ -157,7 +157,7 @@ function CarouselItem({ className, ...props }: React.ComponentProps<"div">) {
  const { orientation } = useCarousel();
 
  return (
- <div
+ <div data-testid="carousel-div-2"
  role="group"
  aria-roledescription="slide"
  data-slot="carousel-item"
@@ -180,7 +180,7 @@ function CarouselPrevious({
  const { orientation, scrollPrev, canScrollPrev } = useCarousel();
 
  return (
- <Button
+ <Button data-testid="carousel-button"
  data-slot="carousel-previous"
  variant={variant}
  size={size}
@@ -210,7 +210,7 @@ function CarouselNext({
  const { orientation, scrollNext, canScrollNext } = useCarousel();
 
  return (
- <Button
+ <Button data-testid="carousel-button-2"
  data-slot="carousel-next"
  variant={variant}
  size={size}

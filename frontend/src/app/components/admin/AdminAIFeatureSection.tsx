@@ -231,7 +231,7 @@ export const AdminAIFeatureSection: React.FC = () => {
                 {/* Master Status & Toggle */}
                 <div className="flex items-center gap-4 bg-slate-50 rounded-2xl px-5 py-3 border border-slate-100 self-start md:self-auto">
                   <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Master Switch</span>
-                  <button
+                  <button data-testid={`admin-aifeature-section-button-${key}`}
                     type="button"
                     onClick={() => handleToggleModuleEnabled(key, !mod.enabled)}
                     className={cn(
@@ -267,7 +267,7 @@ export const AdminAIFeatureSection: React.FC = () => {
                       )}
                     >
                       <span className="text-xs font-bold text-slate-700 capitalize">{role}</span>
-                      <button
+                      <button data-testid={`admin-aifeature-section-button-2-${role}`}
                         type="button"
                         onClick={() => handleToggleModuleRoleAccess(key, role, !mod.roleAccess[role])}
                         disabled={!mod.enabled}
@@ -292,7 +292,7 @@ export const AdminAIFeatureSection: React.FC = () => {
               {/* Granular Capabilities Accordion Toggle */}
               {capabilities.length > 0 && (
                 <div className="pt-4">
-                  <button
+                  <button data-testid={`admin-aifeature-section-button-3-${key}`}
                     type="button"
                     onClick={() => setExpandedModule(isExpanded ? null : key)}
                     className="w-full flex items-center justify-between text-slate-500 hover:text-slate-900 transition-colors py-2"
@@ -318,7 +318,7 @@ export const AdminAIFeatureSection: React.FC = () => {
                               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{cap.key}</p>
                             </div>
 
-                            <button
+                            <button data-testid={`admin-aifeature-section-button-4-${cap.key}`}
                               type="button"
                               onClick={() => handleToggleCapabilityEnabled(key, cap.key, !cap.enabled)}
                               disabled={!mod.enabled}
@@ -345,7 +345,7 @@ export const AdminAIFeatureSection: React.FC = () => {
                                 className="flex items-center justify-between px-3 py-2 rounded-xl bg-white border border-slate-100"
                               >
                                 <span className="text-[10px] font-bold text-slate-500 capitalize">{r}</span>
-                                <button
+                                <button data-testid={`admin-aifeature-section-button-5-${r}`}
                                   type="button"
                                   onClick={() => handleToggleCapabilityRoleAccess(key, cap.key, r, !cap.roleAccess[r])}
                                   disabled={!cap.enabled || !mod.enabled}

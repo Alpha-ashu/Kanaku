@@ -140,10 +140,10 @@ const PhysicalAssetForm: React.FC<{
               data-testid="investments-create-weight-unit"
               className="w-1/3 bg-slate-50 border-none rounded-xl py-2 px-2 font-bold text-xs text-slate-700"
             >
-              <option value="g">g</option>
-              <option value="tola">tola</option>
-              <option value="oz">oz</option>
-              <option value="kg">kg</option>
+              <option data-testid="add-investment-g" value="g">g</option>
+              <option data-testid="add-investment-tola" value="tola">tola</option>
+              <option data-testid="add-investment-oz" value="oz">oz</option>
+              <option data-testid="add-investment-kg" value="kg">kg</option>
             </select>
           </div>
         </div>
@@ -171,12 +171,12 @@ const PhysicalAssetForm: React.FC<{
             data-testid="investments-create-form-select"
             className="w-full bg-slate-50 border-none rounded-xl py-2 px-3 font-bold text-xs text-slate-700"
           >
-            <option value="">Select form</option>
-            <option value="jewelry">Jewelry / Ornament</option>
-            <option value="coin">Coin</option>
-            <option value="bar">Bar / Ingot</option>
-            <option value="biscuit">Biscuit</option>
-            <option value="other">Other</option>
+            <option data-testid="add-investment-select-form" value="">Select form</option>
+            <option data-testid="add-investment-jewelry-ornament" value="jewelry">Jewelry / Ornament</option>
+            <option data-testid="add-investment-coin" value="coin">Coin</option>
+            <option data-testid="add-investment-bar-ingot" value="bar">Bar / Ingot</option>
+            <option data-testid="add-investment-biscuit" value="biscuit">Biscuit</option>
+            <option data-testid="add-investment-other" value="other">Other</option>
           </select>
         </div>
 
@@ -273,12 +273,12 @@ const RealEstateForm: React.FC<{
           data-testid="investments-create-property-type"
           className="w-full bg-slate-50 border-none rounded-xl py-2 px-3 font-bold text-xs text-slate-700"
         >
-          <option value="">Select type</option>
-          <option value="Residential">Residential</option>
-          <option value="Commercial">Commercial</option>
-          <option value="Agricultural Land">Agricultural Land</option>
-          <option value="Plot / Land">Plot / Land</option>
-          <option value="Industrial">Industrial</option>
+          <option data-testid="add-investment-select-type" value="">Select type</option>
+          <option data-testid="add-investment-residential" value="Residential">Residential</option>
+          <option data-testid="add-investment-commercial" value="Commercial">Commercial</option>
+          <option data-testid="add-investment-agricultural-land" value="Agricultural Land">Agricultural Land</option>
+          <option data-testid="add-investment-plot-land" value="Plot / Land">Plot / Land</option>
+          <option data-testid="add-investment-industrial" value="Industrial">Industrial</option>
         </select>
       </div>
       <div className="space-y-1">

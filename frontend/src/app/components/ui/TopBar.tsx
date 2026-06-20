@@ -35,7 +35,7 @@ const DraggablePageMenuItem: React.FC<DraggablePageMenuItemProps> = ({
       whileDrag={{ scale: 1.02, zIndex: 50, backgroundColor: 'rgba(241, 245, 249, 0.8)' }}
       transition={{ type: "spring", stiffness: 300, damping: 25 }}
     >
-      <button
+      <button data-testid="top-bar-button"
         onClick={() => onNavigate(item.id)}
         className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl mb-1.5 transition-all duration-200 relative group text-left ${isActive
           ? 'bg-slate-900 text-white shadow-lg shadow-slate-900/10 font-bold'
@@ -368,7 +368,7 @@ export const TopBar: React.FC = () => {
  {/* Mobile Menu Button */}
  <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
  <SheetTrigger asChild>
- <button className="lg:hidden p-2 -ml-2 hover:bg-gray-200 rounded-lg transition-colors" aria-label="Open navigation menu">
+ <button data-testid="top-bar-open-navigation-menu" className="lg:hidden p-2 -ml-2 hover:bg-gray-200 rounded-lg transition-colors" aria-label="Open navigation menu">
  <Menu size={24} className="text-gray-900" />
  </button>
  </SheetTrigger>
@@ -453,7 +453,7 @@ export const TopBar: React.FC = () => {
               </div>
             </div>
             {/* Logout Button */}
-            <button
+            <button data-testid="top-bar-sign-out"
               onClick={async () => {
                 await signOut();
                 setMobileMenuOpen(false);
@@ -473,7 +473,7 @@ export const TopBar: React.FC = () => {
 
  <div className="relative flex-1 max-w-md group hidden md:block">
  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4 group-hover:text-slate-600 transition-colors" />
- <input
+ <input data-testid="top-bar-search-transactions-assets"
  ref={searchInputRef}
  type="text"
  value={searchQuery}
@@ -510,7 +510,7 @@ export const TopBar: React.FC = () => {
  {matches.map((result) => {
  const Icon = result.icon;
  return (
- <button
+ <button data-testid={`top-bar-button-2-${result.id}`}
  key={result.id}
  onMouseDown={(e) => {
  e.preventDefault();
@@ -556,7 +556,7 @@ export const TopBar: React.FC = () => {
  </div>
 
  {/* Mobile Search Button */}
- <button
+ <button data-testid="top-bar-search"
  onClick={() => setIsMobileSearchOpen(true)}
  className="md:hidden rounded-xl bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 shadow-sm w-10 h-10 shrink-0 flex items-center justify-center transition-colors"
  aria-label="Search"
@@ -566,7 +566,7 @@ export const TopBar: React.FC = () => {
 
  {/* Notification Bell */}
  {visibleFeatures?.notifications !== false && (
- <motion.button
+ <motion.button data-testid="top-bar-button-3"
  whileTap={{ scale: 0.95 }}
  onClick={handleNotificationClick}
  className="relative rounded-xl bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 shadow-sm w-10 h-10 shrink-0 flex items-center justify-center transition-colors"
@@ -585,7 +585,7 @@ export const TopBar: React.FC = () => {
 
  {/* Profile Avatar */}
  {visibleFeatures?.userProfile !== false && (
- <motion.button
+ <motion.button data-testid="top-bar-button-4"
  whileTap={{ scale: 0.95 }}
  onClick={handleProfileClick}
  className="w-10 h-10 rounded-xl bg-gray-200 overflow-hidden shadow-sm shrink-0 hover:shadow-md transition-shadow flex items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-bold text-sm"
@@ -626,7 +626,7 @@ export const TopBar: React.FC = () => {
  <div className="fixed inset-0 bg-white/95 backdrop-blur-xl z-[100] flex flex-col animate-in fade-in duration-200 text-slate-900">
  <div className="flex items-center gap-3 p-4 border-b border-slate-100">
  <Search className="text-slate-400 w-5 h-5" />
- <input
+ <input data-testid="top-bar-search-transactions-assets-2"
  autoFocus
  type="text"
  value={searchQuery}
@@ -634,7 +634,7 @@ export const TopBar: React.FC = () => {
  placeholder="Search transactions, assets..."
  className="flex-1 bg-slate-50 border-none rounded-xl h-11 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-slate-100 font-semibold text-slate-900"
  />
- <button
+ <button data-testid="top-bar-cancel"
  onClick={() => {
  setIsMobileSearchOpen(false);
  setSearchQuery('');
@@ -666,7 +666,7 @@ export const TopBar: React.FC = () => {
  {matches.map((result) => {
  const Icon = result.icon;
  return (
- <button
+ <button data-testid={`top-bar-button-5-${result.id}`}
  key={result.id}
  onClick={result.action}
  className="w-full flex items-start gap-3.5 px-3 py-3 hover:bg-slate-100/50 active:bg-slate-100 rounded-2xl transition-colors text-left"

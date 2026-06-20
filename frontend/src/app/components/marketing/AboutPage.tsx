@@ -141,7 +141,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onBack, onGetStarted, onNa
  <p className="text-gray-400 max-w-xl mx-auto mb-10 text-lg">
  Start managing your wealth smarter today. Join over 50k users who trust KANAKUfor their financial journey.
  </p>
- <button
+ <button data-testid="about-page-get-started-for-free"
  onClick={onGetStarted}
  className="px-8 py-4 rounded-full bg-white text-gray-900 font-bold text-sm lg:text-base hover:bg-gray-100 transition-all hover:scale-105 active:scale-95 shadow-xl shadow-black/20"
  >

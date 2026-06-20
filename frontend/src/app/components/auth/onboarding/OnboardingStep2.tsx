@@ -78,7 +78,7 @@ export const OnboardingStep2: React.FC<OnboardingStep2Props> = ({
  };
 
  return (
- <form onSubmit={handleSubmit} className="space-y-4">
+ <form data-testid="onboarding-step2-form" onSubmit={handleSubmit} className="space-y-4">
  <div>
  <h3 className="text-lg font-medium text-gray-900 mb-2">
  Profile Setup
@@ -93,7 +93,7 @@ export const OnboardingStep2: React.FC<OnboardingStep2Props> = ({
  <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
  First Name
  </label>
- <input
+ <input data-testid="onboarding-step2-john"
  type="text"
  id="firstName"
  value={data.firstName}
@@ -112,7 +112,7 @@ export const OnboardingStep2: React.FC<OnboardingStep2Props> = ({
  <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">
  Last Name
  </label>
- <input
+ <input data-testid="onboarding-step2-doe"
  type="text"
  id="lastName"
  value={data.lastName}
@@ -132,7 +132,7 @@ export const OnboardingStep2: React.FC<OnboardingStep2Props> = ({
  <label htmlFor="salary" className="block text-sm font-medium text-gray-700 mb-1">
  Annual Salary ($)
  </label>
- <input
+ <input data-testid="onboarding-step2-50000"
  type="number"
  id="salary"
  value={data.salary}
@@ -151,7 +151,7 @@ export const OnboardingStep2: React.FC<OnboardingStep2Props> = ({
   <label htmlFor="dateOfBirth" className="block text-sm font-medium text-gray-700 mb-1">
   Date of Birth
   </label>
-  <div 
+  <div data-testid="onboarding-step2-div" 
      className="relative group w-full" 
      onClick={(e) => {
        const input = e.currentTarget.querySelector('input');
@@ -177,7 +177,7 @@ export const OnboardingStep2: React.FC<OnboardingStep2Props> = ({
        </span>
        <Calendar size={14} className="text-gray-400" />
      </div>
-     <input
+     <input data-testid="onboarding-step2-input"
        type="date"
        id="dateOfBirth"
        value={data.dateOfBirth}
@@ -195,7 +195,7 @@ export const OnboardingStep2: React.FC<OnboardingStep2Props> = ({
  <label htmlFor="jobType" className="block text-sm font-medium text-gray-700 mb-1">
  Job Type
  </label>
- <select
+ <select data-testid="onboarding-step2-select"
  id="jobType"
  value={data.jobType}
  onChange={(e) => onUpdate({ jobType: e.target.value })}
@@ -203,9 +203,9 @@ export const OnboardingStep2: React.FC<OnboardingStep2Props> = ({
  errors.jobType ? 'border-red-500' : 'border-gray-300'
  }`}
  >
- <option value="">Select job type</option>
+ <option data-testid="onboarding-step2-select-job-type" value="">Select job type</option>
  {JOB_TYPES.map((job) => (
- <option key={job} value={job}>
+ <option data-testid={`onboarding-step2-option-${job}`} key={job} value={job}>
  {job}
  </option>
  ))}
@@ -216,14 +216,14 @@ export const OnboardingStep2: React.FC<OnboardingStep2Props> = ({
  </div>
 
  <div className="flex space-x-3">
- <button
+ <button data-testid="onboarding-step2-back"
  type="button"
  onClick={onBack}
  className="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors font-medium"
  >
  Back
  </button>
- <button
+ <button data-testid="onboarding-step2-continue-to-pin-setup"
  type="submit"
  className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium"
  >

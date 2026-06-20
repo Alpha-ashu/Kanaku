@@ -357,17 +357,17 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
 
  // Main render 
  return (
- <div
+ <div data-testid="pinauth-div"
  className="fixed inset-0 z-50 overflow-y-auto bg-white flex items-center justify-center p-4"
  onClick={() => hiddenInputRef.current?.focus()}
  >
  {/* Hidden form - offscreen (not zero-size) so mobile browsers keep keyboard open after each digit */}
- <form
+ <form data-testid="pinauth-form"
  className="pin-hidden-input-container"
  autoComplete="off"
  onSubmit={e => e.preventDefault()}
  >
- <input
+ <input data-testid="pinauth-username"
  type="text"
  name="username"
  value={user?.email || ''}
@@ -423,7 +423,7 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  </div>
 
  {/* PIN digit boxes */}
- <div className="flex justify-center gap-3 cursor-pointer" onClick={() => hiddenInputRef.current?.focus()}>
+ <div data-testid="pinauth-div-2" className="flex justify-center gap-3 cursor-pointer" onClick={() => hiddenInputRef.current?.focus()}>
  {Array.from({ length: 6 }, (_, i) => {
  const isActive = i === pin.length;
  const isFilled = i < pin.length;

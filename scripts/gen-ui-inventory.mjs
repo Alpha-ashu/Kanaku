@@ -50,6 +50,17 @@ const COMPONENT_INTERACTIVE = new Set([
 ]);
 // Event handlers that make any element interactive (clickable divs, nav items, cards).
 const INTERACTIVE_HANDLERS = ['onClick', 'onChange', 'onSubmit', 'onKeyDown', 'onKeyPress'];
+// Logical / composite wrappers that render no DOM leaf of their own — their
+// interactive DOM is tagged inside their own component file, so counting the
+// usage would double-count. (Mirrors scripts/fix-ui-testids.mjs.)
+const EXCLUDE = new Set([
+  'FeatureVisibility', 'FeatureGate', 'SignInForm', 'SignUpForm', 'ActionButtons', 'PreviewView', 'ResultsView',
+  'AmountField', 'TextField', 'NumberField', 'DateField', 'SelectField', 'SubcategoryField', 'AccountSelector',
+  'PhysicalAssetForm', 'RealEstateForm', 'BusinessForm',
+  'SegmentedTabs', 'ModalWrapper', 'StockRow', 'NotificationPopup',
+]);
+// Some components expose a custom test-id prop instead of `data-testid`.
+const TESTID_ALIASES = ['data-testid', 'testId'];
 
 // Map a tag (and its attrs) to a friendly element Type for the report.
 function elementType(tag, attrs) {
@@ -181,6 +192,7 @@ function scanFile(file) {
   const rel = path.relative(ROOT, file).replace(/\\/g, '/');
   const icons = iconImports(sf);
   const rows = [];
+  const excluded = [];
 
   const visit = (node) => {
     let openingLike = null;
@@ -196,9 +208,11 @@ function scanFile(file) {
       const isNative = NATIVE_INTERACTIVE.has(tag.toLowerCase());
       // An icon import only counts when it has its own handler (clickable icon).
       const isComponent = COMPONENT_INTERACTIVE.has(tag) && !icons.has(tag);
+      const wouldCount = isNative || isComponent || hasHandler || hasRole;
+      if (wouldCount && EXCLUDE.has(tag)) excluded.push(tag);
 
-      if (isNative || isComponent || hasHandler || hasRole) {
-        const testid = attrs['data-testid'];
+      if (wouldCount && !EXCLUDE.has(tag)) {
+        const testid = TESTID_ALIASES.map((a) => attrs[a]).find(Boolean);
         const text = container ? textOf(container, sf) : '';
         let type = elementType(tag, { type: attrs.type?.value });
         if (!isNative && !isComponent && (hasHandler || hasRole)) {
@@ -223,7 +237,7 @@ function scanFile(file) {
     ts.forEachChild(node, visit);
   };
   visit(sf);
-  return rows;
+  return { rows, excluded };
 }
 
 // ─── Excel ───────────────────────────────────────────────────────────────────
@@ -244,6 +258,7 @@ async function writeWorkbook(rows, pageStats, totals) {
     ['With data-testid', totals.tagged],
     ['Missing data-testid', totals.missing],
     ['Coverage %', totals.elements ? `${((totals.tagged / totals.elements) * 100).toFixed(1)}%` : 'n/a'],
+    ['Composite wrappers excluded', `${totals.excluded} (DOM tagged inside their own component; not double-counted)`],
   ].forEach(([k, v]) => sum.addRow({ k, v }));
   sum.addRow({});
   sum.addRow({ k: '— Per-page coverage —', v: '' }).font = { bold: true };
@@ -290,9 +305,14 @@ function writeGapReport(rows, pageStats, totals) {
   const lines = [];
   lines.push('# UI Automation — Gap Report', '');
   lines.push(`_Generated ${new Date().toISOString()} from \`${path.relative(ROOT, SRC_DIR).replace(/\\/g, '/')}\`_`, '');
-  lines.push(`**${totals.tagged}/${totals.elements}** interactive elements have a \`data-testid\` ` +
+  lines.push(`**${totals.tagged}/${totals.elements}** interactive DOM elements have a \`data-testid\` ` +
     `(**${totals.elements ? ((totals.tagged / totals.elements) * 100).toFixed(1) : 0}%** coverage) across ${totals.files} files. ` +
     `**${totals.missing}** still need one.`, '');
+  if (totals.excluded) {
+    lines.push(`> ${totals.excluded} composite-wrapper usages are excluded from the count ` +
+      `(e.g. ${Object.keys(totals.excludedTags).slice(0, 6).join(', ')}) — they render no DOM leaf of their own; ` +
+      `their interactive DOM is tagged inside the component's own file, so counting the usage would double-count.`, '');
+  }
   lines.push('## Per-page coverage (most gaps first)', '');
   lines.push('| Page | Tagged | Total | Coverage | Missing |', '|---|---|---|---|---|');
   Object.values(pageStats)
@@ -319,10 +339,15 @@ async function main() {
   console.log(`• Scanning ${files.length} .tsx files …`);
 
   let rows = [];
+  const excludedTags = {};
   for (const f of files) {
-    try { rows = rows.concat(scanFile(f)); }
-    catch (e) { console.warn(`  ⚠ parse failed for ${path.relative(ROOT, f)}: ${e.message}`); }
+    try {
+      const { rows: r, excluded } = scanFile(f);
+      rows = rows.concat(r);
+      for (const t of excluded) excludedTags[t] = (excludedTags[t] || 0) + 1;
+    } catch (e) { console.warn(`  ⚠ parse failed for ${path.relative(ROOT, f)}: ${e.message}`); }
   }
+  const excludedTotal = Object.values(excludedTags).reduce((a, b) => a + b, 0);
   // Sort: page, then missing-first so gaps surface, then by line.
   rows.sort((a, b) => a.page.localeCompare(b.page) || a.status.localeCompare(b.status) || a.line - b.line);
 
@@ -337,6 +362,8 @@ async function main() {
     elements: rows.length,
     tagged: rows.filter((r) => r.status === 'HAS ID').length,
     missing: rows.filter((r) => r.status === 'MISSING').length,
+    excluded: excludedTotal,
+    excludedTags,
   };
 
   const xlsx = await writeWorkbook(rows, pageStats, totals);

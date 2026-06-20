@@ -625,7 +625,7 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
  className="relative z-10 px-6 sm:px-8 pb-12 w-full max-w-md mx-auto"
  >
  <div className="space-y-3">
- <motion.button
+ <motion.button data-testid="auth-flow-create-account"
  whileHover={{ scale: 1.02 }}
  whileTap={{ scale: 0.98 }}
  onClick={() => setStep('signup')}
@@ -635,7 +635,7 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
  </motion.button>
 
- <motion.button
+ <motion.button data-testid="auth-flow-sign-in"
  whileHover={{ scale: 1.02 }}
  whileTap={{ scale: 0.98 }}
  onClick={() => setStep('signin')}
@@ -645,7 +645,7 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
  </motion.button>
 
  {/* Continue as Guest */}
- <motion.button
+ <motion.button data-testid="auth-flow-continue-as-guest"
  whileHover={{ scale: 1.01 }}
  whileTap={{ scale: 0.99 }}
  onClick={handleGuestMode}
@@ -655,7 +655,7 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
  </motion.button>
 
  {onBack && (
- <button
+ <button data-testid="auth-flow-back-to-landing-page"
  onClick={onBack}
  className="w-full mt-2 text-sm font-semibold text-gray-500 hover:text-gray-700 transition-colors py-2"
  >
@@ -685,14 +685,14 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
  </div>
 
  <div className="flex gap-3">
- <button
+ <button data-testid="auth-flow-cancel"
  type="button"
  onClick={() => setShowGuestCaution(false)}
  className="flex-1 py-3 rounded-xl bg-gray-100 text-gray-700 font-semibold hover:bg-gray-200 transition-colors text-sm"
  >
  Cancel
  </button>
- <button
+ <button data-testid="auth-flow-proceed-as-guest"
  type="button"
  onClick={confirmGuestMode}
  className="flex-[1.5] py-3 rounded-xl bg-amber-500 text-white font-semibold hover:bg-amber-600 transition-colors text-sm shadow-md shadow-amber-500/20"
@@ -716,7 +716,7 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
  <h2 className="text-xl font-semibold text-gray-800">Complete Your Profile</h2>
  <p className="text-sm text-gray-600 mt-1">Tell us a bit about yourself</p>
  </div>
- <form
+ <form data-testid="auth-flow-form"
  className="p-6 space-y-4"
  onSubmit={(e) => {
  e.preventDefault();
@@ -737,7 +737,7 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
  <div className="grid grid-cols-2 gap-4">
  <div>
  <label htmlFor="ps-firstName" className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
- <input
+ <input data-testid="auth-flow-first-name"
  type="text"
  id="ps-firstName"
  name="firstName"
@@ -748,7 +748,7 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
  </div>
  <div>
  <label htmlFor="ps-lastName" className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
- <input
+ <input data-testid="auth-flow-last-name"
  type="text"
  id="ps-lastName"
  name="lastName"
@@ -761,7 +761,7 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
 
   <div>
     <label htmlFor="ps-dob" className="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
-    <div 
+    <div data-testid="auth-flow-div" 
       className="relative group w-full" 
       onClick={(e) => {
         const input = e.currentTarget.querySelector('input');
@@ -785,7 +785,7 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
         </span>
         <Calendar size={14} className="text-gray-400" />
       </div>
-      <input
+      <input data-testid="auth-flow-dob"
         type="date"
         id="ps-dob"
         name="dob"
@@ -801,43 +801,43 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
  <div className="grid grid-cols-2 gap-4">
  <div>
  <label htmlFor="ps-jobType" className="block text-sm font-medium text-gray-700 mb-1">Job Type</label>
- <select
+ <select data-testid="auth-flow-job-type"
  id="ps-jobType"
  name="jobType"
  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
  required
  >
- <option value="">Select...</option>
- <option value="full-time">Full-time</option>
- <option value="part-time">Part-time</option>
- <option value="self-employed">Self-employed</option>
- <option value="freelance">Freelance</option>
- <option value="student">Student</option>
- <option value="retired">Retired</option>
+ <option data-testid="auth-flow-select" value="">Select...</option>
+ <option data-testid="auth-flow-full-time" value="full-time">Full-time</option>
+ <option data-testid="auth-flow-part-time" value="part-time">Part-time</option>
+ <option data-testid="auth-flow-self-employed" value="self-employed">Self-employed</option>
+ <option data-testid="auth-flow-freelance" value="freelance">Freelance</option>
+ <option data-testid="auth-flow-student" value="student">Student</option>
+ <option data-testid="auth-flow-retired" value="retired">Retired</option>
  </select>
  </div>
  <div>
  <label htmlFor="ps-jobIndustry" className="block text-sm font-medium text-gray-700 mb-1">Industry</label>
- <select
+ <select data-testid="auth-flow-job-industry"
  id="ps-jobIndustry"
  name="jobIndustry"
  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
  required
  >
- <option value="">Select...</option>
- <option value="it">IT / Technology</option>
- <option value="finance">Finance</option>
- <option value="healthcare">Healthcare</option>
- <option value="education">Education</option>
- <option value="retail">Retail</option>
- <option value="other">Other</option>
+ <option data-testid="auth-flow-select-2" value="">Select...</option>
+ <option data-testid="auth-flow-it-technology" value="it">IT / Technology</option>
+ <option data-testid="auth-flow-finance" value="finance">Finance</option>
+ <option data-testid="auth-flow-healthcare" value="healthcare">Healthcare</option>
+ <option data-testid="auth-flow-education" value="education">Education</option>
+ <option data-testid="auth-flow-retail" value="retail">Retail</option>
+ <option data-testid="auth-flow-other" value="other">Other</option>
  </select>
  </div>
  </div>
 
  <div>
  <label htmlFor="ps-income" className="block text-sm font-medium text-gray-700 mb-1">Monthly Income (INR)</label>
- <input
+ <input data-testid="auth-flow-50000"
  type="number"
  id="ps-income"
  name="income"
@@ -847,7 +847,7 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
  />
  </div>
 
- <button
+ <button data-testid="auth-flow-button"
  type="submit"
  disabled={isLoading}
  className="w-full py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50"
@@ -867,7 +867,7 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
  <h2 className="text-xl font-semibold text-gray-800">Salary Account Setup</h2>
  <p className="text-sm text-gray-600 mt-1">Link your salary account for automatic tracking</p>
  </div>
- <form
+ <form data-testid="auth-flow-form-2"
  className="p-6 space-y-4"
  onSubmit={(e) => {
  e.preventDefault();
@@ -884,26 +884,26 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
  >
  <div>
  <label htmlFor="bankName" className="block text-sm font-medium text-gray-700 mb-1">Bank Name</label>
- <select
+ <select data-testid="auth-flow-bank-name"
  id="bankName"
  name="bankName"
  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
  required
  >
- <option value="">Select your bank</option>
- <option value="SBI">State Bank of India</option>
- <option value="HDFC">HDFC Bank</option>
- <option value="ICICI">ICICI Bank</option>
- <option value="Axis">Axis Bank</option>
- <option value="Kotak">Kotak Mahindra Bank</option>
- <option value="PNB">Punjab National Bank</option>
- <option value="other">Other</option>
+ <option data-testid="auth-flow-select-your-bank" value="">Select your bank</option>
+ <option data-testid="auth-flow-state-bank-of-india" value="SBI">State Bank of India</option>
+ <option data-testid="auth-flow-hdfc-bank" value="HDFC">HDFC Bank</option>
+ <option data-testid="auth-flow-icici-bank" value="ICICI">ICICI Bank</option>
+ <option data-testid="auth-flow-axis-bank" value="Axis">Axis Bank</option>
+ <option data-testid="auth-flow-kotak-mahindra-bank" value="Kotak">Kotak Mahindra Bank</option>
+ <option data-testid="auth-flow-punjab-national-bank" value="PNB">Punjab National Bank</option>
+ <option data-testid="auth-flow-other-2" value="other">Other</option>
  </select>
  </div>
 
  <div>
  <label className="block text-sm font-medium text-gray-700 mb-1">Account Holder Name</label>
- <input
+ <input data-testid="auth-flow-as-per-bank-records"
  type="text"
  name="accountName"
  placeholder="As per bank records"
@@ -915,7 +915,7 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
 
  <div>
  <label className="block text-sm font-medium text-gray-700 mb-1">Opening Balance (INR)</label>
- <input
+ <input data-testid="auth-flow-0"
  type="number"
  name="balance"
  placeholder="0"
@@ -926,15 +926,15 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
 
  <div>
  <label htmlFor="creditDate" className="block text-sm font-medium text-gray-700 mb-1">Salary Credit Date</label>
- <select
+ <select data-testid="auth-flow-credit-date"
  id="creditDate"
  name="creditDate"
  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
  required
  >
- <option value="">Select date</option>
+ <option data-testid="auth-flow-select-date" value="">Select date</option>
  {Array.from({ length: 28 }, (_, i) => i + 1).map(day => (
- <option key={day} value={day}>
+ <option data-testid={`auth-flow-of-every-month-${day}`} key={day} value={day}>
  {day}{day === 1 || day === 21 ? 'st' : day === 2 || day === 22 ? 'nd' : day === 3 || day === 23 ? 'rd' : 'th'} of every month
  </option>
  ))}
@@ -942,7 +942,7 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
  </div>
 
  <div className="flex items-center gap-2">
- <input
+ <input data-testid="auth-flow-is-primary"
  type="checkbox"
  name="isPrimary"
  id="isPrimary"
@@ -961,7 +961,7 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
  </p>
  </div>
 
- <button
+ <button data-testid="auth-flow-button-2"
  type="submit"
  disabled={isLoading}
  className="w-full py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50"
@@ -990,7 +990,7 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
  may take a minute to arrive — remember to check your spam folder.
  </p>
 
- <button
+ <button data-testid="auth-flow-button-3"
  type="button"
  onClick={handleResendConfirmation}
  disabled={resendLoading}
@@ -998,7 +998,7 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
  >
  {resendLoading ? 'Sending…' : 'Resend confirmation email'}
  </button>
- <button
+ <button data-testid="auth-flow-back-to-sign-in"
  type="button"
  onClick={() => setStep('signin')}
  className="w-full py-3 bg-white border border-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-colors"
@@ -1022,7 +1022,7 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
  <p className="text-blue-100 mb-8 max-w-md">
  Your account has been set up successfully. Start tracking your finances now!
  </p>
- <button
+ <button data-testid="auth-flow-go-to-dashboard"
  onClick={() => {
  localStorage.setItem('onboarding_completed', 'true');
  window.dispatchEvent(new CustomEvent('KANAKU_AUTH_CHANGE'));
@@ -1101,7 +1101,7 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
  >
  <div className="h-1.5 w-full bg-gradient-to-r from-blue-500 to-indigo-600" />
  <div className="p-6 sm:p-8 border-b border-gray-100/50">
- <button
+ <button data-testid="auth-flow-back"
  onClick={() => setStep('welcome')}
  className="text-gray-500 hover:text-gray-800 transition-colors mb-5 flex items-center gap-1.5 text-sm font-semibold group animate-none"
  >
@@ -1181,7 +1181,7 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
  >
  <div className="h-1.5 w-full bg-gradient-to-r from-blue-500 to-indigo-600" />
  <div className="p-6 sm:p-8 border-b border-gray-100/50">
- <button
+ <button data-testid="auth-flow-back-2"
  onClick={() => setStep('welcome')}
  className="text-gray-500 hover:text-gray-800 transition-colors mb-5 flex items-center gap-1.5 text-sm font-semibold group animate-none"
  >

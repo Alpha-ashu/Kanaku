@@ -75,7 +75,7 @@ export const SignInForm: React.FC<SignInFormProps> = ({ onSwitchToSignUp, onSubm
     peer-focus:top-1.5 peer-focus:text-[10px] peer-focus:text-blue-500 peer-focus:font-semibold`;
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
+    <form data-testid="sign-in-form-form" onSubmit={handleSubmit} className="space-y-5">
       {errors.general && (
         <div className="bg-red-50 border border-red-200 rounded-xl p-3">
           <p className="text-sm text-red-600 text-center">{errors.general}</p>
@@ -148,7 +148,7 @@ export const SignInForm: React.FC<SignInFormProps> = ({ onSwitchToSignUp, onSubm
           />
           <span className="text-sm text-gray-600 font-medium">Remember me</span>
         </label>
-        <a href="#" className="text-sm text-blue-600 hover:text-blue-700 font-semibold transition-colors">
+        <a data-testid="sign-in-form-forgot-password" href="#" className="text-sm text-blue-600 hover:text-blue-700 font-semibold transition-colors">
           Forgot password?
         </a>
       </div>

@@ -45,7 +45,7 @@ export const LimitedModeBanner: React.FC<LimitedModeBannerProps> = ({ onVerify }
  </div>
  </div>
  <div className="flex items-center gap-2">
- <button
+ <button data-testid="limited-mode-banner-verify-now"
  onClick={handleVerify}
  disabled={isVerifying}
  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-600 text-white text-sm font-medium rounded-lg hover:bg-amber-700 transition-colors disabled:opacity-50"
@@ -53,7 +53,7 @@ export const LimitedModeBanner: React.FC<LimitedModeBannerProps> = ({ onVerify }
  <Mail className="w-4 h-4" />
  Verify Now
  </button>
- <button
+ <button data-testid="limited-mode-banner-dismiss-banner"
  onClick={() => setIsDismissed(true)}
  className="p-1 text-amber-600 hover:text-amber-800 hover:bg-amber-100 rounded"
  aria-label="Dismiss banner"
@@ -108,7 +108,7 @@ export const LimitedModeInfo: React.FC = () => {
  ))}
  </div>
 
- <button
+ <button data-testid="limited-mode-banner-verify-email-now"
  onClick={() => toast.info('Verification flow initiated')}
  className="w-full py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
  >

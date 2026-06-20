@@ -247,7 +247,7 @@ export const Groups: React.FC = () => {
  </div>
   <div className="flex gap-3">
   {canAddMember && (
-  <Button
+  <Button data-testid="groups-button"
   variant="secondary"
   onClick={() => setCurrentPage('add-friends')}
   className="shadow-sm border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 h-12 px-5 rounded-2xl font-bold flex items-center gap-2"
@@ -257,7 +257,7 @@ export const Groups: React.FC = () => {
   </Button>
   )}
   {canCreate && (
-  <Button
+  <Button data-testid="groups-button-2"
   onClick={openGroupExpenseForm}
   className="shadow-lg bg-gray-900 hover:bg-gray-800 text-white h-12 px-5 rounded-2xl font-bold flex items-center gap-2"
   >
@@ -298,7 +298,7 @@ export const Groups: React.FC = () => {
  <div className="mt-4 overflow-hidden rounded-[24px] border border-sky-100 bg-gradient-to-r from-sky-50 via-white to-white p-4">
  <div className="-mx-1 -my-1 flex gap-3 overflow-x-auto overflow-y-visible px-1 py-1">
  {savedFriends.map((friend) => (
- <button
+ <button data-testid={`groups-view-${friend.id}`}
  key={friend.id}
  type="button"
  onClick={() => openFriendProfile(friend)}
@@ -364,7 +364,7 @@ export const Groups: React.FC = () => {
  <div className="min-w-0">
  {editingGroupId === expense.id ? (
  <div className="flex items-center gap-2">
- <input
+ <input data-testid={`groups-expense-name-${expense.id}`}
  type="text"
  value={editedName}
  onChange={(e) => setEditedName(e.target.value)}
@@ -372,7 +372,7 @@ export const Groups: React.FC = () => {
  placeholder="Enter expense name"
  aria-label="Expense name"
  />
- <button
+ <button data-testid={`groups-save-${expense.id}`}
  onClick={() => handleSaveEdit(expense.id!)}
  disabled={isSaving}
  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-green-50 text-green-600 transition-colors hover:bg-green-100"
@@ -380,7 +380,7 @@ export const Groups: React.FC = () => {
  >
  <Check size={18} />
  </button>
- <button
+ <button data-testid={`groups-cancel-${expense.id}`}
  onClick={() => setEditingGroupId(null)}
  disabled={isSaving}
  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gray-100 text-gray-600 transition-colors hover:bg-gray-200"
@@ -403,7 +403,7 @@ export const Groups: React.FC = () => {
  {editingGroupId !== expense.id && (
   <div className="flex shrink-0 gap-1.5">
   {canEdit && (
-  <button
+  <button data-testid={`groups-edit-group-name-${expense.id}`}
   onClick={() => handleEditClick(expense.id!, expense.name)}
   className="flex h-9 w-9 items-center justify-center rounded-2xl bg-gray-100 text-gray-600 transition-colors hover:bg-gray-200"
   title="Edit group name"
@@ -412,7 +412,7 @@ export const Groups: React.FC = () => {
   </button>
   )}
   {canSettle && (
-  <button
+  <button data-testid={`groups-delete-group-${expense.id}`}
   onClick={() => handleDeleteGroup(expense.id!, expense.name)}
   className="flex h-9 w-9 items-center justify-center rounded-2xl bg-red-50 text-red-600 transition-colors hover:bg-red-100"
   title="Delete group"
@@ -496,7 +496,7 @@ export const Groups: React.FC = () => {
  const isPaid = member.paymentStatus === 'paid' || member.paid;
  const avatarSrc = member.friendId ? friendAvatarById.get(member.friendId) : undefined;
  return (
- <button
+ <button data-testid={`groups-can-settle-toggle-payment-${`${expense.id}-${member.originalIndex}-${member.name}`}`}
  key={`${expense.id}-${member.originalIndex}-${member.name}`}
  onClick={() => {
    if (!canSettle) {

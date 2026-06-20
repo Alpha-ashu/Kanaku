@@ -182,7 +182,7 @@ export const Goals: React.FC = () => {
  {/* Summary Stats */}
  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 items-stretch">
  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="h-full">
- <Card variant="glass" className="h-full p-4 sm:p-6 relative overflow-hidden">
+ <Card data-testid="goals-card" variant="glass" className="h-full p-4 sm:p-6 relative overflow-hidden">
  <div className="relative z-10">
  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-black rounded-2xl flex items-center justify-center mb-2 sm:mb-4 shadow-sm">
  <Target className="text-white sm:w-5 sm:h-5" size={18} />
@@ -196,7 +196,7 @@ export const Goals: React.FC = () => {
  </motion.div>
 
  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="h-full">
- <Card variant="glass" className="h-full p-4 sm:p-6 relative overflow-hidden">
+ <Card data-testid="goals-card-2" variant="glass" className="h-full p-4 sm:p-6 relative overflow-hidden">
  <div className="relative z-10">
  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-black rounded-2xl flex items-center justify-center mb-2 sm:mb-4 shadow-sm">
  <TrendingUp className="text-white sm:w-5 sm:h-5" size={18} />
@@ -210,7 +210,7 @@ export const Goals: React.FC = () => {
  </motion.div>
 
  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="h-full">
- <Card variant="glass" className="h-full p-4 sm:p-6 relative overflow-hidden">
+ <Card data-testid="goals-card-3" variant="glass" className="h-full p-4 sm:p-6 relative overflow-hidden">
  <div className="relative z-10">
  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-orange-500 rounded-2xl flex items-center justify-center mb-2 sm:mb-4 shadow-sm">
  <Bell className="text-white sm:w-5 sm:h-5" size={18} />
@@ -224,7 +224,7 @@ export const Goals: React.FC = () => {
  </motion.div>
 
  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="h-full">
- <Card variant="mesh-green" className="h-full p-4 sm:p-6 relative overflow-hidden">
+ <Card data-testid="goals-card-4" variant="mesh-green" className="h-full p-4 sm:p-6 relative overflow-hidden">
  <div className="relative z-10">
  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center mb-2 sm:mb-4">
  <Sparkles className="text-white sm:w-5 sm:h-5" size={18} />
@@ -261,7 +261,7 @@ export const Goals: React.FC = () => {
  transition={{ delay: index * 0.05 }}
  className="h-full"
  >
- <Card variant="glass" className="h-full p-4 sm:p-6 flex flex-col hover:shadow-xl transition-all duration-300">
+ <Card data-testid={`goals-card-5-${goal.id}`} variant="glass" className="h-full p-4 sm:p-6 flex flex-col hover:shadow-xl transition-all duration-300">
  <div className="flex items-start justify-between mb-3 sm:mb-4">
  <div className="flex items-center gap-3">
  <div className={cn(
@@ -482,7 +482,7 @@ export const Goals: React.FC = () => {
 
  {/* Empty State */}
  {goals.length === 0 && (
- <Card variant="glass" className="p-12 text-center border-2 border-dashed border-gray-300">
+ <Card data-testid="goals-card-6" variant="glass" className="p-12 text-center border-2 border-dashed border-gray-300">
  <motion.div
  initial={{ opacity: 0, scale: 0.9 }}
  animate={{ opacity: 1, scale: 1 }}
@@ -493,7 +493,7 @@ export const Goals: React.FC = () => {
  </div>
  <h3 className="text-2xl font-display font-bold text-gray-900 mb-2">No goals yet</h3>
  <p className="text-gray-500 mb-6 max-w-md mx-auto">Start planning for your financial future by creating your first savings goal</p>
- <Button
+ <Button data-testid="goals-add-goal"
  onClick={() => setCurrentPage('add-goal')}
  className="rounded-full h-11 px-6 shadow-lg bg-black text-white hover:bg-gray-900 transition-transform active:scale-95"
  aria-label="Add Goal"
@@ -654,8 +654,8 @@ const ContributeModal: React.FC<{
  };
 
  return (
- <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
- <motion.div
+ <div data-testid="goals-div" className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
+ <motion.div data-testid="goals-div-2"
  initial={{ opacity: 0, scale: 0.95 }}
  animate={{ opacity: 1, scale: 1 }}
  exit={{ opacity: 0, scale: 0.95 }}
@@ -663,7 +663,7 @@ const ContributeModal: React.FC<{
  className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl"
  >
  <h3 className="text-2xl font-display font-bold mb-6 text-gray-900">Add Contribution</h3>
- <form onSubmit={handleSubmit} className="space-y-4">
+ <form data-testid="goals-form" onSubmit={handleSubmit} className="space-y-4">
  <div>
  <label htmlFor="goal-contribution-amount" className="block text-sm font-bold text-gray-700 mb-2">Amount</label>
  <input
@@ -694,7 +694,7 @@ const ContributeModal: React.FC<{
  title="Select account"
  >
  {accounts.map(acc => (
- <option key={acc.id} value={acc.id}>{acc.name}</option>
+ <option data-testid={`goals-option-${acc.id}`} key={acc.id} value={acc.id}>{acc.name}</option>
  ))}
  </select>
  </div>

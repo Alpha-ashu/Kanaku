@@ -240,7 +240,7 @@ export const AddAccount: React.FC = () => {
 
  <div className="w-full md:max-w-md">
  {(formData.type === 'bank' || formData.type === 'card') ? (
- <SearchableDropdown
+ <SearchableDropdown testId="add-account-form-data-type-card"
  options={bankOptions}
  value={provider}
  onChange={(val) => {

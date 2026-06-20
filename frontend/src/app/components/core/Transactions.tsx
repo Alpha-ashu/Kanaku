@@ -406,7 +406,7 @@ export const Transactions: React.FC = () => {
         }
 
         return (
-          <button
+          <button data-testid={`transactions-button-${idx}`}
             key={idx}
             data-selected={isSelected}
             onClick={() => setSelectedDate(date)}
@@ -437,12 +437,12 @@ export const Transactions: React.FC = () => {
 
  {/* Filter Bar */}
  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
- <TimeFilter value={timePeriod} onChange={setTimePeriod} />
+ <TimeFilter testId="transactions-time-filter" value={timePeriod} onChange={setTimePeriod} />
  </div>
 
  {/* Stats Board */}
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
- <Card variant="mesh-green" className="p-4 sm:p-6 relative overflow-hidden group">
+ <Card data-testid="transactions-card" variant="mesh-green" className="p-4 sm:p-6 relative overflow-hidden group">
  <div className="relative z-10">
  <div className="flex items-center gap-2 mb-2 sm:mb-3 text-white/80">
  <div className="p-1 sm:p-1.5 bg-white/20 rounded-lg backdrop-blur-md">
@@ -455,7 +455,7 @@ export const Transactions: React.FC = () => {
  <div className="absolute -bottom-4 -right-4 w-24 h-24 sm:w-32 sm:h-32 bg-white/20 rounded-full blur-2xl group-hover:scale-110 transition-transform" />
  </Card>
 
- <Card variant="mesh-pink" className="p-4 sm:p-6 relative overflow-hidden group">
+ <Card data-testid="transactions-card-2" variant="mesh-pink" className="p-4 sm:p-6 relative overflow-hidden group">
  <div className="relative z-10">
  <div className="flex items-center gap-2 mb-2 sm:mb-3 text-white/80">
  <div className="p-1 sm:p-1.5 bg-white/20 rounded-lg backdrop-blur-md">
@@ -468,7 +468,7 @@ export const Transactions: React.FC = () => {
  <div className="absolute -bottom-4 -right-4 w-24 h-24 sm:w-32 sm:h-32 bg-white/20 rounded-full blur-2xl group-hover:scale-110 transition-transform" />
  </Card>
 
- <Card variant="default" className="p-4 sm:p-6 bg-transparent border-white/60 relative overflow-hidden">
+ <Card data-testid="transactions-card-3" variant="default" className="p-4 sm:p-6 bg-transparent border-white/60 relative overflow-hidden">
  <div className="relative z-10">
  <div className="flex items-center gap-2 mb-2 sm:mb-3 text-gray-500">
  <div className="p-1 sm:p-1.5 bg-gray-100 rounded-lg">
@@ -587,11 +587,11 @@ export const Transactions: React.FC = () => {
  </div>
 
  {/* Transaction List */}
- <Card variant="glass" className="overflow-hidden !p-0 min-h-[400px]">
+ <Card data-testid="transactions-card-4" variant="glass" className="overflow-hidden !p-0 min-h-[400px]">
 
  {/* DESKTOP TABLE (lg+): all 4 columns */}
  <div className="hidden lg:block overflow-x-auto">
- <table className="w-full">
+ <table data-testid="transactions-table" className="w-full">
  <thead className="bg-white/50 border-b border-gray-100">
  <tr>
  <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Details</th>
@@ -650,7 +650,7 @@ export const Transactions: React.FC = () => {
  <td className="px-4 py-4 text-right">
  <div className="flex justify-end items-center gap-1">
  {attachedDocumentId && (
- <Button variant="ghost" size="icon"
+ <Button data-testid={`transactions-view-bill-${transaction.id}`} variant="ghost" size="icon"
  className="h-8 w-8 text-orange-400 hover:text-orange-600 hover:bg-orange-50"
  onClick={() => handlePreviewBill(transaction)}
  title="View bill"
@@ -660,13 +660,13 @@ export const Transactions: React.FC = () => {
  )}
  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
  {canEdit && (
- <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-blue-600"
+ <Button data-testid={`transactions-button-2-${transaction.id}`} variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-blue-600"
  onClick={() => { localStorage.setItem('editTransactionId', transaction.id?.toString() || ''); setCurrentPage('add-transaction'); }}>
  <Edit2 size={14} />
  </Button>
  )}
  {canDelete && (
- <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-red-500"
+ <Button data-testid={`transactions-button-3-${transaction.id}`} variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-red-500"
  onClick={() => handleDeleteTransaction(transaction.id!, transaction.description)}>
  <Trash2 size={14} />
  </Button>
@@ -690,7 +690,7 @@ export const Transactions: React.FC = () => {
  : transaction.type;
  const attachedDocumentId = getDocumentIdFromTransaction(transaction);
  return (
- <button
+ <button data-testid={`transactions-button-4-${transaction.id}`}
  key={transaction.id}
  onClick={() => setSelectedTransaction(transaction)}
  className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-gray-50/80 active:bg-gray-100 transition-colors text-left"
@@ -731,7 +731,7 @@ export const Transactions: React.FC = () => {
  )}
  {hasMoreTransactions && (
  <div className="flex items-center justify-center py-4">
- <Button variant="secondary" onClick={() => setVisibleCount((c) => c + 200)} className="text-xs h-9 px-4">
+ <Button data-testid="transactions-load-more" variant="secondary" onClick={() => setVisibleCount((c) => c + 200)} className="text-xs h-9 px-4">
  Load more
  </Button>
  </div>
@@ -747,7 +747,7 @@ export const Transactions: React.FC = () => {
  const attachedTaxAmount = parseMetadataNumber(tx.importMetadata?.['Tax Amount']);
  return (
  <div className="fixed inset-0 z-[61] lg:hidden flex flex-col justify-end">
- <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setSelectedTransaction(null)} />
+ <div data-testid="transactions-div" className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setSelectedTransaction(null)} />
  <motion.div
  initial={{ y: '100%' }}
  animate={{ y: 0 }}
@@ -771,7 +771,7 @@ export const Transactions: React.FC = () => {
  <p className="text-xs text-gray-400 font-medium mt-0.5">{formatLocalDate(tx.date, 'en-US')}</p>
  </div>
  </div>
- <button onClick={() => setSelectedTransaction(null)} className="p-2 rounded-xl hover:bg-gray-100 transition-colors text-gray-400">
+ <button data-testid="transactions-button-5" onClick={() => setSelectedTransaction(null)} className="p-2 rounded-xl hover:bg-gray-100 transition-colors text-gray-400">
  <X size={18} />
  </button>
  </div>
@@ -814,7 +814,7 @@ export const Transactions: React.FC = () => {
  {/* View Bill button always visible when bill attached */}
  {attachedDocumentId && (
  <div className="px-6 pb-2">
- <button
+ <button data-testid="transactions-view-attached-bill"
  onClick={() => { handlePreviewBill(tx); setSelectedTransaction(null); }}
  className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-orange-50 border border-orange-100 text-orange-600 font-black text-sm hover:bg-orange-100 active:scale-[0.98] transition-all"
  >
@@ -826,7 +826,7 @@ export const Transactions: React.FC = () => {
  {/* Action buttons */}
  <div className="px-6 pb-8 pt-3 grid grid-cols-2 gap-3">
  {canEdit && (
- <button
+ <button data-testid="transactions-edit"
  onClick={() => { localStorage.setItem('editTransactionId', tx.id?.toString() || ''); setCurrentPage('add-transaction'); setSelectedTransaction(null); }}
  className="flex items-center justify-center gap-2 py-3 rounded-2xl bg-blue-50 border border-blue-100 text-blue-600 font-black text-sm hover:bg-blue-100 active:scale-[0.98] transition-all"
  >
@@ -834,7 +834,7 @@ export const Transactions: React.FC = () => {
  </button>
  )}
  {canDelete && (
- <button
+ <button data-testid="transactions-delete"
  onClick={() => { handleDeleteTransaction(tx.id!, tx.description); setSelectedTransaction(null); }}
  className="flex items-center justify-center gap-2 py-3 rounded-2xl bg-rose-50 border border-rose-100 text-rose-600 font-black text-sm hover:bg-rose-100 active:scale-[0.98] transition-all"
  >
@@ -851,7 +851,7 @@ export const Transactions: React.FC = () => {
   {/* Transaction Type Modal */}
   {showTransactionTypeModal && (
     <div className="fixed inset-0 flex items-center justify-center z-[60] p-4">
-      <div 
+      <div data-testid="transactions-div-2" 
         className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" 
         onClick={() => setShowTransactionTypeModal(false)} 
       />
@@ -898,7 +898,7 @@ export const Transactions: React.FC = () => {
           ))}
         </div>
 
-        <Button
+        <Button data-testid="transactions-cancel"
           variant="ghost"
           className="w-full mt-6 rounded-xl hover:bg-slate-100 text-slate-500 font-bold"
           onClick={() => setShowTransactionTypeModal(false)}
@@ -930,7 +930,7 @@ export const Transactions: React.FC = () => {
  <h3 className="text-lg font-bold text-gray-900">Attached Bill</h3>
  <p className="text-sm text-gray-500 truncate">{previewDocument.fileName}</p>
  </div>
- <Button
+ <Button data-testid="transactions-button-6"
  variant="ghost"
  size="icon"
  className="h-9 w-9 shrink-0 text-gray-500 hover:text-gray-900"

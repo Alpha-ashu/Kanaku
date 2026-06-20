@@ -95,7 +95,7 @@ const PremiumModeSelector = ({
  {options.map(opt => {
  const isActive = activeId === opt.id;
  return (
- <button
+ <button data-testid={`add-transaction-button-${opt.id}`}
  key={opt.id}
  onClick={() => onChange(opt.id)}
  className={cn(
@@ -174,7 +174,7 @@ const CategoryGrid = ({
             className="w-full shrink-0 snap-align-start grid grid-cols-4 grid-rows-2 gap-2"
           >
             {pageItems.map(cat => (
-              <div
+              <div data-testid={`add-transaction-div-${cat}`}
                 key={cat}
                 onClick={() => onSelect(cat)}
                 className={cn(
@@ -204,7 +204,7 @@ const CategoryGrid = ({
       {pages.length > 1 && (
         <div className="flex justify-center gap-1.5 mt-3">
           {pages.map((_, idx) => (
-            <button
+            <button data-testid={`add-transaction-go-to-page-${idx}`}
               key={idx}
               type="button"
               onClick={() => {
@@ -822,7 +822,7 @@ export function AddTransaction() {
  ? ['Consumer Loan', 'Personal Loan', 'Home Loan', 'Vehicle Loan', 'Education Loan', 'Credit Card', 'Overdraft', 'Others']
  : ['Personal / Friend', 'Business', 'Others']
  ).map(cat => (
- <button
+ <button data-testid={`add-transaction-button-2-${cat}`}
  key={cat}
  type="button"
  onClick={() => {
@@ -946,7 +946,7 @@ export function AddTransaction() {
  : (formData.payee === f.name || loanDraft.contactName === f.name);
  
  return (
- <button
+ <button data-testid={`add-transaction-button-3-${f.id}`}
  key={f.id}
  type="button"
  onClick={() => {
@@ -1026,14 +1026,14 @@ export function AddTransaction() {
  {groupParticipants.map(p => (
  <div key={p.id} className="flex items-center gap-2 p-2 bg-slate-50 rounded-lg border border-slate-100 group">
  <div className="w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center text-[10px] font-black text-indigo-600 uppercase">{p.name?.[0] || '?'}</div>
- <input
+ <input data-testid={`add-transaction-participant-name-${p.id}`}
  type="text"
  value={p.name}
  onChange={e => setGroupParticipants(prev => prev.map(i => i.id === p.id ? { ...i, name: e.target.value } : i))}
  aria-label="Participant name"
  className="flex-1 bg-transparent border-none p-0 text-xs font-bold text-slate-900 focus:ring-0"
  />
- <button
+ <button data-testid={`add-transaction-remove-participant-${p.id}`}
  type="button"
  title="Remove participant"
  onClick={() => setGroupParticipants(prev => prev.filter(i => i.id !== p.id))}
@@ -1058,7 +1058,7 @@ export function AddTransaction() {
  {['Consumer Loan', 'Personal Loan', 'Home Loan', 'Vehicle Loan', 'Education Loan', 'Credit Card', 'Overdraft'].includes(loanDraft.category) ? (
  <div className="space-y-2">
  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Loan Provider</label>
- <SearchableDropdown
+ <SearchableDropdown testId="add-transaction-select-bank-nbfc"
  options={loanProviderOptions}
  value={loanDraft.bankName}
  onChange={handleBankChange}
@@ -1071,7 +1071,7 @@ export function AddTransaction() {
  <div className="space-y-2">
  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Counterparty</label>
  <div className="relative">
- <button type="button" onClick={() => setShowLoanFriendPicker(p => !p)} className="w-full flex items-center justify-between bg-slate-50 border border-slate-100 rounded-xl py-2.5 px-3 font-bold text-xs text-slate-700 hover:bg-slate-100 transition-all">
+ <button data-testid="add-transaction-button-4" type="button" onClick={() => setShowLoanFriendPicker(p => !p)} className="w-full flex items-center justify-between bg-slate-50 border border-slate-100 rounded-xl py-2.5 px-3 font-bold text-xs text-slate-700 hover:bg-slate-100 transition-all">
  <span className={loanDraft.contactName ? 'text-slate-900' : 'text-slate-300'}>{loanDraft.contactName || 'Who?'}</span>
  <ChevronDown size={12} className="text-slate-400" />
  </button>
@@ -1080,7 +1080,7 @@ export function AddTransaction() {
  {friends.length > 0 && (
  <div className="p-2 max-h-[150px] overflow-y-auto">
  {friends.map(f => (
- <button key={f.id} type="button" onClick={() => { setLoanDraft(prev => ({ ...prev, contactName: f.name })); setShowLoanFriendPicker(false); }} className={cn("w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-bold text-left transition-all", loanDraft.contactName === f.name ?"bg-indigo-50 text-indigo-700" :"hover:bg-slate-50 text-slate-700")}>
+ <button data-testid={`add-transaction-button-5-${f.id}`} key={f.id} type="button" onClick={() => { setLoanDraft(prev => ({ ...prev, contactName: f.name })); setShowLoanFriendPicker(false); }} className={cn("w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-bold text-left transition-all", loanDraft.contactName === f.name ?"bg-indigo-50 text-indigo-700" :"hover:bg-slate-50 text-slate-700")}>
  <div className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center text-[10px] font-black text-slate-500 uppercase">{f.name[0]}</div>
  {f.name}
  </button>
@@ -1091,12 +1091,12 @@ export function AddTransaction() {
  <div className="p-2">
  {showNewLoanPersonInput ? (
  <div className="flex items-center gap-2 p-2 bg-indigo-50 rounded-lg">
- <input type="text" value={newLoanPersonName} onChange={e => setNewLoanPersonName(e.target.value)} onKeyDown={e => e.key === 'Enter' && confirmNewLoanPerson()} className="flex-1 bg-transparent border-none p-0 text-xs font-bold text-slate-900 focus:ring-0 placeholder:text-slate-300" placeholder="Enter name" autoFocus />
- <button type="button" title="Confirm" onClick={confirmNewLoanPerson} className="p-1 bg-indigo-600 text-white rounded-md"><Check size={11} strokeWidth={3} /></button>
- <button type="button" title="Cancel" onClick={() => { setShowNewLoanPersonInput(false); setNewLoanPersonName(''); }} className="p-1 text-slate-400"><X size={11} strokeWidth={3} /></button>
+ <input data-testid="add-transaction-enter-name" type="text" value={newLoanPersonName} onChange={e => setNewLoanPersonName(e.target.value)} onKeyDown={e => e.key === 'Enter' && confirmNewLoanPerson()} className="flex-1 bg-transparent border-none p-0 text-xs font-bold text-slate-900 focus:ring-0 placeholder:text-slate-300" placeholder="Enter name" autoFocus />
+ <button data-testid="add-transaction-confirm" type="button" title="Confirm" onClick={confirmNewLoanPerson} className="p-1 bg-indigo-600 text-white rounded-md"><Check size={11} strokeWidth={3} /></button>
+ <button data-testid="add-transaction-cancel" type="button" title="Cancel" onClick={() => { setShowNewLoanPersonInput(false); setNewLoanPersonName(''); }} className="p-1 text-slate-400"><X size={11} strokeWidth={3} /></button>
  </div>
  ) : (
- <button type="button" onClick={() => setShowNewLoanPersonInput(true)} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold text-indigo-600 hover:bg-indigo-50 transition-all">
+ <button data-testid="add-transaction-add-new-person" type="button" onClick={() => setShowNewLoanPersonInput(true)} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold text-indigo-600 hover:bg-indigo-50 transition-all">
  <UserPlus size={13} /> Add New Person
  </button>
  )}
@@ -1113,29 +1113,29 @@ export function AddTransaction() {
  <div className="grid grid-cols-2 gap-4">
  <div className="space-y-1">
  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Interest (%)</label>
- <input type="number" value={loanDraft.interestRate} onChange={e => setLoanDraft(prev => ({ ...prev, interestRate: parseFloat(e.target.value) || 0 }))} aria-label="Interest rate" className="w-full bg-slate-50 border-none rounded-xl py-2.5 px-3 font-bold text-sm text-center" />
+ <input data-testid="add-transaction-interest-rate" type="number" value={loanDraft.interestRate} onChange={e => setLoanDraft(prev => ({ ...prev, interestRate: parseFloat(e.target.value) || 0 }))} aria-label="Interest rate" className="w-full bg-slate-50 border-none rounded-xl py-2.5 px-3 font-bold text-sm text-center" />
  </div>
  <div className="space-y-1">
  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Tenure (Months)</label>
- <input type="number" value={loanDraft.tenureMonths} onChange={e => setLoanDraft(prev => ({ ...prev, tenureMonths: parseInt(e.target.value) || 0 }))} aria-label="Tenure in months" className="w-full bg-slate-50 border-none rounded-xl py-2.5 px-3 font-bold text-sm text-center" />
+ <input data-testid="add-transaction-tenure-in-months" type="number" value={loanDraft.tenureMonths} onChange={e => setLoanDraft(prev => ({ ...prev, tenureMonths: parseInt(e.target.value) || 0 }))} aria-label="Tenure in months" className="w-full bg-slate-50 border-none rounded-xl py-2.5 px-3 font-bold text-sm text-center" />
  </div>
  </div>
 
  <div className="grid grid-cols-2 gap-4">
  <div className="space-y-1">
  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">EMI Amount</label>
- <input type="number" value={loanDraft.emiAmount} onChange={e => setLoanDraft(prev => ({ ...prev, emiAmount: parseFloat(e.target.value) || 0 }))} aria-label="EMI amount" className="w-full bg-slate-50 border-none rounded-xl py-2.5 px-3 font-bold text-sm text-center" />
+ <input data-testid="add-transaction-emi-amount" type="number" value={loanDraft.emiAmount} onChange={e => setLoanDraft(prev => ({ ...prev, emiAmount: parseFloat(e.target.value) || 0 }))} aria-label="EMI amount" className="w-full bg-slate-50 border-none rounded-xl py-2.5 px-3 font-bold text-sm text-center" />
  </div>
  <div className="space-y-1">
  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Down Payment</label>
- <input type="number" value={loanDraft.downPayment} onChange={e => setLoanDraft(prev => ({ ...prev, downPayment: parseFloat(e.target.value) || 0 }))} aria-label="Down payment" className="w-full bg-slate-50 border-none rounded-xl py-2.5 px-3 font-bold text-sm text-center" />
+ <input data-testid="add-transaction-down-payment" type="number" value={loanDraft.downPayment} onChange={e => setLoanDraft(prev => ({ ...prev, downPayment: parseFloat(e.target.value) || 0 }))} aria-label="Down payment" className="w-full bg-slate-50 border-none rounded-xl py-2.5 px-3 font-bold text-sm text-center" />
  </div>
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
  <div className="space-y-1">
  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Received In</label>
- <SearchableDropdown
+ <SearchableDropdown testId="add-transaction-select-account"
  options={accounts.map(a => ({ value: String(a.id), label: a.name, description: formatAccountBalance(a.balance, currency) }))}
  value={String(loanDraft.receivedAccount)}
  onChange={val => {
@@ -1149,7 +1149,7 @@ export function AddTransaction() {
  </div>
  <div className="space-y-1">
  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">EMI Deduction</label>
- <SearchableDropdown
+ <SearchableDropdown testId="add-transaction-select-account-2"
  options={accounts.map(a => ({ value: String(a.id), label: a.name, description: formatAccountBalance(a.balance, currency) }))}
  value={String(loanDraft.emiDeductionAccount)}
  onChange={val => setLoanDraft(prev => ({ ...prev, emiDeductionAccount: parseInt(val) }))}
@@ -1166,7 +1166,7 @@ export function AddTransaction() {
  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Received Method</label>
  <div className="flex gap-2">
  {['bank', 'cash'].map((m) => (
- <button
+ <button data-testid={`add-transaction-button-6-${m}`}
  key={m}
  type="button"
  onClick={() => {
@@ -1191,7 +1191,7 @@ export function AddTransaction() {
  {loanDraft.transferMethod === 'bank' && (
  <div className="space-y-2 animate-in fade-in slide-in-from-top-1">
  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Select Bank Account</label>
- <SearchableDropdown
+ <SearchableDropdown testId="add-transaction-select-account-3"
  options={accounts.filter(a => !a.name.toLowerCase().includes('cash')).map(a => ({ value: String(a.id), label: a.name, description: formatAccountBalance(a.balance, currency) }))}
  value={String(loanDraft.receivedAccount)}
  onChange={val => {
@@ -1214,7 +1214,7 @@ export function AddTransaction() {
 
  <div className="space-y-2">
  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Return Date / Reminder</label>
- <div className="relative group" onClick={(e) => {
+ <div data-testid="add-transaction-div-2" className="relative group" onClick={(e) => {
  const input = e.currentTarget.querySelector('input');
  if (input) (input as any).showPicker();
  }}>
@@ -1228,7 +1228,7 @@ export function AddTransaction() {
  return `${day}-${months[date.getMonth()]}-${date.getFullYear()}`;
  })()}
  </div>
- <input
+ <input data-testid="add-transaction-return-date"
  type="date"
  value={loanDraft.dueDate}
  onChange={e => setLoanDraft(prev => ({ ...prev, dueDate: e.target.value }))}
@@ -1245,7 +1245,7 @@ export function AddTransaction() {
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
  <div className="space-y-2">
  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Lent From</label>
- <SearchableDropdown
+ <SearchableDropdown testId="add-transaction-select-account-4"
  options={accounts.map(a => ({ value: String(a.id), label: a.name, description: formatAccountBalance(a.balance, currency) }))}
  value={String(loanDraft.receivedAccount)}
  onChange={val => {
@@ -1259,7 +1259,7 @@ export function AddTransaction() {
  </div>
  <div className="space-y-2">
  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Due Date</label>
- <div className="relative group" onClick={(e) => {
+ <div data-testid="add-transaction-div-3" className="relative group" onClick={(e) => {
  const input = e.currentTarget.querySelector('input');
  if (input) (input as any).showPicker();
  }}>
@@ -1273,7 +1273,7 @@ export function AddTransaction() {
  return `${day}-${months[date.getMonth()]}-${date.getFullYear()}`;
  })()}
  </div>
- <input
+ <input data-testid="add-transaction-due-date"
  type="date"
  value={loanDraft.dueDate}
  onChange={e => setLoanDraft(prev => ({ ...prev, dueDate: e.target.value }))}
@@ -1286,7 +1286,7 @@ export function AddTransaction() {
  <div className="space-y-1">
  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Counterparty</label>
  <div className="relative">
- <button type="button" onClick={() => setShowLoanFriendPicker(p => !p)} className="w-full flex items-center justify-between bg-slate-50 border border-slate-100 rounded-xl py-2.5 px-3 font-bold text-xs text-slate-700 hover:bg-slate-100 transition-all">
+ <button data-testid="add-transaction-button-7" type="button" onClick={() => setShowLoanFriendPicker(p => !p)} className="w-full flex items-center justify-between bg-slate-50 border border-slate-100 rounded-xl py-2.5 px-3 font-bold text-xs text-slate-700 hover:bg-slate-100 transition-all">
  <span className={loanDraft.contactName ? 'text-slate-900' : 'text-slate-300'}>{loanDraft.contactName || 'Who?'}</span>
  <ChevronDown size={12} className="text-slate-400" />
  </button>
@@ -1295,7 +1295,7 @@ export function AddTransaction() {
  {friends.length > 0 && (
  <div className="p-2 max-h-[150px] overflow-y-auto">
  {friends.map(f => (
- <button key={f.id} type="button" onClick={() => { setLoanDraft(prev => ({ ...prev, contactName: f.name })); setShowLoanFriendPicker(false); }} className={cn("w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-bold text-left transition-all", loanDraft.contactName === f.name ?"bg-indigo-50 text-indigo-700" :"hover:bg-slate-50 text-slate-700")}>
+ <button data-testid={`add-transaction-button-8-${f.id}`} key={f.id} type="button" onClick={() => { setLoanDraft(prev => ({ ...prev, contactName: f.name })); setShowLoanFriendPicker(false); }} className={cn("w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-bold text-left transition-all", loanDraft.contactName === f.name ?"bg-indigo-50 text-indigo-700" :"hover:bg-slate-50 text-slate-700")}>
  <div className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center text-[10px] font-black text-slate-500 uppercase">{f.name[0]}</div>
  {f.name}
  </button>
@@ -1306,12 +1306,12 @@ export function AddTransaction() {
  <div className="p-2">
  {showNewLoanPersonInput ? (
  <div className="flex items-center gap-2 p-2 bg-indigo-50 rounded-lg">
- <input type="text" value={newLoanPersonName} onChange={e => setNewLoanPersonName(e.target.value)} onKeyDown={e => e.key === 'Enter' && confirmNewLoanPerson()} className="flex-1 bg-transparent border-none p-0 text-xs font-bold text-slate-900 focus:ring-0 placeholder:text-slate-300" placeholder="Enter name" autoFocus />
- <button type="button" title="Confirm" onClick={confirmNewLoanPerson} className="p-1 bg-indigo-600 text-white rounded-md"><Check size={11} strokeWidth={3} /></button>
- <button type="button" title="Cancel" onClick={() => { setShowNewLoanPersonInput(false); setNewLoanPersonName(''); }} className="p-1 text-slate-400"><X size={11} strokeWidth={3} /></button>
+ <input data-testid="add-transaction-enter-name-2" type="text" value={newLoanPersonName} onChange={e => setNewLoanPersonName(e.target.value)} onKeyDown={e => e.key === 'Enter' && confirmNewLoanPerson()} className="flex-1 bg-transparent border-none p-0 text-xs font-bold text-slate-900 focus:ring-0 placeholder:text-slate-300" placeholder="Enter name" autoFocus />
+ <button data-testid="add-transaction-confirm-2" type="button" title="Confirm" onClick={confirmNewLoanPerson} className="p-1 bg-indigo-600 text-white rounded-md"><Check size={11} strokeWidth={3} /></button>
+ <button data-testid="add-transaction-cancel-2" type="button" title="Cancel" onClick={() => { setShowNewLoanPersonInput(false); setNewLoanPersonName(''); }} className="p-1 text-slate-400"><X size={11} strokeWidth={3} /></button>
  </div>
  ) : (
- <button type="button" onClick={() => setShowNewLoanPersonInput(true)} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold text-indigo-600 hover:bg-indigo-50 transition-all">
+ <button data-testid="add-transaction-add-new-person-2" type="button" onClick={() => setShowNewLoanPersonInput(true)} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold text-indigo-600 hover:bg-indigo-50 transition-all">
  <UserPlus size={13} /> Add New Person
  </button>
  )}
@@ -1399,7 +1399,7 @@ export function AddTransaction() {
  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
  {isWithdrawal ? 'Withdraw From Account' : isTransfer ? 'From Account' : 'Account'}
  </label>
- <SearchableDropdown
+ <SearchableDropdown testId="add-transaction-account"
  options={accounts.map(a => ({
  value: String(a.id),
  label: a.name,
@@ -1418,7 +1418,7 @@ export function AddTransaction() {
  <div className="space-y-3 animate-in fade-in zoom-in-95 duration-200">
  <div className="flex justify-center"><ArrowDown size={14} className="text-slate-300" /></div>
  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">To Account</label>
- <SearchableDropdown
+ <SearchableDropdown testId="add-transaction-destination-account"
  options={accounts.filter(a => a.id !== formData.accountId).map(a => ({
  value: String(a.id),
  label: a.name,
@@ -1448,7 +1448,7 @@ export function AddTransaction() {
  <div className="space-y-3 animate-in fade-in zoom-in-95 duration-200">
  <div className="flex justify-center"><ArrowDown size={14} className="text-slate-300" /></div>
  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Deposit To</label>
- <SearchableDropdown
+ <SearchableDropdown testId="add-transaction-destination-account-2"
  options={accounts.filter(a => a.id !== formData.accountId).map(a => ({
  value: String(a.id),
  label: a.name,
@@ -1471,7 +1471,7 @@ export function AddTransaction() {
  <div className="flex items-center justify-between">
  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Recipient</label>
  {friends.length > 0 && (
- <button
+ <button data-testid="add-transaction-friends"
  type="button"
  onClick={() => setShowTransferFriendPicker(p => !p)}
  className="flex items-center gap-1 text-[9px] font-black text-violet-600 bg-violet-50 px-2.5 py-1.5 rounded-lg uppercase tracking-wide"
@@ -1487,7 +1487,7 @@ export function AddTransaction() {
  <p className="text-[8px] font-black text-violet-400 uppercase tracking-widest mb-2">Tap to select</p>
  <div className="flex flex-wrap gap-2">
  {friends.map(f => (
- <button
+ <button data-testid={`add-transaction-button-9-${f.id}`}
  key={f.id}
  type="button"
  onClick={() => {
@@ -1539,7 +1539,7 @@ export function AddTransaction() {
  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
  {isWithdrawal || isTransfer ? 'Transfer Date' : 'Date'}
  </label>
- <div className="relative group" onClick={(e) => {
+ <div data-testid="add-transaction-div-4" className="relative group" onClick={(e) => {
  const input = e.currentTarget.querySelector('input');
  if (input) (input as any).showPicker();
  }}>

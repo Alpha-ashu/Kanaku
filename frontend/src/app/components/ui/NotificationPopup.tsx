@@ -43,7 +43,7 @@ export const NotificationPopup: React.FC<NotificationPopupProps> = ({
  {isOpen && (
  <>
  {/* Backdrop */}
- <motion.div
+ <motion.div data-testid="notification-popup-div"
  initial={{ opacity: 0 }}
  animate={{ opacity: 1 }}
  exit={{ opacity: 0 }}
@@ -65,7 +65,7 @@ export const NotificationPopup: React.FC<NotificationPopupProps> = ({
  <Bell size={20} className="text-white" />
  <h3 className="text-white font-bold">Recent Notifications</h3>
  </div>
- <button
+ <button data-testid="notification-popup-close-notifications-popup"
  type="button"
  onClick={onClose}
  className="text-white/60 hover:text-white transition-colors"
@@ -126,7 +126,7 @@ export const NotificationPopup: React.FC<NotificationPopupProps> = ({
 
  {/* Footer */}
  <div className="bg-white border-t border-gray-100 p-4">
- <button
+ <button data-testid="notification-popup-view-all-notifications"
  onClick={() => {
  onViewAll();
  onClose();

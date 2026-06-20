@@ -75,7 +75,7 @@ export const AddFriends: React.FC = () => {
  <header className="px-4 lg:px-6 py-4 bg-white border-b border-slate-100">
  <div className="flex flex-row flex-wrap items-center justify-between gap-4 w-full">
  <div className="flex items-center gap-3">
- <button onClick={() => setCurrentPage('friends')} title="Back" className="lg:!hidden p-2 text-slate-600 hover:bg-slate-50 rounded-xl transition-all">
+ <button data-testid="add-friends-back" onClick={() => setCurrentPage('friends')} title="Back" className="lg:!hidden p-2 text-slate-600 hover:bg-slate-50 rounded-xl transition-all">
  <ArrowLeft size={20} />
  </button>
  <h1 className="text-xl font-black text-slate-900 tracking-tight leading-none">Add Friends</h1>
@@ -93,7 +93,7 @@ export const AddFriends: React.FC = () => {
  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Friend Name</label>
  <div className="relative">
  <User className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
- <input type="text" value={formData.name} onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))} className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-900 text-xs" placeholder="Full Name" />
+ <input data-testid="add-friends-full-name" type="text" value={formData.name} onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))} className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-900 text-xs" placeholder="Full Name" />
  </div>
  </div>
 
@@ -102,14 +102,14 @@ export const AddFriends: React.FC = () => {
  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Email</label>
  <div className="relative">
  <Mail className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
- <input type="email" value={formData.email} onChange={e => setFormData(prev => ({ ...prev, email: e.target.value }))} className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-xs" placeholder="Optional" />
+ <input data-testid="add-friends-optional" type="email" value={formData.email} onChange={e => setFormData(prev => ({ ...prev, email: e.target.value }))} className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-xs" placeholder="Optional" />
  </div>
  </div>
  <div className="space-y-1">
  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Phone</label>
  <div className="relative">
  <Phone className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
- <input type="tel" value={formData.phone} onChange={e => setFormData(prev => ({ ...prev, phone: e.target.value }))} className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-xs" placeholder="Optional" />
+ <input data-testid="add-friends-optional-2" type="tel" value={formData.phone} onChange={e => setFormData(prev => ({ ...prev, phone: e.target.value }))} className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-xs" placeholder="Optional" />
  </div>
  </div>
  </div>
@@ -118,7 +118,7 @@ export const AddFriends: React.FC = () => {
  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Relationship</label>
  <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
  {RELATIONSHIP_TYPES.map(r => (
- <button key={r.key} onClick={() => setFormData(prev => ({ ...prev, relationship: r.key }))} className={cn("flex flex-col items-center justify-center gap-1.5 p-2 rounded-xl transition-all", formData.relationship === r.key ?"bg-indigo-600 text-white shadow-lg" :"bg-slate-50 text-slate-400 hover:bg-slate-100")}>
+ <button data-testid={`add-friends-button-${r.key}`} key={r.key} onClick={() => setFormData(prev => ({ ...prev, relationship: r.key }))} className={cn("flex flex-col items-center justify-center gap-1.5 p-2 rounded-xl transition-all", formData.relationship === r.key ?"bg-indigo-600 text-white shadow-lg" :"bg-slate-50 text-slate-400 hover:bg-slate-100")}>
  {r.icon}
  <span className="text-[7px] font-black uppercase tracking-tighter">{r.label}</span>
  </button>
@@ -126,7 +126,7 @@ export const AddFriends: React.FC = () => {
  </div>
  </div>
 
- <button onClick={addToQueue} className="w-full py-3 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-slate-800 transition-all">
+ <button data-testid="add-friends-add-to-list" onClick={addToQueue} className="w-full py-3 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-slate-800 transition-all">
  <UserPlus size={14} /> Add to List
  </button>
  </div>
@@ -144,7 +144,7 @@ export const AddFriends: React.FC = () => {
  <div className="lg:col-span-5 flex flex-col gap-4">
  <div className="flex items-center justify-between px-1">
  <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Pending List ({queue.length})</h3>
- {queue.length > 0 && <button onClick={() => setQueue([])} className="text-[8px] font-black text-rose-500 uppercase tracking-widest hover:underline">Clear All</button>}
+ {queue.length > 0 && <button data-testid="add-friends-clear-all" onClick={() => setQueue([])} className="text-[8px] font-black text-rose-500 uppercase tracking-widest hover:underline">Clear All</button>}
  </div>
 
  <div className="flex-1 lg:overflow-y-auto space-y-2">
@@ -157,7 +157,7 @@ export const AddFriends: React.FC = () => {
  <p className="text-[8px] font-bold text-slate-400 uppercase tracking-tight">{f.relationship} {f.phone || f.email || 'No contact'}</p>
  </div>
  </div>
- <button type="button" onClick={() => removeFromQueue(i)} title="Remove" className="text-slate-300 hover:text-rose-500 transition-colors">
+ <button data-testid={`add-friends-remove-${i}`} type="button" onClick={() => removeFromQueue(i)} title="Remove" className="text-slate-300 hover:text-rose-500 transition-colors">
  <X size={14} />
  </button>
  </div>
@@ -180,7 +180,7 @@ export const AddFriends: React.FC = () => {
  <p className="text-[10px] font-black">{queue.length} People Selected</p>
  </div>
  </div>
- <button onClick={handleSaveAll} className="px-5 py-2 bg-white text-indigo-600 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg">Confirm & Save</button>
+ <button data-testid="add-friends-confirm-save" onClick={handleSaveAll} className="px-5 py-2 bg-white text-indigo-600 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg">Confirm & Save</button>
  </div>
  )}
  </div>

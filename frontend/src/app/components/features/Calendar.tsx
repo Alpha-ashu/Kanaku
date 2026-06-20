@@ -303,14 +303,14 @@ export const Calendar: React.FC = () => {
  icon={<CalendarIcon size={20} className="sm:w-6 sm:h-6" />}
  >
  <div className="flex items-center gap-2 sm:gap-3">
- <Button
+ <Button data-testid="calendar-today"
  variant="secondary"
  onClick={handleToday}
  className="shadow-sm border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 text-xs sm:text-sm h-9 sm:h-10 px-3 sm:px-4"
  >
  Today
  </Button>
- <Button
+ <Button data-testid="calendar-button"
  onClick={() => setShowReminderModal(true)}
  className="shadow-lg bg-black text-white hover:bg-gray-900 text-xs sm:text-sm h-9 sm:h-10 px-3 sm:px-4"
  >
@@ -323,7 +323,7 @@ export const Calendar: React.FC = () => {
 
  {/* Time Filter */}
  <div className="flex justify-start">
- <TimeFilter value={timePeriod} onChange={setTimePeriod} />
+ <TimeFilter testId="calendar-time-filter" value={timePeriod} onChange={setTimePeriod} />
  </div>
 
  {/* Summary Stats Row */}
@@ -383,7 +383,7 @@ export const Calendar: React.FC = () => {
  <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden max-w-[980px] mx-auto">
  {/* Month Navigation */}
  <div className="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 px-3 sm:px-5 py-3 flex items-center justify-between">
- <button
+ <button data-testid="calendar-previous-month"
  onClick={handlePrevMonth}
  className="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 transition-colors flex items-center justify-center"
  title="Previous month"
@@ -396,7 +396,7 @@ export const Calendar: React.FC = () => {
  </h2>
  <p className="text-[11px] text-gray-400 mt-0.5">{currentDate.getFullYear()}</p>
  </div>
- <button
+ <button data-testid="calendar-next-month"
  onClick={handleNextMonth}
  className="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 transition-colors flex items-center justify-center"
  title="Next month"
@@ -428,7 +428,7 @@ export const Calendar: React.FC = () => {
  const hasAct = hasActivity(date);
 
  return (
- <motion.button
+ <motion.button data-testid={`calendar-date-to-locale-date-${`${getDateKey(date)}-${index}`}`}
  key={`${getDateKey(date)}-${index}`}
  initial={{ opacity: 0, scale: 0.9 }}
  animate={{ opacity: 1, scale: 1 }}
@@ -491,7 +491,7 @@ export const Calendar: React.FC = () => {
  </h2>
  <p className="text-xs text-gray-500 mt-0.5">Activity Summary</p>
  </div>
- <button
+ <button data-testid="calendar-close"
  onClick={() => setSelectedDate(null)}
  className="w-9 h-9 rounded-xl bg-gray-100 hover:bg-gray-200 transition-colors flex items-center justify-center"
  title="Close"
@@ -597,7 +597,7 @@ export const Calendar: React.FC = () => {
  <CalendarIcon size={24} className="text-gray-400" />
  </div>
  <p className="text-gray-500 font-medium">No activities for this day</p>
- <button
+ <button data-testid="calendar-add-reminder"
  onClick={() => setShowReminderModal(true)}
  className="mt-4 px-4 py-2 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-colors inline-flex items-center gap-2 text-sm"
  >
@@ -613,14 +613,14 @@ export const Calendar: React.FC = () => {
  {/* Add Reminder Modal */}
  <AnimatePresence>
  {showReminderModal && (
- <motion.div
+ <motion.div data-testid="calendar-div"
  initial={{ opacity: 0 }}
  animate={{ opacity: 1 }}
  exit={{ opacity: 0 }}
  className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
  onClick={() => setShowReminderModal(false)}
  >
- <motion.div
+ <motion.div data-testid="calendar-div-2"
  initial={{ scale: 0.95, opacity: 0 }}
  animate={{ scale: 1, opacity: 1 }}
  exit={{ scale: 0.95, opacity: 0 }}
@@ -629,7 +629,7 @@ export const Calendar: React.FC = () => {
  >
  <div className="flex items-center justify-between mb-6">
  <h3 className="text-2xl font-bold text-gray-900">Add Reminder</h3>
- <button
+ <button data-testid="calendar-close-add-reminder-modal"
  type="button"
  onClick={() => setShowReminderModal(false)}
  className="p-1 hover:bg-gray-100 rounded-lg"
@@ -643,7 +643,7 @@ export const Calendar: React.FC = () => {
  <div className="space-y-4">
  <div>
  <label htmlFor="reminder-title" className="block text-sm font-semibold text-gray-900 mb-2">Title</label>
- <input
+ <input data-testid="calendar-add-reminder-title"
  id="reminder-title"
  type="text"
  value={newReminder.title}
@@ -655,7 +655,7 @@ export const Calendar: React.FC = () => {
 
  <div>
  <label htmlFor="reminder-description" className="block text-sm font-semibold text-gray-900 mb-2">Description (Optional)</label>
- <textarea
+ <textarea data-testid="calendar-add-details"
  id="reminder-description"
  value={newReminder.description}
  onChange={(e) => setNewReminder({ ...newReminder, description: e.target.value })}
@@ -666,22 +666,22 @@ export const Calendar: React.FC = () => {
 
  <div>
  <label htmlFor="reminder-type" className="block text-sm font-semibold text-gray-900 mb-2">Type</label>
- <select
+ <select data-testid="calendar-select"
  id="reminder-type"
  value={newReminder.type}
  onChange={(e) => setNewReminder({ ...newReminder, type: e.target.value as any })}
  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500"
  >
- <option value="task">Task</option>
- <option value="event">Event</option>
- <option value="reminder">Reminder</option>
- <option value="goal">Goal</option>
+ <option data-testid="calendar-task" value="task">Task</option>
+ <option data-testid="calendar-event" value="event">Event</option>
+ <option data-testid="calendar-reminder" value="reminder">Reminder</option>
+ <option data-testid="calendar-goal" value="goal">Goal</option>
  </select>
  </div>
 
  <div>
  <label htmlFor="reminder-date" className="block text-sm font-semibold text-gray-900 mb-2">Date</label>
- <input
+ <input data-testid="calendar-input"
  id="reminder-date"
  type="date"
  value={newReminder.date.toISOString().split('T')[0]}
@@ -691,13 +691,13 @@ export const Calendar: React.FC = () => {
  </div>
 
  <div className="flex gap-3 pt-4">
- <button
+ <button data-testid="calendar-cancel"
  onClick={() => setShowReminderModal(false)}
  className="flex-1 px-4 py-2 rounded-lg bg-gray-200 text-gray-900 font-semibold hover:bg-gray-300 transition-colors"
  >
  Cancel
  </button>
- <button
+ <button data-testid="calendar-add"
  onClick={addReminder}
  className="flex-1 px-4 py-2 rounded-lg bg-gradient-to-r from-pink-500 to-rose-500 text-white font-semibold hover:from-pink-600 hover:to-rose-600 transition-colors"
  >

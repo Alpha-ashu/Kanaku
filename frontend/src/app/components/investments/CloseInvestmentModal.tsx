@@ -203,7 +203,7 @@ export const CloseInvestmentModal: React.FC<CloseInvestmentModalProps> = ({
  Close this holding and move the proceeds into one of your accounts.
  </p>
  </div>
- <button
+ <button data-testid="close-investment-modal-close-modal"
  type="button"
  onClick={onClose}
  className="w-10 h-10 rounded-2xl bg-gray-100 hover:bg-gray-200 transition-colors flex items-center justify-center shrink-0"
@@ -213,7 +213,7 @@ export const CloseInvestmentModal: React.FC<CloseInvestmentModalProps> = ({
  </button>
  </div>
 
- <form onSubmit={handleSubmit} className="px-6 py-5 space-y-5">
+ <form data-testid="close-investment-modal-form" onSubmit={handleSubmit} className="px-6 py-5 space-y-5">
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
  <div className="rounded-2xl bg-white border border-gray-200 px-4 py-3">
  <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">Quantity</p>
@@ -229,15 +229,15 @@ export const CloseInvestmentModal: React.FC<CloseInvestmentModalProps> = ({
  <label className="block text-sm font-semibold text-gray-900 mb-2">Settlement Account</label>
  <div className="relative">
  <Wallet size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
- <select
+ <select data-testid="close-investment-modal-select"
  value={settlementAccountId}
  onChange={(event) => setSettlementAccountId(parseInt(event.target.value, 10))}
  className="w-full rounded-2xl border border-gray-200 bg-white pl-11 pr-4 py-3 text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-black/10"
  required
  >
- <option value="">Select account</option>
+ <option data-testid="close-investment-modal-select-account" value="">Select account</option>
  {activeAccounts.map((account) => (
- <option key={account.id} value={account.id}>
+ <option data-testid={`close-investment-modal-option-${account.id}`} key={account.id} value={account.id}>
  {account.name} ({formatCurrencyAmount(account.balance, currency, { minimumFractionDigits: 0, maximumFractionDigits: 0 })})
  </option>
  ))}
@@ -250,7 +250,7 @@ export const CloseInvestmentModal: React.FC<CloseInvestmentModalProps> = ({
  <label className="block text-sm font-semibold text-gray-900 mb-2">Sell Price Per Unit</label>
  <div className="flex items-center gap-3 rounded-2xl border border-gray-200 bg-white px-4 py-3">
  <span className="text-gray-600 font-medium">{metrics.assetCurrencySymbol}</span>
- <input
+ <input data-testid="close-investment-modal-input"
  type="number"
  step="0.01"
  value={sellPrice}
@@ -268,7 +268,7 @@ export const CloseInvestmentModal: React.FC<CloseInvestmentModalProps> = ({
  <label className="block text-sm font-semibold text-gray-900 mb-2">Closing Fees</label>
  <div className="flex items-center gap-3 rounded-2xl border border-gray-200 bg-white px-4 py-3">
  <span className="text-gray-600 font-medium">{currency}</span>
- <input
+ <input data-testid="close-investment-modal-0-00"
  type="number"
  step="0.01"
  min="0"
@@ -285,7 +285,7 @@ export const CloseInvestmentModal: React.FC<CloseInvestmentModalProps> = ({
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
  <div>
  <label className="block text-sm font-semibold text-gray-900 mb-2">Close Date</label>
- <input
+ <input data-testid="close-investment-modal-input-2"
  type="date"
  value={closeDate}
  onChange={(event) => setCloseDate(event.target.value)}
@@ -296,7 +296,7 @@ export const CloseInvestmentModal: React.FC<CloseInvestmentModalProps> = ({
 
  <div>
  <label className="block text-sm font-semibold text-gray-900 mb-2">Notes</label>
- <input
+ <input data-testid="close-investment-modal-optional-exit-note"
  type="text"
  value={closeNotes}
  onChange={(event) => setCloseNotes(event.target.value)}
@@ -329,7 +329,7 @@ export const CloseInvestmentModal: React.FC<CloseInvestmentModalProps> = ({
  </div>
 
  <div className="flex gap-3 pt-1">
- <Button
+ <Button data-testid="close-investment-modal-cancel"
  type="button"
  variant="secondary"
  onClick={onClose}
@@ -337,7 +337,7 @@ export const CloseInvestmentModal: React.FC<CloseInvestmentModalProps> = ({
  >
  Cancel
  </Button>
- <Button
+ <Button data-testid="close-investment-modal-button"
  type="submit"
  disabled={submitting}
  className="flex-1 rounded-2xl h-11 bg-black text-white hover:bg-gray-900"

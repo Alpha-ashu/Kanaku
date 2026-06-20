@@ -149,7 +149,7 @@ export const SyncMonitorDashboard: React.FC = () => {
  <div className="text-center py-12">
  <h2 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h2>
  <p className="text-gray-600 mb-4">Only admins can access the sync monitoring panel.</p>
- <button
+ <button data-testid="sync-monitor-dashboard-go-to-dashboard"
  onClick={() => setCurrentPage('dashboard')}
  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
  >
@@ -194,7 +194,7 @@ export const SyncMonitorDashboard: React.FC = () => {
  <div className="space-y-6 pb-8">
  {/* Header */}
  <div className="flex items-center gap-3">
- <button
+ <button data-testid="sync-monitor-dashboard-back-to-admin-panel"
  onClick={() => setCurrentPage('admin-panel')}
  className="p-2 hover:bg-gray-100 rounded-lg transition-colors md:!hidden"
  aria-label="Back to admin panel"
@@ -216,7 +216,7 @@ export const SyncMonitorDashboard: React.FC = () => {
  </h3>
  <div className="flex items-center gap-2">
  <StatusBadge status={syncStats.status} />
- <button
+ <button data-testid="sync-monitor-dashboard-trigger-sync-now"
  onClick={handleManualSync}
  className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
  title="Trigger sync now"
@@ -278,7 +278,7 @@ export const SyncMonitorDashboard: React.FC = () => {
 
  {/* Action buttons */}
  <div className="flex flex-wrap gap-3">
- <button
+ <button data-testid="sync-monitor-dashboard-retry"
  onClick={handleRetryFailed}
  disabled={failedCount === 0}
  className="flex items-center gap-2 px-4 py-2 bg-amber-100 text-amber-800 rounded-xl text-sm font-medium hover:bg-amber-200 transition-colors disabled:opacity-50"
@@ -286,7 +286,7 @@ export const SyncMonitorDashboard: React.FC = () => {
  <RotateCcw size={15} />
  Retry {failedCount} Failed
  </button>
- <button
+ <button data-testid="sync-monitor-dashboard-clear-completed"
  onClick={handleClearSucceeded}
  disabled={succeededCount === 0}
  className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-200 transition-colors disabled:opacity-50"
@@ -294,7 +294,7 @@ export const SyncMonitorDashboard: React.FC = () => {
  <Trash2 size={15} />
  Clear Completed
  </button>
- <button
+ <button data-testid="sync-monitor-dashboard-button"
  onClick={handleForceResync}
  disabled={isForceSyncing}
  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-60"
@@ -308,7 +308,7 @@ export const SyncMonitorDashboard: React.FC = () => {
  <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
  <div className="flex border-b border-gray-100">
  {(['queue', 'logs'] as const).map(tab => (
- <button
+ <button data-testid={`sync-monitor-dashboard-button-2-${tab}`}
  key={tab}
  onClick={() => setActiveTab(tab)}
  className={[
@@ -331,7 +331,7 @@ export const SyncMonitorDashboard: React.FC = () => {
  <p className="text-sm">Sync queue is empty</p>
  </div>
  ) : (
- <table className="w-full min-w-[640px]">
+ <table data-testid="sync-monitor-dashboard-table" className="w-full min-w-[640px]">
  <thead className="sticky top-0 bg-white border-b border-gray-200">
  <tr className="text-xs text-gray-500 font-medium">
  <th className="py-2 px-3 text-left">ID</th>
@@ -357,7 +357,7 @@ export const SyncMonitorDashboard: React.FC = () => {
  <p className="text-sm">No sync events recorded yet</p>
  </div>
  ) : (
- <table className="w-full min-w-[640px]">
+ <table data-testid="sync-monitor-dashboard-table-2" className="w-full min-w-[640px]">
  <thead className="sticky top-0 bg-white border-b border-gray-200">
  <tr className="text-xs text-gray-500 font-medium">
  <th className="py-2 px-3 text-left">ID</th>

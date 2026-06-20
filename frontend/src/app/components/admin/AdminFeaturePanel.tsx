@@ -621,7 +621,7 @@ export const AdminFeaturePanel: React.FC = () => {
         {selectedSubFeatureModule && (
           <>
             {/* Backdrop */}
-            <motion.div
+            <motion.div data-testid="admin-feature-panel-div"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}

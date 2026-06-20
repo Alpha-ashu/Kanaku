@@ -167,7 +167,7 @@ export const AutoCard: React.FC<AutoCardProps> = ({
     photo: 'aspect-photo',
   };
   return (
-    <div
+    <div data-testid="auto-sizing-div"
       className={cn(
         sizeClasses[size],
         height && heightClasses[height],
@@ -239,7 +239,7 @@ export const AutoButton: React.FC<AutoButtonProps> = ({
     ghost:     'text-gray-600 hover:bg-gray-100',
   };
   return (
-    <button
+    <button data-testid="auto-sizing-button"
       type={type}
       disabled={disabled}
       className={cn(

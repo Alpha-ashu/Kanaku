@@ -107,15 +107,15 @@ export const Transfer: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
  <header className="px-4 lg:px-6 py-4 bg-white border-b border-slate-100">
  <div className="flex flex-row flex-wrap items-center justify-between gap-4 w-full">
  <div className="flex items-center gap-3">
- <button onClick={() => onBack ? onBack() : setCurrentPage('accounts')} className="lg:!hidden p-2 text-slate-600 hover:bg-slate-50 rounded-xl transition-all">
+ <button data-testid="transfer-button" onClick={() => onBack ? onBack() : setCurrentPage('accounts')} className="lg:!hidden p-2 text-slate-600 hover:bg-slate-50 rounded-xl transition-all">
  <ArrowLeft size={20} />
  </button>
  <h1 className="text-xl font-black text-slate-900 tracking-tight leading-none">Internal Transfer</h1>
  </div>
  
  <div className="flex items-center gap-3">
- <button onClick={() => onBack ? onBack() : setCurrentPage('accounts')} className="hidden sm:block text-[10px] font-black uppercase text-slate-400 hover:text-slate-600 tracking-widest px-4">Cancel</button>
- <button 
+ <button data-testid="transfer-cancel" onClick={() => onBack ? onBack() : setCurrentPage('accounts')} className="hidden sm:block text-[10px] font-black uppercase text-slate-400 hover:text-slate-600 tracking-widest px-4">Cancel</button>
+ <button data-testid="transfer-complete-transfer" 
  onClick={handleSubmit}
  disabled={isSubmitting || !amountNum}
  className="bg-indigo-600 text-white px-6 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-indigo-100 hover:bg-indigo-700 active:scale-95 transition-all flex items-center gap-2 disabled:opacity-50"
@@ -177,7 +177,7 @@ export const Transfer: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
  <div className="grid grid-cols-2 gap-4">
  <div className="space-y-1">
  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Transfer From</label>
- <SearchableDropdown
+ <SearchableDropdown testId="transfer-source-account"
  options={accountOptions}
  value={String(formData.fromAccountId)}
  onChange={val => setFormData(prev => ({ ...prev, fromAccountId: parseInt(val) }))}
@@ -187,7 +187,7 @@ export const Transfer: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
  </div>
  <div className="space-y-1">
  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Transfer To</label>
- <SearchableDropdown
+ <SearchableDropdown testId="transfer-target-account"
  options={accountOptions.filter(o => o.value !== String(formData.fromAccountId))}
  value={String(formData.toAccountId)}
  onChange={val => setFormData(prev => ({ ...prev, toAccountId: parseInt(val) }))}
@@ -199,7 +199,7 @@ export const Transfer: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
 
  <div className="space-y-1">
  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Note / Reference (Optional)</label>
- <input 
+ <input data-testid="transfer-e-g-monthly-savings" 
  type="text" 
  value={formData.description} 
  onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))} 
@@ -228,7 +228,7 @@ export const Transfer: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
  <span className="text-[9px] font-black text-slate-300 uppercase tracking-[0.2em] mb-2">Transfer Amount</span>
  <div className="flex items-center gap-3">
  <span className="text-3xl font-black text-slate-200 uppercase">{currency}</span>
- <input 
+ <input data-testid="transfer-0-00" 
  type="number" 
  value={amountStr} 
  onChange={e => { setAmountStr(e.target.value); setFormData(prev => ({ ...prev, amount: parseFloat(e.target.value) || 0 })); }}

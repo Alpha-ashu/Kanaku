@@ -137,7 +137,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ onBack, onGetStarted, 
  ))}
  </div>
 
- <button
+ <button data-testid={`pricing-page-button-${i}`}
  onClick={onGetStarted}
  className={`w-full py-4 rounded-2xl font-bold text-sm transition-all hover:scale-[1.02] active:scale-[0.98] ${p.popular
  ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-xl shadow-violet-200'

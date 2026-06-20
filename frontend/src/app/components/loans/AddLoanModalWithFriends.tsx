@@ -102,7 +102,7 @@ export const AddLoanModalWithFriends: React.FC<AddLoanModalWithFriendsProps> = (
  onClose={onClose}
  maxWidth="max-w-md"
  >
- <form onSubmit={handleSubmit} className="space-y-5">
+ <form data-testid="add-loan-modal-with-form" onSubmit={handleSubmit} className="space-y-5">
  {/* Loan Type */}
  <div>
  <label className="block text-sm font-semibold text-gray-700 mb-2">Loan Type</label>

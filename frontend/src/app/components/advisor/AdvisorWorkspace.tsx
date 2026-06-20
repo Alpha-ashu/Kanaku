@@ -51,7 +51,7 @@ export const AdvisorWorkspace: React.FC = () => {
  <Briefcase size={48} className="mx-auto text-gray-300 mb-4" />
  <h2 className="text-2xl font-bold text-gray-900 mb-2">Advisor Access Only</h2>
  <p className="text-gray-500 mb-6">This workspace is for approved financial advisors.</p>
- <button onClick={() => setCurrentPage('book-advisor')} className="px-5 py-2.5 bg-indigo-600 text-white rounded-xl font-bold text-sm">Apply as Advisor</button>
+ <button data-testid="advisor-workspace-apply-as-advisor" onClick={() => setCurrentPage('book-advisor')} className="px-5 py-2.5 bg-indigo-600 text-white rounded-xl font-bold text-sm">Apply as Advisor</button>
  </div>
  </div>
  );
@@ -137,7 +137,7 @@ export const AdvisorWorkspace: React.FC = () => {
  {/* Header */}
  <div className="bg-transparent border-b border-gray-100 px-4 lg:px-8 py-4 sticky top-0 z-10">
  <div className="max-w-5xl mx-auto flex items-center gap-3">
- <button onClick={() => setCurrentPage('dashboard')} className="p-2 hover:bg-gray-100 rounded-xl md:!hidden"><ChevronLeft size={20} className="text-gray-600" /></button>
+ <button data-testid="advisor-workspace-button" onClick={() => setCurrentPage('dashboard')} className="p-2 hover:bg-gray-100 rounded-xl md:!hidden"><ChevronLeft size={20} className="text-gray-600" /></button>
  <div className="flex items-center gap-4">
  <h1 className="text-xl font-black text-slate-900 tracking-tight leading-none">Advisor Workspace</h1>
  </div>

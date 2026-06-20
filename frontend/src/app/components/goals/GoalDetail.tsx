@@ -273,7 +273,7 @@ export const GoalDetail: React.FC = () => {
  <div className="space-y-6">
  <div className="bg-white rounded-[32px] p-6 lg:p-8 ring-1 ring-gray-100 shadow-[0_8px_40px_-12px_rgba(0,0,0,0.05)]">
  <h3 className="text-xl font-bold text-gray-900 mb-6">Add Contribution</h3>
- <form onSubmit={addContribution} className="space-y-4">
+ <form data-testid="goal-detail-form" onSubmit={addContribution} className="space-y-4">
  <div>
  <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Amount</label>
  <input
@@ -296,7 +296,7 @@ export const GoalDetail: React.FC = () => {
  className="w-full bg-white border-0 rounded-2xl px-4 py-3.5 text-gray-900 font-medium focus:ring-2 focus:ring-gray-900 focus:bg-white transition-all appearance-none"
  >
  {accounts.map((account) => (
- <option key={account.id} value={account.id}>{account.name}</option>
+ <option data-testid={`goal-detail-option-${account.id}`} key={account.id} value={account.id}>{account.name}</option>
  ))}
  </select>
  </div>
@@ -310,7 +310,7 @@ export const GoalDetail: React.FC = () => {
  className="w-full bg-white border-0 rounded-2xl px-4 py-3.5 text-gray-900 font-medium focus:ring-2 focus:ring-gray-900 focus:bg-white transition-all appearance-none"
  >
  {(goal.members || []).map((member) => (
- <option key={member.name} value={member.name}>{member.name}</option>
+ <option data-testid={`goal-detail-option-2-${member.name}`} key={member.name} value={member.name}>{member.name}</option>
  ))}
  </select>
  </div>
@@ -336,7 +336,7 @@ export const GoalDetail: React.FC = () => {
  <div className="bg-white rounded-[32px] p-6 lg:p-8 ring-1 ring-gray-100 shadow-[0_8px_40px_-12px_rgba(0,0,0,0.05)]">
  <div className="flex items-center justify-between mb-6">
  <h3 className="text-xl font-bold text-gray-900">Group Members</h3>
- <button className="text-sm font-medium text-gray-500 hover:text-gray-900 flex items-center gap-2">
+ <button data-testid="goal-detail-chat" className="text-sm font-medium text-gray-500 hover:text-gray-900 flex items-center gap-2">
  <MessageSquare size={16} /> Chat
  </button>
  </div>

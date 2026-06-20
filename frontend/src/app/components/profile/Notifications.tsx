@@ -254,7 +254,7 @@ export const Notifications: React.FC = () => {
 
  <div className="flex-1 min-w-0">
  <div className="flex items-start justify-between gap-3">
- <button
+ <button data-testid={`notifications-button-${notification.id ?? `${notification.title}-${notification.createdAt.toString()}`}`}
  type="button"
  onClick={() => handleOpenNotification(notification)}
  className="flex-1 text-left"

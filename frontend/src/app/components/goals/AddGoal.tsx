@@ -282,8 +282,8 @@ export const AddGoal: React.FC = () => {
  <input type="text" value={memberInput.name} onChange={e => setMemberInput(prev => ({ ...prev, name: e.target.value }))} data-testid="goals-create-member-name-input" className="bg-white border-none rounded-lg px-3 py-2 text-xs font-bold" placeholder="Friend Name" />
  <div className="flex gap-2">
  <select value={memberInput.contactType} onChange={e => setMemberInput(prev => ({ ...prev, contactType: e.target.value as any }))} aria-label="Contact type" data-testid="goals-create-member-contact-type" className="bg-white border-none rounded-lg px-2 text-[10px] font-black uppercase">
- <option value="email">Email</option>
- <option value="phone">Phone</option>
+ <option data-testid="add-goal-email" value="email">Email</option>
+ <option data-testid="add-goal-phone" value="phone">Phone</option>
  </select>
  <input type="text" value={memberInput.contactValue} onChange={e => setMemberInput(prev => ({ ...prev, contactValue: e.target.value }))} data-testid="goals-create-member-contact-input" className="flex-1 bg-white border-none rounded-lg px-3 py-2 text-xs font-bold" placeholder="Contact..." />
  </div>

@@ -71,7 +71,7 @@ const ProfileSkeleton: React.FC = () => {
               </div>
 
               {/* Basic Info Card Skeleton */}
-              <Card variant="flat" className="overflow-hidden relative shadow-[0px_1px_2px_rgba(0,0,0,0.04),_0px_4px_12px_rgba(0,0,0,0.06)] bg-white border border-gray-200 rounded-2xl p-6 lg:p-8">
+              <Card data-testid="user-profile-card" variant="flat" className="overflow-hidden relative shadow-[0px_1px_2px_rgba(0,0,0,0.04),_0px_4px_12px_rgba(0,0,0,0.06)] bg-white border border-gray-200 rounded-2xl p-6 lg:p-8">
                 <div className="flex items-center justify-between mb-5">
                   <Skeleton className="h-6 w-36 rounded-lg" />
                   <Skeleton className="h-8 w-14 rounded-xl" />
@@ -87,7 +87,7 @@ const ProfileSkeleton: React.FC = () => {
               </Card>
 
               {/* Location Card Skeleton */}
-              <Card variant="flat" className="overflow-hidden relative shadow-[0px_1px_2px_rgba(0,0,0,0.04),_0px_4px_12px_rgba(0,0,0,0.06)] bg-white border border-gray-200 rounded-2xl p-6 lg:p-8">
+              <Card data-testid="user-profile-card-2" variant="flat" className="overflow-hidden relative shadow-[0px_1px_2px_rgba(0,0,0,0.04),_0px_4px_12px_rgba(0,0,0,0.06)] bg-white border border-gray-200 rounded-2xl p-6 lg:p-8">
                 <div className="flex items-center justify-between mb-5">
                   <Skeleton className="h-6 w-44 rounded-lg" />
                   <Skeleton className="h-8 w-14 rounded-xl" />
@@ -106,7 +106,7 @@ const ProfileSkeleton: React.FC = () => {
             {/* RIGHT COLUMN */}
             <div className="space-y-6 min-w-0">
               {/* Secure Info Card Skeleton */}
-              <Card variant="flat" className="overflow-hidden relative shadow-[0px_1px_2px_rgba(0,0,0,0.04),_0px_4px_12px_rgba(0,0,0,0.06)] bg-white border border-gray-200 rounded-2xl p-6 lg:p-8">
+              <Card data-testid="user-profile-card-3" variant="flat" className="overflow-hidden relative shadow-[0px_1px_2px_rgba(0,0,0,0.04),_0px_4px_12px_rgba(0,0,0,0.06)] bg-white border border-gray-200 rounded-2xl p-6 lg:p-8">
                 <Skeleton className="h-6 w-40 rounded-lg mb-5" />
                 <div className="mb-5 pb-5 border-b border-gray-200">
                   <div className="flex items-center justify-between mb-4">
@@ -137,7 +137,7 @@ const ProfileSkeleton: React.FC = () => {
               </Card>
 
               {/* Security & PIN Card Skeleton */}
-              <Card variant="flat" className="overflow-hidden relative shadow-[0px_1px_2px_rgba(0,0,0,0.04),_0px_4px_12px_rgba(0,0,0,0.06)] bg-white border border-gray-200 rounded-2xl p-6 lg:p-8">
+              <Card data-testid="user-profile-card-4" variant="flat" className="overflow-hidden relative shadow-[0px_1px_2px_rgba(0,0,0,0.04),_0px_4px_12px_rgba(0,0,0,0.06)] bg-white border border-gray-200 rounded-2xl p-6 lg:p-8">
                 <Skeleton className="h-6 w-32 rounded-lg mb-4" />
                 <div className="p-4 bg-white rounded-xl border border-gray-200 flex items-center justify-between">
                   <div className="space-y-1">
@@ -150,7 +150,7 @@ const ProfileSkeleton: React.FC = () => {
 
               {/* Lower grid items skeleton */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-stretch">
-                <Card className="bg-white border border-gray-200 rounded-2xl p-6 h-full flex flex-col justify-between space-y-4">
+                <Card data-testid="user-profile-card-5" className="bg-white border border-gray-200 rounded-2xl p-6 h-full flex flex-col justify-between space-y-4">
                   <div className="flex items-start gap-3">
                     <Skeleton className="w-9 h-9 rounded-full" />
                     <div className="space-y-1 flex-1">
@@ -160,7 +160,7 @@ const ProfileSkeleton: React.FC = () => {
                   </div>
                   <Skeleton className="h-10 w-full rounded-xl" />
                 </Card>
-                <Card className="bg-red-50 border border-red-200 rounded-2xl p-6 h-full flex flex-col justify-between space-y-4">
+                <Card data-testid="user-profile-card-6" className="bg-red-50 border border-red-200 rounded-2xl p-6 h-full flex flex-col justify-between space-y-4">
                   <div className="flex items-start gap-3">
                     <Skeleton className="w-9 h-9 rounded-full" />
                     <div className="space-y-1 flex-1">
@@ -923,7 +923,7 @@ export const UserProfile: React.FC = () => {
   <p className="text-gray-500 mb-6">
   The User Profile and account settings feature is currently disabled by the system administrator.
   </p>
-  <Button 
+  <Button data-testid="user-profile-go-to-dashboard" 
   onClick={() => setCurrentPage('dashboard')}
   className="w-full bg-black text-white hover:bg-gray-900 rounded-full py-3 font-semibold transition-all shadow-md"
   >
@@ -976,7 +976,7 @@ export const UserProfile: React.FC = () => {
  {!profileData.jobType && <li>Job Type &amp; Monthly Income</li>}
  </ul>
  </div>
- <button
+ <button data-testid="user-profile-edit-profile"
  onClick={() => setIsEditingBasic(true)}
  className="shrink-0 mt-1 bg-white text-blue-700 hover:bg-blue-50 font-semibold text-sm px-4 py-2 rounded-xl transition-colors"
  >
@@ -1105,7 +1105,7 @@ export const UserProfile: React.FC = () => {
  animate={{ opacity: 1, y: 0 }}
  transition={{ delay: 0.1 }}
  >
- <Card variant="flat" className="overflow-hidden relative shadow-[0px_1px_2px_rgba(0,0,0,0.04),_0px_4px_12px_rgba(0,0,0,0.06)] bg-white border border-gray-200 rounded-2xl p-6 lg:p-8">
+ <Card data-testid="user-profile-card-7" variant="flat" className="overflow-hidden relative shadow-[0px_1px_2px_rgba(0,0,0,0.04),_0px_4px_12px_rgba(0,0,0,0.06)] bg-white border border-gray-200 rounded-2xl p-6 lg:p-8">
  {/* Header row */}
  <div className="flex items-center justify-between mb-5">
  <h3 className="text-lg font-bold text-gray-900">Basic Information</h3>
@@ -1216,18 +1216,18 @@ export const UserProfile: React.FC = () => {
  id="gender"
  name="gender"
  >
- <option value="">Select gender</option>
- <option value="male">Male</option>
- <option value="female">Female</option>
- <option value="non-binary">Non-binary</option>
- <option value="prefer-not-to-say">Prefer not to say</option>
+ <option data-testid="user-profile-select-gender" value="">Select gender</option>
+ <option data-testid="user-profile-male" value="male">Male</option>
+ <option data-testid="user-profile-female" value="female">Female</option>
+ <option data-testid="user-profile-non-binary" value="non-binary">Non-binary</option>
+ <option data-testid="user-profile-prefer-not-to-say" value="prefer-not-to-say">Prefer not to say</option>
  </select>
  </div>
  <div>
   <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide flex items-center gap-1.5">
   <Calendar size={12} className="text-gray-400" /> Date of Birth
   </label>
-  <div 
+  <div data-testid="user-profile-div" 
      className="relative group w-full" 
      onClick={(e) => {
        const input = e.currentTarget.querySelector('input');
@@ -1280,10 +1280,10 @@ export const UserProfile: React.FC = () => {
  id="jobType"
  name="jobType"
  >
- <option value="">Select job type</option>
- <option value="salaried">Salaried / Employed</option>
- <option value="businessman">Self-employed / Business Owner</option>
- <option value="freelancer">Freelancer</option>
+ <option data-testid="user-profile-select-job-type" value="">Select job type</option>
+ <option data-testid="user-profile-salaried-employed" value="salaried">Salaried / Employed</option>
+ <option data-testid="user-profile-self-employed-business-owner" value="businessman">Self-employed / Business Owner</option>
+ <option data-testid="user-profile-freelancer" value="freelancer">Freelancer</option>
  </select>
  </div>
  <div>
@@ -1322,7 +1322,7 @@ export const UserProfile: React.FC = () => {
  animate={{ opacity: 1, y: 0 }}
  transition={{ delay: 0.15 }}
  >
- <Card variant="flat" className="overflow-hidden relative shadow-[0px_1px_2px_rgba(0,0,0,0.04),_0px_4px_12px_rgba(0,0,0,0.06)] bg-white border border-gray-200 rounded-2xl p-6 lg:p-8">
+ <Card data-testid="user-profile-card-8" variant="flat" className="overflow-hidden relative shadow-[0px_1px_2px_rgba(0,0,0,0.04),_0px_4px_12px_rgba(0,0,0,0.06)] bg-white border border-gray-200 rounded-2xl p-6 lg:p-8">
  {/* Header row */}
  <div className="flex items-center justify-between mb-5">
  <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
@@ -1455,16 +1455,16 @@ export const UserProfile: React.FC = () => {
  data-testid="profile-currency-select"
  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm bg-white"
  >
- <option value="USD">USD - US Dollar</option>
- <option value="EUR">EUR - Euro</option>
- <option value="GBP">GBP - British Pound</option>
- <option value="INR">INR - Indian Rupee</option>
- <option value="JPY">JPY - Japanese Yen</option>
- <option value="AUD">AUD - Australian Dollar</option>
- <option value="CAD">CAD - Canadian Dollar</option>
- <option value="CHF">CHF - Swiss Franc</option>
- <option value="CNY">CNY - Chinese Yuan</option>
- <option value="SGD">SGD - Singapore Dollar</option>
+ <option data-testid="user-profile-usd-us-dollar" value="USD">USD - US Dollar</option>
+ <option data-testid="user-profile-eur-euro" value="EUR">EUR - Euro</option>
+ <option data-testid="user-profile-gbp-british-pound" value="GBP">GBP - British Pound</option>
+ <option data-testid="user-profile-inr-indian-rupee" value="INR">INR - Indian Rupee</option>
+ <option data-testid="user-profile-jpy-japanese-yen" value="JPY">JPY - Japanese Yen</option>
+ <option data-testid="user-profile-aud-australian-dollar" value="AUD">AUD - Australian Dollar</option>
+ <option data-testid="user-profile-cad-canadian-dollar" value="CAD">CAD - Canadian Dollar</option>
+ <option data-testid="user-profile-chf-swiss-franc" value="CHF">CHF - Swiss Franc</option>
+ <option data-testid="user-profile-cny-chinese-yuan" value="CNY">CNY - Chinese Yuan</option>
+ <option data-testid="user-profile-sgd-singapore-dollar" value="SGD">SGD - Singapore Dollar</option>
  </select>
  <p className="mt-2 text-[10px] text-gray-400 italic">
  Currency updates automatically based on selected city, but can be overridden manually.
@@ -1495,7 +1495,7 @@ export const UserProfile: React.FC = () => {
  animate={{ opacity: 1, y: 0 }}
  transition={{ delay: 0.2 }}
  >
- <Card variant="flat" className="overflow-hidden relative shadow-[0px_1px_2px_rgba(0,0,0,0.04),_0px_4px_12px_rgba(0,0,0,0.06)] bg-white border border-gray-200 rounded-2xl p-6 lg:p-8">
+ <Card data-testid="user-profile-card-9" variant="flat" className="overflow-hidden relative shadow-[0px_1px_2px_rgba(0,0,0,0.04),_0px_4px_12px_rgba(0,0,0,0.06)] bg-white border border-gray-200 rounded-2xl p-6 lg:p-8">
  <h3 className="text-lg font-bold text-gray-900 mb-5 flex items-center gap-2">
  <Lock size={20} className="text-orange-600" />
  Secure Information
@@ -1749,7 +1749,7 @@ export const UserProfile: React.FC = () => {
  animate={{ opacity: 1, y: 0 }}
  transition={{ delay: 0.35 }}
  >
- <Card variant="flat" className="overflow-hidden relative shadow-[0px_1px_2px_rgba(0,0,0,0.04),_0px_4px_12px_rgba(0,0,0,0.06)] bg-white border border-gray-200 rounded-2xl p-6 lg:p-8">
+ <Card data-testid="user-profile-card-10" variant="flat" className="overflow-hidden relative shadow-[0px_1px_2px_rgba(0,0,0,0.04),_0px_4px_12px_rgba(0,0,0,0.06)] bg-white border border-gray-200 rounded-2xl p-6 lg:p-8">
  <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
  <KeyRound size={20} className="text-blue-600" />
  Security &amp; PIN
@@ -1772,7 +1772,7 @@ export const UserProfile: React.FC = () => {
  </Button>
  </div>
  ) : (
- <form
+ <form data-testid="user-profile-form"
   onSubmit={(e) => {
     e.preventDefault();
     if (!isPinLoading && currentPin.length === 6 && newPin.length === 6 && newPin === confirmNewPin && !isPinWeak) {
@@ -1813,7 +1813,7 @@ export const UserProfile: React.FC = () => {
       : 'border-green-200 focus:border-green-500 focus:ring-2 focus:ring-green-100 bg-white'
   }`}
   />
-  <button
+  <button data-testid="user-profile-button"
   type="button"
   onClick={() => setShowNewPin(!showNewPin)}
   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
@@ -1874,7 +1874,7 @@ export const UserProfile: React.FC = () => {
  animate={{ opacity: 1, y: 0 }}
  transition={{ delay: 0.4 }}
  >
- <Card className="bg-white border border-gray-200 rounded-2xl p-6 h-full flex flex-col justify-between">
+ <Card data-testid="user-profile-card-11" className="bg-white border border-gray-200 rounded-2xl p-6 h-full flex flex-col justify-between">
  <div className="flex items-start gap-3 mb-5">
  <div className="w-9 h-9 bg-orange-50 rounded-full flex items-center justify-center shrink-0 mt-0.5">
  <LogOut size={15} className="text-orange-500" />
@@ -1901,7 +1901,7 @@ export const UserProfile: React.FC = () => {
  animate={{ opacity: 1, y: 0 }}
  transition={{ delay: 0.5 }}
  >
- <Card className="bg-red-50 border border-red-200 rounded-2xl p-6 h-full flex flex-col justify-between">
+ <Card data-testid="user-profile-card-12" className="bg-red-50 border border-red-200 rounded-2xl p-6 h-full flex flex-col justify-between">
  <div className="flex items-start gap-3 mb-4">
  <div className="w-9 h-9 bg-red-100 rounded-full flex items-center justify-center shrink-0 mt-0.5">
  <ShieldAlert size={15} className="text-red-600" />

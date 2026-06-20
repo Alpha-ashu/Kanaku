@@ -207,7 +207,7 @@ export const BookAdvisor: React.FC = () => {
  {/* High Density Header */}
  <header className="flex items-center justify-between px-4 lg:px-6 py-4 bg-white border-b border-slate-100 shrink-0">
  <div className="flex items-center gap-3">
- <button type="button" aria-label="Go to dashboard" onClick={() => setCurrentPage('dashboard')} className="lg:!hidden p-2 text-slate-600 hover:bg-slate-50 rounded-xl transition-all">
+ <button data-testid="book-advisor-go-to-dashboard" type="button" aria-label="Go to dashboard" onClick={() => setCurrentPage('dashboard')} className="lg:!hidden p-2 text-slate-600 hover:bg-slate-50 rounded-xl transition-all">
  <ChevronLeft size={20} />
  </button>
  <div className="flex items-center gap-4">
@@ -230,7 +230,7 @@ export const BookAdvisor: React.FC = () => {
  {applyingAsAdvisor ? <Loader2 size={14} className="animate-spin" /> : <Shield size={14} />}
  Become an Advisor
  </button>
- <button 
+ <button data-testid="book-advisor-close" 
  onClick={() => setCurrentPage('dashboard')} 
  className="hidden sm:block text-[10px] font-black uppercase text-slate-400 hover:text-slate-600 tracking-widest px-4"
  >
@@ -276,7 +276,7 @@ export const BookAdvisor: React.FC = () => {
  </div>
  <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight">Database Offline</h3>
  <p className="text-xs text-slate-500 mt-2 max-w-xs">We're having trouble connecting to the advisor network. Please try again in a few minutes.</p>
- <button onClick={fetchData} className="mt-4 flex items-center gap-2 px-4 py-2 bg-white rounded-xl text-[10px] font-black uppercase tracking-widest border border-slate-200 hover:bg-slate-50 transition-all">
+ <button data-testid="book-advisor-retry-connection" onClick={fetchData} className="mt-4 flex items-center gap-2 px-4 py-2 bg-white rounded-xl text-[10px] font-black uppercase tracking-widest border border-slate-200 hover:bg-slate-50 transition-all">
  <RefreshCw size={12} /> Retry Connection
  </button>
  </div>
@@ -356,7 +356,7 @@ export const BookAdvisor: React.FC = () => {
    <p className="text-[10px] text-slate-500 line-clamp-2 mb-3 leading-relaxed">{advisor.advisorApplication.bio}</p>
  )}
 
- <button className="w-full py-2.5 bg-slate-900 text-white rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 group">
+ <button data-testid={`book-advisor-select-advisor-${advisor.id}`} className="w-full py-2.5 bg-slate-900 text-white rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 group">
  Select Advisor <ArrowRight size={12} className="group-hover:translate-x-1 transition-transform" />
  </button>
  </motion.div>
@@ -388,7 +388,7 @@ export const BookAdvisor: React.FC = () => {
  <p className="text-[10px] font-black truncate max-w-[150px]">{selectedAdvisor.name}</p>
  </div>
  </div>
- <button type="button" aria-label="Close booking panel" onClick={() => setSelectedAdvisor(null)} className="p-1.5 hover:bg-white/10 rounded-lg transition-colors">
+ <button data-testid="book-advisor-close-booking-panel" type="button" aria-label="Close booking panel" onClick={() => setSelectedAdvisor(null)} className="p-1.5 hover:bg-white/10 rounded-lg transition-colors">
  <X size={16} />
  </button>
  </div>
@@ -511,7 +511,7 @@ export const BookAdvisor: React.FC = () => {
  <div className="premium-glass-card flex-1 flex flex-col p-4 lg:overflow-hidden">
  <div className="flex items-center justify-between mb-4">
  <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Recent Activity</h3>
- <button type="button" aria-label="Refresh bookings" onClick={fetchData} className="text-indigo-600 hover:rotate-180 transition-transform duration-500">
+ <button data-testid="book-advisor-refresh-bookings" type="button" aria-label="Refresh bookings" onClick={fetchData} className="text-indigo-600 hover:rotate-180 transition-transform duration-500">
  <RefreshCw size={12} />
  </button>
  </div>
@@ -558,7 +558,7 @@ export const BookAdvisor: React.FC = () => {
  {/* Apply as Advisor Modal */}
  <AnimatePresence>
  {showApplyModal && (
-   <motion.div
+   <motion.div data-testid="book-advisor-div"
      initial={{ opacity: 0 }}
      animate={{ opacity: 1 }}
      exit={{ opacity: 0 }}
@@ -576,7 +576,7 @@ export const BookAdvisor: React.FC = () => {
            <p className="text-[8px] font-black uppercase tracking-widest text-white/60">Join Our Network</p>
            <h3 className="font-black text-lg tracking-tight">Become an Advisor</h3>
          </div>
-         <button onClick={() => setShowApplyModal(false)} className="p-2 hover:bg-white/10 rounded-xl transition-colors">
+         <button data-testid="book-advisor-button" onClick={() => setShowApplyModal(false)} className="p-2 hover:bg-white/10 rounded-xl transition-colors">
            <X size={18} />
          </button>
        </div>

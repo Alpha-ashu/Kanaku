@@ -112,7 +112,7 @@ export const TransferModal: React.FC<TransferModalProps> = ({
  <h3 className="text-xl font-bold">Transfer Money</h3>
  </div>
 
- <form onSubmit={handleSubmit} className="space-y-4">
+ <form data-testid="transfer-modal-form" onSubmit={handleSubmit} className="space-y-4">
  <div className="bg-blue-50 p-3 rounded-lg mb-4">
  <p className="text-sm text-blue-700 font-medium"> Transfer Between Your Own Accounts</p>
  </div>
@@ -122,7 +122,7 @@ export const TransferModal: React.FC<TransferModalProps> = ({
  <label className="block text-sm font-medium text-gray-700 mb-1">
  From Account
  </label>
- <select
+ <select data-testid="transfer-modal-select"
  value={formData.fromAccountId}
  onChange={(e) =>
  setFormData({ ...formData, fromAccountId: parseInt(e.target.value) })
@@ -130,9 +130,9 @@ export const TransferModal: React.FC<TransferModalProps> = ({
  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
  required
  >
- <option value={0}>Select source account</option>
+ <option data-testid="transfer-modal-select-source-account" value={0}>Select source account</option>
  {activeAccounts.map((account: Account) => (
- <option key={account.id} value={account.id}>
+ <option data-testid={`transfer-modal-option-${account.id}`} key={account.id} value={account.id}>
  {account.name} ({currency} {account.balance.toFixed(2)})
  </option>
  ))}
@@ -144,7 +144,7 @@ export const TransferModal: React.FC<TransferModalProps> = ({
  <label className="block text-sm font-medium text-gray-700 mb-1">
  To Account
  </label>
- <select
+ <select data-testid="transfer-modal-select-2"
  value={formData.toAccountId}
  onChange={(e) =>
  setFormData({ ...formData, toAccountId: parseInt(e.target.value) })
@@ -152,11 +152,11 @@ export const TransferModal: React.FC<TransferModalProps> = ({
  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
  required
  >
- <option value={0}>Select destination account</option>
+ <option data-testid="transfer-modal-select-destination-account" value={0}>Select destination account</option>
  {activeAccounts
  .filter((acc: Account) => acc.id !== formData.fromAccountId)
  .map((account: Account) => (
- <option key={account.id} value={account.id}>
+ <option data-testid={`transfer-modal-option-2-${account.id}`} key={account.id} value={account.id}>
  {account.name} ({currency} {account.balance.toFixed(2)})
  </option>
  ))}
@@ -170,7 +170,7 @@ export const TransferModal: React.FC<TransferModalProps> = ({
  </label>
  <div className="flex items-center">
  <span className="text-gray-600 mr-2">{currency}</span>
- <input
+ <input data-testid="transfer-modal-0-00"
  type="number"
  step="0.01"
  value={formData.amount}
@@ -189,7 +189,7 @@ export const TransferModal: React.FC<TransferModalProps> = ({
  <label className="block text-sm font-medium text-gray-700 mb-1">
  Description (Optional)
  </label>
- <input
+ <input data-testid="transfer-modal-e-g-monthly-transfer"
  type="text"
  value={formData.description}
  onChange={(e) =>
@@ -202,14 +202,14 @@ export const TransferModal: React.FC<TransferModalProps> = ({
 
  {/* Buttons */}
  <div className="flex gap-3 pt-4">
- <button
+ <button data-testid="transfer-modal-cancel"
  type="button"
  onClick={onClose}
  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
  >
  Cancel
  </button>
- <button
+ <button data-testid="transfer-modal-transfer"
  type="submit"
  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
  >

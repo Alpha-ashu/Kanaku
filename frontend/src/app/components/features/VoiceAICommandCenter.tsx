@@ -541,7 +541,7 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
 
  return (
  <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 md:p-6 overflow-hidden">
- <motion.div 
+ <motion.div data-testid="voice-aicommand-center-div" 
  initial={{ opacity: 0 }}
  animate={{ opacity: 1 }}
  exit={{ opacity: 0 }}
@@ -601,7 +601,7 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
  <span className="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Account</span>
  <div className="relative mt-0 md:mt-1">
  <select value={selectedAccountId} onChange={(e) => setSelectedAccountId(Number(e.target.value))} className="bg-transparent text-slate-900 font-bold focus:outline-none appearance-none cursor-pointer pr-6 text-sm md:text-xl" data-testid="voice-ai-account-select">
- {accounts.map(acc => ( <option key={acc.id} value={acc.id}>{acc.name}</option> ))}
+ {accounts.map(acc => ( <option data-testid={`voice-aicommand-center-option-${acc.id}`} key={acc.id} value={acc.id}>{acc.name}</option> ))}
  </select>
  <div className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
  <ChevronRight className="rotate-90 w-4 h-4 md:w-5 md:h-5" />
@@ -685,7 +685,7 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
  data-testid={`voice-ai-action-category-select-${index}`}
  >
  {ALL_CATEGORIES.map(cat => (
- <option key={cat} value={cat}>{cat}</option>
+ <option data-testid={`voice-aicommand-center-option-2-${cat}`} key={cat} value={cat}>{cat}</option>
  ))}
  </select>
  ) : (

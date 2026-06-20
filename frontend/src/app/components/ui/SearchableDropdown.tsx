@@ -249,16 +249,16 @@ export const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
  className="flex-1 bg-transparent text-sm text-gray-900 outline-none placeholder:text-gray-400"
  />
  {query && (
- <button type="button" onClick={() => setQuery('')} className="text-gray-400 hover:text-gray-600">
+ <button data-testid="searchable-dropdown-button" type="button" onClick={() => setQuery('')} className="text-gray-400 hover:text-gray-600">
  <X size={12} />
  </button>
  )}
  </div>
  </div>
 
- <div ref={listRef} className="overflow-y-auto" style={{ maxHeight: '256px' }} role="listbox">
+ <div data-testid="searchable-dropdown-div" ref={listRef} className="overflow-y-auto" style={{ maxHeight: '256px' }} role="listbox">
  {allowCustom && query.trim() && !flatFiltered.some(o => o.label.toLowerCase() === query.toLowerCase()) && (
- <button
+ <button data-testid="searchable-dropdown-button-2"
  type="button"
  onClick={() => selectOption({ value: query, label: query })}
  className="w-full flex items-center gap-3 px-3 py-3 text-left transition-colors hover:bg-indigo-50 border-b border-gray-50"

@@ -25,7 +25,7 @@ function Alert({
  ...props
 }: React.ComponentProps<"div"> & VariantProps<typeof alertVariants>) {
  return (
- <div
+ <div data-testid="alert-div"
  data-slot="alert"
  role="alert"
  className={cn(alertVariants({ variant }), className)}

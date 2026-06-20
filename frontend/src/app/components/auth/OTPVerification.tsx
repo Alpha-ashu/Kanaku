@@ -211,7 +211,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = ({
  <div className="bg-white rounded-2xl shadow-xl w-full max-w-md">
  {/* Header */}
  <div className="p-6 border-b border-gray-200">
- <button
+ <button data-testid="otpverification-back"
  onClick={onBack}
  className="flex items-center text-gray-600 hover:text-gray-800 mb-4 transition-colors"
  >
@@ -244,7 +244,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = ({
 
  <div className="flex justify-center gap-2 mb-6">
  {otp.map((digit, index) => (
- <input
+ <input data-testid={`otpverification-input-${index}`}
  key={index}
  ref={el => { inputRefs.current[index] = el; }}
  type="text"
@@ -275,7 +275,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = ({
 
  {/* Manual verify button */}
  {!isLoading && otp.every(d => d !== '') && (
- <button
+ <button data-testid="otpverification-verify-email"
  onClick={() => handleVerifyOTP(otp.join(''))}
  className="w-full py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors mb-4"
  >
@@ -289,7 +289,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = ({
  {resendAttempts >= maxResendAttempts ? (
  <p className="text-sm text-red-500">Maximum resend attempts reached. Please wait before retrying.</p>
  ) : (
- <button
+ <button data-testid="otpverification-button"
  onClick={handleResendOTP}
  disabled={resendCooldown > 0 || isResending}
  className="text-sm text-blue-600 hover:text-blue-700 font-semibold disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"

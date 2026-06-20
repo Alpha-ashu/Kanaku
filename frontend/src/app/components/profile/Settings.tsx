@@ -436,16 +436,16 @@ export const Settings: React.FC = () => {
  aria-label="Select language"
  data-testid="settings-language-select"
  >
- <option value="en">English</option>
- <option value="es">Español (Spanish)</option>
- <option value="fr">Français (French)</option>
- <option value="de">Deutsch (German)</option>
- <option value="it">Italiano (Italian)</option>
- <option value="pt">Português (Portuguese)</option>
- <option value="ja">日本語 (Japanese)</option>
- <option value="zh">中文 (Chinese)</option>
- <option value="hi">हिंदी (Hindi)</option>
- <option value="ar">العربية (Arabic)</option>
+ <option data-testid="settings-english" value="en">English</option>
+ <option data-testid="settings-espa-ol-spanish" value="es">Español (Spanish)</option>
+ <option data-testid="settings-fran-ais-french" value="fr">Français (French)</option>
+ <option data-testid="settings-deutsch-german" value="de">Deutsch (German)</option>
+ <option data-testid="settings-italiano-italian" value="it">Italiano (Italian)</option>
+ <option data-testid="settings-portugu-s-portuguese" value="pt">Português (Portuguese)</option>
+ <option data-testid="settings-japanese" value="ja">日本語 (Japanese)</option>
+ <option data-testid="settings-chinese" value="zh">中文 (Chinese)</option>
+ <option data-testid="settings-hindi" value="hi">हिंदी (Hindi)</option>
+ <option data-testid="settings-arabic" value="ar">العربية (Arabic)</option>
  </select>
  </div>
  </div>
@@ -464,15 +464,15 @@ export const Settings: React.FC = () => {
  aria-label="Select currency"
  data-testid="settings-currency-select"
  >
- <option value="USD">USD ($)</option>
- <option value="INR">INR (₹)</option>
- <option value="EUR">EUR (€)</option>
- <option value="GBP">GBP (£)</option>
- <option value="JPY">JPY (¥)</option>
- <option value="AUD">AUD (A$)</option>
- <option value="CAD">CAD (C$)</option>
- <option value="SGD">SGD (S$)</option>
- <option value="CHF">CHF (CHF)</option>
+ <option data-testid="settings-usd" value="USD">USD ($)</option>
+ <option data-testid="settings-inr" value="INR">INR (₹)</option>
+ <option data-testid="settings-eur" value="EUR">EUR (€)</option>
+ <option data-testid="settings-gbp" value="GBP">GBP (£)</option>
+ <option data-testid="settings-jpy" value="JPY">JPY (¥)</option>
+ <option data-testid="settings-aud-a" value="AUD">AUD (A$)</option>
+ <option data-testid="settings-cad-c" value="CAD">CAD (C$)</option>
+ <option data-testid="settings-sgd-s" value="SGD">SGD (S$)</option>
+ <option data-testid="settings-chf-chf" value="CHF">CHF (CHF)</option>
  </select>
  </div>
  </div>
@@ -608,7 +608,7 @@ export const Settings: React.FC = () => {
  <div className="p-6">
  <div className="flex items-center justify-between mb-4">
  <h4 className="font-medium text-gray-900">Backups ({backups.length})</h4>
- <button onClick={() => setShowBackups(!showBackups)} className="text-black hover:text-gray-700 text-sm font-medium">{showBackups ? 'Hide' : 'Show'}</button>
+ <button data-testid="settings-button" onClick={() => setShowBackups(!showBackups)} className="text-black hover:text-gray-700 text-sm font-medium">{showBackups ? 'Hide' : 'Show'}</button>
  </div>
  {showBackups && (
  <div className="space-y-2">
@@ -628,7 +628,7 @@ export const Settings: React.FC = () => {
  <div className="p-6">
  <div className="flex items-center justify-between mb-4">
  <h4 className="font-medium text-gray-900">Recent Imports ({importHistory.length})</h4>
- <button onClick={() => setShowImportHistory(!showImportHistory)} className="text-black hover:text-gray-700 text-sm font-medium">{showImportHistory ? 'Hide' : 'Show'}</button>
+ <button data-testid="settings-button-2" onClick={() => setShowImportHistory(!showImportHistory)} className="text-black hover:text-gray-700 text-sm font-medium">{showImportHistory ? 'Hide' : 'Show'}</button>
  </div>
  {showImportHistory && (
  <div className="space-y-3">

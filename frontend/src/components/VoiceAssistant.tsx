@@ -21,7 +21,7 @@ const Button: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement> & { variant
     ghost: 'hover:bg-slate-100 text-slate-900',
   };
   const sizes: Record<string, string> = { sm: 'text-sm px-3 py-1.5 rounded-md', lg: 'text-base px-4 py-2.5 rounded-xl', default: 'text-sm px-4 py-2 rounded-lg' };
-  return <button className={`${base} ${variants[variant]} ${sizes[size ?? 'default']} ${className}`} {...rest}>{children}</button>;
+  return <button data-testid="voice-assistant-button" className={`${base} ${variants[variant]} ${sizes[size ?? 'default']} ${className}`} {...rest}>{children}</button>;
 };
 
 interface VoiceAssistantProps {
@@ -55,7 +55,7 @@ export const VoiceAssistant: React.FC<VoiceAssistantProps> = ({
 
   if (!isSupported) {
     return (
-      <Card className="p-4 border-yellow-200 bg-yellow-50">
+      <Card data-testid="voice-assistant-card" className="p-4 border-yellow-200 bg-yellow-50">
         <p className="text-sm text-yellow-800">
           Voice assistant is not supported on your browser. Please use Chrome, Edge, or Safari.
         </p>
@@ -122,9 +122,9 @@ export const VoiceAssistant: React.FC<VoiceAssistantProps> = ({
   return (
     <div className="w-full space-y-4">
       {/* Microphone Control */}
-      <Card className="p-4">
+      <Card data-testid="voice-assistant-card-2" className="p-4">
         <div className="flex items-center gap-3 mb-4">
-          <Button
+          <Button data-testid="voice-assistant-button-2"
             onClick={isListening ? stopListening : startListening}
             variant={isListening ? 'destructive' : 'default'}
             size="lg"
@@ -164,7 +164,7 @@ export const VoiceAssistant: React.FC<VoiceAssistantProps> = ({
         {/* Control Buttons */}
         {finalText && (
           <div className="flex gap-2">
-            <Button
+            <Button data-testid="voice-assistant-continue"
               onClick={continueListening}
               variant="outline"
               size="sm"
@@ -172,7 +172,7 @@ export const VoiceAssistant: React.FC<VoiceAssistantProps> = ({
             >
               Continue
             </Button>
-            <Button
+            <Button data-testid="voice-assistant-button-3"
               onClick={clearText}
               variant="outline"
               size="sm"
@@ -186,7 +186,7 @@ export const VoiceAssistant: React.FC<VoiceAssistantProps> = ({
 
       {/* Parsed Transactions Display */}
       {parsedCommand?.transactions && parsedCommand.transactions.length > 0 && (
-        <Card className="p-4 bg-blue-50 border-blue-200">
+        <Card data-testid="voice-assistant-card-3" className="p-4 bg-blue-50 border-blue-200">
           <h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
             <Plus className="w-4 h-4" />
             Transactions to Create ({parsedCommand.transactions.length})
@@ -205,7 +205,7 @@ export const VoiceAssistant: React.FC<VoiceAssistantProps> = ({
               </div>
             ))}
           </div>
-          <Button
+          <Button data-testid="voice-assistant-button-4"
             onClick={handleCreateTransactions}
             variant="default"
             className="w-full"
@@ -218,7 +218,7 @@ export const VoiceAssistant: React.FC<VoiceAssistantProps> = ({
 
       {/* Parsed Group Expense Display */}
       {parsedCommand?.groupExpenses && parsedCommand.groupExpenses.length > 0 && (
-        <Card className="p-4 bg-purple-50 border-purple-200">
+        <Card data-testid="voice-assistant-card-4" className="p-4 bg-purple-50 border-purple-200">
           <h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
             <Plus className="w-4 h-4" />
             Group Expense to Create
@@ -242,7 +242,7 @@ export const VoiceAssistant: React.FC<VoiceAssistantProps> = ({
               </div>
             </div>
           ))}
-          <Button
+          <Button data-testid="voice-assistant-button-5"
             onClick={handleCreateGroupExpense}
             variant="default"
             className="w-full bg-purple-600 hover:bg-purple-700"
@@ -255,7 +255,7 @@ export const VoiceAssistant: React.FC<VoiceAssistantProps> = ({
 
       {/* Help Text */}
       {!finalText && !interimText && (
-        <Card className="p-3 bg-gray-50 border-gray-200">
+        <Card data-testid="voice-assistant-card-5" className="p-3 bg-gray-50 border-gray-200">
           <p className="text-xs text-gray-600 mb-2">
             <strong>Try saying:</strong>
           </p>

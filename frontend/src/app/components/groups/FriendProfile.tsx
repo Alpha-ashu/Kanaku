@@ -106,7 +106,7 @@ export const FriendProfile: React.FC = () => {
     return (
       <CenteredLayout>
         <div className="space-y-4">
-          <button onClick={() => setCurrentPage('friends')} className="flex items-center gap-2 text-sm text-slate-600">
+          <button data-testid="friend-profile-back-to-friends" onClick={() => setCurrentPage('friends')} className="flex items-center gap-2 text-sm text-slate-600">
             <ArrowLeft size={16} /> Back to Friends
           </button>
           <div className="rounded-3xl border border-dashed border-gray-300 bg-white px-4 py-12 text-center">
@@ -121,7 +121,7 @@ export const FriendProfile: React.FC = () => {
     <CenteredLayout>
       <div className="space-y-6">
         <div className="flex items-center gap-3">
-          <button onClick={() => setCurrentPage('friends')} title="Back" className="p-2 text-slate-600 hover:bg-slate-50 rounded-xl transition-all">
+          <button data-testid="friend-profile-back" onClick={() => setCurrentPage('friends')} title="Back" className="p-2 text-slate-600 hover:bg-slate-50 rounded-xl transition-all">
             <ArrowLeft size={20} />
           </button>
           <h1 className="text-xl font-black text-slate-900 tracking-tight leading-none">Friend Profile</h1>
@@ -148,7 +148,7 @@ export const FriendProfile: React.FC = () => {
             </div>
             <p className="text-sm text-gray-500">{friend.email || friend.phone || 'No contact info'}</p>
           </div>
-          <Button variant="secondary" onClick={() => setEditing((v) => !v)} className="h-9 px-3 rounded-xl">
+          <Button data-testid="friend-profile-edit" variant="secondary" onClick={() => setEditing((v) => !v)} className="h-9 px-3 rounded-xl">
             <Pencil size={14} className="mr-1" /> Edit
           </Button>
         </div>
@@ -157,20 +157,20 @@ export const FriendProfile: React.FC = () => {
           <div className="rounded-3xl border border-gray-200 bg-white p-5 shadow-sm space-y-3">
             <div className="space-y-1">
               <label className="text-xs font-bold text-slate-400 uppercase tracking-wide">Name</label>
-              <input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} className="w-full bg-slate-50 rounded-xl py-2.5 px-3 text-sm font-medium" />
+              <input data-testid="friend-profile-input" value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} className="w-full bg-slate-50 rounded-xl py-2.5 px-3 text-sm font-medium" />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
                 <label className="text-xs font-bold text-slate-400 uppercase tracking-wide">Email</label>
-                <input value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} className="w-full bg-slate-50 rounded-xl py-2.5 px-3 text-sm font-medium" />
+                <input data-testid="friend-profile-input-2" value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} className="w-full bg-slate-50 rounded-xl py-2.5 px-3 text-sm font-medium" />
               </div>
               <div className="space-y-1">
                 <label className="text-xs font-bold text-slate-400 uppercase tracking-wide">Phone</label>
-                <input value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} className="w-full bg-slate-50 rounded-xl py-2.5 px-3 text-sm font-medium" />
+                <input data-testid="friend-profile-input-3" value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} className="w-full bg-slate-50 rounded-xl py-2.5 px-3 text-sm font-medium" />
               </div>
             </div>
             <p className="text-xs text-slate-400">Changes update across all expenses this friend is part of.</p>
-            <Button onClick={handleSave} disabled={saving} className="bg-gray-900 hover:bg-gray-800 text-white h-10 px-4 rounded-xl font-bold flex items-center gap-2">
+            <Button data-testid="friend-profile-save-changes" onClick={handleSave} disabled={saving} className="bg-gray-900 hover:bg-gray-800 text-white h-10 px-4 rounded-xl font-bold flex items-center gap-2">
               {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} Save Changes
             </Button>
           </div>

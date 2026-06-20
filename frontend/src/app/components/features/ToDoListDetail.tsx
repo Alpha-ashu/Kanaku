@@ -220,10 +220,10 @@ export const ToDoListDetail: React.FC = () => {
         className
       )}
     >
-      <option value="">Everyone</option>
-      <option value={currentUserId || 'me'}>{currentUserName} (You)</option>
+      <option data-testid="to-do-list-detail-everyone" value="">Everyone</option>
+      <option data-testid="to-do-list-detail-you" value={currentUserId || 'me'}>{currentUserName} (You)</option>
       {collaboratorOptions.map(c => (
-        <option key={c.userId || c.name} value={c.userId || c.name}>{c.name}</option>
+        <option data-testid={`to-do-list-detail-option-${c.userId || c.name}`} key={c.userId || c.name} value={c.userId || c.name}>{c.name}</option>
       ))}
     </select>
   );

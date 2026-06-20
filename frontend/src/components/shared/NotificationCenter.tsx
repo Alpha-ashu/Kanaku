@@ -82,7 +82,7 @@ function NotificationItem({
 
         <div className="flex items-center gap-1 flex-shrink-0">
           {!notification.isRead && (
-            <button
+            <button data-testid="notification-center-mark-as-read"
               onClick={() => onMarkAsRead(notification.id)}
               className="p-1 hover:bg-blue-200 rounded transition-colors"
               title="Mark as read"
@@ -92,7 +92,7 @@ function NotificationItem({
             </button>
           )}
 
-          <button
+          <button data-testid="notification-center-delete-notification"
             onClick={async () => {
               setIsDeleting(true);
               await onDelete(notification.id);
@@ -148,7 +148,7 @@ export function NotificationCenter({ badge = true }: NotificationCenterProps) {
   return (
     <div className="relative" ref={containerRef}>
       {/* Bell Icon Button */}
-      <button
+      <button data-testid="notification-center-notifications"
         onClick={() => setIsOpen(!isOpen)}
         className="relative p-2 hover:bg-gray-200 rounded-lg transition-colors"
         title="Notifications"
@@ -168,7 +168,7 @@ export function NotificationCenter({ badge = true }: NotificationCenterProps) {
           {/* Header */}
           <div className="p-4 border-b flex items-center justify-between bg-gray-50">
             <h2 className="font-semibold text-gray-900">Notifications</h2>
-            <button
+            <button data-testid="notification-center-close-notifications-panel"
               onClick={() => setIsOpen(false)}
               className="p-1 hover:bg-gray-200 rounded transition-colors"
               aria-label="Close notifications panel"
@@ -182,7 +182,7 @@ export function NotificationCenter({ badge = true }: NotificationCenterProps) {
             <div className="p-2 border-b flex items-center justify-between bg-gray-50">
               <div className="flex items-center gap-2">
                 {unreadCount > 0 && (
-                  <button
+                  <button data-testid="notification-center-mark-all-as-read"
                     onClick={() => markAllAsRead()}
                     className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
                   >
@@ -191,7 +191,7 @@ export function NotificationCenter({ badge = true }: NotificationCenterProps) {
                 )}
               </div>
 
-              <button
+              <button data-testid="notification-center-clear-all"
                 onClick={() => clearAllNotifications()}
                 className="text-xs px-2 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors"
               >

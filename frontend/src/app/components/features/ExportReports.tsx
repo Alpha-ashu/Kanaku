@@ -305,7 +305,7 @@ export const ExportReports: React.FC = () => {
  { value: 'investments', label: 'Investments' },
  { value: 'all', label: 'All Data' },
  ].map((option) => (
- <button
+ <button data-testid={`export-reports-export-data-${option.value}`}
  key={option.value}
  onClick={() =>
  setExportOptions({
@@ -338,7 +338,7 @@ export const ExportReports: React.FC = () => {
  { value: 'json', label: 'JSON', icon: <FileJson size={20} /> },
  { value: 'pdf', label: 'PDF', icon: <FileText size={20} /> },
  ].map((option) => (
- <button
+ <button data-testid={`export-reports-select-format-${option.value}`}
  key={option.value}
  onClick={() =>
  setExportOptions({
@@ -373,7 +373,7 @@ export const ExportReports: React.FC = () => {
  { value: 'month', label: 'This month' },
  { value: 'custom', label: 'Custom range' },
  ].map((option) => (
- <button
+ <button data-testid={`export-reports-select-date-range-${option.value}`}
  key={option.value}
  onClick={() =>
  setExportOptions({
@@ -402,7 +402,7 @@ export const ExportReports: React.FC = () => {
  <label htmlFor="export-start-date" className="block text-sm font-medium text-gray-700 mb-2">
  Start date
  </label>
- <input
+ <input data-testid="export-reports-start-date"
  id="export-start-date"
  type="date"
  value={exportOptions.startDate ? toLocalDateKey(exportOptions.startDate) ?? '' : ''}
@@ -422,7 +422,7 @@ export const ExportReports: React.FC = () => {
  <label htmlFor="export-end-date" className="block text-sm font-medium text-gray-700 mb-2">
  End date
  </label>
- <input
+ <input data-testid="export-reports-end-date"
  id="export-end-date"
  type="date"
  value={exportOptions.endDate ? toLocalDateKey(exportOptions.endDate) ?? '' : ''}
@@ -442,7 +442,7 @@ export const ExportReports: React.FC = () => {
  )}
 
  {/* Export Button */}
- <button
+ <button data-testid="export-reports-export-as"
  onClick={handleExport}
  disabled={isExporting}
  className="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 font-medium transition-colors flex items-center justify-center gap-2"
@@ -458,7 +458,7 @@ export const ExportReports: React.FC = () => {
  </button>
 
  {exportOptions.format === 'pdf' && (
- <button
+ <button data-testid="export-reports-share-report"
  onClick={sharePdfReport}
  disabled={isExporting}
  className="w-full py-3 bg-white text-blue-700 rounded-lg border border-blue-300 hover:bg-blue-50 disabled:bg-gray-100 font-medium transition-colors flex items-center justify-center gap-2"

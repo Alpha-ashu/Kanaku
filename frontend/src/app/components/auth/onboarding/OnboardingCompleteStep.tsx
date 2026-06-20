@@ -236,13 +236,13 @@ export const OnboardingCompleteStep: React.FC<OnboardingCompleteStepProps> = ({
  </div>
 
  <div className="flex space-x-3">
- <button
+ <button data-testid="onboarding-complete-step-back"
  onClick={onBack}
  className="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors font-medium"
  >
  Back
  </button>
- <button
+ <button data-testid="onboarding-complete-step-try-again"
  onClick={retrySetup}
  className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium"
  >
@@ -326,7 +326,7 @@ export const OnboardingCompleteStep: React.FC<OnboardingCompleteStepProps> = ({
  )}
 
  <div className="flex space-x-3">
- <button
+ <button data-testid="onboarding-complete-step-back-2"
  onClick={onBack}
  disabled={isProcessing}
  className="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
@@ -334,7 +334,7 @@ export const OnboardingCompleteStep: React.FC<OnboardingCompleteStepProps> = ({
  Back
  </button>
  {!isProcessing && progress === 0 && (
- <button
+ <button data-testid="onboarding-complete-step-complete-setup"
  onClick={startProcessing}
  className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium"
  >

@@ -217,13 +217,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin,
  </p>
 
  <div className="flex flex-col sm:flex-row gap-3">
- <button
+ <button data-testid="landing-page-get-started"
  onClick={onGetStarted}
  className="group inline-flex items-center justify-center px-8 py-3.5 rounded-full bg-gray-900 text-white font-bold text-sm hover:bg-gray-800 transition-all duration-250 hover:scale-105 active:scale-95 shadow-lg shadow-gray-200"
  >
  Get Started
  </button>
- <button
+ <button data-testid="landing-page-watch-demo"
  onClick={onGetStarted}
  className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full text-gray-600 font-semibold text-sm hover:bg-gray-100 transition-all duration-200"
  >
@@ -345,7 +345,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin,
  </div>
  <h3 className="text-base font-bold text-gray-900 mb-2">{feat.title}</h3>
  <p className="text-sm text-gray-500 leading-relaxed">{feat.desc}</p>
- <button
+ <button data-testid={`landing-page-learn-more-${i}`}
  onClick={onGetStarted}
  className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-violet-600 hover:text-violet-700 group-hover:gap-2.5 transition-all duration-200"
  >
@@ -397,7 +397,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin,
  Join thousands who have transformed how they manage money. Sign up free - no credit card required.
  </p>
 
- <button
+ <button data-testid="landing-page-yes-get-started-free"
  onClick={onGetStarted}
  className="inline-flex items-center justify-center px-10 py-4 rounded-full bg-white text-gray-900 font-bold text-sm hover:bg-gray-100 transition-all duration-200 hover:scale-105 active:scale-95 shadow-xl shadow-black/20"
  >
@@ -426,7 +426,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin,
  { name: 'Terms', id: 'terms' },
  { name: 'Support', id: 'contact' }
  ].map((link) => (
- <button
+ <button data-testid={`landing-page-button-${link.id}`}
  key={link.id}
  onClick={() => onNavigate(link.id)}
  className="text-xs text-gray-400 hover:text-gray-700 transition-colors"

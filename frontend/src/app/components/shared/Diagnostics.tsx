@@ -125,7 +125,7 @@ export const Diagnostics: React.FC = () => {
  <CenteredLayout>
  <div className="space-y-6">
  <div className="flex items-center gap-3">
- <button
+ <button data-testid="diagnostics-button"
  onClick={() => setCurrentPage('dashboard')}
  className="lg:!hidden p-2 hover:bg-white rounded-xl transition-all"
  >
@@ -146,21 +146,21 @@ export const Diagnostics: React.FC = () => {
  </div>
 
  <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
- <button
+ <button data-testid="diagnostics-login-as-admin"
  onClick={() => handleMockLogin('admin')}
  className="flex items-center justify-center gap-2 px-6 py-4 bg-slate-900 text-white rounded-[1.5rem] font-bold text-sm hover:bg-slate-800 transition-all shadow-lg shadow-slate-200"
  >
  <ShieldCheck size={18} />
  Login as Admin
  </button>
- <button
+ <button data-testid="diagnostics-login-as-manager"
  onClick={() => handleMockLogin('manager')}
  className="flex items-center justify-center gap-2 px-6 py-4 bg-blue-600 text-white rounded-[1.5rem] font-bold text-sm hover:bg-blue-700 transition-all shadow-lg shadow-blue-100"
  >
  <Users size={18} />
  Login as Manager
  </button>
- <button
+ <button data-testid="diagnostics-login-as-advisor"
  onClick={() => handleMockLogin('advisor')}
  className="flex items-center justify-center gap-2 px-6 py-4 bg-emerald-600 text-white rounded-[1.5rem] font-bold text-sm hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-100"
  >
@@ -212,7 +212,7 @@ export const Diagnostics: React.FC = () => {
  <p className="text-sm text-gray-500">Supabase session test</p>
  <p className="text-base font-semibold text-gray-900">{testResult}</p>
  </div>
- <button
+ <button data-testid="diagnostics-button-2"
  onClick={handleSupabaseTest}
  disabled={isTesting}
  className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:bg-gray-300"
@@ -239,7 +239,7 @@ export const Diagnostics: React.FC = () => {
  <p className="text-sm text-gray-600">
  Merges redundant accounts and transactions by matching dates, amounts, and descriptions.
  </p>
- <button
+ <button data-testid="diagnostics-button-3"
  onClick={handleDeduplicate}
  disabled={isCleaning}
  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-gray-200 text-gray-900 rounded-xl font-medium hover:bg-gray-50 hover:border-gray-300 shadow-sm transition-all disabled:opacity-50"
@@ -257,7 +257,7 @@ export const Diagnostics: React.FC = () => {
  <p className="text-sm text-gray-600">
  Wipes all local data. Use this if your database feels corrupted. Data will re-sync from cloud.
  </p>
- <button
+ <button data-testid="diagnostics-reset-database"
  onClick={handleResetDatabase}
  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-red-50 text-red-600 border border-red-200 rounded-xl font-medium hover:bg-red-600 hover:text-white hover:border-red-600 transition-all shadow-sm"
  >
@@ -271,7 +271,7 @@ export const Diagnostics: React.FC = () => {
  <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
  <div className="flex items-center justify-between">
  <h3 className="text-lg font-semibold text-gray-900">Vercel Deployment Checklist</h3>
- <a
+ <a data-testid="diagnostics-open-vercel"
  href="https://vercel.com/dashboard"
  target="_blank"
  rel="noopener noreferrer"
@@ -302,7 +302,7 @@ export const Diagnostics: React.FC = () => {
  </span>
  </div>
  </div>
- <button
+ <button data-testid="diagnostics-copy-environment-variables"
  onClick={handleCopyEnvVars}
  className="mt-3 inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700"
  >
@@ -335,7 +335,7 @@ export const Diagnostics: React.FC = () => {
  <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
  <div className="flex items-center justify-between">
  <h3 className="text-lg font-semibold text-gray-900">Email Confirmation Setup</h3>
- <a
+ <a data-testid="diagnostics-open-supabase"
  href={`https://supabase.com/dashboard/project/${import.meta.env.VITE_SUPABASE_URL?.split('//')[1]?.split('.')[0] ?? 'YOUR_PROJECT'}/auth/url-configuration`}
  target="_blank"
  rel="noopener noreferrer"

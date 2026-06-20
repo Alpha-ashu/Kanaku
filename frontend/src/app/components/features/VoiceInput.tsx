@@ -338,7 +338,7 @@ export function VoiceInput() {
         </div>
         <div className="flex items-center gap-2">
           <StatusPill mode={state.mode} fallback={state.fallbackReason} />
-          <button
+          <button data-testid="voice-input-button"
             onClick={() => dispatch({ type: 'TOGGLE_MANUAL' })}
             className="w-10 h-10 rounded-xl bg-white shadow border flex items-center justify-center hover:bg-violet-50 transition-colors"
           >
@@ -382,7 +382,7 @@ export function VoiceInput() {
           />
 
           {/* Button */}
-          <motion.button
+          <motion.button data-testid="voice-input-button-2"
             whileTap={{ scale: 0.93 }}
             onClick={isListening ? stopListening : startListening}
             disabled={isProcessing}
@@ -437,7 +437,7 @@ export function VoiceInput() {
               <p className="text-center text-slate-400 text-sm font-medium">Tap mic and say…</p>
               <div className="flex flex-wrap gap-2 justify-center">
                 {HINTS.map((h, i) => (
-                  <button
+                  <button data-testid={`voice-input-button-3-${i}`}
                     key={i}
                     onClick={() => handleHintClick(h.text)}
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-2xl border text-xs font-semibold ${h.color} hover:scale-105 transition-transform`}
@@ -479,7 +479,7 @@ export function VoiceInput() {
                   </div>
                   <div className="flex gap-2 shrink-0">
                     {state.fallbackReason === 'network' && (
-                      <button
+                      <button data-testid="voice-input-retry"
                         onClick={() => { dispatch({ type: 'CLEAR_ERROR' }); startListening(); }}
                         className="text-amber-600 hover:text-amber-800 transition-colors"
                         title="Retry"
@@ -487,7 +487,7 @@ export function VoiceInput() {
                         <RefreshCw size={16} />
                       </button>
                     )}
-                    <button onClick={() => dispatch({ type: 'CLEAR_ERROR' })} className="text-slate-400 hover:text-slate-600">
+                    <button data-testid="voice-input-button-4" onClick={() => dispatch({ type: 'CLEAR_ERROR' })} className="text-slate-400 hover:text-slate-600">
                       <X size={16} />
                     </button>
                   </div>
@@ -518,14 +518,14 @@ export function VoiceInput() {
             <div className="p-5 space-y-4">
               <div className="flex items-center justify-between">
                 <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Type your transaction</p>
-                <button onClick={() => { dispatch({ type: 'TOGGLE_MANUAL', payload: false }); dispatch({ type: 'CLEAR_ERROR' }); }} className="text-slate-400 hover:bg-slate-100 p-1.5 rounded-full transition-colors">
+                <button data-testid="voice-input-button-5" onClick={() => { dispatch({ type: 'TOGGLE_MANUAL', payload: false }); dispatch({ type: 'CLEAR_ERROR' }); }} className="text-slate-400 hover:bg-slate-100 p-1.5 rounded-full transition-colors">
                   <X size={16} />
                 </button>
               </div>
 
               {/* Textarea */}
               <div className="relative">
-                <textarea
+                <textarea data-testid="voice-input-e-g-paid-2000"
                   ref={inputRef}
                   rows={2}
                   value={state.manualInput}
@@ -540,7 +540,7 @@ export function VoiceInput() {
               {/* Quick-fill chips */}
               <div className="flex flex-wrap gap-1.5">
                 {HINTS.slice(0, 3).map((h, i) => (
-                  <button
+                  <button data-testid={`voice-input-button-6-${i}`}
                     key={i}
                     onClick={() => dispatch({ type: 'SET_MANUAL_INPUT', payload: h.text })}
                     className={`flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full border ${h.color} hover:scale-105 transition-transform`}
@@ -552,7 +552,7 @@ export function VoiceInput() {
 
               {/* Action buttons */}
               <div className="flex justify-end pt-1">
-                <button
+                <button data-testid="voice-input-analyze-amp-process"
                   onClick={processManualInput}
                   disabled={!state.manualInput.trim()}
                   className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-violet-600 to-fuchsia-500 text-white text-sm font-black flex items-center justify-center gap-1.5 shadow-lg shadow-violet-200/60 disabled:opacity-40 disabled:cursor-not-allowed"

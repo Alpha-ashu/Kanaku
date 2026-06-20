@@ -89,7 +89,7 @@ export const AddGold: React.FC = () => {
  <header className="px-4 lg:px-6 py-4 bg-white border-b border-slate-100">
  <div className="flex flex-row flex-wrap items-center justify-between gap-4 w-full">
  <div className="flex items-center gap-3">
- <button onClick={() => setCurrentPage('investments')} title="Back" className="lg:!hidden p-2 text-slate-600 hover:bg-slate-50 rounded-xl transition-all">
+ <button data-testid="add-gold-back" onClick={() => setCurrentPage('investments')} title="Back" className="lg:!hidden p-2 text-slate-600 hover:bg-slate-50 rounded-xl transition-all">
  <ArrowLeft size={20} />
  </button>
  <h1 className="text-xl font-black text-slate-900 tracking-tight leading-none">Add Gold Asset</h1>
@@ -107,7 +107,7 @@ export const AddGold: React.FC = () => {
  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">1. Gold Category</label>
  <div className="grid grid-cols-3 gap-2">
  {GOLD_TYPES.map(t => (
- <button key={t.id} onClick={() => setFormData(prev => ({ ...prev, type: t.id as any }))} className={cn("flex flex-col items-center gap-1.5 p-3 rounded-xl transition-all", formData.type === t.id ?"bg-amber-500 text-white shadow-lg shadow-amber-100" :"bg-slate-50 text-slate-400 hover:bg-slate-100")}>
+ <button data-testid={`add-gold-button-${t.id}`} key={t.id} onClick={() => setFormData(prev => ({ ...prev, type: t.id as any }))} className={cn("flex flex-col items-center gap-1.5 p-3 rounded-xl transition-all", formData.type === t.id ?"bg-amber-500 text-white shadow-lg shadow-amber-100" :"bg-slate-50 text-slate-400 hover:bg-slate-100")}>
  <span className="text-xl">{t.icon}</span>
  <span className="text-[9px] font-black uppercase tracking-tighter">{t.label}</span>
  </button>
@@ -120,13 +120,13 @@ export const AddGold: React.FC = () => {
  <div className="flex gap-2">
  <div className="flex-1 grid grid-cols-4 gap-1.5">
  {PURITY_PRESETS.map(p => (
- <button key={p.label} onClick={() => setFormData(prev => ({ ...prev, purityPercentage: p.value }))} className={cn("py-2 rounded-lg text-[9px] font-black uppercase transition-all", formData.purityPercentage === p.value ?"bg-slate-900 text-white" :"bg-slate-50 text-slate-400")}>
+ <button data-testid={`add-gold-button-2-${p.label}`} key={p.label} onClick={() => setFormData(prev => ({ ...prev, purityPercentage: p.value }))} className={cn("py-2 rounded-lg text-[9px] font-black uppercase transition-all", formData.purityPercentage === p.value ?"bg-slate-900 text-white" :"bg-slate-50 text-slate-400")}>
  {p.label}
  </button>
  ))}
  </div>
  <div className="w-20 relative">
- <input type="number" value={formData.purityPercentage} onChange={e => setFormData(prev => ({ ...prev, purityPercentage: parseFloat(e.target.value) || 0 }))} aria-label="Purity percentage" className="w-full h-full bg-slate-50 border-none rounded-lg text-center font-black text-[10px]" />
+ <input data-testid="add-gold-purity-percentage" type="number" value={formData.purityPercentage} onChange={e => setFormData(prev => ({ ...prev, purityPercentage: parseFloat(e.target.value) || 0 }))} aria-label="Purity percentage" className="w-full h-full bg-slate-50 border-none rounded-lg text-center font-black text-[10px]" />
  <span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-[8px] font-black text-slate-300">%</span>
  </div>
  </div>
@@ -137,21 +137,21 @@ export const AddGold: React.FC = () => {
  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Storage Location</label>
  <div className="relative">
  <MapPin className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
- <input type="text" value={formData.location} onChange={e => setFormData(prev => ({ ...prev, location: e.target.value }))} className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-900 text-xs" placeholder="Locker, Safe..." />
+ <input data-testid="add-gold-locker-safe" type="text" value={formData.location} onChange={e => setFormData(prev => ({ ...prev, location: e.target.value }))} className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-900 text-xs" placeholder="Locker, Safe..." />
  </div>
  </div>
  <div className="space-y-1">
  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Purchase Date</label>
  <div className="relative">
  <Calendar className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
- <input type="date" value={formData.purchaseDate} onChange={e => setFormData(prev => ({ ...prev, purchaseDate: e.target.value }))} aria-label="Purchase date" className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-xs" />
+ <input data-testid="add-gold-purchase-date" type="date" value={formData.purchaseDate} onChange={e => setFormData(prev => ({ ...prev, purchaseDate: e.target.value }))} aria-label="Purchase date" className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-xs" />
  </div>
  </div>
  </div>
 
  <div className="space-y-1">
  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Certificate / Notes</label>
- <textarea value={formData.notes} onChange={e => setFormData(prev => ({ ...prev, notes: e.target.value }))} className="w-full bg-slate-50 border-none rounded-xl py-2.5 px-3 font-bold text-slate-900 text-xs min-h-[60px] resize-none" placeholder="Cert #12345..." />
+ <textarea data-testid="add-gold-cert-12345" value={formData.notes} onChange={e => setFormData(prev => ({ ...prev, notes: e.target.value }))} className="w-full bg-slate-50 border-none rounded-xl py-2.5 px-3 font-bold text-slate-900 text-xs min-h-[60px] resize-none" placeholder="Cert #12345..." />
  </div>
  </div>
  
@@ -172,12 +172,12 @@ export const AddGold: React.FC = () => {
  <div className="absolute -top-10 -right-10 w-32 h-32 bg-amber-500/5 blur-[40px] rounded-full" />
  <div className="flex items-center gap-3 mb-4">
  {UNIT_OPTIONS.map(u => (
- <button key={u.value} onClick={() => setFormData(prev => ({ ...prev, unit: u.value as any }))} className={cn("px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-wider transition-all", formData.unit === u.value ?"bg-slate-900 text-white" :"bg-slate-50 text-slate-400")}>{u.label}</button>
+ <button data-testid={`add-gold-button-3-${u.value}`} key={u.value} onClick={() => setFormData(prev => ({ ...prev, unit: u.value as any }))} className={cn("px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-wider transition-all", formData.unit === u.value ?"bg-slate-900 text-white" :"bg-slate-50 text-slate-400")}>{u.label}</button>
  ))}
  </div>
  <div className="flex flex-col items-center">
  <span className="text-[9px] font-black text-slate-300 uppercase tracking-[0.2em] mb-2">Weight ({formData.unit})</span>
- <input 
+ <input data-testid="add-gold-0-00" 
  type="number" 
  value={formData.quantity || ''} 
  onChange={e => setFormData(prev => ({ ...prev, quantity: parseFloat(e.target.value) || 0 }))}
@@ -193,14 +193,14 @@ export const AddGold: React.FC = () => {
  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Buy Price / {formData.unit}</label>
  <div className="relative">
  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-300">{currency}</span>
- <input type="number" value={formData.purchasePrice || ''} onChange={e => setFormData(prev => ({ ...prev, purchasePrice: parseFloat(e.target.value) || 0 }))} aria-label="Buy price per unit" className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-8 pr-3 font-bold text-xs" />
+ <input data-testid="add-gold-buy-price-per-unit" type="number" value={formData.purchasePrice || ''} onChange={e => setFormData(prev => ({ ...prev, purchasePrice: parseFloat(e.target.value) || 0 }))} aria-label="Buy price per unit" className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-8 pr-3 font-bold text-xs" />
  </div>
  </div>
  <div className="space-y-1">
  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Live Price / {formData.unit}</label>
  <div className="relative">
  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-300">{currency}</span>
- <input type="number" value={formData.currentPrice || ''} onChange={e => setFormData(prev => ({ ...prev, currentPrice: parseFloat(e.target.value) || 0 }))} aria-label="Live price per unit" className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-8 pr-3 font-bold text-xs" />
+ <input data-testid="add-gold-live-price-per-unit" type="number" value={formData.currentPrice || ''} onChange={e => setFormData(prev => ({ ...prev, currentPrice: parseFloat(e.target.value) || 0 }))} aria-label="Live price per unit" className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-8 pr-3 font-bold text-xs" />
  </div>
  </div>
  </div>

@@ -244,7 +244,7 @@ export const AutoFillExpenseForm: React.FC<AutoFillExpenseFormProps> = ({
  <Brain className="w-5 h-5" />
  <h3 className="font-semibold">KANAKUAI</h3>
  </div>
- <button
+ <button data-testid="auto-fill-expense-form-button"
  onClick={onClose}
  className="p-1 hover:bg-white/20 rounded-lg transition-colors"
  >
@@ -258,7 +258,7 @@ export const AutoFillExpenseForm: React.FC<AutoFillExpenseFormProps> = ({
 
  {/* Tabs */}
  <div className="flex border-b border-gray-200">
- <button
+ <button data-testid="auto-fill-expense-form-camera"
  onClick={() => setActiveTab('camera')}
  className={`flex-1 py-3 px-4 text-sm font-medium transition-colors ${activeTab === 'camera'
  ? 'text-blue-600 border-b-2 border-blue-600'
@@ -269,7 +269,7 @@ export const AutoFillExpenseForm: React.FC<AutoFillExpenseFormProps> = ({
  Camera
  </button>
  {voiceEnabled && (
-    <button
+    <button data-testid="auto-fill-expense-form-voice"
     onClick={() => setActiveTab('voice')}
     className={`flex-1 py-3 px-4 text-sm font-medium transition-colors ${activeTab === 'voice'
     ? 'text-blue-600 border-b-2 border-blue-600'
@@ -280,7 +280,7 @@ export const AutoFillExpenseForm: React.FC<AutoFillExpenseFormProps> = ({
     Voice
     </button>
   )}
- <button
+ <button data-testid="auto-fill-expense-form-upload"
  onClick={() => setActiveTab('upload')}
  className={`flex-1 py-3 px-4 text-sm font-medium transition-colors ${activeTab === 'upload'
  ? 'text-blue-600 border-b-2 border-blue-600'
@@ -360,7 +360,7 @@ export const AutoFillExpenseForm: React.FC<AutoFillExpenseFormProps> = ({
  {/* Action Buttons */}
  <div className="flex space-x-3 pt-4">
  {confidence > 0.7 ? (
- <button
+ <button data-testid="auto-fill-expense-form-auto-fill-expense"
  onClick={handleConfirmData}
  className="flex-1 bg-green-600 text-white py-3 rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center justify-center space-x-2"
  >
@@ -369,13 +369,13 @@ export const AutoFillExpenseForm: React.FC<AutoFillExpenseFormProps> = ({
  </button>
  ) : (
  <>
- <button
+ <button data-testid="auto-fill-expense-form-edit-manually"
  onClick={() => handleFeedback(false)}
  className="flex-1 bg-red-600 text-white py-3 rounded-lg font-medium hover:bg-red-700 transition-colors"
  >
  Edit Manually
  </button>
- <button
+ <button data-testid="auto-fill-expense-form-looks-correct"
  onClick={() => handleFeedback(true)}
  className="flex-1 bg-green-600 text-white py-3 rounded-lg font-medium hover:bg-green-700 transition-colors"
  >
@@ -392,7 +392,7 @@ export const AutoFillExpenseForm: React.FC<AutoFillExpenseFormProps> = ({
  <div>
  <Camera className="w-12 h-12 text-gray-400 mx-auto mb-4" />
  <p className="text-gray-600 mb-4">Take a photo of your receipt</p>
- <input
+ <input data-testid="auto-fill-expense-form-input"
  type="file"
  accept="image/*"
  capture="environment"
@@ -414,7 +414,7 @@ export const AutoFillExpenseForm: React.FC<AutoFillExpenseFormProps> = ({
  <div>
  <Mic className="w-12 h-12 text-gray-400 mx-auto mb-4" />
  <p className="text-gray-600 mb-4">Speak your expense details</p>
- <button
+ <button data-testid="auto-fill-expense-form-start-recording"
  onClick={handleVoiceInput}
  className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center space-x-2"
  >
@@ -429,7 +429,7 @@ export const AutoFillExpenseForm: React.FC<AutoFillExpenseFormProps> = ({
  <div>
  <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
  <p className="text-gray-600 mb-4">Upload receipt or invoice</p>
- <input
+ <input data-testid="auto-fill-expense-form-input-2"
  type="file"
  accept="image/*,.pdf"
  onChange={handleFileUpload}

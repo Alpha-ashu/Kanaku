@@ -9,7 +9,7 @@ const Card: React.FC<{ className?: string; children: React.ReactNode }> = ({ cla
 const Button: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: string; size?: string }> = ({
   variant, size, className = '', children, ...rest
 }) => (
-  <button className={`inline-flex items-center justify-center font-medium transition-colors rounded-lg px-3 py-1.5 text-sm hover:bg-slate-100 text-slate-900 ${className}`} {...rest}>{children}</button>
+  <button data-testid="voice-assistant-page-button" className={`inline-flex items-center justify-center font-medium transition-colors rounded-lg px-3 py-1.5 text-sm hover:bg-slate-100 text-slate-900 ${className}`} {...rest}>{children}</button>
 );
 
 /**
@@ -33,10 +33,10 @@ export const VoiceAssistantPage: React.FC<{
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <Card data-testid="voice-assistant-page-card" className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <div className="sticky top-0 bg-white border-b p-4 flex items-center justify-between">
           <h2 className="text-xl font-bold">Voice Assistant</h2>
-          <Button
+          <Button data-testid="voice-assistant-page-button-2"
             variant="ghost"
             size="sm"
             onClick={handleClose}

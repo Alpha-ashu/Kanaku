@@ -10,7 +10,7 @@ import { Button, buttonVariants } from"./button";
 
 function Pagination({ className, ...props }: React.ComponentProps<"nav">) {
  return (
- <nav
+ <nav data-testid="pagination-pagination"
  role="navigation"
  aria-label="pagination"
  data-slot="pagination"
@@ -49,7 +49,7 @@ function PaginationLink({
  ...props
 }: PaginationLinkProps) {
  return (
- <a
+ <a data-testid="pagination-link"
  aria-current={isActive ?"page" : undefined}
  data-slot="pagination-link"
  data-active={isActive}

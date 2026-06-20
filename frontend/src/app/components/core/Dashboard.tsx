@@ -317,7 +317,7 @@ export function Dashboard({ setCurrentPage }: DashboardProps) {
  icon={<Activity size={24} />}
   >
   <div className="flex flex-row flex-wrap items-center gap-4">
-    <TimeFilter value={timePeriod} onChange={setTimePeriod} />
+    <TimeFilter testId="dashboard-time-filter" value={timePeriod} onChange={setTimePeriod} />
   </div>
   </PageHeader>
  </div>
@@ -469,7 +469,7 @@ export function Dashboard({ setCurrentPage }: DashboardProps) {
  className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide scroll-smooth touch-scroll"
  >
  {filteredAccounts.map((account) => (
- <Card key={account.id} 
+ <Card data-testid={`dashboard-card-${account.id}`} key={account.id} 
  className={cn(
 "p-5 w-[260px] xs:w-[280px] sm:w-[320px] shrink-0 snap-center hover:shadow-xl transition-all cursor-pointer relative overflow-hidden group border-none",
  getCardStyle(account).bgClass
@@ -536,7 +536,7 @@ export function Dashboard({ setCurrentPage }: DashboardProps) {
  ))}
  </motion.div>
  ) : (
- <Card className="p-8 text-center cursor-pointer hover:shadow-md transition-shadow" onClick={() => setCurrentPage?.('add-account')}>
+ <Card data-testid="dashboard-card-2" className="p-8 text-center cursor-pointer hover:shadow-md transition-shadow" onClick={() => setCurrentPage?.('add-account')}>
  <EmptyWidget icon={Wallet} message="No accounts yet - tap to add your first" />
  </Card>
  )}
@@ -548,9 +548,9 @@ export function Dashboard({ setCurrentPage }: DashboardProps) {
  <motion.div {...fadeUp} className="mb-6 lg:mb-8">
  <SectionHeader title="Recent Transactions" onViewAll={() => setCurrentPage?.('transactions')} />
  {recentTransactions.length > 0 ? (
- <Card variant="glass" className="divide-y divide-white/10 no-padding overflow-hidden border-white/20">
+ <Card data-testid="dashboard-card-3" variant="glass" className="divide-y divide-white/10 no-padding overflow-hidden border-white/20">
  {recentTransactions.map((transaction) => (
- <div key={transaction.id} className="p-4 flex items-center justify-between hover:bg-transparent transition-colors cursor-pointer" onClick={() => setCurrentPage?.('transactions')}>
+ <div data-testid={`dashboard-div-${transaction.id}`} key={transaction.id} className="p-4 flex items-center justify-between hover:bg-transparent transition-colors cursor-pointer" onClick={() => setCurrentPage?.('transactions')}>
  <div className="flex items-center gap-3">
  <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-white/40 shadow-sm border border-slate-100">
  {getCategoryCartoonIcon(transaction.category || 'Miscellaneous', 24)}
@@ -570,7 +570,7 @@ export function Dashboard({ setCurrentPage }: DashboardProps) {
  ))}
  </Card>
  ) : (
- <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setCurrentPage?.('add-transaction')}>
+ <Card data-testid="dashboard-card-4" className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setCurrentPage?.('add-transaction')}>
  <EmptyWidget icon={CreditCard} message="No transactions - tap to add your first" />
  </Card>
  )}
@@ -591,7 +591,7 @@ export function Dashboard({ setCurrentPage }: DashboardProps) {
  }[status];
  const StatusIcon = statusConfig.icon;
  return (
- <Card key={loan.id}
+ <Card data-testid={`dashboard-card-5-${loan.id}`} key={loan.id}
  className={cn("p-4 cursor-pointer hover:shadow-lg transition-all border", statusConfig.border)}
  onClick={() => setCurrentPage?.('loans')}
  >
@@ -631,7 +631,7 @@ export function Dashboard({ setCurrentPage }: DashboardProps) {
  })}
  </div>
  ) : (
- <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setCurrentPage?.('loans')}>
+ <Card data-testid="dashboard-card-6" className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setCurrentPage?.('loans')}>
  <EmptyWidget icon={Landmark} message="No active loans - click to manage" />
  </Card>
  )}
@@ -641,7 +641,7 @@ export function Dashboard({ setCurrentPage }: DashboardProps) {
  <motion.div {...fadeUp} className="mb-6 lg:mb-8">
  <SectionHeader title="Upcoming Events" onViewAll={() => setCurrentPage?.('calendar')} viewLabel="View Calendar" />
  {upcomingEvents.length > 0 ? (
- <Card className="divide-y divide-gray-100 cursor-pointer hover:shadow-md transition-shadow" onClick={() => setCurrentPage?.('calendar')}>
+ <Card data-testid="dashboard-card-7" className="divide-y divide-gray-100 cursor-pointer hover:shadow-md transition-shadow" onClick={() => setCurrentPage?.('calendar')}>
  {upcomingEvents.map((event, i) => {
  const timeBadge = {
  today: { label: 'Today', cls: 'bg-red-100 text-red-600' },
@@ -676,7 +676,7 @@ export function Dashboard({ setCurrentPage }: DashboardProps) {
  })}
  </Card>
  ) : (
- <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setCurrentPage?.('calendar')}>
+ <Card data-testid="dashboard-card-8" className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setCurrentPage?.('calendar')}>
  <div className="flex flex-col items-center justify-center py-8 text-gray-400">
  <Calendar size={36} className="mb-2 opacity-40" />
  <p className="text-sm font-medium">No upcoming events this month</p>
@@ -689,7 +689,7 @@ export function Dashboard({ setCurrentPage }: DashboardProps) {
  {/* 6. Borrow, Lend & Groups */}
  <motion.div {...fadeUp} className="mb-6 lg:mb-8">
  <SectionHeader title="Borrow, Lend & Groups" onViewAll={() => setCurrentPage?.('groups')} />
- <Card variant="glass" className="cursor-pointer hover:shadow-xl transition-all border-white/20" onClick={() => setCurrentPage?.('groups')}>
+ <Card data-testid="dashboard-card-9" variant="glass" className="cursor-pointer hover:shadow-xl transition-all border-white/20" onClick={() => setCurrentPage?.('groups')}>
  {(groupStats.borrowed > 0 || groupStats.lent > 0 || groupStats.pendingSettlements > 0 || groupStats.activeGroups > 0) ? (
  <div className="p-4">
  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -748,7 +748,7 @@ export function Dashboard({ setCurrentPage }: DashboardProps) {
  <motion.div {...fadeUp} className="mb-6 lg:mb-8">
  <SectionHeader title="Investments" onViewAll={() => setCurrentPage?.('investments')} />
  {investmentStats.count > 0 ? (
- <Card className="cursor-pointer hover:shadow-md transition-all" onClick={() => setCurrentPage?.('investments')}>
+ <Card data-testid="dashboard-card-10" className="cursor-pointer hover:shadow-md transition-all" onClick={() => setCurrentPage?.('investments')}>
  <div className="p-4">
  {/* Top summary row */}
  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
@@ -812,7 +812,7 @@ export function Dashboard({ setCurrentPage }: DashboardProps) {
  </div>
  </Card>
  ) : (
- <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setCurrentPage?.('investments')}>
+ <Card data-testid="dashboard-card-11" className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setCurrentPage?.('investments')}>
  <EmptyWidget icon={BarChart3} message="No investments added yet - click to add" />
  </Card>
  )}
@@ -826,7 +826,7 @@ export function Dashboard({ setCurrentPage }: DashboardProps) {
  {activeGoals.map((goal) => {
  const progress = Math.min((goal.currentAmount / goal.targetAmount) * 100, 100);
  return (
- <Card key={goal.id} className="p-4 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setCurrentPage?.('goals')}>
+ <Card data-testid={`dashboard-card-12-${goal.id}`} key={goal.id} className="p-4 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setCurrentPage?.('goals')}>
  <div className="flex items-center justify-between mb-3">
  <h4 className="font-medium text-gray-900 truncate text-sm">{goal.name}</h4>
  <Target size={16} className="text-pink-400 flex-shrink-0" />

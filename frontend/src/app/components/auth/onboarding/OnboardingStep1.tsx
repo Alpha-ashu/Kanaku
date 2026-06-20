@@ -50,7 +50,7 @@ export const OnboardingStep1: React.FC<OnboardingStep1Props> = ({
  };
 
  return (
- <form onSubmit={handleSubmit} className="space-y-4">
+ <form data-testid="onboarding-step1-form" onSubmit={handleSubmit} className="space-y-4">
  <div>
  <h3 className="text-lg font-medium text-gray-900 mb-2">
  Account Registration
@@ -64,7 +64,7 @@ export const OnboardingStep1: React.FC<OnboardingStep1Props> = ({
  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
  Email Address
  </label>
- <input
+ <input data-testid="onboarding-step1-you-example-com"
  type="email"
  id="email"
  value={data.email}
@@ -83,7 +83,7 @@ export const OnboardingStep1: React.FC<OnboardingStep1Props> = ({
  <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
  Password
  </label>
- <input
+ <input data-testid="onboarding-step1-input"
  type="password"
  id="password"
  value={data.password}
@@ -102,7 +102,7 @@ export const OnboardingStep1: React.FC<OnboardingStep1Props> = ({
  <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
  Confirm Password
  </label>
- <input
+ <input data-testid="onboarding-step1-input-2"
  type="password"
  id="confirmPassword"
  value={data.confirmPassword}
@@ -117,7 +117,7 @@ export const OnboardingStep1: React.FC<OnboardingStep1Props> = ({
  )}
  </div>
 
- <button
+ <button data-testid="onboarding-step1-continue-to-profile-setup"
  type="submit"
  className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium"
  >
@@ -126,7 +126,7 @@ export const OnboardingStep1: React.FC<OnboardingStep1Props> = ({
 
  <div className="text-center text-sm text-gray-600">
  Already have an account?{' '}
- <a href="/login" className="text-blue-600 hover:text-blue-700 font-medium">
+ <a data-testid="onboarding-step1-sign-in" href="/login" className="text-blue-600 hover:text-blue-700 font-medium">
  Sign in
  </a>
  </div>

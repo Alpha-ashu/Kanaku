@@ -383,7 +383,7 @@ export const EditInvestment: React.FC = () => {
  />
 
  <div className="bg-white rounded-xl border border-gray-200 p-8">
- <form onSubmit={handleSubmit} className="space-y-6">
+ <form data-testid="edit-investment-form" onSubmit={handleSubmit} className="space-y-6">
  <div>
  <label className="block text-sm font-medium text-gray-700 mb-2">Asset Type</label>
  <select
@@ -394,16 +394,16 @@ export const EditInvestment: React.FC = () => {
  title="Asset Type"
  data-testid="investments-edit-type-select"
  >
- <option value="stock">Stock</option>
- <option value="crypto">Cryptocurrency</option>
- <option value="forex">Forex</option>
- <option value="gold">🥇 Gold</option>
- <option value="silver">🥈 Silver</option>
- <option value="platinum">💎 Platinum</option>
- <option value="bronze">🏆 Bronze</option>
- <option value="real_estate">🏠 Real Estate</option>
- <option value="business">🏢 Business</option>
- <option value="other">Other</option>
+ <option data-testid="edit-investment-stock" value="stock">Stock</option>
+ <option data-testid="edit-investment-cryptocurrency" value="crypto">Cryptocurrency</option>
+ <option data-testid="edit-investment-forex" value="forex">Forex</option>
+ <option data-testid="edit-investment-gold" value="gold">🥇 Gold</option>
+ <option data-testid="edit-investment-silver" value="silver">🥈 Silver</option>
+ <option data-testid="edit-investment-platinum" value="platinum">💎 Platinum</option>
+ <option data-testid="edit-investment-bronze" value="bronze">🏆 Bronze</option>
+ <option data-testid="edit-investment-real-estate" value="real_estate">🏠 Real Estate</option>
+ <option data-testid="edit-investment-business" value="business">🏢 Business</option>
+ <option data-testid="edit-investment-other" value="other">Other</option>
  </select>
  </div>
 
@@ -438,12 +438,12 @@ export const EditInvestment: React.FC = () => {
  <div>
  <label className="block text-xs font-medium text-gray-600 mb-1">Form</label>
  <select value={metadata.form || ''} onChange={e => setMetadata(prev => ({ ...prev, form: e.target.value }))} className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm" title="Form" data-testid="investments-edit-form-select">
- <option value="">Select form</option>
- <option value="jewelry">Jewelry</option>
- <option value="coin">Coin</option>
- <option value="bar">Bar</option>
- <option value="biscuit">Biscuit</option>
- <option value="other">Other</option>
+ <option data-testid="edit-investment-select-form" value="">Select form</option>
+ <option data-testid="edit-investment-jewelry" value="jewelry">Jewelry</option>
+ <option data-testid="edit-investment-coin" value="coin">Coin</option>
+ <option data-testid="edit-investment-bar" value="bar">Bar</option>
+ <option data-testid="edit-investment-biscuit" value="biscuit">Biscuit</option>
+ <option data-testid="edit-investment-other-2" value="other">Other</option>
  </select>
  </div>
  <div>
@@ -480,11 +480,11 @@ export const EditInvestment: React.FC = () => {
  <div>
  <label className="block text-xs font-medium text-gray-600 mb-1">Property Type</label>
  <select value={metadata.propertyType || ''} onChange={e => setMetadata(prev => ({ ...prev, propertyType: e.target.value }))} className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm" title="Property Type" data-testid="investments-edit-property-type">
- <option value="">Select type</option>
- <option value="Residential">Residential</option>
- <option value="Commercial">Commercial</option>
- <option value="Agricultural Land">Agricultural Land</option>
- <option value="Plot / Land">Plot / Land</option>
+ <option data-testid="edit-investment-select-type" value="">Select type</option>
+ <option data-testid="edit-investment-residential" value="Residential">Residential</option>
+ <option data-testid="edit-investment-commercial" value="Commercial">Commercial</option>
+ <option data-testid="edit-investment-agricultural-land" value="Agricultural Land">Agricultural Land</option>
+ <option data-testid="edit-investment-plot-land" value="Plot / Land">Plot / Land</option>
  </select>
  </div>
  <div>
@@ -523,7 +523,7 @@ export const EditInvestment: React.FC = () => {
  <div className="grid grid-cols-2 gap-6">
  <div>
  <label className="block text-sm font-medium text-gray-700 mb-2">Quantity</label>
- <input
+ <input data-testid="edit-investment-quantity"
  type="number"
  step="0.01"
  value={formData.quantity || ''}
@@ -536,7 +536,7 @@ export const EditInvestment: React.FC = () => {
  </div>
  <div>
  <label className="block text-sm font-medium text-gray-700 mb-2">Buy Price</label>
- <input
+ <input data-testid="edit-investment-buy-price"
  type="number"
  step="0.01"
  value={formData.buyPrice || ''}
@@ -562,9 +562,9 @@ export const EditInvestment: React.FC = () => {
  title="Payment Account"
  data-testid="investments-edit-account-select"
  >
- <option value="">Select an account</option>
+ <option data-testid="edit-investment-select-an-account" value="">Select an account</option>
  {activeAccounts.map((account) => (
- <option key={account.id} value={account.id}>
+ <option data-testid={`edit-investment-option-${account.id}`} key={account.id} value={account.id}>
  {account.name} ({formatNativeMoney(account.balance, currency)})
  </option>
  ))}

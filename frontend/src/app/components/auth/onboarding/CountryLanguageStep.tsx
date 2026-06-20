@@ -183,7 +183,7 @@ export const CountryLanguageStep: React.FC<CountryLanguageStepProps> = ({
  };
 
  return (
- <form onSubmit={handleSubmit} className="space-y-6">
+ <form data-testid="country-language-step-form" onSubmit={handleSubmit} className="space-y-6">
  <div className="text-center mb-2">
  <h3 className="text-xl font-bold text-gray-900 mb-1">Region &amp; Language</h3>
  <p className="text-sm text-gray-500">
@@ -198,7 +198,7 @@ export const CountryLanguageStep: React.FC<CountryLanguageStepProps> = ({
  Your Location
  </label>
  <div className="relative">
- <input
+ <input data-testid="country-language-step-e-g-chennai-tamil"
  ref={inputRef}
  type="text"
  value={locationInput}
@@ -221,7 +221,7 @@ export const CountryLanguageStep: React.FC<CountryLanguageStepProps> = ({
  {showDropdown && (
  <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden">
  {suggestions.map((loc, i) => (
- <button
+ <button data-testid={`country-language-step-button-${i}`}
  key={i}
  type="button"
  onMouseDown={() => handleSelectLocation(loc)}
@@ -262,7 +262,7 @@ export const CountryLanguageStep: React.FC<CountryLanguageStepProps> = ({
  <Languages size={15} className="text-blue-500" />
  Preferred Language
  </label>
- <select
+ <select data-testid="country-language-step-select"
  id="language"
  value={data.language || 'English'}
  onChange={e => { onUpdate({ language: e.target.value }); setErrors(prev => ({ ...prev, language: '' })); }}
@@ -271,7 +271,7 @@ export const CountryLanguageStep: React.FC<CountryLanguageStepProps> = ({
  }`}
  >
  {LANGUAGES.map(lang => (
- <option key={lang.value} value={lang.value}>
+ <option data-testid={`country-language-step-option-${lang.value}`} key={lang.value} value={lang.value}>
  {lang.flag} {lang.label}
  </option>
  ))}
@@ -282,14 +282,14 @@ export const CountryLanguageStep: React.FC<CountryLanguageStepProps> = ({
  {/* Actions */}
  <div className="space-y-3 pt-2">
  <div className="flex gap-3">
- <button
+ <button data-testid="country-language-step-back"
  type="button"
  onClick={onBack}
  className="flex-1 bg-gray-100 text-gray-800 py-3 px-4 rounded-xl hover:bg-gray-200 transition-colors font-semibold"
  >
  Back
  </button>
- <button
+ <button data-testid="country-language-step-continue-to-bank"
  type="submit"
  className="flex-1 bg-blue-600 text-white py-3 px-4 rounded-xl hover:bg-blue-700 transition-colors font-semibold shadow-md border-b-4 border-blue-700 active:border-b-0 active:mt-1"
  >
@@ -297,7 +297,7 @@ export const CountryLanguageStep: React.FC<CountryLanguageStepProps> = ({
  </button>
  </div>
  {onSkip && (
- <button
+ <button data-testid="country-language-step-skip-for-now-i"
  type="button"
  onClick={onSkip}
  className="w-full flex items-center justify-center gap-2 text-sm text-gray-400 hover:text-gray-600 transition-colors py-1"

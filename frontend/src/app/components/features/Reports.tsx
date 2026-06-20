@@ -569,19 +569,19 @@ export const Reports: React.FC = () => {
 
  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
- <Card variant="glass" className="p-4 sm:p-6">
+ <Card data-testid="reports-card" variant="glass" className="p-4 sm:p-6">
  <p className="text-gray-500 font-medium mb-0.5 sm:mb-1 text-xs sm:text-sm uppercase tracking-wide">Total Income</p>
  <p className="text-xl sm:text-2xl font-display font-bold text-green-600">{formatCurrency(summaryStats.totalIncome)}</p>
  </Card>
  </motion.div>
  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
- <Card variant="glass" className="p-4 sm:p-6">
+ <Card data-testid="reports-card-2" variant="glass" className="p-4 sm:p-6">
  <p className="text-gray-500 font-medium mb-0.5 sm:mb-1 text-xs sm:text-sm uppercase tracking-wide">Total Expenses</p>
  <p className="text-xl sm:text-2xl font-display font-bold text-red-600">{formatCurrency(summaryStats.totalExpenses)}</p>
  </Card>
  </motion.div>
  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
- <Card variant="glass" className="p-4 sm:p-6">
+ <Card data-testid="reports-card-3" variant="glass" className="p-4 sm:p-6">
  <p className="text-gray-500 font-medium mb-0.5 sm:mb-1 text-xs sm:text-sm uppercase tracking-wide">Total Savings</p>
  <p className={`text-xl sm:text-2xl font-display font-bold ${summaryStats.netSavings >= 0 ? 'text-green-600' : 'text-red-600'}`}>
  {formatCurrency(summaryStats.netSavings)}
@@ -589,7 +589,7 @@ export const Reports: React.FC = () => {
  </Card>
  </motion.div>
  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
- <Card variant="glass" className="p-4 sm:p-6">
+ <Card data-testid="reports-card-4" variant="glass" className="p-4 sm:p-6">
  <p className="text-gray-500 font-medium mb-0.5 sm:mb-1 text-xs sm:text-sm uppercase tracking-wide">Savings Rate</p>
  <p className={`text-xl sm:text-2xl font-display font-bold ${summaryStats.savingsRate >= 20 ? 'text-green-600' : 'text-orange-600'}`}>
  {summaryStats.savingsRate.toFixed(1)}%
@@ -602,7 +602,7 @@ export const Reports: React.FC = () => {
   {(canAiInsights || canForecasting) && (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {canAiInsights && (
-        <Card variant="glass" className="p-6 overflow-hidden flex flex-col">
+        <Card data-testid="reports-card-5" variant="glass" className="p-6 overflow-hidden flex flex-col">
           <h3 className="text-lg font-display font-bold text-gray-900 mb-4 flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />
             AI Intelligence Insights
@@ -613,7 +613,7 @@ export const Reports: React.FC = () => {
         </Card>
       )}
       {canForecasting && (
-        <Card variant="glass" className="p-6 overflow-hidden flex flex-col">
+        <Card data-testid="reports-card-6" variant="glass" className="p-6 overflow-hidden flex flex-col">
           <h3 className="text-lg font-display font-bold text-gray-900 mb-4 flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             Smart Financial Forecasting
@@ -627,7 +627,7 @@ export const Reports: React.FC = () => {
   )}
 
  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
- <Card variant="glass" className="p-6">
+ <Card data-testid="reports-card-7" variant="glass" className="p-6">
  <h3 className="text-lg font-display font-bold text-gray-900 mb-4">Expense Breakdown</h3>
  {expenseBreakdown.length === 0 ? (
  <p className="text-sm text-gray-500">No expenses found for this range.</p>
@@ -646,7 +646,7 @@ export const Reports: React.FC = () => {
  )}
  </Card>
 
- <Card variant="glass" className="p-6">
+ <Card data-testid="reports-card-8" variant="glass" className="p-6">
  <h3 className="text-lg font-display font-bold text-gray-900 mb-4">Category-wise Spending</h3>
  {expenseBreakdown.length === 0 ? (
  <p className="text-sm text-gray-500">No expenses found for this range.</p>
@@ -664,7 +664,7 @@ export const Reports: React.FC = () => {
  </Card>
  </div>
 
- <Card variant="glass" className="p-6">
+ <Card data-testid="reports-card-9" variant="glass" className="p-6">
  <h3 className="text-lg font-display font-bold text-gray-900 mb-4">Monthly Cash Flow</h3>
  {cashFlowMonthly.length === 0 ? (
  <p className="text-sm text-gray-500">No cash flow data available.</p>
@@ -684,7 +684,7 @@ export const Reports: React.FC = () => {
  </Card>
 
  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
- <Card variant="glass" className="p-6">
+ <Card data-testid="reports-card-10" variant="glass" className="p-6">
  <h3 className="text-lg font-display font-bold text-gray-900 mb-4">Savings Growth</h3>
  {savingsGrowth.length === 0 ? (
  <p className="text-sm text-gray-500">No savings data available.</p>
@@ -701,7 +701,7 @@ export const Reports: React.FC = () => {
  )}
  </Card>
 
- <Card variant="glass" className="p-6">
+ <Card data-testid="reports-card-11" variant="glass" className="p-6">
  <h3 className="text-lg font-display font-bold text-gray-900 mb-4">Income vs Expense</h3>
  <ResponsiveContainer width="100%" height={280}>
  <BarChart data={incomeExpenseData}>
@@ -715,22 +715,22 @@ export const Reports: React.FC = () => {
  </Card>
  </div>
 
- <Card variant="glass" className="p-6">
+ <Card data-testid="reports-card-12" variant="glass" className="p-6">
  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
  <div>
  <h3 className="text-lg font-display font-bold text-gray-900">Transactions</h3>
  <p className="text-sm text-gray-500">Search and filter detailed activity.</p>
  </div>
  <div className="flex flex-wrap gap-2">
- {canPdf && <Button onClick={() => void downloadPDF()} className="rounded-full px-4 py-2 text-xs bg-black text-white hover:bg-gray-900">Download PDF</Button>}
- {canCsv && <Button onClick={exportCSV} className="rounded-full px-4 py-2 text-xs bg-white border border-gray-200 text-gray-900 hover:bg-gray-50">Export CSV</Button>}
- {canExcel && <Button onClick={exportExcel} className="rounded-full px-4 py-2 text-xs bg-white border border-gray-200 text-gray-900 hover:bg-gray-50">Export Excel</Button>}
+ {canPdf && <Button data-testid="reports-download-pdf" onClick={() => void downloadPDF()} className="rounded-full px-4 py-2 text-xs bg-black text-white hover:bg-gray-900">Download PDF</Button>}
+ {canCsv && <Button data-testid="reports-export-csv" onClick={exportCSV} className="rounded-full px-4 py-2 text-xs bg-white border border-gray-200 text-gray-900 hover:bg-gray-50">Export CSV</Button>}
+ {canExcel && <Button data-testid="reports-export-excel" onClick={exportExcel} className="rounded-full px-4 py-2 text-xs bg-white border border-gray-200 text-gray-900 hover:bg-gray-50">Export Excel</Button>}
  </div>
  </div>
 
  <div className="flex flex-col md:flex-row md:items-center gap-3 mb-4">
  <label htmlFor="reports-search-transactions" className="sr-only">Search transactions</label>
- <input
+ <input data-testid="reports-search-transactions"
  id="reports-search-transactions"
  type="text"
  value={searchQuery}
@@ -741,7 +741,7 @@ export const Reports: React.FC = () => {
  className="flex-1 px-3 py-2 border border-gray-200 rounded-lg"
  />
  <label htmlFor="reports-category-filter" className="sr-only">Filter transactions by category</label>
- <select
+ <select data-testid="reports-filter-transactions-by-category"
  id="reports-category-filter"
  value={categoryFilter}
  onChange={(e) => setCategoryFilter(e.target.value)}
@@ -749,15 +749,15 @@ export const Reports: React.FC = () => {
  title="Filter transactions by category"
  className="px-3 py-2 border border-gray-200 rounded-lg"
  >
- <option value="all">All Categories</option>
+ <option data-testid="reports-all-categories" value="all">All Categories</option>
  {categoryOptions.map((category) => (
- <option key={category} value={category}>{category}</option>
+ <option data-testid={`reports-option-${category}`} key={category} value={category}>{category}</option>
  ))}
  </select>
  </div>
 
  <div className="overflow-x-auto">
- <table className="w-full text-sm">
+ <table data-testid="reports-table" className="w-full text-sm">
  <thead className="bg-white text-gray-600">
  <tr>
  <th className="text-left p-3">Date</th>
@@ -794,7 +794,7 @@ export const Reports: React.FC = () => {
  </Card>
 
  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
- <Card variant="glass" className="p-6">
+ <Card data-testid="reports-card-13" variant="glass" className="p-6">
  <h3 className="text-lg font-display font-bold text-gray-900 mb-4">Financial Summary</h3>
  <div className="space-y-3">
  <div className="p-4 bg-white rounded-xl hover:bg-gray-100 transition-colors">
@@ -812,7 +812,7 @@ export const Reports: React.FC = () => {
  </div>
  </Card>
 
- <Card variant="glass" className="p-6">
+ <Card data-testid="reports-card-14" variant="glass" className="p-6">
  <h3 className="text-lg font-display font-bold text-gray-900 mb-4">Net Worth Snapshot</h3>
  <div className="p-5 bg-black/5 rounded-2xl border border-black/10">
  <p className="text-xs text-gray-600 font-medium uppercase tracking-wide">Net Worth</p>

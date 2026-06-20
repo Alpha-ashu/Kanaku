@@ -44,7 +44,7 @@ export const PageHeaderCard: React.FC<PageHeaderProps> = ({
  <div className="flex flex-row flex-wrap items-center justify-between gap-4 w-full">
  <div className="flex items-center gap-4">
  {showBack && (
- <button
+ <button data-testid="page-header-go-back"
  onClick={handleBackClick}
  className="w-10 h-10 flex lg:!hidden items-center justify-center bg-transparent border border-slate-200 hover:bg-slate-100/50 rounded-xl transition-all shrink-0 active:scale-95 group"
  aria-label="Go back"
@@ -78,7 +78,7 @@ export const SegmentedTabs = ({ tabs, activeTab, onChange }: { tabs: { id: strin
  {tabs.map(tab => {
  const isActive = activeTab === tab.id;
  return (
- <button
+ <button data-testid={`page-header-button-${tab.id}`}
  key={tab.id}
  onClick={() => onChange(tab.id)}
  className={cn(
@@ -98,7 +98,7 @@ export const SegmentedTabs = ({ tabs, activeTab, onChange }: { tabs: { id: strin
 
 export const PrimaryActionButton = ({ onClick, children, icon, className, variant = 'primary' }: { onClick?: () => void, children: React.ReactNode, icon?: React.ReactNode, className?: string, variant?: 'primary' | 'secondary' }) => {
  return (
- <button
+ <button data-testid="page-header-button-2"
  onClick={onClick}
  className={cn(
 "flex items-center justify-center gap-2 px-8 py-4 rounded-[20px] font-black transition-all active:scale-95 whitespace-nowrap shadow-xl shrink-0 uppercase tracking-widest text-[11px]",
@@ -119,7 +119,7 @@ export const SearchHeader = ({ value, onChange, placeholder ="Search..." }: { va
  <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-indigo-500 transition-colors">
  <Search size={18} strokeWidth={3} />
  </div>
- <input
+ <input data-testid="page-header-placeholder"
  type="text"
  value={value}
  onChange={e => onChange(e.target.value)}

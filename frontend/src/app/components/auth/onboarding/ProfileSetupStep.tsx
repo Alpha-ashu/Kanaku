@@ -101,7 +101,7 @@ export const ProfileSetupStep: React.FC<ProfileSetupStepProps> = ({
  };
 
  return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form data-testid="profile-setup-step-form" onSubmit={handleSubmit} className="space-y-6">
       <div className="text-center mb-4 md:mb-6">
         <h3 className="text-xl font-bold text-gray-900 mb-1">
           Profile Information
@@ -129,7 +129,7 @@ export const ProfileSetupStep: React.FC<ProfileSetupStepProps> = ({
           <div className="w-full">
             <div className="flex items-center justify-between mb-3">
               <h4 className="text-sm font-semibold text-gray-900">Choose Your Avatar</h4>
-              <button
+              <button data-testid="profile-setup-step-save-avatar"
                 type="button"
                 onClick={() => onUpdate({ avatarId: pendingAvatar.id, avatarUrl: pendingAvatar.url })}
                 className="inline-flex items-center gap-2 rounded-full border border-blue-200 px-4 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-50 transition-colors"
@@ -141,7 +141,7 @@ export const ProfileSetupStep: React.FC<ProfileSetupStepProps> = ({
 
             <div className="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-6 lg:grid-cols-7 gap-2 max-h-[300px] overflow-y-auto p-2 border border-gray-100 rounded-xl bg-gray-50/30 scrollbar-thin scrollbar-thumb-gray-200">
               {AVATAR_OPTIONS.map((avatar) => (
-                <button
+                <button data-testid={`profile-setup-step-select-avatar-${avatar.id}`}
                   key={avatar.id}
                   type="button"
                   onClick={() => setPendingAvatarId(avatar.id)}
@@ -171,7 +171,7 @@ export const ProfileSetupStep: React.FC<ProfileSetupStepProps> = ({
             <label htmlFor="gender" className="block text-sm font-medium text-gray-700 mb-1">
               Gender
             </label>
-            <select
+            <select data-testid="profile-setup-step-select"
               id="gender"
               value={data.gender || ''}
               onChange={(e) => onUpdate({ gender: e.target.value })}
@@ -179,11 +179,11 @@ export const ProfileSetupStep: React.FC<ProfileSetupStepProps> = ({
                 errors.gender ? 'border-red-500' : 'border-gray-300'
               }`}
             >
-              <option value="">Select gender</option>
-              <option value="male">Male</option>
-              <option value="female">Female</option>
-              <option value="non-binary">Non-binary</option>
-              <option value="prefer-not-to-say">Prefer not to say</option>
+              <option data-testid="profile-setup-step-select-gender" value="">Select gender</option>
+              <option data-testid="profile-setup-step-male" value="male">Male</option>
+              <option data-testid="profile-setup-step-female" value="female">Female</option>
+              <option data-testid="profile-setup-step-non-binary" value="non-binary">Non-binary</option>
+              <option data-testid="profile-setup-step-prefer-not-to-say" value="prefer-not-to-say">Prefer not to say</option>
             </select>
             {errors.gender && (
               <p className="mt-1 text-sm text-red-600">{errors.gender}</p>
@@ -194,7 +194,7 @@ export const ProfileSetupStep: React.FC<ProfileSetupStepProps> = ({
             <label htmlFor="dateOfBirth" className="block text-sm font-medium text-gray-700 mb-1">
               Date of Birth
             </label>
-            <div 
+            <div data-testid="profile-setup-step-div" 
               className="relative group w-full" 
               onClick={(e) => {
                 const input = e.currentTarget.querySelector('input');
@@ -220,7 +220,7 @@ export const ProfileSetupStep: React.FC<ProfileSetupStepProps> = ({
                 </span>
                 <Calendar size={14} className="text-gray-400" />
               </div>
-              <input
+              <input data-testid="profile-setup-step-input"
                 type="date"
                 id="dateOfBirth"
                 value={data.dateOfBirth}
@@ -238,7 +238,7 @@ export const ProfileSetupStep: React.FC<ProfileSetupStepProps> = ({
             <label htmlFor="jobType" className="block text-sm font-medium text-gray-700 mb-1">
               Job Type
             </label>
-            <select
+            <select data-testid="profile-setup-step-select-2"
               id="jobType"
               value={data.jobType}
               onChange={(e) => onUpdate({ jobType: e.target.value })}
@@ -246,9 +246,9 @@ export const ProfileSetupStep: React.FC<ProfileSetupStepProps> = ({
                 errors.jobType ? 'border-red-500' : 'border-gray-300'
               }`}
             >
-              <option value="">Select job type</option>
+              <option data-testid="profile-setup-step-select-job-type" value="">Select job type</option>
               {JOB_TYPES.map((job) => (
-                <option key={job} value={job}>
+                <option data-testid={`profile-setup-step-option-${job}`} key={job} value={job}>
                   {job}
                 </option>
               ))}
@@ -265,7 +265,7 @@ export const ProfileSetupStep: React.FC<ProfileSetupStepProps> = ({
                 <span className="ml-1 text-xs font-normal text-gray-400">(Optional)</span>
               )}
             </label>
-            <input
+            <input data-testid="profile-setup-step-is-salary-optional-not"
               type="number"
               id="salary"
               value={data.salary}
@@ -281,7 +281,7 @@ export const ProfileSetupStep: React.FC<ProfileSetupStepProps> = ({
           </div>
 
           <div className="pt-2">
-            <button
+            <button data-testid="profile-setup-step-continue-to-bank-account"
               type="submit"
               className="w-full bg-blue-600 text-white py-2.5 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-sm"
             >

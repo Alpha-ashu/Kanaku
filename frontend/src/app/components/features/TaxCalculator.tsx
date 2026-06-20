@@ -127,7 +127,7 @@ export const TaxCalculator: React.FC<TaxCalculatorProps> = ({
  <label className="block text-sm font-medium text-gray-700 mb-1">
  Tax Year
  </label>
- <input
+ <input data-testid="tax-calculator-input"
  type="number"
  value={formData.year}
  onChange={(e) =>
@@ -142,15 +142,15 @@ export const TaxCalculator: React.FC<TaxCalculatorProps> = ({
  <label className="block text-sm font-medium text-gray-700 mb-1">
  Country
  </label>
- <select
+ <select data-testid="tax-calculator-select"
  value={formData.country}
  onChange={(e) =>
  setFormData({ ...formData, country: e.target.value })
  }
  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
  >
- <option value="india">India</option>
- <option value="usa">USA</option>
+ <option data-testid="tax-calculator-india" value="india">India</option>
+ <option data-testid="tax-calculator-usa" value="usa">USA</option>
  </select>
  </div>
 
@@ -159,17 +159,17 @@ export const TaxCalculator: React.FC<TaxCalculatorProps> = ({
  <label className="block text-sm font-medium text-gray-700 mb-1">
  Filing Status
  </label>
- <select
+ <select data-testid="tax-calculator-select-2"
  value={formData.filingStatus}
  onChange={(e) =>
  setFormData({ ...formData, filingStatus: e.target.value })
  }
  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
  >
- <option value="singleFiler">Single</option>
- <option value="marriedFiler">Married Filing Jointly</option>
- <option value="headOfHousehold">Head of Household</option>
- <option value="seniorCitizen">Senior Citizen</option>
+ <option data-testid="tax-calculator-single" value="singleFiler">Single</option>
+ <option data-testid="tax-calculator-married-filing-jointly" value="marriedFiler">Married Filing Jointly</option>
+ <option data-testid="tax-calculator-head-of-household" value="headOfHousehold">Head of Household</option>
+ <option data-testid="tax-calculator-senior-citizen" value="seniorCitizen">Senior Citizen</option>
  </select>
  </div>
 
@@ -180,7 +180,7 @@ export const TaxCalculator: React.FC<TaxCalculatorProps> = ({
  </label>
  <div className="flex items-center">
  <span className="text-gray-600 mr-2">{currency}</span>
- <input
+ <input data-testid="tax-calculator-input-2"
  type="number"
  step="0.01"
  value={formData.totalIncome}
@@ -200,7 +200,7 @@ export const TaxCalculator: React.FC<TaxCalculatorProps> = ({
  </label>
  <div className="flex items-center">
  <span className="text-gray-600 mr-2">{currency}</span>
- <input
+ <input data-testid="tax-calculator-medical-education-charity-etc"
  type="number"
  step="0.01"
  value={formData.deductions}
@@ -214,7 +214,7 @@ export const TaxCalculator: React.FC<TaxCalculatorProps> = ({
  </div>
 
  {/* Calculate Button */}
- <button
+ <button data-testid="tax-calculator-calculate-tax"
  onClick={handleCalculate}
  className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
  >
@@ -265,7 +265,7 @@ export const TaxCalculator: React.FC<TaxCalculatorProps> = ({
  )}
 
  {/* Close Button */}
- <button
+ <button data-testid="tax-calculator-close"
  onClick={onClose}
  className="w-full px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
  >

@@ -200,7 +200,7 @@ export const StatementImport: React.FC<StatementImportProps> = ({
  if (!file) return <Upload size={24} />;
  
  if (file.type === 'application/pdf') return <FileText size={24} />;
- if (file.type === 'text/csv') return <Table size={24} />;
+ if (file.type === 'text/csv') return <Table data-testid="statement-import-table" size={24} />;
  return <FileText size={24} />;
  };
 
@@ -229,11 +229,11 @@ export const StatementImport: React.FC<StatementImportProps> = ({
  };
 
  return (
- <div 
+ <div data-testid="statement-import-div" 
  className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4"
  onClick={(e) => e.target === e.currentTarget && onCancel?.()}
  >
- <motion.div
+ <motion.div data-testid="statement-import-div-2"
  initial={{ opacity: 0, y: 20, scale: 0.95 }}
  animate={{ opacity: 1, y: 0, scale: 1 }}
  exit={{ opacity: 0, scale: 0.95 }}
@@ -241,7 +241,7 @@ export const StatementImport: React.FC<StatementImportProps> = ({
  className="bg-white/95 backdrop-blur-2xl border border-white/20 rounded-[2rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)] w-[95%] max-w-lg max-h-[85vh] overflow-hidden flex flex-col relative z-[101] pointer-events-auto"
  >
  {/* Hidden file input */}
- <input
+ <input data-testid="statement-import-input"
  type="file"
  ref={fileInputRef}
  onChange={handleFileSelect}
@@ -263,7 +263,7 @@ export const StatementImport: React.FC<StatementImportProps> = ({
  <p className="text-sm font-medium text-gray-500">Account: <span className="text-gray-900">{accountName}</span></p>
  </div>
  </div>
- <button
+ <button data-testid="statement-import-cancel-statement-import"
  onClick={(e) => { e.stopPropagation(); onCancel?.(); }}
  className="p-2.5 bg-white hover:bg-gray-100 rounded-2xl transition-all duration-200 group active:scale-95 touch-manipulation"
  aria-label="Cancel statement import"
@@ -312,7 +312,7 @@ export const StatementImport: React.FC<StatementImportProps> = ({
  </p>
  
  <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
- <Button
+ <Button data-testid="statement-import-button"
  onClick={() => fileInputRef.current?.click()}
  className="rounded-2xl px-8 h-12 bg-white border border-gray-200 text-gray-900 hover:bg-gray-50 hover:shadow-md transition-all font-semibold"
  >
@@ -321,7 +321,7 @@ export const StatementImport: React.FC<StatementImportProps> = ({
  </Button>
  
  {file && (
- <Button
+ <Button data-testid="statement-import-analyze-statement"
  onClick={handleUpload}
  className="rounded-2xl px-8 h-12 bg-blue-600 text-white hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-200 transition-all font-semibold animate-in fade-in zoom-in duration-300"
  >
@@ -433,7 +433,7 @@ export const StatementImport: React.FC<StatementImportProps> = ({
  <span className="text-[9px] font-black text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded-md uppercase">
  {selectedTransactions.size} SEL
  </span>
- <Button
+ <Button data-testid="statement-import-button-2"
  variant="ghost"
  size="sm"
  onClick={toggleAllTransactions}
@@ -447,7 +447,7 @@ export const StatementImport: React.FC<StatementImportProps> = ({
  <div className="bg-white/50 rounded-3xl border border-gray-100 overflow-hidden">
  <div className="max-h-[250px] overflow-y-auto custom-scrollbar divide-y divide-gray-100">
  {importResult.transactions.map((transaction, index) => (
- <motion.div
+ <motion.div data-testid={`statement-import-div-3-${index}`}
  key={index}
  initial={{ opacity: 0 }}
  animate={{ opacity: 1 }}
@@ -508,14 +508,14 @@ export const StatementImport: React.FC<StatementImportProps> = ({
 
  {/* Actions */}
  <div className="flex gap-4 pt-4">
- <Button
+ <Button data-testid="statement-import-discard"
  variant="outline"
  onClick={onCancel}
  className="flex-1 h-12 md:h-14 rounded-xl md:rounded-2xl border-gray-200 text-gray-600 font-bold hover:bg-gray-50 transition-all"
  >
  Discard
  </Button>
- <Button
+ <Button data-testid="statement-import-complete"
  onClick={handleImport}
  disabled={selectedTransactions.size === 0}
  className="flex-[2] h-11 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 shadow-xl shadow-blue-200 transition-all flex items-center justify-center gap-2 text-xs"
@@ -562,7 +562,7 @@ export const StatementImport: React.FC<StatementImportProps> = ({
  <p className="text-gray-500 mb-6">There was an error processing your statement. Please check the file format and try again.</p>
  )}
  <div className="flex gap-3 justify-center">
- <Button onClick={() => { setImportState('idle'); setErrorDetail(''); }} className="bg-blue-600 text-white hover:bg-blue-700">
+ <Button data-testid="statement-import-try-again" onClick={() => { setImportState('idle'); setErrorDetail(''); }} className="bg-blue-600 text-white hover:bg-blue-700">
  Try Again
  </Button>
  </div>

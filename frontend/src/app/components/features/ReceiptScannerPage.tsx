@@ -87,14 +87,14 @@ function BillCard({
         </span>
         {/* Action buttons on hover */}
         <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
-          <button
+          <button data-testid="receipt-scanner-page-view-receipt"
             onClick={onView}
             className="flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-gray-800 shadow hover:bg-white"
             title="View receipt"
           >
             <Eye size={16} />
           </button>
-          <button
+          <button data-testid="receipt-scanner-page-delete"
             onClick={onDelete}
             className="flex h-9 w-9 items-center justify-center rounded-full bg-red-50 text-red-600 shadow hover:bg-red-100"
             title="Delete"
@@ -151,8 +151,8 @@ function BillDetailModal({ doc, tx, currency, onClose }: { doc: DocumentRecord; 
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
-      <div
+    <div data-testid="receipt-scanner-page-div" className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
+      <div data-testid="receipt-scanner-page-div-2"
         className="relative w-full max-w-lg overflow-hidden rounded-3xl bg-white shadow-2xl"
         onClick={e => e.stopPropagation()}
       >
@@ -180,7 +180,7 @@ function BillDetailModal({ doc, tx, currency, onClose }: { doc: DocumentRecord; 
           </dl>
         </div>
         <div className="border-t border-gray-100 px-5 py-3">
-          <Button variant="secondary" className="w-full" onClick={onClose}>Close</Button>
+          <Button data-testid="receipt-scanner-page-close" variant="secondary" className="w-full" onClick={onClose}>Close</Button>
         </div>
       </div>
     </div>
@@ -259,7 +259,7 @@ export const ReceiptScannerPage: React.FC = () => {
             <h1 className="text-2xl font-black text-gray-900 tracking-tight">Bills & Receipts</h1>
             <p className="mt-0.5 text-sm text-gray-500">{receipts.length} receipt{receipts.length !== 1 ? 's' : ''} stored</p>
           </div>
-          <Button
+          <Button data-testid="receipt-scanner-page-scan-add-bill"
             onClick={() => setScannerOpen(true)}
             className="flex items-center gap-2 rounded-2xl bg-gray-900 px-5 py-2.5 text-sm font-bold text-white shadow hover:bg-gray-800"
           >
@@ -271,7 +271,7 @@ export const ReceiptScannerPage: React.FC = () => {
         {/* Tabs */}
         <div className="flex gap-1 rounded-2xl bg-gray-100 p-1">
           {TABS.map(tab => (
-            <button
+            <button data-testid={`receipt-scanner-page-button-${tab.key}`}
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
               className={cn(
@@ -309,7 +309,7 @@ export const ReceiptScannerPage: React.FC = () => {
               </p>
             </div>
             {activeTab === 'all' && (
-              <Button
+              <Button data-testid="receipt-scanner-page-add-your-first-bill"
                 onClick={() => setScannerOpen(true)}
                 className="mt-2 flex items-center gap-2 rounded-2xl bg-gray-900 px-5 py-2.5 text-sm font-bold text-white"
               >

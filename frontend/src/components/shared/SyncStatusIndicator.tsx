@@ -103,7 +103,7 @@ export function SyncStatusIndicator({
       onMouseLeave={handleMouseLeave}
     >
       {/* Main Button */}
-      <button
+      <button data-testid="sync-status-indicator-error-sync-error-click"
         onClick={handleManualSync}
         disabled={isManualSyncing}
         className={`

@@ -65,8 +65,8 @@ export const OnboardingStep3: React.FC<OnboardingStep3Props> = ({
  };
 
  return (
- <form onSubmit={handleSubmit} className="space-y-4">
- <input
+ <form data-testid="onboarding-step3-form" onSubmit={handleSubmit} className="space-y-4">
+ <input data-testid="onboarding-step3-username"
  type="text"
  name="username"
  value=""
@@ -90,7 +90,7 @@ export const OnboardingStep3: React.FC<OnboardingStep3Props> = ({
  6-Digit PIN
  </label>
  <div className="relative">
- <input
+ <input data-testid="onboarding-step3-input"
  type={showPin ? 'text' : 'password'}
  id="pin"
  value={data.pin}
@@ -107,7 +107,7 @@ export const OnboardingStep3: React.FC<OnboardingStep3Props> = ({
  autoComplete="new-password"
  inputMode="numeric"
  />
- <button
+ <button data-testid="onboarding-step3-button"
  type="button"
  onClick={() => setShowPin(!showPin)}
  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
@@ -125,7 +125,7 @@ export const OnboardingStep3: React.FC<OnboardingStep3Props> = ({
  Confirm PIN
  </label>
  <div className="relative">
- <input
+ <input data-testid="onboarding-step3-input-2"
  type={showPin ? 'text' : 'password'}
  id="confirmPin"
  value={data.confirmPin}
@@ -141,7 +141,7 @@ export const OnboardingStep3: React.FC<OnboardingStep3Props> = ({
  autoComplete="new-password"
  inputMode="numeric"
  />
- <button
+ <button data-testid="onboarding-step3-button-2"
  type="button"
  onClick={() => setShowPin(!showPin)}
  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
@@ -174,7 +174,7 @@ export const OnboardingStep3: React.FC<OnboardingStep3Props> = ({
  </div>
 
  <div className="flex items-center justify-between">
- <button
+ <button data-testid="onboarding-step3-generate-random-pin"
  type="button"
  onClick={generateRandomPin}
  className="text-sm text-blue-600 hover:text-blue-700 font-medium"
@@ -184,14 +184,14 @@ export const OnboardingStep3: React.FC<OnboardingStep3Props> = ({
  </div>
 
  <div className="flex space-x-3">
- <button
+ <button data-testid="onboarding-step3-back"
  type="button"
  onClick={onBack}
  className="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors font-medium"
  >
  Back
  </button>
- <button
+ <button data-testid="onboarding-step3-button-3"
  type="submit"
  disabled={isCreating}
  className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"

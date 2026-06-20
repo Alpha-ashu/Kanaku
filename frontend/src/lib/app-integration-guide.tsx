@@ -185,7 +185,7 @@ export function TransactionCreatedExample() {
     }
   };
 
-  return <button onClick={handleCreateTransaction}>Create Transaction</button>;
+  return <button data-testid="app-integration-guide-create-transaction" onClick={handleCreateTransaction}>Create Transaction</button>;
 }
 
 /**
@@ -239,7 +239,7 @@ export function SettingsPageExample() {
 
   return (
     <div className="space-y-4">
-      <button onClick={handleManualSync} className="px-4 py-2 bg-blue-500 text-white rounded">
+      <button data-testid="app-integration-guide-sync-now" onClick={handleManualSync} className="px-4 py-2 bg-blue-500 text-white rounded">
         Sync Now
       </button>
 

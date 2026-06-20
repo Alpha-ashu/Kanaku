@@ -183,9 +183,9 @@ export const RecurringTransactions: React.FC = () => {
 
         {/* Add Form */}
         {showAddForm && (
-          <Card variant="glass" className="p-8 mb-8 border-white/40 shadow-xl">
+          <Card data-testid="recurring-transactions-card" variant="glass" className="p-8 mb-8 border-white/40 shadow-xl">
             <h3 className="text-lg font-black text-slate-900 tracking-tight mb-6">Create New Recurring Schedule</h3>
-            <form onSubmit={handleCreate} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <form data-testid="recurring-transactions-form" onSubmit={handleCreate} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div>
                 <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Schedule Name</label>
                 <input
@@ -220,9 +220,9 @@ export const RecurringTransactions: React.FC = () => {
                   className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:border-indigo-600 transition-colors"
                   data-testid="recurring-form-type-select"
                 >
-                  <option value="expense">Expense</option>
-                  <option value="income">Income</option>
-                  <option value="transfer">Transfer</option>
+                  <option data-testid="recurring-transactions-expense" value="expense">Expense</option>
+                  <option data-testid="recurring-transactions-income" value="income">Income</option>
+                  <option data-testid="recurring-transactions-transfer" value="transfer">Transfer</option>
                 </select>
               </div>
 
@@ -246,9 +246,9 @@ export const RecurringTransactions: React.FC = () => {
                   className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:border-indigo-600 transition-colors"
                   data-testid="recurring-form-frequency-select"
                 >
-                  <option value="weekly">Weekly</option>
-                  <option value="monthly">Monthly</option>
-                  <option value="yearly">Yearly</option>
+                  <option data-testid="recurring-transactions-weekly" value="weekly">Weekly</option>
+                  <option data-testid="recurring-transactions-monthly" value="monthly">Monthly</option>
+                  <option data-testid="recurring-transactions-yearly" value="yearly">Yearly</option>
                 </select>
               </div>
 
@@ -272,9 +272,9 @@ export const RecurringTransactions: React.FC = () => {
                     className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:border-indigo-600 transition-colors"
                     data-testid="recurring-form-account-select"
                   >
-                    <option value="">— Select account —</option>
+                    <option data-testid="recurring-transactions-select-account" value="">— Select account —</option>
                     {accounts.map((a) => (
-                      <option key={a.id} value={String(a.id)}>{a.name}</option>
+                      <option data-testid={`recurring-transactions-option-${a.id}`} key={a.id} value={String(a.id)}>{a.name}</option>
                     ))}
                   </select>
                 </div>
@@ -305,7 +305,7 @@ export const RecurringTransactions: React.FC = () => {
         ) : (
           <div className="grid grid-cols-1 gap-6">
             {items.map((item) => (
-              <Card
+              <Card data-testid={`recurring-transactions-card-2-${item.id}`}
                 key={item.id}
                 variant="glass"
                 className={`p-6 border-white/40 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6 transition-all ${item.status === 'paused' ? 'opacity-65' : ''}`}

@@ -249,7 +249,7 @@ export const ReceiptScanner: React.FC<ReceiptScannerProps> = ({
  <p className="text-xs text-gray-400">{headerSubtitle}</p>
  </div>
  </div>
- <button
+ <button data-testid="receipt-scanner-close"
  type="button"
  onClick={handleClose}
  className="flex h-8 w-8 items-center justify-center rounded-xl transition-colors hover:bg-gray-100"
@@ -314,7 +314,7 @@ export const ReceiptScanner: React.FC<ReceiptScannerProps> = ({
  </div>
  </div>
  <label className="relative inline-flex items-center cursor-pointer">
- <input
+ <input data-testid="receipt-scanner-checkbox"
  type="checkbox"
  checked={onDeviceOnly}
  onChange={(e) => setOnDeviceOnly(e.target.checked)}
@@ -358,7 +358,7 @@ export const ReceiptScanner: React.FC<ReceiptScannerProps> = ({
  </div>
 
  {/* Hidden file inputs Scan mode */}
- <input
+ <input data-testid="receipt-scanner-upload-receipt-for-scanning"
  ref={fileInputRef}
  type="file"
  accept="image/*,.pdf,.heic,.heif,.webp"
@@ -366,7 +366,7 @@ export const ReceiptScanner: React.FC<ReceiptScannerProps> = ({
  className="hidden"
  aria-label="Upload receipt for scanning"
  />
- <input
+ <input data-testid="receipt-scanner-take-photo-for-scanning"
  ref={cameraInputRef}
  type="file"
  accept="image/*"
@@ -377,7 +377,7 @@ export const ReceiptScanner: React.FC<ReceiptScannerProps> = ({
  />
 
  {/* Hidden file inputs Attachment mode */}
- <input
+ <input data-testid="receipt-scanner-upload-attachment"
  ref={attachFileInputRef}
  type="file"
  accept="image/jpeg,image/png,image/webp,image/heic,image/heif,application/pdf"
@@ -385,7 +385,7 @@ export const ReceiptScanner: React.FC<ReceiptScannerProps> = ({
  className="hidden"
  aria-label="Upload attachment"
  />
- <input
+ <input data-testid="receipt-scanner-take-photo-for-attachment"
  ref={attachCameraInputRef}
  type="file"
  accept="image/*"

@@ -68,7 +68,7 @@ export const QuickActionModal: React.FC<QuickActionModalProps> = ({
  {isOpen && (
  <>
  {/* Backdrop */}
- <motion.div
+ <motion.div data-testid="quick-action-modal-div"
  initial={{ opacity: 0 }}
  animate={{ opacity: 1 }}
  exit={{ opacity: 0 }}
