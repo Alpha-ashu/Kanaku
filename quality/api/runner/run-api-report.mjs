@@ -167,6 +167,30 @@ async function seed(token) {
   return reg;
 }
 
+// Read-only discovery: GET each collection and remember a real id, so GET-by-id
+// endpoints resolve to an existing resource (2xx) instead of a placeholder (404).
+// Pure reads — no writes. Used in READONLY runs against an account with data.
+async function discover(token) {
+  const reg = {};
+  if (!token) return reg;
+  const targets = [
+    ['/accounts', 'accountId'], ['/goals', 'goalId'], ['/transactions', 'transactionId'],
+    ['/loans', 'loanId'], ['/investments', 'investmentId'], ['/friends', 'friendId'],
+    ['/devices', 'deviceId'], ['/notifications', 'notificationId'], ['/budgets', 'budgetId'],
+    ['/bills', 'billId'], ['/todos/lists', 'listId'], ['/gold', 'goldId'], ['/groups', 'groupId'],
+    ['/recurring', 'recurringId'], ['/sessions', 'sessionId'], ['/bookings', 'bookingId'],
+    ['/aa/consents', 'consentId'], ['/advisors', 'advisorId'], ['/collaborations', 'collaborationId'],
+  ];
+  for (const [p, key] of targets) {
+    const res = await http('GET', p, { token });
+    let arr = res.body?.data;
+    if (!Array.isArray(arr) && arr && typeof arr === 'object') arr = Object.values(arr).find((v) => Array.isArray(v));
+    const first = Array.isArray(arr) ? arr[0] : null;
+    if (first?.id) reg[key] = first.id;
+  }
+  return reg;
+}
+
 function substituteParams(endpoint, feature, reg, userId) {
   return endpoint.replace(/[:{]([A-Za-z0-9_]+)}?/g, (_, name) => {
     if (reg[name]) return reg[name];
@@ -232,8 +256,8 @@ async function main() {
   const auth = await authenticate();
   if (!auth.token) log('⚠ Could not obtain an access token — protected endpoints will return 401 (recorded as actual).');
   else log(`✓ Authenticated (userId: ${auth.userId || 'unknown'})`);
-  const reg = READONLY ? {} : await seed(auth.token);
-  log(READONLY ? '• Read-only run: skipped seeding; only GET endpoints will be fired.\n'
+  const reg = READONLY ? await discover(auth.token) : await seed(auth.token);
+  log(READONLY ? `• Read-only run: skipped seeding; discovered ids for ${Object.keys(reg).join(', ') || 'none'}; only GET endpoints will be fired.\n`
               : `✓ Seeded resources: ${Object.entries(reg).filter(([, v]) => v).map(([k]) => k).join(', ') || 'none'}\n`);
 
   // Flatten endpoints
