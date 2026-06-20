@@ -1,65 +1,114 @@
-﻿{
-    "endpoint":  "/api/v1/devices",
-    "method":  "GET",
-    "feature":  "devices",
-    "description":  "TODO: describe GET /api/v1/devices",
-    "auth":  "public",
-    "rateLimit":  "default",
-    "implementation":  {
-                           "controller":  "backend/src/features/devices/devices.controller.ts#s",
-                           "route":  "backend/src/features/devices/device.routes.ts",
-                           "validation":  "inline or none -- verify"
-                       },
-    "request":  {
-                    "headers":  {
-                                    "Content-Type":  "application/json"
-                                },
-                    "params":  {
-
-                               },
-                    "query":  {
-
-                              }
-                },
-    "responses":  {
-                      "200":  {
-                                  "description":  "TODO success shape",
-                                  "body":  {
-
-                                           }
-                              },
-                      "400":  {
-                                  "description":  "Validation failed",
-                                  "body":  {
-                                               "error":  "validation_error",
-                                               "issues":  [
-
-                                                          ]
-                                           }
-                              },
-                      "429":  {
-                                  "description":  "Rate limited",
-                                  "body":  {
-                                               "error":  "too_many_requests"
-                                           }
-                              },
-                      "500":  {
-                                  "description":  "Server error",
-                                  "body":  {
-                                               "error":  "internal_error"
-                                           }
-                              }
-                  },
-    "sideEffects":  {
-                        "writesDb":  false,
-                        "emitsSocket":  false,
-                        "transactional":  false,
-                        "audited":  false
-                    },
-    "notes":  "",
-    "generator":  {
-                      "auto":  true,
-                      "version":  1,
-                      "generatedAt":  "2026-06-19"
-                  }
+{
+  "endpoint": "/api/v1/devices",
+  "method": "GET",
+  "feature": "devices",
+  "description": "List registered devices",
+  "auth": "public",
+  "rateLimit": "default",
+  "implementation": {
+    "controller": "backend/src/features/devices/devices.controller.ts#s",
+    "route": "backend/src/features/devices/device.routes.ts",
+    "validation": "inline or none -- verify"
+  },
+  "request": {
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "params": {},
+    "query": {}
+  },
+  "responses": {
+    "200": {
+      "description": "TODO success shape",
+      "body": {
+        "success": true,
+        "data": [
+          {
+            "id": "uuid",
+            "deviceId": "device_abc",
+            "deviceName": "iPhone 15",
+            "platform": "ios",
+            "isActive": true
+          }
+        ]
+      }
+    },
+    "400": {
+      "description": "Validation failed",
+      "body": {
+        "error": "validation_error",
+        "issues": []
+      }
+    },
+    "401": {
+      "description": "Unauthorized",
+      "body": {
+        "success": false,
+        "error": "Human-readable error",
+        "code": "MISSING_FIELDS",
+        "details": [
+          {
+            "path": "string",
+            "message": "string",
+            "code": "string"
+          }
+        ]
+      }
+    },
+    "403": {
+      "description": "Forbidden",
+      "body": {
+        "success": false,
+        "error": "Human-readable error",
+        "code": "MISSING_FIELDS",
+        "details": [
+          {
+            "path": "string",
+            "message": "string",
+            "code": "string"
+          }
+        ]
+      }
+    },
+    "404": {
+      "description": "Not found",
+      "body": {
+        "success": false,
+        "error": "Human-readable error",
+        "code": "MISSING_FIELDS",
+        "details": [
+          {
+            "path": "string",
+            "message": "string",
+            "code": "string"
+          }
+        ]
+      }
+    },
+    "429": {
+      "description": "Rate limited",
+      "body": {
+        "error": "too_many_requests"
+      }
+    },
+    "500": {
+      "description": "Server error",
+      "body": {
+        "error": "internal_error"
+      }
+    }
+  },
+  "sideEffects": {
+    "writesDb": false,
+    "emitsSocket": false,
+    "transactional": false,
+    "audited": false
+  },
+  "notes": "",
+  "generator": {
+    "auto": true,
+    "version": 1,
+    "generatedAt": "2026-06-19",
+    "enrichedAt": "2026-06-20"
+  }
 }

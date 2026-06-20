@@ -1,78 +1,100 @@
-﻿{
-    "endpoint":  "/api/v1/dashboard/cashflow",
-    "method":  "GET",
-    "feature":  "dashboard",
-    "description":  "TODO: describe GET /api/v1/dashboard/cashflow",
-    "auth":  "bearer",
-    "rateLimit":  "default",
-    "implementation":  {
-                           "controller":  "backend/src/features/dashboard/dashboard.controller.ts#getCashflow",
-                           "route":  "backend/src/features/dashboard/dashboard.routes.ts",
-                           "validation":  "inline or none -- verify"
-                       },
-    "request":  {
-                    "headers":  {
-                                    "Content-Type":  "application/json",
-                                    "Authorization":  "Bearer \u003cjwt\u003e"
-                                },
-                    "params":  {
-
-                               },
-                    "query":  {
-
-                              }
-                },
-    "responses":  {
-                      "200":  {
-                                  "description":  "TODO success shape",
-                                  "body":  {
-
-                                           }
-                              },
-                      "400":  {
-                                  "description":  "Validation failed",
-                                  "body":  {
-                                               "error":  "validation_error",
-                                               "issues":  [
-
-                                                          ]
-                                           }
-                              },
-                      "429":  {
-                                  "description":  "Rate limited",
-                                  "body":  {
-                                               "error":  "too_many_requests"
-                                           }
-                              },
-                      "500":  {
-                                  "description":  "Server error",
-                                  "body":  {
-                                               "error":  "internal_error"
-                                           }
-                              },
-                      "401":  {
-                                  "description":  "Missing/invalid token",
-                                  "body":  {
-                                               "error":  "unauthorized"
-                                           }
-                              },
-                      "403":  {
-                                  "description":  "Forbidden",
-                                  "body":  {
-                                               "error":  "forbidden"
-                                           }
-                              }
-                  },
-    "sideEffects":  {
-                        "writesDb":  false,
-                        "emitsSocket":  false,
-                        "transactional":  false,
-                        "audited":  false
-                    },
-    "notes":  "",
-    "generator":  {
-                      "auto":  true,
-                      "version":  1,
-                      "generatedAt":  "2026-06-19"
-                  }
+{
+  "endpoint": "/api/v1/dashboard/cashflow",
+  "method": "GET",
+  "feature": "dashboard",
+  "description": "Monthly cashflow breakdown",
+  "auth": "bearer",
+  "rateLimit": "default",
+  "implementation": {
+    "controller": "backend/src/features/dashboard/dashboard.controller.ts#getCashflow",
+    "route": "backend/src/features/dashboard/dashboard.routes.ts",
+    "validation": "inline or none -- verify"
+  },
+  "request": {
+    "headers": {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer <jwt>"
+    },
+    "params": {},
+    "query": {
+      "months": 6
+    }
+  },
+  "responses": {
+    "200": {
+      "description": "TODO success shape",
+      "body": {
+        "success": true,
+        "data": {
+          "months": [
+            {
+              "month": "Jun 2026",
+              "income": 80000,
+              "expenses": 45000,
+              "savings": 35000
+            }
+          ]
+        }
+      }
+    },
+    "400": {
+      "description": "Validation failed",
+      "body": {
+        "error": "validation_error",
+        "issues": []
+      }
+    },
+    "401": {
+      "description": "Missing/invalid token",
+      "body": {
+        "error": "unauthorized"
+      }
+    },
+    "403": {
+      "description": "Forbidden",
+      "body": {
+        "error": "forbidden"
+      }
+    },
+    "404": {
+      "description": "Not found",
+      "body": {
+        "success": false,
+        "error": "Human-readable error",
+        "code": "MISSING_FIELDS",
+        "details": [
+          {
+            "path": "string",
+            "message": "string",
+            "code": "string"
+          }
+        ]
+      }
+    },
+    "429": {
+      "description": "Rate limited",
+      "body": {
+        "error": "too_many_requests"
+      }
+    },
+    "500": {
+      "description": "Server error",
+      "body": {
+        "error": "internal_error"
+      }
+    }
+  },
+  "sideEffects": {
+    "writesDb": false,
+    "emitsSocket": false,
+    "transactional": false,
+    "audited": false
+  },
+  "notes": "",
+  "generator": {
+    "auto": true,
+    "version": 1,
+    "generatedAt": "2026-06-19",
+    "enrichedAt": "2026-06-20"
+  }
 }

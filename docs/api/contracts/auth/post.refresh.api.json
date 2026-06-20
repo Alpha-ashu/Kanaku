@@ -1,68 +1,59 @@
-﻿{
-    "endpoint":  "/api/v1/auth/refresh",
-    "method":  "POST",
-    "feature":  "auth",
-    "description":  "TODO: describe POST /api/v1/auth/refresh",
-    "auth":  "public",
-    "rateLimit":  "auth (20/min)",
-    "implementation":  {
-                           "controller":  "backend/src/features/auth/auth.controller.ts#refreshToken",
-                           "route":  "backend/src/features/auth/auth.routes.ts",
-                           "validation":  "inline or none -- verify"
-                       },
-    "request":  {
-                    "headers":  {
-                                    "Content-Type":  "application/json"
-                                },
-                    "params":  {
-
-                               },
-                    "query":  {
-
-                              },
-                    "body":  {
-
-                             }
-                },
-    "responses":  {
-                      "200":  {
-                                  "description":  "TODO success shape",
-                                  "body":  {
-
-                                           }
-                              },
-                      "400":  {
-                                  "description":  "Validation failed",
-                                  "body":  {
-                                               "error":  "validation_error",
-                                               "issues":  [
-
-                                                          ]
-                                           }
-                              },
-                      "429":  {
-                                  "description":  "Rate limited",
-                                  "body":  {
-                                               "error":  "too_many_requests"
-                                           }
-                              },
-                      "500":  {
-                                  "description":  "Server error",
-                                  "body":  {
-                                               "error":  "internal_error"
-                                           }
-                              }
-                  },
-    "sideEffects":  {
-                        "writesDb":  true,
-                        "emitsSocket":  false,
-                        "transactional":  false,
-                        "audited":  false
-                    },
-    "notes":  "",
-    "generator":  {
-                      "auto":  true,
-                      "version":  1,
-                      "generatedAt":  "2026-06-19"
-                  }
+{
+  "endpoint": "/api/v1/auth/refresh",
+  "method": "POST",
+  "feature": "auth",
+  "description": "Create auth refresh",
+  "auth": "public",
+  "rateLimit": "auth (20/min)",
+  "implementation": {
+    "controller": "backend/src/features/auth/auth.controller.ts#refreshToken",
+    "route": "backend/src/features/auth/auth.routes.ts",
+    "validation": "inline or none -- verify"
+  },
+  "request": {
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "params": {},
+    "query": {},
+    "body": {}
+  },
+  "responses": {
+    "200": {
+      "description": "TODO success shape",
+      "body": {}
+    },
+    "400": {
+      "description": "Validation failed",
+      "body": {
+        "error": "validation_error",
+        "issues": []
+      }
+    },
+    "429": {
+      "description": "Rate limited",
+      "body": {
+        "error": "too_many_requests"
+      }
+    },
+    "500": {
+      "description": "Server error",
+      "body": {
+        "error": "internal_error"
+      }
+    }
+  },
+  "sideEffects": {
+    "writesDb": true,
+    "emitsSocket": false,
+    "transactional": false,
+    "audited": false
+  },
+  "notes": "",
+  "generator": {
+    "auto": true,
+    "version": 1,
+    "generatedAt": "2026-06-19",
+    "enrichedAt": "2026-06-20"
+  }
 }

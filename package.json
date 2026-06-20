@@ -45,6 +45,7 @@
     "qa:ui-inventory": "node scripts/gen-ui-inventory.mjs",
     "qa:ui-fix": "node scripts/fix-ui-testids.mjs",
     "qa:contract-audit": "node scripts/audit-api-contracts.mjs",
+    "qa:contract-enrich": "node scripts/enrich-api-contracts.mjs",
     "qa:regression": "node scripts/qa-regression-diff.mjs",
     "qa:reports": "npm run qa:ui-inventory && npm run qa:contract-audit",
     "clean": "rimraf frontend/dist backend/dist node_modules/.vite",

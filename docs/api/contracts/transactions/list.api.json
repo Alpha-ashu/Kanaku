@@ -1,67 +1,128 @@
-﻿{
-    "endpoint":  "/api/v1/transactions",
-    "method":  "GET",
-    "feature":  "transactions",
-    "description":  "TODO: describe GET /api/v1/transactions",
-    "auth":  "public",
-    "rateLimit":  "default",
-    "implementation":  {
-                           "controller":  "backend/src/features/transactions/transactions.controller.ts#a",
-                           "route":  "backend/src/features/transactions/transaction.routes.ts",
-                           "validation":  {
-                                              "query":  "backend/src/features/transactions/*.validation.ts#transactionQuerySchema"
-                                          }
-                       },
-    "request":  {
-                    "headers":  {
-                                    "Content-Type":  "application/json"
-                                },
-                    "params":  {
-
-                               },
-                    "query":  {
-
-                              }
-                },
-    "responses":  {
-                      "200":  {
-                                  "description":  "TODO success shape",
-                                  "body":  {
-
-                                           }
-                              },
-                      "400":  {
-                                  "description":  "Validation failed",
-                                  "body":  {
-                                               "error":  "validation_error",
-                                               "issues":  [
-
-                                                          ]
-                                           }
-                              },
-                      "429":  {
-                                  "description":  "Rate limited",
-                                  "body":  {
-                                               "error":  "too_many_requests"
-                                           }
-                              },
-                      "500":  {
-                                  "description":  "Server error",
-                                  "body":  {
-                                               "error":  "internal_error"
-                                           }
-                              }
-                  },
-    "sideEffects":  {
-                        "writesDb":  false,
-                        "emitsSocket":  false,
-                        "transactional":  false,
-                        "audited":  false
-                    },
-    "notes":  "",
-    "generator":  {
-                      "auto":  true,
-                      "version":  1,
-                      "generatedAt":  "2026-06-19"
-                  }
+{
+  "endpoint": "/api/v1/transactions",
+  "method": "GET",
+  "feature": "transactions",
+  "description": "List transactions",
+  "auth": "public",
+  "rateLimit": "default",
+  "implementation": {
+    "controller": "backend/src/features/transactions/transactions.controller.ts#a",
+    "route": "backend/src/features/transactions/transaction.routes.ts",
+    "validation": {
+      "query": "backend/src/features/transactions/*.validation.ts#transactionQuerySchema"
+    }
+  },
+  "request": {
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "params": {},
+    "query": {
+      "accountId": "uuid",
+      "startDate": "2026-01-01",
+      "endDate": "2026-12-31",
+      "category": "Food & Dining",
+      "page": 1,
+      "limit": 20
+    }
+  },
+  "responses": {
+    "200": {
+      "description": "TODO success shape",
+      "body": {
+        "success": true,
+        "data": {
+          "transactions": [
+            {
+              "id": "uuid",
+              "type": "expense",
+              "amount": 450,
+              "category": "Food & Dining",
+              "date": "2026-06-09"
+            }
+          ],
+          "totalCount": 142,
+          "page": 1,
+          "limit": 20
+        }
+      }
+    },
+    "400": {
+      "description": "Validation failed",
+      "body": {
+        "error": "validation_error",
+        "issues": []
+      }
+    },
+    "401": {
+      "description": "Unauthorized",
+      "body": {
+        "success": false,
+        "error": "Human-readable error",
+        "code": "MISSING_FIELDS",
+        "details": [
+          {
+            "path": "string",
+            "message": "string",
+            "code": "string"
+          }
+        ]
+      }
+    },
+    "403": {
+      "description": "Forbidden",
+      "body": {
+        "success": false,
+        "error": "Human-readable error",
+        "code": "MISSING_FIELDS",
+        "details": [
+          {
+            "path": "string",
+            "message": "string",
+            "code": "string"
+          }
+        ]
+      }
+    },
+    "404": {
+      "description": "Not found",
+      "body": {
+        "success": false,
+        "error": "Human-readable error",
+        "code": "MISSING_FIELDS",
+        "details": [
+          {
+            "path": "string",
+            "message": "string",
+            "code": "string"
+          }
+        ]
+      }
+    },
+    "429": {
+      "description": "Rate limited",
+      "body": {
+        "error": "too_many_requests"
+      }
+    },
+    "500": {
+      "description": "Server error",
+      "body": {
+        "error": "internal_error"
+      }
+    }
+  },
+  "sideEffects": {
+    "writesDb": false,
+    "emitsSocket": false,
+    "transactional": false,
+    "audited": false
+  },
+  "notes": "",
+  "generator": {
+    "auto": true,
+    "version": 1,
+    "generatedAt": "2026-06-19",
+    "enrichedAt": "2026-06-20"
+  }
 }

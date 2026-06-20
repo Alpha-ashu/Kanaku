@@ -1,68 +1,123 @@
-﻿{
-    "endpoint":  "/api/v1/sync/pull",
-    "method":  "POST",
-    "feature":  "sync",
-    "description":  "TODO: describe POST /api/v1/sync/pull",
-    "auth":  "public",
-    "rateLimit":  "default",
-    "implementation":  {
-                           "controller":  "backend/src/features/sync/sync.controller.ts#nextNextFunction",
-                           "route":  "backend/src/features/sync/sync.routes.ts",
-                           "validation":  "inline or none -- verify"
-                       },
-    "request":  {
-                    "headers":  {
-                                    "Content-Type":  "application/json"
-                                },
-                    "params":  {
-
-                               },
-                    "query":  {
-
-                              },
-                    "body":  {
-
-                             }
-                },
-    "responses":  {
-                      "200":  {
-                                  "description":  "TODO success shape",
-                                  "body":  {
-
-                                           }
-                              },
-                      "400":  {
-                                  "description":  "Validation failed",
-                                  "body":  {
-                                               "error":  "validation_error",
-                                               "issues":  [
-
-                                                          ]
-                                           }
-                              },
-                      "429":  {
-                                  "description":  "Rate limited",
-                                  "body":  {
-                                               "error":  "too_many_requests"
-                                           }
-                              },
-                      "500":  {
-                                  "description":  "Server error",
-                                  "body":  {
-                                               "error":  "internal_error"
-                                           }
-                              }
-                  },
-    "sideEffects":  {
-                        "writesDb":  true,
-                        "emitsSocket":  false,
-                        "transactional":  false,
-                        "audited":  false
-                    },
-    "notes":  "",
-    "generator":  {
-                      "auto":  true,
-                      "version":  1,
-                      "generatedAt":  "2026-06-19"
-                  }
+{
+  "endpoint": "/api/v1/sync/pull",
+  "method": "POST",
+  "feature": "sync",
+  "description": "Pull delta changes from cloud",
+  "auth": "public",
+  "rateLimit": "default",
+  "implementation": {
+    "controller": "backend/src/features/sync/sync.controller.ts#nextNextFunction",
+    "route": "backend/src/features/sync/sync.routes.ts",
+    "validation": "inline or none -- verify"
+  },
+  "request": {
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "params": {},
+    "query": {},
+    "body": {
+      "deviceId": "device_abc123",
+      "lastSyncedAt": "2026-06-08T10:00:00.000Z",
+      "entityTypes": [
+        "accounts",
+        "transactions"
+      ]
+    }
+  },
+  "responses": {
+    "200": {
+      "description": "TODO success shape",
+      "body": {
+        "success": true,
+        "data": {
+          "accounts": [],
+          "transactions": [
+            {
+              "id": "uuid",
+              "updatedAt": "2026-06-09T10:00:00Z"
+            }
+          ],
+          "syncedAt": "2026-06-09T10:01:00Z"
+        }
+      }
+    },
+    "400": {
+      "description": "Validation failed",
+      "body": {
+        "error": "validation_error",
+        "issues": []
+      }
+    },
+    "401": {
+      "description": "Unauthorized",
+      "body": {
+        "success": false,
+        "error": "Human-readable error",
+        "code": "MISSING_FIELDS",
+        "details": [
+          {
+            "path": "string",
+            "message": "string",
+            "code": "string"
+          }
+        ]
+      }
+    },
+    "403": {
+      "description": "Forbidden",
+      "body": {
+        "success": false,
+        "error": "Human-readable error",
+        "code": "MISSING_FIELDS",
+        "details": [
+          {
+            "path": "string",
+            "message": "string",
+            "code": "string"
+          }
+        ]
+      }
+    },
+    "404": {
+      "description": "Not found",
+      "body": {
+        "success": false,
+        "error": "Human-readable error",
+        "code": "MISSING_FIELDS",
+        "details": [
+          {
+            "path": "string",
+            "message": "string",
+            "code": "string"
+          }
+        ]
+      }
+    },
+    "429": {
+      "description": "Rate limited",
+      "body": {
+        "error": "too_many_requests"
+      }
+    },
+    "500": {
+      "description": "Server error",
+      "body": {
+        "error": "internal_error"
+      }
+    }
+  },
+  "sideEffects": {
+    "writesDb": true,
+    "emitsSocket": false,
+    "transactional": false,
+    "audited": false
+  },
+  "notes": "",
+  "generator": {
+    "auto": true,
+    "version": 1,
+    "generatedAt": "2026-06-19",
+    "enrichedAt": "2026-06-20"
+  }
 }

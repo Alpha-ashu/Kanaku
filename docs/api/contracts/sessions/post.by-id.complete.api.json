@@ -1,70 +1,114 @@
-﻿{
-    "endpoint":  "/api/v1/sessions/:id/complete",
-    "method":  "POST",
-    "feature":  "sessions",
-    "description":  "TODO: describe POST /api/v1/sessions/:id/complete",
-    "auth":  "public",
-    "rateLimit":  "default",
-    "implementation":  {
-                           "controller":  "backend/src/features/sessions/sessions.controller.ts#a",
-                           "route":  "backend/src/features/sessions/session.routes.ts",
-                           "validation":  {
-                                              "params":  "backend/src/features/sessions/*.validation.ts#sessionIdParamSchema"
-                                          }
-                       },
-    "request":  {
-                    "headers":  {
-                                    "Content-Type":  "application/json"
-                                },
-                    "params":  {
-                                   "id":  "string (required)"
-                               },
-                    "query":  {
-
-                              },
-                    "body":  {
-
-                             }
-                },
-    "responses":  {
-                      "200":  {
-                                  "description":  "TODO success shape",
-                                  "body":  {
-
-                                           }
-                              },
-                      "400":  {
-                                  "description":  "Validation failed",
-                                  "body":  {
-                                               "error":  "validation_error",
-                                               "issues":  [
-
-                                                          ]
-                                           }
-                              },
-                      "429":  {
-                                  "description":  "Rate limited",
-                                  "body":  {
-                                               "error":  "too_many_requests"
-                                           }
-                              },
-                      "500":  {
-                                  "description":  "Server error",
-                                  "body":  {
-                                               "error":  "internal_error"
-                                           }
-                              }
-                  },
-    "sideEffects":  {
-                        "writesDb":  true,
-                        "emitsSocket":  false,
-                        "transactional":  false,
-                        "audited":  false
-                    },
-    "notes":  "",
-    "generator":  {
-                      "auto":  true,
-                      "version":  1,
-                      "generatedAt":  "2026-06-19"
-                  }
+{
+  "endpoint": "/api/v1/sessions/:id/complete",
+  "method": "POST",
+  "feature": "sessions",
+  "description": "Complete session (Advisor only)",
+  "auth": "public",
+  "rateLimit": "default",
+  "implementation": {
+    "controller": "backend/src/features/sessions/sessions.controller.ts#a",
+    "route": "backend/src/features/sessions/session.routes.ts",
+    "validation": {
+      "params": "backend/src/features/sessions/*.validation.ts#sessionIdParamSchema"
+    }
+  },
+  "request": {
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "params": {
+      "id": "string (required)"
+    },
+    "query": {},
+    "body": {
+      "notes": "string"
+    }
+  },
+  "responses": {
+    "200": {
+      "description": "TODO success shape",
+      "body": {
+        "success": true,
+        "data": {},
+        "message": "string"
+      }
+    },
+    "400": {
+      "description": "Validation failed",
+      "body": {
+        "error": "validation_error",
+        "issues": []
+      }
+    },
+    "401": {
+      "description": "Unauthorized",
+      "body": {
+        "success": false,
+        "error": "Human-readable error",
+        "code": "MISSING_FIELDS",
+        "details": [
+          {
+            "path": "string",
+            "message": "string",
+            "code": "string"
+          }
+        ]
+      }
+    },
+    "403": {
+      "description": "Forbidden",
+      "body": {
+        "success": false,
+        "error": "Human-readable error",
+        "code": "MISSING_FIELDS",
+        "details": [
+          {
+            "path": "string",
+            "message": "string",
+            "code": "string"
+          }
+        ]
+      }
+    },
+    "404": {
+      "description": "Not found",
+      "body": {
+        "success": false,
+        "error": "Human-readable error",
+        "code": "MISSING_FIELDS",
+        "details": [
+          {
+            "path": "string",
+            "message": "string",
+            "code": "string"
+          }
+        ]
+      }
+    },
+    "429": {
+      "description": "Rate limited",
+      "body": {
+        "error": "too_many_requests"
+      }
+    },
+    "500": {
+      "description": "Server error",
+      "body": {
+        "error": "internal_error"
+      }
+    }
+  },
+  "sideEffects": {
+    "writesDb": true,
+    "emitsSocket": false,
+    "transactional": false,
+    "audited": false
+  },
+  "notes": "",
+  "generator": {
+    "auto": true,
+    "version": 1,
+    "generatedAt": "2026-06-19",
+    "enrichedAt": "2026-06-20"
+  }
 }

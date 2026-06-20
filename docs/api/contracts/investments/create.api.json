@@ -1,70 +1,127 @@
-﻿{
-    "endpoint":  "/api/v1/investments",
-    "method":  "POST",
-    "feature":  "investments",
-    "description":  "TODO: describe POST /api/v1/investments",
-    "auth":  "public",
-    "rateLimit":  "default",
-    "implementation":  {
-                           "controller":  "backend/src/features/investments/investments.controller.ts#a",
-                           "route":  "backend/src/features/investments/investment.routes.ts",
-                           "validation":  {
-                                              "body":  "backend/src/features/investments/*.validation.ts#investmentCreateSchema"
-                                          }
-                       },
-    "request":  {
-                    "headers":  {
-                                    "Content-Type":  "application/json"
-                                },
-                    "params":  {
-
-                               },
-                    "query":  {
-
-                              },
-                    "body":  {
-
-                             }
-                },
-    "responses":  {
-                      "200":  {
-                                  "description":  "TODO success shape",
-                                  "body":  {
-
-                                           }
-                              },
-                      "400":  {
-                                  "description":  "Validation failed",
-                                  "body":  {
-                                               "error":  "validation_error",
-                                               "issues":  [
-
-                                                          ]
-                                           }
-                              },
-                      "429":  {
-                                  "description":  "Rate limited",
-                                  "body":  {
-                                               "error":  "too_many_requests"
-                                           }
-                              },
-                      "500":  {
-                                  "description":  "Server error",
-                                  "body":  {
-                                               "error":  "internal_error"
-                                           }
-                              }
-                  },
-    "sideEffects":  {
-                        "writesDb":  true,
-                        "emitsSocket":  false,
-                        "transactional":  false,
-                        "audited":  false
-                    },
-    "notes":  "",
-    "generator":  {
-                      "auto":  true,
-                      "version":  1,
-                      "generatedAt":  "2026-06-19"
-                  }
+{
+  "endpoint": "/api/v1/investments",
+  "method": "POST",
+  "feature": "investments",
+  "description": "Create investment",
+  "auth": "public",
+  "rateLimit": "default",
+  "implementation": {
+    "controller": "backend/src/features/investments/investments.controller.ts#a",
+    "route": "backend/src/features/investments/investment.routes.ts",
+    "validation": {
+      "body": "backend/src/features/investments/*.validation.ts#investmentCreateSchema"
+    }
+  },
+  "request": {
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "params": {},
+    "query": {},
+    "body": {
+      "type": "stocks",
+      "name": "TATA MOTORS",
+      "symbol": "TATAMOTORS",
+      "units": 50,
+      "purchasePrice": 800,
+      "currentPrice": 0,
+      "purchaseDate": "2026-06-20",
+      "accountId": "uuid",
+      "maturityDate": "2026-06-20",
+      "interestRate": 0,
+      "notes": "string",
+      "clientRequestId": "string"
+    }
+  },
+  "responses": {
+    "200": {
+      "description": "TODO success shape",
+      "body": {}
+    },
+    "201": {
+      "description": "Created",
+      "body": {
+        "success": true,
+        "data": {},
+        "message": "string"
+      }
+    },
+    "400": {
+      "description": "Validation failed",
+      "body": {
+        "error": "validation_error",
+        "issues": []
+      }
+    },
+    "401": {
+      "description": "Unauthorized",
+      "body": {
+        "success": false,
+        "error": "Human-readable error",
+        "code": "MISSING_FIELDS",
+        "details": [
+          {
+            "path": "string",
+            "message": "string",
+            "code": "string"
+          }
+        ]
+      }
+    },
+    "403": {
+      "description": "Forbidden",
+      "body": {
+        "success": false,
+        "error": "Human-readable error",
+        "code": "MISSING_FIELDS",
+        "details": [
+          {
+            "path": "string",
+            "message": "string",
+            "code": "string"
+          }
+        ]
+      }
+    },
+    "404": {
+      "description": "Not found",
+      "body": {
+        "success": false,
+        "error": "Human-readable error",
+        "code": "MISSING_FIELDS",
+        "details": [
+          {
+            "path": "string",
+            "message": "string",
+            "code": "string"
+          }
+        ]
+      }
+    },
+    "429": {
+      "description": "Rate limited",
+      "body": {
+        "error": "too_many_requests"
+      }
+    },
+    "500": {
+      "description": "Server error",
+      "body": {
+        "error": "internal_error"
+      }
+    }
+  },
+  "sideEffects": {
+    "writesDb": true,
+    "emitsSocket": false,
+    "transactional": false,
+    "audited": false
+  },
+  "notes": "",
+  "generator": {
+    "auto": true,
+    "version": 1,
+    "generatedAt": "2026-06-19",
+    "enrichedAt": "2026-06-20"
+  }
 }
