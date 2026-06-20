@@ -5,6 +5,7 @@ import { captureAIEvent } from './ai.controller';
 import { aiEventBodySchema } from './ai.validation';
 import { getAIQuotaInfo } from '../../utils/aiUsageTracker';
 import { requireAIFeature } from '../../middleware/featureGate';
+import { authenticatedRateLimit } from '../../middleware/rateLimit';
 import {
   runAllAgents,
   runFinancialHealthScoreAgent,
@@ -27,7 +28,18 @@ router.get('/quota', async (req: AuthRequest, res: Response) => {
   res.json(info);
 });
 
-//  AI Agents Endpoints 
+//  AI Agents Endpoints
+
+// AI generation is expensive (LLM calls) — apply a stricter PER-USER rate limit on top
+// of feature gating + quota tracking. Placed after the cheap /events + /quota routes so
+// only the agent endpoints below are throttled. Env-tunable via AI_RATE_LIMIT.
+const aiGenerationLimiter = authenticatedRateLimit({
+  windowMs: 60_000,
+  max: Number(process.env.AI_RATE_LIMIT || 20),
+  scope: 'ai-generation',
+  message: 'AI request limit reached. Please wait a moment before trying again.',
+});
+router.use(aiGenerationLimiter);
 
 // Run all agents and return consolidated insights
 router.get('/insights', requireAIFeature('aiAutomation'), async (req: AuthRequest, res: Response) => {

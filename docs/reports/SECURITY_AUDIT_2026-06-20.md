@@ -17,7 +17,7 @@ deployment-ops that cannot be verified from source.
 |----|----------|------|--------|
 | F1 | High→**Fixed** | Auth rate limits too lenient (20/min for login+register) | **Fixed this pass** (layered per-flow limiters) |
 | F2 | Medium | Login challenge `code` returned in response body (`auth.controller.ts:343`) | Open — architectural (needs FE+BE + OTP delivery) |
-| F3 | Low | `backend/.env.test` committed | Open — **mock values only, no real secrets**; recommend untrack |
+| F3 | Low | `backend/.env.test` committed | **Accepted** — mock values only; loaded by `tests/setup.ts` and not CI-injected, so untracking would break backend tests for no real-secret gain |
 | F4 | Info | Access JWT is stateless (no server-side revocation list) | Accepted — mitigated by 15-min TTL + refresh-cookie clear on logout |
 | F5 | Ops | HTTPS/HSTS, DB network exposure, prod secret presence | Deployment checklist (below) — not verifiable from code |
 
@@ -61,7 +61,7 @@ deployment-ops that cannot be verified from source.
 
 - **Rate limiting:** Redis-backed (`INCR`+`pexpire`) with in-memory fallback, per-user *or* per-IP
   keying, `X-RateLimit-*` headers, and an **audit event on every limit hit** (`middleware/rateLimit.ts`). Global `/api/v1` limiter + per-route limiters + destructive (3/min) + the new login/register limiters (F1).
-- **AI endpoints:** authenticated + rate-limited; confirm a *stricter* per-user limit on generation routes (recommended hardening).
+- **AI endpoints:** authenticated + feature-gated + quota-tracked, and now a **stricter per-user limiter** (`ai-generation`, 20/min, env `AI_RATE_LIMIT`) on the expensive agent routes (`ai.routes.ts`) — added this pass.
 - **CAPTCHA / device fingerprinting:** device-id flow exists; CAPTCHA not present — acceptable given layered rate-limit + audit, recommended for public signup if abuse appears.
 
 ## 6. Secure Deployment & Infrastructure — ✅ headers PASS / ops checklist
@@ -95,7 +95,7 @@ deployment-ops that cannot be verified from source.
 | No secrets in frontend/repo | ✅ (F3: untrack `.env.test`) |
 | Ownership checks / IDOR eliminated | ✅ service-layer `(id, userId)` |
 | Login brute force blocked | ✅ layered limiters (F1) |
-| AI endpoint protected | ⚠️ add stricter per-user generation limit |
+| AI endpoint protected | ✅ feature gate + quota + per-user `ai-generation` limiter |
 | HTTPS enforced / DB not exposed / monitoring | ⚠️ deployment checklist (F5) |
 | No stack traces / internal IDs exposed | ✅ |
 
@@ -103,8 +103,9 @@ deployment-ops that cannot be verified from source.
 
 ## Remediation plan
 
-- **Fixed now:** F1 (auth rate limits).
-- **Short-term (recommended):** untrack `backend/.env.test` (F3); add a stricter per-user limiter to AI generation routes; confirm upload MIME/extension/size allow-lists.
+- **Fixed now:** F1 (auth rate limits); stricter per-user AI-generation limiter.
+- **Accepted:** F3 (`backend/.env.test` — mock values only; untracking would break test setup).
+- **Short-term (recommended):** confirm magic-byte (`file-type`) sniffing on receipt/document uploads.
 - **Coordinated FE+BE:** F2 — deliver login challenge code out-of-band (depends on working SendGrid/SMS OTP).
 - **Deployment ops (F5):** verify HTTPS redirect+HSTS active in prod, Supabase DB network-restricted, all prod secrets set, `prisma migrate deploy` run, and alerting wired on the existing `security.rate_limit_hit` / auth-failure audit events.
 
