@@ -76,6 +76,11 @@ export const SecurityProvider: React.FC<{ children: ReactNode }> = ({ children }
     setEncryptionKey(null);
     sessionStorage.removeItem('session_active');
     sessionStorage.removeItem('session_encryption_key');
+    // SECURITY: tell AuthContext to halt syncing and re-engage the data gate, so no
+    // financial data is fetched while locked and a fresh sync runs on the next unlock.
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('KANAKU_PIN_LOCKED'));
+    }
   };
 
   const logout = async () => {

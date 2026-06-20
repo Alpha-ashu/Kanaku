@@ -392,11 +392,12 @@ const AppContent: React.FC = () => {
     }
 
     if (user) {
-      // Render ASAP; run heavy init work in the background
+      // Render ASAP; run heavy init work in the background.
+      // NOTE: notifications + SMS detection fetch user data — they are gated behind PIN
+      // unlock in a separate effect below (not here), so nothing user-specific loads
+      // before authentication.
       setIsInitialized(true);
 
-      void Promise.resolve().then(() => initializeNotifications());
-      void Promise.resolve().then(() => initializeSmsTransactionDetection());
       HealthChecker.checkHealth().catch(console.error);
       HealthChecker.startPeriodicCheck(60000).catch(console.error);
 
@@ -417,6 +418,15 @@ const AppContent: React.FC = () => {
     return () => { cleanupNetwork(); };
   }, [user, authLoading, criticalPagesPrefetched]);
 
+  // SECURITY: notifications + SMS detection fetch user data — start them only AFTER the
+  // user has unlocked with their PIN (never on the pre-auth PIN screen).
+  useEffect(() => {
+    if (user && isAuthenticated) {
+      void Promise.resolve().then(() => initializeNotifications());
+      void Promise.resolve().then(() => initializeSmsTransactionDetection());
+    }
+  }, [user, isAuthenticated]);
+
   // Trigger data sync after PIN verification
   useEffect(() => {
     if (user && isAuthenticated && !dataReady && !dataSyncing) {
@@ -424,6 +434,20 @@ const AppContent: React.FC = () => {
       void triggerDataSync(requiredTables);
     }
   }, [user, isAuthenticated, dataReady, dataSyncing, triggerDataSync, currentPage]);
+
+  // SECURITY: re-sync the current page's tables when the network reconnects — only while
+  // unlocked (replaces the eager re-sync removed from AuthContext.handleOnline).
+  useEffect(() => {
+    if (!user || !isAuthenticated || !dataReady) return;
+    const handleReconnect = () => {
+      const requiredTables = PAGE_REQUIRED_TABLES[currentPage] || [];
+      if (requiredTables.length > 0) {
+        void syncUserDataFromCloud(user.id, requiredTables);
+      }
+    };
+    window.addEventListener('online', handleReconnect);
+    return () => window.removeEventListener('online', handleReconnect);
+  }, [user, isAuthenticated, dataReady, currentPage]);
 
   // Handle background sync when page changes
   useEffect(() => {

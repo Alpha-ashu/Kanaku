@@ -730,29 +730,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           activeSyncUserId.current = nextUser.id;
           setDataSyncing(true);
           setDataSyncError(null);
+          // SECURITY: on reconnect, refresh role/permissions only. Any data re-sync is
+          // gated behind PIN unlock and driven from App.tsx (online effect).
           void (async () => {
             try {
               const permissions = await permissionService.fetchUserPermissions(nextUser.id, provisionalRole);
               if (activeSyncUserId.current === nextUser.id) {
                 setRole(permissions.role);
               }
-
-              // If we already have local accounts stored in offline Dexie database, set dataReady immediately
-              // to avoid showing a blocking sync screen for a clean, smooth, and immediate load.
-              const localAccountsCount = await db.accounts.count().catch(() => 0);
-              const hasLocalData = localAccountsCount > 0;
-              if (hasLocalData && activeSyncUserId.current === nextUser.id) {
-                setDataReady(true);
-              }
-
-              await syncFromSupabase(nextUser);
-              if (activeSyncUserId.current === nextUser.id) {
-                setDataReady(true);
-              }
             } catch (err) {
               if (activeSyncUserId.current === nextUser.id) {
                 setDataSyncError(formatSupabaseError(err));
-                setDataReady(true);
               }
             } finally {
               if (activeSyncUserId.current === nextUser.id) {
@@ -816,24 +804,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
               setDataSyncing(true);
               setDataSyncError(null);
               
+              // SECURITY: role/permissions only — financial data + profile load after PIN
+              // unlock (App.tsx triggerDataSync). Never set dataReady here.
               void (async () => {
                 try {
                   const permissions = await permissionService.fetchUserPermissions(nextUser.id, provisionalRole);
                   if (activeSyncUserId.current === nextUser.id) {
                     setRole(permissions.role);
                   }
-                  const localAccountsCount = await db.accounts.count().catch(() => 0);
-                  if (localAccountsCount > 0 && activeSyncUserId.current === nextUser.id) {
-                    setDataReady(true);
-                  }
-                  await syncFromSupabase(nextUser);
-                  if (activeSyncUserId.current === nextUser.id) {
-                    setDataReady(true);
-                  }
                 } catch (err) {
                   if (activeSyncUserId.current === nextUser.id) {
                     setDataSyncError(formatSupabaseError(err));
-                    setDataReady(true);
                   }
                 } finally {
                   if (activeSyncUserId.current === nextUser.id) {
@@ -863,9 +844,21 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
     };
 
+    // SECURITY: when the app locks (inactivity auto-lock / return to PIN), re-engage the
+    // data gate so nothing financial is fetched while locked and a fresh per-page sync runs
+    // on the next unlock. Data components unmount via the PIN gate in App.tsx, so in-memory
+    // state is dropped automatically; the encrypted Dexie store is preserved for fast unlock.
+    const handlePinLocked = () => {
+      activeSyncUserId.current = null;
+      setDataReady(false);
+      setDataSyncing(false);
+      setDataSyncError(null);
+    };
+
     window.addEventListener('offline', handleOffline);
     window.addEventListener('online', handleOnline);
     window.addEventListener('KANAKU_AUTH_CHANGE', handleCustomAuthChange);
+    window.addEventListener('KANAKU_PIN_LOCKED', handlePinLocked);
 
     let initialSyncDone = false;
 
@@ -1001,7 +994,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             if (isFreshLogin || isAppLoad) {
               activeSyncUserId.current = nextUser.id;
               setDataReady(false);
-              setDataSyncing(true); // full sync starts immediately below
+              setDataSyncing(true); // resolving role/permissions; data sync deferred to post-PIN
               setDataSyncError(null);
 
               const lastUserId = localStorage.getItem('auth_last_user_id');
@@ -1023,19 +1016,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
               }
               initialSyncDone = true;
 
-              // Database is the source of truth: fetch ALL data on every fresh login.
-              // force=true + no requestedTables → syncFromSupabase syncs every core table,
-              // bypassing the 5-minute cooldown even if the user re-logs within that window.
+              // SECURITY (least-privilege): do NOT fetch financial data or profile PII
+              // before PIN unlock. Only resolve role/permissions here. App.tsx's post-PIN
+              // `triggerDataSync` effect loads each page's tables (and the profile) once
+              // SecurityContext.isAuthenticated becomes true — so `dataReady` stays false
+              // until the user has unlocked.
               void (async () => {
                 try {
                   const permissions = await permissionService.fetchUserPermissions(nextUser.id, provisionalRole);
                   if (activeSyncUserId.current === nextUser.id) setRole(permissions.role);
-                  await syncFromSupabase(nextUser, true); // undefined tables = all core tables
-                  if (activeSyncUserId.current === nextUser.id) setDataReady(true);
                 } catch (err) {
                   if (activeSyncUserId.current === nextUser.id) {
                     setDataSyncError(formatSupabaseError(err));
-                    setDataReady(true); // unblock UI even on failure
                   }
                 } finally {
                   if (activeSyncUserId.current === nextUser.id) setDataSyncing(false);
@@ -1084,6 +1076,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       window.removeEventListener('offline', handleOffline);
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('KANAKU_AUTH_CHANGE', handleCustomAuthChange);
+      window.removeEventListener('KANAKU_PIN_LOCKED', handlePinLocked);
     };
   }, []);
 
@@ -1149,6 +1142,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setDataSyncError(null);
 
     try {
+      // Returning user with offline Dexie data: unblock the UI immediately and refresh in
+      // the background, so post-PIN unlock is instant instead of a blocking sync screen.
+      const localAccountsCount = await db.accounts.count().catch(() => 0);
+      if (localAccountsCount > 0 && activeSyncUserId.current === targetUserId) {
+        setDataReady(true);
+      }
       const permissions = await permissionService.fetchUserPermissions(targetUserId, resolveUserRole(user));
       setRole(permissions.role);
       await syncFromSupabase(user, true, requestedTables);
