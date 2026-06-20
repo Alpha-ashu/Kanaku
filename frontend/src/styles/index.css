@@ -338,12 +338,39 @@ html {
   z-index: -1;
 }
 
+/* Page transition wrapper.
+   A short, GPU-composited (opacity-only) fade replaces the abrupt content swap
+   between pages. It converts the brief blank frame produced by lazy mounts and
+   per-section entry animations into a single, intentional fade — eliminating the
+   perceived blink/flash while keeping navigation feeling instant. Opacity-only
+   means no transform is left on the element, so fixed/absolute overlays inside a
+   page are never reparented or clipped. The min-height reserves space so the
+   layout never collapses while a page swaps, preventing layout-shift jumps. */
+.page-view {
+  animation: page-view-in 150ms ease-out;
+  min-height: 60vh;
+}
+
+@keyframes page-view-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
 /* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+
+  .page-view {
+    animation: none;
   }
 }
 
