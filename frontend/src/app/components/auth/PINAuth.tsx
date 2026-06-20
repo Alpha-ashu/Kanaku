@@ -34,8 +34,23 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  const [resetError, setResetError] = useState('');
  const [resetOtpSent, setResetOtpSent] = useState(false);
  const [resetOtp, setResetOtp] = useState('');
+ // True when this lock screen was reached via the inactivity auto-lock, so we
+ // can explain why the user is being asked for their PIN again.
+ const [lockedForInactivity, setLockedForInactivity] = useState(false);
 
  const hiddenInputRef = useRef<HTMLInputElement>(null);
+
+ // Read (and consume) the auto-lock reason flag set by SecurityContext.
+ useEffect(() => {
+ try {
+ if (sessionStorage.getItem('KANAKU_lock_reason') === 'inactivity') {
+ setLockedForInactivity(true);
+ sessionStorage.removeItem('KANAKU_lock_reason');
+ }
+ } catch {
+ /* sessionStorage unavailable — no banner, no harm */
+ }
+ }, []);
 
  // Init 
  useEffect(() => {
@@ -401,6 +416,20 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  <h1 className="text-3xl font-black text-gray-900 tracking-tighter mb-1">KANAKU</h1>
  <p className="text-sm text-gray-500 font-medium text-center max-w-[240px] leading-tight">{currentStepSub}</p>
  </div>
+
+ {/* Inactivity auto-lock notice */}
+ {lockedForInactivity && !isCreating && (
+ <div
+ data-testid="pinauth-inactivity-banner"
+ role="status"
+ className="mx-6 mb-4 flex items-center gap-2.5 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-800"
+ >
+ <Lock size={16} className="flex-shrink-0 text-amber-600" />
+ <p className="text-xs font-medium leading-snug">
+ Locked due to inactivity. Enter your PIN to continue.
+ </p>
+ </div>
+ )}
 
  {/* Card Content */}
  <div className="px-8 flex flex-col gap-6">

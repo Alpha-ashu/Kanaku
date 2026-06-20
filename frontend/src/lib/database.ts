@@ -184,6 +184,14 @@ export interface GoalContribution {
   memberName?: string;
   status?: 'paid' | 'pending';
   notes?: string;
+  /**
+   * When a contribution is created alongside its own cash `transactions` row
+   * (e.g. statement/CSV import), this links to that transaction. The balance
+   * engine skips linked contributions so the spend is counted once — via the
+   * transaction — instead of twice. UI contributions (which have no
+   * transaction) leave this undefined and are counted directly.
+   */
+  transactionId?: number;
 }
 
 export interface GroupExpense {

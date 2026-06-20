@@ -13,6 +13,7 @@ import { isDatabaseUnavailableError } from '../../utils/databaseAvailability';
 import { AppError } from '../../utils/AppError';
 import { generateTokens, verifyRefreshToken, REFRESH_TOKEN_TTL_SECONDS } from '../../utils/auth';
 import { setRefreshCookie, clearRefreshCookie, readRefreshCookie } from '../../security/refreshCookie';
+import { establishIdleSession, clearIdleSession, evaluateIdleSession } from '../../security/idleSession';
 import { sendWelcomeEmail } from '../../emails';
 
 const authService = new AuthService();
@@ -251,6 +252,9 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
     // backward-compat with older clients until they migrate.
     setRefreshCookie(res, tokens.refreshToken, REFRESH_TOKEN_TTL_SECONDS);
 
+    // Start the server-side inactivity window for the new session.
+    if (tokens.user?.id) await establishIdleSession(tokens.user.id);
+
     res.status(201).json({
       success: true,
       message: 'Registration successful',
@@ -440,6 +444,9 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
     // backward-compat during client migration.
     setRefreshCookie(res, tokens.refreshToken, REFRESH_TOKEN_TTL_SECONDS);
 
+    // Start (or reset) the server-side inactivity window for this session.
+    if (userId) await establishIdleSession(userId);
+
     res.json({
       success: true,
       message: 'Login successful',
@@ -517,6 +524,18 @@ export const refreshToken = async (req: Request, res: Response, next: NextFuncti
       throw new AppError(403, 'ACCOUNT_SUSPENDED', 'Account suspended. Contact support.', true);
     }
 
+    // Idle gate: a refresh token must not mint new access tokens after the
+    // inactivity window has elapsed. `allowFreshTokenGrace: false` means the
+    // session must have a *live* activity marker — an idle (but still valid)
+    // refresh token is rejected, forcing a full re-login.
+    const stillActive = await evaluateIdleSession(claims.userId, { allowFreshTokenGrace: false });
+    if (!stillActive) {
+      throw AppError.unauthorized(
+        'Your session was locked due to inactivity. Please sign in again.',
+        'SESSION_IDLE_TIMEOUT',
+      );
+    }
+
     // Rotate: issue a brand-new access + refresh pair.
     const tokens = generateTokens(user);
     res.setHeader('Authorization', `Bearer ${tokens.accessToken}`);
@@ -524,6 +543,9 @@ export const refreshToken = async (req: Request, res: Response, next: NextFuncti
 
     // C3: rotate the HttpOnly cookie too.
     setRefreshCookie(res, tokens.refreshToken, REFRESH_TOKEN_TTL_SECONDS);
+
+    // Refresh counts as activity — slide the inactivity window forward.
+    await establishIdleSession(user.id);
 
     res.json({
       success: true,
@@ -800,6 +822,7 @@ export const logout = async (req: AuthRequest, res: Response, next: NextFunction
     }
     if (req.userId) {
       invalidateUserSnapshotCache(req.userId);
+      await clearIdleSession(req.userId);
     }
 
     clearRefreshCookie(res);

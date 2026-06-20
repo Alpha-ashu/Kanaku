@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { updateAccountWithBackendSync } from '@/lib/auth-sync-integration';
+import { setAccountTargetBalance } from '@/lib/transactionAggregation';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -76,6 +77,9 @@ export const EditAccount: React.FC<{ accountId?: number }> = ({ accountId: propA
  subType: account.subType,
  colorId: account.colorId,
  });
+ // Balance is derived (openingBalance + ledger). Anchor the opening balance
+ // so the entered "Current Balance" resolves exactly under the derived model.
+ await setAccountTargetBalance(account.id, account.balance);
  toast.success('Account updated successfully!');
  refreshData();
  setCurrentPage('accounts');

@@ -5,7 +5,7 @@
 
 import { db, type Transaction } from '@/lib/database';
 import { queueRecordUpsertSync } from '@/lib/auth-sync-integration';
-import { applyAccountBalanceDeltas } from '@/lib/transactionAggregation';
+import { rebuildAccountBalances, setAccountTargetBalance } from '@/lib/transactionAggregation';
 import { documentIntelligenceService } from './documentIntelligenceService';
 import { createWorker } from 'tesseract.js';
 // @ts-ignore
@@ -434,22 +434,6 @@ class StatementImportService {
         .map((key) => Number(key))
         .filter((key) => Number.isFinite(key));
 
-      const latestBalanceSnapshot = validTransactions
-        .filter((transaction) => typeof transaction.balance_after_transaction === 'number')
-        .sort((left, right) => right.transaction_date.getTime() - left.transaction_date.getTime())[0];
-
-      if (latestBalanceSnapshot?.balance_after_transaction != null) {
-        await db.accounts.update(options.accountId, {
-          balance: latestBalanceSnapshot.balance_after_transaction,
-          updatedAt: new Date(),
-        });
-      } else {
-        const netChange = validTransactions.reduce((sum, transaction) => (
-          sum + (transaction.transaction_type === 'income' ? transaction.amount : -Math.abs(transaction.amount))
-        ), 0);
-        await applyAccountBalanceDeltas(new Map([[options.accountId, netChange]]));
-      }
-
       for (const transaction of validTransactions) {
         if (transaction.merchant_name) {
           await documentIntelligenceService.upsertMerchantProfile({
@@ -477,6 +461,22 @@ class StatementImportService {
         });
       }
     });
+
+    // Balance reconciliation runs AFTER the rw transaction commits so the
+    // imported rows are visible to the canonical engine. The imported
+    // transactions are themselves part of the ledger, so the derived balance
+    // already reflects them. When the statement provides an authoritative
+    // running balance, anchor the opening balance so the derived value lands
+    // exactly on that snapshot.
+    const latestBalanceSnapshot = validTransactions
+      .filter((transaction) => typeof transaction.balance_after_transaction === 'number')
+      .sort((left, right) => right.transaction_date.getTime() - left.transaction_date.getTime())[0];
+
+    if (latestBalanceSnapshot?.balance_after_transaction != null) {
+      await setAccountTargetBalance(options.accountId, latestBalanceSnapshot.balance_after_transaction);
+    } else {
+      await rebuildAccountBalances();
+    }
 
     for (const transactionId of insertedTransactionIds) {
       queueRecordUpsertSync('transactions', transactionId);

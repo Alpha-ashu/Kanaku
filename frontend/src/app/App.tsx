@@ -95,12 +95,26 @@ import { App as CapacitorApp } from '@capacitor/app';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { Capacitor } from '@capacitor/core';
 
-//  Minimal page-transition spinner shown while lazy chunk loads 
-const PageLoader = () => (
-  <div className="flex items-center justify-center h-48 w-full pt-12">
-    <div className="w-8 h-8 border-2 border-pink-200 border-t-pink-500 rounded-full animate-spin" />
-  </div>
-);
+//  Minimal page-transition spinner shown while a lazy chunk loads.
+//  The spinner is delayed: for fast (cached/prefetched) navigations the chunk
+//  resolves before the timer fires, so nothing is shown and the previous page
+//  transitions straight into the next one — no spinner "flash" between pages.
+//  A spinner only appears when loading genuinely takes a moment.
+const PageLoader: React.FC<{ delayMs?: number }> = ({ delayMs = 220 }) => {
+  const [show, setShow] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => setShow(true), delayMs);
+    return () => clearTimeout(timer);
+  }, [delayMs]);
+
+  if (!show) return null;
+
+  return (
+    <div className="flex items-center justify-center h-48 w-full pt-12">
+      <div className="w-8 h-8 border-2 border-pink-200 border-t-pink-500 rounded-full animate-spin" />
+    </div>
+  );
+};
 
 class PageErrorBoundary extends React.Component<
   { children: React.ReactNode },
@@ -402,10 +416,29 @@ const AppContent: React.FC = () => {
       HealthChecker.startPeriodicCheck(60000).catch(console.error);
 
       if (!criticalPagesPrefetched) {
-        // Preload critical pages right after login to avoid first-click lag
-        void import('@/app/components/core/Dashboard');
-        void import('@/app/components/core/Transactions');
         setCriticalPagesPrefetched(true);
+        // Warm the lazy chunks for every primary navigation target during idle
+        // time. Once a chunk is in memory, switching to that tab renders
+        // synchronously (no Suspense fallback), so navigation never flashes a
+        // chunk-loading spinner. Deferred via requestIdleCallback so it never
+        // competes with first paint of the current page.
+        const prefetchPrimaryRoutes = () => {
+          void import('@/app/components/core/Dashboard');
+          void import('@/app/components/core/Accounts');
+          void import('@/app/components/core/Transactions');
+          void import('@/app/components/goals/Goals');
+          void import('@/app/components/investments/Investments');
+          void import('@/app/components/features/Reports');
+          void import('@/app/components/profile/Settings');
+        };
+        const ric = (window as unknown as {
+          requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
+        }).requestIdleCallback;
+        if (typeof ric === 'function') {
+          ric(prefetchPrimaryRoutes, { timeout: 2000 });
+        } else {
+          setTimeout(prefetchPrimaryRoutes, 300);
+        }
       }
     } else if (!authLoading) {
       setIsInitialized(true);
@@ -954,7 +987,13 @@ const AppContent: React.FC = () => {
             )}
             <PageErrorBoundary>
               <Suspense fallback={<PageLoader />}>
-                {renderPage()}
+                {/* Keyed wrapper: gives every page a single, consistent, lightweight
+                    fade-in (see .page-view in index.css) instead of an abrupt swap,
+                    and reserves a min-height so the layout never collapses between
+                    pages — removing the blank-frame "blink" and layout-shift jump. */}
+                <div key={currentPage} className="page-view">
+                  {renderPage()}
+                </div>
               </Suspense>
             </PageErrorBoundary>
           </main>
