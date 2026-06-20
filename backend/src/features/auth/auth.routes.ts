@@ -42,13 +42,32 @@ const destructiveLimiter = rateLimit({
   keyGenerator: (req) => req.ip || 'unknown',
 });
 
+// Layered anti-brute-force limiters (stack on top of the per-minute authLimiter):
+// a long-window cap on sustained attempts per IP, in addition to the burst cap.
+// Defaults are env-tunable to the exact policy (e.g. login 5/15m, register 3/h).
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60_000,     // 15 minutes
+  max: Number(process.env.LOGIN_RATE_LIMIT || 15), // ≈ a handful of 2-step login attempts
+  scope: 'auth-login',
+  message: 'Too many login attempts. Please try again in a few minutes.',
+  keyGenerator: (req) => req.ip || 'unknown',
+});
+
+const registerLimiter = rateLimit({
+  windowMs: 60 * 60_000,     // 1 hour
+  max: Number(process.env.REGISTER_RATE_LIMIT || 10), // per IP; lenient enough for shared/NAT
+  scope: 'auth-register',
+  message: 'Too many sign-up attempts from this network. Please try again later.',
+  keyGenerator: (req) => req.ip || 'unknown',
+});
+
 router.post('/check-email', authLimiter, checkEmailAvailability);
 // NOTE: register/login/challenge keep their hardened in-controller validation
 // (EMAIL_REGEX, password length, MISSING_FIELDS codes) which the test suite
 // asserts on — do not front them with a generic validateBody layer.
-router.post('/register', authLimiter, register);
-router.post('/login/challenge', authLimiter, loginChallenge);
-router.post('/login', authLimiter, login);
+router.post('/register', authLimiter, registerLimiter, register);
+router.post('/login/challenge', authLimiter, loginLimiter, loginChallenge);
+router.post('/login', authLimiter, loginLimiter, login);
 // Token refresh — public (refresh token is the credential), rate-limited.
 router.post('/refresh', authLimiter, refreshToken);
 // Logout — clears the HttpOnly refresh cookie and revokes the token.
