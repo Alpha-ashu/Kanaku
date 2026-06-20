@@ -42,6 +42,10 @@
     "qa:backend:matrix": "npm --prefix backend run qa:matrix",
     "qa:backend": "npm --prefix backend run qa:test-features",
     "qa:api-report": "node quality/api/runner/run-api-report.mjs",
+    "qa:ui-inventory": "node scripts/gen-ui-inventory.mjs",
+    "qa:contract-audit": "node scripts/audit-api-contracts.mjs",
+    "qa:regression": "node scripts/qa-regression-diff.mjs",
+    "qa:reports": "npm run qa:ui-inventory && npm run qa:contract-audit",
     "clean": "rimraf frontend/dist backend/dist node_modules/.vite",
     "postinstall": "npm run db:generate"
   },

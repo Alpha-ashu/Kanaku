@@ -426,6 +426,7 @@ export const Reports: React.FC = () => {
  pulseExportAction('download');
  void downloadPDF();
  }}
+ data-testid="reports-download-pdf-button"
  aria-label="Download PDF"
  title="Download PDF"
  className={`shadow-lg h-11 px-4 rounded-2xl font-semibold transition-all active:scale-95 flex items-center gap-2 ${
@@ -444,6 +445,7 @@ export const Reports: React.FC = () => {
  pulseExportAction('share');
  void sharePDF();
  }}
+ data-testid="reports-share-button"
  aria-label="Share report"
  title="Share report"
  className={`shadow-lg h-11 px-4 rounded-2xl font-semibold transition-all active:scale-95 flex items-center gap-2 ${
@@ -462,6 +464,7 @@ export const Reports: React.FC = () => {
  pulseExportAction('csv');
  void exportCSV();
  }}
+ data-testid="reports-export-csv-button"
  aria-label="Export report as CSV"
  title="Export CSV"
  className={`shadow-lg h-11 px-4 rounded-2xl font-semibold transition-all active:scale-95 flex items-center gap-2 ${
@@ -480,6 +483,7 @@ export const Reports: React.FC = () => {
  pulseExportAction('excel');
  void exportExcel();
  }}
+ data-testid="reports-export-excel-button"
  aria-label="Export report as Excel"
  title="Export Excel"
  className={`shadow-lg h-11 px-4 rounded-2xl font-semibold transition-all active:scale-95 flex items-center gap-2 ${
@@ -497,6 +501,7 @@ export const Reports: React.FC = () => {
  pulseExportAction('more');
  setCurrentPage('export-reports');
  }}
+ data-testid="reports-more-export-button"
  aria-label="Open more export options"
  title="More Export Options"
  className={`shadow-lg h-11 px-4 rounded-2xl font-semibold transition-all active:scale-95 flex items-center gap-2 ${
@@ -516,6 +521,7 @@ export const Reports: React.FC = () => {
  {(['daily', 'weekly', 'monthly', 'yearly', 'custom'] as TimeRange[]).map((range) => (
  <button
  key={range}
+ data-testid={`reports-range-${range}`}
  onClick={() => setTimeRange(range)}
  className={`px-3 py-1.5 rounded-full text-xs sm:text-sm font-semibold transition-all ${
  timeRange === range
@@ -539,6 +545,7 @@ export const Reports: React.FC = () => {
  type="date"
  value={customRange.start}
  onChange={(e) => setCustomRange((prev) => ({ ...prev, start: e.target.value }))}
+ data-testid="reports-custom-start-input"
  aria-label="Custom report start date"
  title="Custom report start date"
  className="px-3 py-2 border border-gray-200 rounded-lg"
@@ -550,6 +557,7 @@ export const Reports: React.FC = () => {
  type="date"
  value={customRange.end}
  onChange={(e) => setCustomRange((prev) => ({ ...prev, end: e.target.value }))}
+ data-testid="reports-custom-end-input"
  aria-label="Custom report end date"
  title="Custom report end date"
  className="px-3 py-2 border border-gray-200 rounded-lg"

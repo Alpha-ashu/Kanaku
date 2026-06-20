@@ -36,6 +36,7 @@ const DraggableMobileMenuItem: React.FC<DraggableMobileMenuItemProps> = ({
  transition={{ type:"spring", stiffness: 300, damping: 25 }}
  >
  <button
+ data-testid={`header-nav-item-${item.id}`}
  onClick={() => onNavigate(item.id)}
  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-1 transition-colors ${isActive
  ? 'bg-accent-secondary/10 text-accent-secondary'
@@ -116,7 +117,7 @@ export const Header: React.FC = () => {
  
  <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
  <SheetTrigger asChild>
- <button className="lg:hidden p-2 hover:bg-slate-100 rounded-lg transition-colors" title="Open navigation menu" aria-label="Open navigation menu">
+ <button data-testid="header-mobile-menu-button" className="lg:hidden p-2 hover:bg-slate-100 rounded-lg transition-colors" title="Open navigation menu" aria-label="Open navigation menu">
  <Menu size={24} className="text-slate-700" />
  </button>
  </SheetTrigger>
@@ -162,6 +163,7 @@ export const Header: React.FC = () => {
  <div className="relative flex-1 max-w-md hidden md:block">
  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" size={18} />
  <input
+ data-testid="header-search-input"
  type="text"
  placeholder="Search anything..."
  className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-slate-900 placeholder-slate-400 transition-all text-sm"
@@ -178,6 +180,7 @@ export const Header: React.FC = () => {
  {visibleFeatures?.notifications !== false && (
  <div className="relative">
  <button
+ data-testid="header-notifications-button"
  onClick={() => setNotificationsOpen(!notificationsOpen)}
  className="relative p-2 hover:bg-white/5 rounded-full transition-colors"
  >
@@ -195,6 +198,7 @@ export const Header: React.FC = () => {
  <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-white/80 backdrop-blur-md sticky top-0 z-10">
  <h3 className="font-black text-slate-900 uppercase tracking-wider text-xs">Notifications</h3>
  <button
+ data-testid="header-notifications-close-button"
  onClick={() => setNotificationsOpen(false)}
  className="p-1.5 hover:bg-slate-100 rounded-full transition-colors text-slate-400"
  title="Close notifications"
@@ -216,6 +220,7 @@ export const Header: React.FC = () => {
  {notifications.map((notification) => (
  <div
  key={notification.id}
+ data-testid={`header-notification-item-${notification.id}`}
  className={`p-4 hover:bg-slate-50 cursor-pointer transition-colors ${!notification.isRead ? 'bg-indigo-50/30' : ''
  }`}
  onClick={() => handleMarkAsRead(notification)}
@@ -245,6 +250,7 @@ export const Header: React.FC = () => {
  {notifications.length > 0 && (
  <div className="p-3 border-t border-slate-100 bg-white">
  <button
+ data-testid="header-notifications-clear-all-button"
  onClick={handleClearAll}
  className="w-full py-2.5 text-xs font-black uppercase tracking-widest text-slate-400 hover:text-indigo-600 hover:bg-white rounded-xl transition-all shadow-sm"
  title="Clear all notifications"

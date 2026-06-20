@@ -286,6 +286,7 @@ export const Groups: React.FC = () => {
  </div>
  </div>
  <Button
+ data-testid="groups-manage-friends-button"
  onClick={() => setCurrentPage('friends')}
  className="shadow-sm bg-sky-50 text-sky-700 hover:bg-sky-100 text-xs sm:text-sm h-9 px-3"
  >
@@ -552,6 +553,7 @@ export const Groups: React.FC = () => {
  </p>
   {canCreate && (
   <button
+  data-testid="groups-create-expense-button"
   onClick={openGroupExpenseForm}
   className="inline-flex items-center gap-2 rounded-2xl bg-black px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-gray-900"
   >

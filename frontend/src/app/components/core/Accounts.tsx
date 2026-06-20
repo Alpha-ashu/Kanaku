@@ -447,6 +447,7 @@ export const Accounts: React.FC = () => {
                             </div>
                             {canCreate && (
                             <button
+                                data-testid="accounts-add-button"
                                 onClick={() => setCurrentPage("add-account")}
                                 className="shrink-0 mt-1 bg-white text-purple-700 hover:bg-purple-50 font-semibold text-sm px-4 py-2 rounded-xl transition-colors whitespace-nowrap"
                             >

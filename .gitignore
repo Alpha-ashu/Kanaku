@@ -179,9 +179,15 @@ supabase/.temp/
 *.seed
 *.pid.lock
 
-# ----- API report runner output (regenerated on demand: npm run qa:api-report) -----
+# ----- QA report output (regenerated on demand: qa:api-report / qa:regression /
+#       qa:contract-audit / qa:ui-inventory). Snapshot one with `git add -f`. -----
 quality/reports/api/*.xlsx
 quality/reports/api/*.json
+quality/reports/api/*.md
+quality/reports/ui/*.xlsx
+quality/reports/ui/*.json
+quality/reports/ui/*.md
+!quality/reports/**/.gitkeep
 
 # ----- Scratch / agent output -----
 scratch/

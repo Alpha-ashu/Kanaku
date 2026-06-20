@@ -290,7 +290,7 @@ export function Dashboard({ setCurrentPage }: DashboardProps) {
  const SectionHeader = ({ title, onViewAll, viewLabel = 'View All' }: { title: string; onViewAll: () => void; viewLabel?: string }) => (
  <div className="flex items-center justify-between mb-4">
  <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
- <Button variant="outline" size="sm" onClick={onViewAll} className="rounded-full text-xs gap-1">
+ <Button data-testid={`dashboard-view-all-${title.toLowerCase().replace(/\s+/g, '-')}`} variant="outline" size="sm" onClick={onViewAll} className="rounded-full text-xs gap-1">
  {viewLabel} <ChevronRight size={12} />
  </Button>
  </div>
@@ -340,7 +340,7 @@ export function Dashboard({ setCurrentPage }: DashboardProps) {
 
  {/*"EUR"EUR 1. Financial Health Hero"EUR"EUR */}
  <div className="flex justify-center mb-6 lg:mb-8">
- <Card variant="mesh-pink" className="w-full max-w-md lg:max-w-lg p-6 lg:p-8 relative overflow-hidden">
+ <Card data-testid="dashboard-networth-card" variant="mesh-pink" className="w-full max-w-md lg:max-w-lg p-6 lg:p-8 relative overflow-hidden">
  <div className="relative z-10">
  <p className="text-white/80 font-medium mb-1 text-sm text-center">Total Net Worth</p>
  <h2 className="text-3xl lg:text-4xl font-display font-bold text-white tracking-tight mb-6 text-center">
@@ -408,6 +408,7 @@ export function Dashboard({ setCurrentPage }: DashboardProps) {
  return (
  <button
  key={tab.id}
+ data-testid={`dashboard-tab-${tab.id}`}
  onClick={() => setActiveTab(tab.id as typeof activeTab)}
  className={cn(
  'relative flex-1 flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-1 py-2 sm:py-2.5 rounded-xl transition-all duration-300 font-bold',

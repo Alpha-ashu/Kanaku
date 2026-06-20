@@ -348,6 +348,7 @@ export const Transactions: React.FC = () => {
  <div className="flex items-center gap-3">
  {canImport && (
  <Button
+ data-testid="transactions-scan-bill-button"
  variant="secondary"
  onClick={() => setShowScanModal(true)}
  className="shadow-sm border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 h-12 px-5 rounded-2xl font-bold"
@@ -358,6 +359,7 @@ export const Transactions: React.FC = () => {
  )}
  {canAdd && (
  <Button
+ data-testid="transactions-add-button"
  onClick={() => setShowTransactionTypeModal(true)}
  className="shadow-lg bg-gray-900 hover:bg-gray-800 text-white h-12 px-5 rounded-2xl font-bold"
  >
@@ -536,6 +538,7 @@ export const Transactions: React.FC = () => {
  </p>
  </div>
  <button
+ data-testid="transactions-tax-scan-bill-button"
  onClick={() => setShowScanModal(true)}
  className="shrink-0 flex items-center gap-1.5 rounded-xl bg-orange-500 px-3 py-2 text-xs font-bold text-white hover:bg-orange-600 transition-colors"
  >
@@ -549,6 +552,7 @@ export const Transactions: React.FC = () => {
  <div className="relative">
  <Search className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
  <input
+ data-testid="transactions-search-input"
  type="text"
  value={searchQuery}
  onChange={(e) => setSearchQuery(e.target.value)}
@@ -560,6 +564,7 @@ export const Transactions: React.FC = () => {
  {(['all', 'income', 'expense'] as const).map((type) => (
  <button
  key={type}
+ data-testid={`transactions-filter-${type}`}
  onClick={() => setFilterType(type)}
  className={cn(
 "relative flex-1 flex items-center justify-center py-2 sm:py-2.5 rounded-xl transition-all duration-300 font-bold capitalize text-[10px] sm:text-xs",
