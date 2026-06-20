@@ -33,6 +33,7 @@ import { formatCurrencyAmount } from "@/lib/currencyUtils";
 import { CardNetworkLogo, getBankCardLogo } from "@/app/components/ui/AccountLogos";
 import { CenteredLayout } from "@/app/components/shared/CenteredLayout";
 import { queueRecordUpsertSync } from "@/lib/auth-sync-integration";
+import { setAccountTargetBalance } from "@/lib/transactionAggregation";
 
 type AssetType = "all" | "bank" | "card" | "wallet" | "cash";
 
@@ -147,13 +148,15 @@ export const Accounts: React.FC = () => {
             await db.accounts.update(editingAccount.id, {
                 name: editingAccount.name,
                 type: editingAccount.type as any,
-                balance: editingAccount.balance,
-                openingBalance: editingAccount.openingBalance,
                 isActive: editingAccount.isActive,
                 subType: editingAccount.subType,
                 colorId: editingAccount.colorId,
                 customColor: editingAccount.customColor,
             });
+            // Balance is derived (openingBalance + ledger). Honor the entered
+            // "Current Balance" by anchoring the opening balance so the derived
+            // value resolves exactly to it.
+            await setAccountTargetBalance(editingAccount.id, editingAccount.balance);
             queueRecordUpsertSync('accounts', editingAccount.id);
             toast.success('Account updated!');
             setEditModalOpen(false);

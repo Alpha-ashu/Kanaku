@@ -4,6 +4,7 @@ import { logger } from '../config/logger';
 import { createClient } from '@supabase/supabase-js';
 import { audit } from '../utils/auditLogger';
 import { prisma } from '../db/prisma';
+import { evaluateIdleSession } from '../security/idleSession';
 
 // ─── Typed JWT payload interfaces ─────────────────────────────────────────────
 
@@ -175,6 +176,33 @@ const getUserAuthSnapshot = async (userId: string): Promise<UserAuthSnapshot | n
   }
 };
 
+/**
+ * Enforce the server-side inactivity window for an authenticated request.
+ * Returns true (and writes a 401) when the session has been idle too long, so
+ * the caller can bail out before `next()`. No-op when the feature is disabled.
+ */
+const idleSessionRejected = async (
+  req: AuthRequest,
+  res: Response,
+  userId: string,
+  iatSeconds: number | undefined,
+): Promise<boolean> => {
+  const active = await evaluateIdleSession(userId, { allowFreshTokenGrace: true, iatSeconds });
+  if (active) return false;
+
+  audit({
+    event: 'auth.login_failed',
+    ip: req.ip || undefined,
+    action: `${req.method} ${req.path}`,
+    meta: { reason: 'idle_timeout', userId },
+  });
+  res.status(401).json({
+    error: 'Your session was locked due to inactivity. Please sign in again.',
+    code: 'SESSION_IDLE_TIMEOUT',
+  });
+  return true;
+};
+
 export const authMiddleware = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const authHeader = req.headers.authorization || '';
@@ -231,6 +259,10 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
           await ensureUserInDb(userId, req.user);
         }
 
+        if (await idleSessionRejected(req, res, userId, typeof decoded.iat === 'number' ? decoded.iat : undefined)) {
+          return;
+        }
+
         return next();
       } catch (err) {
         // Fall back to Supabase
@@ -260,6 +292,9 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
           if (!authSnapshot) {
             await ensureUserInDb(userId, req.user);
           }
+          if (await idleSessionRejected(req, res, userId, typeof supabaseDecoded.iat === 'number' ? supabaseDecoded.iat : undefined)) {
+            return;
+          }
           return next();
         }
       } catch (err) {
@@ -288,6 +323,13 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
           };
           if (!authSnapshot) {
             await ensureUserInDb(user.id, req.user);
+          }
+          const apiIat = (() => {
+            const d = jwt.decode(token);
+            return d && typeof d === 'object' && typeof d.iat === 'number' ? d.iat : undefined;
+          })();
+          if (await idleSessionRejected(req, res, user.id, apiIat)) {
+            return;
           }
           return next();
         } else if (error) {

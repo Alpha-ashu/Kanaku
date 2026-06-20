@@ -1,14 +1,15 @@
 import React, { useState, useMemo } from 'react';
 import { db } from '@/lib/database';
-import { 
- Download, Upload, Trash2, Database, Globe, 
+import {
+ Download, Upload, Trash2, Database, Globe,
  Bell, ExternalLink, FileText,
- Smartphone, RefreshCw, Coins
+ Smartphone, RefreshCw, Coins, Lock
 } from 'lucide-react';
 import { Settings as SettingsIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { useApp } from '@/contexts/AppContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSecurity } from '@/contexts/SecurityContext';
 import { motion } from 'framer-motion';
 import { PageHeader } from '@/app/components/ui/PageHeader';
 import { cn } from '@/lib/utils';
@@ -37,6 +38,7 @@ import { runWithCloudSyncSuppressed } from '@/lib/auth-sync-integration';
 export const Settings: React.FC = () => {
  const { currency, setCurrency, language, setLanguage, visibleFeatures, setVisibleFeatures, accounts, refreshData, setCurrentPage } = useApp();
  const { user, signOut, role } = useAuth();
+ const { lockTimeout, setLockTimeout } = useSecurity();
  const [showImportModal, setShowImportModal] = useState(false);
  const [backups, setBackups] = useState<Array<any>>([]);
  const [showBackups, setShowBackups] = useState(false);
@@ -473,6 +475,53 @@ export const Settings: React.FC = () => {
  <option data-testid="settings-cad-c" value="CAD">CAD (C$)</option>
  <option data-testid="settings-sgd-s" value="SGD">SGD (S$)</option>
  <option data-testid="settings-chf-chf" value="CHF">CHF (CHF)</option>
+ </select>
+ </div>
+ </div>
+ </div>
+ </motion.div>
+ ),
+ },
+ {
+ id: 'security',
+ node: (
+ <motion.div
+ key="security"
+ initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }}
+ className="rounded-[30px] overflow-hidden relative bg-white/60 backdrop-blur-xl border border-white/40 shadow-glass"
+ >
+ <div className="p-6 border-b border-white/10">
+ <h3 className="text-lg font-semibold text-gray-900">Security</h3>
+ </div>
+ <div className="divide-y divide-gray-200">
+ <div className="p-6">
+ <div className="flex items-center justify-between">
+ <div className="flex items-center gap-3">
+ <div className="w-10 h-10 bg-amber-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+ <Lock className="text-amber-600" size={20} />
+ </div>
+ <div>
+ <h4 className="font-medium text-gray-900">Auto-Lock</h4>
+ <p className="text-xs text-gray-500 mt-0.5">Require your PIN after a period of inactivity</p>
+ </div>
+ </div>
+ <select
+ value={lockTimeout}
+ onChange={(e) => {
+ const minutes = Number(e.target.value);
+ setLockTimeout(minutes);
+ toast.success(minutes === 0 ? 'Auto-lock disabled' : `Auto-lock set to ${minutes} min`);
+ }}
+ className="px-3 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black/10"
+ aria-label="Select auto-lock timeout"
+ data-testid="settings-autolock-select"
+ >
+ <option value={0}>Never</option>
+ <option value={1}>1 minute</option>
+ <option value={5}>5 minutes</option>
+ <option value={10}>10 minutes</option>
+ <option value={15}>15 minutes</option>
+ <option value={30}>30 minutes</option>
  </select>
  </div>
  </div>

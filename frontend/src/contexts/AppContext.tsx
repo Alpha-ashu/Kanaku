@@ -8,6 +8,7 @@ import { useSecurity } from '@/contexts/SecurityContext';
 import { getVisibleFeaturesForRole, mergeVisibleFeatures, normalizeFeatures, FeatureVisibility, computeSubFeatureMap, AIModuleKey, computeAICapabilityMap } from '@/lib/featureFlags';
 import { type SyncStats, useSyncStats, offlineSyncEngine } from '@/lib/offline-sync-engine';
 import { deduplicateLocalData, saveAccountWithBackendSync, syncUserDataFromCloud, updateAccountWithBackendSync } from '@/lib/auth-sync-integration';
+import { computeDerivedBalances } from '@/lib/transactionAggregation';
 import { backendSyncService } from '@/lib/backend-sync-service';
 import {
   mergeStoredUserSettings,
@@ -143,7 +144,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     return preferences;
   }, []);
 
-  const accounts = useLiveQuery(
+  const rawAccounts = useLiveQuery(
     () => db.accounts.filter(acc => !acc.deletedAt && acc.isActive !== false).toArray(),
     [manualRefreshToken]
   ) || [];
@@ -171,6 +172,30 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     () => db.groupExpenses.filter(ge => !ge.deletedAt).toArray(),
     [manualRefreshToken]
   ) || [];
+  // Money movements that adjust an account balance WITHOUT a `transactions`
+  // row. They must feed the canonical balance engine alongside transactions.
+  const goalContributions = useLiveQuery(
+    () => db.goalContributions.toArray(),
+    [manualRefreshToken]
+  ) || [];
+  const loanPayments = useLiveQuery(
+    () => db.loanPayments.toArray(),
+    [manualRefreshToken]
+  ) || [];
+
+  // SINGLE SOURCE OF TRUTH for every screen: derive each account's balance
+  // from openingBalance + the full ledger, so Dashboard, Accounts,
+  // Transactions, Analytics, Net Worth and Reports always read the identical,
+  // recalculated value. Because it is recomputed (not accumulated) it can
+  // never double-count an expense.
+  const accounts = useMemo(() => {
+    const derived = computeDerivedBalances(rawAccounts, transactions, goalContributions, loanPayments);
+    return rawAccounts.map((account) => {
+      if (!account.id) return account;
+      const balance = derived.get(account.id);
+      return balance == null || balance === account.balance ? account : { ...account, balance };
+    });
+  }, [rawAccounts, transactions, goalContributions, loanPayments]);
 
   const totalBalance = useMemo(() => (
     accounts.filter(acc => acc.isActive).reduce((sum, acc) => sum + acc.balance, 0)
@@ -203,133 +228,37 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     });
   }, [transactions]);
 
+  // Persist the derived balances back to Dexie so the stored `balance` column
+  // stays equal to the single-source-of-truth value. This keeps any code that
+  // reads the DB directly — or that computes `account.balance + delta` when
+  // recording investments/loans — working off the same correct number. The
+  // write is idempotent (only runs when a value actually changed) and uses a
+  // raw account update so it does not enqueue redundant cloud syncs.
   useEffect(() => {
-    if (accounts.length === 0 || transactions.length === 0) return;
+    if (rawAccounts.length === 0) return;
 
-    const activeAccounts = accounts.filter((account) => account.isActive !== false && !account.deletedAt);
-    if (activeAccounts.length === 0) return;
-
-    const allZeroBalances = activeAccounts.every((account) => Math.abs(account.balance) < 0.000001);
-
-    const importedNegativeNonCardAccounts = activeAccounts.filter(
-      (account) => account.type !== 'card' && account.balance < 0,
-    );
-
-    const shouldAttemptNegativeImportRepair = importedNegativeNonCardAccounts.some((account) => {
+    const derived = computeDerivedBalances(rawAccounts, transactions, goalContributions, loanPayments);
+    const changed = rawAccounts.filter((account) => {
       if (!account.id) return false;
-      return transactions.some(
-        (txn) => txn.accountId === account.id && !txn.deletedAt && Boolean(txn.importSource || txn.importedAt),
-      );
+      const next = derived.get(account.id);
+      return next != null && next !== account.balance;
     });
+    if (changed.length === 0) return;
 
-    if (!allZeroBalances && !shouldAttemptNegativeImportRepair) return;
-
-    const repairKey = `${activeAccounts.map((account) => `${account.id}:${Number(account.balance).toFixed(2)}`).join(',')}::${transactions.length}`;
-    if (attemptedBalanceRepairKeyRef.current === repairKey) return;
-    attemptedBalanceRepairKeyRef.current = repairKey;
-
-    const balanceByAccountId = new Map<number, number>();
-    const flowByAccountId = new Map<number, { inflow: number; outflow: number }>();
-    const latestSnapshotByAccountId = new Map<number, { date: Date; balance: number }>();
-
-    for (const txn of transactions) {
-      if (!txn.accountId || txn.deletedAt) continue;
-
-      const snapshotValue = txn.importMetadata?.['Account Balance'];
-      if (snapshotValue) {
-        const parsedSnapshot = Number.parseFloat(
-          String(snapshotValue)
-            .replace(/[()]/g, '')
-            .replace(/[^\d.,-]/g, '')
-            .replace(/,(?=\d{3}\b)/g, ''),
-        );
-        const txDate = new Date(txn.date);
-        if (Number.isFinite(parsedSnapshot) && !Number.isNaN(txDate.getTime())) {
-          const existing = latestSnapshotByAccountId.get(txn.accountId);
-          if (!existing || txDate.getTime() >= existing.date.getTime()) {
-            latestSnapshotByAccountId.set(txn.accountId, {
-              date: txDate,
-              balance: parsedSnapshot,
-            });
-          }
-        }
-      }
-
-      const currentFlow = flowByAccountId.get(txn.accountId) ?? { inflow: 0, outflow: 0 };
-
-      if (txn.type === 'income') {
-        balanceByAccountId.set(txn.accountId, (balanceByAccountId.get(txn.accountId) ?? 0) + txn.amount);
-        currentFlow.inflow += txn.amount;
-        flowByAccountId.set(txn.accountId, currentFlow);
-        continue;
-      }
-
-      if (txn.type === 'expense') {
-        balanceByAccountId.set(txn.accountId, (balanceByAccountId.get(txn.accountId) ?? 0) - txn.amount);
-        currentFlow.outflow += txn.amount;
-        flowByAccountId.set(txn.accountId, currentFlow);
-        continue;
-      }
-
-      if (txn.type === 'transfer') {
-        balanceByAccountId.set(txn.accountId, (balanceByAccountId.get(txn.accountId) ?? 0) - txn.amount);
-        currentFlow.outflow += txn.amount;
-        flowByAccountId.set(txn.accountId, currentFlow);
-        if (txn.transferToAccountId) {
-          balanceByAccountId.set(
-            txn.transferToAccountId,
-            (balanceByAccountId.get(txn.transferToAccountId) ?? 0) + txn.amount,
-          );
-          const destinationFlow = flowByAccountId.get(txn.transferToAccountId) ?? { inflow: 0, outflow: 0 };
-          destinationFlow.inflow += txn.amount;
-          flowByAccountId.set(txn.transferToAccountId, destinationFlow);
-        }
-      }
-
-    }
-
-    const hasNonZeroDerivedBalance = Array.from(balanceByAccountId.values()).some((value) => Math.abs(value) > 0.000001);
-    if (!hasNonZeroDerivedBalance && !shouldAttemptNegativeImportRepair) return;
+    const reconcileKey = changed.map((account) => `${account.id}:${derived.get(account.id!)}`).join(',');
+    if (attemptedBalanceRepairKeyRef.current === reconcileKey) return;
+    attemptedBalanceRepairKeyRef.current = reconcileKey;
 
     void db.transaction('rw', db.accounts, async () => {
       const now = new Date();
-      for (const account of activeAccounts) {
+      for (const account of changed) {
         if (!account.id) continue;
-
-        const latestSnapshot = latestSnapshotByAccountId.get(account.id);
-        if (latestSnapshot) {
-          await db.accounts.update(account.id, {
-            balance: Number(latestSnapshot.balance.toFixed(2)),
-            updatedAt: now,
-          });
-          continue;
-        }
-
-        const derivedBalance = balanceByAccountId.get(account.id);
-        if (derivedBalance == null) continue;
-
-        const flows = flowByAccountId.get(account.id) ?? { inflow: 0, outflow: 0 };
-        const hasImportedRows = transactions.some(
-          (txn) => txn.accountId === account.id && !txn.deletedAt && Boolean(txn.importSource || txn.importedAt),
-        );
-
-        let repairedBalance = Number(account.openingBalance ?? 0) + derivedBalance;
-        if (
-          hasImportedRows
-          && account.type !== 'card'
-          && repairedBalance < 0
-          && flows.inflow <= 0
-        ) {
-          repairedBalance = 0;
-        }
-
-        await db.accounts.update(account.id, {
-          balance: Number(repairedBalance.toFixed(2)),
-          updatedAt: now,
-        });
+        const next = derived.get(account.id);
+        if (next == null) continue;
+        await db.accounts.update(account.id, { balance: next, updatedAt: now });
       }
     });
-  }, [accounts, transactions]);
+  }, [rawAccounts, transactions, goalContributions, loanPayments]);
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);

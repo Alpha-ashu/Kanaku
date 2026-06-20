@@ -43,6 +43,11 @@ const envSchema = z.object({
   REFRESH_COOKIE_NAME: z.string().default('kanaku_rt'),
   REFRESH_COOKIE_DOMAIN: z.string().optional(),
 
+  // Server-side inactivity window (minutes). 0 / unset disables the idle lock,
+  // so a stolen access/refresh token can't be replayed after the user has been
+  // inactive this long. See backend/src/security/idleSession.ts.
+  IDLE_TIMEOUT_MINUTES: z.coerce.number().nonnegative().optional(),
+
   // API Keys and Credentials
   STRIPE_API_KEY: z.string().optional(),
   OPENAI_API_KEY: z.string().optional(),

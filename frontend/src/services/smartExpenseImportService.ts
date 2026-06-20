@@ -11,6 +11,7 @@ import {
   type Transaction,
 } from '@/lib/database';
 import { initializeBackendSync } from '@/lib/auth-sync-integration';
+import { rebuildAccountBalances, setAccountTargetBalance } from '@/lib/transactionAggregation';
 import {
   INCOME_CATEGORIES,
   detectExpenseCategoryFromText,
@@ -1454,6 +1455,9 @@ class SmartExpenseImportService {
                 accountId: account.id,
                 date: row.date!,
                 notes: `Imported from ${options.fileName}`,
+                // Linked to the imported cash transaction above so the balance
+                // engine counts this spend once (via the transaction).
+                transactionId,
               });
 
               await db.goals.update(goalEntry.goal.id!, {
@@ -1467,40 +1471,10 @@ class SmartExpenseImportService {
           }
         }
 
-        for (const [accountId, change] of accountBalanceChanges.entries()) {
-          const account = await db.accounts.get(accountId);
-          if (!account) continue;
-
-          const importedSnapshot = importedAccountSnapshots.get(accountId);
-          if (importedSnapshot) {
-            await db.accounts.update(accountId, {
-              balance: importedSnapshot.balance,
-              updatedAt: importedAt,
-            });
-            continue;
-          }
-
-          const flows = accountFlows.get(accountId) ?? { inflow: 0, outflow: 0 };
-          const nextBalance = account.balance + change;
-
-          if (
-            ensuredAccounts.createdAccountIds.has(accountId)
-            && account.type !== 'card'
-            && nextBalance < 0
-            && flows.inflow <= 0
-          ) {
-            await db.accounts.update(accountId, {
-              balance: 0,
-              updatedAt: importedAt,
-            });
-            continue;
-          }
-
-          await db.accounts.update(accountId, {
-            balance: nextBalance,
-            updatedAt: importedAt,
-          });
-        }
+        // Account balances are reconciled AFTER this transaction commits
+        // (see below) via the canonical derived-balance engine, so the
+        // imported rows are already persisted and counted exactly once. No
+        // manual running-total update happens here anymore.
 
         const history: ImportHistory = {
           fileName: options.fileName,
@@ -1526,6 +1500,19 @@ class SmartExpenseImportService {
         await db.importHistories.add(history);
       },
     );
+
+    // Reconcile balances against the canonical engine now that the imported
+    // ledger rows are committed. When a statement supplied an authoritative
+    // running balance, anchor the opening balance so the derived value lands
+    // exactly on that snapshot; otherwise recompute from the full ledger.
+    const accountsWithSnapshot = new Set<number>();
+    for (const [accountId, snapshot] of importedAccountSnapshots.entries()) {
+      await setAccountTargetBalance(accountId, snapshot.balance);
+      accountsWithSnapshot.add(accountId);
+    }
+    if (accountBalanceChanges.size > accountsWithSnapshot.size) {
+      await rebuildAccountBalances();
+    }
 
     return {
       importedCount,
