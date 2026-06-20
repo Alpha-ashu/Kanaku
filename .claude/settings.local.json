@@ -10,7 +10,8 @@
       "Bash(npx prisma@6.19.2 db execute --schema backend/prisma/schema.prisma --file backend/prisma/migrations/20260610_add_composite_indexes/migration.sql)",
       "Bash(git add *)",
       "Bash(git commit *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Bash(git checkout *)"
     ]
   }
 }
