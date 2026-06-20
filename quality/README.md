@@ -10,7 +10,7 @@ report**, a **UI element inventory**, **contract auditing**, and **regression di
 | # | Capability | Command | Output / location |
 |---|---|---|---|
 | 1 | **UI automation inventory** (every interactive element + its `data-testid`) | `npm run qa:ui-inventory` | `reports/ui/automation-element-inventory.xlsx`, `ui-gap-report.md` |
-| 2 | **API contract catalog** (240 endpoints documented) | — (authored) / `npm run qa:contract-audit` | `../docs/api/contracts/` + `reports/api/contract-completeness.xlsx` |
+| 2 | **API contract catalog** (240 endpoints) | `npm run qa:contract-enrich` then `qa:contract-audit` | `../docs/api/contracts/` + `reports/api/contract-completeness.xlsx` (165/239 complete) |
 | 3 | **Automated API validation runner** (fires every endpoint, captures actual response) | `npm run qa:api-report` | `reports/api/api-report-<ts>.xlsx` (+ `.json`) |
 | 4 | **Excel validation report** (expected vs actual, API-vs-DB counts) | same as #3 | `reports/api/api-report-<ts>.xlsx` |
 | 5 | **Bug-identification workflow** (read the Excel, no IDE) | open the report | see *Bug workflow* below |
@@ -49,6 +49,11 @@ stakeholders with `git add -f reports/...`.
 ```bash
 # 1. UI element inventory + gap report (no server needed)
 npm run qa:ui-inventory
+npm run qa:ui-fix                         # codemod: inject data-testid on every untagged element (→100%)
+
+# 2. Enrich contracts from the OpenAPI spec, then re-score (no server needed)
+npm run qa:contract-enrich
+npm run qa:contract-audit
 
 # 2/3/4. Fire every endpoint against a live backend → Excel (expected vs actual, API vs DB)
 npm run dev:backend                       # backend on :3000
@@ -101,8 +106,10 @@ runs explicitly with `--base <old.json> --head <new.json>`.
 
 Every interactive element must have a unique `data-testid`. Naming:
 `<page>-<element>-<action>` (e.g. `goals-add-goal-button`, `goals-edit-name-input`);
-dynamic rows use a template: `` `goals-edit-button-${goal.id}` ``. Track coverage
-with `npm run qa:ui-inventory` (currently ~29% — the report is the burn-down list).
+dynamic rows use a template: `` `goals-edit-button-${goal.id}` ``. Coverage is
+**100%** (`npm run qa:ui-inventory`); `npm run qa:ui-fix` re-tags any new untagged
+elements. Composite wrappers (whose DOM is tagged inside their own file) are
+excluded from the count and the inventory reports that exclusion explicitly.
 
 ## Bearer token (API E2E)
 
