@@ -10,7 +10,7 @@ report**, a **UI element inventory**, **contract auditing**, and **regression di
 | # | Capability | Command | Output / location |
 |---|---|---|---|
 | 1 | **UI automation inventory** (every interactive element + its `data-testid`) | `npm run qa:ui-inventory` | `reports/ui/automation-element-inventory.xlsx`, `ui-gap-report.md` |
-| 2 | **API contract catalog** (240 endpoints) | `npm run qa:contract-enrich` then `qa:contract-audit` | `../docs/api/contracts/` + `reports/api/contract-completeness.xlsx` (165/239 complete) |
+| 2 | **API contract catalog** (240 endpoints) | `qa:contract-enrich` → `qa:contract-enrich-zod` → live capture → `qa:contract-finalize` | `../docs/api/contracts/` + `reports/api/contract-completeness.xlsx` (**239/239 complete**) |
 | 3 | **Automated API validation runner** (fires every endpoint, captures actual response) | `npm run qa:api-report` | `reports/api/api-report-<ts>.xlsx` (+ `.json`) |
 | 4 | **Excel validation report** (expected vs actual, API-vs-DB counts) | same as #3 | `reports/api/api-report-<ts>.xlsx` |
 | 5 | **Bug-identification workflow** (read the Excel, no IDE) | open the report | see *Bug workflow* below |
@@ -51,9 +51,14 @@ stakeholders with `git add -f reports/...`.
 npm run qa:ui-inventory
 npm run qa:ui-fix                         # codemod: inject data-testid on every untagged element (→100%)
 
-# 2. Enrich contracts from the OpenAPI spec, then re-score (no server needed)
-npm run qa:contract-enrich
-npm run qa:contract-audit
+# 2. Fill the contract catalog to 100% (239/239)
+npm run qa:contract-enrich       # from the OpenAPI spec (offline)
+npm run qa:contract-enrich-zod   # request bodies from Zod validation schemas (offline)
+# live capture (real responses): backend up, then
+QA_CAPTURE_WRITES=1 npm run qa:api-report   # fresh throwaway user, create→read→update→delete
+npm run qa:contract-audit -- --write-expected
+npm run qa:contract-finalize     # documented defaults for endpoints that can't be exercised locally
+npm run qa:contract-audit        # re-score
 
 # 2/3/4. Fire every endpoint against a live backend → Excel (expected vs actual, API vs DB)
 npm run dev:backend                       # backend on :3000
