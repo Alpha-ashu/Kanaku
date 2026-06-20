@@ -18,7 +18,26 @@
     },
     "params": {},
     "query": {},
-    "body": {}
+    "body": {
+      "vua": "string",
+      "fiTypes": [
+        "DEPOSIT"
+      ],
+      "consentTypes": [
+        "TRANSACTIONS",
+        "SUMMARY"
+      ],
+      "purpose": {
+        "code": "string",
+        "text": "string"
+      },
+      "dataRange": {
+        "from": "string",
+        "to": "string"
+      },
+      "consentMode": "VIEW",
+      "fetchType": "ONETIME"
+    }
   },
   "responses": {
     "200": {
@@ -56,6 +75,7 @@
     "auto": true,
     "version": 1,
     "generatedAt": "2026-06-19",
-    "enrichedAt": "2026-06-20"
+    "enrichedAt": "2026-06-20",
+    "zodEnrichedAt": "2026-06-20"
   }
 }

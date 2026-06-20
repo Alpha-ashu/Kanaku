@@ -18,7 +18,22 @@
     },
     "params": {},
     "query": {},
-    "body": {}
+    "body": {
+      "year": 2000,
+      "regime": "string",
+      "country": "string",
+      "totalIncome": 0,
+      "totalExpense": 0,
+      "netProfit": 0,
+      "taxableIncome": 0,
+      "estimatedTax": 0,
+      "taxRate": 0,
+      "deductions": 0,
+      "currency": "string",
+      "notes": "string",
+      "metadata": {},
+      "clientRequestId": "string"
+    }
   },
   "responses": {
     "200": {
@@ -56,6 +71,7 @@
     "auto": true,
     "version": 1,
     "generatedAt": "2026-06-19",
-    "enrichedAt": "2026-06-20"
+    "enrichedAt": "2026-06-20",
+    "zodEnrichedAt": "2026-06-20"
   }
 }

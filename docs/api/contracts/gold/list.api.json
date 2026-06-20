@@ -17,7 +17,9 @@
       "Content-Type": "application/json"
     },
     "params": {},
-    "query": {}
+    "query": {
+      "type": "gold"
+    }
   },
   "responses": {
     "200": {
@@ -59,6 +61,7 @@
     "version": 1,
     "generatedAt": "2026-06-19",
     "enrichedAt": "2026-06-20",
-    "expectedBackfilledAt": "2026-06-20"
+    "expectedBackfilledAt": "2026-06-20",
+    "zodEnrichedAt": "2026-06-20"
   }
 }

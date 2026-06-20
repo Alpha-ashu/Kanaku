@@ -18,7 +18,19 @@
     },
     "params": {},
     "query": {},
-    "body": {}
+    "body": {
+      "category": "string",
+      "amount": 0,
+      "period": "weekly",
+      "threshold": 1,
+      "startDate": "2026-06-20T08:14:56.671Z",
+      "endDate": "2026-06-20T08:14:56.672Z",
+      "alertEnabled": false,
+      "alertChannels": [
+        "app"
+      ],
+      "clientRequestId": "string"
+    }
   },
   "responses": {
     "200": {
@@ -56,6 +68,7 @@
     "auto": true,
     "version": 1,
     "generatedAt": "2026-06-19",
-    "enrichedAt": "2026-06-20"
+    "enrichedAt": "2026-06-20",
+    "zodEnrichedAt": "2026-06-20"
   }
 }

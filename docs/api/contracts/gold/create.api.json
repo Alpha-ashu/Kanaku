@@ -18,7 +18,19 @@
     },
     "params": {},
     "query": {},
-    "body": {}
+    "body": {
+      "type": "gold",
+      "quantity": 0,
+      "unit": "gram",
+      "purchasePrice": 0,
+      "currentPrice": 0,
+      "purchaseDate": "2026-06-20T08:14:56.695Z",
+      "purityPercentage": 0,
+      "location": "string",
+      "certificateNumber": "string",
+      "notes": "string",
+      "clientRequestId": "string"
+    }
   },
   "responses": {
     "200": {
@@ -56,6 +68,7 @@
     "auto": true,
     "version": 1,
     "generatedAt": "2026-06-19",
-    "enrichedAt": "2026-06-20"
+    "enrichedAt": "2026-06-20",
+    "zodEnrichedAt": "2026-06-20"
   }
 }

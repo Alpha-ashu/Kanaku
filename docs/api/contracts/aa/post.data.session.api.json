@@ -18,7 +18,9 @@
     },
     "params": {},
     "query": {},
-    "body": {}
+    "body": {
+      "consentId": "string"
+    }
   },
   "responses": {
     "200": {
@@ -56,6 +58,7 @@
     "auto": true,
     "version": 1,
     "generatedAt": "2026-06-19",
-    "enrichedAt": "2026-06-20"
+    "enrichedAt": "2026-06-20",
+    "zodEnrichedAt": "2026-06-20"
   }
 }

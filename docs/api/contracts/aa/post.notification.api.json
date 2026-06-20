@@ -18,7 +18,14 @@
     },
     "params": {},
     "query": {},
-    "body": {}
+    "body": {
+      "type": "CONSENT_STATUS_UPDATE",
+      "consentId": "string",
+      "consentHandle": "string",
+      "sessionId": "string",
+      "status": "string",
+      "timestamp": "string"
+    }
   },
   "responses": {
     "200": {
@@ -56,6 +63,7 @@
     "auto": true,
     "version": 1,
     "generatedAt": "2026-06-19",
-    "enrichedAt": "2026-06-20"
+    "enrichedAt": "2026-06-20",
+    "zodEnrichedAt": "2026-06-20"
   }
 }
