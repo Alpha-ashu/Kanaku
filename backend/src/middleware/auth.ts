@@ -49,8 +49,13 @@ const ensureUserInDb = async (userId: string, userClaims: UserClaims) => {
         email: userClaims.email || `user-${userId.substring(0, 8)}@noemail.invalid`,
         name: userClaims.name || userClaims.email?.split('@')[0] || 'User',
         password: 'supabase-managed-account',
-        role: userClaims.role || 'user',
-        isApproved: userClaims.isApproved ?? false,
+        // SECURITY: privilege is NEVER derived from client-controllable claims.
+        // Supabase `user_metadata` is writable by the user themselves
+        // (`auth.updateUser({ data: { role } })`), so a shadow row is always
+        // created as an unprivileged, unapproved 'user'. Elevation happens only
+        // through the admin/advisor server flows.
+        role: 'user',
+        isApproved: false,
       }
     });
     logger.info(`[Auth] Ensured user ${userId} exists in database`);
@@ -285,7 +290,10 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
           req.user = {
             id: userId,
             email: authSnapshot?.email || supabaseDecoded.email || '',
-            role: authSnapshot?.role || normalizeAppRole(supabaseDecoded.user_metadata?.role || supabaseDecoded.app_metadata?.role),
+            // SECURITY: role comes only from the DB snapshot (server-authoritative).
+            // Token metadata is NOT trusted for privilege — `user_metadata` is
+            // user-writable in Supabase. New users without a snapshot default to 'user'.
+            role: authSnapshot?.role || 'user',
             isApproved: authSnapshot?.isApproved ?? false,
             name: authSnapshot?.name || supabaseDecoded.user_metadata?.full_name,
           };
@@ -317,7 +325,9 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
           req.user = {
             id: user.id,
             email: authSnapshot?.email || user.email || '',
-            role: authSnapshot?.role || normalizeAppRole(user.user_metadata?.role || user.app_metadata?.role),
+            // SECURITY: role comes only from the DB snapshot. `user_metadata.role`
+            // is user-writable, so it is never trusted for privilege here.
+            role: authSnapshot?.role || 'user',
             isApproved: authSnapshot?.isApproved ?? false,
             name: authSnapshot?.name || user.user_metadata?.full_name,
           };
@@ -352,7 +362,8 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
           req.user = {
             id: userId,
             email: unverified?.email || '',
-            role: normalizeAppRole(unverified?.user_metadata?.role || unverified?.app_metadata?.role),
+            // SECURITY: never trust token metadata for role (see above).
+            role: 'user',
             isApproved: false,
             name: unverified?.user_metadata?.full_name,
           };

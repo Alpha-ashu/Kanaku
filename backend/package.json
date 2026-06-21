@@ -9,6 +9,8 @@
                     "generate:prisma":  "prisma generate",
                     "ensure:cloud-sync-schema":  "node ./scripts/ensure-cloud-sync-schema.cjs",
                     "ensure:db-integrity":  "node ./scripts/ensure-db-integrity.cjs",
+                    "backfill:user-settings":  "node ./scripts/backfill-user-settings.cjs",
+                    "backfill:profiles-from-user":  "node ./scripts/backfill-profiles-from-user.cjs",
                     "demo:reset-users":  "node ./scripts/reset-demo-users.cjs",
                     "measure:auth":  "node ./scripts/measure-auth-distribution.cjs",
                     "migrate:supabase-auth":  "node ./scripts/migrate-users-to-supabase-auth.cjs",
