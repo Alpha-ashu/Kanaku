@@ -349,14 +349,23 @@ export const loginChallenge = async (req: Request, res: Response, next: NextFunc
     const challengeId = 'ch_' + randomUUID();
     const redisKey = `login-challenge:${email.toLowerCase().trim()}`;
 
-    const redisActive = getRedisStatus() === 'connected';
+    const challengeValue = { email: email.toLowerCase().trim(), code: challengeCode };
     const redisClient = getRedisClient();
+    let storedInRedis = false;
 
-    if (redisActive && redisClient) {
-      await redisClient.set(redisKey, JSON.stringify({ email: email.toLowerCase().trim(), code: challengeCode }), 'EX', 60);
-    } else {
+    // Try Redis first, but NEVER let a Redis error (e.g. Upstash over-quota,
+    // connection drop) fail the login — fall back to the in-memory cache.
+    if (getRedisStatus() === 'connected' && redisClient) {
+      try {
+        await redisClient.set(redisKey, JSON.stringify(challengeValue), 'EX', 60);
+        storedInRedis = true;
+      } catch (redisErr: any) {
+        logger.warn('Login challenge Redis store failed; using in-memory fallback.', { message: redisErr?.message });
+      }
+    }
+    if (!storedInRedis) {
       challengeMemoryCache.set(redisKey, {
-        payload: { email: email.toLowerCase().trim(), code: challengeCode },
+        payload: challengeValue,
         expiresAt: Date.now() + 60000,
       });
     }
@@ -409,16 +418,23 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
       const redisKey = `login-challenge:${input.email.toLowerCase().trim()}`;
       let challenge: any = null;
 
-      const redisActive = getRedisStatus() === 'connected';
       const redisClient = getRedisClient();
 
-      if (redisActive && redisClient) {
-        const raw = await redisClient.get(redisKey);
-        if (raw) {
-          challenge = JSON.parse(raw);
-          await redisClient.del(redisKey);
+      // Try Redis, but tolerate Redis errors (over-quota / connection drop).
+      if (getRedisStatus() === 'connected' && redisClient) {
+        try {
+          const raw = await redisClient.get(redisKey);
+          if (raw) {
+            challenge = JSON.parse(raw);
+            await redisClient.del(redisKey).catch(() => {});
+          }
+        } catch (redisErr: any) {
+          logger.warn('Login challenge Redis read failed; falling back to memory.', { message: redisErr?.message });
         }
-      } else {
+      }
+      // Fall back to the in-memory cache when Redis missed/errored — this is where
+      // the challenge lives if the store above fell back (single-instance prod).
+      if (!challenge) {
         const cached = challengeMemoryCache.get(redisKey);
         if (cached && cached.expiresAt > Date.now()) {
           challenge = cached.payload;
