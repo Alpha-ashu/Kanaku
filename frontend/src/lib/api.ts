@@ -12,7 +12,6 @@ import {
   markOptionalBackendUnavailable,
   shouldRetryWithLocalApiFallback,
 } from './apiBase';
-import supabase from '@/utils/supabase/client';
 import type { ApiResponse, ApiError } from '@/types';
 import { ErrorFactory, ErrorHandler } from './errorHandling';
 import { logger } from './logger';
@@ -146,52 +145,59 @@ const clearGetResponseCache = (): void => {
 };
 
 // In-memory token store — avoids writing JWTs to extra localStorage keys.
-// The Supabase session (sb-*-auth-token) is the authoritative source.
-// Custom tokens issued by our own backend (e.g. for tests) fall back here.
+// Backend-managed auth: the backend JWT (captured from login/refresh response
+// headers) is the authoritative API credential, held in-memory + localStorage.
 let _memoryAccessToken: string | null = null;
 let _memoryRefreshToken: string | null = null;
+
+// Safe localStorage accessor — undefined in SSR / web-worker / some test envs.
+const _ls = (): Storage | null => {
+  try {
+    return typeof localStorage !== 'undefined' ? localStorage : null;
+  } catch {
+    return null;
+  }
+};
 
 export const TokenManager = {
   getAccessToken: (): string | null => {
     // Prefer in-memory (most recent), then legacy localStorage fallback
     return _memoryAccessToken
-      || localStorage.getItem('auth_token')
-      || localStorage.getItem('accessToken')
-      || localStorage.getItem('token');
+      || _ls()?.getItem('auth_token')
+      || _ls()?.getItem('accessToken')
+      || _ls()?.getItem('token')
+      || null;
   },
 
   setAccessToken: (token: string): void => {
     _memoryAccessToken = token;
     if (token) {
-      localStorage.setItem('auth_token', token);
+      _ls()?.setItem('auth_token', token);
     } else {
-      localStorage.removeItem('auth_token');
+      _ls()?.removeItem('auth_token');
     }
   },
 
   getRefreshToken: (): string | null => {
     return _memoryRefreshToken
-      || localStorage.getItem('refresh_token')
-      || localStorage.getItem('refreshToken');
+      || _ls()?.getItem('refresh_token')
+      || _ls()?.getItem('refreshToken')
+      || null;
   },
 
   setRefreshToken: (token: string): void => {
     _memoryRefreshToken = token;
     if (token) {
-      localStorage.setItem('refresh_token', token);
+      _ls()?.setItem('refresh_token', token);
     } else {
-      localStorage.removeItem('refresh_token');
+      _ls()?.removeItem('refresh_token');
     }
   },
 
   clearTokens: (): void => {
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('refresh_token');
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    localStorage.removeItem('token');
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('auth_token_v1');
+    const ls = _ls();
+    ['auth_token', 'refresh_token', 'accessToken', 'refreshToken', 'token', 'authToken', 'auth_token_v1']
+      .forEach((k) => ls?.removeItem(k));
     // Clear in-memory copies too
     _memoryAccessToken = null;
     _memoryRefreshToken = null;
@@ -204,25 +210,10 @@ export const TokenManager = {
 };
 
 const resolveAuthToken = async (): Promise<string | null> => {
-  try {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session?.access_token) {
-      return session.access_token;
-    }
-  } catch {
-    // Fall back to locally stored tokens.
-  }
-
+  // Backend-managed auth (BFF): the only API credential is our own backend JWT,
+  // captured by TokenManager from the login/refresh response headers. The client
+  // no longer reads Supabase session tokens — Supabase is never the API identity.
   return TokenManager.getAccessToken();
-};
-
-const hasActiveSupabaseSession = async (): Promise<boolean> => {
-  try {
-    const { data: { session } } = await supabase.auth.getSession();
-    return Boolean(session?.access_token);
-  } catch {
-    return false;
-  }
 };
 
 // ==================== Error Handler ====================
@@ -279,13 +270,38 @@ const refreshAccessToken = async (): Promise<string | null> => {
 
   _refreshInFlight = (async () => {
     try {
-      const { data, error } = await supabase.auth.refreshSession();
-      if (!error && data.session?.access_token) {
-        TokenManager.setAccessToken(data.session.access_token);
-        if (data.session.refresh_token) {
-          TokenManager.setRefreshToken(data.session.refresh_token);
-        }
-        return data.session.access_token;
+      // Direct fetch (NOT via apiClient) to avoid the 401→refresh recursion.
+      // The HttpOnly refresh cookie is sent via credentials:'include'; the
+      // x-refresh-token header is a fallback for clients without the cookie.
+      // New tokens arrive in the Authorization/x-refresh-token response headers
+      // (and the JSON body) — exactly like login. No Supabase involvement.
+      const storedRefresh = TokenManager.getRefreshToken();
+      const res = await fetch(`${API_BASE_URL}/auth/refresh`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(storedRefresh ? { 'x-refresh-token': storedRefresh } : {}),
+        },
+        body: '{}',
+      });
+      if (!res.ok) return null;
+
+      const authHeader = res.headers?.get?.('Authorization') ?? null;
+      const refreshHeader = res.headers?.get?.('x-refresh-token') ?? null;
+      let accessToken = authHeader ? authHeader.replace(/^Bearer\s+/i, '').trim() : null;
+      let newRefresh = refreshHeader;
+
+      if (!accessToken) {
+        const json = await res.json().catch(() => null) as any;
+        accessToken = json?.data?.accessToken ?? null;
+        newRefresh = newRefresh ?? json?.data?.refreshToken ?? null;
+      }
+
+      if (accessToken) {
+        TokenManager.setAccessToken(accessToken);
+        if (newRefresh) TokenManager.setRefreshToken(newRefresh);
+        return accessToken;
       }
     } catch {
       // Refresh failed
@@ -492,13 +508,9 @@ class HTTPClient {
                     clearTimeout(retryTimeout);
                   }
                 }
-                // Refresh failed or retry returned non-ok — clear session and redirect
+                // Refresh failed or retry returned non-ok — clear the backend
+                // session and redirect. (Backend-managed auth: no Supabase session.)
                 TokenManager.clearTokens();
-                try {
-                  await supabase.auth.signOut({ scope: 'local' });
-                } catch {
-                  // Ignore sign out errors
-                }
                 await new Promise(resolve => setTimeout(resolve, 100));
                 if (window.location.pathname !== '/login') {
                   window.location.href = '/login';

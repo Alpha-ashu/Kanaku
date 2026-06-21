@@ -112,18 +112,8 @@ class BackendSyncService {
         }
       }
 
-      if (!userObj) {
-        try {
-          const { data: { user }, error: authError } = await supabase.auth.getUser();
-          if (user && !authError) {
-            userObj = user;
-            const session = await supabase.auth.getSession();
-            accessToken = session.data.session?.access_token || null;
-          }
-        } catch (e) {
-          // ignore
-        }
-      }
+      // Backend-managed auth: identity comes from the backend JWT (decoded above).
+      // No Supabase session fallback.
 
       if (!userObj || !accessToken) {
         console.warn(' Backend sync failed: User not authenticated');

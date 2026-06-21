@@ -98,6 +98,12 @@ const getSupabase = () => {
 
 // Supabase JWT Secret found in Supabase Dashboard Project Settings API JWT Settings
 const supabaseJwtSecret = process.env.SUPABASE_JWT_SECRET || '';
+
+// BFF rollout switch: while the client is migrating to backend-issued JWTs we
+// still accept Supabase tokens. Set ACCEPT_SUPABASE_JWT=false once every client
+// is on the backend JWT to make the backend reject Supabase tokens entirely
+// (defence in depth — the API identity becomes our own JWT only).
+const ACCEPT_SUPABASE_JWT = process.env.ACCEPT_SUPABASE_JWT !== 'false';
 const AUTH_STATUS_LOOKUP_TIMEOUT_MS = Number(process.env.AUTH_STATUS_LOOKUP_TIMEOUT_MS || 5000);
 const STATUS_LOOKUP_TIMEOUT = Symbol('auth-status-timeout');
 const ALLOW_TEST_ROLE_FALLBACK = process.env.NODE_ENV === 'test';
@@ -275,7 +281,7 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
     }
 
     // 2. Try Supabase JWT Secret verification (fast, no network call needed)
-    if (supabaseJwtSecret) {
+    if (ACCEPT_SUPABASE_JWT && supabaseJwtSecret) {
       try {
         const supabaseDecoded = jwt.verify(token, supabaseJwtSecret) as SupabaseJwtPayload;
         const userId = supabaseDecoded?.sub;
@@ -310,7 +316,7 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
       }
     }
 
-    const sb = getSupabase();
+    const sb = ACCEPT_SUPABASE_JWT ? getSupabase() : null;
     if (sb && process.env.NODE_ENV !== 'test') {
       try {
         const { data: { user }, error } = await sb.auth.getUser(token);

@@ -684,7 +684,8 @@ export const updateProfile = async (req: AuthRequest, res: Response, next: NextF
         typeof value === 'string' ? sanitize(value) : value,
       ]),
     );
-    logger.info(`[AuthController] Sanitized data for userId: ${req.userId}: ${JSON.stringify(sanitizedData)}`);
+    // Log only the field NAMES, never values (PII hygiene).
+    logger.info(`[AuthController] Profile update fields for userId: ${req.userId}: ${Object.keys(sanitizedData || {}).join(', ')}`);
     const user = await authService.updateProfile(req.userId, sanitizedData, req.user?.email);
     logger.info(`[AuthController] Profile updated in service for userId: ${req.userId}`);
 

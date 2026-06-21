@@ -42,14 +42,35 @@ const destructiveLimiter = rateLimit({
   keyGenerator: (req) => req.ip || 'unknown',
 });
 
-// Layered anti-brute-force limiters (stack on top of the per-minute authLimiter):
-// a long-window cap on sustained attempts per IP, in addition to the burst cap.
-// Defaults are env-tunable to the exact policy (e.g. login 5/15m, register 3/h).
+// Per-endpoint anti-brute-force limiters (stack on top of the baseline authLimiter).
+// Defaults follow the auth spec and are env-tunable.
+
+// Login: 5 password attempts / minute / IP. Applied to /login/challenge, where the
+// password is actually verified (the brute-force surface); /login only exchanges a
+// short-lived challenge code, so it stays on the baseline limiter.
 const loginLimiter = rateLimit({
-  windowMs: 15 * 60_000,     // 15 minutes
-  max: Number(process.env.LOGIN_RATE_LIMIT || 15), // ≈ a handful of 2-step login attempts
+  windowMs: 60_000,          // 1 minute
+  max: Number(process.env.LOGIN_RATE_LIMIT || 5),
   scope: 'auth-login',
-  message: 'Too many login attempts. Please try again in a few minutes.',
+  message: 'Too many login attempts. Please try again in a minute.',
+  keyGenerator: (req) => req.ip || 'unknown',
+});
+
+// Refresh: 10 / minute / IP.
+const refreshLimiter = rateLimit({
+  windowMs: 60_000,          // 1 minute
+  max: Number(process.env.REFRESH_RATE_LIMIT || 10),
+  scope: 'auth-refresh',
+  message: 'Too many token refreshes. Please slow down.',
+  keyGenerator: (req) => req.ip || 'unknown',
+});
+
+// OTP: 5 / 10 minutes / IP.
+const otpLimiter = rateLimit({
+  windowMs: 10 * 60_000,     // 10 minutes
+  max: Number(process.env.OTP_RATE_LIMIT || 5),
+  scope: 'auth-otp',
+  message: 'Too many OTP requests. Please try again later.',
   keyGenerator: (req) => req.ip || 'unknown',
 });
 
@@ -67,18 +88,18 @@ router.post('/check-email', authLimiter, checkEmailAvailability);
 // asserts on — do not front them with a generic validateBody layer.
 router.post('/register', authLimiter, registerLimiter, register);
 router.post('/login/challenge', authLimiter, loginLimiter, loginChallenge);
-router.post('/login', authLimiter, loginLimiter, login);
-// Token refresh — public (refresh token is the credential), rate-limited.
-router.post('/refresh', authLimiter, refreshToken);
+router.post('/login', authLimiter, login);
+// Token refresh — public (refresh token is the credential), rate-limited (10/min).
+router.post('/refresh', refreshLimiter, refreshToken);
 // Logout — clears the HttpOnly refresh cookie and revokes the token.
 // Auth-optional: a user with an expired access token can still log out.
 router.post('/logout', logout);
 router.get('/profile', authMiddleware, getProfile);
 router.put('/profile', authMiddleware, validateBody(updateProfileSchema), updateProfile);
 
-// OTP routes (authenticated - user must have valid JWT)
-router.post('/otp/send', authMiddleware, sendOtp);
-router.post('/otp/verify', authMiddleware, verifyOtpEndpoint);
+// OTP routes (authenticated - user must have valid JWT) — 5 requests / 10 min / IP.
+router.post('/otp/send', otpLimiter, authMiddleware, sendOtp);
+router.post('/otp/verify', otpLimiter, authMiddleware, verifyOtpEndpoint);
 
 // Device management routes
 router.get('/devices', authMiddleware, getDevices);

@@ -1,5 +1,4 @@
 // Unified Auth Helpers - Centralized authentication operations
-import supabase from '@/utils/supabase/client';
 import { handleLogout } from './auth-sync-integration';
 import { db } from './database';
 import { permissionService } from '@/services/permissionService';
@@ -20,27 +19,11 @@ export async function unifiedSignOut(_navigate?: (path: string) => void): Promis
     // Backup PIN before any clearing
     const pinBackup = backupPINKeys();
 
-    // Step 1: Clear backend tokens and local cache
+    // Step 1: Revoke the backend session (refresh token + cookie) and clear local cache.
+    // Backend-managed auth: there is no Supabase session to sign out of.
     await handleLogout();
 
-    // Step 2: Sign out from Supabase (invalidates server-side session globally if active)
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        const { error } = await supabase.auth.signOut({ scope: 'global' });
-        if (error) {
-          console.warn('Supabase global signOut failed, trying local signOut:', error);
-          await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
-        }
-      } else {
-        await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
-      }
-    } catch (e) {
-      console.warn('Supabase global signOut exception, trying local signOut:', e);
-      await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
-    }
-
-    // Step 3: Clear permissions
+    // Step 2: Clear permissions
     permissionService.clearPermissions();
 
     // Step 4: Clear all storage
@@ -80,21 +63,8 @@ export async function legacySignOut(): Promise<void> {
 
     const pinBackup = backupPINKeys();
 
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        const { error } = await supabase.auth.signOut({ scope: 'global' });
-        if (error) {
-          console.warn('Supabase global signOut failed, trying local signOut:', error);
-          await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
-        }
-      } else {
-        await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
-      }
-    } catch (e) {
-      console.warn('Supabase global signOut exception, trying local signOut:', e);
-      await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
-    }
+    // Backend-managed auth: revoke the backend session; no Supabase session to clear.
+    await handleLogout();
 
     permissionService.clearPermissions();
 

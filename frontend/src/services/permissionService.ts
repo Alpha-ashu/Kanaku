@@ -98,11 +98,7 @@ const resolveEffectiveRole = (role: UserRole, isApproved?: boolean): UserRole =>
 };
 
 const getAuthToken = async (): Promise<string | null> => {
-  const { data: { session } } = await supabase.auth.getSession();
-  if (session?.access_token) {
-    return session.access_token;
-  }
-
+  // Backend-managed auth: the API credential is the backend JWT in TokenManager.
   return TokenManager.getAccessToken();
 };
 

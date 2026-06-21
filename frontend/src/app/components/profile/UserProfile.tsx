@@ -192,17 +192,12 @@ export const UserProfile: React.FC = () => {
  toast.info('Signing out...');
 
  try {
-  // Step 1: Sign out from Supabase (with timeout)
+  // Step 1: Revoke the backend session (with timeout). Backend-managed auth: no Supabase session.
   const signOutPromise = (async () => {
     try {
-      const { error } = await supabase.auth.signOut({ scope: 'global' });
-      if (error) {
-        console.warn('Supabase global signOut failed, trying local signOut:', error);
-        await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
-      }
+      await api.auth.logout();
     } catch (e) {
-      console.warn('Supabase global signOut exception, trying local signOut:', e);
-      await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
+      console.warn('Backend logout failed (continuing local cleanup):', e);
     }
   })();
   const timeoutPromise = new Promise((_, reject) =>

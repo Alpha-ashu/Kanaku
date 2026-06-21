@@ -5,6 +5,7 @@ import { generateTokens } from '../../utils/auth';
 import { Prisma } from '../../db/prisma-client';
 import { logger } from '../../config/logger';
 import { getSupabaseAdminClient } from '../../db/supabase';
+import { authProvider } from './auth.provider';
 
 export class AuthService {
   async register(input: RegisterInput & {
@@ -109,7 +110,8 @@ export class AuthService {
   }
 
   async updateProfile(userId: string, data: any, email?: string): Promise<any> {
-    logger.info(`[AuthService] Processing profile update for userId: ${userId}. Input data: ${JSON.stringify(data)}`);
+    // Log only the field NAMES being updated — never the values (PII hygiene).
+    logger.info(`[AuthService] Processing profile update for userId: ${userId}. Fields: ${Object.keys(data || {}).join(', ')}`);
 
     // Fetch existing records for merging
     const existingUser = await prisma.user.findUnique({ where: { id: userId } });
@@ -320,26 +322,19 @@ export class AuthService {
 
     if (!user.password || user.password === 'supabase-managed-account') {
       logger.info(`[AuthService] User ${input.email} has a Supabase-managed or unmigrated account. Authenticating via Supabase...`);
-      const supabaseAdmin = getSupabaseAdminClient();
-      if (supabaseAdmin) {
-        const { data, error } = await supabaseAdmin.auth.signInWithPassword({
-          email: input.email,
-          password: input.password
-        });
-        
-        if (!error && data.user) {
-          isPasswordValid = true;
-          // Migrating password hash to local DB for future logins
-          try {
-            const hashedPassword = await bcrypt.hash(input.password, 12);
-            await prisma.user.update({
-              where: { id: user.id },
-              data: { password: hashedPassword }
-            });
-            logger.info(`[AuthService] Migrated password hash for user ${input.email} to local DB.`);
-          } catch (migrateErr: any) {
-            logger.warn(`[AuthService] Password migration failed for user ${input.email}:`, migrateErr);
-          }
+      // Verify against the external identity provider (hidden behind AuthProvider).
+      if (await authProvider.verifyCredentials(input.email, input.password)) {
+        isPasswordValid = true;
+        // Migrate the password to our local bcrypt hash for future logins.
+        try {
+          const hashedPassword = await bcrypt.hash(input.password, 12);
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { password: hashedPassword }
+          });
+          logger.info(`[AuthService] Migrated password hash for user ${input.email} to local DB.`);
+        } catch (migrateErr: any) {
+          logger.warn(`[AuthService] Password migration failed for user ${input.email}:`, migrateErr);
         }
       }
     } else {
@@ -373,26 +368,19 @@ export class AuthService {
         // Return false; frontend will fall back to plain encoding on retry.
         return false;
       }
-      const supabaseAdmin = getSupabaseAdminClient();
-      if (supabaseAdmin) {
-        const { data, error } = await supabaseAdmin.auth.signInWithPassword({
-          email,
-          password: passwordStr
-        });
-        
-        if (!error && data.user) {
-          isPasswordValid = true;
-          // Migrate password hash to local DB for future logins
-          try {
-            const hashedPassword = await bcrypt.hash(passwordStr, 12);
-            await prisma.user.update({
-              where: { id: user.id },
-              data: { password: hashedPassword }
-            });
-            logger.info(`[AuthService] Migrated password hash for user ${email} to local DB.`);
-          } catch (migrateErr: any) {
-            logger.warn(`[AuthService] Password migration failed for user ${email}:`, migrateErr);
-          }
+      // Verify against the external identity provider (hidden behind AuthProvider).
+      if (await authProvider.verifyCredentials(email, passwordStr)) {
+        isPasswordValid = true;
+        // Migrate the password to our local bcrypt hash for future logins.
+        try {
+          const hashedPassword = await bcrypt.hash(passwordStr, 12);
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { password: hashedPassword }
+          });
+          logger.info(`[AuthService] Migrated password hash for user ${email} to local DB.`);
+        } catch (migrateErr: any) {
+          logger.warn(`[AuthService] Password migration failed for user ${email}:`, migrateErr);
         }
       }
     } else if (isSha256) {
