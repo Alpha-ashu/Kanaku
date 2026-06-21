@@ -141,6 +141,8 @@ export const AddGoal: React.FC = () => {
  const [initialAmtStr, setInitialAmtStr] = useState('');
  const [memberInput, setMemberInput] = useState({ name: '', contactType: 'email' as 'phone' | 'email' | 'link', contactValue: '' });
  const [members, setMembers] = useState<GoalMember[]>([]);
+ const [showFriendPicker, setShowFriendPicker] = useState(false);
+ const [showNewMemberInput, setShowNewMemberInput] = useState(false);
 
  const deadlineDate = formData.deadline ? new Date(formData.deadline) : null;
  const suggestion = deadlineDate
@@ -212,6 +214,7 @@ export const AddGoal: React.FC = () => {
  if (!memberInput.name || !memberInput.contactValue) { toast.error('Name and contact are required'); return; }
  setMembers(prev => [...prev, { name: memberInput.name, contactType: memberInput.contactType, contactValue: memberInput.contactValue, contribution: 0, status: 'pending' }]);
  setMemberInput({ name: '', contactType: 'email', contactValue: '' });
+ setShowNewMemberInput(false);
  };
 
  return (
@@ -284,44 +287,149 @@ export const AddGoal: React.FC = () => {
  <textarea value={formData.description} onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))} data-testid="goals-create-description-textarea" className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-900 text-xs min-h-[60px] resize-none" placeholder="What is this for?" />
  </div>
  </div>
-
- {/* Group Members Section */}
- {formData.goalType === 'group' && (
- <div className="space-y-3 pt-3 border-t border-slate-100 animate-in slide-in-from-top-2 duration-300">
- <div className="flex items-center justify-between">
- <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Collaborators</label>
- <span className="text-[8px] font-bold text-indigo-500 uppercase">Invite link active</span>
- </div>
- 
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
- <div className="flex flex-col gap-2 p-3 bg-slate-50 rounded-xl">
- <input type="text" value={memberInput.name} onChange={e => setMemberInput(prev => ({ ...prev, name: e.target.value }))} data-testid="goals-create-member-name-input" className="bg-white border-none rounded-lg px-3 py-2 text-xs font-bold" placeholder="Friend Name" />
- <div className="flex gap-2">
- <select value={memberInput.contactType} onChange={e => setMemberInput(prev => ({ ...prev, contactType: e.target.value as any }))} aria-label="Contact type" data-testid="goals-create-member-contact-type" className="bg-white border-none rounded-lg px-2 text-[10px] font-black uppercase">
- <option data-testid="add-goal-email" value="email">Email</option>
- <option data-testid="add-goal-phone" value="phone">Phone</option>
- </select>
- <input type="text" value={memberInput.contactValue} onChange={e => setMemberInput(prev => ({ ...prev, contactValue: e.target.value }))} data-testid="goals-create-member-contact-input" className="flex-1 bg-white border-none rounded-lg px-3 py-2 text-xs font-bold" placeholder="Contact..." />
- </div>
- <button onClick={addMember} data-testid="goals-create-member-add-button" className="w-full py-2 bg-slate-900 text-white rounded-lg text-[9px] font-black uppercase tracking-widest">+ Add</button>
  </div>
 
- <div className="space-y-2 max-h-[120px] overflow-y-auto no-scrollbar">
- {members.map((m, idx) => (
- <div key={idx} className="flex items-center justify-between p-2 bg-white border border-slate-100 rounded-xl">
- <div className="flex items-center gap-2">
- <div className="w-7 h-7 rounded-full bg-indigo-50 flex items-center justify-center text-[10px] font-black text-indigo-500">{m.name[0]}</div>
- <span className="text-[10px] font-bold text-slate-700">{m.name}</span>
- </div>
- <button onClick={() => setMembers(prev => prev.filter((_, i) => i !== idx))} title="Remove member" data-testid={`goals-create-member-remove-${idx}`} className="text-slate-300 hover:text-rose-500"><Trash2 size={12} /></button>
- </div>
- ))}
- {members.length === 0 && <div className="h-full flex items-center justify-center border-2 border-dashed border-slate-100 rounded-xl text-[9px] font-black text-slate-300 uppercase">No members added</div>}
- </div>
- </div>
- </div>
- )}
- </div>
+  {/* Group Members Section */}
+  {formData.goalType === 'group' && (
+  <div className="premium-glass-card p-4 space-y-4 animate-in slide-in-from-bottom-2 duration-300">
+  <div className="flex items-center justify-between">
+  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+  Collaborators ({members.length})
+  </label>
+  
+  <div className="flex gap-2">
+  {friends.length > 0 && (
+  <button
+  type="button"
+  onClick={() => { setShowFriendPicker(p => !p); setShowNewMemberInput(false); }}
+  data-testid="goals-create-friends-picker-button"
+  className="flex items-center gap-1 text-[9px] font-black text-violet-600 bg-violet-50 px-2.5 py-1.5 rounded-lg uppercase tracking-wide transition-all"
+  >
+  <Users size={11} /> Friends
+  </button>
+  )}
+  <button
+  type="button"
+  onClick={() => { setShowNewMemberInput(p => !p); setShowFriendPicker(false); }}
+  data-testid="goals-create-add-member-toggle-button"
+  className="flex items-center gap-1 text-[9px] font-black text-indigo-600 bg-indigo-50 px-2.5 py-1.5 rounded-lg uppercase tracking-wide transition-all"
+  >
+  <UserPlus size={11} /> New
+  </button>
+  </div>
+  </div>
+
+  {/* Friends quick-add / Selection Panel */}
+  {showFriendPicker && friends.length > 0 && (
+  <div className="p-3 bg-violet-50/60 rounded-xl border border-violet-100 animate-in zoom-in-95 duration-200">
+  <p className="text-[8px] font-black text-violet-400 uppercase tracking-widest mb-2">Tap to select</p>
+  <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2">
+  {friends.map(f => {
+  const isSelected = members.some(m => m.name.toLowerCase() === f.name.toLowerCase());
+  return (
+  <button
+  key={f.id}
+  type="button"
+  onClick={() => {
+  if (!isSelected) {
+  setMemberInput(prev => ({ ...prev, name: f.name }));
+  setShowNewMemberInput(true);
+  setShowFriendPicker(false);
+  }
+  }}
+  className={cn(
+  "px-2.5 py-1.5 rounded-lg text-[9px] font-bold transition-all border",
+  isSelected
+  ?"bg-indigo-600 border-indigo-600 text-white shadow-md"
+  :"bg-white border-violet-100 text-violet-700 hover:bg-violet-600 hover:text-white"
+  )}
+  >
+  {f.name}
+  </button>
+  );
+  })}
+  </div>
+  </div>
+  )}
+
+  {/* New Person Input */}
+  {showNewMemberInput && (
+  <div className="flex flex-col gap-2 p-3 bg-slate-50 rounded-xl animate-in slide-in-from-top-2">
+  <div className="flex gap-2">
+  <input
+  type="text"
+  value={memberInput.name}
+  onChange={e => setMemberInput(prev => ({ ...prev, name: e.target.value }))}
+  data-testid="goals-create-member-name-input"
+  className="flex-1 bg-white border-none rounded-lg px-3 py-2 text-xs font-bold"
+  placeholder="Friend Name"
+  autoFocus
+  />
+  <select
+  value={memberInput.contactType}
+  onChange={e => setMemberInput(prev => ({ ...prev, contactType: e.target.value as any }))}
+  aria-label="Contact type"
+  data-testid="goals-create-member-contact-type"
+  className="bg-white border-none rounded-lg px-2 text-[10px] font-black uppercase"
+  >
+  <option data-testid="add-goal-email" value="email">Email</option>
+  <option data-testid="add-goal-phone" value="phone">Phone</option>
+  </select>
+  </div>
+  <div className="flex gap-2">
+  <input
+  type="text"
+  value={memberInput.contactValue}
+  onChange={e => setMemberInput(prev => ({ ...prev, contactValue: e.target.value }))}
+  data-testid="goals-create-member-contact-input"
+  className="flex-1 bg-white border-none rounded-lg px-3 py-2 text-xs font-bold"
+  placeholder="Contact (Email or Phone)..."
+  />
+  <button
+  type="button"
+  onClick={addMember}
+  data-testid="goals-create-member-add-button"
+  className="px-3 bg-indigo-600 text-white rounded-lg text-[9px] font-black uppercase tracking-widest"
+  >
+  Add
+  </button>
+  </div>
+  </div>
+  )}
+
+  {/* Participant List Display */}
+  <div className="space-y-2">
+  {members.length === 0 ? (
+  <p className="text-xs font-bold text-slate-400 text-center py-6">No participants added</p>
+  ) : (
+  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[160px] overflow-y-auto no-scrollbar">
+  {members.map((m, idx) => (
+  <div key={idx} className="flex items-center justify-between p-2 bg-slate-50 border border-slate-100 rounded-xl group transition-all">
+  <div className="flex items-center gap-2">
+  <div className="w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center text-[10px] font-black text-indigo-600 uppercase">
+  {m.name[0] || '?'}
+  </div>
+  <div className="flex flex-col">
+  <span className="text-xs font-bold text-slate-800 leading-tight">{m.name}</span>
+  <span className="text-[8px] font-medium text-slate-400 leading-none">{m.contactValue}</span>
+  </div>
+  </div>
+  <button
+  type="button"
+  onClick={() => setMembers(prev => prev.filter((_, i) => i !== idx))}
+  title="Remove member"
+  data-testid={`goals-create-member-remove-${idx}`}
+  className="p-1 text-slate-300 hover:text-rose-500 transition-colors opacity-0 group-hover:opacity-100"
+  >
+  <Trash2 size={12} strokeWidth={3} />
+  </button>
+  </div>
+  ))}
+  </div>
+  )}
+  </div>
+  </div>
+  )}
  </div>
 
  {/* Right Column: Financials (lg:col-5) */}
