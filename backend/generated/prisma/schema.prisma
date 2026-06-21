@@ -593,6 +593,11 @@ model User {
   advisorStatus               String                     @default("NOT_AVAILABLE")
   status                      String                     @default("verified")
   isApproved                  Boolean                    @default(false)
+  // DEPRECATED PII — `profiles` is the single source of truth for these.
+  // As of 2026-06-21 the app no longer reads or writes them (data was backfilled
+  // into profiles). They are kept in the DB only until the drop migration in
+  // prisma/migrations is applied — see
+  // quality/reports/2026-06-21-schema-dedup-and-role-trust-audit.md (Finding #6).
   firstName                   String?
   lastName                    String?
   salary                      Decimal?                   @db.Decimal(12, 2)
