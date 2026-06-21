@@ -115,9 +115,29 @@ migration and should ship on its own branch with a backfill + rollback plan.
    and the ~10 controllers that currently write both tables (auth, admin, advisors, friends, groups,
    ai, settings.gdpr) so PII writes go to `profiles` only. `User` keeps auth/role/approval/email.
 3. Verify `/auth/profile` is byte-stable for existing users (snapshot test) with the readers repointed.
-4. Only then: a Prisma migration dropping the now-unused `User` PII columns
-   (`firstName`, `lastName`, `gender`, `dateOfBirth`, `country`, `state`, `city`, `salary`, `jobType`,
-   `avatarId`). Keep a DB backup; the drop is irreversible.
+4. Only then: a Prisma migration dropping the now-unused `User` PII columns. Keep a DB backup; the
+   drop is irreversible.
+
+**Status (2026-06-21):** steps 1–3 are DONE. Backfill applied to prod (58/65 users have a matching
+profiles row). Code repointed: `auth.service` writes PII to `profiles` only; `buildProfilePayload`,
+`financial-baseline`, and `advisor.controller` read PII from `profiles` only. The `User` PII columns
+are now **dormant** (kept in the DB/schema, no longer read or written). The physical column-drop
+(step 4) is **deferred** by request. A backup exists at `backend/backups/user-pii-backup-*.json`.
+
+When ready to drop (own branch, against a backup), run this single statement via the **direct**
+connection (5432 / `DIRECT_URL`) — not a blanket `prisma migrate deploy`, because prod has 2
+pre-existing unapplied migrations:
+
+```sql
+ALTER TABLE "public"."User"
+  DROP COLUMN IF EXISTS "firstName", DROP COLUMN IF EXISTS "lastName",
+  DROP COLUMN IF EXISTS "salary",    DROP COLUMN IF EXISTS "dateOfBirth",
+  DROP COLUMN IF EXISTS "jobType",   DROP COLUMN IF EXISTS "avatarId",
+  DROP COLUMN IF EXISTS "city",      DROP COLUMN IF EXISTS "country",
+  DROP COLUMN IF EXISTS "gender",    DROP COLUMN IF EXISTS "state";
+```
+
+Then remove the now-dormant columns from `User` in `schema.prisma` and `prisma generate`.
 
 ## 7. Frontend role inference from email — DOCUMENTED (Low, UI only)
 

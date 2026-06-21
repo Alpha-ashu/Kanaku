@@ -1,3 +1,6 @@
 .env
 
 generated/
+
+# Local PII backups (never commit)
+backups/

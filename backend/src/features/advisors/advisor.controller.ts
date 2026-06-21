@@ -186,7 +186,7 @@ export const getSessions = async (req: AuthRequest, res: Response) => {
     const advisorId = getUserId(req);
     const sessions = await prisma.advisorSession.findMany({
       where: { advisorId },
-      include: { client: { select: { id: true, name: true, email: true, salary: true } }, chatMessages: true, payment: true },
+      include: { client: { select: { id: true, name: true, email: true } }, chatMessages: true, payment: true },
       orderBy: { startTime: 'desc' },
     });
     const clientIds = sessions.map((s) => s.client?.id).filter(Boolean) as string[];

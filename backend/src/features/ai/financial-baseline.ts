@@ -40,7 +40,7 @@ const dateRangeStart = (daysBack: number): Date => {
 
 /**
  * Resolve the declared monthly income from the profiles table (monthly)
- * or the User.salary column (annual → /12).
+ * from the user's profiles row (monthly_income, or annual_income → /12).
  */
 const getDeclaredMonthlyIncome = async (userId: string): Promise<number> => {
   try {
@@ -58,19 +58,6 @@ const getDeclaredMonthlyIncome = async (userId: string): Promise<number> => {
     }
   } catch (error) {
     logger.warn('[financialBaseline] profiles lookup failed', { userId });
-  }
-
-  try {
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { salary: true },
-    });
-    if (user?.salary != null) {
-      const annual = toNum(user.salary);
-      if (annual > 0) return annual / 12;
-    }
-  } catch (error) {
-    logger.warn('[financialBaseline] user lookup failed', { userId });
   }
 
   return 0;
