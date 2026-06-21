@@ -14,6 +14,7 @@ import { AppError } from '../../utils/AppError';
 import { generateTokens, verifyRefreshToken, REFRESH_TOKEN_TTL_SECONDS } from '../../utils/auth';
 import { setRefreshCookie, clearRefreshCookie, readRefreshCookie } from '../../security/refreshCookie';
 import { establishIdleSession, clearIdleSession, evaluateIdleSession } from '../../security/idleSession';
+import { clearPinUnlock } from '../../security/pinUnlock';
 import { sendWelcomeEmail } from '../../emails';
 
 const authService = new AuthService();
@@ -821,6 +822,7 @@ export const logout = async (req: AuthRequest, res: Response, next: NextFunction
     if (req.userId) {
       invalidateUserSnapshotCache(req.userId);
       await clearIdleSession(req.userId);
+      await clearPinUnlock(req.userId); // re-lock financial endpoints on logout
     }
 
     clearRefreshCookie(res);

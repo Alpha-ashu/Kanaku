@@ -521,6 +521,16 @@ class HTTPClient {
             }
             // ── End 401 handling ────────────────────────────────────────────
 
+            // ── 403 PIN gate ────────────────────────────────────────────────
+            // The server requires a live PIN unlock to serve financial data.
+            // Re-lock the app so the PIN screen reappears; a fresh /pin/verify
+            // re-establishes the server-side unlock.
+            if (response.status === 403 && data.code === 'PIN_VERIFICATION_REQUIRED') {
+              if (typeof window !== 'undefined') {
+                window.dispatchEvent(new CustomEvent('KANAKU_FORCE_PIN_LOCK'));
+              }
+            }
+
             const serverCode = data.code || `HTTP_${response.status}`;
             const technicalMessage = data.message || data.error || response.statusText;
             const userMessage = getUserMessage(response.status, serverCode, technicalMessage, showErrorToast);

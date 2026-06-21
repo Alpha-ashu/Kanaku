@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { authMiddleware } from '../../middleware/auth';
+import { pinGate } from '../../middleware/pinGate';
 import { validateBody, validateParams } from '../../middleware/validate';
 import { idempotency } from '../../middleware/idempotency';
 import { responseCache } from '../../middleware/cache';
@@ -10,6 +11,7 @@ import { goalCreateSchema, goalUpdateSchema, goalIdParamSchema, goalMemberAddSch
 const router = Router();
 
 router.use(authMiddleware);
+router.use(pinGate); // financial data requires a live PIN unlock
 
 router.get('/', responseCache({ prefix: 'goals:list', ttlSeconds: CACHE_TTL_SECONDS.goals.list }), GoalController.getGoals);
 router.post('/', idempotency({ scope: 'goals.create' }), validateBody(goalCreateSchema), GoalController.createGoal);

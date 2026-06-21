@@ -1,6 +1,7 @@
 import { Router, Response, NextFunction } from 'express';
 import { syncService } from './sync.service';
 import { authMiddleware, AuthRequest } from '../../middleware/auth';
+import { pinGate } from '../../middleware/pinGate';
 import { AppError } from '../../utils/AppError';
 
 const router = Router();
@@ -53,7 +54,7 @@ function requireUserId(req: AuthRequest): string {
 /**
  * POST /api/v1/sync/pull
  */
-router.post('/pull', async (req: AuthRequest, res: Response, next: NextFunction) => {
+router.post('/pull', pinGate, async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const userId = requireUserId(req);
     const { deviceId, lastSyncedAt, entityTypes } = req.body;
@@ -74,7 +75,7 @@ router.post('/pull', async (req: AuthRequest, res: Response, next: NextFunction)
 /**
  * POST /api/v1/sync/push
  */
-router.post('/push', async (req: AuthRequest, res: Response, next: NextFunction) => {
+router.post('/push', pinGate, async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const userId = requireUserId(req);
     const { deviceId, entities } = req.body;

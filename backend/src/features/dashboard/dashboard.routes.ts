@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { authMiddleware } from '../../middleware/auth';
+import { pinGate } from '../../middleware/pinGate';
 import { validateQuery, z } from '../../middleware/validate';
 import { getDashboardSummary, getCashflow } from './dashboard.controller';
 
@@ -14,7 +15,7 @@ const cashflowQuerySchema = z.object({
   months: z.coerce.number().int().min(1).max(24).optional(),
 });
 
-router.get('/summary', authMiddleware, validateQuery(summaryQuerySchema), getDashboardSummary);
-router.get('/cashflow', authMiddleware, validateQuery(cashflowQuerySchema), getCashflow);
+router.get('/summary', authMiddleware, pinGate, validateQuery(summaryQuerySchema), getDashboardSummary);
+router.get('/cashflow', authMiddleware, pinGate, validateQuery(cashflowQuerySchema), getCashflow);
 
 export { router as dashboardRoutes };

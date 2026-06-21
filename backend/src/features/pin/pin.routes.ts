@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import { pinService } from './pin.service';
 import { authMiddleware, AuthRequest } from '../../middleware/auth';
 import { securityGate, generateSecurityToken } from '../../middleware/securityGate';
+import { establishPinUnlock } from '../../security/pinUnlock';
 import { validateBody } from '../../middleware/validate';
 import { AppError } from '../../utils/AppError';
 import { logger } from '../../config/logger';
@@ -77,6 +78,8 @@ router.post('/create', validateBody(createPinSchema), async (req: AuthRequest, r
       throw AppError.badRequest(result.message, 'INVALID_PIN');
     }
 
+    // Creating a PIN implicitly unlocks the session (the user just proved it).
+    await establishPinUnlock(userId);
     res.json(result);
   } catch (error) {
     next(error);
@@ -97,6 +100,9 @@ router.post('/verify', validateBody(verifyPinSchema), async (req: AuthRequest, r
     if (!result.success) {
       return res.status(401).json(result);
     }
+    // Establish the server-side PIN-unlock so financial endpoints (behind pinGate)
+    // become accessible for this user until the inactivity window elapses.
+    await establishPinUnlock(userId);
     res.json(result);
   } catch (error) {
     next(error);

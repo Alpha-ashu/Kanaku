@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { authMiddleware } from '../../middleware/auth';
+import { pinGate } from '../../middleware/pinGate';
 import { validateBody, validateParams } from '../../middleware/validate';
 import { responseCache } from '../../middleware/cache';
 import { CACHE_TTL_SECONDS } from '../../cache/cache-policy';
@@ -10,6 +11,7 @@ import { accountCreateSchema, accountUpdateSchema, accountIdParamSchema } from '
 const router = Router();
 
 router.use(authMiddleware);
+router.use(pinGate); // financial data requires a live PIN unlock
 
 router.get('/', responseCache({ prefix: 'accounts:list', ttlSeconds: CACHE_TTL_SECONDS.accounts.list }), AccountController.getAccounts);
 router.post('/', requireFeature('accounts', 'createAccount'), validateBody(accountCreateSchema), AccountController.createAccount);

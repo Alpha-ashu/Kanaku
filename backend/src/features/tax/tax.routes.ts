@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { authMiddleware } from '../../middleware/auth';
+import { pinGate } from '../../middleware/pinGate';
 import { validateBody, validateParams, validateQuery } from '../../middleware/validate';
 import * as TaxController from './tax.controller';
 import {
@@ -12,6 +13,7 @@ import {
 const router = Router();
 
 router.use(authMiddleware);
+router.use(pinGate); // financial data requires a live PIN unlock
 
 router.get('/', validateQuery(taxCalcQuerySchema), TaxController.getTaxCalculations);
 router.post('/', validateBody(taxCalcCreateSchema), TaxController.createTaxCalculation);
