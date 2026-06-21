@@ -67,29 +67,43 @@ async function main() {
 
   let created = 0;
   let updated = 0;
+  const conflicts = [];
 
   for (const user of users) {
     const profile = await prisma.profiles.findUnique({ where: { id: user.id } }).catch(() => null);
     const patch = buildProfilePatch(user, profile);
 
-    if (!profile) {
-      created++;
-      console.log(`  + create profiles for ${user.id} (${user.email}) ${JSON.stringify(patch)}`);
-      if (APPLY) {
-        await prisma.profiles.create({ data: { id: user.id, ...patch } });
+    try {
+      if (!profile) {
+        console.log(`  + create profiles for ${user.id} (${user.email}) ${JSON.stringify(patch)}`);
+        if (APPLY) {
+          await prisma.profiles.create({ data: { id: user.id, ...patch } });
+        }
+        created++;
+        continue;
       }
-      continue;
-    }
 
-    if (Object.keys(patch).length === 0) continue;
-    updated++;
-    console.log(`  ~ fill profiles ${user.id}: ${JSON.stringify(patch)}`);
-    if (APPLY) {
-      await prisma.profiles.update({ where: { id: user.id }, data: patch });
+      if (Object.keys(patch).length === 0) continue;
+      console.log(`  ~ fill profiles ${user.id}: ${JSON.stringify(patch)}`);
+      if (APPLY) {
+        await prisma.profiles.update({ where: { id: user.id }, data: patch });
+      }
+      updated++;
+    } catch (err) {
+      // P2002 = a profiles row already holds this email under a DIFFERENT id
+      // (orphan/mismatched seed data). Skip + report rather than abort the run;
+      // reconciling those rows is a separate, manual decision (not auto-merged).
+      const code = err?.code || err?.name || 'ERR';
+      conflicts.push({ userId: user.id, email: user.email, code, target: err?.meta?.target });
+      console.warn(`  ! skip ${user.id} (${user.email}) — ${code}${err?.meta?.target ? ` on ${JSON.stringify(err.meta.target)}` : ''}`);
     }
   }
 
   console.log(`\n${APPLY ? 'Created' : 'Would create'} ${created}, ${APPLY ? 'updated' : 'would update'} ${updated} profiles row(s).`);
+  if (conflicts.length) {
+    console.log(`\nSkipped ${conflicts.length} row(s) due to conflicts (likely orphan profiles sharing an email):`);
+    for (const c of conflicts) console.log(`   - ${c.email} (${c.userId}) [${c.code}${c.target ? ` ${JSON.stringify(c.target)}` : ''}]`);
+  }
   if (!APPLY && created + updated > 0) console.log('Re-run with --apply to persist.');
 }
 
