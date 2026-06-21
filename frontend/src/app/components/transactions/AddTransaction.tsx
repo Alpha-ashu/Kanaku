@@ -735,7 +735,7 @@ export function AddTransaction() {
  </header>
 
  {/* Main Single-Page Content Area */}
- <main className="flex-1 p-3 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 overflow-y-auto pb-32 lg:pb-6 no-scrollbar">
+ <main className="flex-1 p-3 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 overflow-y-auto pb-48 lg:pb-6 no-scrollbar">
 
  {/* Left Column: Context & categorization (lg:col-7) */}
  <div className="lg:col-span-7 flex flex-col gap-4">
@@ -880,8 +880,8 @@ export function AddTransaction() {
  <div className="premium-glass-card p-4 space-y-4 animate-in slide-in-from-bottom-2 duration-300">
  <div className="flex items-center justify-between">
  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
- {expenseMode === 'group' ? `Participants (${groupParticipants.length})` : 
- expenseMode === 'loan' ? 'Counterparty' : 'Who? / Person'}
+ {expenseMode === 'group' ? `PARTICIPANTS (${groupParticipants.length})` : 
+ expenseMode === 'loan' ? 'COUNTERPARTY' : 'WHO? / PERSON'}
  </label>
  
  <div className="flex gap-2">
@@ -892,7 +892,7 @@ export function AddTransaction() {
  data-testid="transaction-friends-picker-button"
  className="flex items-center gap-1 text-[9px] font-black text-violet-600 bg-violet-50 px-2.5 py-1.5 rounded-lg uppercase tracking-wide"
  >
- <Users size={11} /> Friends
+ <Users size={11} /> FRIENDS
  </button>
  )}
  <button
@@ -1054,7 +1054,7 @@ export function AddTransaction() {
  <div className="premium-glass-card p-4 space-y-4 animate-in slide-in-from-bottom-2 duration-300">
  {loanType === 'borrowed' ? (
  <div className="space-y-4">
- {['Consumer Loan', 'Personal Loan', 'Home Loan', 'Vehicle Loan', 'Education Loan', 'Credit Card', 'Overdraft'].includes(loanDraft.category) ? (
+ {['Consumer Loan', 'Personal Loan', 'Home Loan', 'Vehicle Loan', 'Education Loan', 'Credit Card', 'Overdraft'].includes(loanDraft.category) && (
  <div className="space-y-2">
  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Loan Provider</label>
  <SearchableDropdown testId="add-transaction-select-bank-nbfc"
@@ -1065,44 +1065,6 @@ export function AddTransaction() {
  allowCustom={true}
  className="bg-slate-50 border-none rounded-xl h-10 font-bold text-xs"
  />
- </div>
- ) : (
- <div className="space-y-2">
- <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Counterparty</label>
- <div className="relative">
- <button data-testid="add-transaction-button-4" type="button" onClick={() => setShowLoanFriendPicker(p => !p)} className="w-full flex items-center justify-between bg-slate-50 border border-slate-100 rounded-xl py-2.5 px-3 font-bold text-xs text-slate-700 hover:bg-slate-100 transition-all">
- <span className={loanDraft.contactName ? 'text-slate-900' : 'text-slate-300'}>{loanDraft.contactName || 'Who?'}</span>
- <ChevronDown size={12} className="text-slate-400" />
- </button>
- {showLoanFriendPicker && (
- <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-100 rounded-xl shadow-xl z-50 overflow-hidden animate-in slide-in-from-top-2">
- {friends.length > 0 && (
- <div className="p-2 max-h-[150px] overflow-y-auto">
- {friends.map(f => (
- <button data-testid={`add-transaction-button-5-${f.id}`} key={f.id} type="button" onClick={() => { setLoanDraft(prev => ({ ...prev, contactName: f.name })); setShowLoanFriendPicker(false); }} className={cn("w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-bold text-left transition-all", loanDraft.contactName === f.name ?"bg-indigo-50 text-indigo-700" :"hover:bg-slate-50 text-slate-700")}>
- <div className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center text-[10px] font-black text-slate-500 uppercase">{f.name[0]}</div>
- {f.name}
- </button>
- ))}
- </div>
- )}
- {friends.length > 0 && <div className="border-t border-slate-100" />}
- <div className="p-2">
- {showNewLoanPersonInput ? (
- <div className="flex items-center gap-2 p-2 bg-indigo-50 rounded-lg">
- <input data-testid="add-transaction-enter-name" type="text" value={newLoanPersonName} onChange={e => setNewLoanPersonName(e.target.value)} onKeyDown={e => e.key === 'Enter' && confirmNewLoanPerson()} className="flex-1 bg-transparent border-none p-0 text-xs font-bold text-slate-900 focus:ring-0 placeholder:text-slate-300" placeholder="Enter name" autoFocus />
- <button data-testid="add-transaction-confirm" type="button" title="Confirm" onClick={confirmNewLoanPerson} className="p-1 bg-indigo-600 text-white rounded-md"><Check size={11} strokeWidth={3} /></button>
- <button data-testid="add-transaction-cancel" type="button" title="Cancel" onClick={() => { setShowNewLoanPersonInput(false); setNewLoanPersonName(''); }} className="p-1 text-slate-400"><X size={11} strokeWidth={3} /></button>
- </div>
- ) : (
- <button data-testid="add-transaction-add-new-person" type="button" onClick={() => setShowNewLoanPersonInput(true)} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold text-indigo-600 hover:bg-indigo-50 transition-all">
- <UserPlus size={13} /> Add New Person
- </button>
- )}
- </div>
- </div>
- )}
- </div>
  </div>
  )}
 
@@ -1282,43 +1244,6 @@ export function AddTransaction() {
  </div>
  </div>
  </div>
- <div className="space-y-1">
- <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Counterparty</label>
- <div className="relative">
- <button data-testid="add-transaction-button-7" type="button" onClick={() => setShowLoanFriendPicker(p => !p)} className="w-full flex items-center justify-between bg-slate-50 border border-slate-100 rounded-xl py-2.5 px-3 font-bold text-xs text-slate-700 hover:bg-slate-100 transition-all">
- <span className={loanDraft.contactName ? 'text-slate-900' : 'text-slate-300'}>{loanDraft.contactName || 'Who?'}</span>
- <ChevronDown size={12} className="text-slate-400" />
- </button>
- {showLoanFriendPicker && (
- <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-100 rounded-xl shadow-xl z-50 overflow-hidden animate-in slide-in-from-top-2">
- {friends.length > 0 && (
- <div className="p-2 max-h-[150px] overflow-y-auto">
- {friends.map(f => (
- <button data-testid={`add-transaction-button-8-${f.id}`} key={f.id} type="button" onClick={() => { setLoanDraft(prev => ({ ...prev, contactName: f.name })); setShowLoanFriendPicker(false); }} className={cn("w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-bold text-left transition-all", loanDraft.contactName === f.name ?"bg-indigo-50 text-indigo-700" :"hover:bg-slate-50 text-slate-700")}>
- <div className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center text-[10px] font-black text-slate-500 uppercase">{f.name[0]}</div>
- {f.name}
- </button>
- ))}
- </div>
- )}
- {friends.length > 0 && <div className="border-t border-slate-100" />}
- <div className="p-2">
- {showNewLoanPersonInput ? (
- <div className="flex items-center gap-2 p-2 bg-indigo-50 rounded-lg">
- <input data-testid="add-transaction-enter-name-2" type="text" value={newLoanPersonName} onChange={e => setNewLoanPersonName(e.target.value)} onKeyDown={e => e.key === 'Enter' && confirmNewLoanPerson()} className="flex-1 bg-transparent border-none p-0 text-xs font-bold text-slate-900 focus:ring-0 placeholder:text-slate-300" placeholder="Enter name" autoFocus />
- <button data-testid="add-transaction-confirm-2" type="button" title="Confirm" onClick={confirmNewLoanPerson} className="p-1 bg-indigo-600 text-white rounded-md"><Check size={11} strokeWidth={3} /></button>
- <button data-testid="add-transaction-cancel-2" type="button" title="Cancel" onClick={() => { setShowNewLoanPersonInput(false); setNewLoanPersonName(''); }} className="p-1 text-slate-400"><X size={11} strokeWidth={3} /></button>
- </div>
- ) : (
- <button data-testid="add-transaction-add-new-person-2" type="button" onClick={() => setShowNewLoanPersonInput(true)} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold text-indigo-600 hover:bg-indigo-50 transition-all">
- <UserPlus size={13} /> Add New Person
- </button>
- )}
- </div>
- </div>
- )}
- </div>
- </div>
  </div>
  )}
  </div>
@@ -1467,15 +1392,16 @@ export function AddTransaction() {
  {isTransfer && transferSubType === 'others' && (
  <div className="space-y-3 animate-in fade-in zoom-in-95 duration-200">
  <div className="flex justify-center"><ArrowDown size={14} className="text-slate-300" /></div>
- <div className="flex items-center justify-between">
- <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Recipient</label>
+ <div className="premium-glass-card p-4 space-y-4">
+  <div className="flex items-center justify-between">
+ <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">RECIPIENT</label>
  {friends.length > 0 && (
  <button data-testid="add-transaction-friends"
  type="button"
  onClick={() => setShowTransferFriendPicker(p => !p)}
  className="flex items-center gap-1 text-[9px] font-black text-violet-600 bg-violet-50 px-2.5 py-1.5 rounded-lg uppercase tracking-wide"
  >
- <Users size={11} /> Friends
+ <Users size={11} /> FRIENDS
  </button>
  )}
  </div>
@@ -1530,6 +1456,7 @@ export function AddTransaction() {
  <X size={13} strokeWidth={3} />
  </button>
  )}
+ </div>
  </div>
  </div>
  )}

@@ -138,7 +138,7 @@ export const EditAccount: React.FC<{ accountId?: number }> = ({ accountId: propA
  </div>
 
  {/* Main Content - Scrollable Area */}
- <div className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 xl:px-12 pb-32">
+ <div className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 xl:px-12 pb-48">
  <div className="max-w-3xl mx-auto space-y-6">
  
  {/* Visual Card Preview (Optional, but looks premium) */}

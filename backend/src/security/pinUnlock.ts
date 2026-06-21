@@ -99,6 +99,20 @@ export const clearPinUnlock = async (userId: string): Promise<void> => {
 };
 
 /**
+ * Read-only check of whether the user holds a live PIN unlock — does NOT slide
+ * the window (used by reads like /auth/profile that shouldn't extend the data
+ * window). Returns true (fail-open) when the gate is disabled or on error.
+ */
+export const isPinUnlocked = async (userId: string): Promise<boolean> => {
+  if (!isPinGateEnabled() || !userId) return true;
+  try {
+    return (await readMarker(userId)) !== null;
+  } catch {
+    return true;
+  }
+};
+
+/**
  * Whether the user currently holds a live PIN-unlock, sliding the window forward
  * when they do. Returns true (fail-open) when the gate is disabled or on storage
  * failure — a backend hiccup must never lock real users out of their own data.

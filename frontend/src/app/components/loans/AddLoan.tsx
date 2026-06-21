@@ -169,7 +169,7 @@ export const AddLoan: React.FC = () => {
  </header>
 
  {/* Main Single-Page Content Area */}
- <main className="flex-1 p-3 lg:p-5 grid grid-cols-1 lg:grid-cols-12 gap-3 lg:gap-5 pb-32 lg:pb-5">
+ <main className="flex-1 p-3 lg:p-5 grid grid-cols-1 lg:grid-cols-12 gap-3 lg:gap-5 pb-48 lg:pb-5">
  
  {/* Left Column: context & details (lg:col-7) */}
  <div className="lg:col-span-7 flex flex-col gap-3 lg:overflow-y-auto">

@@ -14,7 +14,7 @@ import { AppError } from '../../utils/AppError';
 import { generateTokens, verifyRefreshToken, REFRESH_TOKEN_TTL_SECONDS } from '../../utils/auth';
 import { setRefreshCookie, clearRefreshCookie, readRefreshCookie } from '../../security/refreshCookie';
 import { establishIdleSession, clearIdleSession, evaluateIdleSession } from '../../security/idleSession';
-import { clearPinUnlock } from '../../security/pinUnlock';
+import { clearPinUnlock, isPinUnlocked } from '../../security/pinUnlock';
 import { sendWelcomeEmail } from '../../emails';
 
 const authService = new AuthService();
@@ -42,6 +42,7 @@ const buildProfilePayload = (
   settingsRecord?: Record<string, any> | null,
   includePrivate = false,
   pinRecord?: Record<string, any> | null,
+  pinUnlocked = true,
 ) => {
   const fallbackName = authUser?.name || '';
   const fallbackNameParts = fallbackName.trim().split(/\s+/).filter(Boolean);
@@ -90,6 +91,28 @@ const buildProfilePayload = (
     userRecord?.name ||
     `${firstName} ${lastName}`.trim() ||
     fallbackName;
+
+  // PRIVACY: until the user has unlocked with their PIN (server-verified), the
+  // profile must not leak PII. Return only the minimal fields the pre-PIN app
+  // shell needs — name/avatar for display, role for routing, locale — and
+  // withhold email, phone, gender, address, dob, and income until a live PIN
+  // unlock exists. No-op when the PIN gate is disabled (pinUnlocked defaults true).
+  if (!pinUnlocked) {
+    return {
+      id: userId,
+      name,
+      firstName,
+      lastName,
+      avatarId: profileRecord?.avatar_id || null,
+      avatarUrl: profileRecord?.avatar_url || null,
+      role,
+      isApproved: userRecord?.isApproved ?? authUser?.isApproved ?? false,
+      currency: settingsRecord?.currency || defaultCurrency,
+      language: settingsRecord?.language || 'en',
+      pinEnabled: pinRecord ? Boolean(pinRecord.isActive) : false,
+      pinRequired: true,
+    };
+  }
 
   const payload: Record<string, any> = {
     id: userId,
@@ -576,7 +599,12 @@ export const getProfile = async (req: AuthRequest, res: Response, next: NextFunc
     }
 
     const includePrivate = req.query.includePrivate === 'true' || req.query.includePrivate === '1';
-    const profileCacheKey = includePrivate ? `profile:private:${req.userId}` : `profile:${req.userId}`;
+    // PRIVACY: private profile fields require a live server-side PIN unlock, not
+    // just a query param. Before unlock, a PII-stripped payload is returned.
+    const pinUnlocked = await isPinUnlocked(req.userId);
+    // Cache key varies by unlock state so a pre-PIN payload is never served after unlock.
+    const lockSuffix = pinUnlocked ? '' : ':locked';
+    const profileCacheKey = (includePrivate ? `profile:private:${req.userId}` : `profile:${req.userId}`) + lockSuffix;
     const cachedProfile = await cacheGetJson<any>(profileCacheKey);
     if (cachedProfile) {
       logger.info(`[AuthController] Profile cache hit for key: ${profileCacheKey}`);

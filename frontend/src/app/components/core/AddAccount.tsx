@@ -212,7 +212,7 @@ export const AddAccount: React.FC = () => {
  </header>
 
  {/* Main Single-Page Content Area - Flexible and Scrollable */}
- <main className="flex-1 overflow-y-auto overflow-x-hidden p-3 md:p-4 xl:p-8 pb-32 lg:pb-8">
+ <main className="flex-1 overflow-y-auto overflow-x-hidden p-3 md:p-4 xl:p-8 pb-48 lg:pb-8">
  <div className="max-w-[1600px] mx-auto grid grid-cols-1 xl:grid-cols-12 gap-6 xl:gap-12 items-start">
 
  {/* Left Column: Configuration (xl:col-7) */}

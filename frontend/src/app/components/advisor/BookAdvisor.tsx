@@ -240,7 +240,7 @@ export const BookAdvisor: React.FC = () => {
  </header>
 
  {/* Main Content Area */}
- <main className="flex-1 lg:overflow-hidden flex flex-col lg:flex-row p-3 lg:p-5 gap-4 pb-32 lg:pb-5">
+ <main className="flex-1 lg:overflow-hidden flex flex-col lg:flex-row p-3 lg:p-5 gap-4 pb-48 lg:pb-5">
  
  {/* Left Section: Advisor List & Search (lg:w-2/3) */}
  <div className="flex-1 flex flex-col gap-4 lg:overflow-hidden min-w-0">
