@@ -49,7 +49,9 @@ export class AuthService {
       const isApproved = role === 'user'; // Advisors require explicit admin approval
 
       logger.info(`[AuthService] Creating user record in database for email: ${input.email}, role: ${role}`);
-      // Create user with profile information
+      // Create the auth/identity row. PII (names, dob, income, job) lives in
+      // `profiles` only — see the profiles insert below. `User` keeps just
+      // auth/role/approval + email/name.
       const user = await prisma.user.create({
         data: {
           email: input.email,
@@ -57,11 +59,6 @@ export class AuthService {
           password: hashedPassword,
           role,
           isApproved,
-          firstName: input.firstName,
-          lastName: input.lastName,
-          salary: input.salary,
-          dateOfBirth: input.dateOfBirth,
-          jobType: input.jobType,
         },
       });
       logger.info(`[AuthService] User record created successfully with ID: ${user.id}`);
@@ -72,12 +69,17 @@ export class AuthService {
         const firstName = input.firstName || nameParts[0] || '';
         const lastName = input.lastName || nameParts.slice(1).join(' ') || '';
         logger.info(`[AuthService] Syncing registered user ${user.id} to public.profiles table`);
+        const annualIncome = input.salary != null ? Number(input.salary) : null;
+        const monthlyIncome = annualIncome != null ? Math.round(annualIncome / 12) : null;
         await prisma.$executeRaw`
           INSERT INTO public.profiles (
-            id, email, first_name, last_name, full_name, phone, created_at, updated_at
+            id, email, first_name, last_name, full_name, phone,
+            date_of_birth, job_type, monthly_income, annual_income, created_at, updated_at
           ) VALUES (
-            ${user.id}::uuid, ${user.email}, ${firstName || null}, ${lastName || null}, 
-            ${user.name}, ${resolvedPhone}, NOW(), NOW()
+            ${user.id}::uuid, ${user.email}, ${firstName || null}, ${lastName || null},
+            ${user.name}, ${resolvedPhone},
+            ${input.dateOfBirth ?? null}, ${input.jobType ?? null}, ${monthlyIncome}, ${annualIncome},
+            NOW(), NOW()
           ) ON CONFLICT (id) DO NOTHING;
         `;
         logger.info(`[AuthService] Initial profile synced for registered user: ${user.id}`);
@@ -106,21 +108,6 @@ export class AuthService {
     }
   }
 
-  async completeProfile(userId: string, profileData: {
-    firstName: string;
-    lastName: string;
-    salary: number;
-    dateOfBirth: Date;
-    jobType: string;
-  }): Promise<User> {
-    const user = await prisma.user.update({
-      where: { id: userId },
-      data: profileData,
-    });
-
-    return user;
-  }
-
   async updateProfile(userId: string, data: any, email?: string): Promise<any> {
     logger.info(`[AuthService] Processing profile update for userId: ${userId}. Input data: ${JSON.stringify(data)}`);
 
@@ -129,16 +116,18 @@ export class AuthService {
     const existingProfile = await prisma.profiles.findUnique({ where: { id: userId } });
 
     // Perform a field-by-field merge of incoming data with existing DB state
+    // `profiles` is the single source of truth for PII. Fall back to the
+    // existing profiles row (not User) when a field is omitted from the update.
     const merged = {
-      firstName: data.firstName !== undefined ? data.firstName : (existingUser?.firstName ?? existingProfile?.first_name ?? null),
-      lastName: data.lastName !== undefined ? data.lastName : (existingUser?.lastName ?? existingProfile?.last_name ?? null),
-      gender: data.gender !== undefined ? data.gender : (existingUser?.gender ?? existingProfile?.gender ?? null),
-      country: data.country !== undefined ? data.country : (existingUser?.country ?? existingProfile?.country ?? null),
-      state: data.state !== undefined ? data.state : (existingUser?.state ?? existingProfile?.state ?? null),
-      city: data.city !== undefined ? data.city : (existingUser?.city ?? existingProfile?.city ?? null),
-      avatarId: data.avatarId !== undefined ? data.avatarId : (existingUser?.avatarId ?? existingProfile?.avatar_id ?? null),
+      firstName: data.firstName !== undefined ? data.firstName : (existingProfile?.first_name ?? null),
+      lastName: data.lastName !== undefined ? data.lastName : (existingProfile?.last_name ?? null),
+      gender: data.gender !== undefined ? data.gender : (existingProfile?.gender ?? null),
+      country: data.country !== undefined ? data.country : (existingProfile?.country ?? null),
+      state: data.state !== undefined ? data.state : (existingProfile?.state ?? null),
+      city: data.city !== undefined ? data.city : (existingProfile?.city ?? null),
+      avatarId: data.avatarId !== undefined ? data.avatarId : (existingProfile?.avatar_id ?? null),
       avatarUrl: data.avatarUrl !== undefined ? data.avatarUrl : (existingProfile?.avatar_url ?? null),
-      jobType: data.jobType !== undefined ? data.jobType : (existingUser?.jobType ?? existingProfile?.job_type ?? null),
+      jobType: data.jobType !== undefined ? data.jobType : (existingProfile?.job_type ?? null),
     };
 
     // Standardize phone - if phone or mobile is provided in request, use it. Otherwise fall back to DB.
@@ -154,8 +143,6 @@ export class AuthService {
     if (monthlyIncomeVal === undefined) {
       if (existingProfile?.monthly_income !== null && existingProfile?.monthly_income !== undefined) {
         monthlyIncomeVal = Number(existingProfile.monthly_income);
-      } else if (existingUser?.salary !== null && existingUser?.salary !== undefined) {
-        monthlyIncomeVal = Number(existingUser.salary) / 12;
       } else {
         monthlyIncomeVal = null;
       }
@@ -179,7 +166,7 @@ export class AuthService {
     // Standardize dateOfBirth - fall back to DB if omitted (undefined)
     let dobVal = data.dateOfBirth;
     if (dobVal === undefined) {
-      dobVal = existingUser?.dateOfBirth ?? existingProfile?.date_of_birth ?? null;
+      dobVal = existingProfile?.date_of_birth ?? null;
     }
 
     // Validate email if provided in data
@@ -250,20 +237,12 @@ export class AuthService {
       // In a hybrid system, we prefer the email from the JWT/Session
       const finalActiveEmail = email || data.email || existingUser?.email || `user-${userId.substring(0, 8)}@noemail.invalid`;
 
+      // User holds only auth/identity now (name + email). All PII is written to
+      // `profiles` by the sync below — the single source of truth.
       const user = await prisma.user.upsert({
         where: { id: userId },
         update: {
           name: `${merged.firstName || ''} ${merged.lastName || ''}`.trim() || 'User',
-          firstName: merged.firstName,
-          lastName: merged.lastName,
-          gender: merged.gender,
-          country: merged.country,
-          state: merged.state,
-          city: merged.city,
-          salary: monthlyIncomeVal ? Number(monthlyIncomeVal) * 12 : null,
-          dateOfBirth: dob,
-          jobType: merged.jobType,
-          avatarId: merged.avatarId,
           updatedAt: new Date(),
         } as any,
         create: {
@@ -271,16 +250,6 @@ export class AuthService {
           email: finalActiveEmail,
           name: `${merged.firstName || ''} ${merged.lastName || ''}`.trim() || 'User',
           password: 'supabase-managed-account',
-          firstName: merged.firstName,
-          lastName: merged.lastName,
-          gender: merged.gender,
-          country: merged.country,
-          state: merged.state,
-          city: merged.city,
-          salary: monthlyIncomeVal ? Number(monthlyIncomeVal) * 12 : 0,
-          dateOfBirth: dob,
-          jobType: merged.jobType,
-          avatarId: merged.avatarId,
           updatedAt: new Date(),
           createdAt: new Date(),
         } as any

@@ -275,15 +275,11 @@ const resolveUserRole = (_user: User | null): UserRole => {
     if (roleFromEmail) return roleFromEmail;
   }
 
-  // 2. Check metadata
-  if (_user.user_metadata?.role) {
-    const metadataRole = String(_user.user_metadata.role).trim().toLowerCase();
-    if (['admin', 'manager', 'advisor', 'user'].includes(metadataRole)) {
-      return metadataRole as UserRole;
-    }
-  }
-
-  // 3. Fallback to local profile
+  // 2. Use the server-authoritative role from the cached profile (sourced from
+  // GET /auth/profile). Supabase `user_metadata.role` is intentionally NOT
+  // consulted: it is writable by the user themselves
+  // (`auth.updateUser({ data: { role } })`), so trusting it would let a user
+  // spoof the admin UI. The backend enforces the real role from the DB.
   const localProfile = readLocalProfile();
   if (localProfile?.role) {
     const normalizedRole = String(localProfile.role).trim().toLowerCase();

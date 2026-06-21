@@ -45,31 +45,30 @@ const buildProfilePayload = (
   const fallbackName = authUser?.name || '';
   const fallbackNameParts = fallbackName.trim().split(/\s+/).filter(Boolean);
 
+  // PII (names, dob, income, job, address, avatar) is sourced from `profiles`
+  // only — the single source of truth. `User` keeps auth/identity (name, email,
+  // role) which is still read below.
   const firstName =
     profileRecord?.first_name ||
-    userRecord?.firstName ||
     fallbackNameParts[0] ||
     '';
   const lastName =
     profileRecord?.last_name ||
-    userRecord?.lastName ||
     fallbackNameParts.slice(1).join(' ') ||
     '';
   const monthlyIncome = profileRecord?.monthly_income != null
     ? toNumber(profileRecord.monthly_income, 0)
-    : (userRecord?.salary != null ? Math.round(toNumber(userRecord.salary, 0) / 12) : 0);
+    : 0;
 
   const salary =
-    userRecord?.salary != null
-      ? toNumber(userRecord.salary, 0)
-      : (profileRecord?.annual_income != null
-        ? toNumber(profileRecord.annual_income, monthlyIncome * 12)
-        : monthlyIncome * 12);
-  const dateOfBirth = toIsoDateOnly(profileRecord?.date_of_birth || userRecord?.dateOfBirth);
-  const jobType = profileRecord?.job_type || userRecord?.jobType || '';
+    profileRecord?.annual_income != null
+      ? toNumber(profileRecord.annual_income, monthlyIncome * 12)
+      : monthlyIncome * 12;
+  const dateOfBirth = toIsoDateOnly(profileRecord?.date_of_birth);
+  const jobType = profileRecord?.job_type || '';
   const role = userRecord?.role || authUser?.role || 'user';
 
-  const countryVal = (profileRecord?.country || userRecord?.country || '').trim();
+  const countryVal = (profileRecord?.country || '').trim();
   let defaultCurrency = 'USD';
   if (countryVal === 'India') {
     defaultCurrency = 'INR';
@@ -97,15 +96,14 @@ const buildProfilePayload = (
     name,
     firstName,
     lastName,
-    fullName: name,
-    gender: profileRecord?.gender || userRecord?.gender || '',
+    gender: profileRecord?.gender || '',
     country: countryVal,
-    state: profileRecord?.state || userRecord?.state || '',
-    city: profileRecord?.city || userRecord?.city || '',
-    mobile: profileRecord?.phone || '',
+    state: profileRecord?.state || '',
+    city: profileRecord?.city || '',
+    // Single canonical phone key. The former `mobile`/`mobileNumber` aliases were
+    // dropped — clients read `phone` (or normalise via their profile adapter).
     phone: profileRecord?.phone || '',
-    mobileNumber: profileRecord?.phone || userRecord?.phone || '',
-    avatarId: profileRecord?.avatar_id || userRecord?.avatarId || null,
+    avatarId: profileRecord?.avatar_id || null,
     avatarUrl: profileRecord?.avatar_url || null,
     currency: settingsRecord?.currency || defaultCurrency,
     language: settingsRecord?.language || 'en',
@@ -135,8 +133,7 @@ const buildProfilePayload = (
     'email',
     'firstName',
     'lastName',
-    'fullName',
-    'mobileNumber',
+    'phone',
     'dateOfBirth',
     'gender',
     'jobType',

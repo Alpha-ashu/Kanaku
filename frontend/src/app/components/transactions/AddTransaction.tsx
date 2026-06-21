@@ -360,7 +360,6 @@ export function AddTransaction() {
  const showPersonCard = !isTransfer && !isWithdrawal && (
  expenseMode === 'group' || 
  (isLoanMode && !isBankLoan) || 
- (expenseMode === 'individual' && isExpense) || 
  formData.type === 'income'
  );
 

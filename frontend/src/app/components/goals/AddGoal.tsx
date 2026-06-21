@@ -9,7 +9,8 @@ import { getCategoryCartoonIcon } from '@/app/components/ui/CartoonCategoryIcons
 import { motion, AnimatePresence } from 'framer-motion';
 import {
  ArrowLeft, Target, Users, TrendingUp, Calendar, Wallet, Check, Trash2, 
- UserPlus, Mail, Phone, Link as LinkIcon, Sparkles, Store, AlignLeft, Info, Plus, Loader2
+ UserPlus, Mail, Phone, Link as LinkIcon, Sparkles, Store, AlignLeft, Info, Plus, Loader2,
+ X, CalendarDays
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -229,8 +230,8 @@ export const AddGoal: React.FC = () => {
  </div>
  </header>
 
- {/* Main Single-Page Content Area */}
- <main className="flex-1 p-3 lg:p-5 grid grid-cols-1 lg:grid-cols-12 gap-3 lg:gap-5 pb-32 lg:pb-5">
+  {/* Main Single-Page Content Area */}
+  <main className="flex-1 p-3 lg:p-5 grid grid-cols-1 lg:grid-cols-12 gap-3 lg:gap-5 overflow-y-auto pb-48 lg:pb-6 no-scrollbar">
  
  {/* Left Column: context & types (lg:col-7) */}
  <div className="lg:col-span-7 flex flex-col gap-3 lg:overflow-y-auto">
@@ -245,6 +246,21 @@ export const AddGoal: React.FC = () => {
  {m.icon} {m.label}
  </button>
  ))}
+ </div>
+
+ {/* Goal Summary Display */}
+ <div className="p-4 bg-indigo-600 rounded-2xl text-white flex items-center justify-between shadow-xl shadow-indigo-100">
+ <div className="flex items-center gap-3">
+ <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center"><Target size={16} className="text-white" /></div>
+ <div>
+ <p className="text-[8px] font-black text-white/60 uppercase">Goal Summary</p>
+ <p className="text-[10px] font-black truncate max-w-[120px]">{formData.name || 'New Goal'}</p>
+ </div>
+ </div>
+ <div className="text-right">
+ <p className="text-[8px] font-black text-white/60 uppercase">Target</p>
+ <p className="text-lg font-black tracking-tighter">{currency} {formData.targetAmount.toLocaleString()}</p>
+ </div>
  </div>
 
  <div className="premium-glass-card p-4 space-y-4">
@@ -311,51 +327,115 @@ export const AddGoal: React.FC = () => {
  {/* Right Column: Financials (lg:col-5) */}
  <div className="lg:col-span-5 flex flex-col gap-3 lg:overflow-y-auto">
  
- {/* Target Amount Display */}
- <div className="premium-glass-card p-5 flex flex-col items-center bg-white relative overflow-hidden">
- <div className="absolute -top-10 -right-10 w-32 h-32 bg-indigo-500/5 blur-[40px] rounded-full" />
- <span className="text-[9px] font-black text-slate-300 uppercase tracking-[0.2em] mb-2">Target Goal Amount</span>
- <div className="flex items-center gap-3">
- <span className="text-2xl font-black text-slate-200 uppercase">{currency}</span>
- <input
- type="number"
- name="targetAmount"
- value={amountStr}
- onChange={e => { setAmountStr(e.target.value); setFormData(prev => ({ ...prev, targetAmount: parseFloat(e.target.value) || 0 })); }}
- data-testid="goals-create-target-amount-input"
- className="bg-transparent text-4xl font-black text-slate-900 outline-none w-[160px] text-center tracking-tighter"
- placeholder="0.00"
- />
- </div>
+  {/* Target Amount Display - Premium & High Density */}
+  <div className="premium-glass-card p-8 bg-white relative overflow-hidden flex flex-col items-center">
+  <div className="absolute -top-24 -left-24 w-64 h-64 bg-indigo-500/5 blur-[80px] rounded-full animate-pulse pointer-events-none z-0" />
+  <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-violet-500/5 blur-[80px] rounded-full animate-pulse pointer-events-none z-0 [animation-delay:1s]" />
+
+  <div className="relative z-10 flex flex-col items-center w-full">
+  <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4">Target Goal Amount</span>
+
+  <div className="flex items-center justify-center w-full my-2 sm:my-4 gap-1 sm:gap-4 overflow-hidden px-2">
+  {/* Left Side: Currency */}
+  <div className="flex-1 flex justify-end">
+  <span className="text-xl sm:text-4xl font-black text-slate-200 select-none tracking-tighter shrink-0">{currency}</span>
+  </div>
+
+  {/* Center: Input */}
+  <div className="shrink-0 flex justify-center max-w-[60%]">
+  <input
+  type="number"
+  name="targetAmount"
+  value={amountStr}
+  onChange={e => { setAmountStr(e.target.value); setFormData(prev => ({ ...prev, targetAmount: parseFloat(e.target.value) || 0 })); }}
+  data-testid="goals-create-target-amount-input"
+  className="bg-transparent text-4xl min-[400px]:text-5xl sm:text-6xl font-black text-slate-900 outline-none w-full text-center tracking-tighter placeholder:text-slate-100 p-0 m-0"
+  placeholder="0"
+  />
+  </div>
+
+  {/* Right Side: Clear Button */}
+  <div className="flex-1 flex justify-start">
+  {amountStr && (
+  <button
+  onClick={() => { setAmountStr(''); setFormData(prev => ({ ...prev, targetAmount: 0 })); }}
+  title="Clear amount"
+  data-testid="goals-create-target-amount-clear-button"
+  className="p-1 sm:p-2 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-full transition-all animate-in fade-in zoom-in-50"
+  >
+  <X size={20} className="sm:w-7 sm:h-7" strokeWidth={3} />
+  </button>
+  )}
+  </div>
+  </div>
+
+  {/* Preset Pills */}
+  <div className="flex flex-wrap justify-center gap-3 mt-8 max-w-sm">
+  {[100, 500, 1000, 2000, 5000].map(amt => (
+  <button
+  key={amt}
+  type="button"
+  onClick={() => {
+  const current = Number(formData.targetAmount) || 0;
+  const next = current + amt;
+  setAmountStr(String(next));
+  setFormData(prev => ({ ...prev, targetAmount: next }));
+  }}
+  data-testid={`goals-create-preset-${amt}-button`}
+  className="px-6 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-[11px] font-black text-slate-500 hover:bg-slate-900 hover:text-white hover:border-slate-900 hover:shadow-2xl hover:shadow-slate-200 transition-all active:scale-90 select-none"
+  >
+  +{currency}{amt}
+  </button>
+  ))}
+  </div>
+  </div>
+  </div>
+
+  <div className="premium-glass-card p-4 space-y-4">
+  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+  <div className="space-y-1">
+  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Initial Deposit</label>
+  <div className="flex items-center w-full bg-slate-50 border border-transparent rounded-xl h-10 px-3 focus-within:ring-2 focus-within:ring-indigo-500/20">
+  <span className="text-slate-300 text-[10px] font-black select-none mr-1.5 shrink-0">{currency}</span>
+  <input type="number" value={initialAmtStr} onChange={e => { setInitialAmtStr(e.target.value); setFormData(prev => ({ ...prev, currentAmount: parseFloat(e.target.value) || 0 })); }} data-testid="goals-create-initial-deposit-input" className="flex-1 bg-transparent border-none p-0 font-bold text-xs focus:ring-0 text-slate-900 placeholder:text-slate-300" placeholder="0" />
+  </div>
+  </div>
+  <div className="space-y-1">
+  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Target Date</label>
+  <div data-testid="goals-create-target-date-container" className="relative group" onClick={(e) => {
+  const input = e.currentTarget.querySelector('input');
+  if (input) (input as any).showPicker();
+  }}>
+  <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-indigo-500 transition-colors z-10" size={14} />
+  <div className="w-full bg-slate-50 border border-transparent rounded-xl py-2.5 pl-9 pr-3 font-bold text-xs text-slate-900 group-hover:bg-slate-100/50 group-hover:border-slate-200 transition-all flex items-center h-10">
+  {(() => {
+  if (!formData.deadline) return 'Select Target Date';
+  const date = new Date(formData.deadline);
+  const day = String(date.getDate()).padStart(2, '0');
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  return `${day}-${months[date.getMonth()]}-${date.getFullYear()}`;
+  })()}
+  </div>
+  <input data-testid="goals-create-target-date-input"
+  type="date"
+  value={formData.deadline}
+  onChange={e => setFormData(prev => ({ ...prev, deadline: e.target.value }))}
+  aria-label="Target date"
+  className="absolute inset-0 opacity-0 cursor-pointer z-20"
+  />
+  </div>
+  </div>
  </div>
 
- <div className="premium-glass-card p-4 space-y-4">
- <div className="grid grid-cols-2 gap-4">
- <div className="space-y-1">
- <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Initial Deposit</label>
- <div className="relative">
- <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300 text-[10px] font-black">{currency}</span>
- <input type="number" value={initialAmtStr} onChange={e => { setInitialAmtStr(e.target.value); setFormData(prev => ({ ...prev, currentAmount: parseFloat(e.target.value) || 0 })); }} data-testid="goals-create-initial-deposit-input" className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-7 pr-3 font-bold text-xs" placeholder="0" />
- </div>
- </div>
- <div className="space-y-1">
- <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Target Date</label>
- <div className="relative">
- <Calendar className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
- <input type="date" value={formData.deadline} onChange={e => setFormData(prev => ({ ...prev, deadline: e.target.value }))} onClick={(e) => (e.target as HTMLInputElement).showPicker?.()} aria-label="Target date" data-testid="goals-create-target-date-input" className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-xs" />
- </div>
- </div>
- </div>
-
- <div className="space-y-1">
- <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Monthly Plan</label>
- <div className="flex gap-3">
- <div className="flex-1 relative">
- <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300 text-[10px] font-black">{currency}</span>
- <input type="number" value={formData.monthlySavingPlan} onChange={e => setFormData(prev => ({ ...prev, monthlySavingPlan: parseFloat(e.target.value) || 0 }))} aria-label="Monthly saving plan" data-testid="goals-create-monthly-plan-input" className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-7 pr-3 font-bold text-xs" />
- </div>
+  <div className="space-y-1">
+  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Monthly Plan</label>
+  <div className="flex gap-3">
+  <div className="flex-1 flex items-center bg-slate-50 border border-transparent rounded-xl h-10 px-3 focus-within:ring-2 focus-within:ring-indigo-500/20">
+  <span className="text-slate-300 text-[10px] font-black select-none mr-1.5 shrink-0">{currency}</span>
+  <input type="number" value={formData.monthlySavingPlan} onChange={e => setFormData(prev => ({ ...prev, monthlySavingPlan: parseFloat(e.target.value) || 0 }))} aria-label="Monthly saving plan" data-testid="goals-create-monthly-plan-input" className="flex-1 bg-transparent border-none p-0 font-bold text-xs focus:ring-0 text-slate-900 placeholder:text-slate-300" />
+  </div>
  {suggestion && (
- <button onClick={() => setFormData(prev => ({ ...prev, monthlySavingPlan: Math.ceil(suggestion.monthlyAmount) }))} data-testid="goals-create-suggest-button" className="px-3 bg-indigo-50 text-indigo-600 rounded-xl text-[9px] font-black uppercase tracking-wider hover:bg-indigo-100 transition-colors">
+ <button onClick={() => setFormData(prev => ({ ...prev, monthlySavingPlan: Math.ceil(suggestion.monthlyAmount) }))} data-testid="goals-create-suggest-button" className="px-3 bg-indigo-50 text-indigo-600 rounded-xl text-[9px] font-black uppercase tracking-wider hover:bg-indigo-100 transition-colors shrink-0">
  Use Smart Suggest: {formatCurrency(suggestion.monthlyAmount, currency)}
  </button>
  )}
@@ -371,21 +451,6 @@ export const AddGoal: React.FC = () => {
  </div>
  </div>
  )}
- </div>
-
- {/* Goal Summary Display */}
- <div className="mt-auto p-4 bg-indigo-600 rounded-2xl text-white flex items-center justify-between shadow-xl shadow-indigo-100">
- <div className="flex items-center gap-3">
- <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center"><Target size={16} className="text-white" /></div>
- <div>
- <p className="text-[8px] font-black text-white/60 uppercase">Goal Summary</p>
- <p className="text-[10px] font-black truncate max-w-[120px]">{formData.name || 'New Goal'}</p>
- </div>
- </div>
- <div className="text-right">
- <p className="text-[8px] font-black text-white/60 uppercase">Target</p>
- <p className="text-lg font-black tracking-tighter">{currency} {formData.targetAmount.toLocaleString()}</p>
- </div>
  </div>
  </div>
  </main>

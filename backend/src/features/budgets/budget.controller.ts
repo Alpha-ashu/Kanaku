@@ -5,6 +5,32 @@ import { AppError } from '../../utils/AppError';
 import { logger } from '../../config/logger';
 import { isDatabaseUnavailableError } from '../../utils/databaseAvailability';
 
+/**
+ * `alertChannels` is a Json column. Historically it was written with
+ * `JSON.stringify(...)`, double-encoding it into a JSON *string* so the API
+ * returned `alertChannels: "[\"app\"]"` instead of `["app"]`. We now store a
+ * native array; this coerces any value (legacy string OR array) to an array so
+ * every response is consistent even before the data is rewritten.
+ */
+const coerceChannels = (value: unknown): string[] => {
+  if (Array.isArray(value)) return value.map((v) => String(v));
+  if (typeof value === 'string') {
+    try {
+      const parsed = JSON.parse(value);
+      if (Array.isArray(parsed)) return parsed.map((v) => String(v));
+    } catch {
+      /* fall through */
+    }
+  }
+  return ['app'];
+};
+
+/** Shape a budget row so `alertChannels` is always a proper array on the wire. */
+const serializeBudget = <T extends { alertChannels?: unknown }>(budget: T) => ({
+  ...budget,
+  alertChannels: coerceChannels(budget.alertChannels),
+});
+
 export const getBudgets = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const userId = getUserId(req);
@@ -19,7 +45,7 @@ export const getBudgets = async (req: AuthRequest, res: Response, next: NextFunc
       orderBy: { createdAt: 'desc' },
     });
 
-    res.json({ success: true, data: budgets });
+    res.json({ success: true, data: budgets.map(serializeBudget) });
   } catch (error) {
     if (isDatabaseUnavailableError(error)) {
       logger.warn('Budgets fallback: database unavailable');
@@ -65,12 +91,13 @@ export const createBudget = async (req: AuthRequest, res: Response, next: NextFu
         startDate: body.startDate ? new Date(body.startDate) : null,
         endDate: body.endDate ? new Date(body.endDate) : null,
         alertEnabled: body.alertEnabled ?? true,
-        alertChannels: body.alertChannels ? JSON.stringify(body.alertChannels) : '["app"]',
+        // Store a native array (validated by zod) — not a JSON string.
+        alertChannels: body.alertChannels ?? ['app'],
         clientRequestId: body.clientRequestId || null,
       },
     });
 
-    res.status(201).json({ success: true, data: budget });
+    res.status(201).json({ success: true, data: serializeBudget(budget) });
   } catch (error) {
     next(error);
   }
@@ -87,7 +114,7 @@ export const getBudget = async (req: AuthRequest, res: Response, next: NextFunct
 
     if (!budget) throw AppError.notFound('Budget');
 
-    res.json({ success: true, data: budget });
+    res.json({ success: true, data: serializeBudget(budget) });
   } catch (error) {
     next(error);
   }
@@ -109,7 +136,7 @@ export const updateBudget = async (req: AuthRequest, res: Response, next: NextFu
     if (body.spent !== undefined) updates.spent = Number(body.spent);
     if (body.threshold !== undefined) updates.threshold = body.threshold;
     if (body.alertEnabled !== undefined) updates.alertEnabled = body.alertEnabled;
-    if (body.alertChannels !== undefined) updates.alertChannels = JSON.stringify(body.alertChannels);
+    if (body.alertChannels !== undefined) updates.alertChannels = body.alertChannels;
     if (body.startDate !== undefined) updates.startDate = body.startDate ? new Date(body.startDate) : null;
     if (body.endDate !== undefined) updates.endDate = body.endDate ? new Date(body.endDate) : null;
 
@@ -118,7 +145,7 @@ export const updateBudget = async (req: AuthRequest, res: Response, next: NextFu
       data: updates,
     });
 
-    res.json({ success: true, data: updated });
+    res.json({ success: true, data: serializeBudget(updated) });
   } catch (error) {
     next(error);
   }
