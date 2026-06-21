@@ -6,7 +6,7 @@ import {
   markOptionalBackendUnavailable,
   shouldRetryWithLocalApiFallback,
 } from '@/lib/apiBase';
-import { TokenManager } from '@/lib/api';
+import { TokenManager, api } from '@/lib/api';
 import supabase from '@/utils/supabase/client';
 import CryptoJS from 'crypto-js';
 
@@ -331,6 +331,8 @@ class PinService {
     const hashedPin = CryptoJS.SHA256(pin).toString();
     const result = await this.post('create', { pin: hashedPin });
     this.persistPinState(result, true);
+    // Creating a PIN establishes the server unlock — bust the cached pre-PIN profile.
+    if (result.success) api.clearCache();
     return result;
   }
 
@@ -346,6 +348,10 @@ class PinService {
       this.persistPinState(result, true);
       localStorage.setItem(this.PIN_VERIFIED_KEY, 'true');
       localStorage.setItem(this.PIN_VERIFIED_AT_KEY, new Date().toISOString());
+      // The server just established the PIN unlock, so /auth/profile will now
+      // return the full (PII) payload. Bust the cached pre-PIN (stripped) profile
+      // so the next fetch gets fresh, complete data.
+      api.clearCache();
     } else {
       this.clearPinVerification();
     }

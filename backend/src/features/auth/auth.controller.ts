@@ -678,7 +678,7 @@ export const getProfile = async (req: AuthRequest, res: Response, next: NextFunc
     const settingsRecord = settingsResult.status === 'fulfilled' ? (settingsResult.value as Record<string, any>) : null;
     const pinRecord = pinResult.status === 'fulfilled' ? (pinResult.value as Record<string, any>) : null;
 
-    const payload = buildProfilePayload(req.userId, req.user, userRecord, profileRecord, settingsRecord, includePrivate, pinRecord);
+    const payload = buildProfilePayload(req.userId, req.user, userRecord, profileRecord, settingsRecord, includePrivate, pinRecord, pinUnlocked);
     await cacheSetJson(profileCacheKey, payload, 30); // Cache for 30 seconds
 
     res.json({
@@ -692,9 +692,10 @@ export const getProfile = async (req: AuthRequest, res: Response, next: NextFunc
       userId: req.userId
     });
     const includePrivate = req.query.includePrivate === 'true' || req.query.includePrivate === '1';
+    const pinUnlocked = await isPinUnlocked(req.userId || '').catch(() => true);
     res.json({
       success: true,
-      data: buildProfilePayload(req.userId || '', req.user, null, null, null, includePrivate, null),
+      data: buildProfilePayload(req.userId || '', req.user, null, null, null, includePrivate, null, pinUnlocked),
     });
   }
 };
