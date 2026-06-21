@@ -137,6 +137,24 @@ export const SecurityProvider: React.FC<{ children: ReactNode }> = ({ children }
     }
   };
 
+  // Re-lock when the server rejects a request for lack of a live PIN unlock
+  // (403 PIN_VERIFICATION_REQUIRED). Mirrors the inactivity lock so the PIN
+  // screen reappears and a fresh /pin/verify re-establishes the server unlock.
+  useEffect(() => {
+    const onForceLock = () => {
+      try { sessionStorage.setItem('KANAKU_lock_reason', 'pin_required'); } catch { /* ignore */ }
+      setIsAuthenticated(false);
+      setEncryptionKey(null);
+      sessionStorage.removeItem('session_active');
+      sessionStorage.removeItem('session_encryption_key');
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('KANAKU_PIN_LOCKED'));
+      }
+    };
+    window.addEventListener('KANAKU_FORCE_PIN_LOCK', onForceLock);
+    return () => window.removeEventListener('KANAKU_FORCE_PIN_LOCK', onForceLock);
+  }, []);
+
   const logout = async () => {
     handleLock();
 

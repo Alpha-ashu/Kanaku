@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { authMiddleware } from '../../middleware/auth';
+import { pinGate } from '../../middleware/pinGate';
 import { validateBody, validateParams } from '../../middleware/validate';
 import { idempotency } from '../../middleware/idempotency';
 import { responseCache } from '../../middleware/cache';
@@ -10,6 +11,7 @@ import { loanCreateSchema, loanUpdateSchema, loanPaymentSchema, loanIdParamSchem
 const router = Router();
 
 router.use(authMiddleware);
+router.use(pinGate); // financial data requires a live PIN unlock
 
 router.get('/', responseCache({ prefix: 'loans:list', ttlSeconds: CACHE_TTL_SECONDS.loans.list }), LoanController.getLoans);
 router.post('/', idempotency({ scope: 'loans.create' }), validateBody(loanCreateSchema), LoanController.createLoan);

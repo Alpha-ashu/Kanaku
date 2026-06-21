@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { authMiddleware } from '../../middleware/auth';
+import { pinGate } from '../../middleware/pinGate';
 import { validateBody, validateParams } from '../../middleware/validate';
 import * as InvestmentController from './investment.controller';
 import { investmentCreateSchema, investmentIdParamSchema, investmentUpdateSchema } from './investment.validation';
@@ -7,6 +8,7 @@ import { investmentCreateSchema, investmentIdParamSchema, investmentUpdateSchema
 const router = Router();
 
 router.use(authMiddleware);
+router.use(pinGate); // financial data requires a live PIN unlock
 
 router.get('/', InvestmentController.getInvestments);
 router.get('/:id', validateParams(investmentIdParamSchema), InvestmentController.getInvestment);

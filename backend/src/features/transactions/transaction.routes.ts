@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { authMiddleware } from '../../middleware/auth';
+import { pinGate } from '../../middleware/pinGate';
 import { validateBody, validateParams, validateQuery } from '../../middleware/validate';
 import { idempotency } from '../../middleware/idempotency';
 import * as TransactionController from './transaction.controller';
@@ -17,8 +18,9 @@ import {
 
 const router = Router();
 
-// All transaction routes require authentication
+// All transaction routes require authentication + a live PIN unlock
 router.use(authMiddleware);
+router.use(pinGate);
 
 router.get(
 	'/',
