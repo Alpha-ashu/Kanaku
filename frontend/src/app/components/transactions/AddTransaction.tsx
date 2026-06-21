@@ -840,7 +840,7 @@ export function AddTransaction() {
  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Description / Reason</label>
  <div className="relative">
  <AlignLeft className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
- <input type="text" value={formData.description} onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))} aria-label="Description" data-testid="transaction-description-input" className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-900 text-xs focus:ring-2 focus:ring-indigo-500/20" placeholder=" Loan EMI / Friends / ATM Withdrawal" />
+ <input type="text" value={formData.description} onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))} aria-label="Description" data-testid="transaction-description-input" className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-300 text-xs focus:ring-2 focus:ring-indigo-500/20" placeholder=" Loan EMI / Friends / ATM Withdrawal" />
  </div>
  </div>
  </div>
@@ -1442,7 +1442,7 @@ export function AddTransaction() {
  onChange={e => setTransferRecipient(e.target.value)}
  aria-label="Recipient name or UPI"
  data-testid="transaction-recipient-input"
- className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-xs"
+ className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-300 text-xs"
  placeholder="Name / UPI / Account"
  />
  {transferRecipient && (
@@ -1497,7 +1497,7 @@ export function AddTransaction() {
  onChange={e => setFormData(prev => ({ ...prev, notes: e.target.value }))}
  aria-label="Notes"
  data-testid="transaction-notes-textarea"
- className="w-full bg-slate-50 border-none rounded-xl p-3 font-bold text-xs min-h-[60px] resize-none"
+ className="w-full bg-slate-50 border-none rounded-xl p-3 font-bold text-slate-300 text-xs min-h-[60px] resize-none"
  placeholder="ATM Withdrawal / Friend Transfer / etc..."
  />
  </div>

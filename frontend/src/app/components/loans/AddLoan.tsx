@@ -185,7 +185,7 @@ export const AddLoan: React.FC = () => {
  value={formData.lenderName} 
  onChange={e => handleFieldChange('lenderName', e.target.value)} 
  data-testid="loan-create-lender-input"
- className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-900 text-xs" 
+ className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-300 text-xs" 
  placeholder="e.g. HDFC Bank, John Doe" 
  />
  </div>
@@ -274,7 +274,7 @@ export const AddLoan: React.FC = () => {
  value={formData.description} 
  onChange={e => handleFieldChange('description', e.target.value)} 
  data-testid="loan-create-notes-textarea"
- className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-900 text-xs min-h-[60px] resize-none" 
+ className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-300 text-xs min-h-[60px] resize-none" 
  placeholder="e.g. For buying a new laptop" 
  />
  </div>

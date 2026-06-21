@@ -742,7 +742,7 @@ export const AddInvestment: React.FC = () => {
                   value={formData.name}
                   onChange={e => { setFormData(prev => ({ ...prev, name: e.target.value })); if (isMarketAsset) setShowSuggestions(true); }}
                   data-testid="investments-create-name-input"
-                  className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-900 text-xs"
+                  className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-300 text-xs"
                   placeholder={
                     isMarketAsset ? 'Search Symbol (AAPL, BTC...)' :
                     isPhysicalMetal ? 'e.g. Gold Necklace, 22K Ring' :
@@ -805,7 +805,7 @@ export const AddInvestment: React.FC = () => {
                 <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Broker / Platform</label>
                 <div className="relative">
                   <Globe className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
-                  <input type="text" value={formData.broker} onChange={e => setFormData(prev => ({ ...prev, broker: e.target.value }))} data-testid="investments-create-broker-input" className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-900 text-xs" placeholder="e.g. Zerodha" />
+                  <input type="text" value={formData.broker} onChange={e => setFormData(prev => ({ ...prev, broker: e.target.value }))} data-testid="investments-create-broker-input" className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-300 text-xs" placeholder="e.g. Zerodha" />
                 </div>
               </div>
               <div className="space-y-1">

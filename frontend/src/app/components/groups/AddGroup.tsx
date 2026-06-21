@@ -243,7 +243,7 @@ export const AddGroup: React.FC = () => {
  type="text" 
  value={formData.name} 
  onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))} 
- className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-900 text-xs" 
+ className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-300 text-xs" 
  placeholder="e.g. Weekend Trip to Goa" 
  />
  </div>
@@ -291,7 +291,7 @@ export const AddGroup: React.FC = () => {
  <textarea data-testid="add-group-what-was-this-for" 
  value={formData.description} 
  onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))} 
- className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-900 text-xs min-h-[60px] resize-none" 
+ className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-300 text-xs min-h-[60px] resize-none" 
  placeholder="What was this for?" 
  />
  </div>

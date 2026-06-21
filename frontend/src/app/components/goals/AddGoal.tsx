@@ -271,7 +271,7 @@ export const AddGoal: React.FC = () => {
  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Goal Name</label>
  <div className="relative">
  <Target className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
- <input type="text" value={formData.name} onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))} data-testid="goals-create-name-input" className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-900 text-xs" placeholder="e.g. New Macbook Pro" />
+ <input type="text" value={formData.name} onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))} data-testid="goals-create-name-input" className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-300 text-xs" placeholder="e.g. New Macbook Pro" />
  </div>
  </div>
 
@@ -284,7 +284,7 @@ export const AddGoal: React.FC = () => {
  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Description / Note</label>
  <div className="relative">
  <AlignLeft className="absolute left-2.5 top-3 text-slate-300" size={14} />
- <textarea value={formData.description} onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))} data-testid="goals-create-description-textarea" className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-900 text-xs min-h-[60px] resize-none" placeholder="What is this for?" />
+ <textarea value={formData.description} onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))} data-testid="goals-create-description-textarea" className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-300 text-xs min-h-[60px] resize-none" placeholder="What is this for?" />
  </div>
  </div>
  </div>

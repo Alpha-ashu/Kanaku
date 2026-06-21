@@ -272,7 +272,7 @@ export const AddAccount: React.FC = () => {
  value={provider}
  onChange={e => setProvider(e.target.value)}
  data-testid="account-create-provider-input"
- className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-900 text-xs"
+ className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-300 text-xs"
  placeholder="Bank or Wallet Name"
  />
  </div>
@@ -285,7 +285,7 @@ export const AddAccount: React.FC = () => {
  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest shrink-0">3. Custom Label (Optional)</label>
  <div className="relative w-full md:max-w-md">
  <Wallet className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300" size={12} />
- <input type="text" value={formData.name} onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))} data-testid="account-create-name-input" className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-900 text-xs" placeholder="e.g. My Savings" />
+ <input type="text" value={formData.name} onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))} data-testid="account-create-name-input" className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-300 text-xs" placeholder="e.g. My Savings" />
  </div>
  </div>
 
