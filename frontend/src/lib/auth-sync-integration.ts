@@ -1,7 +1,7 @@
 import type { RealtimeChannel } from '@supabase/supabase-js';
 import supabase from '@/utils/supabase/client';
 import { db } from '@/lib/database';
-import { apiClient } from '@/lib/api';
+import { apiClient, TokenManager } from '@/lib/api';
 import { markOptionalBackendUnavailable, shouldSkipOptionalBackendRequests } from '@/lib/apiBase';
 import {
   applyTransactionAccountImpact,
@@ -973,21 +973,20 @@ export async function processPendingSyncQueue() {
   const pendingItems = readSyncQueue();
   if (pendingItems.length === 0) return;
 
+  // Backend-managed auth: derive the user id from the backend JWT (no Supabase session).
   let user = null as { id: string } | null;
   try {
-    const { data: { session } } = await supabase.auth.getSession();
-    user = session?.user ? { id: session.user.id } : null;
-
-    if (!user) {
-      const { data } = await supabase.auth.getUser();
-      user = data.user ? { id: data.user.id } : null;
+    const token = TokenManager.getAccessToken();
+    if (token) {
+      const parts = token.split('.');
+      if (parts.length === 3) {
+        const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+        const id = payload.userId || payload.sub;
+        if (id) user = { id };
+      }
     }
-  } catch (error) {
-    if (isConnectivityError(error)) {
-      markSupabaseTemporarilyUnavailable(error);
-      return;
-    }
-    throw error;
+  } catch {
+    // Malformed token — treat as unauthenticated.
   }
 
   if (!user) return;
@@ -3038,12 +3037,8 @@ export async function saveGoalWithBackendSync(goal: any) {
 }
 
 export async function checkBackendConnectivity(): Promise<boolean> {
-  try {
-    const { data: { session } } = await supabase.auth.getSession();
-    return !!session;
-  } catch {
-    return false;
-  }
+  // Backend-managed auth: an authenticated session means we hold a backend JWT.
+  return !!TokenManager.getAccessToken();
 }
 
 export async function saveToDoListWithBackendSync(list: any) {

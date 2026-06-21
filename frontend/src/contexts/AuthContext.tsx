@@ -1090,41 +1090,23 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
     }
 
-    try {
-      const { data: { session: activeSession } } = await supabase.auth.getSession();
-      if (activeSession) {
-        const { error } = await supabase.auth.signOut({ scope: 'global' });
-        if (error) {
-          console.warn('Supabase global signOut failed, trying local signOut:', error);
-          await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
-        }
-      } else {
-        await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
-      }
-    } catch (error) {
-      console.error('Error signing out from Supabase, clearing local auth state anyway:', error);
-      try {
-        await supabase.auth.signOut({ scope: 'local' });
-      } catch (localSignOutError) {
-        console.error('Local-only sign out fallback also failed:', localSignOutError);
-      }
-    } finally {
-      // Guarantee local DB and presentation clearing to ensure complete isolation
-      await handleBackendLogout();
-      TokenManager.clearTokens();
-      await clearLocalUserData();
-      clearLocalAuthPresentationState(true); // Preserve PIN keys
+    // Backend-managed auth: revoke the backend session (refresh token + cookie);
+    // there is no Supabase session to clear. Guarantee local DB and presentation
+    // clearing to ensure complete isolation.
+    await handleBackendLogout();
+    TokenManager.clearTokens();
+    await clearLocalUserData();
+    clearLocalAuthPresentationState(true); // Preserve PIN keys
 
-      socketClient.disconnect();
-      setUser(null);
-      setSession(null);
-      setRole('user');
-      permissionService.clearPermissions();
-      activeSyncUserId.current = null;
-      setDataReady(false);
-      setDataSyncing(false);
-      setDataSyncError(null);
-    }
+    socketClient.disconnect();
+    setUser(null);
+    setSession(null);
+    setRole('user');
+    permissionService.clearPermissions();
+    activeSyncUserId.current = null;
+    setDataReady(false);
+    setDataSyncing(false);
+    setDataSyncError(null);
   };
 
   const triggerDataSync = async (requestedTables?: SyncedTableName[]) => {

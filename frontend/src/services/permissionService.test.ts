@@ -13,7 +13,7 @@ vi.mock('@/utils/supabase/client', () => ({
   },
 }));
 
-import { api } from '@/lib/api';
+import { api, TokenManager } from '@/lib/api';
 import { permissionService } from './permissionService';
 
 describe('permissionService', () => {
@@ -26,17 +26,12 @@ describe('permissionService', () => {
     if (typeof localStorage !== 'undefined') {
       localStorage.clear();
     }
+    TokenManager.clearTokens(); // reset in-memory + stored backend JWT between tests
     api.clearCache();
   });
 
   it('uses backend profile role instead of the fallback role when available', async () => {
-    getSession.mockResolvedValue({
-      data: {
-        session: {
-          access_token: 'session-token',
-        },
-      },
-    });
+    TokenManager.setAccessToken('session-token');
 
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
       ok: true,
@@ -61,13 +56,7 @@ describe('permissionService', () => {
   });
 
   it('downgrades unapproved advisors to user permissions', async () => {
-    getSession.mockResolvedValue({
-      data: {
-        session: {
-          access_token: 'session-token',
-        },
-      },
-    });
+    TokenManager.setAccessToken('session-token');
 
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
       ok: true,
@@ -88,13 +77,7 @@ describe('permissionService', () => {
   });
 
   it('falls back to the caller role when backend profile lookup fails', async () => {
-    getSession.mockResolvedValue({
-      data: {
-        session: {
-          access_token: 'session-token',
-        },
-      },
-    });
+    TokenManager.setAccessToken('session-token');
 
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
       ok: false,
@@ -114,13 +97,7 @@ describe('permissionService', () => {
   });
 
   it('reuses the last successful backend role during a later transient failure', async () => {
-    getSession.mockResolvedValue({
-      data: {
-        session: {
-          access_token: 'session-token',
-        },
-      },
-    });
+    TokenManager.setAccessToken('session-token');
 
     const fetchMock = vi
       .fn()
@@ -160,13 +137,7 @@ describe('permissionService', () => {
   });
 
   it('deduplicates concurrent backend role lookups for the same user', async () => {
-    getSession.mockResolvedValue({
-      data: {
-        session: {
-          access_token: 'session-token',
-        },
-      },
-    });
+    TokenManager.setAccessToken('session-token');
 
     let resolveFetch: any = null;
     const fetchPromise = new Promise<any>((resolve) => {

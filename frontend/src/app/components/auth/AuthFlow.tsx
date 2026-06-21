@@ -22,7 +22,10 @@ import { MailCheck } from 'lucide-react';
 // JWT flow; 'supabase' (Option A) authenticates via Supabase Auth so the API client's
 // (already Supabase-first) token resolution carries the Supabase session.
 // See docs/AUTH_CONSOLIDATION_PLAN.md.
-const AUTH_CANONICAL = (import.meta.env.VITE_AUTH_CANONICAL || 'supabase') as string;
+// Backend-managed auth (BFF) is the default: login/signup go through our own
+// API and the client uses only the backend JWT. Set VITE_AUTH_CANONICAL=supabase
+// to fall back to direct Supabase auth (legacy / emergency rollback).
+const AUTH_CANONICAL = (import.meta.env.VITE_AUTH_CANONICAL || 'backend') as string;
 
 /** Internal-only logger - never leaks raw errors to the browser console in production. */
 const internalLog = {

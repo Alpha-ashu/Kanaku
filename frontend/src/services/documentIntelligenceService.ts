@@ -1,5 +1,5 @@
 import { db, type DocumentRecord, type MerchantProfile, type UserCategoryPreference } from '@/lib/database';
-import supabase from '@/utils/supabase/client';
+import { TokenManager } from '@/lib/api';
 
 const KNOWN_MERCHANT_CATEGORIES: Record<string, string> = {
   starbucks: 'Food',
@@ -80,9 +80,18 @@ const inferCategoryFromKeywords = (text: string, amount?: number) => {
   return 'Others';
 };
 
-async function getActiveUserId() {
-  const { data } = await supabase.auth.getUser();
-  return data.user?.id;
+async function getActiveUserId(): Promise<string | undefined> {
+  // Backend-managed auth: derive the user id from the backend JWT, not Supabase.
+  const token = TokenManager.getAccessToken();
+  if (!token) return undefined;
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return undefined;
+    const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+    return payload.userId || payload.sub || undefined;
+  } catch {
+    return undefined;
+  }
 }
 
 async function upsertMerchantProfile(profile: Omit<MerchantProfile, 'id' | 'createdAt' | 'updatedAt' | 'usageCount'>) {

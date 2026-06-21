@@ -41,18 +41,14 @@ describe('api auth token resolution', () => {
     };
     vi.stubGlobal('localStorage', mockLocalStorage);
     localStorage.clear();
+    TokenManager.clearTokens(); // reset in-memory backend JWT between tests
     api.clearCache();
     window.history.replaceState({}, '', '/');
   });
 
-  it('uses the Supabase session token for authenticated requests', async () => {
-    getSession.mockResolvedValue({
-      data: {
-        session: {
-          access_token: 'session-token',
-        },
-      },
-    });
+  it('uses the backend JWT (TokenManager) for authenticated requests', async () => {
+    // Backend-managed auth: the API credential is the backend JWT, never a Supabase token.
+    TokenManager.setAccessToken('session-token');
 
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
@@ -70,12 +66,7 @@ describe('api auth token resolution', () => {
     }));
   });
 
-  it('falls back to auth_token when no Supabase session token exists', async () => {
-    getSession.mockResolvedValue({
-      data: {
-        session: null,
-      },
-    });
+  it('reads the backend JWT from auth_token storage', async () => {
     localStorage.setItem('auth_token', 'legacy-jwt');
 
     const fetchMock = vi.fn().mockResolvedValue({

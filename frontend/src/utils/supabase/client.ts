@@ -61,7 +61,7 @@ const createStubClient = (): any => {
 // In the default hybrid/custom mode the custom JWT is canonical, so we keep the
 // Supabase session non-persistent (AuthContext manages any refresh) to avoid
 // console-flooding retries when the Supabase project is paused.
-const supabaseCanonical = (import.meta.env.VITE_AUTH_CANONICAL || 'supabase') === 'supabase';
+const supabaseCanonical = (import.meta.env.VITE_AUTH_CANONICAL || 'backend') === 'supabase';
 
 const supabase = (!supabaseUrl || !supabaseKey)
 	? createStubClient()

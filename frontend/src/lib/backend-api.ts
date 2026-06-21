@@ -375,13 +375,8 @@ class BackendService {
         };
 
         if (status === 401) {
+          // Backend-managed auth: clearing the backend tokens is the full sign-out.
           TokenManager.clearTokens();
-          try {
-            // Force local sign out to clear stale local storage sessions without triggering a 403 network call
-            void supabase.auth.signOut({ scope: 'local' }).catch(() => {});
-          } catch (e) {
-            // Ignore sign out errors
-          }
           // Wait a tiny bit for local storage to actually clear before redirecting
           setTimeout(() => {
             if (window.location.pathname !== '/login') {

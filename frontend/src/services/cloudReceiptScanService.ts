@@ -36,14 +36,10 @@ const fetchWithRetries = async (
 };
 
 const getAuthToken = async () => {
-  const { data: { session } } = await supabase.auth.getSession();
-  if (session?.access_token) return session.access_token;
-  
-  // Fallback to custom JWT stored in localStorage
+  // Backend-managed auth: the API credential is the backend JWT in TokenManager.
   const token = TokenManager.getAccessToken();
-                
   if (!token) {
-    console.warn('[ReceiptScanner] No auth token found in localStorage');
+    console.warn('[ReceiptScanner] No auth token found');
   }
   return token || null;
 };
