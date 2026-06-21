@@ -1542,10 +1542,9 @@ export function AddTransaction() {
      <div className="w-9 h-9 rounded-xl bg-slate-200 flex items-center justify-center">
        <Paperclip size={18} className="text-slate-600" />
      </div>
-     <div className="text-center">
-       <p className="text-[10px] font-black uppercase tracking-wide leading-none">Add Attachment</p>
-       <p className="text-[9px] font-semibold text-slate-400 mt-0.5 leading-none">No OCR</p>
-     </div>
+      <div className="text-center">
+        <p className="text-[10px] font-black uppercase tracking-wide leading-none">Add Attachment</p>
+      </div>
    </button>
  </div>
  )}
