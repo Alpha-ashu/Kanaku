@@ -333,5 +333,17 @@ describe('AUTH MODULE', () => {
         expect(String(res.headers['set-cookie'] || '')).toContain('kanaku_rt');
       }
     });
+
+    it('older native installs are recognized by their Capacitor Origin (no platform header)', async () => {
+      const res = await request(app)
+        .post(`${API}/auth/refresh`)
+        .set('Origin', 'https://localhost')
+        .set('x-refresh-token', signTyped('refresh'));
+      expect([200, 401, 503]).toContain(res.status);
+      if (res.status === 200) {
+        // Backward-compat: pre-header native builds still receive the body token.
+        expect(res.body.data).toHaveProperty('refreshToken');
+      }
+    });
   });
 });

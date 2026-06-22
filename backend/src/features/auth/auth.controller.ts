@@ -21,6 +21,14 @@ const authService = new AuthService();
 const challengeMemoryCache = new Map<string, { payload: any; expiresAt: number }>();
 
 /**
+ * Origins used by Capacitor native webviews (Android/iOS). A real browser can
+ * never forge these (Origin is a browser-controlled, forbidden header), so they
+ * are a safe signal — and they let already-installed native apps that predate
+ * the `X-Client-Platform` header keep working.
+ */
+const NATIVE_ORIGINS = new Set(['https://localhost', 'capacitor://localhost', 'ionic://localhost']);
+
+/**
  * Whether the request comes from a native (Capacitor) client — Android/iOS.
  * Those run in a webview at https://localhost and call the API cross-origin,
  * where the HttpOnly refresh cookie (SameSite) is unreliable (iOS WKWebView ITP,
@@ -28,9 +36,18 @@ const challengeMemoryCache = new Map<string, { payload: any; expiresAt: number }
  * JSON body and persist it in device storage instead. Web clients are
  * same-origin (Vercel proxy) and receive the refresh token ONLY as the HttpOnly
  * cookie, so it is never exposed to browser JS (XSS-safe).
+ *
+ * Detected by the explicit `X-Client-Platform: native` header (current apps) OR
+ * a Capacitor native Origin (older installs without the header). A browser web
+ * origin (Vercel domain, or http://localhost:<port> in dev) never matches, so
+ * web stays cookie-only.
  */
-const isNativeClient = (req: Request): boolean =>
-  String(req.headers['x-client-platform'] || '').toLowerCase() === 'native';
+const isNativeClient = (req: Request): boolean => {
+  if (String(req.headers['x-client-platform'] || '').toLowerCase() === 'native') return true;
+  const origin = String(req.headers.origin || '').toLowerCase();
+  if (!origin) return false;
+  return NATIVE_ORIGINS.has(origin) || origin.startsWith('capacitor://') || origin.startsWith('ionic://');
+};
 
 // Strict email regex: local@domain.tld, no SQL/XSS chars
 const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
