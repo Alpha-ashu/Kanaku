@@ -13,6 +13,18 @@ const envSchema = z.object({
       if (typeof value === 'string') return value === 'true';
       return false;
     }),
+  // Optional secondary cache store (e.g. self-hosted Dragonfly). The cache layer
+  // automatically fails over to this when the primary errors / hits a quota,
+  // then fails back when the primary recovers. (BullMQ queues stay on REDIS_URL.)
+  REDIS_FALLBACK_URL: z.string().url().optional(),
+  REDIS_FALLBACK_TLS: z
+    .union([z.boolean(), z.string()])
+    .optional()
+    .transform((value) => {
+      if (typeof value === 'boolean') return value;
+      if (typeof value === 'string') return value === 'true';
+      return false;
+    }),
   JWT_SECRET: z.string().min(32).optional(),
   SUPABASE_JWT_SECRET: z.string().min(1).optional(),
   // Auth source of truth. 'custom' = backend-issued JWT (default, current behavior).
