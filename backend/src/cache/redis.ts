@@ -1,6 +1,7 @@
 import Redis from 'ioredis';
 import { env } from '../config/env';
 import { logger } from '../config/logger';
+import { resolveRedisUrl } from '../config/redis-connections';
 
 type RedisStatus = 'disabled' | 'connected' | 'connecting' | 'error';
 
@@ -124,7 +125,9 @@ const buildEndpoint = (name: string, url: string, forceTls = false): RedisEndpoi
 
 const ensureEndpoints = () => {
   if (endpoints.length) return;
-  if (env.REDIS_URL) endpoints.push(buildEndpoint('primary', env.REDIS_URL, !!env.REDIS_TLS));
+  // Cache primary runs on its own logical DB (CACHE_REDIS_URL → REDIS_URL/db1).
+  const primaryUrl = resolveRedisUrl('cache');
+  if (primaryUrl) endpoints.push(buildEndpoint('primary', primaryUrl, !!env.REDIS_TLS));
   // Priority-ordered fallback chain (comma-separated): e.g. Dragonfly -> Redis Cloud -> Valkey.
   if (env.REDIS_FALLBACK_URL) {
     env.REDIS_FALLBACK_URL.split(',')

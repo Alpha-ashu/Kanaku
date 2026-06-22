@@ -20,6 +20,15 @@ const envSchema = z.object({
   // URL's scheme (rediss:// = TLS). (BullMQ queues stay on REDIS_URL.)
   // Example: REDIS_FALLBACK_URL="redis://localhost:6380,redis://default:***@cloud:10204"
   REDIS_FALLBACK_URL: z.string().optional(),
+  // Per-workload connection URLs for logical-DB isolation (Dragonfly). Each
+  // defaults to REDIS_URL with its logical db index appended when unset:
+  //   BULLMQ → db0, CACHE → db1, SESSION → db2, RATE_LIMIT → db3.
+  // See backend/src/config/redis-connections.ts. Point these at different hosts
+  // to split workloads across instances with no code change.
+  BULLMQ_REDIS_URL: z.string().optional(),
+  CACHE_REDIS_URL: z.string().optional(),
+  SESSION_REDIS_URL: z.string().optional(),
+  RATE_LIMIT_REDIS_URL: z.string().optional(),
   JWT_SECRET: z.string().min(32).optional(),
   SUPABASE_JWT_SECRET: z.string().min(1).optional(),
   // Auth source of truth. 'custom' = backend-issued JWT (default, current behavior).

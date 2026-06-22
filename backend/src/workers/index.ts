@@ -1,323 +1,294 @@
-import { Worker, Queue } from 'bullmq';
+/**
+ * Notification delivery workers (email + push).
+ *
+ * Reliability contract (§11/§12/§19):
+ *   - Idempotent: a job is skipped if its channel is already 'sent' for that
+ *     notificationId, so retries / duplicate enqueues never double-deliver.
+ *   - Lifecycle: every attempt updates the notification row (PostgreSQL is the
+ *     source of truth) — status pending → processing → sent | retrying | failed.
+ *   - Dead-letter: a job that exhausts all retries is copied to the queue's DLQ
+ *     and the notification marked 'failed'. Nothing is ever silently dropped.
+ *
+ * Retry/backoff/attempts come from STANDARD_JOB_OPTIONS (config/queue.ts).
+ */
+import { Worker, Job } from 'bullmq';
 import { logger } from '../config/logger';
-import * as admin from 'firebase-admin';
-import nodemailer from 'nodemailer';
 import { prisma } from '../db/prisma';
-import { sendEmail } from '../utils/email';
-import { redisConnection as sharedRedisConnection } from '../config/queue';
-import { logInvitationEvent } from '../utils/invitationLifecycle';
+import { sendNotificationEmail } from '../emails';
+import { sendPushNotification, initializeFirebase } from '../config/firebase';
+import {
+  bullConnection,
+  QUEUE_NAMES,
+  STANDARD_JOB_OPTIONS,
+  moveToDeadLetter,
+} from '../config/queue';
 
-// Initialize Firebase Admin if not already done
-let firebaseInitialized = false;
-let firebaseApp: any = null;
+const EMAIL_CONCURRENCY = Number(process.env.EMAIL_WORKER_CONCURRENCY || 5);
+const PUSH_CONCURRENCY = Number(process.env.PUSH_WORKER_CONCURRENCY || 10);
+export const MAX_ATTEMPTS = Number(STANDARD_JOB_OPTIONS.attempts ?? 5);
+const BACKOFF_BASE_MS =
+  (typeof STANDARD_JOB_OPTIONS.backoff === 'object' && STANDARD_JOB_OPTIONS.backoff?.delay) || 5000;
 
-const initializeFirebase = () => {
-  if (firebaseInitialized) return;
+type Channel = 'email' | 'push';
 
+// ── Live runtime stats (for the queue monitoring endpoint) ───────────────────
+interface QueueRuntimeStats {
+  worker: Worker | null;
+  concurrency: number;
+  completed: number;
+  failed: number;
+  processingMsTotal: number;
+  processingSamples: number;
+}
+const runtimeStats = new Map<string, QueueRuntimeStats>();
+
+export function getWorkerRuntimeStats(queueName: string) {
+  const s = runtimeStats.get(queueName);
+  if (!s) return null;
+  return {
+    running: s.worker ? s.worker.isRunning() : false,
+    concurrency: s.concurrency,
+    completed: s.completed,
+    failed: s.failed,
+    avgProcessingMs:
+      s.processingSamples > 0 ? Math.round(s.processingMsTotal / s.processingSamples) : 0,
+  };
+}
+
+// ── Lifecycle / idempotency helpers ─────────────────────────────────────────
+const parseDeliveryStatus = (value: unknown): Record<string, string> => {
   try {
-    // Firebase credentials should be in .env as JSON string
-    const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT
-      ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)
-      : undefined;
-
-    if (!serviceAccount) {
-      logger.warn('Firebase service account not configured. Push notifications will not work.');
-      firebaseInitialized = true;
-      return;
-    }
-
-    firebaseApp = admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount),
-    });
-
-    firebaseInitialized = true;
-    logger.info('Firebase Admin SDK initialized');
-  } catch (error) {
-    logger.error('Failed to initialize Firebase Admin SDK:', error);
-    firebaseInitialized = true;
+    return typeof value === 'string' ? JSON.parse(value) : ((value as Record<string, string>) || {});
+  } catch {
+    return {};
   }
 };
 
-// Email transporter setup
-const getEmailTransporter = () => {
-  if (process.env.SENDGRID_API_KEY) {
-    return nodemailer.createTransport({
-      host: 'smtp.sendgrid.net',
-      port: 587,
-      auth: {
-        user: 'apikey',
-        pass: process.env.SENDGRID_API_KEY,
+/** Idempotency guard (§12): has this channel already been delivered? */
+async function isAlreadySent(notificationId: string, channel: Channel): Promise<boolean> {
+  const n = await prisma.notification.findUnique({
+    where: { id: notificationId },
+    select: { deliveryStatus: true },
+  });
+  if (!n) return false;
+  return parseDeliveryStatus(n.deliveryStatus)[channel] === 'sent';
+}
+
+async function setProcessing(notificationId: string): Promise<void> {
+  await prisma.notification
+    .update({ where: { id: notificationId }, data: { status: 'processing' } })
+    .catch(() => {/* bookkeeping must never fail the send */});
+}
+
+async function markChannel(
+  notificationId: string,
+  channel: Channel,
+  channelStatus: 'sent' | 'failed',
+): Promise<void> {
+  const n = await prisma.notification.findUnique({ where: { id: notificationId } });
+  if (!n) return;
+  const ds = parseDeliveryStatus(n.deliveryStatus);
+  ds[channel] = channelStatus;
+  await prisma.notification
+    .update({
+      where: { id: notificationId },
+      data: {
+        deliveryStatus: JSON.stringify(ds),
+        ...(channelStatus === 'sent'
+          ? { status: 'sent', sentAt: new Date(), errorMessage: null }
+          : {}),
+      },
+    })
+    .catch(() => {/* best-effort */});
+}
+
+async function recordFailure(
+  notificationId: string | undefined,
+  attemptsMade: number,
+  err: unknown,
+  isFinal: boolean,
+): Promise<void> {
+  if (!notificationId) return;
+  const message = (err instanceof Error ? err.message : String(err)).slice(0, 500);
+  await prisma.notification
+    .update({
+      where: { id: notificationId },
+      data: {
+        attempts: attemptsMade,
+        status: isFinal ? 'failed' : 'retrying',
+        errorMessage: message,
+        nextRetryAt: isFinal
+          ? null
+          : new Date(Date.now() + BACKOFF_BASE_MS * Math.pow(2, Math.max(0, attemptsMade - 1))),
+      },
+    })
+    .catch(() => {/* best-effort */});
+}
+
+// ── Processors ───────────────────────────────────────────────────────────────
+export async function processEmail(job: Job): Promise<unknown> {
+  const { notificationId, userId, title, message, category, deepLink } = job.data;
+
+  if (await isAlreadySent(notificationId, 'email')) {
+    return { skipped: true, reason: 'already_sent' };
+  }
+  await setProcessing(notificationId);
+
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { email: true } });
+  if (!user?.email) {
+    // No recipient — permanent failure, no point retrying.
+    await markChannel(notificationId, 'email', 'failed');
+    return { skipped: true, reason: 'no_email' };
+  }
+
+  const sent = await sendNotificationEmail({
+    to: user.email,
+    title,
+    message,
+    category,
+    deepLink,
+    headers: { 'X-Notification-ID': notificationId },
+  });
+  if (!sent) throw new Error('SendGrid send failed');
+
+  await markChannel(notificationId, 'email', 'sent');
+  return { sent: true };
+}
+
+export async function processPush(job: Job): Promise<unknown> {
+  const { notificationId, userId, deviceId, fcmToken, title, message, category, deepLink, priority } =
+    job.data;
+
+  if (await isAlreadySent(notificationId, 'push')) {
+    return { skipped: true, reason: 'already_sent' };
+  }
+  await setProcessing(notificationId);
+
+  const device = await prisma.device.findUnique({ where: { id: deviceId } });
+  if (!device || device.userId !== userId || !device.isActive || device.fcmToken !== fcmToken) {
+    await markChannel(notificationId, 'push', 'failed');
+    return { skipped: true, reason: 'device_unavailable' };
+  }
+
+  try {
+    const messageId = await sendPushNotification(fcmToken, {
+      title,
+      body: message,
+      data: {
+        notificationId,
+        category: category || '',
+        deepLink: deepLink || '',
+        priority: priority || 'normal',
       },
     });
+    await prisma.device.update({ where: { id: deviceId }, data: { lastSeenAt: new Date() } }).catch(() => {});
+    await markChannel(notificationId, 'push', 'sent');
+    return { sent: true, messageId };
+  } catch (err) {
+    // A dead/unregistered token will never succeed — clean it up so we stop
+    // retrying it, then re-throw so BullMQ records the failed attempt.
+    const msg = err instanceof Error ? err.message.toLowerCase() : '';
+    if (msg.includes('invalid') || msg.includes('unregistered') || msg.includes('not-registered')) {
+      await prisma.device
+        .update({ where: { id: deviceId }, data: { fcmToken: null, isActive: false } })
+        .catch(() => {});
+    }
+    throw err;
   }
+}
 
-  // Fallback SMTP config
-  return nodemailer.createTransport({
-    host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    port: parseInt(process.env.SMTP_PORT || '587'),
-    secure: process.env.SMTP_SECURE === 'true',
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASSWORD,
-    },
-  });
-};
+// ── Failure handling (retry bookkeeping + dead-letter routing) ───────────────
+interface FailableJob {
+  id?: string;
+  name: string;
+  data: any;
+  attemptsMade: number;
+}
 
 /**
- * Initialize push notification worker
+ * Records a failed attempt and, once retries are exhausted, marks the channel
+ * failed and copies the job to its dead-letter queue. Extracted from the worker
+ * 'failed' listener so the DLQ contract is unit-testable without a live queue.
  */
-export const initializePushWorker = (pushQueue: Queue) => {
+export async function handleJobFailure(
+  queueName: string,
+  channel: Channel,
+  job: FailableJob,
+  err: { message?: string } | undefined,
+): Promise<void> {
+  const isFinal = job.attemptsMade >= MAX_ATTEMPTS;
+  logger.warn(`[${queueName}] job ${job.id} failed (attempt ${job.attemptsMade}/${MAX_ATTEMPTS})`, {
+    error: err?.message,
+  });
+
+  await recordFailure(job.data?.notificationId, job.attemptsMade, err, isFinal);
+
+  if (isFinal) {
+    if (job.data?.notificationId) await markChannel(job.data.notificationId, channel, 'failed');
+    await moveToDeadLetter(queueName, job.name, job.data, err?.message || 'unknown').catch((e) =>
+      logger.error(`[${queueName}] failed to move job to dead-letter queue`, { error: e?.message }),
+    );
+  }
+}
+
+// ── Worker wiring (with dead-letter routing) ─────────────────────────────────
+function startWorker(
+  queueName: string,
+  channel: Channel,
+  processor: (job: Job) => Promise<unknown>,
+  concurrency: number,
+): Worker {
+  const stats: QueueRuntimeStats = {
+    worker: null,
+    concurrency,
+    completed: 0,
+    failed: 0,
+    processingMsTotal: 0,
+    processingSamples: 0,
+  };
+  runtimeStats.set(queueName, stats);
+
+  const worker = new Worker(queueName, processor, { connection: bullConnection as any, concurrency });
+  stats.worker = worker;
+
+  worker.on('completed', (job) => {
+    stats.completed += 1;
+    const started = job.processedOn ?? job.timestamp;
+    const finished = job.finishedOn ?? Date.now();
+    if (started) {
+      stats.processingMsTotal += Math.max(0, finished - started);
+      stats.processingSamples += 1;
+    }
+    logger.debug(`[${queueName}] job ${job.id} completed`);
+  });
+
+  worker.on('failed', async (job, err) => {
+    if (!job) return;
+    stats.failed += 1;
+    await handleJobFailure(queueName, channel, job as unknown as FailableJob, err);
+  });
+
+  worker.on('error', () => {
+    // Connection noise (e.g. Redis offline in dev) — already surfaced elsewhere.
+  });
+
+  logger.info(`${queueName} worker initialized (concurrency ${concurrency})`);
+  return worker;
+}
+
+let workers: Worker[] = [];
+
+/** Start the email + push notification workers. */
+export const initializeNotificationWorkers = () => {
   initializeFirebase();
-
-  // Reuse the same Redis connection the queues are created with (config/queue.ts
-  // resolves REDIS_URL in production, not just REDIS_HOST/PORT) — otherwise this
-  // worker silently connects to a different (often unreachable) Redis instance
-  // and never picks up jobs that were actually enqueued.
-  const worker = new Worker(
-    'push-notifications',
-    async (job) => {
-      try {
-        const { notificationId, userId, deviceId, fcmToken, title, message, deepLink, priority } =
-          job.data;
-
-        logger.info('Processing push notification', {
-          notificationId,
-          deviceId,
-          jobId: job.id,
-        });
-
-        if (!firebaseApp) {
-          logger.warn('Firebase not initialized. Skipping push notification.');
-          return { status: 'skipped', reason: 'firebase_not_initialized' };
-        }
-
-        // firebase-admin v13: use send() with token field instead of sendToDevice()
-        const fcmMessage = {
-          notification: {
-            title,
-            body: message,
-          },
-          data: {
-            notificationId,
-            userId,
-            deviceId,
-            type: 'in-app-notification',
-            ...(deepLink && { deepLink }),
-          },
-          token: fcmToken,
-          android: {
-            priority: (priority === 'high' ? 'high' : 'normal') as 'high' | 'normal',
-            ttl: 86400 * 1000, // 24 hours in ms
-          },
-        };
-
-        const messageId = await admin.messaging().send(fcmMessage);
-
-        logger.info('Push notification sent', {
-          notificationId,
-          deviceId,
-          messageId,
-        });
-
-        return {
-          status: 'sent',
-          notificationId,
-          deviceId,
-          messageId,
-        };
-      } catch (error) {
-        logger.error('Push notification worker error', {
-          error: error instanceof Error ? error.message : String(error),
-          jobId: job.id,
-        });
-        throw error;
-      }
-    },
-    {
-      connection: sharedRedisConnection as any,
-      concurrency: 10, // Process 10 notifications concurrently
-    }
-  );
-
-  worker.on('completed', (job) => {
-    logger.debug(`Push job ${job.id} completed`);
-  });
-
-  worker.on('failed', (job, err) => {
-    logger.error(`Push job ${job?.id} failed:`, err.message);
-  });
-
-  worker.on('error', (err) => {
-    // Suppress/log connection errors when Redis is offline in dev
-  });
-
-  logger.info('Push notification worker initialized');
-  return worker;
+  const emailWorker = startWorker(QUEUE_NAMES.email, 'email', processEmail, EMAIL_CONCURRENCY);
+  const pushWorker = startWorker(QUEUE_NAMES.push, 'push', processPush, PUSH_CONCURRENCY);
+  workers = [emailWorker, pushWorker];
+  return { emailWorker, pushWorker };
 };
 
-/**
- * Initialize email notification worker
- */
-export const initializeEmailWorker = (emailQueue: Queue) => {
-  // Reuse the same Redis connection the queues are created with (see note on
-  // initializePushWorker above).
-
-  // Reserved for any future non-SendGrid SMTP fallback; the active send path
-  // below goes through utils/email.ts (SendGrid) to match the rest of the app.
-  void getEmailTransporter;
-
-  const worker = new Worker(
-    'email-notifications',
-    async (job) => {
-      const { notificationId, userId, title, message, category, deepLink } = job.data;
-
-      try {
-        logger.info('Processing email notification', {
-          notificationId,
-          userId,
-          category,
-          jobId: job.id,
-        });
-
-        const user = await prisma.user.findUnique({ where: { id: userId } });
-        if (!user?.email) {
-          logger.warn('Email notification skipped: user not found or has no email', { userId });
-          return { status: 'skipped', reason: 'user_email_not_found' };
-        }
-
-        const sent = await sendEmail({
-          to: user.email,
-          subject: title,
-          html: buildNotificationEmailHtml({ title, message, category, deepLink }),
-          categories: ['kanaku-notification', category || 'general'],
-          headers: {
-            'X-Notification-ID': notificationId,
-            'X-User-ID': userId,
-          },
-          customArgs: { kind: 'notification', notificationId, userId },
-        });
-
-        logInvitationEvent(sent ? 'EMAIL_SENT' : 'EMAIL_FAILED', {
-          email: user.email, notificationId, userId, moduleType: category, path: 'registered_user_queue',
-        });
-
-        if (notificationId) {
-          try {
-            const notification = await prisma.notification.findUnique({ where: { id: notificationId } });
-            if (notification) {
-              const deliveryStatus = (typeof notification.deliveryStatus === 'string'
-                ? JSON.parse(notification.deliveryStatus)
-                : (notification.deliveryStatus || {})) as any;
-              deliveryStatus.email = sent ? 'sent' : 'failed';
-              await prisma.notification.update({
-                where: { id: notificationId },
-                data: { deliveryStatus: JSON.stringify(deliveryStatus) },
-              });
-            }
-          } catch (statusErr) {
-            logger.warn('Failed to update notification delivery status', statusErr);
-          }
-        }
-
-        if (!sent) {
-          throw new Error('SendGrid delivery failed');
-        }
-
-        logger.info('Email notification sent', { notificationId, userId, to: user.email });
-
-        return { status: 'sent', notificationId, userId };
-      } catch (error) {
-        logger.error('Email notification worker error', {
-          error: error instanceof Error ? error.message : String(error),
-          jobId: job.id,
-        });
-        throw error;
-      }
-    },
-    {
-      connection: sharedRedisConnection as any,
-      concurrency: 5, // Process 5 emails concurrently
-    }
-  );
-
-  worker.on('completed', (job) => {
-    logger.debug(`Email job ${job.id} completed`);
-  });
-
-  worker.on('failed', (job, err) => {
-    logger.error(`Email job ${job?.id} failed:`, err.message);
-  });
-
-  worker.on('error', (err) => {
-    // Suppress/log connection errors when Redis is offline in dev
-  });
-
-  logger.info('Email notification worker initialized');
-  return worker;
-};
-
-function escapeHtml(text: string): string {
-  const map: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
-  return text.replace(/[&<>"']/g, (char) => map[char]);
-}
-
-function buildNotificationEmailHtml(args: { title: string; message: string; category?: string; deepLink?: string }): string {
-  const { title, message, category, deepLink } = args;
-  const actionButton = deepLink
-    ? `<a href="${process.env.FRONTEND_URL || ''}${deepLink}" style="display: inline-block; padding: 12px 24px; background-color: #5B21B6; color: white; text-decoration: none; border-radius: 6px; font-weight: 500; margin-top: 16px;">View Details</a>`
-    : '';
-
-  return `
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <style>
-          body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; color: #333; }
-          .container { max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9fafb; }
-          .card { background-color: white; border-radius: 8px; padding: 32px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-          .header { margin-bottom: 24px; border-bottom: 2px solid #5B21B6; padding-bottom: 16px; }
-          .logo { font-size: 24px; font-weight: bold; color: #5B21B6; }
-          .title { font-size: 22px; font-weight: 600; margin: 16px 0 8px 0; color: #1f2937; }
-          .category { font-size: 12px; text-transform: uppercase; color: #6b7280; letter-spacing: 0.5px; }
-          .message { font-size: 16px; margin: 20px 0; color: #4b5563; line-height: 1.8; }
-          .footer { margin-top: 32px; padding-top: 16px; border-top: 1px solid #e5e7eb; font-size: 12px; color: #9ca3af; text-align: center; }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <div class="card">
-            <div class="header"><div class="logo">KANAKU</div></div>
-            ${category ? `<div class="category">${escapeHtml(category)}</div>` : ''}
-            <div class="title">${escapeHtml(title)}</div>
-            <div class="message">${escapeHtml(message)}</div>
-            ${actionButton}
-            <div class="footer">
-              <p>This is an automated notification from Kanaku.</p>
-              <p>&copy; ${new Date().getFullYear()} Kanaku. All rights reserved.</p>
-            </div>
-          </div>
-        </div>
-      </body>
-    </html>
-  `;
-}
-
-/**
- * Initialize all notification workers
- */
-export const initializeNotificationWorkers = (pushQueue: Queue, emailQueue: Queue) => {
-  try {
-    const pushWorker = initializePushWorker(pushQueue);
-    const emailWorker = initializeEmailWorker(emailQueue);
-
-    return {
-      pushWorker,
-      emailWorker,
-    };
-  } catch (error) {
-    logger.error('Failed to initialize notification workers:', error);
-    throw error;
-  }
+/** Gracefully close all workers (called on shutdown). */
+export const stopNotificationWorkers = async (): Promise<void> => {
+  await Promise.allSettled(workers.map((w) => w.close()));
+  workers = [];
 };

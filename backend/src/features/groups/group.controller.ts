@@ -1,13 +1,12 @@
 import { randomUUID } from 'crypto';
 import { Response } from 'express';
-import { Queue } from 'bullmq';
 import { AuthRequest, getUserId } from '../../middleware/auth';
 import { prisma } from '../../db/prisma';
 import { logger } from '../../config/logger';
 import { isDatabaseUnavailableError } from '../../utils/databaseAvailability';
 import { getSocketManager } from '../../sockets';
 import { sanitize } from '../../utils/sanitize';
-import { redisConnection } from '../../config/queue';
+import { getEmailQueue } from '../../config/queue';
 import { inviteParticipants } from '../collaboration/invitation.service';
 
 // User has no `phone` column — phone numbers live on `profiles` (synced 1:1 with User.id on registration).
@@ -23,16 +22,9 @@ async function findUserByEmailOrPhone(email?: string | null, phone?: string | nu
   return null;
 }
 
-let _emailQueue: Queue | null = null;
-function getEmailQueue(): Queue {
-  if (!_emailQueue) {
-    _emailQueue = new Queue('email-notifications', { connection: redisConnection as any });
-  }
-  return _emailQueue;
-}
-
 async function queueGroupExpenseEmail(notificationId: string, userId: string, title: string, message: string): Promise<void> {
   try {
+    // Retry/backoff/DLQ policy comes from the queue's STANDARD_JOB_OPTIONS.
     await getEmailQueue().add('send-notification-email', {
       notificationId,
       userId,
@@ -42,8 +34,6 @@ async function queueGroupExpenseEmail(notificationId: string, userId: string, ti
       deepLink: '/groups',
     }, {
       priority: 1,
-      attempts: 3,
-      backoff: { type: 'exponential', delay: 2000 },
     });
   } catch (err) {
     logger.warn('Failed to queue group expense email notification', err);

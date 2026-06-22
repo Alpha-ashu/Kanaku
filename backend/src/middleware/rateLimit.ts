@@ -1,7 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { audit } from '../utils/auditLogger';
-import { getRedisClient, getRedisStatus } from '../cache/redis';
+import { getPurposeClient, getPurposeStatus } from '../config/redis-connections';
+
+// Rate-limit counters live on the dedicated RATE_LIMIT logical DB (db3).
+const getRedisClient = () => getPurposeClient('ratelimit');
+const getRedisStatus = () => getPurposeStatus('ratelimit');
 
 type RateLimitOptions = {
   windowMs: number;
@@ -23,7 +27,11 @@ setInterval(() => {
 }, CLEANUP_INTERVAL_MS).unref();
 
 /** Try Redis INCR with TTL; returns null when Redis is unavailable. */
-async function redisIncrement(key: string, windowMs: number): Promise<{ count: number; resetAt: number } | null> {
+async function redisIncrement(
+  key: string,
+  windowMs: number,
+  max: number,
+): Promise<{ count: number; resetAt: number } | null> {
   const redis = getRedisClient();
   if (!redis) return null;
   if (getRedisStatus() !== 'connected') return null;
@@ -31,11 +39,18 @@ async function redisIncrement(key: string, windowMs: number): Promise<{ count: n
   try {
     const count = await redis.incr(key);
     if (count === 1) {
+      // First request in the window: set the TTL; reset time is known exactly.
       await redis.pexpire(key, windowMs);
+      return { count, resetAt: Date.now() + windowMs };
     }
-    const pttl = await redis.pttl(key);
-    const resetAt = Date.now() + Math.max(pttl, 0);
-    return { count, resetAt };
+    // Only pay for a PTTL round-trip when we actually need an accurate reset —
+    // i.e. the caller is about to return 429. On the common under-limit path we
+    // approximate the reset header, halving Redis commands per request.
+    if (count > max) {
+      const pttl = await redis.pttl(key);
+      return { count, resetAt: Date.now() + Math.max(pttl, 0) };
+    }
+    return { count, resetAt: Date.now() + windowMs };
   } catch {
     return null; // fall back to in-memory
   }
@@ -55,7 +70,7 @@ export const rateLimit = ({ windowMs, max, scope = 'global', keyGenerator, messa
     // Try Redis first (persistent across restarts / instances)
     let count: number;
     let resetAt: number;
-    const redisResult = await redisIncrement(key, windowMs);
+    const redisResult = await redisIncrement(key, windowMs, max);
 
     if (redisResult) {
       count = redisResult.count;

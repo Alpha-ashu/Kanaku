@@ -15,14 +15,21 @@
  * setting PIN_GATE_ENABLED=true once the client handles the 403 re-lock. The
  * window is PIN_GATE_TIMEOUT_MINUTES (default 5, matching the client auto-lock).
  */
-import { getRedisClient, getRedisStatus } from '../cache/redis';
+import { getPurposeClient, getPurposeStatus } from '../config/redis-connections';
 import { logger } from '../config/logger';
+
+// PIN-unlock markers live on the dedicated SESSION logical DB (db2).
+const getRedisClient = () => getPurposeClient('session');
+const getRedisStatus = () => getPurposeStatus('session');
 
 const PIN_GATE_ENABLED = process.env.PIN_GATE_ENABLED === 'true';
 const PIN_GATE_TIMEOUT_MINUTES = Number(process.env.PIN_GATE_TIMEOUT_MINUTES || 5);
 const PIN_GATE_TIMEOUT_MS = PIN_GATE_TIMEOUT_MINUTES * 60 * 1000;
 const PIN_GATE_TIMEOUT_SECONDS = Math.max(1, Math.ceil(PIN_GATE_TIMEOUT_MS / 1000));
 const KEY_PREFIX = 'pinunlock:';
+
+// Throttle sliding writes (see idleSession.ts) — avoid a SET on every gated request.
+const SLIDE_INTERVAL_MS = Math.max(30_000, Math.min(PIN_GATE_TIMEOUT_MS / 2, 5 * 60_000));
 
 // In-memory fallback when Redis is not connected. Maps userId -> lastSeen (ms).
 const memoryStore = new Map<string, number>();
@@ -132,7 +139,10 @@ export const evaluatePinUnlock = async (userId: string): Promise<boolean> => {
   }
 
   if (marker !== null) {
-    await writeMarker(userId, Date.now()); // slide
+    // Slide forward, throttled — avoid a SET on every gated request.
+    if (Date.now() - marker >= SLIDE_INTERVAL_MS) {
+      await writeMarker(userId, Date.now());
+    }
     return true;
   }
   return false;

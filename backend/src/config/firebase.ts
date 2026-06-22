@@ -35,19 +35,29 @@ const firebaseConfig = {
  * Called once on application startup
  */
 export function initializeFirebase() {
-  try {
-    // Check if already initialized
-    if (admin.apps.length === 0) {
-      admin.initializeApp({
-        credential: admin.credential.cert(firebaseConfig as any),
-      });
-      console.log("✓ Firebase Admin SDK initialized");
+  if (admin.apps.length > 0) return;
+
+  // No credentials configured: skip cleanly (push disabled) in dev; hard-fail in
+  // production where FCM is expected. Avoids dumping a full stack trace locally.
+  if (!firebaseConfig.project_id) {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("Firebase Admin not configured: FIREBASE_* env vars are missing.");
     }
+    console.warn("⚠ Firebase Admin not configured (FIREBASE_* env vars missing) — push notifications disabled in dev.");
+    return;
+  }
+
+  try {
+    admin.initializeApp({ credential: admin.credential.cert(firebaseConfig as any) });
+    console.log("✓ Firebase Admin SDK initialized");
   } catch (error) {
     if (process.env.NODE_ENV === "production") {
       throw error;
     }
-    console.warn("⚠ Firebase initialization skipped (development mode):", error);
+    console.warn(
+      "⚠ Firebase initialization skipped (development):",
+      error instanceof Error ? error.message : String(error),
+    );
   }
 }
 
