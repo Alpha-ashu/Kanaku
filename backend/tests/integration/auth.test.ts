@@ -240,11 +240,15 @@ describe('AUTH MODULE', () => {
 
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
+      // Identity fields fall back from the JWT. Privilege does NOT: with no DB
+      // row, role/approval are the secure defaults (never derived from token
+      // claims — see authMiddleware). This previously "passed" only because a
+      // leftover seeded row existed; against a clean DB the secure default holds.
       expect(res.body.data).toMatchObject({
         id: 'profile-fallback-user',
         email: 'profile-fallback@example.com',
-        role: 'advisor',
-        isApproved: true,
+        role: 'user',
+        isApproved: false,
         firstName: 'Profile',
         lastName: 'Fallback',
       });

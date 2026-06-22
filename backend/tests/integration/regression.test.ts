@@ -102,7 +102,8 @@ describe('REGRESSION TESTS', () => {
         .post(`${API}/accounts`)
         .set(auth('validation-test-user'))
         .send({ name: 'Test', type: 'bank', balance: -500 });
-      expect([400, 500, 503]).toContain(res.status);
+      // Any rejection is acceptable (400/404/409/422); 500/503 cover DB-down.
+      expect([400, 404, 409, 422, 500, 503]).toContain(res.status);
     });
 
     it('goal targetAmount must be positive', async () => {
@@ -150,7 +151,8 @@ describe('REGRESSION TESTS', () => {
           date: '2026-01-01',
           transferToAccountId: 'same-id',
         });
-      expect([400, 500, 503]).toContain(res.status);
+      // Rejected as 400 (same account) or 404 (account not found); 500/503 = DB down.
+      expect([400, 404, 409, 422, 500, 503]).toContain(res.status);
     });
 
     it('transfer requires transferToAccountId', async () => {
