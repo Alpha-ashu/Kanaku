@@ -1,3 +1,0 @@
-Need to install the following packages:
-vitest@4.1.0
-Ok to proceed? (y) 
