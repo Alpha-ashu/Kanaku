@@ -1,9 +1,8 @@
-import { Queue } from 'bullmq';
 import { prisma } from '../../db/prisma';
 import { logger } from '../../config/logger';
 import { sendEmail } from '../../utils/email';
 import { getSocketManager } from '../../sockets';
-import { redisConnection } from '../../config/queue';
+import { getEmailQueue } from '../../config/queue';
 import { todoRepository } from '../todos/todo.repository';
 import { logInvitationEvent } from '../../utils/invitationLifecycle';
 
@@ -35,16 +34,9 @@ function moduleDeepLink(moduleType: ModuleType, moduleId: string): string {
   return `/${path}/${moduleId}`;
 }
 
-let _emailQueue: Queue | null = null;
-function getEmailQueue(): Queue {
-  if (!_emailQueue) {
-    _emailQueue = new Queue('email-notifications', { connection: redisConnection as any });
-  }
-  return _emailQueue;
-}
-
 async function queueCollaborationEmail(notificationId: string, userId: string, title: string, message: string, category: string, deepLink: string): Promise<void> {
   try {
+    // Retry/backoff/DLQ policy comes from the queue's STANDARD_JOB_OPTIONS.
     await getEmailQueue().add('send-notification-email', {
       notificationId,
       userId,
@@ -54,8 +46,6 @@ async function queueCollaborationEmail(notificationId: string, userId: string, t
       deepLink,
     }, {
       priority: 1,
-      attempts: 3,
-      backoff: { type: 'exponential', delay: 2000 },
     });
     logInvitationEvent('EMAIL_QUEUED', { notificationId, userId, moduleType: category });
   } catch (err) {

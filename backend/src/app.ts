@@ -16,6 +16,9 @@ import { authMiddleware, type AuthRequest } from './middleware/auth';
 import { requireRole } from './middleware/rbac';
 import { metricsMiddleware, getMetricsSnapshot } from './middleware/metrics';
 import { getCacheMetricsSnapshot } from './cache/redis';
+import { getQueueMonitoringSnapshot } from './workers/queue-monitor';
+import { getRedisHealth } from './config/redis-connections';
+import { bullConnection } from './config/queue';
 import { isCryptoConfigured } from './security/crypto';
 
 import { isAllowedOrigin } from './config/cors';
@@ -245,6 +248,61 @@ app.get('/api/v1/health/metrics', authMiddleware, requireRole('admin'), (_req, r
     cache: getCacheMetricsSnapshot(),
     circuitBreakers: getCircuitBreakerStatus(),
   });
+});
+
+/**
+ * GET /api/v1/health/queues
+ *
+ * Admin-only BullMQ queue observability (§13): per-queue job counts
+ * (waiting/active/completed/failed/delayed), queue depth, worker health +
+ * concurrency, average processing time, and dead-letter queue size.
+ */
+app.get('/api/v1/health/queues', authMiddleware, requireRole('admin'), async (_req, res) => {
+  try {
+    res.json(await getQueueMonitoringSnapshot());
+  } catch (err) {
+    logger.error('[health/queues] snapshot failed', {
+      error: err instanceof Error ? err.message : String(err),
+    });
+    res.status(503).json({ status: 'unavailable', error: 'Queue monitoring temporarily unavailable.' });
+  }
+});
+
+/**
+ * GET /api/v1/health/redis
+ *
+ * Admin-only Dragonfly/Redis health: per-workload connection status + ping
+ * latency (BullMQ/cache/session/rate-limit) plus server memory + connected
+ * clients. BullMQ runs on its own connection, pinged here behind a short
+ * timeout so a dead Redis can never hang the endpoint.
+ */
+app.get('/api/v1/health/redis', authMiddleware, requireRole('admin'), async (_req, res) => {
+  const pingBullmq = async () => {
+    const start = Date.now();
+    try {
+      await Promise.race([
+        bullConnection.ping(),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 2000)),
+      ]);
+      return { status: 'connected', latencyMs: Date.now() - start };
+    } catch (e) {
+      return { status: 'error', error: e instanceof Error ? e.message : String(e) };
+    }
+  };
+
+  try {
+    const [health, bullmq] = await Promise.all([getRedisHealth(), pingBullmq()]);
+    res.json({
+      timestamp: new Date().toISOString(),
+      workloads: { bullmq, ...health.workloads },
+      server: health.server,
+    });
+  } catch (err) {
+    logger.error('[health/redis] snapshot failed', {
+      error: err instanceof Error ? err.message : String(err),
+    });
+    res.status(503).json({ status: 'unavailable', error: 'Redis health temporarily unavailable.' });
+  }
 });
 
 // Public API documentation

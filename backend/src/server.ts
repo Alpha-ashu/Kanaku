@@ -3,8 +3,10 @@ import app from './app';
 import { logger } from './config/logger';
 import { initializeSocket } from './sockets/index';
 import { closeRedis, initRedis } from './cache/redis';
+import { closePurposeClients } from './config/redis-connections';
+import { closeQueueConnections } from './config/queue';
 import { startAIBackgroundJobs, stopAIBackgroundJobs } from './features/ai/ai.engine';
-import { initializeNotificationWorkers } from './workers/index';
+import { initializeNotificationWorkers, stopNotificationWorkers } from './workers/index';
 import { startCleanupWorker, stopCleanupWorker } from './workers/cleanup.worker';
 import { getQueues } from './config/queue';
 
@@ -50,8 +52,8 @@ void initRedis();
 
 // Initialize notification workers
 try {
-  const { pushQueue, emailQueue } = getQueues();
-  const workers = initializeNotificationWorkers(pushQueue, emailQueue);
+  getQueues(); // register email/push queues + their dead-letter queues
+  const workers = initializeNotificationWorkers();
   logger.info('Notification workers initialized', {
     pushWorker: !!workers.pushWorker,
     emailWorker: !!workers.emailWorker,
@@ -68,6 +70,9 @@ const shutdown = async (signal: string) => {
   server.close(async () => {
     stopAIBackgroundJobs();
     stopCleanupWorker();
+    await stopNotificationWorkers();
+    await closeQueueConnections();
+    await closePurposeClients();
     await closeRedis();
     process.exit(0);
   });

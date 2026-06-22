@@ -1,6 +1,4 @@
-﻿version: '3.8'
-
-services:
+﻿services:
   postgres:
     image: postgres:15
     container_name: KANAKU_postgres
@@ -40,9 +38,13 @@ services:
     ulimits:
       memlock: -1
     # Persist snapshots to the mounted volume (on shutdown + every 10 min).
+    # Local dev runs open (no auth). PRODUCTION must add `--requirepass` with a
+    # strong secret — see the hardened compose in docs/REDIS_DRAGONFLY_MIGRATION.md §6.
     command: ["--dir", "/data", "--dbfilename", "dump", "--snapshot_cron", "*/10 * * * *"]
+    # Loopback-only: not exposed on the LAN/public interface. In PRODUCTION drop
+    # the host port entirely and reach Dragonfly over the internal network only.
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
     volumes:
       - dragonfly_data:/data
     networks:
@@ -61,8 +63,9 @@ services:
     restart: unless-stopped
     # AOF + RDB persistence.
     command: ["valkey-server", "--appendonly", "yes", "--save", "60", "1"]
+    # Loopback-only (see dragonfly note above).
     ports:
-      - "6380:6379"
+      - "127.0.0.1:6380:6379"
     volumes:
       - valkey_data:/data
     networks:

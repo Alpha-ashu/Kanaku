@@ -18,14 +18,23 @@
  *
  * Enable by setting IDLE_TIMEOUT_MINUTES (e.g. 10) in the backend environment.
  */
-import { getRedisClient, getRedisStatus } from '../cache/redis';
+import { getPurposeClient, getPurposeStatus } from '../config/redis-connections';
 import { logger } from '../config/logger';
 import { env } from '../config/env';
+
+// Idle-session markers live on the dedicated SESSION logical DB (db2).
+const getRedisClient = () => getPurposeClient('session');
+const getRedisStatus = () => getPurposeStatus('session');
 
 const IDLE_TIMEOUT_MINUTES = Number(env.IDLE_TIMEOUT_MINUTES || 0);
 const IDLE_TIMEOUT_MS = IDLE_TIMEOUT_MINUTES * 60 * 1000;
 const IDLE_TIMEOUT_SECONDS = Math.max(1, Math.ceil(IDLE_TIMEOUT_MS / 1000));
 const KEY_PREFIX = 'idle:';
+
+// Throttle sliding writes: only re-persist the marker when it is older than this
+// interval, to avoid a Redis SET on every authenticated request. Kept well under
+// the window so the session still effectively slides for active users.
+const SLIDE_INTERVAL_MS = Math.max(30_000, Math.min(IDLE_TIMEOUT_MS / 2, 5 * 60_000));
 
 // In-memory fallback when Redis is not connected. Maps userId -> lastSeen (ms).
 const memoryStore = new Map<string, number>();
@@ -140,8 +149,11 @@ export const evaluateIdleSession = async (
   }
 
   if (marker !== null) {
-    // Activity seen within the window — slide it forward.
-    await writeMarker(userId, now);
+    // Activity seen within the window — slide it forward, but throttle the write
+    // so we don't issue a SET on every single request (only once per interval).
+    if (now - marker >= SLIDE_INTERVAL_MS) {
+      await writeMarker(userId, now);
+    }
     return true;
   }
 

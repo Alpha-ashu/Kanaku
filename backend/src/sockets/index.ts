@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import { Server, Socket } from 'socket.io';
 import { prisma } from '../db/prisma';
 import { isAllowedOrigin } from '../config/cors';
-import { redisConnection } from '../config/queue';
+import { getPurposeClient } from '../config/redis-connections';
 
 const SOCKET_AUTH_CACHE_TTL = 60; // seconds — cache verified identity to avoid DB on every connect
 
@@ -121,10 +121,11 @@ export class SocketManager {
     decodedToken: jwt.JwtPayload | null
   ): Promise<SocketUserIdentity | null> {
     const cacheKey = `socket:user:${userId}`;
+    const cache = getPurposeClient('cache');
 
     // Check cache first
     try {
-      const cached = await redisConnection.get(cacheKey);
+      const cached = cache ? await cache.get(cacheKey) : null;
       if (cached) {
         return JSON.parse(cached) as SocketUserIdentity;
       }
@@ -148,7 +149,7 @@ export class SocketManager {
 
     // Cache for SOCKET_AUTH_CACHE_TTL seconds
     try {
-      await redisConnection.set(cacheKey, JSON.stringify(identity), 'EX', SOCKET_AUTH_CACHE_TTL);
+      if (cache) await cache.set(cacheKey, JSON.stringify(identity), 'EX', SOCKET_AUTH_CACHE_TTL);
     } catch {
       // Redis unavailable — non-fatal
     }
