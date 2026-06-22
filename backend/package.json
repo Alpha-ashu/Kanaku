@@ -7,6 +7,7 @@
     "scripts":  {
                     "dev":  "ts-node-dev --respawn --transpile-only src/server.ts",
                     "generate:prisma":  "prisma generate",
+                    "db:test:reset":  "node ./scripts/test-db.mjs",
                     "ensure:cloud-sync-schema":  "node ./scripts/ensure-cloud-sync-schema.cjs",
                     "ensure:db-integrity":  "node ./scripts/ensure-db-integrity.cjs",
                     "backfill:user-settings":  "node ./scripts/backfill-user-settings.cjs",
