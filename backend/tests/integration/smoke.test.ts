@@ -26,20 +26,16 @@ describe('SMOKE TESTS - System Stability', () => {
       expect(typeof res.body.timestamp).toBe('string');
     });
 
-    it('should include services status', async () => {
+    it('public /health is a minimal liveness probe (no internal service details exposed)', async () => {
       const res = await request(app).get('/health');
-      expect(res.body.services).toBeDefined();
+      // Detailed diagnostics are intentionally NOT exposed on the public probe
+      // (info-disclosure safety); they live on the authenticated deep route.
+      expect(res.body.services).toBeUndefined();
     });
 
-    it('should include database status', async () => {
-      const res = await request(app).get('/health');
-      expect(res.body.services.database).toBeDefined();
-      expect(res.body.services.database.status).toMatch(/^(connected|error|unknown)$/);
-    });
-
-    it('should include redis status', async () => {
-      const res = await request(app).get('/health');
-      expect(res.body.services.redis).toBeDefined();
+    it('detailed service health is exposed only on the authenticated deep route', async () => {
+      const res = await request(app).get('/api/v1/health/deep');
+      expect(res.status).toBe(401); // protected — requires a valid token
     });
 
     it('should not expose X-Powered-By header', async () => {

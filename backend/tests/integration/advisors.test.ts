@@ -50,7 +50,9 @@ describe('Advisor System', () => {
     it('returns array in data if 200', async () => {
       const res = await request(app).get(`${API}/advisors`).set(userAuth());
       if (res.status === 200) {
-        expect(Array.isArray(res.body.data)).toBe(true);
+        // GET /advisors returns the advisor list as the response body (array).
+        // Tolerate a future {success,data} envelope too.
+        expect(Array.isArray(res.body) || Array.isArray(res.body?.data)).toBe(true);
       }
     });
 

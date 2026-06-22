@@ -24,7 +24,7 @@ const safeText = (max: number) =>
       message: 'Input contains disallowed characters',
     });
 
-export const updateProfileSchema = z
+const updateProfileObject = z
   .object({
     firstName: safeText(80).optional(),
     lastName: safeText(80).optional(),
@@ -66,4 +66,23 @@ export const updateProfileSchema = z
       .optional(),
   })
   .strip();
+
+/**
+ * Clients (notably the local→backend profile sync) send empty optional fields as
+ * `null`. Zod's `.optional()` accepts `undefined` but NOT `null`, which produced
+ * spurious 400 VALIDATION_ERRORs for any user with an incomplete profile.
+ *
+ * Strip null/undefined keys before validation so an absent field is simply
+ * "not provided" — never rejected, and never written over existing data.
+ */
+export const updateProfileSchema = z.preprocess((val) => {
+  if (val && typeof val === 'object' && !Array.isArray(val)) {
+    const cleaned: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(val as Record<string, unknown>)) {
+      if (value !== null && value !== undefined) cleaned[key] = value;
+    }
+    return cleaned;
+  }
+  return val;
+}, updateProfileObject);
 

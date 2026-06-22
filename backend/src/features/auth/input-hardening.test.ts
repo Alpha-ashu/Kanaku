@@ -66,6 +66,29 @@ describe('updateProfileSchema', () => {
     expect(result.success).toBe(true);
   });
 
+  it('accepts (and drops) null optional fields sent by the local profile sync', () => {
+    // The frontend sends empty optional fields as `null`. These must NOT 400 —
+    // they should be treated as "not provided" (stripped), never written.
+    const result = updateProfileSchema.safeParse({
+      firstName: 'Shaik',
+      gender: null,
+      phone: null,
+      dateOfBirth: null,
+      jobType: null,
+      country: null,
+      state: null,
+      city: null,
+      monthlyIncome: null,
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data).not.toHaveProperty('gender');
+      expect(result.data).not.toHaveProperty('phone');
+      expect(result.data).not.toHaveProperty('monthlyIncome');
+      expect(result.data.firstName).toBe('Shaik');
+    }
+  });
+
   it('keeps the annual cap consistent with the monthly cap', () => {
     expect(MAX_MONTHLY_INCOME).toBe(Math.floor(MAX_ANNUAL_INCOME / 12));
   });
