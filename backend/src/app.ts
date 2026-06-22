@@ -113,6 +113,8 @@ app.use(cors({
     'Content-Type',
     'Authorization',
     'x-refresh-token',
+    'x-client-platform', // 'native' marks Capacitor (Android/iOS) clients that
+                         // can't use the cross-site HttpOnly refresh cookie.
     'x-pw-encoding',   // password encoding negotiation (sha256 vs plain)
     'x-request-id',
   ],

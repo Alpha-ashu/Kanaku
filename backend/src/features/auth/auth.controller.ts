@@ -20,6 +20,18 @@ import { sendWelcomeEmail } from '../../emails';
 const authService = new AuthService();
 const challengeMemoryCache = new Map<string, { payload: any; expiresAt: number }>();
 
+/**
+ * Whether the request comes from a native (Capacitor) client — Android/iOS.
+ * Those run in a webview at https://localhost and call the API cross-origin,
+ * where the HttpOnly refresh cookie (SameSite) is unreliable (iOS WKWebView ITP,
+ * Android third-party-cookie policy). Such clients get the refresh token in the
+ * JSON body and persist it in device storage instead. Web clients are
+ * same-origin (Vercel proxy) and receive the refresh token ONLY as the HttpOnly
+ * cookie, so it is never exposed to browser JS (XSS-safe).
+ */
+const isNativeClient = (req: Request): boolean =>
+  String(req.headers['x-client-platform'] || '').toLowerCase() === 'native';
+
 // Strict email regex: local@domain.tld, no SQL/XSS chars
 const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
@@ -266,12 +278,13 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
     }
 
     res.setHeader('Authorization', `Bearer ${tokens.accessToken}`);
-    res.setHeader('x-refresh-token', tokens.refreshToken);
 
-    // C3: also deliver the refresh token as an HttpOnly cookie so the SPA
-    // never has to read/store it in JS. The header is kept temporarily for
-    // backward-compat with older clients until they migrate.
+    // Web (same-origin): refresh token is delivered ONLY as the HttpOnly cookie,
+    // never exposed to browser JS (XSS-safe). Native (cross-origin Capacitor):
+    // the cookie is unreliable, so the token is returned in the body for device
+    // storage. Either way the cookie is set; only the body delivery is gated.
     setRefreshCookie(res, tokens.refreshToken, REFRESH_TOKEN_TTL_SECONDS);
+    const native = isNativeClient(req);
 
     // Start the server-side inactivity window for the new session.
     if (tokens.user?.id) await establishIdleSession(tokens.user.id);
@@ -282,6 +295,8 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
       data: {
         user: tokens.user,
         expiresAt: tokens.expiresAt,
+        // Native clients can't read cross-origin headers, so deliver tokens here.
+        ...(native ? { accessToken: tokens.accessToken, refreshToken: tokens.refreshToken } : {}),
       },
     });
   } catch (error: any) {
@@ -475,11 +490,12 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
     }
 
     res.setHeader('Authorization', `Bearer ${tokens.accessToken}`);
-    res.setHeader('x-refresh-token', tokens.refreshToken);
 
-    // C3: HttpOnly refresh cookie (preferred). Header retained for
-    // backward-compat during client migration.
+    // Web (same-origin): refresh token via HttpOnly cookie only — unreadable by
+    // JS (XSS-safe). Native (cross-origin Capacitor): also in the body for
+    // device storage, since the cross-site cookie is unreliable there.
     setRefreshCookie(res, tokens.refreshToken, REFRESH_TOKEN_TTL_SECONDS);
+    const native = isNativeClient(req);
 
     // Start (or reset) the server-side inactivity window for this session.
     if (userId) await establishIdleSession(userId);
@@ -489,7 +505,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
       message: 'Login successful',
       data: {
         accessToken: tokens.accessToken,
-        refreshToken: tokens.refreshToken,
+        ...(native ? { refreshToken: tokens.refreshToken } : {}),
         expiresAt: tokens.expiresAt,
         user: input.challengeCode ? {
           id: userRecord.id,
@@ -576,10 +592,11 @@ export const refreshToken = async (req: Request, res: Response, next: NextFuncti
     // Rotate: issue a brand-new access + refresh pair.
     const tokens = generateTokens(user);
     res.setHeader('Authorization', `Bearer ${tokens.accessToken}`);
-    res.setHeader('x-refresh-token', tokens.refreshToken);
 
-    // C3: rotate the HttpOnly cookie too.
+    // Rotate the HttpOnly cookie (web). The rotated refresh token is exposed to
+    // JS only for native clients (in the body) that can't use the cookie.
     setRefreshCookie(res, tokens.refreshToken, REFRESH_TOKEN_TTL_SECONDS);
+    const native = isNativeClient(req);
 
     // Refresh counts as activity — slide the inactivity window forward.
     await establishIdleSession(user.id);
@@ -589,7 +606,7 @@ export const refreshToken = async (req: Request, res: Response, next: NextFuncti
       message: 'Token refreshed',
       data: {
         accessToken: tokens.accessToken,
-        refreshToken: tokens.refreshToken,
+        ...(native ? { refreshToken: tokens.refreshToken } : {}),
         expiresAt: tokens.expiresAt,
         user: tokens.user,
       },

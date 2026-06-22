@@ -29,7 +29,9 @@ describe('COMPREHENSIVE AUTHENTICATION MODULE TESTS', () => {
       if (res.status === 201) {
         expect(res.body.success).toBe(true);
         expect(res.headers).toHaveProperty('authorization');
-        expect(res.headers).toHaveProperty('x-refresh-token');
+        // Refresh token is HttpOnly-cookie only — not in a JS-readable header.
+        expect(res.headers).not.toHaveProperty('x-refresh-token');
+        expect(String(res.headers['set-cookie'] || '')).toContain('kanaku_rt');
         expect(res.body.data?.user?.email).toBe(email);
       }
     });
@@ -317,7 +319,9 @@ describe('COMPREHENSIVE AUTHENTICATION MODULE TESTS', () => {
         if (loginRes.status === 200) {
           expect(loginRes.body.success).toBe(true);
           expect(loginRes.headers).toHaveProperty('authorization');
-          expect(loginRes.headers).toHaveProperty('x-refresh-token');
+          // Refresh token is HttpOnly-cookie only — not in a JS-readable header.
+          expect(loginRes.headers).not.toHaveProperty('x-refresh-token');
+          expect(String(loginRes.headers['set-cookie'] || '')).toContain('kanaku_rt');
         }
       }
     });
@@ -469,7 +473,9 @@ describe('COMPREHENSIVE AUTHENTICATION MODULE TESTS', () => {
           expect(loginRes.status).toBe(200);
           expect(loginRes.body.success).toBe(true);
           expect(loginRes.headers).toHaveProperty('authorization');
-          expect(loginRes.headers).toHaveProperty('x-refresh-token');
+          // Refresh token is HttpOnly-cookie only — not in a JS-readable header.
+          expect(loginRes.headers).not.toHaveProperty('x-refresh-token');
+          expect(String(loginRes.headers['set-cookie'] || '')).toContain('kanaku_rt');
         }
       }
     });

@@ -179,10 +179,11 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
       const resData = response.data as any;
       const user = resData.user;
       const accessToken = resData.accessToken;
-      const refreshToken = resData.refreshToken;
 
-      if (accessToken && refreshToken) {
-        TokenManager.setTokens(accessToken, refreshToken);
+      // Refresh token is set as an HttpOnly cookie by the server — never in the
+      // body. Only the access token is stored by JS.
+      if (accessToken) {
+        TokenManager.setAccessToken(accessToken);
       }
 
       setEmail(credentials.email);
@@ -295,10 +296,11 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
       const resData = response.data as any;
       const user = resData.user;
       const accessToken = resData.accessToken;
-      const refreshToken = resData.refreshToken;
 
-      if (accessToken && refreshToken) {
-        TokenManager.setTokens(accessToken, refreshToken);
+      // Refresh token is set as an HttpOnly cookie by the server — never in the
+      // body. Only the access token is stored by JS.
+      if (accessToken) {
+        TokenManager.setAccessToken(accessToken);
       }
 
       setEmail(data.email);

@@ -43,7 +43,10 @@ describe('AUTH MODULE', () => {
       if (res.status === 201) {
         expect(res.body.success).toBe(true);
         expect(res.headers).toHaveProperty('authorization');
-        expect(res.headers).toHaveProperty('x-refresh-token');
+        // Refresh token is delivered ONLY via the HttpOnly cookie — never in a
+        // JS-readable header or the JSON body.
+        expect(res.headers).not.toHaveProperty('x-refresh-token');
+        expect(String(res.headers['set-cookie'] || '')).toContain('kanaku_rt');
       }
     });
 
@@ -308,9 +311,26 @@ describe('AUTH MODULE', () => {
       expect([200, 401, 503]).toContain(res.status);
       if (res.status === 200) {
         expect(res.body.data).toHaveProperty('accessToken');
-        expect(res.body.data).toHaveProperty('refreshToken');
         expect(res.body.data).toHaveProperty('expiresAt');
-        expect(res.headers).toHaveProperty('x-refresh-token');
+        // Web (no X-Client-Platform): rotated refresh token is the HttpOnly cookie only.
+        expect(res.body.data).not.toHaveProperty('refreshToken');
+        expect(res.headers).not.toHaveProperty('x-refresh-token');
+        expect(String(res.headers['set-cookie'] || '')).toContain('kanaku_rt');
+      }
+    });
+
+    it('native clients (X-Client-Platform: native) get the rotated refresh token in the body too', async () => {
+      const res = await request(app)
+        .post(`${API}/auth/refresh`)
+        .set('x-client-platform', 'native')
+        .set('x-refresh-token', signTyped('refresh'));
+      expect([200, 401, 503]).toContain(res.status);
+      if (res.status === 200) {
+        expect(res.body.data).toHaveProperty('accessToken');
+        // Native can't use the cross-origin cookie, so it also receives the token in the body.
+        expect(res.body.data).toHaveProperty('refreshToken');
+        // The cookie is still set (harmless for native, used by web).
+        expect(String(res.headers['set-cookie'] || '')).toContain('kanaku_rt');
       }
     });
   });

@@ -88,7 +88,7 @@ export const OnboardingStep4: React.FC<OnboardingStep4Props> = ({
 
  const loginData = await loginResponse.json();
  localStorage.setItem('auth_token', loginData.accessToken);
- localStorage.setItem('refresh_token', loginData.refreshToken);
+ // Refresh token is an HttpOnly cookie set by the server — not stored by JS.
 
  // Step 3: Initialize sync service
  setSyncStatus('Initializing sync service...');

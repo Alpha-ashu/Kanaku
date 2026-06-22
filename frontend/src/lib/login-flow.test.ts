@@ -94,19 +94,18 @@ describe('TokenManager', () => {
     });
   });
 
-  describe('setRefreshToken / getRefreshToken', () => {
-    it('stores and retrieves the refresh token', () => {
+  describe('setRefreshToken / getRefreshToken (cookie-only)', () => {
+    // The refresh token now lives ONLY in the server's HttpOnly cookie. The
+    // client must never store or read it, so these accessors are inert.
+    it('setRefreshToken is a no-op (never persisted to JS)', () => {
       TokenManager.setRefreshToken('my-refresh-token');
-      expect(TokenManager.getRefreshToken()).toBe('my-refresh-token');
-    });
-
-    it('returns null when no refresh token is set', () => {
       expect(TokenManager.getRefreshToken()).toBeNull();
+      expect(localStorage.getItem('refresh_token')).toBeNull();
     });
 
-    it('reads from refresh_token key as fallback', () => {
+    it('getRefreshToken always returns null, even with a legacy stored value', () => {
       localStorage.setItem('refresh_token', 'stored-refresh');
-      expect(TokenManager.getRefreshToken()).toBe('stored-refresh');
+      expect(TokenManager.getRefreshToken()).toBeNull();
     });
   });
 
@@ -133,10 +132,11 @@ describe('TokenManager', () => {
   });
 
   describe('setTokens (convenience)', () => {
-    it('sets both access and refresh tokens at once', () => {
+    it('stores only the access token; the refresh token is cookie-only', () => {
       TokenManager.setTokens('acc-123', 'ref-456');
       expect(TokenManager.getAccessToken()).toBe('acc-123');
-      expect(TokenManager.getRefreshToken()).toBe('ref-456');
+      expect(TokenManager.getRefreshToken()).toBeNull();
+      expect(localStorage.getItem('refresh_token')).toBeNull();
     });
   });
 });

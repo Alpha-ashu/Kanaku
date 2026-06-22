@@ -273,8 +273,8 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
       });
       if (response.data && typeof response.data === 'object' && 'accessToken' in response.data) {
         const tokens = response.data as any;
+        // Refresh token is delivered as an HttpOnly cookie — not stored by JS.
         localStorage.setItem('auth_token', tokens.accessToken);
-        localStorage.setItem('refresh_token', tokens.refreshToken);
         localStorage.setItem('user_email', formData.email);
         localStorage.setItem('user_name', `${formData.firstName} ${formData.lastName}`);
 

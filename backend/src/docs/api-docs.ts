@@ -845,7 +845,9 @@ const ROUTE_MOUNTS: RouteMount[] = [
 const ENDPOINT_OVERRIDES: Record<string, EndpointOverride> = {
   'post /api/v1/auth/register': {
     summary: 'Register a new user',
-    description: 'Creates a KANAKU account and returns authentication data.',
+    description: 'Creates a KANAKU account and returns authentication data. The '
+      + 'access token is in the response body and Authorization header; the '
+      + 'refresh token is set ONLY as an HttpOnly cookie (never in the body).',
     requestExample: {
       name: 'Asha Sharma',
       email: 'asha@example.com',
@@ -854,12 +856,14 @@ const ENDPOINT_OVERRIDES: Record<string, EndpointOverride> = {
     responseExample: {
       user: { id: 'uuid', email: 'asha@example.com', name: 'Asha Sharma' },
       accessToken: 'jwt-token',
-      refreshToken: 'refresh-token',
+      expiresAt: 1782126929095,
     },
   },
   'post /api/v1/auth/login': {
     summary: 'Login with email and password',
-    description: 'Authenticates the user and returns access credentials.',
+    description: 'Authenticates the user and returns access credentials. The '
+      + 'access token is in the response body and Authorization header; the '
+      + 'refresh token is set ONLY as an HttpOnly cookie (never in the body).',
     requestExample: {
       email: 'asha@example.com',
       password: 'StrongPassword123!',
@@ -867,7 +871,7 @@ const ENDPOINT_OVERRIDES: Record<string, EndpointOverride> = {
     responseExample: {
       user: { id: 'uuid', email: 'asha@example.com', name: 'Asha Sharma' },
       accessToken: 'jwt-token',
-      refreshToken: 'refresh-token',
+      expiresAt: 1782126929095,
     },
   },
   'get /api/v1/auth/profile': {

@@ -39,7 +39,8 @@ export const SignInForm: React.FC<SignInFormProps> = ({ onSwitchToSignUp, onSubm
  const response = await api.auth.login({ email: formData.email, password: formData.password });
  if (response.data && typeof response.data === 'object' && 'accessToken' in response.data) {
  const tokens = response.data as any;
- TokenManager.setTokens(tokens.accessToken, tokens.refreshToken);
+ // Refresh token is an HttpOnly cookie set by the server; only the access token is stored by JS.
+ TokenManager.setAccessToken(tokens.accessToken);
  localStorage.setItem('user_email', formData.email);
  const onboardingCompleted = localStorage.getItem('onboarding_completed');
  setCurrentPage(onboardingCompleted ? 'dashboard' : 'onboarding');

@@ -4,6 +4,7 @@
  */
 
 import { toast } from 'sonner';
+import { Capacitor } from '@capacitor/core';
 import {
   buildApiUrl,
   clearOptionalBackendUnavailable,
@@ -15,6 +16,20 @@ import {
 import type { ApiResponse, ApiError } from '@/types';
 import { ErrorFactory, ErrorHandler } from './errorHandling';
 import { logger } from './logger';
+
+// Native (Capacitor Android/iOS) clients call the API cross-origin from a
+// https://localhost webview, where the HttpOnly refresh cookie is unreliable
+// (iOS WKWebView ITP, Android third-party-cookie policy). They therefore mark
+// requests with `X-Client-Platform: native` and persist the refresh token in
+// device storage. Web is same-origin (Vercel proxy) and uses the cookie only —
+// the refresh token is never stored in browser JS (XSS-safe).
+const isNativePlatform = (): boolean => {
+  try {
+    return Capacitor.isNativePlatform();
+  } catch {
+    return false;
+  }
+};
 
 // ==================== User-friendly error message map ====================
 // Maps server error codes to simple, human-readable messages.
@@ -178,15 +193,17 @@ export const TokenManager = {
     }
   },
 
+  // The refresh token is persisted by JS ONLY on native (Capacitor) clients,
+  // which can't use the cross-origin HttpOnly cookie. On web it lives solely in
+  // the cookie, so these accessors are inert there (XSS-safe).
   getRefreshToken: (): string | null => {
-    return _memoryRefreshToken
-      || _ls()?.getItem('refresh_token')
-      || _ls()?.getItem('refreshToken')
-      || null;
+    if (!isNativePlatform()) return null;
+    return _memoryRefreshToken || _ls()?.getItem('refresh_token') || null;
   },
 
-  setRefreshToken: (token: string): void => {
-    _memoryRefreshToken = token;
+  setRefreshToken: (token?: string): void => {
+    if (!isNativePlatform()) return; // web: cookie-only, never store in JS
+    _memoryRefreshToken = token || null;
     if (token) {
       _ls()?.setItem('refresh_token', token);
     } else {
@@ -203,11 +220,24 @@ export const TokenManager = {
     _memoryRefreshToken = null;
   },
 
-  setTokens: (accessToken: string, refreshToken: string): void => {
+  setTokens: (accessToken: string, refreshToken?: string): void => {
     TokenManager.setAccessToken(accessToken);
-    TokenManager.setRefreshToken(refreshToken);
+    // No-op on web; persists to device storage on native.
+    if (refreshToken) TokenManager.setRefreshToken(refreshToken);
   },
 };
+
+// One-time cleanup (web only): remove any refresh token a prior build left in
+// localStorage. On web the token now lives only in the HttpOnly cookie, so a
+// stale copy is dead weight and an XSS target. Native legitimately persists it.
+const clearLegacyRefreshTokens = (): void => {
+  if (isNativePlatform()) return;
+  const ls = _ls();
+  if (!ls) return;
+  ['refresh_token', 'refreshToken'].forEach((k) => ls.removeItem(k));
+  _memoryRefreshToken = null;
+};
+clearLegacyRefreshTokens();
 
 const resolveAuthToken = async (): Promise<string | null> => {
   // Backend-managed auth (BFF): the only API credential is our own backend JWT,
@@ -271,16 +301,18 @@ const refreshAccessToken = async (): Promise<string | null> => {
   _refreshInFlight = (async () => {
     try {
       // Direct fetch (NOT via apiClient) to avoid the 401→refresh recursion.
-      // The HttpOnly refresh cookie is sent via credentials:'include'; the
-      // x-refresh-token header is a fallback for clients without the cookie.
-      // New tokens arrive in the Authorization/x-refresh-token response headers
-      // (and the JSON body) — exactly like login. No Supabase involvement.
-      const storedRefresh = TokenManager.getRefreshToken();
+      // Web: the refresh token rides the HttpOnly cookie (credentials:'include')
+      // and is never read/stored by JS. Native: the cookie is unreliable, so the
+      // stored token is sent as a header and the rotated one is read from the
+      // body and re-persisted. No Supabase involvement.
+      const native = isNativePlatform();
+      const storedRefresh = native ? TokenManager.getRefreshToken() : null;
       const res = await fetch(`${API_BASE_URL}/auth/refresh`, {
         method: 'POST',
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
+          ...(native && { 'X-Client-Platform': 'native' }),
           ...(storedRefresh ? { 'x-refresh-token': storedRefresh } : {}),
         },
         body: '{}',
@@ -288,19 +320,18 @@ const refreshAccessToken = async (): Promise<string | null> => {
       if (!res.ok) return null;
 
       const authHeader = res.headers?.get?.('Authorization') ?? null;
-      const refreshHeader = res.headers?.get?.('x-refresh-token') ?? null;
       let accessToken = authHeader ? authHeader.replace(/^Bearer\s+/i, '').trim() : null;
-      let newRefresh = refreshHeader;
 
+      const json = await res.json().catch(() => null) as any;
       if (!accessToken) {
-        const json = await res.json().catch(() => null) as any;
         accessToken = json?.data?.accessToken ?? null;
-        newRefresh = newRefresh ?? json?.data?.refreshToken ?? null;
       }
+      // Native only: persist the rotated refresh token (no-op on web).
+      const rotatedRefresh = json?.data?.refreshToken ?? null;
+      if (rotatedRefresh) TokenManager.setRefreshToken(rotatedRefresh);
 
       if (accessToken) {
         TokenManager.setAccessToken(accessToken);
-        if (newRefresh) TokenManager.setRefreshToken(newRefresh);
         return accessToken;
       }
     } catch {
@@ -411,6 +442,9 @@ class HTTPClient {
       ...fetchConfig.headers,
       ...(token && { Authorization: `Bearer ${token}` }),
       ...(resolvedIdempotencyKey && { 'Idempotency-Key': resolvedIdempotencyKey }),
+      // Marks native (Capacitor) clients so the backend returns the refresh
+      // token in the body for device storage (cross-origin cookie is unreliable).
+      ...(isNativePlatform() && { 'X-Client-Platform': 'native' }),
     };
     const baseCandidates = getApiBaseCandidates(this.baseURL);
 
@@ -435,7 +469,6 @@ class HTTPClient {
           // Use optional chaining — test mocks (and some edge-case environments)
           // may not provide a headers object with a .get() method.
           const responseAuthToken = response.headers?.get?.('Authorization') ?? null;
-          const responseRefreshToken = response.headers?.get?.('x-refresh-token') ?? null;
 
           if (responseAuthToken) {
             const tokenVal = responseAuthToken.replace(/^Bearer\s+/i, '').trim();
@@ -448,16 +481,15 @@ class HTTPClient {
               }
             }
           }
-          if (responseRefreshToken) {
-            TokenManager.setRefreshToken(responseRefreshToken);
-            if (data && typeof data === 'object') {
-              if (data.data && typeof data.data === 'object') {
-                data.data.refreshToken = responseRefreshToken;
-              } else {
-                data.refreshToken = responseRefreshToken;
-              }
-            }
-          }
+
+          // Refresh token: web never receives it in JS (HttpOnly cookie only).
+          // Native receives it in the body and persists it to device storage —
+          // setRefreshToken is a no-op on web, so this is safe to call always.
+          const bodyRefreshToken =
+            (data && typeof data === 'object'
+              ? (data.data?.refreshToken ?? data.refreshToken)
+              : null) ?? null;
+          if (bodyRefreshToken) TokenManager.setRefreshToken(bodyRefreshToken);
 
           if (!response.ok) {
             if (response.status >= 500 || response.status === 429) {
@@ -880,12 +912,14 @@ export const api = {
         successMessage: 'Logged out successfully',
       }),
 
-    refreshToken: (refreshToken: string) =>
-      apiClient.post('/auth/refresh', undefined, {
-        headers: {
-          'x-refresh-token': refreshToken,
-        },
-      }),
+    // Web: refresh uses the HttpOnly cookie (sent automatically with
+    // credentials). Native: the stored token is sent as a header since the
+    // cross-origin cookie is unreliable.
+    refreshToken: () => {
+      const stored = isNativePlatform() ? TokenManager.getRefreshToken() : null;
+      return apiClient.post('/auth/refresh', undefined,
+        stored ? { headers: { 'x-refresh-token': stored } } : undefined);
+    },
 
     verifyEmail: (token: string) =>
       apiClient.post('/auth/verify-email', { token }),
