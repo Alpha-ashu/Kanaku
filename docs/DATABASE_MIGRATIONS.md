@@ -32,6 +32,12 @@ The script uses Prisma's explicit `--url` flag (which bypasses `.env`) and
 hard-refuses any non-local URL, so it is physically incapable of reaching a
 remote database.
 
+**Tests run serially** (`maxWorkers: 1` in `jest.config.ts`). The suite shares a
+single Postgres test database, so parallel workers race and contaminate each
+other's rows — which shows up as *different* tests "flakily" failing on each run.
+Serial execution makes runs deterministic. (To run tests in parallel safely you
+would need to isolate a database per jest worker — a larger future enhancement.)
+
 ## Making a schema change
 1. Edit `backend/prisma/schema.prisma`.
 2. Create a migration (against a LOCAL dev DB only):
