@@ -909,7 +909,7 @@ export namespace Prisma {
   export import Exact = $Public.Exact
 
   /**
-   * Prisma Client JS version: 6.19.2
+   * Prisma Client JS version: 6.19.3
    * Query Engine version: c2990dca591cba766e3b7ef5d9e8a84796e47ab7
    */
   export type PrismaVersion = {
@@ -25547,8 +25547,18 @@ export namespace Prisma {
 
   export type AggregateNotification = {
     _count: NotificationCountAggregateOutputType | null
+    _avg: NotificationAvgAggregateOutputType | null
+    _sum: NotificationSumAggregateOutputType | null
     _min: NotificationMinAggregateOutputType | null
     _max: NotificationMaxAggregateOutputType | null
+  }
+
+  export type NotificationAvgAggregateOutputType = {
+    attempts: number | null
+  }
+
+  export type NotificationSumAggregateOutputType = {
+    attempts: number | null
   }
 
   export type NotificationMinAggregateOutputType = {
@@ -25566,6 +25576,12 @@ export namespace Prisma {
     createdAt: Date | null
     readAt: Date | null
     deletedAt: Date | null
+    status: string | null
+    attempts: number | null
+    nextRetryAt: Date | null
+    errorMessage: string | null
+    sentAt: Date | null
+    updatedAt: Date | null
   }
 
   export type NotificationMaxAggregateOutputType = {
@@ -25583,6 +25599,12 @@ export namespace Prisma {
     createdAt: Date | null
     readAt: Date | null
     deletedAt: Date | null
+    status: string | null
+    attempts: number | null
+    nextRetryAt: Date | null
+    errorMessage: string | null
+    sentAt: Date | null
+    updatedAt: Date | null
   }
 
   export type NotificationCountAggregateOutputType = {
@@ -25603,9 +25625,23 @@ export namespace Prisma {
     createdAt: number
     readAt: number
     deletedAt: number
+    status: number
+    attempts: number
+    nextRetryAt: number
+    errorMessage: number
+    sentAt: number
+    updatedAt: number
     _all: number
   }
 
+
+  export type NotificationAvgAggregateInputType = {
+    attempts?: true
+  }
+
+  export type NotificationSumAggregateInputType = {
+    attempts?: true
+  }
 
   export type NotificationMinAggregateInputType = {
     id?: true
@@ -25622,6 +25658,12 @@ export namespace Prisma {
     createdAt?: true
     readAt?: true
     deletedAt?: true
+    status?: true
+    attempts?: true
+    nextRetryAt?: true
+    errorMessage?: true
+    sentAt?: true
+    updatedAt?: true
   }
 
   export type NotificationMaxAggregateInputType = {
@@ -25639,6 +25681,12 @@ export namespace Prisma {
     createdAt?: true
     readAt?: true
     deletedAt?: true
+    status?: true
+    attempts?: true
+    nextRetryAt?: true
+    errorMessage?: true
+    sentAt?: true
+    updatedAt?: true
   }
 
   export type NotificationCountAggregateInputType = {
@@ -25659,6 +25707,12 @@ export namespace Prisma {
     createdAt?: true
     readAt?: true
     deletedAt?: true
+    status?: true
+    attempts?: true
+    nextRetryAt?: true
+    errorMessage?: true
+    sentAt?: true
+    updatedAt?: true
     _all?: true
   }
 
@@ -25700,6 +25754,18 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
+     * Select which fields to average
+    **/
+    _avg?: NotificationAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: NotificationSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
      * Select which fields to find the minimum value
     **/
     _min?: NotificationMinAggregateInputType
@@ -25730,6 +25796,8 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: NotificationCountAggregateInputType | true
+    _avg?: NotificationAvgAggregateInputType
+    _sum?: NotificationSumAggregateInputType
     _min?: NotificationMinAggregateInputType
     _max?: NotificationMaxAggregateInputType
   }
@@ -25752,7 +25820,15 @@ export namespace Prisma {
     createdAt: Date
     readAt: Date | null
     deletedAt: Date | null
+    status: string
+    attempts: number
+    nextRetryAt: Date | null
+    errorMessage: string | null
+    sentAt: Date | null
+    updatedAt: Date
     _count: NotificationCountAggregateOutputType | null
+    _avg: NotificationAvgAggregateOutputType | null
+    _sum: NotificationSumAggregateOutputType | null
     _min: NotificationMinAggregateOutputType | null
     _max: NotificationMaxAggregateOutputType | null
   }
@@ -25789,6 +25865,12 @@ export namespace Prisma {
     createdAt?: boolean
     readAt?: boolean
     deletedAt?: boolean
+    status?: boolean
+    attempts?: boolean
+    nextRetryAt?: boolean
+    errorMessage?: boolean
+    sentAt?: boolean
+    updatedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["notification"]>
 
@@ -25810,6 +25892,12 @@ export namespace Prisma {
     createdAt?: boolean
     readAt?: boolean
     deletedAt?: boolean
+    status?: boolean
+    attempts?: boolean
+    nextRetryAt?: boolean
+    errorMessage?: boolean
+    sentAt?: boolean
+    updatedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["notification"]>
 
@@ -25831,6 +25919,12 @@ export namespace Prisma {
     createdAt?: boolean
     readAt?: boolean
     deletedAt?: boolean
+    status?: boolean
+    attempts?: boolean
+    nextRetryAt?: boolean
+    errorMessage?: boolean
+    sentAt?: boolean
+    updatedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["notification"]>
 
@@ -25852,9 +25946,15 @@ export namespace Prisma {
     createdAt?: boolean
     readAt?: boolean
     deletedAt?: boolean
+    status?: boolean
+    attempts?: boolean
+    nextRetryAt?: boolean
+    errorMessage?: boolean
+    sentAt?: boolean
+    updatedAt?: boolean
   }
 
-  export type NotificationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "sourceUserId" | "title" | "message" | "type" | "category" | "deepLink" | "priority" | "channels" | "metadata" | "deliveryStatus" | "encryptedPayload" | "isRead" | "createdAt" | "readAt" | "deletedAt", ExtArgs["result"]["notification"]>
+  export type NotificationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "sourceUserId" | "title" | "message" | "type" | "category" | "deepLink" | "priority" | "channels" | "metadata" | "deliveryStatus" | "encryptedPayload" | "isRead" | "createdAt" | "readAt" | "deletedAt" | "status" | "attempts" | "nextRetryAt" | "errorMessage" | "sentAt" | "updatedAt", ExtArgs["result"]["notification"]>
   export type NotificationInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
   }
@@ -25888,6 +25988,12 @@ export namespace Prisma {
       createdAt: Date
       readAt: Date | null
       deletedAt: Date | null
+      status: string
+      attempts: number
+      nextRetryAt: Date | null
+      errorMessage: string | null
+      sentAt: Date | null
+      updatedAt: Date
     }, ExtArgs["result"]["notification"]>
     composites: {}
   }
@@ -26329,6 +26435,12 @@ export namespace Prisma {
     readonly createdAt: FieldRef<"Notification", 'DateTime'>
     readonly readAt: FieldRef<"Notification", 'DateTime'>
     readonly deletedAt: FieldRef<"Notification", 'DateTime'>
+    readonly status: FieldRef<"Notification", 'String'>
+    readonly attempts: FieldRef<"Notification", 'Int'>
+    readonly nextRetryAt: FieldRef<"Notification", 'DateTime'>
+    readonly errorMessage: FieldRef<"Notification", 'String'>
+    readonly sentAt: FieldRef<"Notification", 'DateTime'>
+    readonly updatedAt: FieldRef<"Notification", 'DateTime'>
   }
     
 
@@ -63807,7 +63919,13 @@ export namespace Prisma {
     isRead: 'isRead',
     createdAt: 'createdAt',
     readAt: 'readAt',
-    deletedAt: 'deletedAt'
+    deletedAt: 'deletedAt',
+    status: 'status',
+    attempts: 'attempts',
+    nextRetryAt: 'nextRetryAt',
+    errorMessage: 'errorMessage',
+    sentAt: 'sentAt',
+    updatedAt: 'updatedAt'
   };
 
   export type NotificationScalarFieldEnum = (typeof NotificationScalarFieldEnum)[keyof typeof NotificationScalarFieldEnum]
@@ -66311,6 +66429,12 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Notification"> | Date | string
     readAt?: DateTimeNullableFilter<"Notification"> | Date | string | null
     deletedAt?: DateTimeNullableFilter<"Notification"> | Date | string | null
+    status?: StringFilter<"Notification"> | string
+    attempts?: IntFilter<"Notification"> | number
+    nextRetryAt?: DateTimeNullableFilter<"Notification"> | Date | string | null
+    errorMessage?: StringNullableFilter<"Notification"> | string | null
+    sentAt?: DateTimeNullableFilter<"Notification"> | Date | string | null
+    updatedAt?: DateTimeFilter<"Notification"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
   }
 
@@ -66332,6 +66456,12 @@ export namespace Prisma {
     createdAt?: SortOrder
     readAt?: SortOrderInput | SortOrder
     deletedAt?: SortOrderInput | SortOrder
+    status?: SortOrder
+    attempts?: SortOrder
+    nextRetryAt?: SortOrderInput | SortOrder
+    errorMessage?: SortOrderInput | SortOrder
+    sentAt?: SortOrderInput | SortOrder
+    updatedAt?: SortOrder
     user?: UserOrderByWithRelationInput
   }
 
@@ -66356,6 +66486,12 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Notification"> | Date | string
     readAt?: DateTimeNullableFilter<"Notification"> | Date | string | null
     deletedAt?: DateTimeNullableFilter<"Notification"> | Date | string | null
+    status?: StringFilter<"Notification"> | string
+    attempts?: IntFilter<"Notification"> | number
+    nextRetryAt?: DateTimeNullableFilter<"Notification"> | Date | string | null
+    errorMessage?: StringNullableFilter<"Notification"> | string | null
+    sentAt?: DateTimeNullableFilter<"Notification"> | Date | string | null
+    updatedAt?: DateTimeFilter<"Notification"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
   }, "id">
 
@@ -66377,9 +66513,17 @@ export namespace Prisma {
     createdAt?: SortOrder
     readAt?: SortOrderInput | SortOrder
     deletedAt?: SortOrderInput | SortOrder
+    status?: SortOrder
+    attempts?: SortOrder
+    nextRetryAt?: SortOrderInput | SortOrder
+    errorMessage?: SortOrderInput | SortOrder
+    sentAt?: SortOrderInput | SortOrder
+    updatedAt?: SortOrder
     _count?: NotificationCountOrderByAggregateInput
+    _avg?: NotificationAvgOrderByAggregateInput
     _max?: NotificationMaxOrderByAggregateInput
     _min?: NotificationMinOrderByAggregateInput
+    _sum?: NotificationSumOrderByAggregateInput
   }
 
   export type NotificationScalarWhereWithAggregatesInput = {
@@ -66403,6 +66547,12 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<"Notification"> | Date | string
     readAt?: DateTimeNullableWithAggregatesFilter<"Notification"> | Date | string | null
     deletedAt?: DateTimeNullableWithAggregatesFilter<"Notification"> | Date | string | null
+    status?: StringWithAggregatesFilter<"Notification"> | string
+    attempts?: IntWithAggregatesFilter<"Notification"> | number
+    nextRetryAt?: DateTimeNullableWithAggregatesFilter<"Notification"> | Date | string | null
+    errorMessage?: StringNullableWithAggregatesFilter<"Notification"> | string | null
+    sentAt?: DateTimeNullableWithAggregatesFilter<"Notification"> | Date | string | null
+    updatedAt?: DateTimeWithAggregatesFilter<"Notification"> | Date | string
   }
 
   export type PaymentWhereInput = {
@@ -71429,6 +71579,12 @@ export namespace Prisma {
     createdAt?: Date | string
     readAt?: Date | string | null
     deletedAt?: Date | string | null
+    status?: string
+    attempts?: number
+    nextRetryAt?: Date | string | null
+    errorMessage?: string | null
+    sentAt?: Date | string | null
+    updatedAt?: Date | string
     user: UserCreateNestedOneWithoutNotificationsInput
   }
 
@@ -71450,6 +71606,12 @@ export namespace Prisma {
     createdAt?: Date | string
     readAt?: Date | string | null
     deletedAt?: Date | string | null
+    status?: string
+    attempts?: number
+    nextRetryAt?: Date | string | null
+    errorMessage?: string | null
+    sentAt?: Date | string | null
+    updatedAt?: Date | string
   }
 
   export type NotificationUpdateInput = {
@@ -71469,6 +71631,12 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    attempts?: IntFieldUpdateOperationsInput | number
+    nextRetryAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    errorMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutNotificationsNestedInput
   }
 
@@ -71490,6 +71658,12 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    attempts?: IntFieldUpdateOperationsInput | number
+    nextRetryAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    errorMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type NotificationCreateManyInput = {
@@ -71510,6 +71684,12 @@ export namespace Prisma {
     createdAt?: Date | string
     readAt?: Date | string | null
     deletedAt?: Date | string | null
+    status?: string
+    attempts?: number
+    nextRetryAt?: Date | string | null
+    errorMessage?: string | null
+    sentAt?: Date | string | null
+    updatedAt?: Date | string
   }
 
   export type NotificationUpdateManyMutationInput = {
@@ -71529,6 +71709,12 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    attempts?: IntFieldUpdateOperationsInput | number
+    nextRetryAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    errorMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type NotificationUncheckedUpdateManyInput = {
@@ -71549,6 +71735,12 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    attempts?: IntFieldUpdateOperationsInput | number
+    nextRetryAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    errorMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type PaymentCreateInput = {
@@ -76519,6 +76711,16 @@ export namespace Prisma {
     createdAt?: SortOrder
     readAt?: SortOrder
     deletedAt?: SortOrder
+    status?: SortOrder
+    attempts?: SortOrder
+    nextRetryAt?: SortOrder
+    errorMessage?: SortOrder
+    sentAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type NotificationAvgOrderByAggregateInput = {
+    attempts?: SortOrder
   }
 
   export type NotificationMaxOrderByAggregateInput = {
@@ -76536,6 +76738,12 @@ export namespace Prisma {
     createdAt?: SortOrder
     readAt?: SortOrder
     deletedAt?: SortOrder
+    status?: SortOrder
+    attempts?: SortOrder
+    nextRetryAt?: SortOrder
+    errorMessage?: SortOrder
+    sentAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type NotificationMinOrderByAggregateInput = {
@@ -76553,6 +76761,16 @@ export namespace Prisma {
     createdAt?: SortOrder
     readAt?: SortOrder
     deletedAt?: SortOrder
+    status?: SortOrder
+    attempts?: SortOrder
+    nextRetryAt?: SortOrder
+    errorMessage?: SortOrder
+    sentAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type NotificationSumOrderByAggregateInput = {
+    attempts?: SortOrder
   }
 
   export type PaymentCountOrderByAggregateInput = {
@@ -90056,6 +90274,12 @@ export namespace Prisma {
     createdAt?: Date | string
     readAt?: Date | string | null
     deletedAt?: Date | string | null
+    status?: string
+    attempts?: number
+    nextRetryAt?: Date | string | null
+    errorMessage?: string | null
+    sentAt?: Date | string | null
+    updatedAt?: Date | string
   }
 
   export type NotificationUncheckedCreateWithoutUserInput = {
@@ -90075,6 +90299,12 @@ export namespace Prisma {
     createdAt?: Date | string
     readAt?: Date | string | null
     deletedAt?: Date | string | null
+    status?: string
+    attempts?: number
+    nextRetryAt?: Date | string | null
+    errorMessage?: string | null
+    sentAt?: Date | string | null
+    updatedAt?: Date | string
   }
 
   export type NotificationCreateOrConnectWithoutUserInput = {
@@ -91418,6 +91648,12 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Notification"> | Date | string
     readAt?: DateTimeNullableFilter<"Notification"> | Date | string | null
     deletedAt?: DateTimeNullableFilter<"Notification"> | Date | string | null
+    status?: StringFilter<"Notification"> | string
+    attempts?: IntFilter<"Notification"> | number
+    nextRetryAt?: DateTimeNullableFilter<"Notification"> | Date | string | null
+    errorMessage?: StringNullableFilter<"Notification"> | string | null
+    sentAt?: DateTimeNullableFilter<"Notification"> | Date | string | null
+    updatedAt?: DateTimeFilter<"Notification"> | Date | string
   }
 
   export type PaymentUpsertWithWhereUniqueWithoutAdvisorInput = {
@@ -96073,6 +96309,12 @@ export namespace Prisma {
     createdAt?: Date | string
     readAt?: Date | string | null
     deletedAt?: Date | string | null
+    status?: string
+    attempts?: number
+    nextRetryAt?: Date | string | null
+    errorMessage?: string | null
+    sentAt?: Date | string | null
+    updatedAt?: Date | string
   }
 
   export type PaymentCreateManyAdvisorInput = {
@@ -97233,6 +97475,12 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    attempts?: IntFieldUpdateOperationsInput | number
+    nextRetryAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    errorMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type NotificationUncheckedUpdateWithoutUserInput = {
@@ -97252,6 +97500,12 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    attempts?: IntFieldUpdateOperationsInput | number
+    nextRetryAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    errorMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type NotificationUncheckedUpdateManyWithoutUserInput = {
@@ -97271,6 +97525,12 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    attempts?: IntFieldUpdateOperationsInput | number
+    nextRetryAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    errorMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type PaymentUpdateWithoutAdvisorInput = {

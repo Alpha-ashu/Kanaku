@@ -445,6 +445,18 @@ model Notification {
   createdAt        DateTime  @default(now())
   readAt           DateTime?
   deletedAt        DateTime? // Soft-delete for compliance
+  // ── Queue-backed delivery lifecycle (PostgreSQL is the source of truth) ──
+  // Overall delivery state; per-channel truth stays in `deliveryStatus`. These
+  // power retries, dead-letter recovery and observability.
+  // App-only notifications are delivered the moment the row exists, so they rest
+  // at 'sent'. The dispatcher explicitly sets 'pending' only when it enqueues an
+  // async channel (email/push); a worker then drives retrying → sent | failed.
+  status           String    @default("sent") // pending|processing|retrying|sent|failed
+  attempts         Int       @default(0)
+  nextRetryAt      DateTime?
+  errorMessage     String?
+  sentAt           DateTime?
+  updatedAt        DateTime  @default(now()) @updatedAt
   user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([createdAt])
@@ -454,6 +466,7 @@ model Notification {
   @@index([type])
   @@index([deletedAt])
   @@index([userId, isRead, createdAt]) // unread notification counts + sorted feed
+  @@index([status, nextRetryAt]) // retry sweeper / stuck-delivery recovery
   @@schema("public")
 }
 
