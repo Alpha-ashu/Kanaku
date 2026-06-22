@@ -13,18 +13,13 @@ const envSchema = z.object({
       if (typeof value === 'string') return value === 'true';
       return false;
     }),
-  // Optional secondary cache store (e.g. self-hosted Dragonfly). The cache layer
-  // automatically fails over to this when the primary errors / hits a quota,
-  // then fails back when the primary recovers. (BullMQ queues stay on REDIS_URL.)
-  REDIS_FALLBACK_URL: z.string().url().optional(),
-  REDIS_FALLBACK_TLS: z
-    .union([z.boolean(), z.string()])
-    .optional()
-    .transform((value) => {
-      if (typeof value === 'boolean') return value;
-      if (typeof value === 'string') return value === 'true';
-      return false;
-    }),
+  // Comma-separated, priority-ordered chain of fallback cache stores (any
+  // Redis-wire compatible store: Dragonfly, Redis Cloud, Valkey, ...). The cache
+  // layer fails over down the chain when a store errors / hits a quota, then
+  // returns to the highest-priority healthy one. TLS is auto-detected from each
+  // URL's scheme (rediss:// = TLS). (BullMQ queues stay on REDIS_URL.)
+  // Example: REDIS_FALLBACK_URL="redis://localhost:6380,redis://default:***@cloud:10204"
+  REDIS_FALLBACK_URL: z.string().optional(),
   JWT_SECRET: z.string().min(32).optional(),
   SUPABASE_JWT_SECRET: z.string().min(1).optional(),
   // Auth source of truth. 'custom' = backend-issued JWT (default, current behavior).

@@ -31,8 +31,52 @@ services:
     networks:
       - KANAKU_network
 
+  # Primary cache store (Redis-wire compatible, no request quota). Point the
+  # backend at it: REDIS_URL=redis://localhost:6379
+  dragonfly:
+    image: docker.dragonflydb.io/dragonflydb/dragonfly:latest
+    container_name: KANAKU_dragonfly
+    restart: unless-stopped
+    ulimits:
+      memlock: -1
+    # Persist snapshots to the mounted volume (on shutdown + every 10 min).
+    command: ["--dir", "/data", "--dbfilename", "dump", "--snapshot_cron", "*/10 * * * *"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - dragonfly_data:/data
+    networks:
+      - KANAKU_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "-p", "6379", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # Local fallback cache (open-source Redis fork). Used as the next tier when the
+  # primary errors/over-quota: REDIS_FALLBACK_URL=redis://localhost:6380
+  valkey:
+    image: valkey/valkey:8.1.8-alpine
+    container_name: KANAKU_valkey
+    restart: unless-stopped
+    # AOF + RDB persistence.
+    command: ["valkey-server", "--appendonly", "yes", "--save", "60", "1"]
+    ports:
+      - "6380:6379"
+    volumes:
+      - valkey_data:/data
+    networks:
+      - KANAKU_network
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
 volumes:
   postgres_data:
+  dragonfly_data:
+  valkey_data:
 
 
 networks:

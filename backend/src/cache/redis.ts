@@ -84,16 +84,19 @@ export const resetCacheMetrics = () => {
   cacheMetrics.clear();
 };
 
-const buildEndpoint = (name: string, url: string, tls: boolean): RedisEndpoint => {
+const buildEndpoint = (name: string, url: string, forceTls = false): RedisEndpoint => {
   const endpoint: RedisEndpoint = { name, client: null, status: 'connecting', unhealthyUntil: 0 };
 
+  // TLS auto-detected from the URL scheme (rediss://), with an override for the
+  // primary (REDIS_TLS) for providers that use redis:// over a TLS port.
+  const useTls = forceTls || url.startsWith('rediss://');
   const redis = new Redis(url, {
     lazyConnect: true,
     maxRetriesPerRequest: 0,
     enableReadyCheck: true,
     connectTimeout: 3000,
     commandTimeout: 2000,
-    tls: tls ? {} : undefined,
+    tls: useTls ? {} : undefined,
   });
 
   redis.on('connect', () => {
@@ -122,7 +125,13 @@ const buildEndpoint = (name: string, url: string, tls: boolean): RedisEndpoint =
 const ensureEndpoints = () => {
   if (endpoints.length) return;
   if (env.REDIS_URL) endpoints.push(buildEndpoint('primary', env.REDIS_URL, !!env.REDIS_TLS));
-  if (env.REDIS_FALLBACK_URL) endpoints.push(buildEndpoint('fallback', env.REDIS_FALLBACK_URL, !!env.REDIS_FALLBACK_TLS));
+  // Priority-ordered fallback chain (comma-separated): e.g. Dragonfly -> Redis Cloud -> Valkey.
+  if (env.REDIS_FALLBACK_URL) {
+    env.REDIS_FALLBACK_URL.split(',')
+      .map((u) => u.trim())
+      .filter(Boolean)
+      .forEach((u, i) => endpoints.push(buildEndpoint(`fallback${i + 1}`, u)));
+  }
 };
 
 /** Pick the best available endpoint: a connected, non-cooled-down one first, then
