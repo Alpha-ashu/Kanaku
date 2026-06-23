@@ -20,32 +20,46 @@ export const getDashboardSummary = async (req: AuthRequest, res: Response, next:
     const startOfMonth = new Date(year, month, 1);
     const endOfMonth = new Date(year, month + 1, 0, 23, 59, 59, 999);
 
-    // All dashboard queries are read-only — route to replica for scale
+    // All dashboard queries are read-only — route to replica for scale.
+    //
+    // Every transaction aggregate below is JOINed to a *live* account (active and
+    // not soft-deleted). This keeps the dashboard internally consistent: the
+    // income/expense totals, category breakdown and recent list only ever reflect
+    // accounts that also appear in the Accounts list and net-worth total — so an
+    // archived account can never produce "expense ₹X with no account". The
+    // transactions themselves are never deleted; they remain fully visible and
+    // searchable on the Transactions/history page.
     const [monthlyTotals, categoryBreakdown, accounts, recentTransactions] = await Promise.all([
       // 1. Monthly income vs expense totals
       prismaRead.$queryRaw<{ type: string; _sum: number }[]>`
-        SELECT type, COALESCE(SUM(amount), 0) as "_sum"
-        FROM "Transaction"
-        WHERE "userId" = ${userId}
-          AND "deletedAt" IS NULL
-          AND date >= ${startOfMonth}
-          AND date <= ${endOfMonth}
-          AND type IN ('income', 'expense')
-        GROUP BY type
+        SELECT t.type, COALESCE(SUM(t.amount), 0) as "_sum"
+        FROM "Transaction" t
+        JOIN "Account" a ON a.id = t."accountId"
+        WHERE t."userId" = ${userId}
+          AND t."deletedAt" IS NULL
+          AND a."deletedAt" IS NULL
+          AND a."isActive" = true
+          AND t.date >= ${startOfMonth}
+          AND t.date <= ${endOfMonth}
+          AND t.type IN ('income', 'expense')
+        GROUP BY t.type
       `,
 
       // 2. Category breakdown for expenses this month (top 15)
       prismaRead.$queryRaw<{ category: string; total: number; count: number }[]>`
-        SELECT category,
-               COALESCE(SUM(amount), 0)::float as total,
+        SELECT t.category,
+               COALESCE(SUM(t.amount), 0)::float as total,
                COUNT(*)::int as count
-        FROM "Transaction"
-        WHERE "userId" = ${userId}
-          AND "deletedAt" IS NULL
-          AND type = 'expense'
-          AND date >= ${startOfMonth}
-          AND date <= ${endOfMonth}
-        GROUP BY category
+        FROM "Transaction" t
+        JOIN "Account" a ON a.id = t."accountId"
+        WHERE t."userId" = ${userId}
+          AND t."deletedAt" IS NULL
+          AND a."deletedAt" IS NULL
+          AND a."isActive" = true
+          AND t.type = 'expense'
+          AND t.date >= ${startOfMonth}
+          AND t.date <= ${endOfMonth}
+        GROUP BY t.category
         ORDER BY total DESC
         LIMIT 15
       `,
@@ -57,9 +71,9 @@ export const getDashboardSummary = async (req: AuthRequest, res: Response, next:
         orderBy: { name: 'asc' },
       }),
 
-      // 4. Last 5 transactions
+      // 4. Last 5 transactions (live accounts only — consistent with totals above)
       prismaRead.transaction.findMany({
-        where: { userId, deletedAt: null },
+        where: { userId, deletedAt: null, account: { isActive: true, deletedAt: null } },
         orderBy: { date: 'desc' },
         take: 5,
         select: {
@@ -108,15 +122,18 @@ export const getCashflow = async (req: AuthRequest, res: Response, next: NextFun
     const startDate = new Date(now.getFullYear(), now.getMonth() - monthsBack + 1, 1);
 
     const rows = await prisma.$queryRaw<{ month: string; type: string; total: number }[]>`
-      SELECT TO_CHAR(date, 'YYYY-MM') as month,
-             type,
-             COALESCE(SUM(amount), 0)::float as total
-      FROM "Transaction"
-      WHERE "userId" = ${userId}
-        AND "deletedAt" IS NULL
-        AND type IN ('income', 'expense')
-        AND date >= ${startDate}
-      GROUP BY TO_CHAR(date, 'YYYY-MM'), type
+      SELECT TO_CHAR(t.date, 'YYYY-MM') as month,
+             t.type,
+             COALESCE(SUM(t.amount), 0)::float as total
+      FROM "Transaction" t
+      JOIN "Account" a ON a.id = t."accountId"
+      WHERE t."userId" = ${userId}
+        AND t."deletedAt" IS NULL
+        AND a."deletedAt" IS NULL
+        AND a."isActive" = true
+        AND t.type IN ('income', 'expense')
+        AND t.date >= ${startDate}
+      GROUP BY TO_CHAR(t.date, 'YYYY-MM'), t.type
       ORDER BY month
     `;
 

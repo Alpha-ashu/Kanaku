@@ -45,6 +45,9 @@ const USER_FRIENDLY_MESSAGES: Record<string, string> = {
   PASSWORD_TOO_SHORT: 'Your password must be at least 8 characters long.',
   UNAUTHORIZED: 'Please sign in to continue.',
   FORBIDDEN: 'You do not have permission to do that.',
+  // Accounts / transactions
+  ACCOUNT_UNAVAILABLE: 'That account is no longer available. Please pick an active account or create a new one before recording transactions.',
+  TRANSFER_ACCOUNT_UNAVAILABLE: 'The transfer destination account is no longer available. Please choose an active account.',
   // Data
   NOT_FOUND: 'We could not find what you were looking for.',
   DUPLICATE_ENTRY: 'This item already exists. Please use different values.',

@@ -13,7 +13,7 @@ import { isDatabaseUnavailableError } from '../../utils/databaseAvailability';
 import { AppError } from '../../utils/AppError';
 import { generateTokens, verifyRefreshToken, REFRESH_TOKEN_TTL_SECONDS } from '../../utils/auth';
 import { setRefreshCookie, clearRefreshCookie, readRefreshCookie } from '../../security/refreshCookie';
-import { establishIdleSession, clearIdleSession, evaluateIdleSession } from '../../security/idleSession';
+import { establishIdleSession, clearIdleSession } from '../../security/idleSession';
 import { clearPinUnlock, isPinUnlocked } from '../../security/pinUnlock';
 import { sendWelcomeEmail } from '../../emails';
 
@@ -594,17 +594,18 @@ export const refreshToken = async (req: Request, res: Response, next: NextFuncti
       throw new AppError(403, 'ACCOUNT_SUSPENDED', 'Account suspended. Contact support.', true);
     }
 
-    // Idle gate: a refresh token must not mint new access tokens after the
-    // inactivity window has elapsed. `allowFreshTokenGrace: false` means the
-    // session must have a *live* activity marker — an idle (but still valid)
-    // refresh token is rejected, forcing a full re-login.
-    const stillActive = await evaluateIdleSession(claims.userId, { allowFreshTokenGrace: false });
-    if (!stillActive) {
-      throw AppError.unauthorized(
-        'Your session was locked due to inactivity. Please sign in again.',
-        'SESSION_IDLE_TIMEOUT',
-      );
-    }
+    // SESSION POLICY: seamless sessions. A valid (un-expired) refresh token is
+    // honoured for its full lifetime (REFRESH_TOKEN_TTL_SECONDS), regardless of
+    // how long the client has been idle — so a user returning after a long break
+    // is silently re-issued an access token instead of being bounced to /login.
+    //
+    // We deliberately do NOT gate refresh on the idle-session marker here (the
+    // previous `evaluateIdleSession(..., { allowFreshTokenGrace: false })` check).
+    // Trade-off: this drops the "stolen refresh token can't be replayed after the
+    // idle window" protection. Logout (which revokes the token + clears the
+    // cookie) and the 7-day token expiry remain the hard session boundaries.
+    // Re-establishing the idle marker below means subsequent access-token
+    // requests pass the middleware idle check, so the session is self-healing.
 
     // Rotate: issue a brand-new access + refresh pair.
     const tokens = generateTokens(user);

@@ -123,10 +123,16 @@ export class TransactionService {
       throw AppError.badRequest('Invalid transaction date format', 'INVALID_DATE');
     }
 
-    // Verify account ownership
-    const primaryAccount = await accountRepository.findFirst({ id: accountId, userId });
+    // Verify account ownership AND that the account is live (not archived /
+    // soft-deleted). Recording a transaction against a deleted account is what
+    // produces the "expense exists but no account" state on the dashboard, so we
+    // reject it here at the source rather than letting an orphan be written.
+    const primaryAccount = await accountRepository.findFirst({ id: accountId, userId, deletedAt: null, isActive: true });
     if (!primaryAccount) {
-      throw AppError.notFound('Primary account not found or access denied', 'ACCOUNT_NOT_FOUND');
+      throw AppError.badRequest(
+        'The selected account is unavailable. Please choose an active account or create one before recording transactions.',
+        'ACCOUNT_UNAVAILABLE',
+      );
     }
 
     if (type === 'transfer') {
@@ -136,9 +142,9 @@ export class TransactionService {
       if (transferToAccountId === accountId) {
         throw AppError.badRequest('Cannot transfer to the same account', 'INVALID_TRANSFER');
       }
-      const targetAccount = await accountRepository.findFirst({ id: transferToAccountId, userId });
+      const targetAccount = await accountRepository.findFirst({ id: transferToAccountId, userId, deletedAt: null, isActive: true });
       if (!targetAccount) {
-        throw AppError.notFound('Transfer destination account not found', 'TRANSFER_ACCOUNT_NOT_FOUND');
+        throw AppError.badRequest('The transfer destination account is unavailable. Please choose an active account.', 'TRANSFER_ACCOUNT_UNAVAILABLE');
       }
     }
 
@@ -210,11 +216,14 @@ export class TransactionService {
       throw AppError.badRequest('Amount must be a positive number', 'INVALID_AMOUNT');
     }
 
-    // Verify ownership of the accounts
+    // Verify ownership of the accounts. When the account is being changed, the
+    // new target must be live (not archived / soft-deleted) — same invariant as
+    // create. Re-pointing a transaction at a deleted account would re-create the
+    // orphaned-transaction state, so block it.
     if (accountId !== existing.accountId) {
-      const primaryAccount = await accountRepository.findFirst({ id: accountId, userId });
+      const primaryAccount = await accountRepository.findFirst({ id: accountId, userId, deletedAt: null, isActive: true });
       if (!primaryAccount) {
-        throw AppError.notFound('Account');
+        throw AppError.badRequest('The selected account is unavailable. Please choose an active account.', 'ACCOUNT_UNAVAILABLE');
       }
     }
 
@@ -222,9 +231,9 @@ export class TransactionService {
       if (transferToAccountId === accountId) {
         throw AppError.badRequest('Cannot transfer to the same account', 'INVALID_TRANSFER');
       }
-      const targetAccount = await accountRepository.findFirst({ id: transferToAccountId, userId });
+      const targetAccount = await accountRepository.findFirst({ id: transferToAccountId, userId, deletedAt: null, isActive: true });
       if (!targetAccount) {
-        throw AppError.notFound('Transfer destination account not found', 'TRANSFER_ACCOUNT_NOT_FOUND');
+        throw AppError.badRequest('The transfer destination account is unavailable. Please choose an active account.', 'TRANSFER_ACCOUNT_UNAVAILABLE');
       }
     }
 
