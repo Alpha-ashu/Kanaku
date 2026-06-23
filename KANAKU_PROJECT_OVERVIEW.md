@@ -1212,6 +1212,56 @@ To deliver a privacy-respecting financial companion that combines offline-first 
 
 ---
 
+## Module Phasing & Gating
+
+Kanaku ships as a **manual personal-finance platform** first and grows by phase. The
+repository already contains scaffolding for later phases, but the product being
+*built and exposed today* is intentionally limited to the manual MVP.
+
+### Roadmap
+
+| Phase | Scope | Status |
+|---|---|---|
+| **1 — Admin** | Central feature control, user/role management, configuration | Active |
+| **1 — User (MVP)** | Dashboard, accounts, transactions, budgets, goals, loans, calendar, manual investments, group expenses, to-do, notifications, profile & settings | Active |
+| **2 — Advisor Marketplace** | Advisors, bookings, sessions | Deferred (scaffolding) |
+| **3 — AI Assistant** | Insights, categorization, voice, receipts | Partial / behind admin AI flags |
+| **4 — Payments** | Payment initiate/complete/refund + provider webhook | Deferred (scaffolding) |
+| **5 — Bank Integrations / Account Aggregator** | Setu AA consent + data pull (RBI) | Deferred (scaffolding) |
+
+### Why gating is enforced at the route mount, not just the admin flag
+
+The admin feature-flag engine (`requireFeature`, `src/middleware/featureGate.ts`)
+governs **UI visibility** and enforces on routers that opt into it. However, several
+later-phase routers — **payments, Account Aggregator, advisor** — historically did
+**not** call `requireFeature`, so toggling them "off" in the admin panel hid the
+button but left the API endpoint reachable by any authenticated caller. For
+deferred and especially *regulated* surfaces (payments, AA), "UI-hidden" is not the
+same as "disabled".
+
+To close that gap, deferred routers are now **phase-gated at the mount layer** in
+[`src/routes/index.ts`](backend/src/routes/index.ts):
+
+- A comma-separated env var **`ENABLED_MODULES`** acts as an allowlist of deferred
+  modules to mount. Recognized keys: `advisor`, `payments`, `aa`.
+- **Unset (the production default)** → those routers are never mounted and their
+  paths return `404`. A deferred/regulated endpoint cannot be reached just because
+  its code exists in the repo.
+- MVP modules are **always** mounted regardless of this variable.
+
+```bash
+# Production (manual MVP): leave it unset → advisor/payments/aa are 404.
+# Local development of a later phase:
+ENABLED_MODULES=advisor,payments,aa
+```
+
+The integration test suite opts these in automatically (`tests/setup.ts`) so the
+advisor/payments/AA suites keep running. When a phase is ready to ship, add its key
+to `ENABLED_MODULES` in that environment (and, for fine-grained per-role/per-feature
+control, wire `requireFeature` into the router so the admin panel governs it too).
+
+---
+
 ## 4. User Roles & Permission Matrix
 
 | Role | Access Level | Responsibilities | Core Workflows |

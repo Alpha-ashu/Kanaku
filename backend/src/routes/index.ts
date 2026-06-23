@@ -131,7 +131,6 @@ router.use('/stocks', stockRoutes);
 // OTP Verification (RBI-compliant)
 router.use('/otp', otpRoutes);
 
-// Account Aggregator (RBI AA â€” Setu integration)
 // Account Aggregator (Setu AA) — Phase 5 (deferred). ENABLED_MODULES=aa.
 if (moduleEnabled('aa')) {
   router.use('/aa', aaRoutes);
