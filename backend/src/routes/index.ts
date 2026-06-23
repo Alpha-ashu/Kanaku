@@ -54,12 +54,12 @@ const lazyRoute =
   };
 
 // --- Phase-based module gating ----------------------------------------------
-// Some routers are scaffolding for later roadmap phases (Advisor marketplace,
-// Payments, Account Aggregator). They are deferred and stay UNMOUNTED unless the
-// deployment explicitly opts in via the ENABLED_MODULES env var (comma-separated,
-// e.g. ENABLED_MODULES=advisor,payments,aa). With it unset — the production
-// default — these paths 404, so a deferred/regulated endpoint cannot be reached
-// just because its code exists in the repo. MVP modules are always mounted.
+// Most feature modules are governed at runtime by the admin feature-flag engine
+// (requireFeature, src/middleware/featureGate.ts) so the admin panel can toggle
+// them. A regulated integration that should not even be MOUNTED until its phase
+// ships (Account Aggregator / Setu, Phase 5) is instead deferred at the mount
+// layer behind the ENABLED_MODULES env allowlist: with it unset — the production
+// default — `/aa` returns 404 and cannot be reached just because its code exists.
 // See KANAKU_PROJECT_OVERVIEW.md → "Module Phasing & Gating".
 const ENABLED_MODULES = new Set(
   (process.env.ENABLED_MODULES ?? '')
@@ -97,18 +97,15 @@ router.use('/import', importRoutes);
 router.use('/ai', lazyRoute(() => require('../features/ai/ai.routes'), 'aiRoutes'));
 router.use('/receipts', lazyRoute(() => require('../features/receipts/receipt.routes'), 'receiptRoutes'));
 
-// Advisor & Booking routes — Phase 2 (deferred). Mounted only when the deploy
-// opts in via ENABLED_MODULES=advisor; otherwise these paths 404 in production.
-if (moduleEnabled('advisor')) {
-  router.use('/bookings', bookingRoutes);
-  router.use('/advisors', advisorRoutes);
-  router.use('/sessions', sessionRoutes);
-}
+// Advisor & Booking routes
+router.use('/bookings', bookingRoutes);
+router.use('/advisors', advisorRoutes);
+router.use('/sessions', sessionRoutes);
 
-// Payment routes (includes webhook) — Phase 4 (deferred). ENABLED_MODULES=payments.
-if (moduleEnabled('payments')) {
-  router.use('/payments', paymentRoutes);
-}
+// Payment routes (includes webhook). Runtime access is governed by the admin
+// feature flag `payments` (enforced in payment.routes.ts → requireFeature),
+// so the admin panel can enable/disable the whole module at the API layer.
+router.use('/payments', paymentRoutes);
 
 // Notification routes
 router.use('/notifications', notificationRoutes);

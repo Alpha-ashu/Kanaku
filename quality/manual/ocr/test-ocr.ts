@@ -3,8 +3,9 @@ import path from 'path';
 import dotenv from 'dotenv';
 dotenv.config();
 
-import { scanReceiptWithGemini } from './src/features/ai/ocr.engine';
-import { processImage } from './src/utils/imageProcessing';
+// Relocated from backend/ root into the quality/ hub; imports reach back into backend/src.
+import { scanReceiptWithGemini } from '../../../backend/src/features/ai/ocr.engine';
+import { processImage } from '../../../backend/src/utils/imageProcessing';
 
 async function testOCR() {
   try {

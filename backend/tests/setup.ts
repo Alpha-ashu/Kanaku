@@ -3,10 +3,10 @@ import { config } from 'dotenv';
 
 config({ path: path.resolve(__dirname, '../.env.test') });
 
-// Advisor/Payments/Account-Aggregator routers are phase-gated OFF by default in
-// production (see src/routes/index.ts), but the integration suite exercises them,
-// so opt them in for tests unless the runner already configured ENABLED_MODULES.
-process.env.ENABLED_MODULES = process.env.ENABLED_MODULES || 'advisor,payments,aa';
+// The Account-Aggregator router is mount-gated OFF by default in production
+// (see src/routes/index.ts), but the integration suite exercises it, so opt it
+// in for tests unless the runner already configured ENABLED_MODULES.
+process.env.ENABLED_MODULES = process.env.ENABLED_MODULES || 'aa';
 
 // API Keys and Credentials
 export const getApiKey = (key: string): string | undefined => {

@@ -19,6 +19,7 @@ export type FeatureKey =
   | 'transfer'
   | 'taxCalculator'
   | 'bookAdvisor'
+  | 'payments'
   | 'adminPanel'
   | 'managerPanel'
   | 'advisorPanel'

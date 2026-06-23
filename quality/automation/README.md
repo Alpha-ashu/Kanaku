@@ -4,9 +4,9 @@ Automated suites across the stack. Files stay with their runners; this indexes t
 
 | Layer | Runner | Location | Command |
 |---|---|---|---|
-| Backend unit + integration | Jest | `backend/tests/`, `backend/src/features/*/tests/` | `npm --prefix backend test` |
-| Backend security/pentest | Jest | `backend/tests/integration/security*.test.ts` | `npm --prefix backend run test:security` |
-| Frontend unit | Vitest | `frontend/src/**/*.test.tsx` | `npm --prefix frontend run test:unit` |
+| Backend unit + integration | Jest | `backend/tests/integration/`, colocated `backend/src/**/*.test.ts` | `npm --prefix backend test` |
+| Backend security/pentest | Jest | `backend/tests/integration/*security*.test.ts` (index: [`../security/`](../security/README.md)) | `npm --prefix backend run test:security` |
+| Frontend unit/service | Vitest | `frontend/src/**/*.test.{ts,tsx}` | `npm --prefix frontend run test:unit` |
 | API E2E | Playwright (request) | `quality/api/e2e/` | `npm run test:api` |
 | UI E2E | Playwright (browser) | `quality/e2e/` (+ `pom/`) | `npm run test:e2e` |
 | API report (all endpoints → Excel) | Node | `quality/api/runner/` | `npm run qa:api-report` |

@@ -13,7 +13,7 @@ Load, latency, and resource testing.
 | HTTP load | `k6` or `autocannon` |
 | Sustained soak | `k6` scenarios |
 | Frontend bundle/perf | Lighthouse CI, Vite bundle analyzer |
-| DB query perf | `backend/tests/query-performance.test.ts` (exists) |
+| DB query perf | add `backend/tests/integration/query-performance.test.ts` (Jest + test DB) |
 
 ## Budgets (proposed)
 - p95 API latency < 300 ms under 500 rps.
