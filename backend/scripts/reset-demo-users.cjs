@@ -1,3 +1,16 @@
+/**
+ * ⚠️ DEPRECATED — DO NOT USE FOR NEW SEEDING.
+ *
+ * This script provisions a LEGACY demo set on a different domain/casing
+ * (superadmin@KANAKU.com, user@KANAKU.com, advisore@KANAKU.com) and wipes the
+ * users table. The project's canonical credentials are the four @kanaku.com
+ * role accounts + the test cohort, created by:
+ *     npm run seed:all   (seed-production-roles + seed-mock-data + seed-test-users)
+ *
+ * Kept only for historical reference. It refuses to run unless explicitly forced
+ * with ALLOW_DEPRECATED_DEMO_RESET=1, so it can no longer create conflicting
+ * credentials by accident.
+ */
 const path = require('node:path');
 const bcrypt = require('bcrypt');
 const { createClient } = require('@supabase/supabase-js');
@@ -371,6 +384,14 @@ async function seedUser(demoUser, authUserId, passwordHash, pinHash) {
 }
 
 async function main() {
+  if (process.env.ALLOW_DEPRECATED_DEMO_RESET !== '1') {
+    console.error('[reset-demo-users] DEPRECATED and disabled. This creates legacy demo accounts');
+    console.error('(superadmin@KANAKU.com, advisore@KANAKU.com, …) and wipes the users table.');
+    console.error('Use the canonical seeders instead:  npm run seed:all');
+    console.error('To run this legacy script anyway, set ALLOW_DEPRECATED_DEMO_RESET=1.');
+    process.exitCode = 1;
+    return;
+  }
   console.log('Resolving Supabase auth users for demo accounts...');
   const authUsers = [];
 

@@ -16,6 +16,8 @@
                     "measure:auth":  "node ./scripts/measure-auth-distribution.cjs",
                     "migrate:supabase-auth":  "node ./scripts/migrate-users-to-supabase-auth.cjs",
                     "seed:demo":  "node ./scripts/seed-production-roles.cjs \u0026\u0026 node ./scripts/seed-mock-data.cjs",
+                    "seed:test":  "node ./scripts/seed-test-users.cjs",
+                    "seed:all":  "npm run seed:demo && npm run seed:test",
                     "build":  "tsc",
                     "start":  "node dist/server.js",
                     "test":  "jest",

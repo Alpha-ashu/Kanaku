@@ -1278,40 +1278,85 @@ All **30 integration test suites / 561 tests pass** against the production-confi
 
 ## 7. Production Admin & Role Account Setup
 
-### 7.1 How to Create the Canonical Role Accounts
+> ⚠️ **SECURITY — this repository is PUBLIC.** The passwords listed below are seed
+> **defaults for local development & testing only**. For any real/staging deployment,
+> override every one via the `SEED_*` / `SEED_TEST_PASSWORD` environment variables and
+> rotate them. Never rely on these published values on an internet-facing instance.
 
-The four canonical accounts (`admin`, `manager`, `advisor`, `user`) are **not** created automatically on first deploy. Run the seed script once after the initial deployment:
+### 7.1 Canonical login accounts (the only role credentials the project ships)
+
+Exactly four canonical role accounts exist, on the **`@kanaku.com`** domain. They are
+**not** created automatically on first deploy — run the seed scripts once (below).
+
+| Role | Email | Default password | Created by |
+|------|-------|------------------|------------|
+| Admin   | `admin@kanaku.com`   | `K@n4ku_Adm!n#2Xz9$`   | `seed-production-roles.cjs` |
+| Manager | `manager@kanaku.com` | `K@n4ku_M4n4g3r#7Qw8$` | `seed-production-roles.cjs` |
+| Advisor | `advisor@kanaku.com` | `K@n4ku_Adv!s0r#5Tz6^` | `seed-production-roles.cjs` |
+| User    | `user@kanaku.com`    | `K@n4ku_Us3r#3Pm2*Wy`  | `seed-production-roles.cjs` |
+
+Each canonical account is populated with **comprehensive mock data** by
+`seed-mock-data.cjs`: 4 accounts, 30+ transactions across every category, goals (+
+contributions), loans (+ payments), friends, investments, gold assets, budgets,
+recurring transactions, group expenses, tax calculations, notifications, to-do lists,
+and — for the advisor — an approved application, weekly availability, and a completed +
+upcoming booking/session linked to the `user` account.
+
+### 7.2 Testing cohort — 5 test users + 5 test advisors
+
+For load/role testing, `seed-test-users.cjs` creates ten extra accounts, all sharing
+one password (`SEED_TEST_PASSWORD`, default **`Test@Kanaku#2026`**):
+
+| Role | Emails | Password |
+|------|--------|----------|
+| User (×5)    | `testuser1@kanaku.com` … `testuser5@kanaku.com`       | `Test@Kanaku#2026` |
+| Advisor (×5) | `testadvisor1@kanaku.com` … `testadvisor5@kanaku.com` | `Test@Kanaku#2026` |
+
+Each test account gets its own mock data (4 accounts, ~14 transactions, 3 goals, 2 loans,
+3–4 investments, 4 budgets, 3 recurring txns, 3 friends, notifications; advisors also get
+an approved advisor application + weekday availability). The script is **idempotent** —
+re-running refreshes each account's data without duplicating rows.
+
+### 7.3 Seeding commands
 
 ```bash
-# 1. Set credentials as Fly secrets (one-time — remove after seeding if desired)
+# ── Local (DATABASE_URL must point at the target DB) ──
+cd backend
+npm run seed:demo     # 4 canonical accounts + their full mock data
+npm run seed:test     # 5 test users + 5 test advisors + their mock data
+npm run seed:all      # both of the above, in order
+
+# ── Fly.io (production machine) ──
+# 1. Provide canonical passwords as one-time secrets (override the defaults above)
 fly secrets set \
-  SEED_ADMIN_EMAIL=admin@kanku.com \
-  SEED_ADMIN_PASSWORD=<admin-password> \
-  SEED_MANAGER_EMAIL=manager@kanku.com \
-  SEED_MANAGER_PASSWORD=<manager-password> \
-  SEED_ADVISOR_EMAIL=advisor@kanku.com \
-  SEED_ADVISOR_PASSWORD=<advisor-password> \
-  SEED_USER_EMAIL=user@kanku.com \
-  SEED_USER_PASSWORD=<user-password> \
+  SEED_ADMIN_EMAIL=admin@kanaku.com   SEED_ADMIN_PASSWORD=<admin-password> \
+  SEED_MANAGER_EMAIL=manager@kanaku.com SEED_MANAGER_PASSWORD=<manager-password> \
+  SEED_ADVISOR_EMAIL=advisor@kanaku.com SEED_ADVISOR_PASSWORD=<advisor-password> \
+  SEED_USER_EMAIL=user@kanaku.com     SEED_USER_PASSWORD=<user-password> \
+  SEED_TEST_PASSWORD=<test-cohort-password> \
   --app kanaku
 
-# 2. SSH into the running machine and execute the seed
+# 2. Run the seeders on the machine
 fly ssh console --app kanaku -C "node scripts/seed-production-roles.cjs"
+fly ssh console --app kanaku -C "node scripts/seed-mock-data.cjs"
+fly ssh console --app kanaku -C "node scripts/seed-test-users.cjs"
 
-# 3. After seeding, remove the SEED_* secrets (keep DATABASE_URL etc.)
+# 3. Remove the one-time seed secrets afterwards (keep DATABASE_URL etc.)
 fly secrets unset SEED_ADMIN_EMAIL SEED_ADMIN_PASSWORD \
   SEED_MANAGER_EMAIL SEED_MANAGER_PASSWORD \
   SEED_ADVISOR_EMAIL SEED_ADVISOR_PASSWORD \
-  SEED_USER_EMAIL SEED_USER_PASSWORD \
+  SEED_USER_EMAIL SEED_USER_PASSWORD SEED_TEST_PASSWORD \
   --app kanaku
 ```
 
-The script (`backend/scripts/seed-production-roles.cjs`) is **idempotent** — running it again updates the password hash without creating duplicate accounts.
+> The older `reset-demo-users.cjs` (`npm run demo:reset-users`) used a **different,
+> deprecated** set of demo emails (`superadmin@KANAKU.com`, `advisore@KANAKU.com`, …) and
+> is **no longer the source of truth** — use the canonical seeders above instead.
 
-### 7.2 Password Requirements (enforced since 2026-06-11)
+### 7.4 Password Requirements (enforced since 2026-06-11)
 
 All passwords — for registration and seeded accounts — must satisfy:
-- Minimum **8 characters**
+- Minimum **8 characters** (seeded accounts use **≥ 12**)
 - At least **one uppercase letter** (A–Z)
 - At least **one lowercase letter** (a–z)
 - At least **one digit** (0–9)
