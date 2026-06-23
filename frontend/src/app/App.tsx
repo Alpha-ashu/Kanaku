@@ -45,7 +45,6 @@ const Investments = lazy(() => import('@/app/components/investments/Investments'
 const Reports = lazy(() => import('@/app/components/features/Reports').then(m => ({ default: m.Reports })));
 const Settings = lazy(() => import('@/app/components/profile/Settings').then(m => ({ default: m.Settings })));
 const Calendar = lazy(() => import('@/app/components/features/Calendar').then(m => ({ default: m.Calendar })));
-const Transfer = lazy(() => import('@/app/components/transactions/Transfer').then(m => ({ default: m.Transfer })));
 const VoiceInput = lazy(() => import('@/app/components/features/VoiceInput').then(m => ({ default: m.VoiceInput })));
 const VoiceReview = lazy(() => import('@/app/components/features/VoiceReview').then(m => ({ default: m.VoiceReview })));
 const AuthCallback = lazy(() => import('@/app/components/auth/AuthCallback').then(m => ({ default: m.AuthCallback })));
@@ -978,7 +977,6 @@ const AppContent: React.FC = () => {
       case 'voice-input': return <VoiceInput />;
       case 'voice-review': return <VoiceReview />;
       case 'pay-emi': return <PayEMI />;
-      case 'transfer': return <Transfer />;
       case 'tax-calculator': return <TaxCalculator />;
       case 'ai-insights': return <AIInsightsPage />;
       case 'data-export': return <ExportReports />;

@@ -874,13 +874,8 @@ export const Transactions: React.FC = () => {
                 data-testid={`transaction-modal-type-${opt.type}-button`}
                 onClick={() => {
                   setShowTransactionTypeModal(false);
-                  if (opt.type === 'transfer') {
-                    // Always open the Transfer page
-                    setCurrentPage('transfer');
-                  } else {
-                    localStorage.setItem('quickFormType', opt.type);
-                    setCurrentPage('add-transaction');
-                  }
+                  localStorage.setItem('quickFormType', opt.type);
+                  setCurrentPage('add-transaction');
                 }}
                 className={cn(
                   "w-full p-4 flex items-center gap-4 rounded-2xl transition-all border border-transparent hover:scale-[1.02] active:scale-[0.98]",
