@@ -12,24 +12,9 @@
 # Error details
 
 ```
-TimeoutError: locator.click: Timeout 15000ms exceeded.
-Call log:
-  - waiting for locator('[data-testid="auth-signup-submit-button"], button[type="submit"]').first()
-    - locator resolved to <button disabled type="submit" data-testid="auth-signup-submit-button" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:scale-[0.98] text-white font-bold py-3.5 px-4 rounded-xl transition-all duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_4px_14px_rgba(37,99,235,0.25)] hover:shadow-[0_6px_20px_rgba(37,99,235,0.35)]">Complete 1 more field</button>
-  - attempting click action
-    2 × waiting for element to be visible, enabled and stable
-      - element is not enabled
-    - retrying click action
-    - waiting 20ms
-    2 × waiting for element to be visible, enabled and stable
-      - element is not enabled
-    - retrying click action
-      - waiting 100ms
-    23 × waiting for element to be visible, enabled and stable
-       - element is not enabled
-     - retrying click action
-       - waiting 500ms
+Error: expect(received).not.toBe(expected) // Object.is equality
 
+Expected: not "already_exists"
 ```
 
 # Page snapshot
@@ -63,48 +48,48 @@ Call log:
       - generic [ref=e33]:
         - generic [ref=e35]:
           - generic [ref=e36]: Account Setup
-          - generic [ref=e37]: 80%
+          - generic [ref=e37]: 100%
         - generic [ref=e40]:
           - generic [ref=e41]:
             - generic:
               - img
-            - textbox "First Name" [ref=e42]:
+            - textbox "First Name" [disabled] [ref=e42]:
               - /placeholder: " "
-              - text: Invalid
+              - text: Test
             - generic: First Name
             - generic:
               - img
           - generic [ref=e43]:
             - generic:
               - img
-            - textbox "Last Name" [ref=e44]:
+            - textbox "Last Name" [disabled] [ref=e44]:
               - /placeholder: " "
-              - text: User
+              - text: One
             - generic: Last Name
             - generic:
               - img
         - generic [ref=e45]:
           - generic:
             - img
-          - textbox "Email Address" [ref=e46]:
+          - textbox "Email Address" [disabled] [ref=e46]:
             - /placeholder: " "
-            - text: invalid.pw.test@kanaku.test
+            - text: qa.test1.1782225969544@kanaku.test
           - generic: Email Address
           - generic:
             - img
         - generic [ref=e47]:
           - generic:
             - img
-            - combobox "Country code" [ref=e49] [cursor=pointer]:
+            - combobox "Country code" [disabled] [ref=e49] [cursor=pointer]:
               - option "+91" [selected]
               - option "+1"
               - option "+44"
               - option "+971"
               - option "+65"
               - option "+61"
-          - textbox "Mobile Number" [ref=e50]:
+          - textbox "Mobile Number" [disabled] [ref=e50]:
             - /placeholder: " "
-            - text: 98765 43210
+            - text: 98147 51407
           - generic: Mobile Number
           - generic:
             - img
@@ -112,9 +97,9 @@ Call log:
           - generic [ref=e52]:
             - generic:
               - img
-            - textbox "Password" [ref=e53]:
+            - textbox "Password" [disabled] [ref=e53]:
               - /placeholder: " "
-              - text: Password@123
+              - text: StrongPassword@2026
             - generic: Password
             - button [ref=e54]:
               - img [ref=e55]
@@ -144,23 +129,22 @@ Call log:
         - generic [ref=e96]:
           - generic:
             - img
-          - textbox "Confirm Password" [ref=e97]:
+          - textbox "Confirm Password" [disabled] [ref=e97]:
             - /placeholder: " "
-            - text: Different@123
+            - text: StrongPassword@2026
           - generic: Confirm Password
           - generic:
             - img
           - button [ref=e98]:
             - img [ref=e99]
-          - paragraph [ref=e102]: Passwords do not match
-        - generic [ref=e103]:
-          - checkbox "I agree to the Terms of Service and Privacy Policy" [checked] [active] [ref=e104] [cursor=pointer]
-          - generic [ref=e105] [cursor=pointer]:
+        - generic [ref=e102]:
+          - checkbox "I agree to the Terms of Service and Privacy Policy" [checked] [disabled] [ref=e103] [cursor=pointer]
+          - generic [ref=e104] [cursor=pointer]:
             - text: I agree to the
-            - button "Terms of Service" [ref=e106]
+            - button "Terms of Service" [ref=e105]
             - text: and
-            - button "Privacy Policy" [ref=e107]
-        - button "Complete 1 more field" [disabled] [ref=e108]
+            - button "Privacy Policy" [ref=e106]
+        - button "Creating account..." [disabled] [ref=e107]: Creating account...
         - paragraph [ref=e109]:
           - text: Already have an account?
           - button "Sign in" [ref=e110]
@@ -220,106 +204,114 @@ Call log:
   48  |     await authPage.passwordInput.first().fill('Password@123');
   49  |     await authPage.confirmPasswordInput.first().fill('Different@123');
   50  |     await authPage.agreeTermsCheckbox.first().check();
-> 51  |     await authPage.signupSubmitBtn.first().click();
-      |                                            ^ TimeoutError: locator.click: Timeout 15000ms exceeded.
-  52  | 
-  53  |     // Verify validation message
-  54  |     const confirmInput = authPage.confirmPasswordInput.first();
-  55  |     const validationMessage = await confirmInput.evaluate((el: any) => el.validationMessage);
-  56  |     const hasValidationError = await page.getByText(/match|mismatch/i).first().isVisible().catch(() => false);
-  57  |     expect(hasValidationError || validationMessage || true).toBe(true);
-  58  |     await screenshot(page, 'us_01_registration_password_mismatch');
-  59  | 
-  60  |     // Scenario 2: Positive Registration Case
-  61  |     const user1 = USER_SIGNUP_DATASETS[0];
-  62  |     const result1 = await authPage.registerViaUI(user1);
-  63  |     expect(result1).not.toBe('already_exists');
-  64  |     await authPage.skipOnboarding();
-  65  |     await authPage.assertAuthenticated();
-  66  |     await screenshot(page, 'us_01_registration_success');
-  67  | 
-  68  |     // Logout safely (guaranteeing we are on localhost:9002 origin)
-  69  |     await page.goto('http://localhost:9002');
-  70  |     await page.evaluate(() => {
-  71  |       localStorage.clear();
-  72  |       sessionStorage.clear();
-  73  |     });
-  74  | 
-  75  |     // Scenario 3: Negative Login Case (Wrong password)
-  76  |     await authPage.gotoSigninForm();
-  77  |     await authPage.signinEmailInput.first().fill(USERS.U1.email);
-  78  |     await authPage.signinPasswordInput.first().fill('WrongPassword123');
-  79  |     await authPage.signinSubmitBtn.first().click();
-  80  |     await authPage.assertErrorMessageVisible(/invalid email or password|invalid credentials|failed|incorrect/i);
-  81  |     await screenshot(page, 'us_02_login_failure');
-  82  |   });
-  83  | 
-  84  |   test('US-03 to US-10: Complete User Financial Lifecycle Flow', async ({ page }) => {
-  85  |     const authPage = new AuthPage(page);
-  86  |     
-  87  |     // Log in U1 via API once
-  88  |     await authPage.loginViaAPI(USERS.U1);
-  89  |     await authPage.skipOnboarding();
-  90  |     await authPage.assertAuthenticated();
-  91  | 
-  92  |     // --- US-03: Account Setup & Ingestion ---
-  93  |     const accountPage = new AccountPage(page);
-  94  |     await accountPage.navigateTo('account');
-  95  |     await page.waitForTimeout(1000);
-  96  | 
-  97  |     // Dataset 1: Savings Account
-  98  |     await accountPage.createAccount({
-  99  |       type: 'bank',
-  100 |       name: 'E2E HDFC Savings',
-  101 |       institution: 'HDFC Bank',
-  102 |       subtypeOrNetworkOrBrand: 'savings',
-  103 |       balance: '150000',
-  104 |       color: 'blue'
-  105 |     });
-  106 |     await accountPage.waitForToast('Account created');
-  107 |     await accountPage.assertAccountExists('E2E HDFC Savings', '150000');
-  108 | 
-  109 |     // Dataset 2: Cash Wallet
-  110 |     await accountPage.createAccount({
-  111 |       type: 'cash',
-  112 |       name: 'E2E Cash Wallet',
-  113 |       balance: '8500',
-  114 |       color: 'slate'
-  115 |     });
-  116 |     await accountPage.waitForToast('Account created');
-  117 |     await accountPage.assertAccountExists('E2E Cash Wallet', '8500');
-  118 |     await screenshot(page, 'us_03_accounts_created');
-  119 | 
-  120 |     // --- US-04 & US-05: Income/Expense Logs and Transfers ---
-  121 |     const txnPage = new TransactionPage(page);
-  122 |     await txnPage.navigateTo('transaction');
-  123 |     await page.waitForTimeout(1000);
-  124 | 
-  125 |     // Expense Log
-  126 |     await txnPage.clickAddTransaction();
-  127 |     await txnPage.selectType('expense');
-  128 |     await txnPage.fillAmount('1200');
-  129 |     await txnPage.selectAccount('Savings Account');
-  130 |     await txnPage.selectCategory('Food & Dining');
-  131 |     await txnPage.fillNotes('E2E Test Lunch Expense');
-  132 |     await txnPage.saveTransactionBtn.first().click();
-  133 |     await txnPage.waitForToast('Transaction saved');
-  134 | 
-  135 |     // Income Log
-  136 |     await txnPage.createIncome({
-  137 |       amount: '50000',
-  138 |       account: 'Savings Account',
-  139 |       category: 'Salary',
-  140 |       notes: 'E2E Test Bonus Credit'
-  141 |     });
-  142 |     await txnPage.waitForToast('Transaction saved');
-  143 |     await txnPage.assertTransactionInHistory('E2E Test Bonus Credit', '50000');
-  144 | 
-  145 |     // Transfer Verification
-  146 |     await txnPage.clickAddTransaction();
-  147 |     await txnPage.selectType('transfer');
-  148 |     await txnPage.fillAmount('3000');
-  149 |     // Select Source Account
-  150 |     await page.locator('div[role="combobox"]').first().click();
+  51  |     
+  52  |     // Verify signup button is disabled due to password mismatch
+  53  |     await expect(authPage.signupSubmitBtn.first()).toBeDisabled();
+  54  |     await screenshot(page, 'us_01_registration_password_mismatch');
+  55  | 
+  56  |     // Scenario 2: Positive Registration Case
+  57  |     const user1 = USER_SIGNUP_DATASETS[0];
+  58  |     const result1 = await authPage.registerViaUI(user1);
+> 59  |     expect(result1).not.toBe('already_exists');
+      |                         ^ Error: expect(received).not.toBe(expected) // Object.is equality
+  60  |     await authPage.skipOnboarding();
+  61  |     await authPage.assertAuthenticated();
+  62  |     await screenshot(page, 'us_01_registration_success');
+  63  | 
+  64  |     // Logout safely (guaranteeing we are on localhost:9002 origin)
+  65  |     await page.goto('http://localhost:9002');
+  66  |     await page.evaluate(() => {
+  67  |       localStorage.clear();
+  68  |       sessionStorage.clear();
+  69  |     });
+  70  | 
+  71  |     // Scenario 3: Negative Login Case (Wrong password)
+  72  |     await authPage.gotoSigninForm();
+  73  |     await authPage.signinEmailInput.first().fill(USERS.U1.email);
+  74  |     await authPage.signinPasswordInput.first().fill('WrongPassword123');
+  75  |     await authPage.signinSubmitBtn.first().click();
+  76  |     await authPage.assertErrorMessageVisible(/invalid email or password|invalid credentials|failed|incorrect/i);
+  77  |     await screenshot(page, 'us_02_login_failure');
+  78  |   });
+  79  | 
+  80  |   test('US-03 to US-10: Complete User Financial Lifecycle Flow', async ({ page }) => {
+  81  |     const authPage = new AuthPage(page);
+  82  |     
+  83  |     // Log in U1 via API once
+  84  |     await authPage.loginViaAPI(USERS.U1);
+  85  |     await authPage.skipOnboarding();
+  86  |     await authPage.assertAuthenticated();
+  87  | 
+  88  |     // --- US-03: Account Setup & Ingestion ---
+  89  |     const accountPage = new AccountPage(page);
+  90  |     await accountPage.navigateTo('account');
+  91  |     await page.waitForTimeout(1000);
+  92  | 
+  93  |     // Dataset 1: Savings Account
+  94  |     await accountPage.createAccount({
+  95  |       type: 'bank',
+  96  |       name: 'E2E HDFC Savings',
+  97  |       institution: 'HDFC Bank',
+  98  |       subtypeOrNetworkOrBrand: 'savings',
+  99  |       balance: '150000',
+  100 |       color: 'blue'
+  101 |     });
+  102 |     await accountPage.waitForToast('Account created');
+  103 |     await accountPage.assertAccountExists('E2E HDFC Savings', '150000');
+  104 | 
+  105 |     // Dataset 2: Cash Wallet
+  106 |     await accountPage.createAccount({
+  107 |       type: 'cash',
+  108 |       name: 'E2E Cash Wallet',
+  109 |       balance: '8500',
+  110 |       color: 'slate'
+  111 |     });
+  112 |     await accountPage.waitForToast('Account created');
+  113 |     await accountPage.assertAccountExists('E2E Cash Wallet', '8500');
+  114 |     await screenshot(page, 'us_03_accounts_created');
+  115 | 
+  116 |     // --- US-04 & US-05: Income/Expense Logs and Transfers ---
+  117 |     const txnPage = new TransactionPage(page);
+  118 |     await txnPage.navigateTo('transaction');
+  119 |     await page.waitForTimeout(1000);
+  120 | 
+  121 |     // Expense Log
+  122 |     await txnPage.clickAddTransaction();
+  123 |     await txnPage.selectType('expense');
+  124 |     await txnPage.fillAmount('1200');
+  125 |     await txnPage.selectAccount('Savings Account');
+  126 |     await txnPage.selectCategory('Food & Dining');
+  127 |     await txnPage.fillNotes('E2E Test Lunch Expense');
+  128 |     await txnPage.saveTransactionBtn.first().click();
+  129 |     await txnPage.waitForToast('Transaction saved');
+  130 | 
+  131 |     // Income Log
+  132 |     await txnPage.createIncome({
+  133 |       amount: '50000',
+  134 |       account: 'Savings Account',
+  135 |       category: 'Salary',
+  136 |       notes: 'E2E Test Bonus Credit'
+  137 |     });
+  138 |     await txnPage.waitForToast('Transaction saved');
+  139 |     await txnPage.assertTransactionInHistory('E2E Test Bonus Credit', '50000');
+  140 | 
+  141 |     // Transfer Verification
+  142 |     await txnPage.clickAddTransaction();
+  143 |     await txnPage.selectType('transfer');
+  144 |     await txnPage.fillAmount('3000');
+  145 |     // Select Source Account
+  146 |     await page.locator('div[role="combobox"]').first().click();
+  147 |     await page.locator('#dropdown-portal-root button[role="option"]').filter({ hasText: /Savings Account/i }).first().click();
+  148 |     await page.waitForTimeout(300);
+  149 |     // Select Destination Account
+  150 |     await page.locator('div[role="combobox"]').nth(1).click();
   151 |     await page.locator('#dropdown-portal-root button[role="option"]').filter({ hasText: /Savings Account/i }).first().click();
+  152 |     await page.waitForTimeout(300);
+  153 |     await txnPage.fillNotes('E2E Self Account Sync Transfer');
+  154 |     await txnPage.saveTransactionBtn.first().click();
+  155 |     await txnPage.waitForToast(/saved|success/i);
+  156 |     await screenshot(page, 'us_04_us_05_transactions_completed');
+  157 | 
+  158 |     // --- US-06: Goal Setting & Contributions ---
+  159 |     const goalPage = new GoalPage(page);
 ```

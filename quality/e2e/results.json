@@ -82,11 +82,11 @@
         {
           "title": "Kanaku User Role Scenario-Level Testing Suite",
           "file": "11-user-advisor-scenarios.spec.ts",
-          "line": 53,
+          "line": 36,
           "column": 6,
           "specs": [
             {
-              "title": "US-01: New User Registration & Validation (Multiple Datasets)",
+              "title": "US-01 & US-02: User Registration, Validation & Login Challenge Flow",
               "ok": false,
               "tags": [],
               "tests": [
@@ -101,169 +101,129 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "failed",
-                      "duration": 10336,
+                      "duration": 26126,
                       "error": {
-                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mnot\u001b[2m.\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: not \u001b[32m\"already_exists\"\u001b[39m",
-                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mnot\u001b[2m.\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: not \u001b[32m\"already_exists\"\u001b[39m\n    at K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts:62:25",
+                        "message": "TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"auth-signup-submit-button\"], button[type=\"submit\"]').first()\u001b[22m\n\u001b[2m    - locator resolved to <button disabled type=\"submit\" data-testid=\"auth-signup-submit-button\" class=\"w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:scale-[0.98] text-white font-bold py-3.5 px-4 rounded-xl transition-all duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_4px_14px_rgba(37,99,235,0.25)] hover:shadow-[0_6px_20px_rgba(37,99,235,0.35)]\">Complete 1 more field</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not enabled\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not enabled\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    23 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is not enabled\u001b[22m\n\u001b[2m     - retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n",
+                        "stack": "TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"auth-signup-submit-button\"], button[type=\"submit\"]').first()\u001b[22m\n\u001b[2m    - locator resolved to <button disabled type=\"submit\" data-testid=\"auth-signup-submit-button\" class=\"w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:scale-[0.98] text-white font-bold py-3.5 px-4 rounded-xl transition-all duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_4px_14px_rgba(37,99,235,0.25)] hover:shadow-[0_6px_20px_rgba(37,99,235,0.35)]\">Complete 1 more field</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not enabled\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not enabled\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    23 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is not enabled\u001b[22m\n\u001b[2m     - retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n\n    at K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts:51:44",
                         "location": {
                           "file": "K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts",
-                          "column": 25,
-                          "line": 62
+                          "column": 44,
+                          "line": 51
                         },
-                        "snippet": "\u001b[0m \u001b[90m 60 |\u001b[39m     \u001b[36mconst\u001b[39m user1 \u001b[33m=\u001b[39m \u001b[33mUSER_SIGNUP_DATASETS\u001b[39m[\u001b[35m0\u001b[39m]\u001b[33m;\u001b[39m\n \u001b[90m 61 |\u001b[39m     \u001b[36mconst\u001b[39m result1 \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m authPage\u001b[33m.\u001b[39mregisterViaUI(user1)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 62 |\u001b[39m     expect(result1)\u001b[33m.\u001b[39mnot\u001b[33m.\u001b[39mtoBe(\u001b[32m'already_exists'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                         \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 63 |\u001b[39m     \u001b[36mawait\u001b[39m authPage\u001b[33m.\u001b[39mskipOnboarding()\u001b[33m;\u001b[39m\n \u001b[90m 64 |\u001b[39m     \u001b[36mawait\u001b[39m authPage\u001b[33m.\u001b[39massertAuthenticated()\u001b[33m;\u001b[39m\n \u001b[90m 65 |\u001b[39m     \u001b[36mawait\u001b[39m screenshot(page\u001b[33m,\u001b[39m \u001b[32m'us_01_registration_dataset_1_success'\u001b[39m)\u001b[33m;\u001b[39m\u001b[0m"
+                        "snippet": "\u001b[0m \u001b[90m 49 |\u001b[39m     \u001b[36mawait\u001b[39m authPage\u001b[33m.\u001b[39mconfirmPasswordInput\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39mfill(\u001b[32m'Different@123'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 50 |\u001b[39m     \u001b[36mawait\u001b[39m authPage\u001b[33m.\u001b[39magreeTermsCheckbox\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39mcheck()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 51 |\u001b[39m     \u001b[36mawait\u001b[39m authPage\u001b[33m.\u001b[39msignupSubmitBtn\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                            \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 52 |\u001b[39m\n \u001b[90m 53 |\u001b[39m     \u001b[90m// Verify validation message\u001b[39m\n \u001b[90m 54 |\u001b[39m     \u001b[36mconst\u001b[39m confirmInput \u001b[33m=\u001b[39m authPage\u001b[33m.\u001b[39mconfirmPasswordInput\u001b[33m.\u001b[39mfirst()\u001b[33m;\u001b[39m\u001b[0m"
                       },
                       "errors": [
                         {
                           "location": {
                             "file": "K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts",
-                            "column": 25,
-                            "line": 62
+                            "column": 44,
+                            "line": 51
                           },
-                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mnot\u001b[2m.\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: not \u001b[32m\"already_exists\"\u001b[39m\n\n  60 |     const user1 = USER_SIGNUP_DATASETS[0];\n  61 |     const result1 = await authPage.registerViaUI(user1);\n> 62 |     expect(result1).not.toBe('already_exists');\n     |                         ^\n  63 |     await authPage.skipOnboarding();\n  64 |     await authPage.assertAuthenticated();\n  65 |     await screenshot(page, 'us_01_registration_dataset_1_success');\n    at K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts:62:25"
+                          "message": "TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"auth-signup-submit-button\"], button[type=\"submit\"]').first()\u001b[22m\n\u001b[2m    - locator resolved to <button disabled type=\"submit\" data-testid=\"auth-signup-submit-button\" class=\"w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:scale-[0.98] text-white font-bold py-3.5 px-4 rounded-xl transition-all duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_4px_14px_rgba(37,99,235,0.25)] hover:shadow-[0_6px_20px_rgba(37,99,235,0.35)]\">Complete 1 more field</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not enabled\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not enabled\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    23 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is not enabled\u001b[22m\n\u001b[2m     - retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n\n\n  49 |     await authPage.confirmPasswordInput.first().fill('Different@123');\n  50 |     await authPage.agreeTermsCheckbox.first().check();\n> 51 |     await authPage.signupSubmitBtn.first().click();\n     |                                            ^\n  52 |\n  53 |     // Verify validation message\n  54 |     const confirmInput = authPage.confirmPasswordInput.first();\n    at K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts:51:44"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-23T13:21:27.431Z",
+                      "startTime": "2026-06-23T14:33:55.848Z",
                       "annotations": [],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--e9886-lidation-Multiple-Datasets--chromium\\test-failed-1.png"
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--8c4ec-dation-Login-Challenge-Flow-chromium\\test-failed-1.png"
                         },
                         {
                           "name": "video",
                           "contentType": "video/webm",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--e9886-lidation-Multiple-Datasets--chromium\\video.webm"
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--8c4ec-dation-Login-Challenge-Flow-chromium\\video.webm"
                         },
                         {
                           "name": "error-context",
                           "contentType": "text/markdown",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--e9886-lidation-Multiple-Datasets--chromium\\error-context.md"
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--8c4ec-dation-Login-Challenge-Flow-chromium\\error-context.md"
                         },
                         {
                           "name": "trace",
                           "contentType": "application/zip",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--e9886-lidation-Multiple-Datasets--chromium\\trace.zip"
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--8c4ec-dation-Login-Challenge-Flow-chromium\\trace.zip"
                         }
                       ],
                       "errorLocation": {
                         "file": "K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts",
-                        "column": 25,
-                        "line": 62
+                        "column": 44,
+                        "line": 51
                       }
                     },
                     {
                       "workerIndex": 1,
                       "parallelIndex": 0,
                       "status": "failed",
-                      "duration": 8647,
+                      "duration": 24015,
                       "error": {
-                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mnot\u001b[2m.\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: not \u001b[32m\"already_exists\"\u001b[39m",
-                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mnot\u001b[2m.\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: not \u001b[32m\"already_exists\"\u001b[39m\n    at K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts:62:25",
+                        "message": "TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"auth-signup-submit-button\"], button[type=\"submit\"]').first()\u001b[22m\n\u001b[2m    - locator resolved to <button disabled type=\"submit\" data-testid=\"auth-signup-submit-button\" class=\"w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:scale-[0.98] text-white font-bold py-3.5 px-4 rounded-xl transition-all duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_4px_14px_rgba(37,99,235,0.25)] hover:shadow-[0_6px_20px_rgba(37,99,235,0.35)]\">Complete 1 more field</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not stable\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is not stable\u001b[22m\n\u001b[2m  2 × retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m      - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not enabled\u001b[22m\n\u001b[2m  24 × retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n\u001b[2m       - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is not enabled\u001b[22m\n\u001b[2m  - retrying click action\u001b[22m\n\u001b[2m    - waiting 500ms\u001b[22m\n",
+                        "stack": "TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"auth-signup-submit-button\"], button[type=\"submit\"]').first()\u001b[22m\n\u001b[2m    - locator resolved to <button disabled type=\"submit\" data-testid=\"auth-signup-submit-button\" class=\"w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:scale-[0.98] text-white font-bold py-3.5 px-4 rounded-xl transition-all duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_4px_14px_rgba(37,99,235,0.25)] hover:shadow-[0_6px_20px_rgba(37,99,235,0.35)]\">Complete 1 more field</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not stable\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is not stable\u001b[22m\n\u001b[2m  2 × retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m      - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not enabled\u001b[22m\n\u001b[2m  24 × retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n\u001b[2m       - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is not enabled\u001b[22m\n\u001b[2m  - retrying click action\u001b[22m\n\u001b[2m    - waiting 500ms\u001b[22m\n\n    at K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts:51:44",
                         "location": {
                           "file": "K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts",
-                          "column": 25,
-                          "line": 62
+                          "column": 44,
+                          "line": 51
                         },
-                        "snippet": "\u001b[0m \u001b[90m 60 |\u001b[39m     \u001b[36mconst\u001b[39m user1 \u001b[33m=\u001b[39m \u001b[33mUSER_SIGNUP_DATASETS\u001b[39m[\u001b[35m0\u001b[39m]\u001b[33m;\u001b[39m\n \u001b[90m 61 |\u001b[39m     \u001b[36mconst\u001b[39m result1 \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m authPage\u001b[33m.\u001b[39mregisterViaUI(user1)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 62 |\u001b[39m     expect(result1)\u001b[33m.\u001b[39mnot\u001b[33m.\u001b[39mtoBe(\u001b[32m'already_exists'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                         \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 63 |\u001b[39m     \u001b[36mawait\u001b[39m authPage\u001b[33m.\u001b[39mskipOnboarding()\u001b[33m;\u001b[39m\n \u001b[90m 64 |\u001b[39m     \u001b[36mawait\u001b[39m authPage\u001b[33m.\u001b[39massertAuthenticated()\u001b[33m;\u001b[39m\n \u001b[90m 65 |\u001b[39m     \u001b[36mawait\u001b[39m screenshot(page\u001b[33m,\u001b[39m \u001b[32m'us_01_registration_dataset_1_success'\u001b[39m)\u001b[33m;\u001b[39m\u001b[0m"
+                        "snippet": "\u001b[0m \u001b[90m 49 |\u001b[39m     \u001b[36mawait\u001b[39m authPage\u001b[33m.\u001b[39mconfirmPasswordInput\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39mfill(\u001b[32m'Different@123'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 50 |\u001b[39m     \u001b[36mawait\u001b[39m authPage\u001b[33m.\u001b[39magreeTermsCheckbox\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39mcheck()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 51 |\u001b[39m     \u001b[36mawait\u001b[39m authPage\u001b[33m.\u001b[39msignupSubmitBtn\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                            \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 52 |\u001b[39m\n \u001b[90m 53 |\u001b[39m     \u001b[90m// Verify validation message\u001b[39m\n \u001b[90m 54 |\u001b[39m     \u001b[36mconst\u001b[39m confirmInput \u001b[33m=\u001b[39m authPage\u001b[33m.\u001b[39mconfirmPasswordInput\u001b[33m.\u001b[39mfirst()\u001b[33m;\u001b[39m\u001b[0m"
                       },
                       "errors": [
                         {
                           "location": {
                             "file": "K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts",
-                            "column": 25,
-                            "line": 62
+                            "column": 44,
+                            "line": 51
                           },
-                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mnot\u001b[2m.\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: not \u001b[32m\"already_exists\"\u001b[39m\n\n  60 |     const user1 = USER_SIGNUP_DATASETS[0];\n  61 |     const result1 = await authPage.registerViaUI(user1);\n> 62 |     expect(result1).not.toBe('already_exists');\n     |                         ^\n  63 |     await authPage.skipOnboarding();\n  64 |     await authPage.assertAuthenticated();\n  65 |     await screenshot(page, 'us_01_registration_dataset_1_success');\n    at K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts:62:25"
+                          "message": "TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"auth-signup-submit-button\"], button[type=\"submit\"]').first()\u001b[22m\n\u001b[2m    - locator resolved to <button disabled type=\"submit\" data-testid=\"auth-signup-submit-button\" class=\"w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:scale-[0.98] text-white font-bold py-3.5 px-4 rounded-xl transition-all duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_4px_14px_rgba(37,99,235,0.25)] hover:shadow-[0_6px_20px_rgba(37,99,235,0.35)]\">Complete 1 more field</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not stable\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is not stable\u001b[22m\n\u001b[2m  2 × retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m      - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not enabled\u001b[22m\n\u001b[2m  24 × retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n\u001b[2m       - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is not enabled\u001b[22m\n\u001b[2m  - retrying click action\u001b[22m\n\u001b[2m    - waiting 500ms\u001b[22m\n\n\n  49 |     await authPage.confirmPasswordInput.first().fill('Different@123');\n  50 |     await authPage.agreeTermsCheckbox.first().check();\n> 51 |     await authPage.signupSubmitBtn.first().click();\n     |                                            ^\n  52 |\n  53 |     // Verify validation message\n  54 |     const confirmInput = authPage.confirmPasswordInput.first();\n    at K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts:51:44"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 1,
-                      "startTime": "2026-06-23T13:21:39.844Z",
+                      "startTime": "2026-06-23T14:34:25.399Z",
                       "annotations": [],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--e9886-lidation-Multiple-Datasets--chromium-retry1\\test-failed-1.png"
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--8c4ec-dation-Login-Challenge-Flow-chromium-retry1\\test-failed-1.png"
                         },
                         {
                           "name": "video",
                           "contentType": "video/webm",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--e9886-lidation-Multiple-Datasets--chromium-retry1\\video.webm"
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--8c4ec-dation-Login-Challenge-Flow-chromium-retry1\\video.webm"
                         },
                         {
                           "name": "error-context",
                           "contentType": "text/markdown",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--e9886-lidation-Multiple-Datasets--chromium-retry1\\error-context.md"
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--8c4ec-dation-Login-Challenge-Flow-chromium-retry1\\error-context.md"
                         },
                         {
                           "name": "trace",
                           "contentType": "application/zip",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--e9886-lidation-Multiple-Datasets--chromium-retry1\\trace.zip"
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--8c4ec-dation-Login-Challenge-Flow-chromium-retry1\\trace.zip"
                         }
                       ],
                       "errorLocation": {
                         "file": "K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts",
-                        "column": 25,
-                        "line": 62
+                        "column": 44,
+                        "line": 51
                       }
                     }
                   ],
                   "status": "unexpected"
                 }
               ],
-              "id": "e70723a47e036255403b-78a4b73bef3d053fb250",
+              "id": "e70723a47e036255403b-1a763026450a84e45f55",
               "file": "11-user-advisor-scenarios.spec.ts",
-              "line": 56,
+              "line": 39,
               "column": 3
             },
             {
-              "title": "US-02: Login Challenge-Response Flow",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 180000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 2,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 34792,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-06-23T13:21:50.281Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--9f98a-gin-Challenge-Response-Flow-chromium\\test-finished-1.png"
-                        }
-                      ]
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "e70723a47e036255403b-e5124765bdd8b7c98aa8",
-              "file": "11-user-advisor-scenarios.spec.ts",
-              "line": 92,
-              "column": 3
-            },
-            {
-              "title": "US-03: Account Creation & Ingestion (Multiple Datasets)",
+              "title": "US-03 to US-10: Complete User Financial Lifecycle Flow",
               "ok": false,
               "tags": [],
               "tests": [
@@ -278,134 +238,142 @@
                       "workerIndex": 2,
                       "parallelIndex": 0,
                       "status": "failed",
-                      "duration": 1198,
+                      "duration": 62973,
                       "error": {
-                        "message": "Error: Login challenge failed for arjun.test@kanaku.app: {\"error\":\"Too many login attempts. Please try again in a minute.\"}",
-                        "stack": "Error: Login challenge failed for arjun.test@kanaku.app: {\"error\":\"Too many login attempts. Please try again in a minute.\"}\n    at loginUser (K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts:70:11)\n    at K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts:112:5",
+                        "message": "TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: /add account|new account|\\+ account/i }).first()\u001b[22m\n",
+                        "stack": "TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: /add account|new account|\\+ account/i }).first()\u001b[22m\n\n    at AccountPage.clickAddAccount (K:\\Project\\Kanaku\\quality\\e2e\\pom\\AccountPage.ts:22:38)\n    at AccountPage.createAccount (K:\\Project\\Kanaku\\quality\\e2e\\pom\\AccountPage.ts:89:16)\n    at K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts:110:23",
                         "location": {
-                          "file": "K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts",
-                          "column": 11,
-                          "line": 70
+                          "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\AccountPage.ts",
+                          "column": 38,
+                          "line": 22
                         },
-                        "snippet": "\u001b[90m   at \u001b[39mhelpers.ts:70\n\n\u001b[0m \u001b[90m 68 |\u001b[39m\n \u001b[90m 69 |\u001b[39m   \u001b[36mif\u001b[39m (\u001b[33m!\u001b[39mchallengeJson\u001b[33m?\u001b[39m\u001b[33m.\u001b[39msuccess \u001b[33m||\u001b[39m \u001b[33m!\u001b[39mchallengeJson\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mdata\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mcode) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 70 |\u001b[39m     \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\n \u001b[90m    |\u001b[39m           \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 71 |\u001b[39m       \u001b[32m`Login challenge failed for ${user.email}: ${JSON.stringify(challengeJson)}`\u001b[39m\n \u001b[90m 72 |\u001b[39m     )\u001b[33m;\u001b[39m\n \u001b[90m 73 |\u001b[39m   }\u001b[0m"
+                        "snippet": "\u001b[90m   at \u001b[39mpom\\AccountPage.ts:22\n\n\u001b[0m \u001b[90m 20 |\u001b[39m\n \u001b[90m 21 |\u001b[39m   \u001b[36masync\u001b[39m clickAddAccount() {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 22 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39maddAccountBtn\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                      \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 23 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mwait(\u001b[35m800\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 24 |\u001b[39m   }\n \u001b[90m 25 |\u001b[39m\u001b[0m"
                       },
                       "errors": [
                         {
                           "location": {
-                            "file": "K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts",
-                            "column": 11,
-                            "line": 70
+                            "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\AccountPage.ts",
+                            "column": 38,
+                            "line": 22
                           },
-                          "message": "Error: Login challenge failed for arjun.test@kanaku.app: {\"error\":\"Too many login attempts. Please try again in a minute.\"}\n\n   at helpers.ts:70\n\n  68 |\n  69 |   if (!challengeJson?.success || !challengeJson?.data?.code) {\n> 70 |     throw new Error(\n     |           ^\n  71 |       `Login challenge failed for ${user.email}: ${JSON.stringify(challengeJson)}`\n  72 |     );\n  73 |   }\n    at loginUser (K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts:70:11)\n    at K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts:112:5"
+                          "message": "TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: /add account|new account|\\+ account/i }).first()\u001b[22m\n\n\n   at pom\\AccountPage.ts:22\n\n  20 |\n  21 |   async clickAddAccount() {\n> 22 |     await this.addAccountBtn.first().click();\n     |                                      ^\n  23 |     await this.wait(800);\n  24 |   }\n  25 |\n    at AccountPage.clickAddAccount (K:\\Project\\Kanaku\\quality\\e2e\\pom\\AccountPage.ts:22:38)\n    at AccountPage.createAccount (K:\\Project\\Kanaku\\quality\\e2e\\pom\\AccountPage.ts:89:16)\n    at K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts:110:23"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-23T13:22:25.435Z",
+                      "startTime": "2026-06-23T14:34:52.412Z",
                       "annotations": [],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--cc2d5-ngestion-Multiple-Datasets--chromium\\test-failed-1.png"
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--01d46-er-Financial-Lifecycle-Flow-chromium\\test-failed-1.png"
                         },
                         {
                           "name": "video",
                           "contentType": "video/webm",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--cc2d5-ngestion-Multiple-Datasets--chromium\\video.webm"
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--01d46-er-Financial-Lifecycle-Flow-chromium\\video.webm"
                         },
                         {
                           "name": "error-context",
                           "contentType": "text/markdown",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--cc2d5-ngestion-Multiple-Datasets--chromium\\error-context.md"
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--01d46-er-Financial-Lifecycle-Flow-chromium\\error-context.md"
                         },
                         {
                           "name": "trace",
                           "contentType": "application/zip",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--cc2d5-ngestion-Multiple-Datasets--chromium\\trace.zip"
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--01d46-er-Financial-Lifecycle-Flow-chromium\\trace.zip"
                         }
                       ],
                       "errorLocation": {
-                        "file": "K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts",
-                        "column": 11,
-                        "line": 70
+                        "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\AccountPage.ts",
+                        "column": 38,
+                        "line": 22
                       }
                     },
                     {
                       "workerIndex": 3,
                       "parallelIndex": 0,
                       "status": "failed",
-                      "duration": 637,
+                      "duration": 61800,
                       "error": {
-                        "message": "Error: Login challenge failed for arjun.test@kanaku.app: {\"error\":\"Too many login attempts. Please try again in a minute.\"}",
-                        "stack": "Error: Login challenge failed for arjun.test@kanaku.app: {\"error\":\"Too many login attempts. Please try again in a minute.\"}\n    at loginUser (K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts:70:11)\n    at K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts:112:5",
+                        "message": "TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: /add account|new account|\\+ account/i }).first()\u001b[22m\n",
+                        "stack": "TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: /add account|new account|\\+ account/i }).first()\u001b[22m\n\n    at AccountPage.clickAddAccount (K:\\Project\\Kanaku\\quality\\e2e\\pom\\AccountPage.ts:22:38)\n    at AccountPage.createAccount (K:\\Project\\Kanaku\\quality\\e2e\\pom\\AccountPage.ts:89:16)\n    at K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts:110:23",
                         "location": {
-                          "file": "K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts",
-                          "column": 11,
-                          "line": 70
+                          "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\AccountPage.ts",
+                          "column": 38,
+                          "line": 22
                         },
-                        "snippet": "\u001b[90m   at \u001b[39mhelpers.ts:70\n\n\u001b[0m \u001b[90m 68 |\u001b[39m\n \u001b[90m 69 |\u001b[39m   \u001b[36mif\u001b[39m (\u001b[33m!\u001b[39mchallengeJson\u001b[33m?\u001b[39m\u001b[33m.\u001b[39msuccess \u001b[33m||\u001b[39m \u001b[33m!\u001b[39mchallengeJson\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mdata\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mcode) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 70 |\u001b[39m     \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\n \u001b[90m    |\u001b[39m           \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 71 |\u001b[39m       \u001b[32m`Login challenge failed for ${user.email}: ${JSON.stringify(challengeJson)}`\u001b[39m\n \u001b[90m 72 |\u001b[39m     )\u001b[33m;\u001b[39m\n \u001b[90m 73 |\u001b[39m   }\u001b[0m"
+                        "snippet": "\u001b[90m   at \u001b[39mpom\\AccountPage.ts:22\n\n\u001b[0m \u001b[90m 20 |\u001b[39m\n \u001b[90m 21 |\u001b[39m   \u001b[36masync\u001b[39m clickAddAccount() {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 22 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39maddAccountBtn\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                      \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 23 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mwait(\u001b[35m800\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 24 |\u001b[39m   }\n \u001b[90m 25 |\u001b[39m\u001b[0m"
                       },
                       "errors": [
                         {
                           "location": {
-                            "file": "K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts",
-                            "column": 11,
-                            "line": 70
+                            "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\AccountPage.ts",
+                            "column": 38,
+                            "line": 22
                           },
-                          "message": "Error: Login challenge failed for arjun.test@kanaku.app: {\"error\":\"Too many login attempts. Please try again in a minute.\"}\n\n   at helpers.ts:70\n\n  68 |\n  69 |   if (!challengeJson?.success || !challengeJson?.data?.code) {\n> 70 |     throw new Error(\n     |           ^\n  71 |       `Login challenge failed for ${user.email}: ${JSON.stringify(challengeJson)}`\n  72 |     );\n  73 |   }\n    at loginUser (K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts:70:11)\n    at K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts:112:5"
+                          "message": "TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: /add account|new account|\\+ account/i }).first()\u001b[22m\n\n\n   at pom\\AccountPage.ts:22\n\n  20 |\n  21 |   async clickAddAccount() {\n> 22 |     await this.addAccountBtn.first().click();\n     |                                      ^\n  23 |     await this.wait(800);\n  24 |   }\n  25 |\n    at AccountPage.clickAddAccount (K:\\Project\\Kanaku\\quality\\e2e\\pom\\AccountPage.ts:22:38)\n    at AccountPage.createAccount (K:\\Project\\Kanaku\\quality\\e2e\\pom\\AccountPage.ts:89:16)\n    at K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts:110:23"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 1,
-                      "startTime": "2026-06-23T13:22:27.643Z",
+                      "startTime": "2026-06-23T14:35:58.521Z",
                       "annotations": [],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--cc2d5-ngestion-Multiple-Datasets--chromium-retry1\\test-failed-1.png"
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--01d46-er-Financial-Lifecycle-Flow-chromium-retry1\\test-failed-1.png"
                         },
                         {
                           "name": "video",
                           "contentType": "video/webm",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--cc2d5-ngestion-Multiple-Datasets--chromium-retry1\\video.webm"
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--01d46-er-Financial-Lifecycle-Flow-chromium-retry1\\video.webm"
                         },
                         {
                           "name": "error-context",
                           "contentType": "text/markdown",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--cc2d5-ngestion-Multiple-Datasets--chromium-retry1\\error-context.md"
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--01d46-er-Financial-Lifecycle-Flow-chromium-retry1\\error-context.md"
                         },
                         {
                           "name": "trace",
                           "contentType": "application/zip",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--cc2d5-ngestion-Multiple-Datasets--chromium-retry1\\trace.zip"
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--01d46-er-Financial-Lifecycle-Flow-chromium-retry1\\trace.zip"
                         }
                       ],
                       "errorLocation": {
-                        "file": "K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts",
-                        "column": 11,
-                        "line": 70
+                        "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\AccountPage.ts",
+                        "column": 38,
+                        "line": 22
                       }
                     }
                   ],
                   "status": "unexpected"
                 }
               ],
-              "id": "e70723a47e036255403b-8a2f469ce56f50e80248",
+              "id": "e70723a47e036255403b-dbe0b6de5210545f811a",
               "file": "11-user-advisor-scenarios.spec.ts",
-              "line": 110,
+              "line": 84,
               "column": 3
-            },
+            }
+          ]
+        },
+        {
+          "title": "Kanaku Advisor Role Scenario-Level Testing Suite",
+          "file": "11-user-advisor-scenarios.spec.ts",
+          "line": 245,
+          "column": 6,
+          "specs": [
             {
-              "title": "US-04 & US-05: Income/Expense Logs and Transfers (Multiple Datasets)",
+              "title": "AD-01 & AD-03: Advisor Application & Compliance Approval Flow",
               "ok": false,
               "tags": [],
               "tests": [
                 {
-                  "timeout": 180000,
+                  "timeout": 240000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
@@ -415,134 +383,134 @@
                       "workerIndex": 4,
                       "parallelIndex": 0,
                       "status": "failed",
-                      "duration": 627,
+                      "duration": 60720,
                       "error": {
-                        "message": "Error: Login challenge failed for arjun.test@kanaku.app: {\"error\":\"Too many login attempts. Please try again in a minute.\"}",
-                        "stack": "Error: Login challenge failed for arjun.test@kanaku.app: {\"error\":\"Too many login attempts. Please try again in a minute.\"}\n    at loginUser (K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts:70:11)\n    at K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts:146:5",
+                        "message": "Error: Failed to navigate to page: book-advisor",
+                        "stack": "Error: Failed to navigate to page: book-advisor\n    at AdvisorPage.navigateTo (K:\\Project\\Kanaku\\quality\\e2e\\pom\\BasePage.ts:16:13)\n    at K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts:267:5",
                         "location": {
-                          "file": "K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts",
-                          "column": 11,
-                          "line": 70
+                          "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\BasePage.ts",
+                          "column": 13,
+                          "line": 16
                         },
-                        "snippet": "\u001b[90m   at \u001b[39mhelpers.ts:70\n\n\u001b[0m \u001b[90m 68 |\u001b[39m\n \u001b[90m 69 |\u001b[39m   \u001b[36mif\u001b[39m (\u001b[33m!\u001b[39mchallengeJson\u001b[33m?\u001b[39m\u001b[33m.\u001b[39msuccess \u001b[33m||\u001b[39m \u001b[33m!\u001b[39mchallengeJson\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mdata\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mcode) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 70 |\u001b[39m     \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\n \u001b[90m    |\u001b[39m           \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 71 |\u001b[39m       \u001b[32m`Login challenge failed for ${user.email}: ${JSON.stringify(challengeJson)}`\u001b[39m\n \u001b[90m 72 |\u001b[39m     )\u001b[33m;\u001b[39m\n \u001b[90m 73 |\u001b[39m   }\u001b[0m"
+                        "snippet": "\u001b[90m   at \u001b[39mpom\\BasePage.ts:16\n\n\u001b[0m \u001b[90m 14 |\u001b[39m     \u001b[36mconst\u001b[39m success \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m clickNav(\u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mpage\u001b[33m,\u001b[39m label)\u001b[33m;\u001b[39m\n \u001b[90m 15 |\u001b[39m     \u001b[36mif\u001b[39m (\u001b[33m!\u001b[39msuccess) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 16 |\u001b[39m       \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\u001b[32m`Failed to navigate to page: ${label}`\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m             \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 17 |\u001b[39m     }\n \u001b[90m 18 |\u001b[39m   }\n \u001b[90m 19 |\u001b[39m\u001b[0m"
                       },
                       "errors": [
                         {
                           "location": {
-                            "file": "K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts",
-                            "column": 11,
-                            "line": 70
+                            "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\BasePage.ts",
+                            "column": 13,
+                            "line": 16
                           },
-                          "message": "Error: Login challenge failed for arjun.test@kanaku.app: {\"error\":\"Too many login attempts. Please try again in a minute.\"}\n\n   at helpers.ts:70\n\n  68 |\n  69 |   if (!challengeJson?.success || !challengeJson?.data?.code) {\n> 70 |     throw new Error(\n     |           ^\n  71 |       `Login challenge failed for ${user.email}: ${JSON.stringify(challengeJson)}`\n  72 |     );\n  73 |   }\n    at loginUser (K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts:70:11)\n    at K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts:146:5"
+                          "message": "Error: Failed to navigate to page: book-advisor\n\n   at pom\\BasePage.ts:16\n\n  14 |     const success = await clickNav(this.page, label);\n  15 |     if (!success) {\n> 16 |       throw new Error(`Failed to navigate to page: ${label}`);\n     |             ^\n  17 |     }\n  18 |   }\n  19 |\n    at AdvisorPage.navigateTo (K:\\Project\\Kanaku\\quality\\e2e\\pom\\BasePage.ts:16:13)\n    at K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts:267:5"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-23T13:22:29.526Z",
+                      "startTime": "2026-06-23T14:37:02.123Z",
                       "annotations": [],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--093e4-ransfers-Multiple-Datasets--chromium\\test-failed-1.png"
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--fc356-on-Compliance-Approval-Flow-chromium\\test-failed-1.png"
                         },
                         {
                           "name": "video",
                           "contentType": "video/webm",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--093e4-ransfers-Multiple-Datasets--chromium\\video.webm"
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--fc356-on-Compliance-Approval-Flow-chromium\\video.webm"
                         },
                         {
                           "name": "error-context",
                           "contentType": "text/markdown",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--093e4-ransfers-Multiple-Datasets--chromium\\error-context.md"
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--fc356-on-Compliance-Approval-Flow-chromium\\error-context.md"
                         },
                         {
                           "name": "trace",
                           "contentType": "application/zip",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--093e4-ransfers-Multiple-Datasets--chromium\\trace.zip"
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--fc356-on-Compliance-Approval-Flow-chromium\\trace.zip"
                         }
                       ],
                       "errorLocation": {
-                        "file": "K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts",
-                        "column": 11,
-                        "line": 70
+                        "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\BasePage.ts",
+                        "column": 13,
+                        "line": 16
                       }
                     },
                     {
                       "workerIndex": 5,
                       "parallelIndex": 0,
                       "status": "failed",
-                      "duration": 638,
+                      "duration": 65624,
                       "error": {
-                        "message": "Error: Login challenge failed for arjun.test@kanaku.app: {\"error\":\"Too many login attempts. Please try again in a minute.\"}",
-                        "stack": "Error: Login challenge failed for arjun.test@kanaku.app: {\"error\":\"Too many login attempts. Please try again in a minute.\"}\n    at loginUser (K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts:70:11)\n    at K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts:146:5",
+                        "message": "Error: Failed to navigate to page: book-advisor",
+                        "stack": "Error: Failed to navigate to page: book-advisor\n    at AdvisorPage.navigateTo (K:\\Project\\Kanaku\\quality\\e2e\\pom\\BasePage.ts:16:13)\n    at K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts:267:5",
                         "location": {
-                          "file": "K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts",
-                          "column": 11,
-                          "line": 70
+                          "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\BasePage.ts",
+                          "column": 13,
+                          "line": 16
                         },
-                        "snippet": "\u001b[90m   at \u001b[39mhelpers.ts:70\n\n\u001b[0m \u001b[90m 68 |\u001b[39m\n \u001b[90m 69 |\u001b[39m   \u001b[36mif\u001b[39m (\u001b[33m!\u001b[39mchallengeJson\u001b[33m?\u001b[39m\u001b[33m.\u001b[39msuccess \u001b[33m||\u001b[39m \u001b[33m!\u001b[39mchallengeJson\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mdata\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mcode) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 70 |\u001b[39m     \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\n \u001b[90m    |\u001b[39m           \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 71 |\u001b[39m       \u001b[32m`Login challenge failed for ${user.email}: ${JSON.stringify(challengeJson)}`\u001b[39m\n \u001b[90m 72 |\u001b[39m     )\u001b[33m;\u001b[39m\n \u001b[90m 73 |\u001b[39m   }\u001b[0m"
+                        "snippet": "\u001b[90m   at \u001b[39mpom\\BasePage.ts:16\n\n\u001b[0m \u001b[90m 14 |\u001b[39m     \u001b[36mconst\u001b[39m success \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m clickNav(\u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mpage\u001b[33m,\u001b[39m label)\u001b[33m;\u001b[39m\n \u001b[90m 15 |\u001b[39m     \u001b[36mif\u001b[39m (\u001b[33m!\u001b[39msuccess) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 16 |\u001b[39m       \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\u001b[32m`Failed to navigate to page: ${label}`\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m             \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 17 |\u001b[39m     }\n \u001b[90m 18 |\u001b[39m   }\n \u001b[90m 19 |\u001b[39m\u001b[0m"
                       },
                       "errors": [
                         {
                           "location": {
-                            "file": "K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts",
-                            "column": 11,
-                            "line": 70
+                            "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\BasePage.ts",
+                            "column": 13,
+                            "line": 16
                           },
-                          "message": "Error: Login challenge failed for arjun.test@kanaku.app: {\"error\":\"Too many login attempts. Please try again in a minute.\"}\n\n   at helpers.ts:70\n\n  68 |\n  69 |   if (!challengeJson?.success || !challengeJson?.data?.code) {\n> 70 |     throw new Error(\n     |           ^\n  71 |       `Login challenge failed for ${user.email}: ${JSON.stringify(challengeJson)}`\n  72 |     );\n  73 |   }\n    at loginUser (K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts:70:11)\n    at K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts:146:5"
+                          "message": "Error: Failed to navigate to page: book-advisor\n\n   at pom\\BasePage.ts:16\n\n  14 |     const success = await clickNav(this.page, label);\n  15 |     if (!success) {\n> 16 |       throw new Error(`Failed to navigate to page: ${label}`);\n     |             ^\n  17 |     }\n  18 |   }\n  19 |\n    at AdvisorPage.navigateTo (K:\\Project\\Kanaku\\quality\\e2e\\pom\\BasePage.ts:16:13)\n    at K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts:267:5"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 1,
-                      "startTime": "2026-06-23T13:22:31.338Z",
+                      "startTime": "2026-06-23T14:38:05.753Z",
                       "annotations": [],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--093e4-ransfers-Multiple-Datasets--chromium-retry1\\test-failed-1.png"
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--fc356-on-Compliance-Approval-Flow-chromium-retry1\\test-failed-1.png"
                         },
                         {
                           "name": "video",
                           "contentType": "video/webm",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--093e4-ransfers-Multiple-Datasets--chromium-retry1\\video.webm"
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--fc356-on-Compliance-Approval-Flow-chromium-retry1\\video.webm"
                         },
                         {
                           "name": "error-context",
                           "contentType": "text/markdown",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--093e4-ransfers-Multiple-Datasets--chromium-retry1\\error-context.md"
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--fc356-on-Compliance-Approval-Flow-chromium-retry1\\error-context.md"
                         },
                         {
                           "name": "trace",
                           "contentType": "application/zip",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--093e4-ransfers-Multiple-Datasets--chromium-retry1\\trace.zip"
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--fc356-on-Compliance-Approval-Flow-chromium-retry1\\trace.zip"
                         }
                       ],
                       "errorLocation": {
-                        "file": "K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts",
-                        "column": 11,
-                        "line": 70
+                        "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\BasePage.ts",
+                        "column": 13,
+                        "line": 16
                       }
                     }
                   ],
                   "status": "unexpected"
                 }
               ],
-              "id": "e70723a47e036255403b-42686466210af2bc6269",
+              "id": "e70723a47e036255403b-94f500c2127eca4616ee",
               "file": "11-user-advisor-scenarios.spec.ts",
-              "line": 144,
+              "line": 248,
               "column": 3
             },
             {
-              "title": "US-06: Goal Setting & Contributions",
+              "title": "AD-04 to AD-09: Advisor Workspace Operations & Profile Customizations",
               "ok": false,
               "tags": [],
               "tests": [
                 {
-                  "timeout": 180000,
+                  "timeout": 240000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
@@ -552,703 +520,68 @@
                       "workerIndex": 6,
                       "parallelIndex": 0,
                       "status": "failed",
-                      "duration": 646,
+                      "duration": 37763,
                       "error": {
-                        "message": "Error: Login challenge failed for arjun.test@kanaku.app: {\"error\":\"Too many login attempts. Please try again in a minute.\"}",
-                        "stack": "Error: Login challenge failed for arjun.test@kanaku.app: {\"error\":\"Too many login attempts. Please try again in a minute.\"}\n    at loginUser (K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts:70:11)\n    at K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts:194:5",
+                        "message": "Error: Failed to navigate to page: advisor-panel",
+                        "stack": "Error: Failed to navigate to page: advisor-panel\n    at AdvisorPage.navigateTo (K:\\Project\\Kanaku\\quality\\e2e\\pom\\BasePage.ts:16:13)\n    at K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts:300:5",
                         "location": {
-                          "file": "K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts",
-                          "column": 11,
-                          "line": 70
+                          "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\BasePage.ts",
+                          "column": 13,
+                          "line": 16
                         },
-                        "snippet": "\u001b[90m   at \u001b[39mhelpers.ts:70\n\n\u001b[0m \u001b[90m 68 |\u001b[39m\n \u001b[90m 69 |\u001b[39m   \u001b[36mif\u001b[39m (\u001b[33m!\u001b[39mchallengeJson\u001b[33m?\u001b[39m\u001b[33m.\u001b[39msuccess \u001b[33m||\u001b[39m \u001b[33m!\u001b[39mchallengeJson\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mdata\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mcode) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 70 |\u001b[39m     \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\n \u001b[90m    |\u001b[39m           \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 71 |\u001b[39m       \u001b[32m`Login challenge failed for ${user.email}: ${JSON.stringify(challengeJson)}`\u001b[39m\n \u001b[90m 72 |\u001b[39m     )\u001b[33m;\u001b[39m\n \u001b[90m 73 |\u001b[39m   }\u001b[0m"
+                        "snippet": "\u001b[90m   at \u001b[39mpom\\BasePage.ts:16\n\n\u001b[0m \u001b[90m 14 |\u001b[39m     \u001b[36mconst\u001b[39m success \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m clickNav(\u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mpage\u001b[33m,\u001b[39m label)\u001b[33m;\u001b[39m\n \u001b[90m 15 |\u001b[39m     \u001b[36mif\u001b[39m (\u001b[33m!\u001b[39msuccess) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 16 |\u001b[39m       \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\u001b[32m`Failed to navigate to page: ${label}`\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m             \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 17 |\u001b[39m     }\n \u001b[90m 18 |\u001b[39m   }\n \u001b[90m 19 |\u001b[39m\u001b[0m"
                       },
                       "errors": [
                         {
                           "location": {
-                            "file": "K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts",
-                            "column": 11,
-                            "line": 70
+                            "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\BasePage.ts",
+                            "column": 13,
+                            "line": 16
                           },
-                          "message": "Error: Login challenge failed for arjun.test@kanaku.app: {\"error\":\"Too many login attempts. Please try again in a minute.\"}\n\n   at helpers.ts:70\n\n  68 |\n  69 |   if (!challengeJson?.success || !challengeJson?.data?.code) {\n> 70 |     throw new Error(\n     |           ^\n  71 |       `Login challenge failed for ${user.email}: ${JSON.stringify(challengeJson)}`\n  72 |     );\n  73 |   }\n    at loginUser (K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts:70:11)\n    at K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts:194:5"
+                          "message": "Error: Failed to navigate to page: advisor-panel\n\n   at pom\\BasePage.ts:16\n\n  14 |     const success = await clickNav(this.page, label);\n  15 |     if (!success) {\n> 16 |       throw new Error(`Failed to navigate to page: ${label}`);\n     |             ^\n  17 |     }\n  18 |   }\n  19 |\n    at AdvisorPage.navigateTo (K:\\Project\\Kanaku\\quality\\e2e\\pom\\BasePage.ts:16:13)\n    at K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts:300:5"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-23T13:22:33.143Z",
+                      "startTime": "2026-06-23T14:39:16.091Z",
                       "annotations": [],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--152ff--Goal-Setting-Contributions-chromium\\test-failed-1.png"
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--bea8d-ions-Profile-Customizations-chromium\\test-failed-1.png"
                         },
                         {
                           "name": "video",
                           "contentType": "video/webm",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--152ff--Goal-Setting-Contributions-chromium\\video.webm"
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--bea8d-ions-Profile-Customizations-chromium\\video.webm"
                         },
                         {
                           "name": "error-context",
                           "contentType": "text/markdown",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--152ff--Goal-Setting-Contributions-chromium\\error-context.md"
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--bea8d-ions-Profile-Customizations-chromium\\error-context.md"
                         },
                         {
                           "name": "trace",
                           "contentType": "application/zip",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--152ff--Goal-Setting-Contributions-chromium\\trace.zip"
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--bea8d-ions-Profile-Customizations-chromium\\trace.zip"
                         }
                       ],
                       "errorLocation": {
-                        "file": "K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts",
-                        "column": 11,
-                        "line": 70
+                        "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\BasePage.ts",
+                        "column": 13,
+                        "line": 16
                       }
                     },
                     {
                       "workerIndex": 7,
                       "parallelIndex": 0,
                       "status": "failed",
-                      "duration": 590,
-                      "error": {
-                        "message": "Error: Login challenge failed for arjun.test@kanaku.app: {\"error\":\"Too many login attempts. Please try again in a minute.\"}",
-                        "stack": "Error: Login challenge failed for arjun.test@kanaku.app: {\"error\":\"Too many login attempts. Please try again in a minute.\"}\n    at loginUser (K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts:70:11)\n    at K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts:194:5",
-                        "location": {
-                          "file": "K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts",
-                          "column": 11,
-                          "line": 70
-                        },
-                        "snippet": "\u001b[90m   at \u001b[39mhelpers.ts:70\n\n\u001b[0m \u001b[90m 68 |\u001b[39m\n \u001b[90m 69 |\u001b[39m   \u001b[36mif\u001b[39m (\u001b[33m!\u001b[39mchallengeJson\u001b[33m?\u001b[39m\u001b[33m.\u001b[39msuccess \u001b[33m||\u001b[39m \u001b[33m!\u001b[39mchallengeJson\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mdata\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mcode) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 70 |\u001b[39m     \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\n \u001b[90m    |\u001b[39m           \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 71 |\u001b[39m       \u001b[32m`Login challenge failed for ${user.email}: ${JSON.stringify(challengeJson)}`\u001b[39m\n \u001b[90m 72 |\u001b[39m     )\u001b[33m;\u001b[39m\n \u001b[90m 73 |\u001b[39m   }\u001b[0m"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts",
-                            "column": 11,
-                            "line": 70
-                          },
-                          "message": "Error: Login challenge failed for arjun.test@kanaku.app: {\"error\":\"Too many login attempts. Please try again in a minute.\"}\n\n   at helpers.ts:70\n\n  68 |\n  69 |   if (!challengeJson?.success || !challengeJson?.data?.code) {\n> 70 |     throw new Error(\n     |           ^\n  71 |       `Login challenge failed for ${user.email}: ${JSON.stringify(challengeJson)}`\n  72 |     );\n  73 |   }\n    at loginUser (K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts:70:11)\n    at K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts:194:5"
-                        }
-                      ],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 1,
-                      "startTime": "2026-06-23T13:22:34.974Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--152ff--Goal-Setting-Contributions-chromium-retry1\\test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--152ff--Goal-Setting-Contributions-chromium-retry1\\video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--152ff--Goal-Setting-Contributions-chromium-retry1\\error-context.md"
-                        },
-                        {
-                          "name": "trace",
-                          "contentType": "application/zip",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--152ff--Goal-Setting-Contributions-chromium-retry1\\trace.zip"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts",
-                        "column": 11,
-                        "line": 70
-                      }
-                    }
-                  ],
-                  "status": "unexpected"
-                }
-              ],
-              "id": "e70723a47e036255403b-671ef3171ecf3afccdd9",
-              "file": "11-user-advisor-scenarios.spec.ts",
-              "line": 192,
-              "column": 3
-            },
-            {
-              "title": "US-07: Debt & EMI Tracking",
-              "ok": false,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 180000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 8,
-                      "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 843,
-                      "error": {
-                        "message": "Error: Login challenge failed for arjun.test@kanaku.app: {\"error\":\"Too many login attempts. Please try again in a minute.\"}",
-                        "stack": "Error: Login challenge failed for arjun.test@kanaku.app: {\"error\":\"Too many login attempts. Please try again in a minute.\"}\n    at loginUser (K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts:70:11)\n    at K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts:219:5",
-                        "location": {
-                          "file": "K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts",
-                          "column": 11,
-                          "line": 70
-                        },
-                        "snippet": "\u001b[90m   at \u001b[39mhelpers.ts:70\n\n\u001b[0m \u001b[90m 68 |\u001b[39m\n \u001b[90m 69 |\u001b[39m   \u001b[36mif\u001b[39m (\u001b[33m!\u001b[39mchallengeJson\u001b[33m?\u001b[39m\u001b[33m.\u001b[39msuccess \u001b[33m||\u001b[39m \u001b[33m!\u001b[39mchallengeJson\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mdata\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mcode) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 70 |\u001b[39m     \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\n \u001b[90m    |\u001b[39m           \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 71 |\u001b[39m       \u001b[32m`Login challenge failed for ${user.email}: ${JSON.stringify(challengeJson)}`\u001b[39m\n \u001b[90m 72 |\u001b[39m     )\u001b[33m;\u001b[39m\n \u001b[90m 73 |\u001b[39m   }\u001b[0m"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts",
-                            "column": 11,
-                            "line": 70
-                          },
-                          "message": "Error: Login challenge failed for arjun.test@kanaku.app: {\"error\":\"Too many login attempts. Please try again in a minute.\"}\n\n   at helpers.ts:70\n\n  68 |\n  69 |   if (!challengeJson?.success || !challengeJson?.data?.code) {\n> 70 |     throw new Error(\n     |           ^\n  71 |       `Login challenge failed for ${user.email}: ${JSON.stringify(challengeJson)}`\n  72 |     );\n  73 |   }\n    at loginUser (K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts:70:11)\n    at K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts:219:5"
-                        }
-                      ],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-06-23T13:22:36.858Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--92e53-ite-US-07-Debt-EMI-Tracking-chromium\\test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--92e53-ite-US-07-Debt-EMI-Tracking-chromium\\video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--92e53-ite-US-07-Debt-EMI-Tracking-chromium\\error-context.md"
-                        },
-                        {
-                          "name": "trace",
-                          "contentType": "application/zip",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--92e53-ite-US-07-Debt-EMI-Tracking-chromium\\trace.zip"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts",
-                        "column": 11,
-                        "line": 70
-                      }
-                    },
-                    {
-                      "workerIndex": 9,
-                      "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 733,
-                      "error": {
-                        "message": "Error: Login challenge failed for arjun.test@kanaku.app: {\"error\":\"Too many login attempts. Please try again in a minute.\"}",
-                        "stack": "Error: Login challenge failed for arjun.test@kanaku.app: {\"error\":\"Too many login attempts. Please try again in a minute.\"}\n    at loginUser (K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts:70:11)\n    at K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts:219:5",
-                        "location": {
-                          "file": "K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts",
-                          "column": 11,
-                          "line": 70
-                        },
-                        "snippet": "\u001b[90m   at \u001b[39mhelpers.ts:70\n\n\u001b[0m \u001b[90m 68 |\u001b[39m\n \u001b[90m 69 |\u001b[39m   \u001b[36mif\u001b[39m (\u001b[33m!\u001b[39mchallengeJson\u001b[33m?\u001b[39m\u001b[33m.\u001b[39msuccess \u001b[33m||\u001b[39m \u001b[33m!\u001b[39mchallengeJson\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mdata\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mcode) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 70 |\u001b[39m     \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\n \u001b[90m    |\u001b[39m           \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 71 |\u001b[39m       \u001b[32m`Login challenge failed for ${user.email}: ${JSON.stringify(challengeJson)}`\u001b[39m\n \u001b[90m 72 |\u001b[39m     )\u001b[33m;\u001b[39m\n \u001b[90m 73 |\u001b[39m   }\u001b[0m"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts",
-                            "column": 11,
-                            "line": 70
-                          },
-                          "message": "Error: Login challenge failed for arjun.test@kanaku.app: {\"error\":\"Too many login attempts. Please try again in a minute.\"}\n\n   at helpers.ts:70\n\n  68 |\n  69 |   if (!challengeJson?.success || !challengeJson?.data?.code) {\n> 70 |     throw new Error(\n     |           ^\n  71 |       `Login challenge failed for ${user.email}: ${JSON.stringify(challengeJson)}`\n  72 |     );\n  73 |   }\n    at loginUser (K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts:70:11)\n    at K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts:219:5"
-                        }
-                      ],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 1,
-                      "startTime": "2026-06-23T13:22:39.107Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--92e53-ite-US-07-Debt-EMI-Tracking-chromium-retry1\\test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--92e53-ite-US-07-Debt-EMI-Tracking-chromium-retry1\\video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--92e53-ite-US-07-Debt-EMI-Tracking-chromium-retry1\\error-context.md"
-                        },
-                        {
-                          "name": "trace",
-                          "contentType": "application/zip",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--92e53-ite-US-07-Debt-EMI-Tracking-chromium-retry1\\trace.zip"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts",
-                        "column": 11,
-                        "line": 70
-                      }
-                    }
-                  ],
-                  "status": "unexpected"
-                }
-              ],
-              "id": "e70723a47e036255403b-bb550d468d6fb5acdcf9",
-              "file": "11-user-advisor-scenarios.spec.ts",
-              "line": 217,
-              "column": 3
-            },
-            {
-              "title": "US-08: To-Do Checklist Management",
-              "ok": false,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 180000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 10,
-                      "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 728,
-                      "error": {
-                        "message": "Error: Login challenge failed for arjun.test@kanaku.app: {\"error\":\"Too many login attempts. Please try again in a minute.\"}",
-                        "stack": "Error: Login challenge failed for arjun.test@kanaku.app: {\"error\":\"Too many login attempts. Please try again in a minute.\"}\n    at loginUser (K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts:70:11)\n    at K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts:241:5",
-                        "location": {
-                          "file": "K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts",
-                          "column": 11,
-                          "line": 70
-                        },
-                        "snippet": "\u001b[90m   at \u001b[39mhelpers.ts:70\n\n\u001b[0m \u001b[90m 68 |\u001b[39m\n \u001b[90m 69 |\u001b[39m   \u001b[36mif\u001b[39m (\u001b[33m!\u001b[39mchallengeJson\u001b[33m?\u001b[39m\u001b[33m.\u001b[39msuccess \u001b[33m||\u001b[39m \u001b[33m!\u001b[39mchallengeJson\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mdata\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mcode) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 70 |\u001b[39m     \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\n \u001b[90m    |\u001b[39m           \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 71 |\u001b[39m       \u001b[32m`Login challenge failed for ${user.email}: ${JSON.stringify(challengeJson)}`\u001b[39m\n \u001b[90m 72 |\u001b[39m     )\u001b[33m;\u001b[39m\n \u001b[90m 73 |\u001b[39m   }\u001b[0m"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts",
-                            "column": 11,
-                            "line": 70
-                          },
-                          "message": "Error: Login challenge failed for arjun.test@kanaku.app: {\"error\":\"Too many login attempts. Please try again in a minute.\"}\n\n   at helpers.ts:70\n\n  68 |\n  69 |   if (!challengeJson?.success || !challengeJson?.data?.code) {\n> 70 |     throw new Error(\n     |           ^\n  71 |       `Login challenge failed for ${user.email}: ${JSON.stringify(challengeJson)}`\n  72 |     );\n  73 |   }\n    at loginUser (K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts:70:11)\n    at K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts:241:5"
-                        }
-                      ],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-06-23T13:22:41.149Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--51235--To-Do-Checklist-Management-chromium\\test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--51235--To-Do-Checklist-Management-chromium\\video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--51235--To-Do-Checklist-Management-chromium\\error-context.md"
-                        },
-                        {
-                          "name": "trace",
-                          "contentType": "application/zip",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--51235--To-Do-Checklist-Management-chromium\\trace.zip"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts",
-                        "column": 11,
-                        "line": 70
-                      }
-                    },
-                    {
-                      "workerIndex": 11,
-                      "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 1001,
-                      "error": {
-                        "message": "Error: Login challenge failed for arjun.test@kanaku.app: {\"error\":\"Too many login attempts. Please try again in a minute.\"}",
-                        "stack": "Error: Login challenge failed for arjun.test@kanaku.app: {\"error\":\"Too many login attempts. Please try again in a minute.\"}\n    at loginUser (K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts:70:11)\n    at K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts:241:5",
-                        "location": {
-                          "file": "K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts",
-                          "column": 11,
-                          "line": 70
-                        },
-                        "snippet": "\u001b[90m   at \u001b[39mhelpers.ts:70\n\n\u001b[0m \u001b[90m 68 |\u001b[39m\n \u001b[90m 69 |\u001b[39m   \u001b[36mif\u001b[39m (\u001b[33m!\u001b[39mchallengeJson\u001b[33m?\u001b[39m\u001b[33m.\u001b[39msuccess \u001b[33m||\u001b[39m \u001b[33m!\u001b[39mchallengeJson\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mdata\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mcode) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 70 |\u001b[39m     \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\n \u001b[90m    |\u001b[39m           \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 71 |\u001b[39m       \u001b[32m`Login challenge failed for ${user.email}: ${JSON.stringify(challengeJson)}`\u001b[39m\n \u001b[90m 72 |\u001b[39m     )\u001b[33m;\u001b[39m\n \u001b[90m 73 |\u001b[39m   }\u001b[0m"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts",
-                            "column": 11,
-                            "line": 70
-                          },
-                          "message": "Error: Login challenge failed for arjun.test@kanaku.app: {\"error\":\"Too many login attempts. Please try again in a minute.\"}\n\n   at helpers.ts:70\n\n  68 |\n  69 |   if (!challengeJson?.success || !challengeJson?.data?.code) {\n> 70 |     throw new Error(\n     |           ^\n  71 |       `Login challenge failed for ${user.email}: ${JSON.stringify(challengeJson)}`\n  72 |     );\n  73 |   }\n    at loginUser (K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts:70:11)\n    at K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts:241:5"
-                        }
-                      ],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 1,
-                      "startTime": "2026-06-23T13:22:43.239Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--51235--To-Do-Checklist-Management-chromium-retry1\\test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--51235--To-Do-Checklist-Management-chromium-retry1\\video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--51235--To-Do-Checklist-Management-chromium-retry1\\error-context.md"
-                        },
-                        {
-                          "name": "trace",
-                          "contentType": "application/zip",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--51235--To-Do-Checklist-Management-chromium-retry1\\trace.zip"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts",
-                        "column": 11,
-                        "line": 70
-                      }
-                    }
-                  ],
-                  "status": "unexpected"
-                }
-              ],
-              "id": "e70723a47e036255403b-5738a60e9c07a9418bf5",
-              "file": "11-user-advisor-scenarios.spec.ts",
-              "line": 239,
-              "column": 3
-            },
-            {
-              "title": "US-09 & US-10: Advisor Browsing & Booking",
-              "ok": false,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 180000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 12,
-                      "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 1101,
-                      "error": {
-                        "message": "Error: Login challenge failed for arjun.test@kanaku.app: {\"error\":\"Too many login attempts. Please try again in a minute.\"}",
-                        "stack": "Error: Login challenge failed for arjun.test@kanaku.app: {\"error\":\"Too many login attempts. Please try again in a minute.\"}\n    at loginUser (K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts:70:11)\n    at K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts:261:5",
-                        "location": {
-                          "file": "K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts",
-                          "column": 11,
-                          "line": 70
-                        },
-                        "snippet": "\u001b[90m   at \u001b[39mhelpers.ts:70\n\n\u001b[0m \u001b[90m 68 |\u001b[39m\n \u001b[90m 69 |\u001b[39m   \u001b[36mif\u001b[39m (\u001b[33m!\u001b[39mchallengeJson\u001b[33m?\u001b[39m\u001b[33m.\u001b[39msuccess \u001b[33m||\u001b[39m \u001b[33m!\u001b[39mchallengeJson\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mdata\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mcode) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 70 |\u001b[39m     \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\n \u001b[90m    |\u001b[39m           \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 71 |\u001b[39m       \u001b[32m`Login challenge failed for ${user.email}: ${JSON.stringify(challengeJson)}`\u001b[39m\n \u001b[90m 72 |\u001b[39m     )\u001b[33m;\u001b[39m\n \u001b[90m 73 |\u001b[39m   }\u001b[0m"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts",
-                            "column": 11,
-                            "line": 70
-                          },
-                          "message": "Error: Login challenge failed for arjun.test@kanaku.app: {\"error\":\"Too many login attempts. Please try again in a minute.\"}\n\n   at helpers.ts:70\n\n  68 |\n  69 |   if (!challengeJson?.success || !challengeJson?.data?.code) {\n> 70 |     throw new Error(\n     |           ^\n  71 |       `Login challenge failed for ${user.email}: ${JSON.stringify(challengeJson)}`\n  72 |     );\n  73 |   }\n    at loginUser (K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts:70:11)\n    at K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts:261:5"
-                        }
-                      ],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-06-23T13:22:46.052Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--0e1c8-10-Advisor-Browsing-Booking-chromium\\test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--0e1c8-10-Advisor-Browsing-Booking-chromium\\video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--0e1c8-10-Advisor-Browsing-Booking-chromium\\error-context.md"
-                        },
-                        {
-                          "name": "trace",
-                          "contentType": "application/zip",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--0e1c8-10-Advisor-Browsing-Booking-chromium\\trace.zip"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts",
-                        "column": 11,
-                        "line": 70
-                      }
-                    },
-                    {
-                      "workerIndex": 13,
-                      "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 934,
-                      "error": {
-                        "message": "Error: Login challenge failed for arjun.test@kanaku.app: {\"error\":\"Too many login attempts. Please try again in a minute.\"}",
-                        "stack": "Error: Login challenge failed for arjun.test@kanaku.app: {\"error\":\"Too many login attempts. Please try again in a minute.\"}\n    at loginUser (K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts:70:11)\n    at K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts:261:5",
-                        "location": {
-                          "file": "K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts",
-                          "column": 11,
-                          "line": 70
-                        },
-                        "snippet": "\u001b[90m   at \u001b[39mhelpers.ts:70\n\n\u001b[0m \u001b[90m 68 |\u001b[39m\n \u001b[90m 69 |\u001b[39m   \u001b[36mif\u001b[39m (\u001b[33m!\u001b[39mchallengeJson\u001b[33m?\u001b[39m\u001b[33m.\u001b[39msuccess \u001b[33m||\u001b[39m \u001b[33m!\u001b[39mchallengeJson\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mdata\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mcode) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 70 |\u001b[39m     \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\n \u001b[90m    |\u001b[39m           \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 71 |\u001b[39m       \u001b[32m`Login challenge failed for ${user.email}: ${JSON.stringify(challengeJson)}`\u001b[39m\n \u001b[90m 72 |\u001b[39m     )\u001b[33m;\u001b[39m\n \u001b[90m 73 |\u001b[39m   }\u001b[0m"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts",
-                            "column": 11,
-                            "line": 70
-                          },
-                          "message": "Error: Login challenge failed for arjun.test@kanaku.app: {\"error\":\"Too many login attempts. Please try again in a minute.\"}\n\n   at helpers.ts:70\n\n  68 |\n  69 |   if (!challengeJson?.success || !challengeJson?.data?.code) {\n> 70 |     throw new Error(\n     |           ^\n  71 |       `Login challenge failed for ${user.email}: ${JSON.stringify(challengeJson)}`\n  72 |     );\n  73 |   }\n    at loginUser (K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts:70:11)\n    at K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts:261:5"
-                        }
-                      ],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 1,
-                      "startTime": "2026-06-23T13:22:48.926Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--0e1c8-10-Advisor-Browsing-Booking-chromium-retry1\\test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--0e1c8-10-Advisor-Browsing-Booking-chromium-retry1\\video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--0e1c8-10-Advisor-Browsing-Booking-chromium-retry1\\error-context.md"
-                        },
-                        {
-                          "name": "trace",
-                          "contentType": "application/zip",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--0e1c8-10-Advisor-Browsing-Booking-chromium-retry1\\trace.zip"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts",
-                        "column": 11,
-                        "line": 70
-                      }
-                    }
-                  ],
-                  "status": "unexpected"
-                }
-              ],
-              "id": "e70723a47e036255403b-a13940d45318a13cbefa",
-              "file": "11-user-advisor-scenarios.spec.ts",
-              "line": 259,
-              "column": 3
-            }
-          ]
-        },
-        {
-          "title": "Kanaku Advisor Role Scenario-Level Testing Suite",
-          "file": "11-user-advisor-scenarios.spec.ts",
-          "line": 299,
-          "column": 6,
-          "specs": [
-            {
-              "title": "AD-01 & AD-03: Advisor Application & Compliance Approval (Multiple Datasets)",
-              "ok": false,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 240000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 14,
-                      "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 60441,
-                      "error": {
-                        "message": "Error: Failed to navigate to page: book-advisor",
-                        "stack": "Error: Failed to navigate to page: book-advisor\n    at AdvisorPage.navigateTo (K:\\Project\\Kanaku\\quality\\e2e\\pom\\BasePage.ts:16:13)\n    at K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts:323:5",
-                        "location": {
-                          "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\BasePage.ts",
-                          "column": 13,
-                          "line": 16
-                        },
-                        "snippet": "\u001b[90m   at \u001b[39mpom\\BasePage.ts:16\n\n\u001b[0m \u001b[90m 14 |\u001b[39m     \u001b[36mconst\u001b[39m success \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m clickNav(\u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mpage\u001b[33m,\u001b[39m label)\u001b[33m;\u001b[39m\n \u001b[90m 15 |\u001b[39m     \u001b[36mif\u001b[39m (\u001b[33m!\u001b[39msuccess) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 16 |\u001b[39m       \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\u001b[32m`Failed to navigate to page: ${label}`\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m             \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 17 |\u001b[39m     }\n \u001b[90m 18 |\u001b[39m   }\n \u001b[90m 19 |\u001b[39m\u001b[0m"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\BasePage.ts",
-                            "column": 13,
-                            "line": 16
-                          },
-                          "message": "Error: Failed to navigate to page: book-advisor\n\n   at pom\\BasePage.ts:16\n\n  14 |     const success = await clickNav(this.page, label);\n  15 |     if (!success) {\n> 16 |       throw new Error(`Failed to navigate to page: ${label}`);\n     |             ^\n  17 |     }\n  18 |   }\n  19 |\n    at AdvisorPage.navigateTo (K:\\Project\\Kanaku\\quality\\e2e\\pom\\BasePage.ts:16:13)\n    at K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts:323:5"
-                        }
-                      ],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-06-23T13:22:51.812Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--8ccf5-Approval-Multiple-Datasets--chromium\\test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--8ccf5-Approval-Multiple-Datasets--chromium\\video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--8ccf5-Approval-Multiple-Datasets--chromium\\error-context.md"
-                        },
-                        {
-                          "name": "trace",
-                          "contentType": "application/zip",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--8ccf5-Approval-Multiple-Datasets--chromium\\trace.zip"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\BasePage.ts",
-                        "column": 13,
-                        "line": 16
-                      }
-                    },
-                    {
-                      "workerIndex": 15,
-                      "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 59154,
-                      "error": {
-                        "message": "Error: Failed to navigate to page: book-advisor",
-                        "stack": "Error: Failed to navigate to page: book-advisor\n    at AdvisorPage.navigateTo (K:\\Project\\Kanaku\\quality\\e2e\\pom\\BasePage.ts:16:13)\n    at K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts:323:5",
-                        "location": {
-                          "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\BasePage.ts",
-                          "column": 13,
-                          "line": 16
-                        },
-                        "snippet": "\u001b[90m   at \u001b[39mpom\\BasePage.ts:16\n\n\u001b[0m \u001b[90m 14 |\u001b[39m     \u001b[36mconst\u001b[39m success \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m clickNav(\u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mpage\u001b[33m,\u001b[39m label)\u001b[33m;\u001b[39m\n \u001b[90m 15 |\u001b[39m     \u001b[36mif\u001b[39m (\u001b[33m!\u001b[39msuccess) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 16 |\u001b[39m       \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\u001b[32m`Failed to navigate to page: ${label}`\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m             \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 17 |\u001b[39m     }\n \u001b[90m 18 |\u001b[39m   }\n \u001b[90m 19 |\u001b[39m\u001b[0m"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\BasePage.ts",
-                            "column": 13,
-                            "line": 16
-                          },
-                          "message": "Error: Failed to navigate to page: book-advisor\n\n   at pom\\BasePage.ts:16\n\n  14 |     const success = await clickNav(this.page, label);\n  15 |     if (!success) {\n> 16 |       throw new Error(`Failed to navigate to page: ${label}`);\n     |             ^\n  17 |     }\n  18 |   }\n  19 |\n    at AdvisorPage.navigateTo (K:\\Project\\Kanaku\\quality\\e2e\\pom\\BasePage.ts:16:13)\n    at K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts:323:5"
-                        }
-                      ],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 1,
-                      "startTime": "2026-06-23T13:23:54.378Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--8ccf5-Approval-Multiple-Datasets--chromium-retry1\\test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--8ccf5-Approval-Multiple-Datasets--chromium-retry1\\video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--8ccf5-Approval-Multiple-Datasets--chromium-retry1\\error-context.md"
-                        },
-                        {
-                          "name": "trace",
-                          "contentType": "application/zip",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--8ccf5-Approval-Multiple-Datasets--chromium-retry1\\trace.zip"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\BasePage.ts",
-                        "column": 13,
-                        "line": 16
-                      }
-                    }
-                  ],
-                  "status": "unexpected"
-                }
-              ],
-              "id": "e70723a47e036255403b-3dcead9c0ae975bd286f",
-              "file": "11-user-advisor-scenarios.spec.ts",
-              "line": 302,
-              "column": 3
-            },
-            {
-              "title": "AD-04 to AD-08: Advisor Workspace Operations",
-              "ok": false,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 240000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 16,
-                      "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 33972,
+                      "duration": 37052,
                       "error": {
                         "message": "Error: Failed to navigate to page: advisor-panel",
-                        "stack": "Error: Failed to navigate to page: advisor-panel\n    at AdvisorPage.navigateTo (K:\\Project\\Kanaku\\quality\\e2e\\pom\\BasePage.ts:16:13)\n    at K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts:357:5",
+                        "stack": "Error: Failed to navigate to page: advisor-panel\n    at AdvisorPage.navigateTo (K:\\Project\\Kanaku\\quality\\e2e\\pom\\BasePage.ts:16:13)\n    at K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts:300:5",
                         "location": {
                           "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\BasePage.ts",
                           "column": 13,
@@ -1263,92 +596,34 @@
                             "column": 13,
                             "line": 16
                           },
-                          "message": "Error: Failed to navigate to page: advisor-panel\n\n   at pom\\BasePage.ts:16\n\n  14 |     const success = await clickNav(this.page, label);\n  15 |     if (!success) {\n> 16 |       throw new Error(`Failed to navigate to page: ${label}`);\n     |             ^\n  17 |     }\n  18 |   }\n  19 |\n    at AdvisorPage.navigateTo (K:\\Project\\Kanaku\\quality\\e2e\\pom\\BasePage.ts:16:13)\n    at K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts:357:5"
-                        }
-                      ],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-06-23T13:24:55.390Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--60f42-dvisor-Workspace-Operations-chromium\\test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--60f42-dvisor-Workspace-Operations-chromium\\video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--60f42-dvisor-Workspace-Operations-chromium\\error-context.md"
-                        },
-                        {
-                          "name": "trace",
-                          "contentType": "application/zip",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--60f42-dvisor-Workspace-Operations-chromium\\trace.zip"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\BasePage.ts",
-                        "column": 13,
-                        "line": 16
-                      }
-                    },
-                    {
-                      "workerIndex": 17,
-                      "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 33273,
-                      "error": {
-                        "message": "Error: Failed to navigate to page: advisor-panel",
-                        "stack": "Error: Failed to navigate to page: advisor-panel\n    at AdvisorPage.navigateTo (K:\\Project\\Kanaku\\quality\\e2e\\pom\\BasePage.ts:16:13)\n    at K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts:357:5",
-                        "location": {
-                          "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\BasePage.ts",
-                          "column": 13,
-                          "line": 16
-                        },
-                        "snippet": "\u001b[90m   at \u001b[39mpom\\BasePage.ts:16\n\n\u001b[0m \u001b[90m 14 |\u001b[39m     \u001b[36mconst\u001b[39m success \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m clickNav(\u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mpage\u001b[33m,\u001b[39m label)\u001b[33m;\u001b[39m\n \u001b[90m 15 |\u001b[39m     \u001b[36mif\u001b[39m (\u001b[33m!\u001b[39msuccess) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 16 |\u001b[39m       \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\u001b[32m`Failed to navigate to page: ${label}`\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m             \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 17 |\u001b[39m     }\n \u001b[90m 18 |\u001b[39m   }\n \u001b[90m 19 |\u001b[39m\u001b[0m"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\BasePage.ts",
-                            "column": 13,
-                            "line": 16
-                          },
-                          "message": "Error: Failed to navigate to page: advisor-panel\n\n   at pom\\BasePage.ts:16\n\n  14 |     const success = await clickNav(this.page, label);\n  15 |     if (!success) {\n> 16 |       throw new Error(`Failed to navigate to page: ${label}`);\n     |             ^\n  17 |     }\n  18 |   }\n  19 |\n    at AdvisorPage.navigateTo (K:\\Project\\Kanaku\\quality\\e2e\\pom\\BasePage.ts:16:13)\n    at K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts:357:5"
+                          "message": "Error: Failed to navigate to page: advisor-panel\n\n   at pom\\BasePage.ts:16\n\n  14 |     const success = await clickNav(this.page, label);\n  15 |     if (!success) {\n> 16 |       throw new Error(`Failed to navigate to page: ${label}`);\n     |             ^\n  17 |     }\n  18 |   }\n  19 |\n    at AdvisorPage.navigateTo (K:\\Project\\Kanaku\\quality\\e2e\\pom\\BasePage.ts:16:13)\n    at K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts:300:5"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 1,
-                      "startTime": "2026-06-23T13:25:31.121Z",
+                      "startTime": "2026-06-23T14:39:57.194Z",
                       "annotations": [],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--60f42-dvisor-Workspace-Operations-chromium-retry1\\test-failed-1.png"
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--bea8d-ions-Profile-Customizations-chromium-retry1\\test-failed-1.png"
                         },
                         {
                           "name": "video",
                           "contentType": "video/webm",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--60f42-dvisor-Workspace-Operations-chromium-retry1\\video.webm"
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--bea8d-ions-Profile-Customizations-chromium-retry1\\video.webm"
                         },
                         {
                           "name": "error-context",
                           "contentType": "text/markdown",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--60f42-dvisor-Workspace-Operations-chromium-retry1\\error-context.md"
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--bea8d-ions-Profile-Customizations-chromium-retry1\\error-context.md"
                         },
                         {
                           "name": "trace",
                           "contentType": "application/zip",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--60f42-dvisor-Workspace-Operations-chromium-retry1\\trace.zip"
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--bea8d-ions-Profile-Customizations-chromium-retry1\\trace.zip"
                         }
                       ],
                       "errorLocation": {
@@ -1361,13 +636,13 @@
                   "status": "unexpected"
                 }
               ],
-              "id": "e70723a47e036255403b-14c5cae141b2905f9efb",
+              "id": "e70723a47e036255403b-ffccf52b425c3cd25019",
               "file": "11-user-advisor-scenarios.spec.ts",
-              "line": 349,
+              "line": 294,
               "column": 3
             },
             {
-              "title": "AD-09: Advisor Profile Update & Customizations",
+              "title": "AD-10: Security Isolation & Access Blocks (Data Isolation)",
               "ok": true,
               "tags": [],
               "tests": [
@@ -1379,21 +654,21 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 18,
+                      "workerIndex": 8,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 30821,
+                      "duration": 32691,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-23T13:26:06.137Z",
+                      "startTime": "2026-06-23T14:40:37.085Z",
                       "annotations": [],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--76837-ofile-Update-Customizations-chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--cf1b3-cess-Blocks-Data-Isolation--chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -1401,146 +676,9 @@
                   "status": "expected"
                 }
               ],
-              "id": "e70723a47e036255403b-90d2fabb70501765a46e",
-              "file": "11-user-advisor-scenarios.spec.ts",
-              "line": 389,
-              "column": 3
-            },
-            {
-              "title": "AD-10: Security Isolation & Access Blocks (Data Isolation)",
-              "ok": false,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 240000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 18,
-                      "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 30887,
-                      "error": {
-                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mnot\u001b[2m.\u001b[22mtoContain\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // indexOf\u001b[22m\n\nExpected substring: not \u001b[32m\"advisor-verification\"\u001b[39m\nReceived string:        \u001b[31m\"http://localhost:9002/#/\u001b[7madvisor-verification\u001b[27m\"\u001b[39m",
-                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mnot\u001b[2m.\u001b[22mtoContain\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // indexOf\u001b[22m\n\nExpected substring: not \u001b[32m\"advisor-verification\"\u001b[39m\nReceived string:        \u001b[31m\"http://localhost:9002/#/\u001b[7madvisor-verification\u001b[27m\"\u001b[39m\n    at K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts:424:28",
-                        "location": {
-                          "file": "K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts",
-                          "column": 28,
-                          "line": 424
-                        },
-                        "snippet": "\u001b[0m \u001b[90m 422 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForTimeout(\u001b[35m1000\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 423 |\u001b[39m     \u001b[90m// Should redirect back to dashboard\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 424 |\u001b[39m     expect(page\u001b[33m.\u001b[39murl())\u001b[33m.\u001b[39mnot\u001b[33m.\u001b[39mtoContain(\u001b[32m'advisor-verification'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                            \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 425 |\u001b[39m\n \u001b[90m 426 |\u001b[39m     \u001b[36mawait\u001b[39m screenshot(page\u001b[33m,\u001b[39m \u001b[32m'ad_10_security_isolation_success'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 427 |\u001b[39m   })\u001b[33m;\u001b[39m\u001b[0m"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts",
-                            "column": 28,
-                            "line": 424
-                          },
-                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mnot\u001b[2m.\u001b[22mtoContain\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // indexOf\u001b[22m\n\nExpected substring: not \u001b[32m\"advisor-verification\"\u001b[39m\nReceived string:        \u001b[31m\"http://localhost:9002/#/\u001b[7madvisor-verification\u001b[27m\"\u001b[39m\n\n  422 |     await page.waitForTimeout(1000);\n  423 |     // Should redirect back to dashboard\n> 424 |     expect(page.url()).not.toContain('advisor-verification');\n      |                            ^\n  425 |\n  426 |     await screenshot(page, 'ad_10_security_isolation_success');\n  427 |   });\n    at K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts:424:28"
-                        }
-                      ],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-06-23T13:26:37.268Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--cf1b3-cess-Blocks-Data-Isolation--chromium\\test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--cf1b3-cess-Blocks-Data-Isolation--chromium\\video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--cf1b3-cess-Blocks-Data-Isolation--chromium\\error-context.md"
-                        },
-                        {
-                          "name": "trace",
-                          "contentType": "application/zip",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--cf1b3-cess-Blocks-Data-Isolation--chromium\\trace.zip"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts",
-                        "column": 28,
-                        "line": 424
-                      }
-                    },
-                    {
-                      "workerIndex": 19,
-                      "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 30980,
-                      "error": {
-                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mnot\u001b[2m.\u001b[22mtoContain\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // indexOf\u001b[22m\n\nExpected substring: not \u001b[32m\"advisor-verification\"\u001b[39m\nReceived string:        \u001b[31m\"http://localhost:9002/#/\u001b[7madvisor-verification\u001b[27m\"\u001b[39m",
-                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mnot\u001b[2m.\u001b[22mtoContain\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // indexOf\u001b[22m\n\nExpected substring: not \u001b[32m\"advisor-verification\"\u001b[39m\nReceived string:        \u001b[31m\"http://localhost:9002/#/\u001b[7madvisor-verification\u001b[27m\"\u001b[39m\n    at K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts:424:28",
-                        "location": {
-                          "file": "K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts",
-                          "column": 28,
-                          "line": 424
-                        },
-                        "snippet": "\u001b[0m \u001b[90m 422 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForTimeout(\u001b[35m1000\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 423 |\u001b[39m     \u001b[90m// Should redirect back to dashboard\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 424 |\u001b[39m     expect(page\u001b[33m.\u001b[39murl())\u001b[33m.\u001b[39mnot\u001b[33m.\u001b[39mtoContain(\u001b[32m'advisor-verification'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                            \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 425 |\u001b[39m\n \u001b[90m 426 |\u001b[39m     \u001b[36mawait\u001b[39m screenshot(page\u001b[33m,\u001b[39m \u001b[32m'ad_10_security_isolation_success'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 427 |\u001b[39m   })\u001b[33m;\u001b[39m\u001b[0m"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts",
-                            "column": 28,
-                            "line": 424
-                          },
-                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mnot\u001b[2m.\u001b[22mtoContain\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // indexOf\u001b[22m\n\nExpected substring: not \u001b[32m\"advisor-verification\"\u001b[39m\nReceived string:        \u001b[31m\"http://localhost:9002/#/\u001b[7madvisor-verification\u001b[27m\"\u001b[39m\n\n  422 |     await page.waitForTimeout(1000);\n  423 |     // Should redirect back to dashboard\n> 424 |     expect(page.url()).not.toContain('advisor-verification');\n      |                            ^\n  425 |\n  426 |     await screenshot(page, 'ad_10_security_isolation_success');\n  427 |   });\n    at K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts:424:28"
-                        }
-                      ],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 1,
-                      "startTime": "2026-06-23T13:27:09.812Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--cf1b3-cess-Blocks-Data-Isolation--chromium-retry1\\test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--cf1b3-cess-Blocks-Data-Isolation--chromium-retry1\\video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--cf1b3-cess-Blocks-Data-Isolation--chromium-retry1\\error-context.md"
-                        },
-                        {
-                          "name": "trace",
-                          "contentType": "application/zip",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--cf1b3-cess-Blocks-Data-Isolation--chromium-retry1\\trace.zip"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts",
-                        "column": 28,
-                        "line": 424
-                      }
-                    }
-                  ],
-                  "status": "unexpected"
-                }
-              ],
               "id": "e70723a47e036255403b-f73ff0c22384e479558d",
               "file": "11-user-advisor-scenarios.spec.ts",
-              "line": 404,
+              "line": 337,
               "column": 3
             }
           ]
@@ -1550,11 +688,11 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-06-23T13:21:26.727Z",
-    "duration": 375318.63,
-    "expected": 2,
+    "startTime": "2026-06-23T14:33:55.186Z",
+    "duration": 436143.89,
+    "expected": 1,
     "skipped": 0,
-    "unexpected": 10,
+    "unexpected": 4,
     "flaky": 0
   }
 }

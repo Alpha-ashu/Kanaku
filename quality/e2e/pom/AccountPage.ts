@@ -19,6 +19,9 @@ export class AccountPage extends BasePage {
   }
 
   async clickAddAccount() {
+    if (await this.balanceInput.first().isVisible().catch(() => false)) {
+      return;
+    }
     await this.addAccountBtn.first().click();
     await this.wait(800);
   }

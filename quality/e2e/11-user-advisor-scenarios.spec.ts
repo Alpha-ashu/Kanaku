@@ -48,13 +48,9 @@ test.describe('Kanaku User Role Scenario-Level Testing Suite', () => {
     await authPage.passwordInput.first().fill('Password@123');
     await authPage.confirmPasswordInput.first().fill('Different@123');
     await authPage.agreeTermsCheckbox.first().check();
-    await authPage.signupSubmitBtn.first().click();
-
-    // Verify validation message
-    const confirmInput = authPage.confirmPasswordInput.first();
-    const validationMessage = await confirmInput.evaluate((el: any) => el.validationMessage);
-    const hasValidationError = await page.getByText(/match|mismatch/i).first().isVisible().catch(() => false);
-    expect(hasValidationError || validationMessage || true).toBe(true);
+    
+    // Verify signup button is disabled due to password mismatch
+    await expect(authPage.signupSubmitBtn.first()).toBeDisabled();
     await screenshot(page, 'us_01_registration_password_mismatch');
 
     // Scenario 2: Positive Registration Case
@@ -245,6 +241,9 @@ test.describe('Kanaku User Role Scenario-Level Testing Suite', () => {
 test.describe('Kanaku Advisor Role Scenario-Level Testing Suite', () => {
   test.setTimeout(240_000);
 
+  let registeredAdvisorEmail = 'advisor.test.default@kanaku.test';
+  let registeredAdvisorMobile = '9000000000';
+
   test('AD-01 & AD-03: Advisor Application & Compliance Approval Flow', async ({ page }) => {
     const authPage = new AuthPage(page);
 
@@ -259,6 +258,8 @@ test.describe('Kanaku Advisor Role Scenario-Level Testing Suite', () => {
       password: 'StrongPassword@2026',
       persona: 'Advisor'
     };
+    registeredAdvisorEmail = uniqueUser.email;
+    registeredAdvisorMobile = uniqueUser.mobile;
 
     await authPage.registerViaUI(uniqueUser);
     await authPage.skipOnboarding();
@@ -293,7 +294,14 @@ test.describe('Kanaku Advisor Role Scenario-Level Testing Suite', () => {
 
   test('AD-04 to AD-09: Advisor Workspace Operations & Profile Customizations', async ({ page }) => {
     const authPage = new AuthPage(page);
-    await authPage.loginViaAPI(USERS.U7);
+    await authPage.loginViaAPI({
+      firstName: 'E2E',
+      lastName: 'Advisor',
+      email: registeredAdvisorEmail,
+      mobile: registeredAdvisorMobile,
+      password: 'StrongPassword@2026',
+      persona: 'Advisor'
+    });
     await authPage.skipOnboarding();
 
     const advisorPage = new AdvisorPage(page);

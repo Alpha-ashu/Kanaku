@@ -35,8 +35,8 @@ export const FloatingSaveBar: React.FC<FloatingSaveBarProps> = ({
       // `lg:hidden`), so the bar automatically drops to ~10px from the bottom
       // on desktop instead of floating 72px up into the form fields.
       'bottom-[calc(var(--bottom-nav-height,64px)+env(safe-area-inset-bottom,0px)+10px)]',
-      // On desktop, make it follow the normal layout flow to prevent overlapping input fields
-      'lg:relative lg:bottom-auto lg:left-auto lg:right-auto lg:z-10 lg:mt-8 lg:mb-4 lg:px-0',
+      // On desktop and tablet, make it follow the normal layout flow to prevent overlapping input fields
+      'md:relative md:bottom-auto md:left-auto md:right-auto md:z-10 md:mt-8 md:mb-4 md:px-0',
       className
     )}
   >

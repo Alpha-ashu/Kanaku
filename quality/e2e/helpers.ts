@@ -281,6 +281,34 @@ export async function skipOnboardingIfPresent(page: Page) {
     .isVisible().catch(() => false);
   if (isDashboardVisible) return;
 
+  // Handle Profile Onboarding Step 1 (gender, DOB, job type, salary)
+  const genderSelect = page.locator('select#gender');
+  if (await isElementVisible(genderSelect, 3000)) {
+    await genderSelect.selectOption('male');
+    await page.locator('input#dateOfBirth').fill('2000-01-01');
+    await page.locator('select#jobType').selectOption('Full-time Employment');
+    await page.locator('input#salary').fill('1200000');
+    const continueBtn = page.getByRole('button', { name: /Continue to Bank Account Setup/i });
+    if (await isElementVisible(continueBtn, 2000)) {
+      await continueBtn.click();
+      await page.waitForTimeout(1000);
+    }
+  }
+
+  // Handle Profile Onboarding Step 2 (Country and Language)
+  const skipStep2Btn = page.getByRole('button', { name: /Skip for now/i }).first();
+  if (await isElementVisible(skipStep2Btn, 3000)) {
+    await skipStep2Btn.click();
+    await page.waitForTimeout(1000);
+  }
+
+  // Handle Profile Onboarding Step 3 (Onboarding Complete / Complete Setup)
+  const completeSetupBtn = page.getByRole('button', { name: /Complete Setup/i }).first();
+  if (await isElementVisible(completeSetupBtn, 3000)) {
+    await completeSetupBtn.click();
+    await page.waitForTimeout(1000);
+  }
+
   // Handle App Feature Slides (shown to new users before PIN setup)
   const slidesContainer = page.getByTestId('onboarding-slides-container');
   if (await isElementVisible(slidesContainer, 5000)) {
