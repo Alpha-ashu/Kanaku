@@ -233,12 +233,16 @@ export async function applyTransactionAccountImpact(
  * contributions and loan payments) that affects a single account.
  */
 export async function getAccountLedgerDelta(accountId: number): Promise<number> {
+  // Filter in JS rather than via `.where('accountId')`: neither
+  // `goalContributions` nor `loanPayments` indexes `accountId` (see the schema
+  // in database.ts), so an indexed query throws a Dexie SchemaError. This
+  // mirrors how `rebuildAccountBalances` already reads these tables.
   const [transactions, goalContributions, loanPayments] = await Promise.all([
     db.transactions
       .filter((t) => !t.deletedAt && (t.accountId === accountId || t.transferToAccountId === accountId))
       .toArray(),
-    db.goalContributions.where('accountId').equals(accountId).toArray(),
-    db.loanPayments.where('accountId').equals(accountId).toArray(),
+    db.goalContributions.filter((c) => c.accountId === accountId).toArray(),
+    db.loanPayments.filter((p) => p.accountId === accountId).toArray(),
   ]);
   return computeAccountDeltas(transactions, goalContributions, loanPayments).get(accountId) ?? 0;
 }
