@@ -55,6 +55,7 @@ export const ROLE_FEATURES: Record<UserRole, Partial<Record<FeatureKey, boolean>
     transfer: true,
     taxCalculator: true,
     bookAdvisor: true,
+    payments: true,
     adminPanel: true,
     managerPanel: true,
     advisorPanel: false,
