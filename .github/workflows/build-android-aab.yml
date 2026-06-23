@@ -140,10 +140,15 @@ jobs:
 
       - name: Build summary
         if: always()
+        # Branch/event names go through env, not direct ${{ }} interpolation in
+        # the shell (CodeQL: expression/script injection in GitHub Actions).
+        env:
+          BRANCH: ${{ github.ref_name }}
+          EVENT: ${{ github.event_name }}
         run: |
           echo "## Build Summary" >> $GITHUB_STEP_SUMMARY
-          echo "- Branch: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Triggered by: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Branch: $BRANCH" >> $GITHUB_STEP_SUMMARY
+          echo "- Triggered by: $EVENT" >> $GITHUB_STEP_SUMMARY
           if [ -f "android/app/build/outputs/apk/debug/app-debug.apk" ]; then
             echo "- Debug APK: ✅ Built successfully" >> $GITHUB_STEP_SUMMARY
           fi

@@ -16,9 +16,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Deprecation warning
+        # Pass the workflow_dispatch input via env, never interpolate ${{ }}
+        # directly into the shell (CodeQL: expression/script injection in Actions).
+        env:
+          CONFIRM: ${{ github.event.inputs.confirm }}
         run: |
           echo "::warning::This workflow is deprecated. Use 'Deploy Backend → Fly.io' workflow instead."
-          if [ "${{ github.event.inputs.confirm }}" != "yes" ]; then
+          if [ "$CONFIRM" != "yes" ]; then
             echo "::error::Deployment cancelled. Set confirm=yes to force run this deprecated workflow."
             exit 1
           fi
