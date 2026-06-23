@@ -49,10 +49,17 @@ Schema: `Envelope`
       "email": "asha@example.com",
       "name": "Asha Sharma",
       "role": "user"
-    }
+    },
+    "expiresAt": 1782126929095
   }
 }
 ```
+
+**Token delivery (platform-aware, see Project Overview §E.1):** access token in the
+`Authorization` response header; refresh token via the `kanaku_rt` HttpOnly cookie
+(web). **Native** clients (`X-Client-Platform: native` or Capacitor Origin)
+additionally receive `data.accessToken` and `data.refreshToken` in the body for
+device storage, since they can't read cross-origin headers/cookies.
 
 ### 400 — Validation error
 

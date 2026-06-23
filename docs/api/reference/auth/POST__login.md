@@ -42,6 +42,8 @@ Schema: `Envelope`
 {
   "success": true,
   "data": {
+    "accessToken": "<jwt>",
+    "expiresAt": 1782126929095,
     "user": {
       "id": "uuid",
       "email": "asha@example.com",
@@ -50,6 +52,13 @@ Schema: `Envelope`
   }
 }
 ```
+
+**Token delivery (platform-aware, see Project Overview §E.1):**
+- `accessToken` — in the body **and** the `Authorization` response header (15 min).
+- **Refresh token** — **web:** `Set-Cookie: kanaku_rt=… HttpOnly; Secure; SameSite=Strict`
+  only (never in the body/JS). **Native** (request sends `X-Client-Platform: native`
+  or a Capacitor Origin): also returned as `data.refreshToken` for device storage.
+  The legacy `x-refresh-token` response header is no longer sent.
 
 ### 400 — Validation error
 

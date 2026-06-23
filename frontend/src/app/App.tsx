@@ -269,6 +269,12 @@ const AppContent: React.FC = () => {
   const [authInitialStep, setAuthInitialStep] = useState<'welcome' | 'signin' | 'signup'>('welcome');
   const [criticalPagesPrefetched, setCriticalPagesPrefetched] = useState(false);
   const hasModuleReloaded = useRef(false);
+  // Live-state refs for the native hardware-back handler (registered once, so it
+  // must read current values via refs rather than a stale closure).
+  const lastBackPressRef = useRef(0);
+  const currentPageRef = useRef<string>('dashboard');
+  const goBackRef = useRef<(() => void) | undefined>(undefined);
+  const closeOverlaysRef = useRef<() => boolean>(() => false);
   const [quickActionKey, setQuickActionKey] = useState(0);
   const [slidesViewed, setSlidesViewed] = useState(() => localStorage.getItem('onboarding_slides_viewed') === 'true');
 
@@ -316,6 +322,16 @@ const AppContent: React.FC = () => {
   }
 
   const { setCurrentPage, visibleFeatures, aiCapabilities } = appContext;
+
+  // Keep the native back handler's refs pointing at the latest values. Assigning
+  // refs during render is safe and gives the once-registered listener current
+  // state without re-registering it.
+  currentPageRef.current = currentPage;
+  goBackRef.current = appContext.goBack;
+  closeOverlaysRef.current = () => {
+    if (showQuickAction) { setShowQuickAction(false); return true; }
+    return false;
+  };
 
 
   // Show landing page only once we KNOW the user is not signed in
@@ -562,9 +578,34 @@ const AppContent: React.FC = () => {
     try {
       await StatusBar.setStyle({ style: Style.Dark });
       await StatusBar.setBackgroundColor({ color: '#2563eb' });
-      CapacitorApp.addListener('backButton', ({ canGoBack }) => {
-        if (!canGoBack) CapacitorApp.exitApp();
-        else window.history.back();
+      // Hardware-back handling.
+      //
+      // IMPORTANT: never call exitApp() on a single back event. Android dismisses
+      // the soft keyboard by dispatching a BACK key event, so right after login
+      // (keyboard still open) a stray back would otherwise quit the app the moment
+      // the Dashboard mounts — the "app closes after first login" bug. We instead:
+      //   1) close any open overlay,
+      //   2) navigate back in-app when we're not on a root page,
+      //   3) require a deliberate double-press to exit from a root page.
+      // `canGoBack` (WebView history) is unreliable here because navigation is
+      // driven by react-router state, so we use the app's own navigation instead.
+      const ROOT_PAGES = new Set(['dashboard', 'landing']);
+      CapacitorApp.addListener('backButton', () => {
+        if (closeOverlaysRef.current?.()) return;
+
+        const page = currentPageRef.current;
+        if (!ROOT_PAGES.has(page)) {
+          goBackRef.current?.();
+          return;
+        }
+
+        const now = Date.now();
+        if (now - lastBackPressRef.current < 2000) {
+          CapacitorApp.exitApp();
+        } else {
+          lastBackPressRef.current = now;
+          toast('Press back again to exit');
+        }
       });
       CapacitorApp.addListener('appStateChange', ({ isActive }) => {
         if (isActive) console.info('[Capacitor] App resumed to foreground.');

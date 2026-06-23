@@ -53,10 +53,38 @@ Kanaku/
 
 ---
 
-## A1. Recent Hardening & Fixes (2026-06-19)
+## A1. Recent Hardening & Fixes (2026-06-19 → 2026-06-23)
 
 > Logged here because these changes alter request validation, monetary
 > persistence, AI behaviour, and client request volume. Treat as authoritative.
+
+### 0a. Refresh token no longer exposed to web JavaScript (2026-06-23)
+- **Issue:** `login`/`refresh` returned the long-lived refresh token in the JSON
+  body **and** an `x-refresh-token` response header — both readable by JS, so any
+  XSS could exfiltrate it, defeating the existing HttpOnly cookie.
+- **Fix (platform-aware, see §E.1):** web now gets the refresh token **only** via
+  the `HttpOnly; Secure; SameSite=Strict` cookie; native (Capacitor) gets it in
+  the body for device storage (cross-site cookies are unreliable in mobile
+  webviews). Native is detected via `X-Client-Platform: native` **or** a Capacitor
+  Origin (`https://localhost`/`capacitor://`/`ionic://`) so pre-header installs
+  keep working. `x-refresh-token` response header removed; inbound reads kept.
+- **Touched:** `auth.controller.ts` (`isNativeClient` gate), `app.ts` (CORS
+  `allowedHeaders`), `frontend/src/lib/api.ts` (platform-aware `TokenManager` +
+  `X-Client-Platform`), auth components, auth integration/unit tests, Swagger docs.
+
+### 0b. App closed immediately after first login (native back-button) — fixed (2026-06-23)
+- **Root cause:** the Android hardware-back handler ran `if (!canGoBack) exitApp()`.
+  Navigation is react-router/state driven, so on the freshly-mounted Dashboard the
+  WebView history depth is 1 (`canGoBack === false`). After login the soft keyboard
+  is still open; Android dismisses it by dispatching a **BACK key event**, which the
+  handler turned into `exitApp()` → the app returned to the home screen. It only
+  happened on the *first* login (keyboard open); reopening (already logged in, no
+  keyboard) was fine.
+- **Fix:** `frontend/src/app/App.tsx` back handler now (1) closes open overlays,
+  (2) does in-app logical back via the app's `goBack()` on non-root pages, and
+  (3) requires a deliberate **double-press within 2s to exit** from a root page —
+  so a stray/keyboard-dismiss back can never quit the app. (Native-only path; web
+  back is unaffected.)
 
 ### 1. Onboarding `PUT /api/v1/auth/profile` 500 → numeric overflow fixed
 - **Root cause:** `User.salary` is `Decimal(12, 2)` (max ≈ 9,999,999,999.99). An
@@ -338,6 +366,32 @@ sequenceDiagram
     Note over FE,EX: Subsequent requests carry Authorization: Bearer <accessToken>
     Note over EX: Multi-strategy verify:<br/>1. Custom HS256<br/>2. Supabase JWKS<br/>3. Supabase /auth/v1/user<br/>4. Dev bypass (non-prod only)
 ```
+
+### E.1 Token delivery & refresh topology (platform-aware, 2026-06-23)
+
+The **access token** is short-lived (15 min) and returned in the response body
+(`data.accessToken`) and the `Authorization` header — held in JS memory /
+`localStorage` (`auth_token`). It is the only API credential (Bearer).
+
+The **refresh token** (7 d) delivery is **platform-aware** so it is XSS-safe on
+web while remaining reliable on mobile:
+
+| Client | Refresh token delivery | Storage | Why |
+|--------|------------------------|---------|-----|
+| **Web** (Vercel, same-origin via `/api/*` proxy) | `HttpOnly; Secure; SameSite=Strict` cookie **only** (`kanaku_rt`, Path `/api/v1/auth`) | Cookie (not readable by JS) | XSS cannot exfiltrate it |
+| **Native** (Capacitor Android/iOS, cross-origin) | JSON body (`data.refreshToken`) | Device storage (`localStorage`) | Cross-site cookies are dropped by iOS WKWebView ITP / Android 3rd-party-cookie policy |
+
+- Native is detected by `isNativeClient(req)` in `auth.controller.ts`: the
+  `X-Client-Platform: native` header (set by the SPA via `Capacitor.isNativePlatform()`)
+  **or** a Capacitor Origin (`https://localhost` / `capacitor://` / `ionic://`,
+  which also covers older installs). A browser web origin never matches, so web
+  stays cookie-only.
+- The `x-refresh-token` **response** header was removed entirely; the backend
+  still *reads* an inbound `x-refresh-token` header/body on `POST /auth/refresh`.
+- `POST /auth/refresh` rotates the pair; web rides the cookie (`credentials:'include'`),
+  native sends/receives the token in the header/body.
+- **Prod requirement:** `CORS_ORIGIN` must list both the web origin and
+  `https://localhost`; `x-client-platform` is in CORS `allowedHeaders`.
 
 ---
 
