@@ -1,6 +1,7 @@
 app = 'kanaku'
 primary_region = 'sin'
 # auto-deploy enabled via GitHub Actions
+# deploy: ship main after the Actions-minutes outage (openingBalance column confirmed applied to prod DB)
 
 [build]
   dockerfile = 'backend/Dockerfile'
