@@ -1,135 +1,47 @@
 /**
- * Purpose-keyed Redis (Dragonfly) connection factory.
+ * Redis-free workload stub.
  *
- * Each backend workload runs on its own *logical database* so they cannot
- * interfere with one another (a `FLUSHDB` or a `cacheDeleteByPrefix` SCAN on the
- * cache must never touch BullMQ's keyspace, and vice-versa):
+ * Kanaku no longer depends on Redis/Dragonfly. The rate-limit, idle-session and
+ * PIN-unlock modules, plus the socket identity cache, used to ask this factory
+ * for a purpose-keyed client and fall back to their own in-memory path when it
+ * returned null (local dev without Redis). We now make that the only path:
+ * `getPurposeClient` always returns null and every workload reports 'disabled',
+ * so each caller transparently uses its in-process Map.
  *
- *   DB0 → BullMQ queues / workers   (BULLMQ_REDIS_URL)
- *   DB1 → response / profile cache  (CACHE_REDIS_URL)
- *   DB2 → sessions (idle + PIN gate)(SESSION_REDIS_URL)
- *   DB3 → rate limiting             (RATE_LIMIT_REDIS_URL)
- *
- * URL resolution precedence per workload:
- *   1. The workload's own env var (operator controls host AND db index).
- *   2. REDIS_URL with the workload's logical db index appended (/0../3).
- *   3. null  → caller falls open to its in-memory path.
- *
- * This indirection is what lets the same code run against a single shared
- * Dragonfly today and split workloads across dedicated instances later WITHOUT
- * code changes — you just point the per-workload env vars at different hosts.
+ * The exported surface is kept intact so callers compile unchanged.
  */
-import Redis, { RedisOptions } from 'ioredis';
-import { logger } from './logger';
-
 export type RedisPurpose = 'bullmq' | 'cache' | 'session' | 'ratelimit';
 
 export type PurposeStatus = 'disabled' | 'connecting' | 'connected' | 'error';
 
-const PURPOSE_ENV: Record<RedisPurpose, string> = {
-  bullmq: 'BULLMQ_REDIS_URL',
-  cache: 'CACHE_REDIS_URL',
-  session: 'SESSION_REDIS_URL',
-  ratelimit: 'RATE_LIMIT_REDIS_URL',
-};
-
-/** Logical DB index per workload (see file header). */
-const PURPOSE_DB: Record<RedisPurpose, number> = {
-  bullmq: 0,
-  cache: 1,
-  session: 2,
-  ratelimit: 3,
-};
-
 /**
- * Resolve the connection URL for a workload, or null when Redis is not
- * configured at all (local dev without Dragonfly → callers use in-memory).
+ * Minimal Redis-command surface the (now Redis-free) callers still reference
+ * inside their `if (client) { … }` guards. The factory always returns null at
+ * runtime, so these methods are never actually invoked — the type just keeps the
+ * guarded branches compiling without touching every call site.
  */
-export function resolveRedisUrl(purpose: RedisPurpose): string | null {
-  const explicit = process.env[PURPOSE_ENV[purpose]]?.trim();
-  if (explicit) return explicit;
-
-  const base = process.env.REDIS_URL?.trim();
-  if (!base) return null;
-
-  // Derive a per-workload URL by swapping in the logical db index. Preserves
-  // scheme (redis/rediss), auth, host and port from REDIS_URL.
-  try {
-    const url = new URL(base);
-    url.pathname = `/${PURPOSE_DB[purpose]}`;
-    return url.toString();
-  } catch {
-    // Not a parseable URL — hand it to ioredis unchanged and let it report.
-    return base;
-  }
+export interface RedisLike {
+  get(key: string): Promise<string | null>;
+  set(key: string, value: string, ...args: any[]): Promise<unknown>;
+  del(...keys: string[]): Promise<unknown>;
+  incr(key: string): Promise<number>;
+  expire(key: string, seconds: number): Promise<unknown>;
+  pexpire(key: string, ms: number): Promise<unknown>;
+  pttl(key: string): Promise<number>;
+  ttl(key: string): Promise<number>;
 }
 
-export function buildRedisOptions(purpose: RedisPurpose): RedisOptions {
-  const url = resolveRedisUrl(purpose);
-  const useTls = !!url && url.startsWith('rediss://');
-
-  return {
-    lazyConnect: true,
-    enableReadyCheck: purpose !== 'bullmq',
-    // BullMQ REQUIRES maxRetriesPerRequest=null on its (blocking) connection;
-    // everything else fails fast so a Redis hiccup can't stall a request.
-    maxRetriesPerRequest: purpose === 'bullmq' ? null : 0,
-    connectTimeout: 3000,
-    // No command timeout on BullMQ — its blocking pops are expected to wait.
-    commandTimeout: purpose === 'bullmq' ? undefined : 2000,
-    tls: useTls ? {} : undefined,
-  };
+/** No Redis client in single-instance mode — callers fall back to in-memory. */
+export function getPurposeClient(_purpose: RedisPurpose): RedisLike | null {
+  return null;
 }
 
-// ── Shared singleton clients for the non-BullMQ workloads ───────────────────
-// (BullMQ owns its own connection lifecycle in config/queue.ts.)
-const clients = new Map<RedisPurpose, Redis | null>();
-const statuses = new Map<RedisPurpose, PurposeStatus>();
-
-/**
- * Lazily create (once) and return the singleton client for a workload, or null
- * when Redis is not configured. Status is tracked so callers can fall open to
- * their in-memory path while a connection is unhealthy.
- */
-export function getPurposeClient(purpose: RedisPurpose): Redis | null {
-  if (clients.has(purpose)) return clients.get(purpose) ?? null;
-
-  const url = resolveRedisUrl(purpose);
-  if (!url) {
-    clients.set(purpose, null);
-    statuses.set(purpose, 'disabled');
-    return null;
-  }
-
-  const client = new Redis(url, buildRedisOptions(purpose));
-  statuses.set(purpose, 'connecting');
-
-  client.on('connect', () => {
-    statuses.set(purpose, 'connected');
-    logger.info(`Redis[${purpose}] connected (db ${PURPOSE_DB[purpose]})`);
-  });
-  client.on('error', (error) => {
-    statuses.set(purpose, 'error');
-    logger.warn(`Redis[${purpose}] error`, { error: error.message });
-  });
-  client.on('close', () => {
-    if (statuses.get(purpose) !== 'disabled') statuses.set(purpose, 'connecting');
-  });
-
-  // Kick off the connection; failures surface via the 'error' handler above.
-  client.connect().catch(() => statuses.set(purpose, 'error'));
-
-  clients.set(purpose, client);
-  return client;
+export function getPurposeStatus(_purpose: RedisPurpose): PurposeStatus {
+  return 'disabled';
 }
 
-export function getPurposeStatus(purpose: RedisPurpose): PurposeStatus {
-  return statuses.get(purpose) ?? 'disabled';
-}
-
-/** True only when the workload's client is configured AND currently healthy. */
-export function isPurposeReady(purpose: RedisPurpose): boolean {
-  return getPurposeStatus(purpose) === 'connected' && !!getPurposeClient(purpose);
+export function isPurposeReady(_purpose: RedisPurpose): boolean {
+  return false;
 }
 
 export interface WorkloadHealth {
@@ -138,12 +50,7 @@ export interface WorkloadHealth {
   error?: string;
 }
 
-/**
- * Health snapshot for the purpose-managed workloads (cache/session/rate-limit).
- * Pings each client (bounded by the 2s command timeout) and reads server-level
- * memory / client stats from the cache connection. BullMQ uses its own
- * connection (config/queue.ts) and is pinged separately by the health route.
- */
+/** Health snapshot — every workload is intentionally disabled (no Redis). */
 export async function getRedisHealth(
   purposes: RedisPurpose[] = ['cache', 'session', 'ratelimit'],
 ): Promise<{
@@ -151,51 +58,11 @@ export async function getRedisHealth(
   server?: { usedMemory?: string; connectedClients?: string };
 }> {
   const workloads: Record<string, WorkloadHealth> = {};
-
-  for (const purpose of purposes) {
-    const client = getPurposeClient(purpose);
-    if (!client) {
-      workloads[purpose] = { status: 'disabled' };
-      continue;
-    }
-    const start = Date.now();
-    try {
-      await client.ping();
-      workloads[purpose] = { status: getPurposeStatus(purpose), latencyMs: Date.now() - start };
-    } catch (e) {
-      workloads[purpose] = { status: 'error', error: e instanceof Error ? e.message : String(e) };
-    }
-  }
-
-  let server: { usedMemory?: string; connectedClients?: string } | undefined;
-  const cache = getPurposeClient('cache');
-  if (cache) {
-    try {
-      const info = await cache.info();
-      server = {
-        usedMemory: /used_memory_human:(.+)/.exec(info)?.[1]?.trim(),
-        connectedClients: /connected_clients:(\d+)/.exec(info)?.[1],
-      };
-    } catch {
-      /* INFO unsupported / unavailable — omit server stats */
-    }
-  }
-
-  return { workloads, server };
+  for (const purpose of purposes) workloads[purpose] = { status: 'disabled' };
+  return { workloads };
 }
 
-/** Gracefully close all purpose clients (called on shutdown). */
+/** Nothing to close. Kept for the server shutdown wiring. */
 export async function closePurposeClients(): Promise<void> {
-  for (const [purpose, client] of clients) {
-    if (!client) continue;
-    try {
-      await client.quit();
-    } catch {
-      try { client.disconnect(); } catch { /* ignore */ }
-    }
-    clients.set(purpose, null);
-    statuses.set(purpose, 'disabled');
-  }
-  clients.clear();
-  statuses.clear();
+  /* no-op */
 }

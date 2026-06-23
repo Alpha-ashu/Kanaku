@@ -29,57 +29,12 @@
     networks:
       - KANAKU_network
 
-  # Primary cache store (Redis-wire compatible, no request quota). Point the
-  # backend at it: REDIS_URL=redis://localhost:6379
-  dragonfly:
-    image: docker.dragonflydb.io/dragonflydb/dragonfly:latest
-    container_name: KANAKU_dragonfly
-    restart: unless-stopped
-    ulimits:
-      memlock: -1
-    # Persist snapshots to the mounted volume (on shutdown + every 10 min).
-    # Local dev runs open (no auth). PRODUCTION must add `--requirepass` with a
-    # strong secret — see the hardened compose in docs/REDIS_DRAGONFLY_MIGRATION.md §6.
-    command: ["--dir", "/data", "--dbfilename", "dump", "--snapshot_cron", "*/10 * * * *"]
-    # Loopback-only: not exposed on the LAN/public interface. In PRODUCTION drop
-    # the host port entirely and reach Dragonfly over the internal network only.
-    ports:
-      - "127.0.0.1:6379:6379"
-    volumes:
-      - dragonfly_data:/data
-    networks:
-      - KANAKU_network
-    healthcheck:
-      test: ["CMD", "redis-cli", "-p", "6379", "ping"]
-      interval: 10s
-      timeout: 3s
-      retries: 5
-
-  # Local fallback cache (open-source Redis fork). Used as the next tier when the
-  # primary errors/over-quota: REDIS_FALLBACK_URL=redis://localhost:6380
-  valkey:
-    image: valkey/valkey:8.1.8-alpine
-    container_name: KANAKU_valkey
-    restart: unless-stopped
-    # AOF + RDB persistence.
-    command: ["valkey-server", "--appendonly", "yes", "--save", "60", "1"]
-    # Loopback-only (see dragonfly note above).
-    ports:
-      - "127.0.0.1:6380:6379"
-    volumes:
-      - valkey_data:/data
-    networks:
-      - KANAKU_network
-    healthcheck:
-      test: ["CMD", "valkey-cli", "ping"]
-      interval: 10s
-      timeout: 3s
-      retries: 5
+  # NOTE: Redis/Dragonfly/Valkey were removed — the backend caches in-process and
+  # delivers notifications via a PostgreSQL outbox (no queue broker). See
+  # docs/04_App_Flow/ARCHITECTURE.md.
 
 volumes:
   postgres_data:
-  dragonfly_data:
-  valkey_data:
 
 
 networks:

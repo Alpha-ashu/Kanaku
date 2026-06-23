@@ -1,3 +1,10 @@
+> ⚠️ **SUPERSEDED — historical only.** Redis/Dragonfly/Valkey and BullMQ have been
+> **removed** entirely. The backend now caches in-process and delivers
+> notifications via a PostgreSQL outbox drained by `node-cron`
+> (`backend/src/workers/index.ts`). There is no Redis or queue broker. See the
+> current design in [04_App_Flow/ARCHITECTURE.md](04_App_Flow/ARCHITECTURE.md).
+> This document is kept only as a record of the prior architecture.
+
 # Redis → Dragonfly Migration & Queue Architecture (v2.0)
 
 Production-grade background-processing and cache architecture for Kanaku / Finora.

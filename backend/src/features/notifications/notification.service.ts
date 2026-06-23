@@ -2,7 +2,6 @@ import { prisma } from "../../utils/prisma";
 import { v4 as uuidv4 } from "uuid";
 import * as nacl from "tweetnacl";
 import * as naclUtil from "tweetnacl-util";
-import { Queue } from "bullmq";
 
 export interface CreateNotificationInput {
   userId: string;
@@ -26,17 +25,13 @@ export interface NotificationChannel {
 
 /**
  * Notification Service
- * Handles creation, retrieval, and management of notifications
- * Integrates with job queues for multi-channel delivery
+ * Handles creation, retrieval, and management of notifications.
+ * Async channels (email/push) are delivered by the notification outbox drainer
+ * (workers/index.ts), which polls for rows at status='pending' — no queue/broker.
  */
 export class NotificationService {
-  constructor(
-    private emailQueue: Queue,
-    private pushQueue: Queue
-  ) {}
-
   /**
-   * Create a notification and dispatch to delivery channels
+   * Create a notification and hand async channels to the outbox drainer
    */
   async createNotification(
     input: CreateNotificationInput
@@ -55,11 +50,15 @@ export class NotificationService {
       devicePublicKey,
     } = input;
 
-    // Initialize delivery status
+    const wantsEmail = channels.includes("email");
+    const wantsPush = channels.includes("push");
+    const wantsAsync = wantsEmail || wantsPush;
+
+    // Initialize delivery status (only the requested async channels are queued).
     const deliveryStatus: NotificationChannel = {
       app: "sent",
-      email: "queued",
-      push: "queued",
+      ...(wantsEmail ? { email: "queued" as const } : {}),
+      ...(wantsPush ? { push: "queued" as const } : {}),
     };
 
     // Optional E2E encryption
@@ -86,63 +85,14 @@ export class NotificationService {
         channels: JSON.stringify(channels),
         deliveryStatus: JSON.stringify(deliveryStatus),
         encryptedPayload,
+        // 'pending' lets the outbox drainer pick up email/push; app-only is 'sent'.
+        status: wantsAsync ? "pending" : "sent",
+        sentAt: wantsAsync ? null : new Date(),
       },
     });
 
-    // Queue email delivery if channel enabled
-    if (channels.includes("email")) {
-      await this.emailQueue.add(
-        "send-notification-email",
-        {
-          notificationId: notification.id,
-          userId,
-          title,
-          message,
-          category,
-          deepLink,
-        },
-        {
-          priority: priority === "high" ? 1 : priority === "low" ? 3 : 2,
-          attempts: 3,
-          backoff: {
-            type: "exponential",
-            delay: 2000,
-          },
-        }
-      );
-    }
-
-    // Queue push delivery if channel enabled
-    if (channels.includes("push")) {
-      const device = await prisma.device.findFirst({
-        where: { userId, isActive: true, fcmToken: { not: null } },
-      });
-
-      if (device?.fcmToken) {
-        await this.pushQueue.add(
-          "send-push-notification",
-          {
-            notificationId: notification.id,
-            userId,
-            deviceId: device.id,
-            fcmToken: device.fcmToken,
-            title,
-            message,
-            category,
-            deepLink,
-          },
-          {
-            priority: priority === "high" ? 1 : priority === "low" ? 3 : 2,
-            attempts: 3,
-            backoff: {
-              type: "exponential",
-              delay: 2000,
-            },
-          }
-        );
-      }
-    }
-
+    // Email/push are delivered asynchronously by the notification outbox drainer
+    // (workers/index.ts) — there is nothing to enqueue here.
     return notification;
   }
 

@@ -6,7 +6,6 @@ import { logger } from '../../config/logger';
 import { isDatabaseUnavailableError } from '../../utils/databaseAvailability';
 import { getSocketManager } from '../../sockets';
 import { sanitize } from '../../utils/sanitize';
-import { getEmailQueue } from '../../config/queue';
 import { inviteParticipants } from '../collaboration/invitation.service';
 
 // User has no `phone` column — phone numbers live on `profiles` (synced 1:1 with User.id on registration).
@@ -20,24 +19,6 @@ async function findUserByEmailOrPhone(email?: string | null, phone?: string | nu
     if (profile) return prisma.user.findUnique({ where: { id: profile.id } });
   }
   return null;
-}
-
-async function queueGroupExpenseEmail(notificationId: string, userId: string, title: string, message: string): Promise<void> {
-  try {
-    // Retry/backoff/DLQ policy comes from the queue's STANDARD_JOB_OPTIONS.
-    await getEmailQueue().add('send-notification-email', {
-      notificationId,
-      userId,
-      title,
-      message,
-      category: 'group_expense',
-      deepLink: '/groups',
-    }, {
-      priority: 1,
-    });
-  } catch (err) {
-    logger.warn('Failed to queue group expense email notification', err);
-  }
 }
 
 // Helper to convert internal Prisma model to the response format dynamically
@@ -327,13 +308,15 @@ export const createGroup = async (req: AuthRequest, res: Response) => {
             title: notifTitle,
             message: notifMsg,
             type: 'group_expense',
+            category: 'group_expense',
+            deepLink: '/groups',
             priority: 'high',
             channels: '["app","email"]',
             deliveryStatus: '{"app":"sent","email":"queued"}',
+            // 'pending' hands the email channel to the notification outbox drainer.
+            status: 'pending',
           }
         });
-
-        await queueGroupExpenseEmail(notification.id, targetUser.id, notifTitle, notifMsg);
 
         try {
           const socketManager = getSocketManager();
@@ -496,13 +479,14 @@ export const updateGroup = async (req: AuthRequest, res: Response) => {
                 title: updNotifTitle,
                 message: updNotifMsg,
                 type: 'group_expense',
+                category: 'group_expense',
+                deepLink: '/groups',
                 priority: 'normal',
                 channels: '["app","email"]',
                 deliveryStatus: '{"app":"sent","email":"queued"}',
+                status: 'pending',
               }
             });
-
-            await queueGroupExpenseEmail(notification.id, targetUser.id, updNotifTitle, updNotifMsg);
 
             try {
               getSocketManager().notifyUser(targetUser.id, 'notification', notification);
@@ -548,12 +532,14 @@ export const updateGroup = async (req: AuthRequest, res: Response) => {
               title: settleNotifTitle,
               message: settleNotifMsg,
               type: 'group_expense',
+              category: 'group_expense',
+              deepLink: '/groups',
               priority: 'normal',
               channels: '["app","email"]',
               deliveryStatus: '{"app":"sent","email":"queued"}',
+              status: 'pending',
             }
           });
-          await queueGroupExpenseEmail(notificationCreator.id, existing.userId, settleNotifTitle, settleNotifMsg);
 
           try {
             getSocketManager().notifyUser(existing.userId, 'notification', notificationCreator);

@@ -1,70 +1,58 @@
 /**
- * Notification delivery workers (email + push).
+ * Notification delivery — database outbox drainer (Redis-free).
  *
- * Reliability contract (§11/§12/§19):
- *   - Idempotent: a job is skipped if its channel is already 'sent' for that
- *     notificationId, so retries / duplicate enqueues never double-deliver.
- *   - Lifecycle: every attempt updates the notification row (PostgreSQL is the
- *     source of truth) — status pending → processing → sent | retrying | failed.
- *   - Dead-letter: a job that exhausts all retries is copied to the queue's DLQ
- *     and the notification marked 'failed'. Nothing is ever silently dropped.
+ * The notification row in PostgreSQL IS the queue. Producers write a row with
+ * `status='pending'` and per-channel `deliveryStatus` of 'queued'; this drainer
+ * polls for due rows on a node-cron tick and delivers each pending channel.
  *
- * Retry/backoff/attempts come from STANDARD_JOB_OPTIONS (config/queue.ts).
+ * Reliability contract (unchanged from the former BullMQ workers):
+ *   - Idempotent: a channel already 'sent' for a notificationId is skipped, so a
+ *     re-drain never double-delivers.
+ *   - Lifecycle: PostgreSQL is the source of truth — status pending → processing
+ *     → sent | retrying | failed, with per-channel truth in `deliveryStatus`.
+ *   - Retry/backoff: failed sends are retried up to MAX_ATTEMPTS with exponential
+ *     backoff via `nextRetryAt`. A row that exhausts its retries lands at
+ *     status='failed' — the queryable dead-letter equivalent (nothing is ever
+ *     silently dropped; the `@@index([status, nextRetryAt])` powers recovery).
  */
-import { Worker, Job } from 'bullmq';
+import cron, { ScheduledTask } from 'node-cron';
 import { logger } from '../config/logger';
 import { prisma } from '../db/prisma';
 import { sendNotificationEmail } from '../emails';
 import { sendPushNotification, initializeFirebase } from '../config/firebase';
-import {
-  bullConnection,
-  QUEUE_NAMES,
-  STANDARD_JOB_OPTIONS,
-  moveToDeadLetter,
-} from '../config/queue';
 
-const EMAIL_CONCURRENCY = Number(process.env.EMAIL_WORKER_CONCURRENCY || 5);
-const PUSH_CONCURRENCY = Number(process.env.PUSH_WORKER_CONCURRENCY || 10);
-export const MAX_ATTEMPTS = Number(STANDARD_JOB_OPTIONS.attempts ?? 5);
-const BACKOFF_BASE_MS =
-  (typeof STANDARD_JOB_OPTIONS.backoff === 'object' && STANDARD_JOB_OPTIONS.backoff?.delay) || 5000;
+// ── Delivery policy ──────────────────────────────────────────────────────────
+export const MAX_ATTEMPTS = Number(process.env.NOTIFICATION_MAX_ATTEMPTS || 5);
+const BACKOFF_BASE_MS = Number(process.env.NOTIFICATION_BACKOFF_BASE_MS || 5000);
+const OUTBOX_BATCH = Number(process.env.NOTIFICATION_OUTBOX_BATCH || 25);
+// node-cron 6-field expression (seconds supported). Default: every 15 seconds.
+const OUTBOX_SCHEDULE = process.env.NOTIFICATION_OUTBOX_CRON || '*/15 * * * * *';
 
 type Channel = 'email' | 'push';
+const ASYNC_CHANNELS: Channel[] = ['email', 'push'];
 
-// ── Live runtime stats (for the queue monitoring endpoint) ───────────────────
-interface QueueRuntimeStats {
-  worker: Worker | null;
-  concurrency: number;
-  completed: number;
-  failed: number;
-  processingMsTotal: number;
-  processingSamples: number;
-}
-const runtimeStats = new Map<string, QueueRuntimeStats>();
+const backoffMs = (attemptsMade: number) =>
+  BACKOFF_BASE_MS * Math.pow(2, Math.max(0, attemptsMade - 1));
 
-export function getWorkerRuntimeStats(queueName: string) {
-  const s = runtimeStats.get(queueName);
-  if (!s) return null;
-  return {
-    running: s.worker ? s.worker.isRunning() : false,
-    concurrency: s.concurrency,
-    completed: s.completed,
-    failed: s.failed,
-    avgProcessingMs:
-      s.processingSamples > 0 ? Math.round(s.processingMsTotal / s.processingSamples) : 0,
-  };
-}
-
-// ── Lifecycle / idempotency helpers ─────────────────────────────────────────
-const parseDeliveryStatus = (value: unknown): Record<string, string> => {
+// ── Lifecycle / idempotency helpers ──────────────────────────────────────────
+const parseJson = <T>(value: unknown, fallback: T): T => {
   try {
-    return typeof value === 'string' ? JSON.parse(value) : ((value as Record<string, string>) || {});
+    if (value == null) return fallback;
+    return (typeof value === 'string' ? JSON.parse(value) : value) as T;
   } catch {
-    return {};
+    return fallback;
   }
 };
 
-/** Idempotency guard (§12): has this channel already been delivered? */
+const parseDeliveryStatus = (value: unknown): Record<string, string> =>
+  parseJson<Record<string, string>>(value, {});
+
+const parseChannels = (value: unknown): string[] => {
+  const parsed = parseJson<unknown>(value, []);
+  return Array.isArray(parsed) ? parsed.map(String) : [];
+};
+
+/** Idempotency guard: has this channel already been delivered? */
 async function isAlreadySent(notificationId: string, channel: Channel): Promise<boolean> {
   const n = await prisma.notification.findUnique({
     where: { id: notificationId },
@@ -95,38 +83,28 @@ async function markChannel(
       data: {
         deliveryStatus: JSON.stringify(ds),
         ...(channelStatus === 'sent'
-          ? { status: 'sent', sentAt: new Date(), errorMessage: null }
+          ? { sentAt: new Date(), errorMessage: null }
           : {}),
       },
     })
     .catch(() => {/* best-effort */});
 }
 
-async function recordFailure(
-  notificationId: string | undefined,
-  attemptsMade: number,
-  err: unknown,
-  isFinal: boolean,
-): Promise<void> {
-  if (!notificationId) return;
-  const message = (err instanceof Error ? err.message : String(err)).slice(0, 500);
-  await prisma.notification
-    .update({
-      where: { id: notificationId },
-      data: {
-        attempts: attemptsMade,
-        status: isFinal ? 'failed' : 'retrying',
-        errorMessage: message,
-        nextRetryAt: isFinal
-          ? null
-          : new Date(Date.now() + BACKOFF_BASE_MS * Math.pow(2, Math.max(0, attemptsMade - 1))),
-      },
-    })
-    .catch(() => {/* best-effort */});
+// ── Channel processors (idempotent, source-of-truth = PostgreSQL) ────────────
+export interface DeliveryJob {
+  notificationId: string;
+  userId: string;
+  title: string;
+  message: string;
+  category?: string;
+  deepLink?: string;
+  // push-only
+  deviceId?: string;
+  fcmToken?: string;
+  priority?: string;
 }
 
-// ── Processors ───────────────────────────────────────────────────────────────
-export async function processEmail(job: Job): Promise<unknown> {
+export async function processEmail(job: { data: DeliveryJob }): Promise<unknown> {
   const { notificationId, userId, title, message, category, deepLink } = job.data;
 
   if (await isAlreadySent(notificationId, 'email')) {
@@ -155,7 +133,7 @@ export async function processEmail(job: Job): Promise<unknown> {
   return { sent: true };
 }
 
-export async function processPush(job: Job): Promise<unknown> {
+export async function processPush(job: { data: DeliveryJob }): Promise<unknown> {
   const { notificationId, userId, deviceId, fcmToken, title, message, category, deepLink, priority } =
     job.data;
 
@@ -163,6 +141,11 @@ export async function processPush(job: Job): Promise<unknown> {
     return { skipped: true, reason: 'already_sent' };
   }
   await setProcessing(notificationId);
+
+  if (!deviceId || !fcmToken) {
+    await markChannel(notificationId, 'push', 'failed');
+    return { skipped: true, reason: 'no_device' };
+  }
 
   const device = await prisma.device.findUnique({ where: { id: deviceId } });
   if (!device || device.userId !== userId || !device.isActive || device.fcmToken !== fcmToken) {
@@ -186,7 +169,7 @@ export async function processPush(job: Job): Promise<unknown> {
     return { sent: true, messageId };
   } catch (err) {
     // A dead/unregistered token will never succeed — clean it up so we stop
-    // retrying it, then re-throw so BullMQ records the failed attempt.
+    // retrying it, then re-throw so the drainer records the failed attempt.
     const msg = err instanceof Error ? err.message.toLowerCase() : '';
     if (msg.includes('invalid') || msg.includes('unregistered') || msg.includes('not-registered')) {
       await prisma.device
@@ -197,98 +180,177 @@ export async function processPush(job: Job): Promise<unknown> {
   }
 }
 
-// ── Failure handling (retry bookkeeping + dead-letter routing) ───────────────
-interface FailableJob {
-  id?: string;
-  name: string;
-  data: any;
-  attemptsMade: number;
+// ── Per-notification delivery (all due channels in one pass) ──────────────────
+interface OutboxRow {
+  id: string;
+  userId: string;
+  title: string;
+  message: string;
+  category: string | null;
+  deepLink: string | null;
+  priority: string | null;
+  channels: unknown;
+  deliveryStatus: unknown;
+  attempts: number;
+}
+
+const isTerminal = (s: string | undefined) => s === 'sent' || s === 'failed';
+
+/** Build the per-channel job payload from a notification row (+ device for push). */
+async function buildJob(row: OutboxRow, channel: Channel): Promise<DeliveryJob> {
+  const base: DeliveryJob = {
+    notificationId: row.id,
+    userId: row.userId,
+    title: row.title,
+    message: row.message,
+    category: row.category ?? undefined,
+    deepLink: row.deepLink ?? undefined,
+    priority: row.priority ?? undefined,
+  };
+  if (channel === 'push') {
+    const device = await prisma.device.findFirst({
+      where: { userId: row.userId, isActive: true, fcmToken: { not: null } },
+    });
+    base.deviceId = device?.id;
+    base.fcmToken = device?.fcmToken ?? undefined;
+  }
+  return base;
 }
 
 /**
- * Records a failed attempt and, once retries are exhausted, marks the channel
- * failed and copies the job to its dead-letter queue. Extracted from the worker
- * 'failed' listener so the DLQ contract is unit-testable without a live queue.
+ * Deliver every still-pending async channel for one notification, then reconcile
+ * the overall status. Exported for unit testing.
  */
-export async function handleJobFailure(
-  queueName: string,
-  channel: Channel,
-  job: FailableJob,
-  err: { message?: string } | undefined,
-): Promise<void> {
-  const isFinal = job.attemptsMade >= MAX_ATTEMPTS;
-  logger.warn(`[${queueName}] job ${job.id} failed (attempt ${job.attemptsMade}/${MAX_ATTEMPTS})`, {
-    error: err?.message,
+export async function deliverNotification(row: OutboxRow): Promise<void> {
+  const requested = parseChannels(row.channels).filter((c): c is Channel =>
+    (ASYNC_CHANNELS as string[]).includes(c),
+  );
+  const ds = parseDeliveryStatus(row.deliveryStatus);
+  const pending = requested.filter((c) => !isTerminal(ds[c]));
+
+  if (pending.length === 0) {
+    // Nothing to do — reconcile a stuck 'pending'/'retrying' row to terminal.
+    const anySent = requested.some((c) => ds[c] === 'sent');
+    await prisma.notification
+      .update({ where: { id: row.id }, data: { status: anySent ? 'sent' : 'failed', nextRetryAt: null } })
+      .catch(() => {});
+    return;
+  }
+
+  const attemptsMade = (row.attempts ?? 0) + 1;
+  let lastError: string | undefined;
+
+  for (const channel of pending) {
+    try {
+      const job = { data: await buildJob(row, channel) };
+      await (channel === 'email' ? processEmail(job) : processPush(job));
+    } catch (err) {
+      lastError = (err instanceof Error ? err.message : String(err)).slice(0, 500);
+      logger.warn(`[outbox] ${channel} delivery failed for ${row.id} (attempt ${attemptsMade}/${MAX_ATTEMPTS})`, {
+        error: lastError,
+      });
+      if (attemptsMade >= MAX_ATTEMPTS) {
+        // Retries exhausted — mark the channel failed (queryable dead-letter).
+        await markChannel(row.id, channel, 'failed');
+      }
+    }
+  }
+
+  // Re-read the per-channel truth markChannel just wrote, then reconcile status.
+  const fresh = await prisma.notification.findUnique({
+    where: { id: row.id },
+    select: { deliveryStatus: true },
   });
+  const freshDs = parseDeliveryStatus(fresh?.deliveryStatus);
+  const stillPending = requested.filter((c) => !isTerminal(freshDs[c]));
 
-  await recordFailure(job.data?.notificationId, job.attemptsMade, err, isFinal);
+  if (stillPending.length > 0) {
+    // Some channel can still be retried — schedule the next attempt.
+    await prisma.notification
+      .update({
+        where: { id: row.id },
+        data: {
+          status: 'retrying',
+          attempts: attemptsMade,
+          errorMessage: lastError ?? null,
+          nextRetryAt: new Date(Date.now() + backoffMs(attemptsMade)),
+        },
+      })
+      .catch(() => {});
+    return;
+  }
 
-  if (isFinal) {
-    if (job.data?.notificationId) await markChannel(job.data.notificationId, channel, 'failed');
-    await moveToDeadLetter(queueName, job.name, job.data, err?.message || 'unknown').catch((e) =>
-      logger.error(`[${queueName}] failed to move job to dead-letter queue`, { error: e?.message }),
-    );
+  // All channels terminal: sent if at least one delivered, else failed.
+  const anySent = requested.some((c) => freshDs[c] === 'sent');
+  await prisma.notification
+    .update({
+      where: { id: row.id },
+      data: {
+        status: anySent ? 'sent' : 'failed',
+        attempts: attemptsMade,
+        nextRetryAt: null,
+        ...(anySent ? { sentAt: new Date(), errorMessage: null } : { errorMessage: lastError ?? null }),
+      },
+    })
+    .catch(() => {});
+}
+
+/** Drain one batch of due notifications. Exported so it can be triggered/tested directly. */
+let draining = false;
+export async function drainNotificationOutbox(): Promise<number> {
+  if (draining) return 0; // never let ticks overlap
+  draining = true;
+  try {
+    const now = new Date();
+    const due = (await prisma.notification.findMany({
+      where: {
+        status: { in: ['pending', 'retrying'] },
+        deletedAt: null,
+        OR: [{ nextRetryAt: null }, { nextRetryAt: { lte: now } }],
+      },
+      orderBy: { createdAt: 'asc' },
+      take: OUTBOX_BATCH,
+      select: {
+        id: true, userId: true, title: true, message: true, category: true,
+        deepLink: true, priority: true, channels: true, deliveryStatus: true, attempts: true,
+      },
+    })) as OutboxRow[];
+
+    for (const row of due) {
+      await deliverNotification(row);
+    }
+    return due.length;
+  } catch (err) {
+    logger.error('[outbox] drain failed', { error: err instanceof Error ? err.message : String(err) });
+    return 0;
+  } finally {
+    draining = false;
   }
 }
 
-// ── Worker wiring (with dead-letter routing) ─────────────────────────────────
-function startWorker(
-  queueName: string,
-  channel: Channel,
-  processor: (job: Job) => Promise<unknown>,
-  concurrency: number,
-): Worker {
-  const stats: QueueRuntimeStats = {
-    worker: null,
-    concurrency,
-    completed: 0,
-    failed: 0,
-    processingMsTotal: 0,
-    processingSamples: 0,
-  };
-  runtimeStats.set(queueName, stats);
+// ── Lifecycle ────────────────────────────────────────────────────────────────
+let outboxJob: ScheduledTask | null = null;
 
-  const worker = new Worker(queueName, processor, { connection: bullConnection as any, concurrency });
-  stats.worker = worker;
-
-  worker.on('completed', (job) => {
-    stats.completed += 1;
-    const started = job.processedOn ?? job.timestamp;
-    const finished = job.finishedOn ?? Date.now();
-    if (started) {
-      stats.processingMsTotal += Math.max(0, finished - started);
-      stats.processingSamples += 1;
-    }
-    logger.debug(`[${queueName}] job ${job.id} completed`);
-  });
-
-  worker.on('failed', async (job, err) => {
-    if (!job) return;
-    stats.failed += 1;
-    await handleJobFailure(queueName, channel, job as unknown as FailableJob, err);
-  });
-
-  worker.on('error', () => {
-    // Connection noise (e.g. Redis offline in dev) — already surfaced elsewhere.
-  });
-
-  logger.info(`${queueName} worker initialized (concurrency ${concurrency})`);
-  return worker;
-}
-
-let workers: Worker[] = [];
-
-/** Start the email + push notification workers. */
-export const initializeNotificationWorkers = () => {
+/** Start the notification outbox drainer (replaces the BullMQ workers). */
+export const startNotificationOutbox = (): void => {
   initializeFirebase();
-  const emailWorker = startWorker(QUEUE_NAMES.email, 'email', processEmail, EMAIL_CONCURRENCY);
-  const pushWorker = startWorker(QUEUE_NAMES.push, 'push', processPush, PUSH_CONCURRENCY);
-  workers = [emailWorker, pushWorker];
-  return { emailWorker, pushWorker };
+
+  if (!cron.validate(OUTBOX_SCHEDULE)) {
+    logger.error(`Invalid NOTIFICATION_OUTBOX_CRON: "${OUTBOX_SCHEDULE}". Outbox drainer NOT started.`);
+    return;
+  }
+
+  outboxJob = cron.schedule(OUTBOX_SCHEDULE, () => {
+    void drainNotificationOutbox();
+  });
+  logger.info(`Notification outbox drainer started (schedule: ${OUTBOX_SCHEDULE}, batch: ${OUTBOX_BATCH})`);
 };
 
-/** Gracefully close all workers (called on shutdown). */
-export const stopNotificationWorkers = async (): Promise<void> => {
-  await Promise.allSettled(workers.map((w) => w.close()));
-  workers = [];
+/** Stop the drainer (called on shutdown). */
+export const stopNotificationOutbox = async (): Promise<void> => {
+  if (outboxJob) {
+    outboxJob.stop();
+    outboxJob = null;
+    logger.info('Notification outbox drainer stopped');
+  }
 };

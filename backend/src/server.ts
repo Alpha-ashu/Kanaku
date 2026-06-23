@@ -4,11 +4,9 @@ import { logger } from './config/logger';
 import { initializeSocket } from './sockets/index';
 import { closeRedis, initRedis } from './cache/redis';
 import { closePurposeClients } from './config/redis-connections';
-import { closeQueueConnections } from './config/queue';
 import { startAIBackgroundJobs, stopAIBackgroundJobs } from './features/ai/ai.engine';
-import { initializeNotificationWorkers, stopNotificationWorkers } from './workers/index';
+import { startNotificationOutbox, stopNotificationOutbox } from './workers/index';
 import { startCleanupWorker, stopCleanupWorker } from './workers/cleanup.worker';
-import { getQueues } from './config/queue';
 
 const PORT = process.env.PORT || 3000;
 
@@ -50,16 +48,12 @@ initializeSocket(server);
 
 void initRedis();
 
-// Initialize notification workers
+// Start the notification outbox drainer (email/push delivery via PostgreSQL —
+// no Redis/queue broker). It polls for notification rows at status='pending'.
 try {
-  getQueues(); // register email/push queues + their dead-letter queues
-  const workers = initializeNotificationWorkers();
-  logger.info('Notification workers initialized', {
-    pushWorker: !!workers.pushWorker,
-    emailWorker: !!workers.emailWorker,
-  });
+  startNotificationOutbox();
 } catch (error) {
-  logger.error('Failed to initialize notification workers:', error);
+  logger.error('Failed to start notification outbox drainer:', error);
 }
 
 startAIBackgroundJobs();
@@ -70,8 +64,7 @@ const shutdown = async (signal: string) => {
   server.close(async () => {
     stopAIBackgroundJobs();
     stopCleanupWorker();
-    await stopNotificationWorkers();
-    await closeQueueConnections();
+    await stopNotificationOutbox();
     await closePurposeClients();
     await closeRedis();
     process.exit(0);
