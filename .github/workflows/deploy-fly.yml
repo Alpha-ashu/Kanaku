@@ -54,6 +54,15 @@ jobs:
         uses: superfly/flyctl-actions/setup-flyctl@v1
 
       - name: Deploy to Fly.io
-        run: flyctl deploy --remote-only --config fly.toml
+        # Skip gracefully (don't fail the run) when FLY_API_TOKEN is not
+        # configured, so the workflow stays green until deployment is wired up.
+        # Add the secret under Settings → Secrets and variables → Actions to
+        # enable real deploys. Mirrors the Android workflow's keystore fallback.
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          if [ -z "$FLY_API_TOKEN" ]; then
+            echo "::warning::FLY_API_TOKEN is not set — skipping deploy. Add it in Settings → Secrets and variables → Actions to enable Fly.io deployment."
+            exit 0
+          fi
+          flyctl deploy --remote-only --config fly.toml
