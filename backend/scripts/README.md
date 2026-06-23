@@ -51,3 +51,7 @@ npm run qa:test-features
 ```
 
 Prefer the package scripts instead of calling PowerShell files directly.
+
+<!-- ci: touch to re-run the Backend Feature Matrix on current main after the
+     Actions-minutes outage; this file is build-irrelevant. -->
+
