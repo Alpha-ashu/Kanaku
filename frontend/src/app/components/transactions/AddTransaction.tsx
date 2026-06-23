@@ -735,7 +735,7 @@ export function AddTransaction() {
  </header>
 
  {/* Main Single-Page Content Area */}
- <main className="flex-1 p-3 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 overflow-y-auto pb-48 lg:pb-6 no-scrollbar">
+ <main className="flex-1 p-3 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 overflow-y-auto pb-48 no-scrollbar">
 
  {/* Left Column: Context & categorization (lg:col-7) */}
  <div className="lg:col-span-7 flex flex-col gap-4">
