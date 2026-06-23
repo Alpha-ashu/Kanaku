@@ -53,6 +53,22 @@ const lazyRoute =
     }
   };
 
+// --- Phase-based module gating ----------------------------------------------
+// Some routers are scaffolding for later roadmap phases (Advisor marketplace,
+// Payments, Account Aggregator). They are deferred and stay UNMOUNTED unless the
+// deployment explicitly opts in via the ENABLED_MODULES env var (comma-separated,
+// e.g. ENABLED_MODULES=advisor,payments,aa). With it unset — the production
+// default — these paths 404, so a deferred/regulated endpoint cannot be reached
+// just because its code exists in the repo. MVP modules are always mounted.
+// See KANAKU_PROJECT_OVERVIEW.md → "Module Phasing & Gating".
+const ENABLED_MODULES = new Set(
+  (process.env.ENABLED_MODULES ?? '')
+    .split(',')
+    .map((m) => m.trim().toLowerCase())
+    .filter(Boolean),
+);
+const moduleEnabled = (key: string): boolean => ENABLED_MODULES.has(key);
+
 // Authentication routes (public)
 router.use('/auth', authRoutes);
 router.use('/avatars', avatarRoutes);
@@ -81,13 +97,18 @@ router.use('/import', importRoutes);
 router.use('/ai', lazyRoute(() => require('../features/ai/ai.routes'), 'aiRoutes'));
 router.use('/receipts', lazyRoute(() => require('../features/receipts/receipt.routes'), 'receiptRoutes'));
 
-// Advisor & Booking routes
-router.use('/bookings', bookingRoutes);
-router.use('/advisors', advisorRoutes);
-router.use('/sessions', sessionRoutes);
+// Advisor & Booking routes — Phase 2 (deferred). Mounted only when the deploy
+// opts in via ENABLED_MODULES=advisor; otherwise these paths 404 in production.
+if (moduleEnabled('advisor')) {
+  router.use('/bookings', bookingRoutes);
+  router.use('/advisors', advisorRoutes);
+  router.use('/sessions', sessionRoutes);
+}
 
-// Payment routes (includes webhook)
-router.use('/payments', paymentRoutes);
+// Payment routes (includes webhook) — Phase 4 (deferred). ENABLED_MODULES=payments.
+if (moduleEnabled('payments')) {
+  router.use('/payments', paymentRoutes);
+}
 
 // Notification routes
 router.use('/notifications', notificationRoutes);
@@ -111,7 +132,10 @@ router.use('/stocks', stockRoutes);
 router.use('/otp', otpRoutes);
 
 // Account Aggregator (RBI AA â€” Setu integration)
-router.use('/aa', aaRoutes);
+// Account Aggregator (Setu AA) — Phase 5 (deferred). ENABLED_MODULES=aa.
+if (moduleEnabled('aa')) {
+  router.use('/aa', aaRoutes);
+}
 
 // Sub-feature modules (Recurring, Budgets, Tax, Gold)
 router.use('/recurring', recurringRoutes);

@@ -1,12 +1,15 @@
 /**
- * Notification delivery reliability contract:
- *   - dispatchNotification writes the row (source of truth) then enqueues channels
- *   - workers are idempotent per channel (no double-send on retry)
- *   - lifecycle transitions: pending → processing → sent | retrying | failed
- *   - exhausted jobs are copied to the dead-letter queue (never silently dropped)
+ * Notification delivery reliability contract (Redis-free DB outbox):
+ *   - dispatchNotification writes the row (source of truth); async channels rest
+ *     at status='pending' for the outbox drainer — there is no queue/broker.
+ *   - processEmail/processPush are idempotent per channel (no double-send on retry)
+ *   - deliverNotification drives the lifecycle: pending → processing → sent |
+ *     retrying | failed, with exponential backoff via nextRetryAt
+ *   - a row that exhausts MAX_ATTEMPTS lands at status='failed' (the queryable
+ *     dead-letter equivalent — never silently dropped)
  *
- * Pure unit tests — prisma, queues, SendGrid and FCM are all mocked, so no live
- * Postgres / Dragonfly is required.
+ * Pure unit tests — prisma, SendGrid and FCM are all mocked, so no live
+ * Postgres / Redis is required.
  */
 
 // ── Mocks (names must be `mock*` to satisfy jest.mock hoisting) ───────────────
@@ -15,9 +18,6 @@ const mockPrisma = {
   user: { findUnique: jest.fn() },
   device: { findUnique: jest.fn(), findFirst: jest.fn(), update: jest.fn() },
 };
-const mockEmailAdd = jest.fn();
-const mockPushAdd = jest.fn();
-const mockMoveToDLQ = jest.fn();
 const mockSendEmail = jest.fn();
 const mockSendPush = jest.fn();
 
@@ -30,66 +30,46 @@ jest.mock('../../src/config/firebase', () => ({
   sendPushNotification: mockSendPush,
   initializeFirebase: jest.fn(),
 }));
-jest.mock('../../src/config/queue', () => ({
-  getEmailQueue: () => ({ add: mockEmailAdd }),
-  getPushQueue: () => ({ add: mockPushAdd }),
-  moveToDeadLetter: (...args: any[]) => mockMoveToDLQ(...args),
-  STANDARD_JOB_OPTIONS: { attempts: 5, backoff: { type: 'exponential', delay: 5000 } },
-  QUEUE_NAMES: { email: 'email-notifications', push: 'push-notifications' },
-  bullConnection: {},
-}));
 
 import { dispatchNotification } from '../../src/features/notifications/notification.dispatcher';
-import { processEmail, processPush, handleJobFailure, MAX_ATTEMPTS } from '../../src/workers/index';
+import { processEmail, processPush, deliverNotification, MAX_ATTEMPTS } from '../../src/workers/index';
 
-const job = (data: any) => ({ id: '1', name: 'job', data, attemptsMade: 0 }) as any;
+const job = (data: any) => ({ data });
 
 beforeEach(() => {
   jest.clearAllMocks();
-  // update/create/findFirst must return promises (workers call .catch on them).
   mockPrisma.notification.update.mockResolvedValue({});
   mockPrisma.notification.create.mockResolvedValue({ id: 'n1' });
   mockPrisma.device.update.mockResolvedValue({});
   mockPrisma.device.findFirst.mockResolvedValue(null);
-  // moveToDeadLetter is async in production — mirror that so `.catch` is valid.
-  mockMoveToDLQ.mockResolvedValue(undefined);
 });
 
-// ── dispatchNotification ──────────────────────────────────────────────────────
+// ── dispatchNotification (writes the outbox row, no enqueue) ──────────────────
 describe('dispatchNotification', () => {
-  it('app-only notification is written as sent with no queue hop', async () => {
+  it('app-only notification is written as sent', async () => {
     await dispatchNotification({ userId: 'u1', title: 't', message: 'm' });
 
     const data = mockPrisma.notification.create.mock.calls[0][0].data;
     expect(data.status).toBe('sent');
     expect(data.sentAt).toBeInstanceOf(Date);
     expect(JSON.parse(data.channels)).toEqual(['app']);
-    expect(mockEmailAdd).not.toHaveBeenCalled();
-    expect(mockPushAdd).not.toHaveBeenCalled();
   });
 
-  it('email channel is written pending and enqueued with notificationId', async () => {
+  it('email channel is written pending with the email channel queued', async () => {
     await dispatchNotification({ userId: 'u1', title: 't', message: 'm', channels: ['app', 'email'] });
 
-    expect(mockPrisma.notification.create.mock.calls[0][0].data.status).toBe('pending');
-    expect(mockEmailAdd).toHaveBeenCalledTimes(1);
-    const [jobName, payload] = mockEmailAdd.mock.calls[0];
-    expect(jobName).toBe('send-notification-email');
-    expect(payload).toMatchObject({ notificationId: 'n1', channel: 'email', userId: 'u1' });
+    const data = mockPrisma.notification.create.mock.calls[0][0].data;
+    expect(data.status).toBe('pending');
+    expect(data.sentAt).toBeNull();
+    expect(JSON.parse(data.deliveryStatus).email).toBe('queued');
   });
 
-  it('push channel enqueues only when an active device with an FCM token exists', async () => {
-    mockPrisma.device.findFirst.mockResolvedValue({ id: 'd1', fcmToken: 'tok' });
+  it('push channel is written pending with the push channel queued', async () => {
     await dispatchNotification({ userId: 'u1', title: 't', message: 'm', channels: ['push'] });
 
-    expect(mockPushAdd).toHaveBeenCalledTimes(1);
-    expect(mockPushAdd.mock.calls[0][1]).toMatchObject({ notificationId: 'n1', channel: 'push', fcmToken: 'tok' });
-  });
-
-  it('push channel does not enqueue when the user has no registered device', async () => {
-    mockPrisma.device.findFirst.mockResolvedValue(null);
-    await dispatchNotification({ userId: 'u1', title: 't', message: 'm', channels: ['push'] });
-    expect(mockPushAdd).not.toHaveBeenCalled();
+    const data = mockPrisma.notification.create.mock.calls[0][0].data;
+    expect(data.status).toBe('pending');
+    expect(JSON.parse(data.deliveryStatus).push).toBe('queued');
   });
 });
 
@@ -104,7 +84,7 @@ describe('processEmail', () => {
     expect(mockSendEmail).not.toHaveBeenCalled();
   });
 
-  it('sends, then marks the channel + notification sent', async () => {
+  it('sends, then marks the channel sent', async () => {
     mockPrisma.notification.findUnique.mockResolvedValue({ deliveryStatus: '{}' });
     mockPrisma.user.findUnique.mockResolvedValue({ email: 'a@b.com' });
     mockSendEmail.mockResolvedValue(true);
@@ -112,11 +92,10 @@ describe('processEmail', () => {
     await processEmail(job({ notificationId: 'n1', userId: 'u1', title: 't', message: 'm' }));
 
     expect(mockSendEmail).toHaveBeenCalledWith(expect.objectContaining({ to: 'a@b.com' }));
-    const sentUpdate = mockPrisma.notification.update.mock.calls
+    const channelUpdate = mockPrisma.notification.update.mock.calls
       .map((c) => c[0].data)
-      .find((d) => d.status === 'sent');
-    expect(sentUpdate).toBeTruthy();
-    expect(JSON.parse(sentUpdate.deliveryStatus).email).toBe('sent');
+      .find((d) => d.deliveryStatus && JSON.parse(d.deliveryStatus).email === 'sent');
+    expect(channelUpdate).toBeTruthy();
   });
 
   it('marks failed (no retry) when the user has no email address', async () => {
@@ -129,7 +108,7 @@ describe('processEmail', () => {
     expect(mockSendEmail).not.toHaveBeenCalled();
   });
 
-  it('throws (so BullMQ retries) when the provider send fails', async () => {
+  it('throws (so the drainer records the attempt) when the provider send fails', async () => {
     mockPrisma.notification.findUnique.mockResolvedValue({ deliveryStatus: '{}' });
     mockPrisma.user.findUnique.mockResolvedValue({ email: 'a@b.com' });
     mockSendEmail.mockResolvedValue(false);
@@ -173,40 +152,53 @@ describe('processPush', () => {
   });
 });
 
-// ── handleJobFailure: dead-letter routing ─────────────────────────────────────
-describe('handleJobFailure (dead-letter contract)', () => {
-  it('marks retrying and does NOT dead-letter before retries are exhausted', async () => {
-    mockPrisma.notification.findUnique.mockResolvedValue({ deliveryStatus: '{}' });
+// ── deliverNotification: outbox lifecycle (retry → failed terminal state) ─────
+describe('deliverNotification (outbox lifecycle)', () => {
+  // Stateful notification row so re-reads see what markChannel/update wrote.
+  let state: any;
 
-    await handleJobFailure(
-      'email-notifications',
-      'email',
-      { id: '1', name: 'send-notification-email', data: { notificationId: 'n1' }, attemptsMade: 2 },
-      { message: 'boom' },
-    );
-
-    const statuses = mockPrisma.notification.update.mock.calls.map((c) => c[0].data.status);
-    expect(statuses).toContain('retrying');
-    expect(mockMoveToDLQ).not.toHaveBeenCalled();
+  const emailRow = (attempts: number) => ({
+    id: 'n1', userId: 'u1', title: 't', message: 'm', category: null, deepLink: null,
+    priority: null, channels: '["app","email"]', deliveryStatus: state.deliveryStatus, attempts,
   });
 
-  it('marks failed and dead-letters once attempts are exhausted', async () => {
-    mockPrisma.notification.findUnique.mockResolvedValue({ deliveryStatus: '{}' });
+  beforeEach(() => {
+    state = { deliveryStatus: '{"app":"sent","email":"queued"}', status: 'pending' };
+    mockPrisma.notification.findUnique.mockImplementation(async () => ({ ...state }));
+    mockPrisma.notification.update.mockImplementation(async ({ data }: any) => {
+      if (data.deliveryStatus !== undefined) state.deliveryStatus = data.deliveryStatus;
+      if (data.status !== undefined) state.status = data.status;
+      if (data.nextRetryAt !== undefined) state.nextRetryAt = data.nextRetryAt;
+      return { ...state };
+    });
+    mockPrisma.user.findUnique.mockResolvedValue({ email: 'a@b.com' });
+  });
 
-    await handleJobFailure(
-      'email-notifications',
-      'email',
-      { id: '1', name: 'send-notification-email', data: { notificationId: 'n1' }, attemptsMade: MAX_ATTEMPTS },
-      { message: 'boom' },
-    );
+  it('delivers and lands the row at sent', async () => {
+    mockSendEmail.mockResolvedValue(true);
+    await deliverNotification(emailRow(0));
+    expect(state.status).toBe('sent');
+    expect(JSON.parse(state.deliveryStatus).email).toBe('sent');
+  });
 
-    const statuses = mockPrisma.notification.update.mock.calls.map((c) => c[0].data.status);
-    expect(statuses).toContain('failed');
-    expect(mockMoveToDLQ).toHaveBeenCalledWith(
-      'email-notifications',
-      'send-notification-email',
-      { notificationId: 'n1' },
-      'boom',
-    );
+  it('marks retrying with a backoff when a send fails below MAX_ATTEMPTS', async () => {
+    mockSendEmail.mockResolvedValue(false);
+    await deliverNotification(emailRow(0));
+    expect(state.status).toBe('retrying');
+    expect(state.nextRetryAt).toBeInstanceOf(Date);
+  });
+
+  it('marks failed (dead-letter equivalent) once MAX_ATTEMPTS is exhausted', async () => {
+    mockSendEmail.mockResolvedValue(false);
+    await deliverNotification(emailRow(MAX_ATTEMPTS));
+    expect(state.status).toBe('failed');
+    expect(JSON.parse(state.deliveryStatus).email).toBe('failed');
+  });
+
+  it('reconciles a stuck row without re-sending when all channels are terminal', async () => {
+    state.deliveryStatus = '{"app":"sent","email":"sent"}';
+    await deliverNotification(emailRow(1));
+    expect(mockSendEmail).not.toHaveBeenCalled();
+    expect(state.status).toBe('sent');
   });
 });

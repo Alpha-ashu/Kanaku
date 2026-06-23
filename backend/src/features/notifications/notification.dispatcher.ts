@@ -1,21 +1,19 @@
 /**
  * Notification dispatcher — the single sanctioned way to raise a notification.
  *
- * Flow (§7):
+ * Flow:
  *   1. Write the notification row to PostgreSQL (the source of truth).
- *   2. Enqueue the async channels (email / push) carrying the notificationId.
+ *   2. For async channels (email/push) the row is left at status='pending' with
+ *      per-channel deliveryStatus='queued'. The outbox drainer (workers/index.ts)
+ *      polls for pending rows and delivers them — no queue/broker required.
  *
- * Workers are idempotent on that notificationId + channel, so a retry or a
- * duplicate enqueue never double-sends. App-only notifications are "delivered"
- * the moment the row exists (the feed reads from PostgreSQL), so they are
- * written straight to status='sent' with no queue hop.
+ * App-only notifications are "delivered" the moment the row exists (the feed
+ * reads from PostgreSQL), so they are written straight to status='sent'.
  *
- * Prefer this over calling prisma.notification.create + queue.add directly in
- * controllers — it keeps the lifecycle fields and per-channel status coherent.
+ * Prefer this over calling prisma.notification.create directly in controllers —
+ * it keeps the lifecycle fields and per-channel status coherent for the drainer.
  */
 import { prisma } from '../../db/prisma';
-import { logger } from '../../config/logger';
-import { getEmailQueue, getPushQueue } from '../../config/queue';
 
 export type NotificationChannel = 'app' | 'email' | 'push';
 
@@ -31,8 +29,6 @@ export interface DispatchNotificationInput {
   sourceUserId?: string;
   metadata?: Record<string, unknown>;
 }
-
-const jobPriority = (p?: string) => (p === 'high' ? 1 : p === 'low' ? 3 : 2);
 
 export async function dispatchNotification(input: DispatchNotificationInput) {
   const channels = input.channels ?? ['app'];
@@ -57,66 +53,13 @@ export async function dispatchNotification(input: DispatchNotificationInput) {
       channels: JSON.stringify(channels),
       metadata: input.metadata as any,
       deliveryStatus: JSON.stringify(deliveryStatus),
+      // 'pending' makes the outbox drainer pick the row up; app-only rows rest at 'sent'.
       status: wantsAsync ? 'pending' : 'sent',
       sentAt: wantsAsync ? null : new Date(),
     },
   });
 
-  const priority = jobPriority(input.priority);
-
-  if (wantsEmail) {
-    try {
-      await getEmailQueue().add(
-        'send-notification-email',
-        {
-          notificationId: notification.id,
-          userId: input.userId,
-          channel: 'email',
-          title: input.title,
-          message: input.message,
-          category: input.category,
-          deepLink: input.deepLink,
-        },
-        { priority },
-      );
-    } catch (err) {
-      logger.warn('Failed to enqueue email notification', {
-        notificationId: notification.id,
-        error: err instanceof Error ? err.message : String(err),
-      });
-    }
-  }
-
-  if (wantsPush) {
-    try {
-      const device = await prisma.device.findFirst({
-        where: { userId: input.userId, isActive: true, fcmToken: { not: null } },
-      });
-      if (device?.fcmToken) {
-        await getPushQueue().add(
-          'send-push-notification',
-          {
-            notificationId: notification.id,
-            userId: input.userId,
-            channel: 'push',
-            deviceId: device.id,
-            fcmToken: device.fcmToken,
-            title: input.title,
-            message: input.message,
-            category: input.category,
-            deepLink: input.deepLink,
-            priority: input.priority ?? 'normal',
-          },
-          { priority },
-        );
-      }
-    } catch (err) {
-      logger.warn('Failed to enqueue push notification', {
-        notificationId: notification.id,
-        error: err instanceof Error ? err.message : String(err),
-      });
-    }
-  }
-
+  // Async channels are delivered asynchronously by the notification outbox
+  // drainer (workers/index.ts) — there is nothing to enqueue here.
   return notification;
 }

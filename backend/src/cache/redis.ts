@@ -1,7 +1,21 @@
-import Redis from 'ioredis';
-import { env } from '../config/env';
+/**
+ * In-memory cache (Redis-free).
+ *
+ * Kanaku runs as a single backend instance, so the cache, idempotency replay
+ * store and response cache all live in-process. This module keeps the exact
+ * public surface the rest of the codebase already imported from the old
+ * Redis-backed cache (cacheGetJson / cacheSetJson / cacheDeleteByPrefix /
+ * getRedisStatus / getRedisClient / metrics) so callers compile and behave
+ * unchanged — they simply hit a bounded, TTL-aware Map instead of a network
+ * round-trip.
+ *
+ * `getRedisClient()` always returns null and `getRedisStatus()` is always
+ * 'disabled'; consumers that branched on a live raw client (otp.service,
+ * aiUsageTracker, auth.controller) already fall back to Postgres / their own
+ * in-memory path when the client is null, so nothing regresses.
+ */
 import { logger } from '../config/logger';
-import { resolveRedisUrl } from '../config/redis-connections';
+import type { RedisLike } from '../config/redis-connections';
 
 type RedisStatus = 'disabled' | 'connected' | 'connecting' | 'error';
 
@@ -18,22 +32,7 @@ export type CacheMetricSnapshot = CacheMetricBucket & {
   hitRate: number;
 };
 
-// ── Multi-endpoint cache store with automatic failover ──────────────────────
-// The cache layer can use a primary (REDIS_URL) and an optional fallback
-// (REDIS_FALLBACK_URL, e.g. self-hosted Dragonfly). When the primary errors or
-// hits a quota, reads/writes automatically route to the fallback for a cooldown,
-// then return to the primary once it recovers. If neither is healthy, callers
-// fall open to their own in-memory path (cache helpers return null/no-op).
-interface RedisEndpoint {
-  name: string;
-  client: Redis | null;
-  status: RedisStatus;
-  unhealthyUntil: number; // epoch ms; while > now, this endpoint is skipped
-}
-
-const UNHEALTHY_COOLDOWN_MS = 30_000;
-const endpoints: RedisEndpoint[] = [];
-
+// ── Metrics (unchanged) ──────────────────────────────────────────────────────
 const cacheMetrics = new Map<string, CacheMetricBucket>();
 const CACHE_METRICS_LOG_EVERY = 50;
 
@@ -85,154 +84,81 @@ export const resetCacheMetrics = () => {
   cacheMetrics.clear();
 };
 
-const buildEndpoint = (name: string, url: string, forceTls = false): RedisEndpoint => {
-  const endpoint: RedisEndpoint = { name, client: null, status: 'connecting', unhealthyUntil: 0 };
+// ── Bounded in-memory TTL store ──────────────────────────────────────────────
+// A simple Map with per-entry expiry. Capped so a burst of distinct keys can't
+// grow memory without bound (oldest-inserted keys are evicted first — Map keeps
+// insertion order). Lazy expiry on read plus a periodic sweep keeps it tidy.
+interface CacheEntry {
+  value: string;
+  expiresAt: number; // epoch ms
+}
 
-  // TLS auto-detected from the URL scheme (rediss://), with an override for the
-  // primary (REDIS_TLS) for providers that use redis:// over a TLS port.
-  const useTls = forceTls || url.startsWith('rediss://');
-  const redis = new Redis(url, {
-    lazyConnect: true,
-    maxRetriesPerRequest: 0,
-    enableReadyCheck: true,
-    connectTimeout: 3000,
-    commandTimeout: 2000,
-    tls: useTls ? {} : undefined,
-  });
+const MAX_ENTRIES = Number(process.env.CACHE_MAX_ENTRIES || 50_000);
+const store = new Map<string, CacheEntry>();
 
-  redis.on('connect', () => {
-    endpoint.status = 'connected';
-    endpoint.unhealthyUntil = 0; // recovered — eligible again
-    logger.info(`Redis[${name}] connected`);
-  });
-
-  // Over-quota ("ERR max requests limit exceeded") and connection errors both
-  // surface here. Mark the endpoint unhealthy for a cooldown so traffic shifts
-  // to the next endpoint instead of repeatedly hitting the failing one.
-  redis.on('error', (error) => {
-    endpoint.status = 'error';
-    endpoint.unhealthyUntil = Date.now() + UNHEALTHY_COOLDOWN_MS;
-    logger.warn(`Redis[${name}] error`, { error: error.message });
-  });
-
-  redis.on('close', () => {
-    if (endpoint.status !== 'disabled') endpoint.status = 'connecting';
-  });
-
-  endpoint.client = redis;
-  return endpoint;
-};
-
-const ensureEndpoints = () => {
-  if (endpoints.length) return;
-  // Cache primary runs on its own logical DB (CACHE_REDIS_URL → REDIS_URL/db1).
-  const primaryUrl = resolveRedisUrl('cache');
-  if (primaryUrl) endpoints.push(buildEndpoint('primary', primaryUrl, !!env.REDIS_TLS));
-  // Priority-ordered fallback chain (comma-separated): e.g. Dragonfly -> Redis Cloud -> Valkey.
-  if (env.REDIS_FALLBACK_URL) {
-    env.REDIS_FALLBACK_URL.split(',')
-      .map((u) => u.trim())
-      .filter(Boolean)
-      .forEach((u, i) => endpoints.push(buildEndpoint(`fallback${i + 1}`, u)));
-  }
-};
-
-/** Pick the best available endpoint: a connected, non-cooled-down one first, then
- *  any connected one, then any not in cooldown, else the first (caller fails open). */
-const getActiveEndpoint = (): RedisEndpoint | null => {
-  ensureEndpoints();
-  if (!endpoints.length) return null;
+const sweep = () => {
   const now = Date.now();
-  return (
-    endpoints.find((e) => e.client && e.status === 'connected' && e.unhealthyUntil <= now)
-    || endpoints.find((e) => e.client && e.status === 'connected')
-    || endpoints.find((e) => e.client && e.unhealthyUntil <= now)
-    || endpoints[0]
-    || null
-  );
-};
-
-export const initRedis = async () => {
-  ensureEndpoints();
-  await Promise.all(
-    endpoints.map(async (ep) => {
-      if (!ep.client) return;
-      try {
-        await ep.client.connect();
-      } catch (error) {
-        ep.status = 'error';
-        ep.unhealthyUntil = Date.now() + UNHEALTHY_COOLDOWN_MS;
-        logger.warn(`Redis[${ep.name}] initialization failed`, {
-          error: error instanceof Error ? error.message : 'Unknown redis init error',
-        });
-      }
-    }),
-  );
-};
-
-export const getRedisClient = () => getActiveEndpoint()?.client ?? null;
-
-export const getRedisStatus = (): RedisStatus => {
-  ensureEndpoints();
-  if (!endpoints.length) return 'disabled';
-  const active = getActiveEndpoint();
-  return active ? active.status : 'connecting';
-};
-
-export const closeRedis = async () => {
-  for (const ep of endpoints) {
-    if (!ep.client) continue;
-    try {
-      await ep.client.quit();
-    } catch {
-      try { await ep.client.disconnect(); } catch { /* ignore */ }
-    }
-    ep.client = null;
+  for (const [key, entry] of store) {
+    if (entry.expiresAt <= now) store.delete(key);
   }
-  endpoints.length = 0;
+};
+const sweepTimer = setInterval(sweep, 60_000);
+sweepTimer.unref?.();
+
+const evictIfNeeded = () => {
+  while (store.size >= MAX_ENTRIES) {
+    const oldest = store.keys().next().value;
+    if (oldest === undefined) break;
+    store.delete(oldest);
+  }
+};
+
+// ── Compatibility shims for the former Redis client/status surface ───────────
+/** No live Redis in single-instance mode. Always null — callers fall back. */
+export const getRedisClient = (): RedisLike | null => null;
+
+/** Always 'disabled' so client-gated callers take their non-Redis path. */
+export const getRedisStatus = (): RedisStatus => 'disabled';
+
+/** No-op: there is no connection to establish. Kept for server.ts wiring. */
+export const initRedis = async (): Promise<void> => {
+  logger.info('Cache running in-memory (Redis disabled)');
+};
+
+/** Clear the in-memory store on shutdown. */
+export const closeRedis = async (): Promise<void> => {
+  clearInterval(sweepTimer);
+  store.clear();
 };
 
 export const cacheGetJson = async <T>(key: string): Promise<T | null> => {
-  const redis = getRedisClient();
-  if (!redis || getRedisStatus() !== 'connected') return null;
-
+  const entry = store.get(key);
+  if (!entry) return null;
+  if (entry.expiresAt <= Date.now()) {
+    store.delete(key);
+    return null;
+  }
   try {
-    const raw = await redis.get(key);
-    if (!raw) return null;
-    return JSON.parse(raw) as T;
+    return JSON.parse(entry.value) as T;
   } catch {
     return null;
   }
 };
 
-export const cacheSetJson = async (key: string, value: unknown, ttlSeconds: number) => {
-  const redis = getRedisClient();
-  if (!redis || getRedisStatus() !== 'connected') return;
-
+export const cacheSetJson = async (key: string, value: unknown, ttlSeconds: number): Promise<void> => {
   try {
-    await redis.set(key, JSON.stringify(value), 'EX', ttlSeconds);
+    const serialized = JSON.stringify(value);
+    // Refresh insertion order so hot keys survive eviction longer.
+    store.delete(key);
+    evictIfNeeded();
+    store.set(key, { value: serialized, expiresAt: Date.now() + ttlSeconds * 1000 });
   } catch {
-    // Cache failure should not fail API behavior.
+    // Non-serializable value — skip caching rather than throw.
   }
 };
 
-export const cacheDeleteByPrefix = async (prefix: string) => {
-  const redis = getRedisClient();
-  if (!redis || getRedisStatus() !== 'connected') return;
-
-  try {
-    const stream = redis.scanStream({ match: `${prefix}*`, count: 100 });
-
-    await new Promise<void>((resolve, reject) => {
-      stream.on('data', (keys: string[]) => {
-        if (keys.length > 0) {
-          void redis.del(...keys);
-        }
-      });
-      stream.on('end', () => resolve());
-      stream.on('error', (error) => reject(error));
-    });
-  } catch {
-    // Best-effort invalidation only.
+export const cacheDeleteByPrefix = async (prefix: string): Promise<void> => {
+  for (const key of store.keys()) {
+    if (key.startsWith(prefix)) store.delete(key);
   }
 };

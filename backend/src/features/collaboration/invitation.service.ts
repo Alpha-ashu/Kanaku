@@ -2,7 +2,6 @@ import { prisma } from '../../db/prisma';
 import { logger } from '../../config/logger';
 import { sendEmail } from '../../utils/email';
 import { getSocketManager } from '../../sockets';
-import { getEmailQueue } from '../../config/queue';
 import { todoRepository } from '../todos/todo.repository';
 import { logInvitationEvent } from '../../utils/invitationLifecycle';
 
@@ -32,26 +31,6 @@ const MODULE_ACTION_LABELS: Record<ModuleType, string> = {
 function moduleDeepLink(moduleType: ModuleType, moduleId: string): string {
   const path = moduleType === 'group_expense' ? 'groups' : moduleType === 'todo_list' ? 'todo-lists' : 'goals';
   return `/${path}/${moduleId}`;
-}
-
-async function queueCollaborationEmail(notificationId: string, userId: string, title: string, message: string, category: string, deepLink: string): Promise<void> {
-  try {
-    // Retry/backoff/DLQ policy comes from the queue's STANDARD_JOB_OPTIONS.
-    await getEmailQueue().add('send-notification-email', {
-      notificationId,
-      userId,
-      title,
-      message,
-      category,
-      deepLink,
-    }, {
-      priority: 1,
-    });
-    logInvitationEvent('EMAIL_QUEUED', { notificationId, userId, moduleType: category });
-  } catch (err) {
-    logger.warn('Failed to queue collaboration email notification', err);
-    logInvitationEvent('EMAIL_FAILED', { notificationId, userId, moduleType: category, reason: 'queue_error' });
-  }
 }
 
 export interface InviteParticipantInput {
@@ -160,10 +139,12 @@ async function notifyRegisteredParticipant(args: {
       priority: 'high',
       channels: '["app","email"]',
       deliveryStatus: '{"app":"sent","email":"queued"}',
+      // 'pending' hands the email channel to the notification outbox drainer.
+      status: 'pending',
     },
   });
 
-  await queueCollaborationEmail(notification.id, targetUserId, title, message, moduleType, deepLink);
+  logInvitationEvent('EMAIL_QUEUED', { notificationId: notification.id, userId: targetUserId, moduleType });
 
   try {
     const socketManager = getSocketManager();

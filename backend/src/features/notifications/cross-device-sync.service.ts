@@ -1,17 +1,13 @@
 import { prisma } from '../../utils/prisma';
-import { Queue } from 'bullmq';
 import { DeviceService } from '../devices/device.service';
 
 /**
  * Cross-Device Sync Notification Service
- * Handles broadcasting notifications and sync events across user devices
+ * Handles broadcasting notifications and sync events across user devices.
+ * Async channels (email/push) are delivered by the notification outbox drainer
+ * (workers/index.ts), which polls for rows at status='pending' — no queue/broker.
  */
 export class CrossDeviceSyncService {
-  constructor(
-    private emailQueue: Queue,
-    private pushQueue: Queue
-  ) {}
-
   /**
    * Broadcast notification to all user devices
    */
@@ -40,7 +36,17 @@ export class CrossDeviceSyncService {
         };
       }
 
-      // Create notification record
+      const channelList = notification.channels || ['app', 'push'];
+      const wantsEmail = channelList.includes('email');
+      const wantsPush = channelList.includes('push');
+      const wantsAsync = wantsEmail || wantsPush;
+
+      const deliveryStatus: Record<string, string> = { app: 'sent' };
+      if (wantsEmail) deliveryStatus.email = 'queued';
+      if (wantsPush) deliveryStatus.push = 'queued';
+
+      // Create notification record. Async channels are left 'pending' for the
+      // notification outbox drainer (workers/index.ts) to deliver.
       const createdNotification = await prisma.notification.create({
         data: {
           userId,
@@ -49,64 +55,16 @@ export class CrossDeviceSyncService {
           type: notification.type,
           deepLink: notification.deepLink,
           priority: notification.priority || 'normal',
-          channels: JSON.stringify(notification.channels || ['app', 'push']),
+          channels: JSON.stringify(channelList),
+          deliveryStatus: JSON.stringify(deliveryStatus),
+          status: wantsAsync ? 'pending' : 'sent',
+          sentAt: wantsAsync ? null : new Date(),
           metadata: {
             broadcastDevices: activeDevices.length,
             targetDeviceIds: activeDevices.map((d) => d.deviceId),
           },
         },
       });
-
-      // Queue push notifications for FCM devices
-      const fcmDevices = activeDevices.filter((d) => d.fcmToken);
-      if (fcmDevices.length > 0 && notification.channels?.includes('push')) {
-        for (const device of fcmDevices) {
-          await this.pushQueue.add(
-            `push-notification-${createdNotification.id}`,
-            {
-              notificationId: createdNotification.id,
-              userId,
-              deviceId: device.deviceId,
-              fcmToken: device.fcmToken,
-              title: notification.title,
-              message: notification.message,
-              deepLink: notification.deepLink,
-              priority: notification.priority || 'normal',
-            },
-            {
-              priority: notification.priority === 'high' ? 10 : 5,
-              attempts: 3,
-              backoff: {
-                type: 'exponential',
-                delay: 2000,
-              },
-              removeOnComplete: true,
-            }
-          );
-        }
-      }
-
-      // Queue email notification if requested
-      if (notification.channels?.includes('email')) {
-        await this.emailQueue.add(
-          `email-notification-${createdNotification.id}`,
-          {
-            notificationId: createdNotification.id,
-            userId,
-            title: notification.title,
-            message: notification.message,
-            type: notification.type,
-          },
-          {
-            attempts: 3,
-            backoff: {
-              type: 'exponential',
-              delay: 2000,
-            },
-            removeOnComplete: true,
-          }
-        );
-      }
 
       return {
         broadcastId: createdNotification.id,

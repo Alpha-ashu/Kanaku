@@ -4,31 +4,9 @@ const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   PORT: z.coerce.number().default(3000),
   DATABASE_URL: z.string().url(),
-  REDIS_URL: z.string().url().optional(),
-  REDIS_TLS: z
-    .union([z.boolean(), z.string()])
-    .optional()
-    .transform((value) => {
-      if (typeof value === 'boolean') return value;
-      if (typeof value === 'string') return value === 'true';
-      return false;
-    }),
-  // Comma-separated, priority-ordered chain of fallback cache stores (any
-  // Redis-wire compatible store: Dragonfly, Redis Cloud, Valkey, ...). The cache
-  // layer fails over down the chain when a store errors / hits a quota, then
-  // returns to the highest-priority healthy one. TLS is auto-detected from each
-  // URL's scheme (rediss:// = TLS). (BullMQ queues stay on REDIS_URL.)
-  // Example: REDIS_FALLBACK_URL="redis://localhost:6380,redis://default:***@cloud:10204"
-  REDIS_FALLBACK_URL: z.string().optional(),
-  // Per-workload connection URLs for logical-DB isolation (Dragonfly). Each
-  // defaults to REDIS_URL with its logical db index appended when unset:
-  //   BULLMQ → db0, CACHE → db1, SESSION → db2, RATE_LIMIT → db3.
-  // See backend/src/config/redis-connections.ts. Point these at different hosts
-  // to split workloads across instances with no code change.
-  BULLMQ_REDIS_URL: z.string().optional(),
-  CACHE_REDIS_URL: z.string().optional(),
-  SESSION_REDIS_URL: z.string().optional(),
-  RATE_LIMIT_REDIS_URL: z.string().optional(),
+  // Redis/Dragonfly has been removed — the cache, rate-limit, idle-session and
+  // PIN-unlock stores all run in-process (single backend instance). There are no
+  // REDIS_* / BULLMQ_* env vars anymore.
   JWT_SECRET: z.string().min(32).optional(),
   SUPABASE_JWT_SECRET: z.string().min(1).optional(),
   // Auth source of truth. 'custom' = backend-issued JWT (default, current behavior).
