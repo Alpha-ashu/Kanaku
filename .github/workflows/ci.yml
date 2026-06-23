@@ -9,14 +9,48 @@ on:
   pull_request:
     branches: [main]
 
+# Minimal token scope: these jobs only read the repo (checkout) and talk to a
+# local Postgres service — no write access is needed.
+permissions:
+  contents: read
+
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
+  # ─── Change detection ────────────────────────────────────────────────────────
+  # Only spend runner minutes on the area that actually changed. Doc-only commits
+  # match neither filter, so both heavy jobs skip. Job-level `if:` skips are
+  # treated as PASSED for required status checks, so this never blocks a PR.
+  changes:
+    name: Detect changes
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'backend/**'
+              - 'package.json'
+              - 'package-lock.json'
+              - '.github/workflows/ci.yml'
+            frontend:
+              - 'frontend/**'
+              - 'package.json'
+              - 'package-lock.json'
+              - '.github/workflows/ci.yml'
+
   # ─── Backend ───────────────────────────────────────────────────────────────
   backend:
     name: Backend (Node.js / Jest)
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
     runs-on: ubuntu-latest
 
     services:
@@ -90,6 +124,8 @@ jobs:
   # ─── Frontend ──────────────────────────────────────────────────────────────
   frontend:
     name: Frontend (Vite / Vitest)
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true'
     runs-on: ubuntu-latest
 
     steps:
