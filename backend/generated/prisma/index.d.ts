@@ -5682,10 +5682,12 @@ export namespace Prisma {
   }
 
   export type AccountAvgAggregateOutputType = {
+    openingBalance: Decimal | null
     balance: Decimal | null
   }
 
   export type AccountSumAggregateOutputType = {
+    openingBalance: Decimal | null
     balance: Decimal | null
   }
 
@@ -5697,6 +5699,7 @@ export namespace Prisma {
     type: string | null
     provider: string | null
     country: string | null
+    openingBalance: Decimal | null
     balance: Decimal | null
     currency: string | null
     isActive: boolean | null
@@ -5715,6 +5718,7 @@ export namespace Prisma {
     type: string | null
     provider: string | null
     country: string | null
+    openingBalance: Decimal | null
     balance: Decimal | null
     currency: string | null
     isActive: boolean | null
@@ -5733,6 +5737,7 @@ export namespace Prisma {
     type: number
     provider: number
     country: number
+    openingBalance: number
     balance: number
     currency: number
     isActive: number
@@ -5746,10 +5751,12 @@ export namespace Prisma {
 
 
   export type AccountAvgAggregateInputType = {
+    openingBalance?: true
     balance?: true
   }
 
   export type AccountSumAggregateInputType = {
+    openingBalance?: true
     balance?: true
   }
 
@@ -5761,6 +5768,7 @@ export namespace Prisma {
     type?: true
     provider?: true
     country?: true
+    openingBalance?: true
     balance?: true
     currency?: true
     isActive?: true
@@ -5779,6 +5787,7 @@ export namespace Prisma {
     type?: true
     provider?: true
     country?: true
+    openingBalance?: true
     balance?: true
     currency?: true
     isActive?: true
@@ -5797,6 +5806,7 @@ export namespace Prisma {
     type?: true
     provider?: true
     country?: true
+    openingBalance?: true
     balance?: true
     currency?: true
     isActive?: true
@@ -5902,6 +5912,7 @@ export namespace Prisma {
     type: string
     provider: string | null
     country: string | null
+    openingBalance: Decimal
     balance: Decimal
     currency: string
     isActive: boolean
@@ -5939,6 +5950,7 @@ export namespace Prisma {
     type?: boolean
     provider?: boolean
     country?: boolean
+    openingBalance?: boolean
     balance?: boolean
     currency?: boolean
     isActive?: boolean
@@ -5962,6 +5974,7 @@ export namespace Prisma {
     type?: boolean
     provider?: boolean
     country?: boolean
+    openingBalance?: boolean
     balance?: boolean
     currency?: boolean
     isActive?: boolean
@@ -5981,6 +5994,7 @@ export namespace Prisma {
     type?: boolean
     provider?: boolean
     country?: boolean
+    openingBalance?: boolean
     balance?: boolean
     currency?: boolean
     isActive?: boolean
@@ -6000,6 +6014,7 @@ export namespace Prisma {
     type?: boolean
     provider?: boolean
     country?: boolean
+    openingBalance?: boolean
     balance?: boolean
     currency?: boolean
     isActive?: boolean
@@ -6010,7 +6025,7 @@ export namespace Prisma {
     deletedAt?: boolean
   }
 
-  export type AccountOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "deviceId" | "name" | "type" | "provider" | "country" | "balance" | "currency" | "isActive" | "syncStatus" | "clientRequestId" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["account"]>
+  export type AccountOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "deviceId" | "name" | "type" | "provider" | "country" | "openingBalance" | "balance" | "currency" | "isActive" | "syncStatus" | "clientRequestId" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["account"]>
   export type AccountInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     goalContributions?: boolean | Account$goalContributionsArgs<ExtArgs>
@@ -6041,6 +6056,7 @@ export namespace Prisma {
       type: string
       provider: string | null
       country: string | null
+      openingBalance: Prisma.Decimal
       balance: Prisma.Decimal
       currency: string
       isActive: boolean
@@ -6483,6 +6499,7 @@ export namespace Prisma {
     readonly type: FieldRef<"Account", 'String'>
     readonly provider: FieldRef<"Account", 'String'>
     readonly country: FieldRef<"Account", 'String'>
+    readonly openingBalance: FieldRef<"Account", 'Decimal'>
     readonly balance: FieldRef<"Account", 'Decimal'>
     readonly currency: FieldRef<"Account", 'String'>
     readonly isActive: FieldRef<"Account", 'Boolean'>
@@ -63573,6 +63590,7 @@ export namespace Prisma {
     type: 'type',
     provider: 'provider',
     country: 'country',
+    openingBalance: 'openingBalance',
     balance: 'balance',
     currency: 'currency',
     isActive: 'isActive',
@@ -64657,6 +64675,7 @@ export namespace Prisma {
     type?: StringFilter<"Account"> | string
     provider?: StringNullableFilter<"Account"> | string | null
     country?: StringNullableFilter<"Account"> | string | null
+    openingBalance?: DecimalFilter<"Account"> | Decimal | DecimalJsLike | number | string
     balance?: DecimalFilter<"Account"> | Decimal | DecimalJsLike | number | string
     currency?: StringFilter<"Account"> | string
     isActive?: BoolFilter<"Account"> | boolean
@@ -64679,6 +64698,7 @@ export namespace Prisma {
     type?: SortOrder
     provider?: SortOrderInput | SortOrder
     country?: SortOrderInput | SortOrder
+    openingBalance?: SortOrder
     balance?: SortOrder
     currency?: SortOrder
     isActive?: SortOrder
@@ -64705,6 +64725,7 @@ export namespace Prisma {
     type?: StringFilter<"Account"> | string
     provider?: StringNullableFilter<"Account"> | string | null
     country?: StringNullableFilter<"Account"> | string | null
+    openingBalance?: DecimalFilter<"Account"> | Decimal | DecimalJsLike | number | string
     balance?: DecimalFilter<"Account"> | Decimal | DecimalJsLike | number | string
     currency?: StringFilter<"Account"> | string
     isActive?: BoolFilter<"Account"> | boolean
@@ -64726,6 +64747,7 @@ export namespace Prisma {
     type?: SortOrder
     provider?: SortOrderInput | SortOrder
     country?: SortOrderInput | SortOrder
+    openingBalance?: SortOrder
     balance?: SortOrder
     currency?: SortOrder
     isActive?: SortOrder
@@ -64752,6 +64774,7 @@ export namespace Prisma {
     type?: StringWithAggregatesFilter<"Account"> | string
     provider?: StringNullableWithAggregatesFilter<"Account"> | string | null
     country?: StringNullableWithAggregatesFilter<"Account"> | string | null
+    openingBalance?: DecimalWithAggregatesFilter<"Account"> | Decimal | DecimalJsLike | number | string
     balance?: DecimalWithAggregatesFilter<"Account"> | Decimal | DecimalJsLike | number | string
     currency?: StringWithAggregatesFilter<"Account"> | string
     isActive?: BoolWithAggregatesFilter<"Account"> | boolean
@@ -69529,6 +69552,7 @@ export namespace Prisma {
     type?: string
     provider?: string | null
     country?: string | null
+    openingBalance?: Decimal | DecimalJsLike | number | string
     balance?: Decimal | DecimalJsLike | number | string
     currency?: string
     isActive?: boolean
@@ -69551,6 +69575,7 @@ export namespace Prisma {
     type?: string
     provider?: string | null
     country?: string | null
+    openingBalance?: Decimal | DecimalJsLike | number | string
     balance?: Decimal | DecimalJsLike | number | string
     currency?: string
     isActive?: boolean
@@ -69571,6 +69596,7 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     provider?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
+    openingBalance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     balance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     currency?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
@@ -69593,6 +69619,7 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     provider?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
+    openingBalance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     balance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     currency?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
@@ -69614,6 +69641,7 @@ export namespace Prisma {
     type?: string
     provider?: string | null
     country?: string | null
+    openingBalance?: Decimal | DecimalJsLike | number | string
     balance?: Decimal | DecimalJsLike | number | string
     currency?: string
     isActive?: boolean
@@ -69631,6 +69659,7 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     provider?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
+    openingBalance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     balance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     currency?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
@@ -69649,6 +69678,7 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     provider?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
+    openingBalance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     balance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     currency?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
@@ -75309,6 +75339,7 @@ export namespace Prisma {
     type?: SortOrder
     provider?: SortOrder
     country?: SortOrder
+    openingBalance?: SortOrder
     balance?: SortOrder
     currency?: SortOrder
     isActive?: SortOrder
@@ -75320,6 +75351,7 @@ export namespace Prisma {
   }
 
   export type AccountAvgOrderByAggregateInput = {
+    openingBalance?: SortOrder
     balance?: SortOrder
   }
 
@@ -75331,6 +75363,7 @@ export namespace Prisma {
     type?: SortOrder
     provider?: SortOrder
     country?: SortOrder
+    openingBalance?: SortOrder
     balance?: SortOrder
     currency?: SortOrder
     isActive?: SortOrder
@@ -75349,6 +75382,7 @@ export namespace Prisma {
     type?: SortOrder
     provider?: SortOrder
     country?: SortOrder
+    openingBalance?: SortOrder
     balance?: SortOrder
     currency?: SortOrder
     isActive?: SortOrder
@@ -75360,6 +75394,7 @@ export namespace Prisma {
   }
 
   export type AccountSumOrderByAggregateInput = {
+    openingBalance?: SortOrder
     balance?: SortOrder
   }
 
@@ -86187,6 +86222,7 @@ export namespace Prisma {
     type?: string
     provider?: string | null
     country?: string | null
+    openingBalance?: Decimal | DecimalJsLike | number | string
     balance?: Decimal | DecimalJsLike | number | string
     currency?: string
     isActive?: boolean
@@ -86208,6 +86244,7 @@ export namespace Prisma {
     type?: string
     provider?: string | null
     country?: string | null
+    openingBalance?: Decimal | DecimalJsLike | number | string
     balance?: Decimal | DecimalJsLike | number | string
     currency?: string
     isActive?: boolean
@@ -86411,6 +86448,7 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     provider?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
+    openingBalance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     balance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     currency?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
@@ -86432,6 +86470,7 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     provider?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
+    openingBalance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     balance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     currency?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
@@ -88959,6 +88998,7 @@ export namespace Prisma {
     type?: string
     provider?: string | null
     country?: string | null
+    openingBalance?: Decimal | DecimalJsLike | number | string
     balance?: Decimal | DecimalJsLike | number | string
     currency?: string
     isActive?: boolean
@@ -88980,6 +89020,7 @@ export namespace Prisma {
     type?: string
     provider?: string | null
     country?: string | null
+    openingBalance?: Decimal | DecimalJsLike | number | string
     balance?: Decimal | DecimalJsLike | number | string
     currency?: string
     isActive?: boolean
@@ -89199,6 +89240,7 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     provider?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
+    openingBalance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     balance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     currency?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
@@ -89220,6 +89262,7 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     provider?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
+    openingBalance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     balance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     currency?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
@@ -89435,6 +89478,7 @@ export namespace Prisma {
     type?: string
     provider?: string | null
     country?: string | null
+    openingBalance?: Decimal | DecimalJsLike | number | string
     balance?: Decimal | DecimalJsLike | number | string
     currency?: string
     isActive?: boolean
@@ -89455,6 +89499,7 @@ export namespace Prisma {
     type?: string
     provider?: string | null
     country?: string | null
+    openingBalance?: Decimal | DecimalJsLike | number | string
     balance?: Decimal | DecimalJsLike | number | string
     currency?: string
     isActive?: boolean
@@ -91018,6 +91063,7 @@ export namespace Prisma {
     type?: StringFilter<"Account"> | string
     provider?: StringNullableFilter<"Account"> | string | null
     country?: StringNullableFilter<"Account"> | string | null
+    openingBalance?: DecimalFilter<"Account"> | Decimal | DecimalJsLike | number | string
     balance?: DecimalFilter<"Account"> | Decimal | DecimalJsLike | number | string
     currency?: StringFilter<"Account"> | string
     isActive?: BoolFilter<"Account"> | boolean
@@ -93246,6 +93292,7 @@ export namespace Prisma {
     type?: string
     provider?: string | null
     country?: string | null
+    openingBalance?: Decimal | DecimalJsLike | number | string
     balance?: Decimal | DecimalJsLike | number | string
     currency?: string
     isActive?: boolean
@@ -93267,6 +93314,7 @@ export namespace Prisma {
     type?: string
     provider?: string | null
     country?: string | null
+    openingBalance?: Decimal | DecimalJsLike | number | string
     balance?: Decimal | DecimalJsLike | number | string
     currency?: string
     isActive?: boolean
@@ -93483,6 +93531,7 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     provider?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
+    openingBalance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     balance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     currency?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
@@ -93504,6 +93553,7 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     provider?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
+    openingBalance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     balance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     currency?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
@@ -96006,6 +96056,7 @@ export namespace Prisma {
     type?: string
     provider?: string | null
     country?: string | null
+    openingBalance?: Decimal | DecimalJsLike | number | string
     balance?: Decimal | DecimalJsLike | number | string
     currency?: string
     isActive?: boolean
@@ -96560,6 +96611,7 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     provider?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
+    openingBalance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     balance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     currency?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
@@ -96580,6 +96632,7 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     provider?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
+    openingBalance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     balance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     currency?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
@@ -96600,6 +96653,7 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     provider?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
+    openingBalance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     balance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     currency?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean

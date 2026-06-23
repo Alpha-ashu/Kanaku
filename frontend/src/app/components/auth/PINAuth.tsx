@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { LogOut, KeyRound, AlertCircle, ChevronLeft, ShieldCheck, Eye, EyeOff, Lock } from 'lucide-react';
 import { KANAKULogo } from '@/app/components/ui/KANAKULogo';
 import { clearSecurityData, isPINSet, verifyPIN, storeMasterKey, backupPINKeys, restorePINKeys } from '@/lib/encryption';
-import { isPinMissing, isPinServiceUnavailable, pinService } from '@/services/pinService';
+import { isPinMissing, isPinServiceUnavailable, isSessionExpired, pinService } from '@/services/pinService';
 import { toast } from 'sonner';
 import { Preferences } from '@capacitor/preferences';
 import { Capacitor } from '@capacitor/core';
@@ -37,6 +37,10 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  // True when this lock screen was reached via the inactivity auto-lock, so we
  // can explain why the user is being asked for their PIN again.
  const [lockedForInactivity, setLockedForInactivity] = useState(false);
+ // True when the server rejected the unlock because the session is too old to
+ // refresh — we then show a "Sign in again" button instead of a wrong-PIN hint.
+ const [sessionExpired, setSessionExpired] = useState(false);
+ const [isReLoggingIn, setIsReLoggingIn] = useState(false);
 
  const hiddenInputRef = useRef<HTMLInputElement>(null);
 
@@ -159,6 +163,7 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
   const handleSubmit = async () => {
     if (pin.length !== 6 || isSubmitting) return;
     setIsSubmitting(true);
+    setSessionExpired(false);
 
     try {
       if (isCreating) {
@@ -250,6 +255,11 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
               return;
             }
             triggerShake('Unable to verify PIN right now. Please try again.');
+          } else if (isSessionExpired(serverResult)) {
+            // The session is too old to refresh — a valid PIN can't recover it.
+            // Surface a re-login action rather than a misleading "wrong PIN".
+            setSessionExpired(true);
+            triggerShake(serverResult.message || 'Invalid or expired session');
           } else {
             // Server explicitly rejected the PIN (incorrect PIN, locked, or expired)
             triggerShake(serverResult.message || 'Incorrect PIN. Please try again.');
@@ -274,6 +284,21 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  toast.error('Failed to sign out. Please try again.');
  } finally {
  setIsLoggingOut(false);
+ }
+ };
+
+ // Session expired beyond recovery: clear the dead session and hard-navigate to
+ // the login page so the user gets a fresh sign-in instead of a stuck PIN screen.
+ const handleReLogin = async () => {
+ setIsReLoggingIn(true);
+ try {
+ pinService.clearPinData();
+ clearSecurityData();
+ await signOut();
+ } catch {
+ /* best-effort — redirect regardless so the user is never stranded */
+ } finally {
+ window.location.href = '/login';
  }
  };
 
@@ -496,6 +521,19 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  </p>
  )}
  </div>
+ {/* Session too old to refresh — let the user re-login instead of being stuck. */}
+ {sessionExpired && (
+ <button
+ type="button"
+ onClick={handleReLogin}
+ disabled={isReLoggingIn}
+ data-testid="pin-auth-relogin-button"
+ className="mt-3 inline-flex items-center justify-center gap-2 rounded-xl bg-gray-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-gray-800 active:scale-95 transition-all disabled:opacity-60 disabled:pointer-events-none"
+ >
+ <LogOut size={15} />
+ {isReLoggingIn ? 'Redirecting…' : 'Sign in again'}
+ </button>
+ )}
  </div>
 
  {/* Number pad */}

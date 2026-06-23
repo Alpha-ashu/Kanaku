@@ -33,7 +33,7 @@ import { formatCurrencyAmount } from "@/lib/currencyUtils";
 import { CardNetworkLogo, getBankCardLogo } from "@/app/components/ui/AccountLogos";
 import { CenteredLayout } from "@/app/components/shared/CenteredLayout";
 import { queueRecordUpsertSync } from "@/lib/auth-sync-integration";
-import { setAccountTargetBalance } from "@/lib/transactionAggregation";
+import { setAccountTargetBalance, setAccountOpeningBalance, getAccountBalanceSnapshot, type AccountBalanceSnapshot } from "@/lib/transactionAggregation";
 
 type AssetType = "all" | "bank" | "card" | "wallet" | "cash";
 
@@ -153,10 +153,17 @@ export const Accounts: React.FC = () => {
                 colorId: editingAccount.colorId,
                 customColor: editingAccount.customColor,
             });
-            // Balance is derived (openingBalance + ledger). Honor the entered
-            // "Current Balance" by anchoring the opening balance so the derived
-            // value resolves exactly to it.
-            await setAccountTargetBalance(editingAccount.id, editingAccount.balance);
+            // Balance is derived (openingBalance + ledger). If the user edited the
+            // Opening Balance, persist it directly and recompute current; otherwise
+            // honor the entered Current Balance by anchoring the opening balance.
+            const original = accounts.find((a) => a.id === editingAccount.id);
+            const openingChanged = editingAccount.openingBalance != null
+                && Number(editingAccount.openingBalance) !== Number(original?.openingBalance ?? NaN);
+            if (openingChanged) {
+                await setAccountOpeningBalance(editingAccount.id, Number(editingAccount.openingBalance));
+            } else {
+                await setAccountTargetBalance(editingAccount.id, editingAccount.balance);
+            }
             queueRecordUpsertSync('accounts', editingAccount.id);
             toast.success('Account updated!');
             setEditModalOpen(false);
@@ -328,6 +335,17 @@ export const Accounts: React.FC = () => {
         accounts.filter((a) => a.isActive).reduce((sum, a) => sum + a.balance, 0)
     ), [accounts]);
 
+    // Previous Balance (before the account's most recent transaction) → Current
+    // Balance (now). Derived from the same ledger the cards display, so the two
+    // numbers always reconcile with the transaction history below.
+    const balanceSnapshots = useMemo(() => {
+        const map = new Map<number, AccountBalanceSnapshot>();
+        for (const account of accounts) {
+            if (account.id) map.set(account.id, getAccountBalanceSnapshot(account, transactions));
+        }
+        return map;
+    }, [accounts, transactions]);
+
     const selectedAccount = useMemo(
         () => accounts.find((a) => a.id === selectedAccountId),
         [accounts, selectedAccountId]
@@ -470,6 +488,7 @@ export const Accounts: React.FC = () => {
                         >
                             {filteredAccounts.map((account) => {
                                 const isActive = selectedAccountId === account.id;
+                                const snapshot = balanceSnapshots.get(account.id!);
                                 return (
                                     <div
                                         key={account.id}
@@ -564,13 +583,26 @@ export const Accounts: React.FC = () => {
                                                             )}>
                                                                 {account.name}
                                                             </h3>
-                                                            <div className="flex items-center gap-2 mt-1">
+                                                            <div className="mt-1">
                                                                 <p className={cn(
                                                                     "text-sm font-bold",
                                                                     isActive ? "text-white/80" : "text-slate-600"
                                                                 )}>
                                                                     {formatCurrency(account.balance)}
                                                                 </p>
+                                                                {(account.openingBalance != null || snapshot?.hasActivity) && (
+                                                                    <p className={cn(
+                                                                        "text-[10px] font-semibold mt-0.5 flex items-center gap-x-2 flex-wrap",
+                                                                        isActive ? "text-white/50" : "text-slate-400"
+                                                                    )}>
+                                                                        {account.openingBalance != null && (
+                                                                            <span>Open {formatCurrency(account.openingBalance)}</span>
+                                                                        )}
+                                                                        {snapshot?.hasActivity && (
+                                                                            <span>Prev {formatCurrency(snapshot.previous)}</span>
+                                                                        )}
+                                                                    </p>
+                                                                )}
                                                             </div>
                                                         </div>
 
@@ -664,6 +696,7 @@ export const Accounts: React.FC = () => {
                                 />
                                 {filteredAccounts.map((account) => {
                                     const isActive = selectedAccountId === account.id;
+                                    const snapshot = balanceSnapshots.get(account.id!);
                                     return (
                                         <div
                                             key={account.id}
@@ -758,18 +791,37 @@ export const Accounts: React.FC = () => {
                                                             </div>
                                                         </div>
 
-                                                        {/* Balance */}
+                                                        {/* Balance: Opening (start) → Previous (before last txn) → Current (now) */}
                                                         <div className="mt-4">
                                                             <p className={cn(
                                                                 "text-[10px] font-semibold tracking-[0.22em] uppercase mb-1",
                                                                 isActive ? "text-white/45" : "text-gray-400"
-                                                            )}>Balance</p>
+                                                            )}>Current Balance</p>
                                                             <p className={cn(
                                                                 "text-[32px] font-bold tracking-tight leading-none",
                                                                 isActive ? "text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.35)]" : "text-gray-900"
                                                             )}>
                                                                 {formatCurrency(account.balance)}
                                                             </p>
+                                                            {(account.openingBalance != null || snapshot?.hasActivity) && (
+                                                                <p className={cn(
+                                                                    "text-[11px] font-semibold mt-1.5 flex items-center gap-x-3 gap-y-0.5 flex-wrap",
+                                                                    isActive ? "text-white/55" : "text-gray-500"
+                                                                )}>
+                                                                    {account.openingBalance != null && (
+                                                                        <span className="flex items-center gap-1">
+                                                                            <span className="uppercase tracking-wider text-[9px] font-bold opacity-70">Opening</span>
+                                                                            {formatCurrency(account.openingBalance)}
+                                                                        </span>
+                                                                    )}
+                                                                    {snapshot?.hasActivity && (
+                                                                        <span className="flex items-center gap-1">
+                                                                            <span className="uppercase tracking-wider text-[9px] font-bold opacity-70">Previous</span>
+                                                                            {formatCurrency(snapshot.previous)}
+                                                                        </span>
+                                                                    )}
+                                                                </p>
+                                                            )}
                                                         </div>
 
                                                         {/* Bottom: name + buttons */}
@@ -971,7 +1023,7 @@ export const Accounts: React.FC = () => {
                                                             {t.description}
                                                         </p>
                                                         <p className="text-xs text-gray-500 mt-0.5">
-                                                            {t.category} EUR{""}
+                                                            {t.category} &middot;{" "}
                                                             {formatLocalDate(t.date, "en-US", {
                                                                 day: "numeric",
                                                                 month: "short",

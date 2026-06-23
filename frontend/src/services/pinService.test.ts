@@ -7,6 +7,10 @@ const { getSession } = vi.hoisted(() => ({
   getSession: vi.fn(),
 }));
 
+const { refreshAccessToken } = vi.hoisted(() => ({
+  refreshAccessToken: vi.fn(),
+}));
+
 vi.mock('@/utils/supabase/client', () => ({
   default: {
     auth: {
@@ -15,11 +19,22 @@ vi.mock('@/utils/supabase/client', () => ({
   },
 }));
 
-import { isPinMissing, isPinServiceUnavailable, pinService } from './pinService';
+// Keep the real TokenManager/api, but stub refreshAccessToken so we can assert
+// the 401 → refresh → retry recovery without hitting the network.
+vi.mock('@/lib/api', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/lib/api')>();
+  return {
+    ...actual,
+    refreshAccessToken,
+  };
+});
+
+import { isPinMissing, isPinServiceUnavailable, isSessionExpired, pinService } from './pinService';
 
 describe('pinService', () => {
   beforeEach(() => {
     getSession.mockReset();
+    refreshAccessToken.mockReset();
     vi.unstubAllGlobals();
     const store = new Map<string, string>();
     const mockLocalStorage = {
@@ -134,5 +149,83 @@ describe('pinService', () => {
         Authorization: 'Bearer session-token',
       }),
     }));
+  });
+
+  it('refreshes the access token and retries when /pin/verify returns 401 (stale token)', async () => {
+    // The access token expired while the app sat on the lock screen.
+    getSession.mockResolvedValue({
+      data: { session: { access_token: 'expired-token' } },
+    });
+
+    // Auth-middleware 401 shape: `{ error }`, no `success` field.
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 401,
+        json: async () => ({ error: 'Invalid or expired session' }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => ({ success: true, message: 'PIN verified' }),
+      });
+    vi.stubGlobal('fetch', fetchMock);
+    refreshAccessToken.mockResolvedValue('fresh-token');
+
+    const result = await pinService.verifyPin({ pin: '135790' });
+
+    expect(result.success).toBe(true);
+    expect(refreshAccessToken).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    // The retry must carry the freshly refreshed token, not the expired one.
+    expect(fetchMock).toHaveBeenLastCalledWith('/api/v1/pin/verify', expect.objectContaining({
+      headers: expect.objectContaining({ Authorization: 'Bearer fresh-token' }),
+    }));
+  });
+
+  it('flags sessionExpired (and stops retrying) when the session cannot be refreshed', async () => {
+    getSession.mockResolvedValue({
+      data: { session: { access_token: 'expired-token' } },
+    });
+
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 401,
+      json: async () => ({ error: 'Invalid or expired session' }),
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    refreshAccessToken.mockResolvedValue(null);
+
+    const result = await pinService.verifyPin({ pin: '135790' });
+
+    expect(result.success).toBe(false);
+    expect(result.sessionExpired).toBe(true);
+    expect(isSessionExpired(result)).toBe(true);
+    expect(refreshAccessToken).toHaveBeenCalledTimes(1);
+    // No fresh token → no retry; the original 401 is surfaced.
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('does NOT refresh or flag sessionExpired on a wrong-PIN 401 (route rejection)', async () => {
+    getSession.mockResolvedValue({
+      data: { session: { access_token: 'valid-token' } },
+    });
+
+    // Route-level rejection shape: `{ success: false, message }` — the token is
+    // valid, so a refresh would be pointless.
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 401,
+      json: async () => ({ success: false, message: 'Incorrect PIN. Please try again.' }),
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const result = await pinService.verifyPin({ pin: '135790' });
+
+    expect(result.success).toBe(false);
+    expect(result.sessionExpired).toBeFalsy();
+    expect(isSessionExpired(result)).toBe(false);
+    expect(refreshAccessToken).not.toHaveBeenCalled();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 });

@@ -295,7 +295,7 @@ function handleAPIError(error: any): never {
 // Shared in-flight refresh promise so concurrent 401s only trigger one refresh
 let _refreshInFlight: Promise<string | null> | null = null;
 
-const refreshAccessToken = async (): Promise<string | null> => {
+export const refreshAccessToken = async (): Promise<string | null> => {
   if (_refreshInFlight) return _refreshInFlight;
 
   _refreshInFlight = (async () => {

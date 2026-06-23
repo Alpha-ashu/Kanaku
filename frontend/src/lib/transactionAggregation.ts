@@ -70,6 +70,57 @@ export function mergeAccountDeltas(...deltaSets: Array<Map<number, number>>): Ma
   return merged;
 }
 
+export interface AccountBalanceSnapshot {
+  /** Balance immediately BEFORE the account's most recent transaction. */
+  previous: number;
+  /** Current (derived) balance — i.e. after the most recent transaction. */
+  current: number;
+  /** Signed effect the most recent transaction had on this account. */
+  lastDelta: number;
+  /** False when the account has no transactions yet (previous === current). */
+  hasActivity: boolean;
+}
+
+/**
+ * Derives the "Previous Balance → Current Balance" pair shown on an account
+ * card. Previous is defined as the balance just before the account's most
+ * recent transaction, so the two values always reconcile with the visible
+ * history:  current = previous + lastDelta.
+ *
+ * A transfer is counted from the perspective of THIS account: money arriving
+ * is a positive delta, money leaving is negative. Soft-deleted transactions
+ * are ignored so an undone transaction never skews the snapshot.
+ */
+export function getAccountBalanceSnapshot(
+  account: { id?: number; balance: number },
+  transactions: TransactionLike[],
+): AccountBalanceSnapshot {
+  const current = roundMoney(Number(account.balance || 0));
+  const base: AccountBalanceSnapshot = { previous: current, current, lastDelta: 0, hasActivity: false };
+  if (!account.id) return base;
+
+  let latest: TransactionLike | null = null;
+  let latestTime = -Infinity;
+  for (const transaction of transactions) {
+    if (transaction.deletedAt) continue;
+    if (transaction.accountId !== account.id && transaction.transferToAccountId !== account.id) continue;
+    const time = new Date(transaction.date as any).getTime();
+    if (Number.isNaN(time) || time < latestTime) continue;
+    latestTime = time;
+    latest = transaction;
+  }
+
+  if (!latest) return base;
+
+  const lastDelta = getTransactionAccountDeltas(latest).get(account.id) ?? 0;
+  return {
+    previous: roundMoney(current - lastDelta),
+    current,
+    lastDelta,
+    hasActivity: true,
+  };
+}
+
 type LedgerMovement = { accountId?: number | null; amount?: number | null; transactionId?: number | null };
 type AccountLike = { id?: number; balance: number; openingBalance?: number | null };
 
@@ -212,6 +263,26 @@ export async function setAccountTargetBalance(
   await db.accounts.update(accountId, {
     openingBalance,
     balance: roundMoney(openingBalance + delta),
+    updatedAt: new Date(),
+    ...extraUpdates,
+  });
+}
+
+/**
+ * Set an account's OPENING balance directly (e.g. the user edits the "Opening
+ * Balance" field) and recompute the current balance as openingBalance + ledger,
+ * keeping the canonical invariant intact.
+ */
+export async function setAccountOpeningBalance(
+  accountId: number,
+  openingBalance: number,
+  extraUpdates: Record<string, unknown> = {},
+): Promise<void> {
+  const delta = await getAccountLedgerDelta(accountId);
+  const opening = roundMoney(openingBalance);
+  await db.accounts.update(accountId, {
+    openingBalance: opening,
+    balance: roundMoney(opening + delta),
     updatedAt: new Date(),
     ...extraUpdates,
   });

@@ -129,6 +129,7 @@ exports.Prisma.AccountScalarFieldEnum = {
   type: 'type',
   provider: 'provider',
   country: 'country',
+  openingBalance: 'openingBalance',
   balance: 'balance',
   currency: 'currency',
   isActive: 'isActive',

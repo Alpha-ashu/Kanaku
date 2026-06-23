@@ -1563,9 +1563,12 @@ async function syncUserDataFromBackend(
     );
     const localId = resolveLocalBackendId(cloudId, localAccounts, () => localRecord);
 
-    // Compute txDeltas for this account from backendTransactions
+    // Compute txDeltas for this account from backendTransactions. Include
+    // transfers where this account is the DESTINATION — otherwise incoming
+    // transfers are dropped here while the display engine still counts them,
+    // skewing the back-derived openingBalance (and thus the shown balance).
     const txDeltas = backendTransactions
-      .filter((tx: any) => String(tx.accountId) === cloudId)
+      .filter((tx: any) => String(tx.accountId) === cloudId || String(tx.transferToAccountId) === cloudId)
       .reduce((sum: number, tx: any) => {
         const amount = Math.abs(Number(tx.amount) || 0);
         if (amount <= 0) return sum;
@@ -1597,7 +1600,11 @@ async function syncUserDataFromBackend(
       balance: Number(account.balance ?? 0),
       currency: account.currency ?? 'INR',
       isActive: account.isActive ?? true,
-      openingBalance: localRecord?.openingBalance ?? (Number(account.balance ?? 0) - txDeltas),
+      // Prefer the server's authoritative opening balance; fall back to a local
+      // value or back-derivation only for legacy rows that predate the column.
+      openingBalance: account.openingBalance != null
+        ? Number(account.openingBalance)
+        : (localRecord?.openingBalance ?? (Number(account.balance ?? 0) - txDeltas)),
       createdAt: toDate(account.createdAt) ?? new Date(),
       updatedAt: toDate(account.updatedAt),
       deletedAt: toDate(account.deletedAt),
@@ -2144,9 +2151,12 @@ export async function syncUserDataFromCloud(
       const localId = resolvedId ?? (hasConflict ? undefined : remoteNumericId);
       accountRemoteToLocal.set(remoteNumericId, resolvedId ?? remoteNumericId);
 
-      // Compute txDeltas from remoteTransactions for this account
+      // Compute txDeltas from remoteTransactions for this account. Include
+      // transfers where this account is the DESTINATION — otherwise incoming
+      // transfers are dropped here while the display engine still counts them,
+      // skewing the back-derived openingBalance (and thus the shown balance).
       const txDeltas = remoteTransactions
-        .filter((tx: any) => Number(tx.account_id) === remoteNumericId)
+        .filter((tx: any) => Number(tx.account_id) === remoteNumericId || Number(tx.transfer_to_account_id) === remoteNumericId)
         .reduce((sum: number, tx: any) => {
           const amount = Math.abs(Number(tx.amount) || 0);
           if (amount <= 0) return sum;
@@ -2180,7 +2190,11 @@ export async function syncUserDataFromCloud(
         balance: Number(account.balance ?? 0),
         currency: account.currency ?? 'INR',
         isActive: account.is_active ?? true,
-        openingBalance: localRecord?.openingBalance ?? (Number(account.balance ?? 0) - txDeltas),
+        // Prefer the server's authoritative opening balance; fall back to a local
+        // value or back-derivation only for legacy rows that predate the column.
+        openingBalance: (account.openingBalance ?? account.opening_balance) != null
+          ? Number(account.openingBalance ?? account.opening_balance)
+          : (localRecord?.openingBalance ?? (Number(account.balance ?? 0) - txDeltas)),
         createdAt: toDate(account.created_at) ?? new Date(),
         updatedAt: toDate(account.updated_at),
         deletedAt: toDate(account.deleted_at),
@@ -2839,6 +2853,7 @@ export async function saveAccountWithBackendSync(account: any) {
         provider: account.provider ?? undefined,
         country: account.country ?? undefined,
         balance: Number(account.balance ?? 0),
+        openingBalance: Number(account.openingBalance ?? account.balance ?? 0),
         currency: account.currency,
         clientRequestId: activeClientRequestId,
       }, {
@@ -2851,6 +2866,7 @@ export async function saveAccountWithBackendSync(account: any) {
         cloudId: remote?.id,
         clientRequestId: activeClientRequestId,
         balance: Number(remote?.balance ?? account.balance ?? 0),
+        openingBalance: Number(remote?.openingBalance ?? account.openingBalance ?? account.balance ?? 0),
         isActive: remote?.isActive ?? account.isActive ?? true,
         createdAt: toDate(remote?.createdAt) ?? account.createdAt ?? new Date(),
         updatedAt: toDate(remote?.updatedAt) ?? new Date(),
@@ -2933,6 +2949,7 @@ export async function updateAccountWithBackendSync(accountId: number, updates: a
           provider: updates.provider,
           country: updates.country,
           balance: updates.balance,
+          openingBalance: updates.openingBalance,
           currency: updates.currency,
           sub_type: updates.subType,
           color_id: updates.colorId,
@@ -2946,6 +2963,7 @@ export async function updateAccountWithBackendSync(accountId: number, updates: a
           ...nextUpdates,
           cloudId: remote?.id ?? existing.cloudId,
           balance: Number(remote?.balance ?? updates.balance ?? existing.balance),
+          openingBalance: Number(remote?.openingBalance ?? updates.openingBalance ?? existing.openingBalance ?? 0),
           isActive: remote?.isActive ?? updates.isActive ?? existing.isActive,
           subType: remote?.sub_type ?? updates.subType ?? existing.subType,
           colorId: remote?.color_id ?? updates.colorId ?? existing.colorId,

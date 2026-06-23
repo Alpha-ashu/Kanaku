@@ -18,6 +18,16 @@ export const registerServiceWorker = async () => {
 
   if ('serviceWorker' in navigator) {
     try {
+      // Capture whether this page was ALREADY under a service worker's control
+      // at registration time. On a first-ever visit (e.g. the first login) the
+      // page loads with no controller; the new worker then skipWaiting()s and
+      // clients.claim()s, firing `controllerchange` even though nothing actually
+      // updated. Reloading on that initial claim cold-restarts the app mid-login
+      // — wiping the in-memory access token and bouncing the user to /login.
+      // We therefore only reload for a GENUINE update: a new worker taking over
+      // a page that already had a controller.
+      const hadActiveControllerAtRegister = !!navigator.serviceWorker.controller;
+
       const registration = await navigator.serviceWorker.register('/service-worker.js', {
         scope: '/',
       });
@@ -25,6 +35,12 @@ export const registerServiceWorker = async () => {
       console.log('Service Worker registered successfully:', registration.scope);
       navigator.serviceWorker.addEventListener('controllerchange', () => {
         if (hasReloadedForServiceWorkerUpdate) {
+          return;
+        }
+
+        // First-load claim (no prior controller) — the page is already running
+        // the latest assets, so a reload is pointless and disruptive. Skip it.
+        if (!hadActiveControllerAtRegister) {
           return;
         }
 

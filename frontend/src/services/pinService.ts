@@ -6,7 +6,7 @@ import {
   markOptionalBackendUnavailable,
   shouldRetryWithLocalApiFallback,
 } from '@/lib/apiBase';
-import { TokenManager, api } from '@/lib/api';
+import { TokenManager, api, refreshAccessToken } from '@/lib/api';
 import supabase from '@/utils/supabase/client';
 import CryptoJS from 'crypto-js';
 
@@ -19,6 +19,12 @@ export interface PinStatus {
   backup?: string;
   statusCode?: number;
   hasBackup?: boolean;
+  /**
+   * True when the request was rejected by the auth layer (expired/invalid
+   * session) rather than by PIN verification — i.e. a token refresh could not
+   * recover it, so the user must sign in again. Distinct from a wrong PIN.
+   */
+  sessionExpired?: boolean;
 }
 
 export interface PinVerifyRequest {
@@ -63,6 +69,14 @@ export const isPinServiceUnavailable = (status?: PinStatus | null): boolean => {
   return PIN_SERVICE_FAILURE_MESSAGE.test(status.message);
 };
 
+/**
+ * True when the failure is an expired/invalid session (the auth layer rejected
+ * the token and a refresh couldn't recover it) rather than a wrong PIN — the
+ * caller should offer a re-login action instead of "incorrect PIN".
+ */
+export const isSessionExpired = (status?: PinStatus | null): boolean =>
+  Boolean(status && !status.success && status.sessionExpired);
+
 class PinService {
   private readonly API_URL = getConfiguredApiBase();
   private readonly PIN_SETUP_KEY = 'pin_setup_completed';
@@ -85,13 +99,61 @@ class PinService {
     return TokenManager.getAccessToken();
   }
 
-  private async getAuthHeaders(securityToken?: string): Promise<HeadersInit> {
+  private async getAuthHeaders(securityToken?: string): Promise<Record<string, string>> {
     const token = await this.getAuthToken();
     return {
       'Content-Type': 'application/json',
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(securityToken ? { 'X-Security-Token': securityToken } : {}),
     };
+  }
+
+  /**
+   * Fetch a PIN endpoint with the same expired-token recovery the main apiClient
+   * performs. The bearer token here can be stale — e.g. the 15-min access token
+   * expires while the app sits on the inactivity lock screen. Without this, a
+   * valid PIN is rejected at the auth layer with 401 "Invalid or expired session"
+   * before /pin/verify ever runs. On a 401 we refresh the access token once
+   * (HttpOnly refresh cookie on web / stored refresh token on native) and retry.
+   */
+  private async fetchPin(
+    url: string,
+    init: RequestInit,
+    headers: Record<string, string>,
+  ): Promise<Response> {
+    const response = await fetch(url, { ...init, headers });
+    // Only an auth-layer rejection (expired/invalid token) is recoverable by a
+    // refresh. A route-level PIN rejection (wrong PIN) is also a 401 but must
+    // NOT trigger a refresh — refreshing on every wrong PIN is wasteful and, on
+    // native, needlessly rotates the refresh token.
+    if (response.status !== 401 || !(await this.isExpiredSessionResponse(response))) {
+      return response;
+    }
+
+    const newToken = await refreshAccessToken();
+    if (!newToken) return response;
+
+    return fetch(url, {
+      ...init,
+      headers: { ...headers, Authorization: `Bearer ${newToken}` },
+    });
+  }
+
+  /**
+   * Distinguish an auth-middleware 401 (expired/invalid token → body `{ error }`,
+   * no `success` field) from a route-level PIN rejection (`{ success: false }`).
+   * Reads a clone so the original body is still available to the caller; in test
+   * mocks without `clone()`, `.json()` is safely re-callable.
+   */
+  private async isExpiredSessionResponse(response: Response): Promise<boolean> {
+    try {
+      const source = typeof response.clone === 'function' ? response.clone() : response;
+      const body: any = await source.json();
+      return body == null || body.success === undefined;
+    } catch {
+      // No/invalid JSON body on a 401 → treat as an auth-layer rejection.
+      return true;
+    }
   }
 
   private async parseResponse(response: Response): Promise<PinStatus> {
@@ -108,6 +170,14 @@ class PinService {
       payload?.error ||
       (response.ok ? 'Request completed successfully' : `HTTP ${response.status}: ${response.statusText}`);
 
+    // A 401 from the auth middleware (expired/invalid token) carries `{ error }`
+    // with no `success` field, whereas a PIN rejection from the route carries
+    // `{ success: false, ... }`. So a 401 lacking an explicit `success` means the
+    // session is gone — not that the PIN was wrong. (fetchPin already tried a
+    // token refresh before this, so reaching here means refresh failed too.)
+    const sessionExpired =
+      response.status === 401 && (payload == null || payload.success === undefined);
+
     return {
       success: Boolean(payload?.success ?? response.ok),
       message,
@@ -116,6 +186,7 @@ class PinService {
       lockedUntil: payload?.lockedUntil,
       backup: payload?.backup,
       statusCode: response.status,
+      sessionExpired,
     };
   }
 
@@ -125,6 +196,7 @@ class PinService {
       return {
         success: false,
         message: 'Session expired. Please sign in again.',
+        sessionExpired: true,
       };
     }
 
@@ -134,10 +206,9 @@ class PinService {
       for (let index = 0; index < apiBases.length; index += 1) {
         const apiBase = apiBases[index];
         try {
-          const response = await fetch(buildApiUrl(apiBase, `/pin/${path}`), {
+          const response = await this.fetchPin(buildApiUrl(apiBase, `/pin/${path}`), {
             method: 'GET',
-            headers,
-          });
+          }, headers);
 
           if (!response.ok && index < apiBases.length - 1 && shouldRetryWithLocalApiFallback(response.status)) {
             markOptionalBackendUnavailable(apiBase);
@@ -204,6 +275,7 @@ class PinService {
       return {
         success: false,
         message: 'Session expired. Please sign in again.',
+        sessionExpired: true,
       };
     }
 
@@ -213,11 +285,10 @@ class PinService {
       for (let index = 0; index < apiBases.length; index += 1) {
         const apiBase = apiBases[index];
         try {
-          const response = await fetch(buildApiUrl(apiBase, `/pin/${path}`), {
+          const response = await this.fetchPin(buildApiUrl(apiBase, `/pin/${path}`), {
             method: 'POST',
-            headers,
             body: JSON.stringify(body),
-          });
+          }, headers);
 
           if (!response.ok && index < apiBases.length - 1 && shouldRetryWithLocalApiFallback(response.status)) {
             markOptionalBackendUnavailable(apiBase);
@@ -267,6 +338,7 @@ class PinService {
       return {
         success: false,
         message: 'Session expired. Please sign in again.',
+        sessionExpired: true,
       };
     }
 
@@ -276,10 +348,9 @@ class PinService {
       for (let index = 0; index < apiBases.length; index += 1) {
         const apiBase = apiBases[index];
         try {
-          const response = await fetch(buildApiUrl(apiBase, `/pin/${path}`), {
+          const response = await this.fetchPin(buildApiUrl(apiBase, `/pin/${path}`), {
             method: 'DELETE',
-            headers,
-          });
+          }, headers);
 
           if (!response.ok && index < apiBases.length - 1 && shouldRetryWithLocalApiFallback(response.status)) {
             markOptionalBackendUnavailable(apiBase);

@@ -15,14 +15,20 @@ export class AccountService {
     provider?: string;
     country?: string;
     balance?: number;
+    openingBalance?: number;
     currency?: string;
     clientRequestId?: string;
   }) {
-    const { name, type, provider, country, balance, currency, clientRequestId } = data;
+    const { name, type, provider, country, balance, openingBalance, currency, clientRequestId } = data;
 
     if (!name || !type) {
       throw AppError.badRequest('Missing required fields: name and type are mandatory.', 'MISSING_FIELDS');
     }
+
+    // A new account has no transactions yet, so its current balance equals its
+    // opening balance. Honour an explicit openingBalance; otherwise treat the
+    // supplied balance as the opening figure.
+    const resolvedOpening = openingBalance != null ? openingBalance : (balance ?? 0);
 
     // Allow negative balances for credit card and overdraft accounts
 
@@ -54,7 +60,8 @@ export class AccountService {
       type,
       provider: provider ? sanitize(provider) : null,
       country: country ? sanitize(country) : null,
-      balance: balance || 0,
+      openingBalance: resolvedOpening,
+      balance: balance != null ? balance : resolvedOpening,
       currency: currency || 'USD',
       isActive: true,
       clientRequestId: clientRequestId || null,
@@ -81,16 +88,15 @@ export class AccountService {
       throw AppError.notFound('Account');
     }
 
-    // Validate balance: must be non-negative and finite
-    if (data.balance !== undefined) {
-      const numBalance = Number(data.balance);
-      if (!Number.isFinite(numBalance)) {
-        throw AppError.badRequest('Account balance must be a finite number', 'INVALID_BALANCE');
+    // Validate balance & openingBalance: must be finite when supplied
+    for (const field of ['balance', 'openingBalance'] as const) {
+      if (data[field] !== undefined && !Number.isFinite(Number(data[field]))) {
+        throw AppError.badRequest(`Account ${field} must be a finite number`, 'INVALID_BALANCE');
       }
     }
 
     // Whitelist only permitted fields to prevent mass assignment
-    const allowedFields = ['name', 'type', 'provider', 'country', 'balance', 'currency', 'color', 'icon', 'syncStatus'] as const;
+    const allowedFields = ['name', 'type', 'provider', 'country', 'balance', 'openingBalance', 'currency', 'color', 'icon', 'syncStatus'] as const;
     const updates: Record<string, any> = {};
     for (const field of allowedFields) {
       if (data[field] !== undefined) {
@@ -101,6 +107,13 @@ export class AccountService {
           updates[field] = data[field];
         }
       }
+    }
+
+    // Editing only the opening balance must shift the current balance by the
+    // same delta so the invariant balance = openingBalance + ledger holds.
+    if (data.openingBalance !== undefined && data.balance === undefined) {
+      const delta = Number(data.openingBalance) - Number(account.openingBalance ?? 0);
+      updates.balance = Number(account.balance ?? 0) + delta;
     }
 
     const updated = await accountRepository.update(id, { ...updates, updatedAt: new Date() });

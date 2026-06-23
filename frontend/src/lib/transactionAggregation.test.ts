@@ -9,6 +9,7 @@ vi.mock('@/lib/database', () => ({
 import {
   computeAccountDeltas,
   computeDerivedBalances,
+  getAccountBalanceSnapshot,
   getTransactionAccountDeltas,
 } from './transactionAggregation';
 
@@ -136,6 +137,63 @@ describe('computeDerivedBalances — legacy accounts', () => {
       [tx('expense', 100, 1)],
     );
     expect(balances.get(1)).toBe(1234.56);
+  });
+});
+
+describe('getAccountBalanceSnapshot — Previous → Current card', () => {
+  const dated = (
+    type: 'income' | 'expense' | 'transfer',
+    amount: number,
+    accountId: number,
+    date: string,
+    extra: Record<string, unknown> = {},
+  ) => tx(type, amount, accountId, { date, ...extra });
+
+  it('spec example: last txn is a 5000 expense → previous 5000, current 0', () => {
+    const snap = getAccountBalanceSnapshot({ id: 1, balance: 0 }, [
+      dated('income', 5000, 1, '2026-01-01'),
+      dated('expense', 5000, 1, '2026-01-10'),
+    ]);
+    expect(snap).toMatchObject({ previous: 5000, current: 0, lastDelta: -5000, hasActivity: true });
+  });
+
+  it('always reconciles: current === previous + lastDelta', () => {
+    const snap = getAccountBalanceSnapshot({ id: 1, balance: 2500 }, [
+      dated('expense', 2500, 1, '2026-02-02'),
+    ]);
+    expect(snap.previous + snap.lastDelta).toBe(snap.current);
+    expect(snap.previous).toBe(5000); // current 2500 - (-2500)
+  });
+
+  it('uses the most recent transaction by date, not insertion order', () => {
+    const snap = getAccountBalanceSnapshot({ id: 1, balance: 100 }, [
+      dated('expense', 900, 1, '2026-03-20'), // most recent
+      dated('income', 1000, 1, '2026-03-01'),
+    ]);
+    expect(snap.lastDelta).toBe(-900);
+    expect(snap.previous).toBe(1000);
+  });
+
+  it('counts an incoming transfer as a positive delta for the destination', () => {
+    const snap = getAccountBalanceSnapshot({ id: 2, balance: 2000 }, [
+      dated('transfer', 2000, 1, '2026-04-01', { transferToAccountId: 2 }),
+    ]);
+    expect(snap.lastDelta).toBe(2000);
+    expect(snap.previous).toBe(0);
+  });
+
+  it('reports no activity (previous === current) when there are no transactions', () => {
+    const snap = getAccountBalanceSnapshot({ id: 1, balance: 5000 }, []);
+    expect(snap).toMatchObject({ previous: 5000, current: 5000, hasActivity: false });
+  });
+
+  it('ignores soft-deleted transactions when picking the latest', () => {
+    const snap = getAccountBalanceSnapshot({ id: 1, balance: 4000 }, [
+      dated('expense', 1000, 1, '2026-05-10'),
+      dated('expense', 9999, 1, '2026-05-20', { deletedAt: new Date() }),
+    ]);
+    expect(snap.lastDelta).toBe(-1000);
+    expect(snap.previous).toBe(5000);
   });
 });
 

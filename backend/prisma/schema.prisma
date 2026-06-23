@@ -19,7 +19,8 @@ model Account {
   type              String             @default("bank")
   provider          String?
   country           String?
-  balance           Decimal            @default(0) @db.Decimal(12, 2) // Computed by trigger from transactions
+  openingBalance    Decimal            @default(0) @db.Decimal(12, 2) // Starting balance; Current = openingBalance + ledger
+  balance           Decimal            @default(0) @db.Decimal(12, 2) // Maintained as openingBalance + Σ(transaction deltas)
   currency          String             @default("USD")
   isActive          Boolean            @default(true)
   syncStatus        String             @default("synced")
