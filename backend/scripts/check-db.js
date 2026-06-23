@@ -1,9 +1,12 @@
 const { Client } = require('pg');
 
 async function checkSchema() {
-  const client = new Client({
-    connectionString: 'postgresql://postgres.mmwrckfqeqjfqciymemh:PacWTmZyQzS7LOM8@aws-1-ap-southeast-2.pooler.supabase.com:6543/postgres?pgbouncer=true'
-  });
+  const connectionString = process.env.DATABASE_URL;
+  if (!connectionString) {
+    console.error('DATABASE_URL is not set. Export it before running, e.g.:\n  DATABASE_URL="postgresql://..." node scripts/check-db.js');
+    process.exit(1);
+  }
+  const client = new Client({ connectionString });
 
   try {
     await client.connect();

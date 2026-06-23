@@ -1,7 +1,11 @@
 const { Client } = require('pg');
 
 async function testConnection() {
-    const url = 'postgresql://postgres.mmwrckfqeqjfqciymemh:KANAKU_2026_@aws-1-ap-southeast-2.pooler.supabase.com:6543/postgres';
+    const url = process.env.DATABASE_URL;
+    if (!url) {
+        console.error('DATABASE_URL is not set. Export it before running, e.g.:\n  DATABASE_URL="postgresql://..." node scripts/test-conn.js');
+        process.exit(1);
+    }
     const client = new Client({ connectionString: url, ssl: { rejectUnauthorized: false } });
 
     try {
