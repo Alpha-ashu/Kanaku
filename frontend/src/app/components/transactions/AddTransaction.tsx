@@ -694,9 +694,9 @@ export function AddTransaction() {
  </div>
  </div>
 
- {/* Row 2: Type Tabs full width pill */}
- <div className="px-4 lg:px-6 pb-3">
- <div className="flex items-center bg-slate-100 rounded-2xl p-1 gap-0.5">
+  {/* Row 2: Type Tabs centered and compact pill */}
+  <div className="px-4 lg:px-6 pb-3 flex justify-center">
+    <div className="flex items-center bg-slate-100 rounded-2xl p-1 gap-0.5 w-full max-w-md mx-auto">
  {([
  { id: 'expense', label: 'Expense', icon: <ArrowUpRight size={13} /> },
  { id: 'income', label: 'Income', icon: <ArrowDownLeft size={13} /> },
