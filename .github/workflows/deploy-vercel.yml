@@ -25,7 +25,27 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Gate the deploy on the Vercel credentials being present. When they are
+      # absent (forks, or before secrets are configured) the job no-ops with a
+      # warning instead of failing red — Vercel's own Git integration can still
+      # deploy. `secrets` can't be used in a step `if:`, so we surface presence
+      # as a step output and gate the deploy steps on that.
+      - name: Check Vercel credentials
+        id: vercel
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          if [ -n "$VERCEL_TOKEN" ] && [ -n "$VERCEL_ORG_ID" ] && [ -n "$VERCEL_PROJECT_ID" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::Vercel secrets not configured (VERCEL_TOKEN / VERCEL_ORG_ID / VERCEL_PROJECT_ID) — skipping deploy. Add them in Settings → Secrets and variables → Actions to enable Actions-driven deploys."
+          fi
+
       - name: Set up Node.js
+        if: steps.vercel.outputs.configured == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -34,24 +54,29 @@ jobs:
 
       # Workspace-aware install at the repo root (single hoisted lockfile).
       - name: Install dependencies
+        if: steps.vercel.outputs.configured == 'true'
         run: npm ci --ignore-scripts --no-audit --no-fund
 
       - name: Install Vercel CLI
+        if: steps.vercel.outputs.configured == 'true'
         run: npm install --global vercel@latest
 
       - name: Pull Vercel environment
+        if: steps.vercel.outputs.configured == 'true'
         run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
       - name: Build project
+        if: steps.vercel.outputs.configured == 'true'
         run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
       - name: Deploy to production
+        if: steps.vercel.outputs.configured == 'true'
         run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
