@@ -27,6 +27,7 @@ import type { AuthRequest } from '../../middleware/auth';
 import { AppError } from '../../utils/AppError';
 import { prisma } from '../../db/prisma';
 import { auditFromRequest } from '../../utils/auditLogger';
+import { isProtectedAccount } from '../../utils/protectedAccounts';
 
 const SOFT_DELETE_GRACE_DAYS = 30;
 
@@ -151,8 +152,17 @@ export const deleteAccount = async (req: AuthRequest, res: Response, next: NextF
     if (!req.userId) throw AppError.unauthorized();
     const userId = req.userId;
 
-    const me = await prisma.user.findUnique({ where: { id: userId }, select: { role: true, status: true } });
+    const me = await prisma.user.findUnique({ where: { id: userId }, select: { role: true, status: true, email: true } });
     if (!me) throw AppError.notFound('User');
+
+    // Protected canonical role accounts (admin/manager/advisor/user) can never
+    // be deleted — not even by themselves.
+    if (isProtectedAccount(me.email)) {
+      throw AppError.forbidden(
+        'This is a protected Kanaku role account and cannot be deleted.',
+        'PROTECTED_ACCOUNT',
+      );
+    }
 
     // Admins must be removed by another admin to avoid orphaning the
     // last admin seat.

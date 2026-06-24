@@ -10,6 +10,8 @@ import { getPlatformSettings, updatePlatformSettings } from '../../utils/platfor
 import { auditLog } from '../../middleware/rbac';
 import { getSupabaseAdminClient } from '../../db/supabase';
 import { getSocketManager } from '../../sockets';
+import { isProtectedAccount } from '../../utils/protectedAccounts';
+import { sendAdminChangeEmail } from '../../emails';
 import { 
   getVisibleFeaturesForRole, 
   getAccessibleSubFeatures,
@@ -293,6 +295,64 @@ export const getFeatureFlags = async (req: AuthRequest, res: Response) => {
 };
 
 // Toggle feature flag (admin only)
+/**
+ * After an admin changes platform settings (which are global and therefore
+ * already reflected across every profile), notify all other active users
+ * in-app and email the acting admin a confirmation summary. Best-effort —
+ * never throws, so it can't block the settings save.
+ */
+async function announceAdminChange(
+  adminId: string | undefined,
+  summary: string,
+  opts?: { targetUserIds?: string[]; title?: string; notifyUsers?: boolean },
+): Promise<void> {
+  try {
+    const admin = adminId
+      ? await prisma.user.findUnique({ where: { id: adminId }, select: { email: true, name: true } })
+      : null;
+
+    // In-app notification — to the specific affected user(s) for per-user
+    // changes (role/status), or to every other active user when the change is
+    // global (feature panel). Skipped when the caller already notified the user.
+    if (opts?.notifyUsers !== false) {
+      const recipients =
+        opts?.targetUserIds ??
+        (
+          await prisma.user.findMany({
+            where: { ...(adminId ? { id: { not: adminId } } : {}), status: 'active' },
+            select: { id: true },
+          })
+        ).map((u) => u.id);
+      const title = opts?.title ?? 'App settings updated';
+      await Promise.all(
+        recipients.map((uid) =>
+          prisma.notification
+            .create({
+              data: {
+                userId: uid,
+                sourceUserId: adminId ?? null,
+                title,
+                message: summary,
+                type: 'info',
+                category: 'admin_update',
+                priority: 'normal',
+                channels: ['app'],
+              },
+            })
+            .catch(() => undefined),
+        ),
+      );
+    }
+
+    // Email the acting admin a confirmation of what changed.
+    if (admin?.email) {
+      await sendAdminChangeEmail({ to: admin.email, adminName: admin.name, summary }).catch(() => undefined);
+    }
+  } catch (err: any) {
+    logger.warn('[admin-change] announce failed (non-fatal)', { message: err?.message });
+  }
+}
+
 export const toggleFeatureFlag = async (req: AuthRequest, res: Response) => {
   try {
     const { features } = req.body; // Expecting the complete features settings object/array
@@ -320,6 +380,12 @@ export const toggleFeatureFlag = async (req: AuthRequest, res: Response) => {
     } catch {
       // Socket not initialized (e.g. during tests) — non-blocking
     }
+
+    // Reflect to other profiles: in-app notify all active users + email the admin.
+    void announceAdminChange(
+      req.userId,
+      `Global feature settings updated (${Object.keys(roleCentricFeatures).join(', ')}).`,
+    );
 
     const reconstructed = reconstructFeatures(roleCentricFeatures);
     res.json({
@@ -380,6 +446,12 @@ export const toggleAIFeatureFlags = async (req: AuthRequest, res: Response) => {
     } catch {
       // Socket not initialized (e.g. during tests) — non-blocking
     }
+
+    // Reflect to other profiles: in-app notify all active users + email the admin.
+    void announceAdminChange(
+      req.userId,
+      `Global AI feature settings updated (${Object.keys(roleCentricAIFeatures).join(', ')}).`,
+    );
 
     const reconstructed = reconstructAIFeatures(roleCentricAIFeatures);
     res.json({
@@ -557,6 +629,12 @@ export const deleteUser = async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
+    // Protected canonical role accounts (admin/manager/advisor/user) are the
+    // project's secure credentials and must never be deleted.
+    if (isProtectedAccount(user.email)) {
+      return res.status(403).json({ error: 'This is a protected Kanaku role account and cannot be deleted.' });
+    }
+
     // Cascade-delete from Prisma (all related data via onDelete: Cascade)
     await prisma.user.delete({ where: { id: userId } });
     logger.info(`[AdminController] Prisma user deleted by admin ${adminId}: ${userId}`);
@@ -644,6 +722,13 @@ export const toggleUserStatus = async (req: AuthRequest, res: Response) => {
       select: { id: true, email: true, status: true }
     });
 
+    // Notify the affected user + email the admin a confirmation.
+    void announceAdminChange(
+      req.userId,
+      `Account ${user.email} status set to "${status}".`,
+      { targetUserIds: [user.id], title: 'Account status updated' },
+    );
+
     res.json({ message: `User ${status} successfully`, user });
   } catch (error: any) {
     res.status(500).json({ error: 'Failed to update user status' });
@@ -692,6 +777,13 @@ export const updateUserRole = async (req: AuthRequest, res: Response) => {
       fromRole: before?.role ?? null,
       toRole: role,
     });
+
+    // The affected user was already notified above; just email the admin a summary.
+    void announceAdminChange(
+      req.userId,
+      `Role of ${updated.email} changed from ${before?.role ?? 'unknown'} to ${role}.`,
+      { notifyUsers: false },
+    );
 
     res.json({ message: `User role updated to ${role} successfully`, user: updated });
   } catch (error: any) {
