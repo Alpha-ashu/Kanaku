@@ -8,15 +8,14 @@
  *   fly ssh console --app kanaku
  *   > node scripts/seed-production-roles.cjs
  *
- * Required secrets (set via `fly secrets set KEY=value`):
- *   SEED_ADMIN_EMAIL       admin@kanaku.com
- *   SEED_ADMIN_PASSWORD    K@n4ku_Adm!n#2Xz9$
- *   SEED_MANAGER_EMAIL     manager@kanaku.com
- *   SEED_MANAGER_PASSWORD  K@n4ku_M4n4g3r#7Qw8$
- *   SEED_ADVISOR_EMAIL     advisor@kanaku.com
- *   SEED_ADVISOR_PASSWORD  K@n4ku_Adv!s0r#5Tz6^
- *   SEED_USER_EMAIL        user@kanaku.com
- *   SEED_USER_PASSWORD     K@n4ku_Us3r#3Pm2*Wy
+ * Required secrets — NEVER hardcode or commit the real values. Provide them at
+ * run time via the environment (local: gitignored `backend/.env`; prod:
+ * `fly secrets set KEY=value`):
+ *   SEED_ADMIN_EMAIL       SEED_ADMIN_PASSWORD
+ *   SEED_MANAGER_EMAIL     SEED_MANAGER_PASSWORD
+ *   SEED_ADVISOR_EMAIL     SEED_ADVISOR_PASSWORD
+ *   SEED_USER_EMAIL        SEED_USER_PASSWORD
+ * (Passwords must satisfy the strength rules in validatePassword below.)
  *
  * DATABASE_URL must already be set (it is in production via fly secrets).
  */
