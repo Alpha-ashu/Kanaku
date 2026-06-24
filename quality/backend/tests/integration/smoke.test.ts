@@ -3,7 +3,7 @@
  * Covers: Health check, API versioning, 404 handling, rate limits, CORS headers
  */
 import request from 'supertest';
-import { app } from '../../src/app';
+import { app } from '../../../../backend/src/app';
 
 const API = '/api/v1';
 

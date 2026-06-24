@@ -29,7 +29,7 @@ vi.mock('@/lib/api', async (importOriginal) => {
   };
 });
 
-import { isPinMissing, isPinServiceUnavailable, isSessionExpired, pinService } from './pinService';
+import { isPinMissing, isPinServiceUnavailable, isSessionExpired, pinService } from '@/services/pinService';
 
 describe('pinService', () => {
   beforeEach(() => {

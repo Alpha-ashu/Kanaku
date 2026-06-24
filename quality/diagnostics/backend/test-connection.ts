@@ -1,5 +1,5 @@
 
-import { supabase } from './supabase';
+import { supabase } from '../../../backend/src/db/supabase';
 import dotenv from 'dotenv';
 
 dotenv.config();

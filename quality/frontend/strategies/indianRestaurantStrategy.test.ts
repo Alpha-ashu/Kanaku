@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { RECEIPT_OCR_SAMPLES } from '@/services/__fixtures__/receiptOcrSamples';
-import { IndianRestaurantStrategy } from './indianRestaurantStrategy';
+import { RECEIPT_OCR_SAMPLES } from '../services/__fixtures__/receiptOcrSamples';
+import { IndianRestaurantStrategy } from '@/strategies/indianRestaurantStrategy';
 
 describe('IndianRestaurantStrategy', () => {
   it('parses restaurant header, GST tax split, and wrapped item names', () => {

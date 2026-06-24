@@ -11,7 +11,7 @@ import {
   computeDerivedBalances,
   getAccountBalanceSnapshot,
   getTransactionAccountDeltas,
-} from './transactionAggregation';
+} from '@/lib/transactionAggregation';
 
 const account = (id: number, openingBalance: number | undefined, balance = 0) => ({
   id,

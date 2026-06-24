@@ -7,7 +7,7 @@ vi.mock('pdfjs-dist/build/pdf', () => ({
   },
 }));
 
-vi.mock('./documentIntelligenceService', () => ({
+vi.mock('@/services/documentIntelligenceService', () => ({
   documentIntelligenceService: {
     normalizeMerchantName: (value: string) => value.toLowerCase(),
     toTitleCase: (value: string) => value
@@ -24,7 +24,7 @@ vi.mock('./documentIntelligenceService', () => ({
   },
 }));
 
-import { parseReceiptText } from './receiptScannerService';
+import { parseReceiptText } from '@/services/receiptScannerService';
 
 describe('parseReceiptText', () => {
   it('extracts labeled total and avoids gstin-like numeric noise for tax', async () => {

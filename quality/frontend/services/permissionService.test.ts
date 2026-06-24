@@ -14,7 +14,7 @@ vi.mock('@/utils/supabase/client', () => ({
 }));
 
 import { api, TokenManager } from '@/lib/api';
-import { permissionService } from './permissionService';
+import { permissionService } from '@/services/permissionService';
 
 describe('permissionService', () => {
   beforeEach(() => {

@@ -13,5 +13,5 @@ Schema, migration, and data-integrity checks.
 - Money-column precision (no floats; integer minor units)
 - Row-level security parity with app-layer ownership checks
 
-> Add executable DB tests under `backend/tests/integration/` (they need the Prisma client + a test DB) and index them here.
+> Add executable DB tests under `quality/backend/tests/integration/` (they need the Prisma client + a test DB) and index them here. Reset the local test DB with `npm --prefix backend run db:test:reset` ([`../diagnostics/backend/test-db.mjs`](../diagnostics/backend/test-db.mjs)).
 

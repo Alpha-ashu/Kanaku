@@ -4,7 +4,7 @@
  */
 import request from 'supertest';
 import jwt from 'jsonwebtoken';
-import { app } from '../../src/app';
+import { app } from '../../../../backend/src/app';
 
 const API = '/api/v1';
 
@@ -302,7 +302,7 @@ describe('SECURITY TESTS', () => {
       const token = jwt.sign({ userId, id: userId, email, role: 'user' }, secret, { expiresIn: '15m' });
       const headers = { Authorization: `Bearer ${token}` };
 
-      const { prisma } = require('../../src/db/prisma');
+      const { prisma } = require('../../../../backend/src/db/prisma');
       await prisma.userPin.deleteMany({ where: { userId } }).catch(() => {});
       await prisma.user.deleteMany({ where: { id: userId } }).catch(() => {});
 

@@ -15,7 +15,9 @@ import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
-const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+// This script was relocated to quality/diagnostics/backend/; `root` must still
+// resolve to the backend/ package (where .env.test and prisma/ live).
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../backend');
 const envTestPath = path.join(root, '.env.test');
 if (!existsSync(envTestPath)) {
   console.error('✗ backend/.env.test not found. Create it with a LOCAL DATABASE_URL.');

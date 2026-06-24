@@ -25,7 +25,7 @@ The integration tests run against `DATABASE_URL` in **`backend/.env.test`**
 Reset it to the current schema — **safe, localhost-only, cannot touch prod**:
 ```bash
 cd backend
-npm run db:test:reset      # scripts/test-db.mjs — uses --url, refuses non-local
+npm run db:test:reset      # quality/diagnostics/backend/test-db.mjs — uses --url, refuses non-local
 npm test
 ```
 The script uses Prisma's explicit `--url` flag (which bypasses `.env`) and

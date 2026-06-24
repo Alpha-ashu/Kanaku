@@ -15,10 +15,10 @@ import jwt from 'jsonwebtoken';
 // Isolate the middleware from the real database and the idle-session/Redis layer.
 const upsertMock = jest.fn().mockResolvedValue({});
 const findUniqueMock = jest.fn().mockResolvedValue(null);
-jest.mock('../../src/db/prisma', () => ({
+jest.mock('../../../../backend/src/db/prisma', () => ({
   prisma: { user: { upsert: upsertMock, findUnique: findUniqueMock } },
 }));
-jest.mock('../../src/security/idleSession', () => ({
+jest.mock('../../../../backend/src/security/idleSession', () => ({
   evaluateIdleSession: jest.fn().mockResolvedValue(true), // session always considered active
 }));
 
@@ -62,7 +62,7 @@ beforeAll(() => {
   // Ensure the custom-JWT path rejects the Supabase-signed token so we exercise
   // the Supabase verification branch (the one that used to trust user_metadata).
   process.env.JWT_SECRET = 'a-totally-different-custom-secret-32-chars-min';
-  ({ authMiddleware } = require('../../src/middleware/auth'));
+  ({ authMiddleware } = require('../../../../backend/src/middleware/auth'));
 });
 
 beforeEach(() => {

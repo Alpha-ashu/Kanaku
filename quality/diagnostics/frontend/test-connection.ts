@@ -1,4 +1,4 @@
-import supabase from './client';
+import supabase from '../../../frontend/src/utils/supabase/client';
 
 /**
  * Test Supabase connection

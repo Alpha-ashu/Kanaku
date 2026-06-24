@@ -3,7 +3,7 @@
  * Covers: /process transcript and /process-audio endpoints
  */
 import request from 'supertest';
-import { app } from '../../src/app';
+import { app } from '../../../../backend/src/app';
 
 const API = '/api/v1';
 

@@ -6,7 +6,7 @@ vi.mock('pdfjs-dist/build/pdf', () => ({
   },
 }));
 
-import { ReceiptParserService, type ParsingStrategy } from './receiptParserService';
+import { ReceiptParserService, type ParsingStrategy } from '@/services/receiptParserService';
 
 describe('ReceiptParserService', () => {
   it('selects and merges highest-confidence strategy results', async () => {

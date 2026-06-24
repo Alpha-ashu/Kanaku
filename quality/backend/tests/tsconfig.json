@@ -10,11 +10,12 @@
     "strict": false,
     "forceConsistentCasingInFileNames": true,
     "types": ["jest", "node"],
-    "baseUrl": "..",
+    "baseUrl": "../../../backend",
     "paths": {}
   },
   "include": [
-    "../src/**/*",
-    "**/*"
+    "../../../backend/src/**/*",
+    "**/*",
+    "../unit/**/*"
   ]
 }

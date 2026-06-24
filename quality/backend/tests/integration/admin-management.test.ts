@@ -1,8 +1,8 @@
 import request from 'supertest';
 import jwt from 'jsonwebtoken';
 import { randomUUID } from 'crypto';
-import { app } from '../../src/app';
-import { prisma } from '../../src/db/prisma';
+import { app } from '../../../../backend/src/app';
+import { prisma } from '../../../../backend/src/db/prisma';
 
 const API = '/api/v1';
 

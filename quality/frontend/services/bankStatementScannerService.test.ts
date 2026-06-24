@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseBankStatement } from './bankStatementScannerService';
+import { parseBankStatement } from '@/services/bankStatementScannerService';
 
 describe('parseBankStatement', () => {
   it('parses debit and credit columns with running balances', async () => {

@@ -1,6 +1,6 @@
-import { containsSqlInjection, sanitize } from '../../utils/sanitize';
-import { updateProfileSchema, MAX_ANNUAL_INCOME, MAX_MONTHLY_INCOME } from './auth.validation';
-import { accountCreateSchema } from '../accounts/account.validation';
+import { containsSqlInjection, sanitize } from '../../../../backend/src/utils/sanitize';
+import { updateProfileSchema, MAX_ANNUAL_INCOME, MAX_MONTHLY_INCOME } from '../../../../backend/src/features/auth/auth.validation';
+import { accountCreateSchema } from '../../../../backend/src/features/accounts/account.validation';
 
 describe('Input hardening: SQL-injection guard', () => {
   it('flags classic injection payloads', () => {

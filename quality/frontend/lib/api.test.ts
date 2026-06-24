@@ -24,7 +24,7 @@ vi.mock('sonner', () => ({
   },
 }));
 
-import { api, TokenManager } from './api';
+import { api, TokenManager } from '@/lib/api';
 
 describe('api auth token resolution', () => {
   beforeEach(() => {

@@ -37,7 +37,7 @@ vi.mock('@/services/receiptParserService', () => ({
   },
 }));
 
-import { TesseractOCRService } from './ocrService';
+import { TesseractOCRService } from '@/services/ocrService';
 
 describe('TesseractOCRService', () => {
   it('blends OCR and parser confidence instead of forcing low/zero confidence', async () => {

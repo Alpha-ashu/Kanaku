@@ -31,7 +31,7 @@ vi.mock('@/lib/api', () => ({
   apiClient: { get: vi.fn(), post: vi.fn(), put: vi.fn(), delete: vi.fn() },
 }));
 
-import { signUp, resendSignupConfirmation, DUPLICATE_ACCOUNT_MESSAGE } from './supabase-helpers';
+import { signUp, resendSignupConfirmation, DUPLICATE_ACCOUNT_MESSAGE } from '@/lib/supabase-helpers';
 
 beforeEach(() => {
   signUpMock.mockReset();

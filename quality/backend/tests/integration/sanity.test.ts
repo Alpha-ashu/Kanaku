@@ -4,7 +4,7 @@
  * Run after any deployment or significant change.
  */
 import request from 'supertest';
-import { app } from '../../src/app';
+import { app } from '../../../../backend/src/app';
 
 const API = '/api/v1';
 

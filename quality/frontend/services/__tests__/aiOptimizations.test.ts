@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { parseVoiceExpense, parseMultipleTransactions } from '../../lib/voiceExpenseParser';
-import { parseBankStatement } from '../bankStatementScannerService';
+import { parseVoiceExpense, parseMultipleTransactions } from '@/lib/voiceExpenseParser';
+import { parseBankStatement } from '@/services/bankStatementScannerService';
 
 describe('AI Model Optimizations', () => {
   describe('Voice Memo Processing', () => {

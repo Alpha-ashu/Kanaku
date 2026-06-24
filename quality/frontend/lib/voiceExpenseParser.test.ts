@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseMultipleTransactions, parseVoiceExpense } from './voiceExpenseParser';
+import { parseMultipleTransactions, parseVoiceExpense } from '@/lib/voiceExpenseParser';
 
 describe('voiceExpenseParser', () => {
   it('keeps a shared phrase with the amount instead of splitting too early', () => {

@@ -6,11 +6,19 @@ command + the deliverable map) is in [`README.md`](./README.md).
 
 ## Layout
 
+- `frontend/` — **frontend unit/service suites** (Vitest). Mirrors `src/` subpaths
+  (`lib/`, `services/`, `strategies/`); tests import app code via the `@/` alias.
+  Run: `npm --prefix frontend run test:unit`.
+- `backend/` — **backend suites** (Jest): `tests/integration/` (DB-backed),
+  `tests/setup.ts` + `tests/tsconfig.json`, and `unit/` (e.g. `unit/auth/input-hardening.test.ts`).
+  Run: `npm --prefix backend test`.
+- `diagnostics/` — relocated dev/DB probe scripts (`backend/`, `frontend/`), incl.
+  `backend/test-db.mjs` (the `db:test:reset` command). Not part of any suite.
 - `api/` — API contract testing: `e2e/` (Playwright request specs) + `runner/`
   (`run-api-report.mjs`, fires every endpoint → Excel).
 - `e2e/` — UI Playwright specs + page objects (`pom/`).
 - `automation/` — index of every automated suite across the stack + CI entry point.
-- `security/` — security/abuse-case test index (suites live with the backend runner).
+- `security/` — security/abuse-case test index (suites under `backend/tests/integration/`).
 - `database/` — schema, migration, and data-integrity test notes + index.
 - `performance/` — load/latency/resource testing notes + budgets.
 - `manual/` — human-driven plans and ad-hoc scripts (`manual/ocr/` OCR diagnostics).
@@ -21,16 +29,16 @@ command + the deliverable map) is in [`README.md`](./README.md).
 - `archive/legacy-tests/` — retired runners and ad-hoc debug pages
   (see [`archive/legacy-tests/ARCHIVE.md`](./archive/legacy-tests/ARCHIVE.md)).
 
-## Co-located suites (live with their runners, not here)
+## How the runners find tests here
 
-These run where their test runner is configured to find them; `quality/` indexes
-them rather than relocating them (moving them would break Vitest/Jest resolution).
+All suites now live under `quality/`; the runners are pointed at this hub:
 
-- Frontend unit/service tests — `frontend/src/**/*.test.{ts,tsx}` (`npm --prefix frontend run test:unit`)
-- Backend integration tests — `backend/tests/integration/` (`npm --prefix backend test`)
-- Backend colocated unit tests — e.g. `backend/src/features/auth/input-hardening.test.ts`
-- Backend security suites — `backend/tests/integration/*security*.test.ts` (see [`security/`](./security/README.md))
-- Backend feature matrix helpers — `backend/scripts/`
+- Vitest — `frontend/vitest.config.ts` `include: ['../quality/frontend/**']`; the `@`
+  alias still resolves to `frontend/src`, so tests import app code as `@/…`.
+- Jest — `backend/jest.config.ts` `roots: ['<rootDir>/../quality/backend']`,
+  `setupFiles` + ts-jest `tsconfig` point at `../quality/backend/tests/…`. Tests import
+  source as `../../../../backend/src/…`. `rootDir` stays `backend/` so coverage targets `src/`.
+- Backend feature-matrix helpers stay in `backend/scripts/`.
 
 ## Sample data
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseTranscriptLocally } from './voiceFinancialService';
+import { parseTranscriptLocally } from '@/services/voiceFinancialService';
 
 describe('voiceFinancialService', () => {
   it('keeps every command in a multi-intent input and extracts loan people', () => {

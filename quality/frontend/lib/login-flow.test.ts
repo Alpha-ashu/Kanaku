@@ -25,7 +25,7 @@ vi.mock('sonner', () => ({
   toast: { error: toastError, success: toastSuccess },
 }));
 
-import { api, TokenManager } from './api';
+import { api, TokenManager } from '@/lib/api';
 
 // ── localStorage stub ────────────────────────────────────────────────────────
 function mockLocalStorage() {

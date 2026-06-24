@@ -12,16 +12,16 @@
  * so this runs as a pure unit test without a database.
  */
 
-jest.mock('../../src/cache/redis', () => ({ cacheDeleteByPrefix: jest.fn() }));
-jest.mock('../../src/features/transactions/transaction.repository', () => ({
+jest.mock('../../../../backend/src/cache/redis', () => ({ cacheDeleteByPrefix: jest.fn() }));
+jest.mock('../../../../backend/src/features/transactions/transaction.repository', () => ({
   transactionRepository: {},
 }));
-jest.mock('../../src/features/accounts/account.repository', () => ({
+jest.mock('../../../../backend/src/features/accounts/account.repository', () => ({
   accountRepository: {},
 }));
-jest.mock('../../src/utils/eventBus', () => ({ eventBus: { emit: jest.fn() } }));
+jest.mock('../../../../backend/src/utils/eventBus', () => ({ eventBus: { emit: jest.fn() } }));
 
-import { transactionService } from '../../src/features/transactions/transaction.service';
+import { transactionService } from '../../../../backend/src/features/transactions/transaction.service';
 
 // getBalanceImpactDeltas is private; access it directly for unit testing.
 const deltasFor = (tx: Record<string, unknown>): Map<string, number> => {

@@ -137,5 +137,5 @@ are re-runnable with no DB cleanup.
 A PR that adds/changes an endpoint must include:
 1. `docs/api/contracts/<feature>/<action>.api.json` (contract — aim for 100% on `qa:contract-audit`)
 2. `quality/api/e2e/<feature>/<action>.spec.ts` (API E2E test)
-3. A `backend/tests/integration/` test
+3. A `quality/backend/tests/integration/` test
 4. (Frontend) new interactive elements carry a `data-testid` (`qa:ui-inventory` shows no new MISSING)

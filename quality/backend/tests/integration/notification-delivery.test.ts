@@ -21,18 +21,18 @@ const mockPrisma = {
 const mockSendEmail = jest.fn();
 const mockSendPush = jest.fn();
 
-jest.mock('../../src/db/prisma', () => ({ prisma: mockPrisma }));
-jest.mock('../../src/config/logger', () => ({
+jest.mock('../../../../backend/src/db/prisma', () => ({ prisma: mockPrisma }));
+jest.mock('../../../../backend/src/config/logger', () => ({
   logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn(), debug: jest.fn() },
 }));
-jest.mock('../../src/emails', () => ({ sendNotificationEmail: mockSendEmail }));
-jest.mock('../../src/config/firebase', () => ({
+jest.mock('../../../../backend/src/emails', () => ({ sendNotificationEmail: mockSendEmail }));
+jest.mock('../../../../backend/src/config/firebase', () => ({
   sendPushNotification: mockSendPush,
   initializeFirebase: jest.fn(),
 }));
 
-import { dispatchNotification } from '../../src/features/notifications/notification.dispatcher';
-import { processEmail, processPush, deliverNotification, MAX_ATTEMPTS } from '../../src/workers/index';
+import { dispatchNotification } from '../../../../backend/src/features/notifications/notification.dispatcher';
+import { processEmail, processPush, deliverNotification, MAX_ATTEMPTS } from '../../../../backend/src/workers/index';
 
 const job = (data: any) => ({ data });
 

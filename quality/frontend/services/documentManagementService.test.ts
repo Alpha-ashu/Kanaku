@@ -13,7 +13,7 @@ const mocks = vi.hoisted(() => {
   };
 });
 
-vi.mock('./documentIntelligenceService', () => ({
+vi.mock('@/services/documentIntelligenceService', () => ({
   documentIntelligenceService: {
     createDocumentRecord: vi.fn(),
     updateDocumentRecord: mocks.updateDocumentRecord,
@@ -41,7 +41,7 @@ vi.mock('@/lib/database', () => ({
   },
 }));
 
-import { DocumentManagementService } from './documentManagementService';
+import { DocumentManagementService } from '@/services/documentManagementService';
 
 describe('DocumentManagementService', () => {
   beforeEach(() => {

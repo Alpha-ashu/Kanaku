@@ -1,7 +1,9 @@
 export default {
   preset: 'ts-jest',
   testEnvironment: 'node',
-  roots: ['<rootDir>/src', '<rootDir>/tests'],
+  // Test suites live in the central quality/ hub, not under backend/.
+  // rootDir stays at backend/ so collectCoverageFrom('src/**') still targets backend source.
+  roots: ['<rootDir>/../quality/backend'],
   testMatch: [
     '**/__tests__/**/*.ts',
     '**/?(*.)+(spec|test).[tj]s',
@@ -9,14 +11,14 @@ export default {
     '**/integration/*.ts',
   ],
   transform: {
-    '^.+\\.ts$': ['ts-jest', { tsconfig: 'tests/tsconfig.json' }],
+    '^.+\\.ts$': ['ts-jest', { tsconfig: '../quality/backend/tests/tsconfig.json' }],
   },
   collectCoverageFrom: [
     'src/**/*.ts',
     '!src/**/*.d.ts',
     '!src/server.ts',
   ],
-  setupFiles: ['<rootDir>/tests/setup.ts'],
+  setupFiles: ['<rootDir>/../quality/backend/tests/setup.ts'],
   // Integration tests share a single Postgres test database, so they MUST run
   // serially — parallel workers race and contaminate each other's rows, which
   // shows up as different tests "flakily" failing on each run. Forcing one

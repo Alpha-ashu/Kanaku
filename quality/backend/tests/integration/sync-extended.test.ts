@@ -11,7 +11,7 @@
  */
 import request from 'supertest';
 import jwt from 'jsonwebtoken';
-import { app } from '../../src/app';
+import { app } from '../../../../backend/src/app';
 
 const API = '/api/v1';
 

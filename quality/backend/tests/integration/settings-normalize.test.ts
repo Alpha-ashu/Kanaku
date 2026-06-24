@@ -3,7 +3,7 @@
  * double-encoded JSON string, and (2) free of keys that duplicate dedicated
  * columns (theme/language/currency/timezone and their aliases).
  */
-import { presentSettingsBlob, normaliseSettingsBlob } from '../../src/features/settings/settings.controller';
+import { presentSettingsBlob, normaliseSettingsBlob } from '../../../../backend/src/features/settings/settings.controller';
 
 describe('settings blob normalisation', () => {
   it('decodes a double-encoded (stringified) blob into an object on the way out', () => {

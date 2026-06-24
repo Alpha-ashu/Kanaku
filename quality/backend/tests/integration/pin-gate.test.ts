@@ -3,13 +3,13 @@
  * 403 PIN_VERIFICATION_REQUIRED unless the user holds a live PIN unlock.
  * (The gate's env switch is off under tests, so the unlock check is mocked.)
  */
-jest.mock('../../src/security/pinUnlock', () => ({
+jest.mock('../../../../backend/src/security/pinUnlock', () => ({
   evaluatePinUnlock: jest.fn(),
 }));
 
-import { pinGate } from '../../src/middleware/pinGate';
-import { evaluatePinUnlock } from '../../src/security/pinUnlock';
-import { AppError } from '../../src/utils/AppError';
+import { pinGate } from '../../../../backend/src/middleware/pinGate';
+import { evaluatePinUnlock } from '../../../../backend/src/security/pinUnlock';
+import { AppError } from '../../../../backend/src/utils/AppError';
 
 const mockEval = evaluatePinUnlock as unknown as jest.Mock;
 

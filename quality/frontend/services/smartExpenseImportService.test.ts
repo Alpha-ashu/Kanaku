@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { smartExpenseImportService } from './smartExpenseImportService';
+import { smartExpenseImportService } from '@/services/smartExpenseImportService';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';

@@ -6,7 +6,9 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     globals: true,
-    include: ['src/**/*.{test,spec}.{ts,tsx}'],
+    // Test suites live in the central quality/ hub, not colocated under src/.
+    // The '@' alias below still resolves to ./src, so tests import app code via '@/…'.
+    include: ['../quality/frontend/**/*.{test,spec}.{ts,tsx}'],
     clearMocks: true,
   },
   resolve: {

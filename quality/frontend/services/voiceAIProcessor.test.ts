@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-vi.mock('./KANAKUIntelligenceEngine', () => ({
+vi.mock('@/services/KANAKUIntelligenceEngine', () => ({
   KANAKUAI: {
     extractExpenseData: vi.fn(async () => ({
       amount: undefined,
@@ -13,7 +13,7 @@ vi.mock('./KANAKUIntelligenceEngine', () => ({
   },
 }));
 
-import { createVoiceAIProcessor } from './voiceAIProcessor';
+import { createVoiceAIProcessor } from '@/services/voiceAIProcessor';
 
 describe('VoiceAIProcessor', () => {
   it('parses transcript files instead of silently returning an empty result', async () => {
