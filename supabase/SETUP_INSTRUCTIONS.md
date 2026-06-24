@@ -97,7 +97,6 @@ Your Supabase connection is working! Now let's set up your database tables and s
    -  group_expenses
    -  investments
    -  notifications
-   -  tax_calculations
    -  todo_lists
    -  todo_items
    -  todo_list_shares
@@ -202,7 +201,6 @@ Expected result:
 
 ### **Additional Features:**
 - **notifications** - EMI reminders, due dates
-- **tax_calculations** - Tax estimates
 - **expense_bills** - File attachments
 
 ---

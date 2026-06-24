@@ -11,7 +11,6 @@ export type FeatureKey =
   | 'calendar'
   | 'todoLists'
   | 'transfer'
-  | 'taxCalculator'
   | 'bookAdvisor'
   | 'payments'
   | 'adminPanel'
@@ -39,7 +38,6 @@ export interface FeatureVisibility extends Record<FeatureKey, boolean> {
   calendar: boolean;
   todoLists: boolean;
   transfer: boolean;
-  taxCalculator: boolean;
   bookAdvisor: boolean;
   payments: boolean;
   adminPanel: boolean;
@@ -68,7 +66,6 @@ const DEFAULT_FEATURES: FeatureVisibility = {
   calendar: true,
   todoLists: true,
   transfer: true,
-  taxCalculator: true,
   bookAdvisor: true,
   payments: true,
   adminPanel: true,
@@ -108,7 +105,6 @@ export const ROLE_FEATURES: Record<UserRole, FeatureVisibility> = {
     calendar: true,
     todoLists: true,
     transfer: true,
-    taxCalculator: true,
     bookAdvisor: true,
     payments: true,
     adminPanel: true,
@@ -140,7 +136,6 @@ export const ROLE_FEATURES: Record<UserRole, FeatureVisibility> = {
     calendar: false,
     todoLists: false,
     transfer: false,
-    taxCalculator: false,
     bookAdvisor: false,
     payments: false,
     adminPanel: false,
@@ -168,7 +163,6 @@ export const ROLE_FEATURES: Record<UserRole, FeatureVisibility> = {
     calendar: false,
     todoLists: false,
     transfer: false,
-    taxCalculator: false,
     bookAdvisor: false,
     payments: false,
     adminPanel: false,
@@ -196,7 +190,6 @@ export const ROLE_FEATURES: Record<UserRole, FeatureVisibility> = {
     calendar: false,
     todoLists: false,
     transfer: false,
-    taxCalculator: false,
     bookAdvisor: false,
     payments: false,
     adminPanel: false,
@@ -281,7 +274,6 @@ export const PAGE_TO_FEATURE_MAPPING: Record<string, FeatureKey> = {
   'notifications': 'notifications',
   'user-profile': 'userProfile',
   'transfer': 'transfer',
-  'tax-calculator': 'taxCalculator',
   'admin-ai': 'aiManagement',
   'ai-management': 'aiManagement',
   'manager-advisor-verification': 'managerPanel',

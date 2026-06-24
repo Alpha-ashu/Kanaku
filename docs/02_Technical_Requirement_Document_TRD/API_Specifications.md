@@ -75,9 +75,6 @@
 ## bills — `/api/v1/bills`
 `GET /`, `GET /:id`, `POST /` (upload, rate-limited), `DELETE /:id`.
 
-## tax — `/api/v1/tax`
-`GET /`, `POST /`, `GET /:id`, `PUT /:id`, `DELETE /:id`.
-
 ## dashboard — `/api/v1/dashboard`
 `GET /summary` (cached), `GET /cashflow`.
 

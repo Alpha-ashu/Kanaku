@@ -82,7 +82,6 @@ const NewUserOnboarding = lazy(() => import('@/app/components/auth/onboarding/Ne
 const AppFeatureSlides = lazy(() => import('@/app/components/auth/onboarding/AppFeatureSlides').then(m => ({ default: m.AppFeatureSlides })));
 
 // Dynamic features pages
-const TaxCalculator = lazy(() => import('@/app/components/features/TaxCalculatorPage').then(m => ({ default: m.TaxCalculator })));
 const AIInsightsPage = lazy(() => import('@/app/components/features/AIInsightsPage').then(m => ({ default: m.AIInsightsPage })));
 const RecurringTransactions = lazy(() => import('@/app/components/features/RecurringTransactions').then(m => ({ default: m.RecurringTransactions })));
 const BudgetAlertsPage = lazy(() => import('@/app/components/features/BudgetAlertsPage').then(m => ({ default: m.BudgetAlertsPage })));
@@ -220,7 +219,6 @@ const PAGE_REQUIRED_TABLES: Record<string, SyncedTableName[]> = {
   'receipt-scanner': ['transactions', 'accounts'],
   'pay-emi': ['transactions', 'accounts', 'loans'],
   'recurring-transactions': ['transactions', 'accounts'],
-  'tax-calculator': ['transactions', 'accounts'],
   loans: ['loans', 'accounts', 'friends'],
   'add-loan': ['loans', 'accounts', 'friends'],
   goals: ['goals'],
@@ -977,7 +975,6 @@ const AppContent: React.FC = () => {
       case 'voice-input': return <VoiceInput />;
       case 'voice-review': return <VoiceReview />;
       case 'pay-emi': return <PayEMI />;
-      case 'tax-calculator': return <TaxCalculator />;
       case 'ai-insights': return <AIInsightsPage />;
       case 'data-export': return <ExportReports />;
       case 'recurring-transactions': return <RecurringTransactions />;

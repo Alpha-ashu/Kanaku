@@ -154,17 +154,6 @@ resetPin:    { userId?: string(1..100) }
 // query: { type? }
 ```
 
-## tax — `/api/v1/tax`
-```ts
-// POST /
-{ year: int(2000..2100), regime?: string(<=50), country?: string(<=50),
-  totalIncome: number(>=0), totalExpense: number(>=0), netProfit: number,
-  taxableIncome: number(>=0), estimatedTax: number(>=0), taxRate: number(0..100),
-  deductions?: number(>=0), currency?: string(<=10), notes?: string(<=500),
-  metadata?: Record<string,unknown>, clientRequestId?: string }
-// query: { year? }
-```
-
 ## friends — `/api/v1/friends`
 ```ts
 // POST /     { name: string(1..120), email?: string|null(<=255), phone?: string|null(<=40) }

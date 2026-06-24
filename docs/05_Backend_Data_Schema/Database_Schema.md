@@ -7,7 +7,7 @@
 |---|---|
 | Identity & access | `User`, `UserPin`, `UserSettings`, `RefreshToken`, `OtpCode`, `OtpRequest`, `Device`, `profiles`, `AuditLog`, `PlatformSettings`, `user_features` |
 | Money core | `Account`, `Transaction`, `Category`, `RecurringTransaction`, `Budget`, `ImportLog`, `Payment` |
-| Wealth | `Investment`, `GoldAsset`, `Goal`, `GoalContribution`, `GoalMember`, `Loan`, `LoanPayment`, `TaxCalculation` |
+| Wealth | `Investment`, `GoldAsset`, `Goal`, `GoalContribution`, `GoalMember`, `Loan`, `LoanPayment` |
 | Bills & receipts | `ExpenseBill`, `AiScan` |
 | Social / collaboration | `Friend`, `GroupExpense`, `GroupExpenseMember`, `CollaborationParticipant`, `Todo`, `ChatMessage` |
 | Advisory | `AdvisorApplication`, `AdvisorAvailability`, `AdvisorSession`, `BookingRequest` |
@@ -44,8 +44,8 @@
 ### Investment / GoldAsset
 - `Investment`: assetType, symbol, units, buyPrice, positionStatus, assetCurrency, baseCurrency. `GoldAsset`: type, unit, grams, purchaseDate, cloudId.
 
-### Budget / RecurringTransaction / TaxCalculation
-- `Budget`: category, period, limit, spent. `RecurringTransaction`: accountId, type, amount, frequency, nextDueDate, status. `TaxCalculation`: year, regime, inputs, result.
+### Budget / RecurringTransaction
+- `Budget`: category, period, limit, spent. `RecurringTransaction`: accountId, type, amount, frequency, nextDueDate, status.
 
 ### Friend / GroupExpense / GroupExpenseMember
 - Group splits map registered users via `GroupExpenseMember`; realtime via Socket.IO.

@@ -384,16 +384,6 @@ Pairs with the machine-readable JSON contracts in [`../contracts/`](../contracts
 | POST | `/api/v1/sync/push` | Push local changes to cloud | [↗](./sync/POST__push.md) |
 | POST | `/api/v1/sync/register-device` | Register sync device (idempotent) | [↗](./sync/POST__register-device.md) |
 
-## tax
-
-| Method | Endpoint | Summary | Doc |
-|---|---|---|---|
-| GET | `/api/v1/tax` | ⚠️ spec pending | [↗](./tax/GET__index.md) |
-| POST | `/api/v1/tax` | ⚠️ spec pending | [↗](./tax/POST__index.md) |
-| DELETE | `/api/v1/tax/{id}` | ⚠️ spec pending | [↗](./tax/DELETE__id.md) |
-| GET | `/api/v1/tax/{id}` | ⚠️ spec pending | [↗](./tax/GET__id.md) |
-| PUT | `/api/v1/tax/{id}` | ⚠️ spec pending | [↗](./tax/PUT__id.md) |
-
 ## todos
 
 | Method | Endpoint | Summary | Doc |

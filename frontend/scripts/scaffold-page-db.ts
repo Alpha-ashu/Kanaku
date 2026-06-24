@@ -43,7 +43,6 @@ const PAGES: readonly PageSpec[] = [
   { slug: 'budget-alerts', title: 'Budget Alerts', tables: ['budgets', 'budgetAlerts'], componentPath: 'app/components/features/BudgetAlertsPage.tsx' },
   { slug: 'client-management', title: 'Client Management', tables: ['friends', 'advisorAssignments'], componentPath: 'app/components/features/ClientManagementPage.tsx' },
   { slug: 'receipt-scanner', title: 'Receipt Scanner', tables: ['expenseBills', 'documents'], componentPath: 'app/components/features/ReceiptScannerPage.tsx' },
-  { slug: 'tax-calculator', title: 'Tax Calculator', tables: ['taxCalculations'], componentPath: 'app/components/features/TaxCalculatorPage.tsx' },
   { slug: 'voice-assistant', title: 'Voice Assistant', tables: [], componentPath: 'pages/VoiceAssistantPage.tsx' },
   { slug: 'about', title: 'About (marketing)', tables: [], componentPath: 'app/components/marketing/AboutPage.tsx' },
   { slug: 'contact', title: 'Contact (marketing)', tables: [], componentPath: 'app/components/marketing/ContactPage.tsx' },

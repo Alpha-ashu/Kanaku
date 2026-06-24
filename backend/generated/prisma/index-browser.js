@@ -21,11 +21,11 @@ exports.Prisma = Prisma
 exports.$Enums = {}
 
 /**
- * Prisma Client JS version: 6.19.2
+ * Prisma Client JS version: 6.19.3
  * Query Engine version: c2990dca591cba766e3b7ef5d9e8a84796e47ab7
  */
 Prisma.prismaVersion = {
-  client: "6.19.2",
+  client: "6.19.3",
   engine: "c2990dca591cba766e3b7ef5d9e8a84796e47ab7"
 }
 
@@ -869,29 +869,6 @@ exports.Prisma.BudgetScalarFieldEnum = {
   deletedAt: 'deletedAt'
 };
 
-exports.Prisma.TaxCalculationScalarFieldEnum = {
-  id: 'id',
-  userId: 'userId',
-  year: 'year',
-  regime: 'regime',
-  country: 'country',
-  totalIncome: 'totalIncome',
-  totalExpense: 'totalExpense',
-  netProfit: 'netProfit',
-  taxableIncome: 'taxableIncome',
-  estimatedTax: 'estimatedTax',
-  taxRate: 'taxRate',
-  deductions: 'deductions',
-  currency: 'currency',
-  notes: 'notes',
-  metadata: 'metadata',
-  clientRequestId: 'clientRequestId',
-  syncStatus: 'syncStatus',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-  deletedAt: 'deletedAt'
-};
-
 exports.Prisma.GoldAssetScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
@@ -990,7 +967,6 @@ exports.Prisma.ModelName = {
   AaTransaction: 'AaTransaction',
   RecurringTransaction: 'RecurringTransaction',
   Budget: 'Budget',
-  TaxCalculation: 'TaxCalculation',
   GoldAsset: 'GoldAsset'
 };
 

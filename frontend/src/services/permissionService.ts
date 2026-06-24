@@ -368,7 +368,7 @@ class PermissionService {
         allowedFeatures: [
           'accounts', 'transactions', 'loans', 'goals', 'groups',
           'investments', 'reports', 'calendar', 'todoLists',
-          'transfer', 'taxCalculator', 'bookAdvisor',
+          'transfer', 'bookAdvisor',
           'adminPanel', 'featureControl', 'advisorPanel'
         ],
         permissions: {
@@ -398,7 +398,7 @@ class PermissionService {
         allowedFeatures: [
           'accounts', 'transactions', 'loans', 'goals', 'groups',
           'investments', 'reports', 'calendar', 'todoLists',
-          'transfer', 'taxCalculator', 'bookAdvisor',
+          'transfer', 'bookAdvisor',
           'advisorPanel'
         ],
         permissions: {
@@ -428,7 +428,7 @@ class PermissionService {
         allowedFeatures: [
           'accounts', 'transactions', 'loans', 'goals', 'groups',
           'investments', 'reports', 'calendar', 'todoLists',
-          'transfer', 'taxCalculator', 'bookAdvisor',
+          'transfer', 'bookAdvisor',
           'advisorPanel'
         ],
         permissions: {
@@ -458,7 +458,7 @@ class PermissionService {
         allowedFeatures: [
           'accounts', 'transactions', 'loans', 'goals', 'groups',
           'investments', 'reports', 'calendar', 'todoLists',
-          'transfer', 'taxCalculator', 'bookAdvisor'
+          'transfer', 'bookAdvisor'
         ],
         permissions: {
           canAccessAdminPanel: false,

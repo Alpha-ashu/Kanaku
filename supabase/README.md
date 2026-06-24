@@ -44,7 +44,6 @@ See **[SETUP_INSTRUCTIONS.md](SETUP_INSTRUCTIONS.md)** for step-by-step guide.
 | **group_expenses** | Split bills with friends | Shared expenses |
 | **investments** | Stocks, crypto, gold, etc. | Investments |
 | **notifications** | EMI/loan reminders | Alerts |
-| **tax_calculations** | Tax estimates | Tax data |
 | **todo_lists** | Task lists | Todo lists |
 | **todo_items** | Individual tasks | Tasks |
 | **todo_list_shares** | Shared todo lists | Sharing |

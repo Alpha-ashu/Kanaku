@@ -920,7 +920,6 @@ All admin routes require **Admin role**
   "groups": false,
   "investments": true,
   "loanTracking": true,
-  "taxCalculator": true,
   "calendar": true,
   "reports": true,
   "realtime": false

@@ -31,7 +31,7 @@ Kanaku/
 │       │   (aa, accounts, admin, advisors, ai, auth, avatars, bills, bookings, budgets,
 │       │    categorization, collaboration, dashboard, devices, friends, goals, gold,
 │       │    groups, import, investments, loans, notifications, otp, payments, pin,
-│       │    receipts, recurring, sessions, settings, stocks, sync, tax, todos,
+│       │    receipts, recurring, sessions, settings, stocks, sync, todos,
 │       │    transactions, voice, webhooks)
 │       ├── routes/         Cross-cutting routers (docs, index, sync)
 │       ├── middleware/     auth, validate, rateLimit, requestId, errorHandler
@@ -881,7 +881,6 @@ sequenceDiagram
 | **stocks** | `GET /stocks/search`, `GET /stocks/quote` *(cached 60s)* |
 | **gold** | `GET /gold/price` *(cached)*, `POST /gold/positions` |
 | **bills** | CRUD `/bills` + reminders |
-| **tax** | `GET /tax/summary`, `POST /tax/declarations` |
 | **dashboard** | `GET /dashboard` *(aggregated; Redis 30s)* |
 | **friends** | CRUD `/friends`, invite/accept |
 | **groups** | CRUD `/groups`, members, splits |
@@ -1329,7 +1328,6 @@ All **30 integration test suites / 561 tests pass** against the production-confi
 | `pin.test.ts` | — | PIN create/verify/reset |
 | `budget.test.ts` | — | Budget CRUD |
 | `recurring.test.ts` | — | Recurring transactions |
-| `tax.test.ts` | — | Tax record management |
 | `gold.test.ts` | — | Gold investment tracking |
 | `advisors.test.ts` | — | Advisor booking/profile |
 
@@ -1364,7 +1362,7 @@ Exactly four canonical role accounts exist, on the **`@kanaku.com`** domain. The
 Each canonical account is populated with **comprehensive mock data** by
 `seed-mock-data.cjs`: 4 accounts, 30+ transactions across every category, goals (+
 contributions), loans (+ payments), friends, investments, gold assets, budgets,
-recurring transactions, group expenses, tax calculations, notifications, to-do lists,
+recurring transactions, group expenses, notifications, to-do lists,
 and — for the advisor — an approved application, weekly availability, and a completed +
 upcoming booking/session linked to the `user` account.
 
@@ -6110,7 +6108,7 @@ erDiagram
     AdvisorSession ||--o{ ChatMessage : contains
 ```
 
-### Wealth, Loans & Tax
+### Wealth & Loans
 
 ```mermaid
 erDiagram
@@ -6141,17 +6139,6 @@ erDiagram
         decimal purityPercentage
         datetime deletedAt
     }
-    TaxCalculation {
-        uuid id PK
-        uuid userId FK
-        int year
-        string regime
-        decimal totalIncome
-        decimal estimatedTax
-        decimal taxRate
-        decimal deductions
-        datetime deletedAt
-    }
     Loan {
         uuid id PK
         uuid userId FK
@@ -6173,7 +6160,6 @@ erDiagram
 
     User ||--o{ Investment : holds
     User ||--o{ GoldAsset : owns
-    User ||--o{ TaxCalculation : calculates
     User ||--o{ Loan : tracks
     Loan ||--o{ LoanPayment : repaid-via
 ```
@@ -6410,7 +6396,6 @@ erDiagram
 | **budget** | CRUD `/budget`, `/:id/recalculate` | Prisma |
 | **recurring** | CRUD `/recurring`, `/:id/toggle` | Prisma |
 | **groups** | CRUD + member management | Prisma, Socket.IO |
-| **tax** | CRUD `/tax` | Prisma |
 | **dashboard** | GET `/dashboard/summary`, `/cashflow` | Prisma aggregations |
 | **reports** | Summary, breakdown, trends, export | Prisma |
 | **import** | POST `/import/upload` (preview), `/import/confirm` | Multer, CSV/Excel parser |
@@ -6483,7 +6468,7 @@ erDiagram
 
 **Kanaku** (frontend brand name: **Kanaku**) is a personal and collaborative finance management application. It is an offline-first Progressive Web App with a Node.js/Express backend and Supabase for auth and cloud sync.
 
-**Core features:** accounts, transactions, loans, goals, group expenses, investments, reports, calendar, to-do lists, AI insights, advisor booking, tax calculator, budget alerts, recurring transactions.
+**Core features:** accounts, transactions, loans, goals, group expenses, investments, reports, calendar, to-do lists, AI insights, advisor booking, budget alerts, recurring transactions.
 
 **Roles:** `admin`, `manager`, `advisor`, `user` — each with different feature visibility and permission levels.
 
@@ -6610,7 +6595,6 @@ All pages/routes must be registered in `PAGE_TO_FEATURE_MAPPING` in `featureFlag
 | `notifications` | `notifications` |
 | `user-profile` | `userProfile` |
 | `transfer` | `transfer` |
-| `tax-calculator` | `taxCalculator` |
 | `admin-ai` / `ai-management` | `aiManagement` |
 | `ai-insights` | `aiInsights` |
 | `export-reports` / `data-export` | `dataExport` |

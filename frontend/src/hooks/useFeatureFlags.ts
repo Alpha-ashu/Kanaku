@@ -24,7 +24,6 @@ const DEFAULT_FEATURE_FLAGS: FeatureFlagState = {
   calendar: { admin: true, manager: true, advisor: true, user: true },
   todoLists: { admin: true, manager: true, advisor: true, user: true },
   transfer: { admin: true, manager: true, advisor: true, user: true },
-  taxCalculator: { admin: true, manager: true, advisor: true, user: true },
   bookAdvisor: { admin: true, manager: true, advisor: true, user: true },
   adminPanel: { admin: true, manager: true, advisor: false, user: false },
   advisorPanel: { admin: false, manager: false, advisor: true, user: false },

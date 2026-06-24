@@ -289,7 +289,6 @@ export const Settings: React.FC = () => {
  db.expenseBills.clear(),
  db.expenseCategories.clear(),
  db.budgets.clear(),
- db.taxCalculations.clear(),
  db.gold.clear(),
  db.groups.clear(),
  db.toDoItems.clear(),

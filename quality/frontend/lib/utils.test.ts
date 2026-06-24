@@ -84,7 +84,6 @@ function canAccessPage(page: string, features: FeatureVisibility): boolean {
     'settings': 'settings',
     'notifications': 'notifications',
     'ai-insights': 'aiInsights',
-    'tax-calculator': 'taxCalculator',
     'budget-alerts': 'budgetAlerts',
     'recurring-transactions': 'recurringTransactions',
     'export-reports': 'dataExport',
@@ -100,7 +99,7 @@ describe('canAccessPage', () => {
     dashboard: true, accounts: true, transactions: true, loans: true,
     goals: true, groups: true, investments: true, reports: true,
     calendar: true, todoLists: true, transfer: true, settings: true,
-    notifications: true, aiInsights: true, taxCalculator: true,
+    notifications: true, aiInsights: true,
     budgetAlerts: true, recurringTransactions: true, dataExport: true,
   };
 

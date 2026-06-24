@@ -19,7 +19,6 @@
 | `budgets` | `id, category, period` | Budget |
 | `budgetAlerts` | `++id, budgetId, type, isRead, triggeredAt` | (alerts) |
 | `recurringTransactions` | `++id, cloudId, accountId, type, nextDueDate, status, syncStatus` | RecurringTransaction |
-| `taxCalculations` | `++id, year` | TaxCalculation |
 | `categories` | `id, type` | Category |
 | `expenseCategories` | `id, type` | (category presets) |
 | `toDoLists` | `++id, cloudId, ownerId, listType, createdAt, archived, syncStatus` | Todo (lists) |

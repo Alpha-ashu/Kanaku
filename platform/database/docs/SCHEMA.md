@@ -5,7 +5,7 @@ Auto-generated from [`backend/prisma/schema.prisma`](../../backend/prisma/schema
 
 > Regenerate with `npm run docs:catalogs`. Edit the Prisma schema, not this file.
 
-**Models:** [`AaConsent`](#aaconsent) · [`AaConsentArtifact`](#aaconsentartifact) · [`AaDataSession`](#aadatasession) · [`AaFinancialData`](#aafinancialdata) · [`AaTransaction`](#aatransaction) · [`Account`](#account) · [`AdvisorApplication`](#advisorapplication) · [`AdvisorAvailability`](#advisoravailability) · [`AdvisorSession`](#advisorsession) · [`ai_events`](#ai_events) · [`ai_insights`](#ai_insights) · [`ai_model_runs`](#ai_model_runs) · [`AiScan`](#aiscan) · [`AuditLog`](#auditlog) · [`BookingRequest`](#bookingrequest) · [`Budget`](#budget) · [`Category`](#category) · [`ChatMessage`](#chatmessage) · [`CollaborationParticipant`](#collaborationparticipant) · [`Device`](#device) · [`ExpenseBill`](#expensebill) · [`Friend`](#friend) · [`Goal`](#goal) · [`GoalContribution`](#goalcontribution) · [`GoalMember`](#goalmember) · [`GoldAsset`](#goldasset) · [`GroupExpense`](#groupexpense) · [`GroupExpenseMember`](#groupexpensemember) · [`ImportLog`](#importlog) · [`Investment`](#investment) · [`Loan`](#loan) · [`LoanPayment`](#loanpayment) · [`Notification`](#notification) · [`OtpCode`](#otpcode) · [`OtpRequest`](#otprequest) · [`Payment`](#payment) · [`PlatformSettings`](#platformsettings) · [`profiles`](#profiles) · [`RecurringTransaction`](#recurringtransaction) · [`RefreshToken`](#refreshtoken) · [`SyncQueue`](#syncqueue) · [`TaxCalculation`](#taxcalculation) · [`Todo`](#todo) · [`Transaction`](#transaction) · [`User`](#user) · [`user_features`](#user_features) · [`UserPin`](#userpin) · [`UserSettings`](#usersettings)
+**Models:** [`AaConsent`](#aaconsent) · [`AaConsentArtifact`](#aaconsentartifact) · [`AaDataSession`](#aadatasession) · [`AaFinancialData`](#aafinancialdata) · [`AaTransaction`](#aatransaction) · [`Account`](#account) · [`AdvisorApplication`](#advisorapplication) · [`AdvisorAvailability`](#advisoravailability) · [`AdvisorSession`](#advisorsession) · [`ai_events`](#ai_events) · [`ai_insights`](#ai_insights) · [`ai_model_runs`](#ai_model_runs) · [`AiScan`](#aiscan) · [`AuditLog`](#auditlog) · [`BookingRequest`](#bookingrequest) · [`Budget`](#budget) · [`Category`](#category) · [`ChatMessage`](#chatmessage) · [`CollaborationParticipant`](#collaborationparticipant) · [`Device`](#device) · [`ExpenseBill`](#expensebill) · [`Friend`](#friend) · [`Goal`](#goal) · [`GoalContribution`](#goalcontribution) · [`GoalMember`](#goalmember) · [`GoldAsset`](#goldasset) · [`GroupExpense`](#groupexpense) · [`GroupExpenseMember`](#groupexpensemember) · [`ImportLog`](#importlog) · [`Investment`](#investment) · [`Loan`](#loan) · [`LoanPayment`](#loanpayment) · [`Notification`](#notification) · [`OtpCode`](#otpcode) · [`OtpRequest`](#otprequest) · [`Payment`](#payment) · [`PlatformSettings`](#platformsettings) · [`profiles`](#profiles) · [`RecurringTransaction`](#recurringtransaction) · [`RefreshToken`](#refreshtoken) · [`SyncQueue`](#syncqueue) · [`Todo`](#todo) · [`Transaction`](#transaction) · [`User`](#user) · [`user_features`](#user_features) · [`UserPin`](#userpin) · [`UserSettings`](#usersettings)
 
 ---
 
@@ -1057,38 +1057,6 @@ _None._
 
 ---
 
-### TaxCalculation
-
-| Column | Type | Attributes |
-|---|---|---|
-| `id` | `String` | PK, default uuid() |
-| `userId` | `String` |  |
-| `year` | `Int` |  |
-| `regime` | `String?` |  |
-| `country` | `String` | default "India" |
-| `totalIncome` | `Decimal` | Decimal(12, 2) |
-| `totalExpense` | `Decimal` | Decimal(12, 2) |
-| `netProfit` | `Decimal` | Decimal(12, 2) |
-| `taxableIncome` | `Decimal` | Decimal(12, 2) |
-| `estimatedTax` | `Decimal` | Decimal(12, 2) |
-| `taxRate` | `Decimal` | Decimal(5, 2) |
-| `deductions` | `Decimal` | default 0, Decimal(12, 2) |
-| `currency` | `String` | default "INR" |
-| `notes` | `String?` |  |
-| `metadata` | `Json?` |  |
-| `clientRequestId` | `String?` | unique |
-| `syncStatus` | `String` | default "synced" |
-| `createdAt` | `DateTime` | default now() |
-| `updatedAt` | `DateTime` | auto-updated |
-| `deletedAt` | `DateTime?` |  |
-
-**Relations:**
-- `user` → **User** (fields: [userId], references: [id], onDelete: Cascade)
-
-**Indexes / constraints:** `index([userId])` · `index([year])` · `index([deletedAt])`
-
----
-
 ### Todo
 
 | Column | Type | Attributes |
@@ -1211,7 +1179,6 @@ _None._
 - `groupExpenses` → **GroupExpense[]**
 - `recurringTransactions` → **RecurringTransaction[]**
 - `budgets` → **Budget[]**
-- `taxCalculations` → **TaxCalculation[]**
 - `goldAssets` → **GoldAsset[]**
 - `collaborationParticipations` → **CollaborationParticipant[]** (CollaborationParticipant_user)
 - `collaborationInvitesSent` → **CollaborationParticipant[]** (CollaborationParticipant_invitedBy)

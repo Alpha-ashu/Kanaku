@@ -28,7 +28,7 @@ flowchart LR
 
 | Capability | user | advisor | manager | admin |
 |---|:--:|:--:|:--:|:--:|
-| Own finances (accounts/transactions/budgets/goals/loans/investments/tax/gold) | ✅ | ✅ | ✅ | ✅ |
+| Own finances (accounts/transactions/budgets/goals/loans/investments/gold) | ✅ | ✅ | ✅ | ✅ |
 | Book an advisor (`bookAdvisor`) | ✅ | — | — | — |
 | Manage availability / accept bookings (`requireApproved`) | — | ✅ | — | — |
 | Approve/reject advisor applications | — | — | ✅ | ✅ |

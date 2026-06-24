@@ -426,7 +426,6 @@ export const FEATURES = {
   ADVISOR_BOOKING: 'advisor_booking',
   GROUP_EXPENSES: 'group_expenses',
   INVESTMENTS: 'investments',
-  TAX_CALCULATOR: 'tax_calculator',
   TODO_LISTS: 'todo_lists',
   EXPORT_REPORTS: 'export_reports',
   NOTIFICATIONS: 'notifications',

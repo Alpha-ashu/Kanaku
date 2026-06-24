@@ -58,7 +58,6 @@ The **Shape** column shows which canonical files exist (in order):
 | [`settings`](./settings/README.md) | `/api/v1/settings` | 2 | CVR | User preferences and app settings. |
 | [`stocks`](./stocks/README.md) | `/api/v1/stocks` | 4 | CR | Public stock/market quotes proxy. |
 | [`sync`](./sync/README.md) | `/api/v1/sync` | 5 | SR | Offline-first client↔server data synchronization. |
-| [`tax`](./tax/README.md) | `/api/v1/tax` | 5 | CVR | Tax estimation and calculators. |
 | [`todos`](./todos/README.md) | `/api/v1/todos` | 17 | CSDVR | To-do lists with collaboration/sharing. |
 | [`transactions`](./transactions/README.md) | `/api/v1/transactions` | 6 | CSDVR | Core income/expense transactions — CRUD with feature gates. |
 | [`voice`](./voice/README.md) | `/api/v1/voice` | 3 | CR | Voice command parsing and voice-driven transaction entry. |

@@ -49,8 +49,8 @@
 - Institutional vs P2P (friends); EMI payment atomic (insert `LoanPayment` + txn + update `outstanding` + balance + notify).
 ### 3.3 Investments / Stocks / Gold (F-INV/STK/GOLD-*)
 - Investment CRUD, close position, Wealth Vault net-worth; stock search/quote (cached 60s)/batch + live ticker; gold positions + live metal price.
-### 3.4 Budgets & Tax (F-BUD/TAX-*)
-- Budget CRUD + recalculate spent + threshold alerts; tax calculations CRUD + regime comparison UI.
+### 3.4 Budgets (F-BUD-*)
+- Budget CRUD + recalculate spent + threshold alerts.
 
 ---
 

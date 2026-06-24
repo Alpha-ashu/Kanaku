@@ -39,7 +39,6 @@ $featureModels = [ordered]@{
   settings       = @('UserSettings','user_features')
   stocks         = @()
   sync           = @('SyncQueue')
-  tax            = @('TaxCalculation')
   todos          = @('Todo')
   transactions   = @('Transaction')
   voice          = @()

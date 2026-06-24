@@ -68,7 +68,6 @@ model User {
   groupExpenses               GroupExpense[]
   recurringTransactions       RecurringTransaction[]
   budgets                     Budget[]
-  taxCalculations             TaxCalculation[]
   goldAssets                  GoldAsset[]
   collaborationParticipations CollaborationParticipant[] @relation("CollaborationParticipant_user")
   collaborationInvitesSent    CollaborationParticipant[] @relation("CollaborationParticipant_invitedBy")

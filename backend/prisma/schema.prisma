@@ -657,7 +657,6 @@ model User {
   groupExpenses               GroupExpense[]
   recurringTransactions       RecurringTransaction[]
   budgets                     Budget[]
-  taxCalculations             TaxCalculation[]
   goldAssets                  GoldAsset[]
   collaborationParticipations CollaborationParticipant[] @relation("CollaborationParticipant_user")
   collaborationInvitesSent    CollaborationParticipant[] @relation("CollaborationParticipant_invitedBy")
@@ -1140,38 +1139,6 @@ model Budget {
   @@index([syncStatus])
   @@index([deletedAt])
   @@map("budgets")
-  @@schema("public")
-}
-
-// ─── Tax Calculations ──────────────────────────────────────────────────────────
-
-model TaxCalculation {
-  id              String    @id @default(uuid())
-  userId          String
-  year            Int
-  regime          String? // 'standard', 'new', 'old', 'single', 'married'
-  country         String    @default("India")
-  totalIncome     Decimal   @db.Decimal(12, 2)
-  totalExpense    Decimal   @db.Decimal(12, 2)
-  netProfit       Decimal   @db.Decimal(12, 2)
-  taxableIncome   Decimal   @db.Decimal(12, 2)
-  estimatedTax    Decimal   @db.Decimal(12, 2)
-  taxRate         Decimal   @db.Decimal(5, 2)
-  deductions      Decimal   @default(0) @db.Decimal(12, 2)
-  currency        String    @default("INR")
-  notes           String?
-  metadata        Json?
-  clientRequestId String?   @unique
-  syncStatus      String    @default("synced")
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  deletedAt       DateTime?
-  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([year])
-  @@index([deletedAt])
-  @@map("tax_calculations")
   @@schema("public")
 }
 

@@ -10,7 +10,6 @@ $pages = @(
   @{ slug='budget-alerts';     title='Budget Alerts';       tables=@('budgets','budgetAlerts');          component='app/components/features/BudgetAlertsPage.tsx' }
   @{ slug='client-management'; title='Client Management';   tables=@('friends','advisorAssignments');    component='app/components/features/ClientManagementPage.tsx' }
   @{ slug='receipt-scanner';   title='Receipt Scanner';     tables=@('expenseBills','documents');        component='app/components/features/ReceiptScannerPage.tsx' }
-  @{ slug='tax-calculator';    title='Tax Calculator';      tables=@('taxCalculations');                 component='app/components/features/TaxCalculatorPage.tsx' }
   @{ slug='voice-assistant';   title='Voice Assistant';     tables=@();                                  component='pages/VoiceAssistantPage.tsx' }
   @{ slug='about';             title='About (marketing)';   tables=@();                                  component='app/components/marketing/AboutPage.tsx' }
   @{ slug='contact';           title='Contact (marketing)'; tables=@();                                  component='app/components/marketing/ContactPage.tsx' }

@@ -159,7 +159,7 @@ Redis/queue health; those were removed). Admin: `GET /api/v1/health/metrics`.
   `transactions`, `accounts`, `goals`, `loans`, `settings`, `friends`,
   `investments`, `todos`, `groups`, `categorize`, `learn`, `voice`, `import`,
   `ai`, `receipts`, `notifications`, `devices`, `bills`, `dashboard`, `admin`,
-  `stocks`, `otp`, `recurring`, `budgets`, `tax`, `gold`, `collaborations`.
+  `stocks`, `otp`, `recurring`, `budgets`, `gold`, `collaborations`.
 - **Phase‑gated** (deferred → 404 unless opted in via `ENABLED_MODULES`):
   `advisor` → `bookings`/`advisors`/`sessions`; `payments` → `payments`;
   `aa` → `aa`. This keeps regulated/unfinished endpoints unreachable in

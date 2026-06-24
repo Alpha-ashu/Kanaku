@@ -59,7 +59,6 @@ const FEATURE_MODELS: Record<string, readonly string[]> = {
   settings: ['UserSettings', 'user_features'],
   stocks: [],
   sync: ['SyncQueue'],
-  tax: ['TaxCalculation'],
   todos: ['Todo'],
   transactions: ['Transaction'],
   voice: [],

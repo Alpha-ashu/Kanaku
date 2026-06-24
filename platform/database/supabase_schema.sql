@@ -338,24 +338,6 @@ CREATE INDEX IF NOT EXISTS idx_goal_contributions_goal_date ON public.goal_contr
 CREATE INDEX IF NOT EXISTS idx_group_expenses_user_date ON public.group_expenses(user_id, date DESC);
 CREATE INDEX IF NOT EXISTS idx_import_logs_user_created_at ON public.import_logs(user_id, created_at DESC);
 
--- TAX CALCULATIONS
-CREATE TABLE IF NOT EXISTS public.tax_calculations (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  local_id INT,
-  user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
-  year INT NOT NULL,
-  total_income NUMERIC NOT NULL,
-  total_expense NUMERIC NOT NULL,
-  net_profit NUMERIC NOT NULL,
-  taxable_income NUMERIC NOT NULL,
-  estimated_tax NUMERIC NOT NULL,
-  tax_rate NUMERIC NOT NULL,
-  deductions NUMERIC NOT NULL,
-  currency TEXT DEFAULT 'USD',
-  notes TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
 
 -- FINANCE ADVISORS
 CREATE TABLE IF NOT EXISTS public.finance_advisors (
@@ -498,7 +480,7 @@ $$ LANGUAGE plpgsql;
 DO $$
 DECLARE
   t TEXT;
-  arr TEXT[] := ARRAY['profiles', 'devices', 'user_pins', 'accounts', 'friends', 'categories', 'transactions', 'goals', 'goal_contributions', 'loans', 'investments', 'user_settings', 'group_expenses', 'tax_calculations', 'finance_advisors', 'advisor_sessions', 'booking_requests', 'chat_conversations', 'todo_lists', 'todo_items'];
+  arr TEXT[] := ARRAY['profiles', 'devices', 'user_pins', 'accounts', 'friends', 'categories', 'transactions', 'goals', 'goal_contributions', 'loans', 'investments', 'user_settings', 'group_expenses', 'finance_advisors', 'advisor_sessions', 'booking_requests', 'chat_conversations', 'todo_lists', 'todo_items'];
 BEGIN
   FOREACH t IN ARRAY arr
   LOOP
@@ -525,7 +507,6 @@ ALTER TABLE public.investments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.user_settings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.group_expenses ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.import_logs ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.tax_calculations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.finance_advisors ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.advisor_sessions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.booking_requests ENABLE ROW LEVEL SECURITY;
@@ -560,7 +541,7 @@ $$ LANGUAGE plpgsql;
 DO $$
 DECLARE
   t TEXT;
-  generic_tables TEXT[] := ARRAY['devices', 'user_pins', 'accounts', 'friends', 'categories', 'transactions', 'goals', 'goal_contributions', 'loans', 'investments', 'user_settings', 'group_expenses', 'import_logs', 'tax_calculations', 'notifications'];
+  generic_tables TEXT[] := ARRAY['devices', 'user_pins', 'accounts', 'friends', 'categories', 'transactions', 'goals', 'goal_contributions', 'loans', 'investments', 'user_settings', 'group_expenses', 'import_logs', 'notifications'];
 BEGIN
   FOREACH t IN ARRAY generic_tables
   LOOP

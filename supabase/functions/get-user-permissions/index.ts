@@ -68,7 +68,7 @@ serve(async (req) => {
       allowedFeatures = [
         'accounts', 'transactions', 'loans', 'goals', 'groups',
         'investments', 'reports', 'calendar', 'todoLists',
-        'transfer', 'taxCalculator', 'bookAdvisor',
+        'transfer', 'bookAdvisor',
         'adminPanel', 'featureControl', 'advisorPanel'
       ];
       permissions = {
@@ -97,7 +97,7 @@ serve(async (req) => {
       allowedFeatures = [
         'accounts', 'transactions', 'loans', 'goals', 'groups',
         'investments', 'reports', 'calendar', 'todoLists',
-        'transfer', 'taxCalculator', 'bookAdvisor',
+        'transfer', 'bookAdvisor',
         'advisorPanel'
       ];
       permissions = {
@@ -126,7 +126,7 @@ serve(async (req) => {
       allowedFeatures = [
         'accounts', 'transactions', 'loans', 'goals', 'groups',
         'investments', 'reports', 'calendar', 'todoLists',
-        'transfer', 'taxCalculator', 'bookAdvisor'
+        'transfer', 'bookAdvisor'
       ];
       permissions = {
         canAccessAdminPanel: false,
@@ -243,7 +243,7 @@ const ROLE_PERMISSIONS = {
     features: [
       'accounts', 'transactions', 'loans', 'goals', 'groups',
       'investments', 'reports', 'calendar', 'todoLists',
-      'transfer', 'taxCalculator', 'bookAdvisor',
+      'transfer', 'bookAdvisor',
       'adminPanel', 'featureControl', 'advisorPanel'
     ],
     canAccessAdminPanel: true,
@@ -258,7 +258,7 @@ const ROLE_PERMISSIONS = {
     features: [
       'accounts', 'transactions', 'loans', 'goals', 'groups',
       'investments', 'reports', 'calendar', 'todoLists',
-      'transfer', 'taxCalculator', 'bookAdvisor',
+      'transfer', 'bookAdvisor',
       'advisorPanel'
     ],
     canAccessAdvisorPanel: true,
@@ -273,7 +273,7 @@ const ROLE_PERMISSIONS = {
     features: [
       'accounts', 'transactions', 'loans', 'goals', 'groups',
       'investments', 'reports', 'calendar', 'todoLists',
-      'transfer', 'taxCalculator', 'bookAdvisor'
+      'transfer', 'bookAdvisor'
     ],
     canBookAdvisors: true,
     canPayForSessions: true,

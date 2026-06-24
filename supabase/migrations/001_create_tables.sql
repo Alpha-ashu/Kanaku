@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   currency TEXT DEFAULT 'USD',
   language TEXT DEFAULT 'en',
   pin_code TEXT, -- Encrypted PIN for app access
-  visible_features JSONB DEFAULT '{"accounts": true, "transactions": true, "loans": true, "goals": true, "groups": true, "investments": true, "reports": true, "calendar": true, "todoLists": true, "transfer": true, "taxCalculator": true, "financeAdvisor": true}'::jsonb,
+  visible_features JSONB DEFAULT '{"accounts": true, "transactions": true, "loans": true, "goals": true, "groups": true, "investments": true, "reports": true, "calendar": true, "todoLists": true, "transfer": true, "financeAdvisor": true}'::jsonb,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );

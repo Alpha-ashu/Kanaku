@@ -439,24 +439,6 @@ paths:
     get: { tags: [bills], summary: Get bill, responses: { "200": { $ref: "#/components/responses/Success" } } }
     delete: { tags: [bills], summary: Delete bill, responses: { "204": { description: No Content } } }
 
-  # ---------------- tax ----------------
-  /tax:
-    get:
-      tags: [tax]
-      summary: List tax calculations
-      parameters: [{ name: year, in: query, schema: { type: integer } }]
-      responses: { "200": { $ref: "#/components/responses/Success" } }
-    post:
-      tags: [tax]
-      summary: Create tax calculation
-      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/TaxCalcCreate" } } } }
-      responses: { "201": { $ref: "#/components/responses/Success" } }
-  /tax/{id}:
-    parameters: [{ $ref: "#/components/parameters/IdPath" }]
-    get: { tags: [tax], summary: Get tax calculation, responses: { "200": { $ref: "#/components/responses/Success" } } }
-    put: { tags: [tax], summary: Update tax calculation, responses: { "200": { $ref: "#/components/responses/Success" } } }
-    delete: { tags: [tax], summary: Delete tax calculation, responses: { "204": { description: No Content } } }
-
   # ---------------- dashboard ----------------
   /dashboard/summary:
     get: { tags: [dashboard], summary: Aggregated summary (cached 30s), responses: { "200": { $ref: "#/components/responses/Success" } } }
@@ -1157,25 +1139,6 @@ components:
         location: { type: string, maxLength: 200 }
         certificateNumber: { type: string, maxLength: 100 }
         notes: { type: string, maxLength: 500 }
-        clientRequestId: { type: string }
-
-    TaxCalcCreate:
-      type: object
-      required: [year, totalIncome, totalExpense, netProfit, taxableIncome, estimatedTax, taxRate]
-      properties:
-        year: { type: integer, minimum: 2000, maximum: 2100 }
-        regime: { type: string, maxLength: 50 }
-        country: { type: string, maxLength: 50 }
-        totalIncome: { type: number, minimum: 0 }
-        totalExpense: { type: number, minimum: 0 }
-        netProfit: { type: number }
-        taxableIncome: { type: number, minimum: 0 }
-        estimatedTax: { type: number, minimum: 0 }
-        taxRate: { type: number, minimum: 0, maximum: 100 }
-        deductions: { type: number, minimum: 0 }
-        currency: { type: string, maxLength: 10 }
-        notes: { type: string, maxLength: 500 }
-        metadata: { type: object }
         clientRequestId: { type: string }
 
     FriendCreate:

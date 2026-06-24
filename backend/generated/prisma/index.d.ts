@@ -244,11 +244,6 @@ export type RecurringTransaction = $Result.DefaultSelection<Prisma.$RecurringTra
  */
 export type Budget = $Result.DefaultSelection<Prisma.$BudgetPayload>
 /**
- * Model TaxCalculation
- * 
- */
-export type TaxCalculation = $Result.DefaultSelection<Prisma.$TaxCalculationPayload>
-/**
  * Model GoldAsset
  * 
  */
@@ -833,16 +828,6 @@ export class PrismaClient<
   get budget(): Prisma.BudgetDelegate<ExtArgs, ClientOptions>;
 
   /**
-   * `prisma.taxCalculation`: Exposes CRUD operations for the **TaxCalculation** model.
-    * Example usage:
-    * ```ts
-    * // Fetch zero or more TaxCalculations
-    * const taxCalculations = await prisma.taxCalculation.findMany()
-    * ```
-    */
-  get taxCalculation(): Prisma.TaxCalculationDelegate<ExtArgs, ClientOptions>;
-
-  /**
    * `prisma.goldAsset`: Exposes CRUD operations for the **GoldAsset** model.
     * Example usage:
     * ```ts
@@ -909,7 +894,7 @@ export namespace Prisma {
   export import Exact = $Public.Exact
 
   /**
-   * Prisma Client JS version: 6.19.2
+   * Prisma Client JS version: 6.19.3
    * Query Engine version: c2990dca591cba766e3b7ef5d9e8a84796e47ab7
    */
   export type PrismaVersion = {
@@ -1338,7 +1323,6 @@ export namespace Prisma {
     AaTransaction: 'AaTransaction',
     RecurringTransaction: 'RecurringTransaction',
     Budget: 'Budget',
-    TaxCalculation: 'TaxCalculation',
     GoldAsset: 'GoldAsset'
   };
 
@@ -1358,7 +1342,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "account" | "advisorApplication" | "advisorAvailability" | "advisorSession" | "bookingRequest" | "category" | "chatMessage" | "device" | "expenseBill" | "friend" | "goal" | "goalContribution" | "importLog" | "investment" | "loan" | "loanPayment" | "notification" | "payment" | "refreshToken" | "syncQueue" | "todo" | "transaction" | "user" | "userPin" | "userSettings" | "platformSettings" | "otpCode" | "aiScan" | "ai_events" | "ai_insights" | "ai_model_runs" | "auditLog" | "groupExpense" | "groupExpenseMember" | "collaborationParticipant" | "goalMember" | "user_features" | "profiles" | "otpRequest" | "aaConsent" | "aaConsentArtifact" | "aaDataSession" | "aaFinancialData" | "aaTransaction" | "recurringTransaction" | "budget" | "taxCalculation" | "goldAsset"
+      modelProps: "account" | "advisorApplication" | "advisorAvailability" | "advisorSession" | "bookingRequest" | "category" | "chatMessage" | "device" | "expenseBill" | "friend" | "goal" | "goalContribution" | "importLog" | "investment" | "loan" | "loanPayment" | "notification" | "payment" | "refreshToken" | "syncQueue" | "todo" | "transaction" | "user" | "userPin" | "userSettings" | "platformSettings" | "otpCode" | "aiScan" | "ai_events" | "ai_insights" | "ai_model_runs" | "auditLog" | "groupExpense" | "groupExpenseMember" | "collaborationParticipant" | "goalMember" | "user_features" | "profiles" | "otpRequest" | "aaConsent" | "aaConsentArtifact" | "aaDataSession" | "aaFinancialData" | "aaTransaction" | "recurringTransaction" | "budget" | "goldAsset"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -4766,80 +4750,6 @@ export namespace Prisma {
           }
         }
       }
-      TaxCalculation: {
-        payload: Prisma.$TaxCalculationPayload<ExtArgs>
-        fields: Prisma.TaxCalculationFieldRefs
-        operations: {
-          findUnique: {
-            args: Prisma.TaxCalculationFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$TaxCalculationPayload> | null
-          }
-          findUniqueOrThrow: {
-            args: Prisma.TaxCalculationFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$TaxCalculationPayload>
-          }
-          findFirst: {
-            args: Prisma.TaxCalculationFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$TaxCalculationPayload> | null
-          }
-          findFirstOrThrow: {
-            args: Prisma.TaxCalculationFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$TaxCalculationPayload>
-          }
-          findMany: {
-            args: Prisma.TaxCalculationFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$TaxCalculationPayload>[]
-          }
-          create: {
-            args: Prisma.TaxCalculationCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$TaxCalculationPayload>
-          }
-          createMany: {
-            args: Prisma.TaxCalculationCreateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          createManyAndReturn: {
-            args: Prisma.TaxCalculationCreateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$TaxCalculationPayload>[]
-          }
-          delete: {
-            args: Prisma.TaxCalculationDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$TaxCalculationPayload>
-          }
-          update: {
-            args: Prisma.TaxCalculationUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$TaxCalculationPayload>
-          }
-          deleteMany: {
-            args: Prisma.TaxCalculationDeleteManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateMany: {
-            args: Prisma.TaxCalculationUpdateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateManyAndReturn: {
-            args: Prisma.TaxCalculationUpdateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$TaxCalculationPayload>[]
-          }
-          upsert: {
-            args: Prisma.TaxCalculationUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$TaxCalculationPayload>
-          }
-          aggregate: {
-            args: Prisma.TaxCalculationAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregateTaxCalculation>
-          }
-          groupBy: {
-            args: Prisma.TaxCalculationGroupByArgs<ExtArgs>
-            result: $Utils.Optional<TaxCalculationGroupByOutputType>[]
-          }
-          count: {
-            args: Prisma.TaxCalculationCountArgs<ExtArgs>
-            result: $Utils.Optional<TaxCalculationCountAggregateOutputType> | number
-          }
-        }
-      }
       GoldAsset: {
         payload: Prisma.$GoldAssetPayload<ExtArgs>
         fields: Prisma.GoldAssetFieldRefs
@@ -5056,7 +4966,6 @@ export namespace Prisma {
     aaTransaction?: AaTransactionOmit
     recurringTransaction?: RecurringTransactionOmit
     budget?: BudgetOmit
-    taxCalculation?: TaxCalculationOmit
     goldAsset?: GoldAssetOmit
   }
 
@@ -5348,7 +5257,6 @@ export namespace Prisma {
     groupExpenses: number
     recurringTransactions: number
     budgets: number
-    taxCalculations: number
     goldAssets: number
     collaborationParticipations: number
     collaborationInvitesSent: number
@@ -5383,7 +5291,6 @@ export namespace Prisma {
     groupExpenses?: boolean | UserCountOutputTypeCountGroupExpensesArgs
     recurringTransactions?: boolean | UserCountOutputTypeCountRecurringTransactionsArgs
     budgets?: boolean | UserCountOutputTypeCountBudgetsArgs
-    taxCalculations?: boolean | UserCountOutputTypeCountTaxCalculationsArgs
     goldAssets?: boolean | UserCountOutputTypeCountGoldAssetsArgs
     collaborationParticipations?: boolean | UserCountOutputTypeCountCollaborationParticipationsArgs
     collaborationInvitesSent?: boolean | UserCountOutputTypeCountCollaborationInvitesSentArgs
@@ -5594,13 +5501,6 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountBudgetsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: BudgetWhereInput
-  }
-
-  /**
-   * UserCountOutputType without action
-   */
-  export type UserCountOutputTypeCountTaxCalculationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: TaxCalculationWhereInput
   }
 
   /**
@@ -33210,7 +33110,6 @@ export namespace Prisma {
     groupExpenses?: boolean | User$groupExpensesArgs<ExtArgs>
     recurringTransactions?: boolean | User$recurringTransactionsArgs<ExtArgs>
     budgets?: boolean | User$budgetsArgs<ExtArgs>
-    taxCalculations?: boolean | User$taxCalculationsArgs<ExtArgs>
     goldAssets?: boolean | User$goldAssetsArgs<ExtArgs>
     collaborationParticipations?: boolean | User$collaborationParticipationsArgs<ExtArgs>
     collaborationInvitesSent?: boolean | User$collaborationInvitesSentArgs<ExtArgs>
@@ -33328,7 +33227,6 @@ export namespace Prisma {
     groupExpenses?: boolean | User$groupExpensesArgs<ExtArgs>
     recurringTransactions?: boolean | User$recurringTransactionsArgs<ExtArgs>
     budgets?: boolean | User$budgetsArgs<ExtArgs>
-    taxCalculations?: boolean | User$taxCalculationsArgs<ExtArgs>
     goldAssets?: boolean | User$goldAssetsArgs<ExtArgs>
     collaborationParticipations?: boolean | User$collaborationParticipationsArgs<ExtArgs>
     collaborationInvitesSent?: boolean | User$collaborationInvitesSentArgs<ExtArgs>
@@ -33371,7 +33269,6 @@ export namespace Prisma {
       groupExpenses: Prisma.$GroupExpensePayload<ExtArgs>[]
       recurringTransactions: Prisma.$RecurringTransactionPayload<ExtArgs>[]
       budgets: Prisma.$BudgetPayload<ExtArgs>[]
-      taxCalculations: Prisma.$TaxCalculationPayload<ExtArgs>[]
       goldAssets: Prisma.$GoldAssetPayload<ExtArgs>[]
       collaborationParticipations: Prisma.$CollaborationParticipantPayload<ExtArgs>[]
       collaborationInvitesSent: Prisma.$CollaborationParticipantPayload<ExtArgs>[]
@@ -33825,7 +33722,6 @@ export namespace Prisma {
     groupExpenses<T extends User$groupExpensesArgs<ExtArgs> = {}>(args?: Subset<T, User$groupExpensesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GroupExpensePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     recurringTransactions<T extends User$recurringTransactionsArgs<ExtArgs> = {}>(args?: Subset<T, User$recurringTransactionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RecurringTransactionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     budgets<T extends User$budgetsArgs<ExtArgs> = {}>(args?: Subset<T, User$budgetsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BudgetPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    taxCalculations<T extends User$taxCalculationsArgs<ExtArgs> = {}>(args?: Subset<T, User$taxCalculationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TaxCalculationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     goldAssets<T extends User$goldAssetsArgs<ExtArgs> = {}>(args?: Subset<T, User$goldAssetsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GoldAssetPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     collaborationParticipations<T extends User$collaborationParticipationsArgs<ExtArgs> = {}>(args?: Subset<T, User$collaborationParticipationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CollaborationParticipantPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     collaborationInvitesSent<T extends User$collaborationInvitesSentArgs<ExtArgs> = {}>(args?: Subset<T, User$collaborationInvitesSentArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CollaborationParticipantPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -34995,30 +34891,6 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: BudgetScalarFieldEnum | BudgetScalarFieldEnum[]
-  }
-
-  /**
-   * User.taxCalculations
-   */
-  export type User$taxCalculationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the TaxCalculation
-     */
-    select?: TaxCalculationSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the TaxCalculation
-     */
-    omit?: TaxCalculationOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: TaxCalculationInclude<ExtArgs> | null
-    where?: TaxCalculationWhereInput
-    orderBy?: TaxCalculationOrderByWithRelationInput | TaxCalculationOrderByWithRelationInput[]
-    cursor?: TaxCalculationWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: TaxCalculationScalarFieldEnum | TaxCalculationScalarFieldEnum[]
   }
 
   /**
@@ -60998,1317 +60870,6 @@ export namespace Prisma {
 
 
   /**
-   * Model TaxCalculation
-   */
-
-  export type AggregateTaxCalculation = {
-    _count: TaxCalculationCountAggregateOutputType | null
-    _avg: TaxCalculationAvgAggregateOutputType | null
-    _sum: TaxCalculationSumAggregateOutputType | null
-    _min: TaxCalculationMinAggregateOutputType | null
-    _max: TaxCalculationMaxAggregateOutputType | null
-  }
-
-  export type TaxCalculationAvgAggregateOutputType = {
-    year: number | null
-    totalIncome: Decimal | null
-    totalExpense: Decimal | null
-    netProfit: Decimal | null
-    taxableIncome: Decimal | null
-    estimatedTax: Decimal | null
-    taxRate: Decimal | null
-    deductions: Decimal | null
-  }
-
-  export type TaxCalculationSumAggregateOutputType = {
-    year: number | null
-    totalIncome: Decimal | null
-    totalExpense: Decimal | null
-    netProfit: Decimal | null
-    taxableIncome: Decimal | null
-    estimatedTax: Decimal | null
-    taxRate: Decimal | null
-    deductions: Decimal | null
-  }
-
-  export type TaxCalculationMinAggregateOutputType = {
-    id: string | null
-    userId: string | null
-    year: number | null
-    regime: string | null
-    country: string | null
-    totalIncome: Decimal | null
-    totalExpense: Decimal | null
-    netProfit: Decimal | null
-    taxableIncome: Decimal | null
-    estimatedTax: Decimal | null
-    taxRate: Decimal | null
-    deductions: Decimal | null
-    currency: string | null
-    notes: string | null
-    clientRequestId: string | null
-    syncStatus: string | null
-    createdAt: Date | null
-    updatedAt: Date | null
-    deletedAt: Date | null
-  }
-
-  export type TaxCalculationMaxAggregateOutputType = {
-    id: string | null
-    userId: string | null
-    year: number | null
-    regime: string | null
-    country: string | null
-    totalIncome: Decimal | null
-    totalExpense: Decimal | null
-    netProfit: Decimal | null
-    taxableIncome: Decimal | null
-    estimatedTax: Decimal | null
-    taxRate: Decimal | null
-    deductions: Decimal | null
-    currency: string | null
-    notes: string | null
-    clientRequestId: string | null
-    syncStatus: string | null
-    createdAt: Date | null
-    updatedAt: Date | null
-    deletedAt: Date | null
-  }
-
-  export type TaxCalculationCountAggregateOutputType = {
-    id: number
-    userId: number
-    year: number
-    regime: number
-    country: number
-    totalIncome: number
-    totalExpense: number
-    netProfit: number
-    taxableIncome: number
-    estimatedTax: number
-    taxRate: number
-    deductions: number
-    currency: number
-    notes: number
-    metadata: number
-    clientRequestId: number
-    syncStatus: number
-    createdAt: number
-    updatedAt: number
-    deletedAt: number
-    _all: number
-  }
-
-
-  export type TaxCalculationAvgAggregateInputType = {
-    year?: true
-    totalIncome?: true
-    totalExpense?: true
-    netProfit?: true
-    taxableIncome?: true
-    estimatedTax?: true
-    taxRate?: true
-    deductions?: true
-  }
-
-  export type TaxCalculationSumAggregateInputType = {
-    year?: true
-    totalIncome?: true
-    totalExpense?: true
-    netProfit?: true
-    taxableIncome?: true
-    estimatedTax?: true
-    taxRate?: true
-    deductions?: true
-  }
-
-  export type TaxCalculationMinAggregateInputType = {
-    id?: true
-    userId?: true
-    year?: true
-    regime?: true
-    country?: true
-    totalIncome?: true
-    totalExpense?: true
-    netProfit?: true
-    taxableIncome?: true
-    estimatedTax?: true
-    taxRate?: true
-    deductions?: true
-    currency?: true
-    notes?: true
-    clientRequestId?: true
-    syncStatus?: true
-    createdAt?: true
-    updatedAt?: true
-    deletedAt?: true
-  }
-
-  export type TaxCalculationMaxAggregateInputType = {
-    id?: true
-    userId?: true
-    year?: true
-    regime?: true
-    country?: true
-    totalIncome?: true
-    totalExpense?: true
-    netProfit?: true
-    taxableIncome?: true
-    estimatedTax?: true
-    taxRate?: true
-    deductions?: true
-    currency?: true
-    notes?: true
-    clientRequestId?: true
-    syncStatus?: true
-    createdAt?: true
-    updatedAt?: true
-    deletedAt?: true
-  }
-
-  export type TaxCalculationCountAggregateInputType = {
-    id?: true
-    userId?: true
-    year?: true
-    regime?: true
-    country?: true
-    totalIncome?: true
-    totalExpense?: true
-    netProfit?: true
-    taxableIncome?: true
-    estimatedTax?: true
-    taxRate?: true
-    deductions?: true
-    currency?: true
-    notes?: true
-    metadata?: true
-    clientRequestId?: true
-    syncStatus?: true
-    createdAt?: true
-    updatedAt?: true
-    deletedAt?: true
-    _all?: true
-  }
-
-  export type TaxCalculationAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which TaxCalculation to aggregate.
-     */
-    where?: TaxCalculationWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of TaxCalculations to fetch.
-     */
-    orderBy?: TaxCalculationOrderByWithRelationInput | TaxCalculationOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the start position
-     */
-    cursor?: TaxCalculationWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` TaxCalculations from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` TaxCalculations.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Count returned TaxCalculations
-    **/
-    _count?: true | TaxCalculationCountAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to average
-    **/
-    _avg?: TaxCalculationAvgAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to sum
-    **/
-    _sum?: TaxCalculationSumAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the minimum value
-    **/
-    _min?: TaxCalculationMinAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the maximum value
-    **/
-    _max?: TaxCalculationMaxAggregateInputType
-  }
-
-  export type GetTaxCalculationAggregateType<T extends TaxCalculationAggregateArgs> = {
-        [P in keyof T & keyof AggregateTaxCalculation]: P extends '_count' | 'count'
-      ? T[P] extends true
-        ? number
-        : GetScalarType<T[P], AggregateTaxCalculation[P]>
-      : GetScalarType<T[P], AggregateTaxCalculation[P]>
-  }
-
-
-
-
-  export type TaxCalculationGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: TaxCalculationWhereInput
-    orderBy?: TaxCalculationOrderByWithAggregationInput | TaxCalculationOrderByWithAggregationInput[]
-    by: TaxCalculationScalarFieldEnum[] | TaxCalculationScalarFieldEnum
-    having?: TaxCalculationScalarWhereWithAggregatesInput
-    take?: number
-    skip?: number
-    _count?: TaxCalculationCountAggregateInputType | true
-    _avg?: TaxCalculationAvgAggregateInputType
-    _sum?: TaxCalculationSumAggregateInputType
-    _min?: TaxCalculationMinAggregateInputType
-    _max?: TaxCalculationMaxAggregateInputType
-  }
-
-  export type TaxCalculationGroupByOutputType = {
-    id: string
-    userId: string
-    year: number
-    regime: string | null
-    country: string
-    totalIncome: Decimal
-    totalExpense: Decimal
-    netProfit: Decimal
-    taxableIncome: Decimal
-    estimatedTax: Decimal
-    taxRate: Decimal
-    deductions: Decimal
-    currency: string
-    notes: string | null
-    metadata: JsonValue | null
-    clientRequestId: string | null
-    syncStatus: string
-    createdAt: Date
-    updatedAt: Date
-    deletedAt: Date | null
-    _count: TaxCalculationCountAggregateOutputType | null
-    _avg: TaxCalculationAvgAggregateOutputType | null
-    _sum: TaxCalculationSumAggregateOutputType | null
-    _min: TaxCalculationMinAggregateOutputType | null
-    _max: TaxCalculationMaxAggregateOutputType | null
-  }
-
-  type GetTaxCalculationGroupByPayload<T extends TaxCalculationGroupByArgs> = Prisma.PrismaPromise<
-    Array<
-      PickEnumerable<TaxCalculationGroupByOutputType, T['by']> &
-        {
-          [P in ((keyof T) & (keyof TaxCalculationGroupByOutputType))]: P extends '_count'
-            ? T[P] extends boolean
-              ? number
-              : GetScalarType<T[P], TaxCalculationGroupByOutputType[P]>
-            : GetScalarType<T[P], TaxCalculationGroupByOutputType[P]>
-        }
-      >
-    >
-
-
-  export type TaxCalculationSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    userId?: boolean
-    year?: boolean
-    regime?: boolean
-    country?: boolean
-    totalIncome?: boolean
-    totalExpense?: boolean
-    netProfit?: boolean
-    taxableIncome?: boolean
-    estimatedTax?: boolean
-    taxRate?: boolean
-    deductions?: boolean
-    currency?: boolean
-    notes?: boolean
-    metadata?: boolean
-    clientRequestId?: boolean
-    syncStatus?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    deletedAt?: boolean
-    user?: boolean | UserDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["taxCalculation"]>
-
-  export type TaxCalculationSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    userId?: boolean
-    year?: boolean
-    regime?: boolean
-    country?: boolean
-    totalIncome?: boolean
-    totalExpense?: boolean
-    netProfit?: boolean
-    taxableIncome?: boolean
-    estimatedTax?: boolean
-    taxRate?: boolean
-    deductions?: boolean
-    currency?: boolean
-    notes?: boolean
-    metadata?: boolean
-    clientRequestId?: boolean
-    syncStatus?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    deletedAt?: boolean
-    user?: boolean | UserDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["taxCalculation"]>
-
-  export type TaxCalculationSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    userId?: boolean
-    year?: boolean
-    regime?: boolean
-    country?: boolean
-    totalIncome?: boolean
-    totalExpense?: boolean
-    netProfit?: boolean
-    taxableIncome?: boolean
-    estimatedTax?: boolean
-    taxRate?: boolean
-    deductions?: boolean
-    currency?: boolean
-    notes?: boolean
-    metadata?: boolean
-    clientRequestId?: boolean
-    syncStatus?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    deletedAt?: boolean
-    user?: boolean | UserDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["taxCalculation"]>
-
-  export type TaxCalculationSelectScalar = {
-    id?: boolean
-    userId?: boolean
-    year?: boolean
-    regime?: boolean
-    country?: boolean
-    totalIncome?: boolean
-    totalExpense?: boolean
-    netProfit?: boolean
-    taxableIncome?: boolean
-    estimatedTax?: boolean
-    taxRate?: boolean
-    deductions?: boolean
-    currency?: boolean
-    notes?: boolean
-    metadata?: boolean
-    clientRequestId?: boolean
-    syncStatus?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    deletedAt?: boolean
-  }
-
-  export type TaxCalculationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "year" | "regime" | "country" | "totalIncome" | "totalExpense" | "netProfit" | "taxableIncome" | "estimatedTax" | "taxRate" | "deductions" | "currency" | "notes" | "metadata" | "clientRequestId" | "syncStatus" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["taxCalculation"]>
-  export type TaxCalculationInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    user?: boolean | UserDefaultArgs<ExtArgs>
-  }
-  export type TaxCalculationIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    user?: boolean | UserDefaultArgs<ExtArgs>
-  }
-  export type TaxCalculationIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    user?: boolean | UserDefaultArgs<ExtArgs>
-  }
-
-  export type $TaxCalculationPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "TaxCalculation"
-    objects: {
-      user: Prisma.$UserPayload<ExtArgs>
-    }
-    scalars: $Extensions.GetPayloadResult<{
-      id: string
-      userId: string
-      year: number
-      regime: string | null
-      country: string
-      totalIncome: Prisma.Decimal
-      totalExpense: Prisma.Decimal
-      netProfit: Prisma.Decimal
-      taxableIncome: Prisma.Decimal
-      estimatedTax: Prisma.Decimal
-      taxRate: Prisma.Decimal
-      deductions: Prisma.Decimal
-      currency: string
-      notes: string | null
-      metadata: Prisma.JsonValue | null
-      clientRequestId: string | null
-      syncStatus: string
-      createdAt: Date
-      updatedAt: Date
-      deletedAt: Date | null
-    }, ExtArgs["result"]["taxCalculation"]>
-    composites: {}
-  }
-
-  type TaxCalculationGetPayload<S extends boolean | null | undefined | TaxCalculationDefaultArgs> = $Result.GetResult<Prisma.$TaxCalculationPayload, S>
-
-  type TaxCalculationCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<TaxCalculationFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
-      select?: TaxCalculationCountAggregateInputType | true
-    }
-
-  export interface TaxCalculationDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['TaxCalculation'], meta: { name: 'TaxCalculation' } }
-    /**
-     * Find zero or one TaxCalculation that matches the filter.
-     * @param {TaxCalculationFindUniqueArgs} args - Arguments to find a TaxCalculation
-     * @example
-     * // Get one TaxCalculation
-     * const taxCalculation = await prisma.taxCalculation.findUnique({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUnique<T extends TaxCalculationFindUniqueArgs>(args: SelectSubset<T, TaxCalculationFindUniqueArgs<ExtArgs>>): Prisma__TaxCalculationClient<$Result.GetResult<Prisma.$TaxCalculationPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find one TaxCalculation that matches the filter or throw an error with `error.code='P2025'`
-     * if no matches were found.
-     * @param {TaxCalculationFindUniqueOrThrowArgs} args - Arguments to find a TaxCalculation
-     * @example
-     * // Get one TaxCalculation
-     * const taxCalculation = await prisma.taxCalculation.findUniqueOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUniqueOrThrow<T extends TaxCalculationFindUniqueOrThrowArgs>(args: SelectSubset<T, TaxCalculationFindUniqueOrThrowArgs<ExtArgs>>): Prisma__TaxCalculationClient<$Result.GetResult<Prisma.$TaxCalculationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first TaxCalculation that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {TaxCalculationFindFirstArgs} args - Arguments to find a TaxCalculation
-     * @example
-     * // Get one TaxCalculation
-     * const taxCalculation = await prisma.taxCalculation.findFirst({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirst<T extends TaxCalculationFindFirstArgs>(args?: SelectSubset<T, TaxCalculationFindFirstArgs<ExtArgs>>): Prisma__TaxCalculationClient<$Result.GetResult<Prisma.$TaxCalculationPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first TaxCalculation that matches the filter or
-     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {TaxCalculationFindFirstOrThrowArgs} args - Arguments to find a TaxCalculation
-     * @example
-     * // Get one TaxCalculation
-     * const taxCalculation = await prisma.taxCalculation.findFirstOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirstOrThrow<T extends TaxCalculationFindFirstOrThrowArgs>(args?: SelectSubset<T, TaxCalculationFindFirstOrThrowArgs<ExtArgs>>): Prisma__TaxCalculationClient<$Result.GetResult<Prisma.$TaxCalculationPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find zero or more TaxCalculations that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {TaxCalculationFindManyArgs} args - Arguments to filter and select certain fields only.
-     * @example
-     * // Get all TaxCalculations
-     * const taxCalculations = await prisma.taxCalculation.findMany()
-     * 
-     * // Get first 10 TaxCalculations
-     * const taxCalculations = await prisma.taxCalculation.findMany({ take: 10 })
-     * 
-     * // Only select the `id`
-     * const taxCalculationWithIdOnly = await prisma.taxCalculation.findMany({ select: { id: true } })
-     * 
-     */
-    findMany<T extends TaxCalculationFindManyArgs>(args?: SelectSubset<T, TaxCalculationFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TaxCalculationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
-
-    /**
-     * Create a TaxCalculation.
-     * @param {TaxCalculationCreateArgs} args - Arguments to create a TaxCalculation.
-     * @example
-     * // Create one TaxCalculation
-     * const TaxCalculation = await prisma.taxCalculation.create({
-     *   data: {
-     *     // ... data to create a TaxCalculation
-     *   }
-     * })
-     * 
-     */
-    create<T extends TaxCalculationCreateArgs>(args: SelectSubset<T, TaxCalculationCreateArgs<ExtArgs>>): Prisma__TaxCalculationClient<$Result.GetResult<Prisma.$TaxCalculationPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Create many TaxCalculations.
-     * @param {TaxCalculationCreateManyArgs} args - Arguments to create many TaxCalculations.
-     * @example
-     * // Create many TaxCalculations
-     * const taxCalculation = await prisma.taxCalculation.createMany({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     *     
-     */
-    createMany<T extends TaxCalculationCreateManyArgs>(args?: SelectSubset<T, TaxCalculationCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Create many TaxCalculations and returns the data saved in the database.
-     * @param {TaxCalculationCreateManyAndReturnArgs} args - Arguments to create many TaxCalculations.
-     * @example
-     * // Create many TaxCalculations
-     * const taxCalculation = await prisma.taxCalculation.createManyAndReturn({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Create many TaxCalculations and only return the `id`
-     * const taxCalculationWithIdOnly = await prisma.taxCalculation.createManyAndReturn({
-     *   select: { id: true },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    createManyAndReturn<T extends TaxCalculationCreateManyAndReturnArgs>(args?: SelectSubset<T, TaxCalculationCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TaxCalculationPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Delete a TaxCalculation.
-     * @param {TaxCalculationDeleteArgs} args - Arguments to delete one TaxCalculation.
-     * @example
-     * // Delete one TaxCalculation
-     * const TaxCalculation = await prisma.taxCalculation.delete({
-     *   where: {
-     *     // ... filter to delete one TaxCalculation
-     *   }
-     * })
-     * 
-     */
-    delete<T extends TaxCalculationDeleteArgs>(args: SelectSubset<T, TaxCalculationDeleteArgs<ExtArgs>>): Prisma__TaxCalculationClient<$Result.GetResult<Prisma.$TaxCalculationPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Update one TaxCalculation.
-     * @param {TaxCalculationUpdateArgs} args - Arguments to update one TaxCalculation.
-     * @example
-     * // Update one TaxCalculation
-     * const taxCalculation = await prisma.taxCalculation.update({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    update<T extends TaxCalculationUpdateArgs>(args: SelectSubset<T, TaxCalculationUpdateArgs<ExtArgs>>): Prisma__TaxCalculationClient<$Result.GetResult<Prisma.$TaxCalculationPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Delete zero or more TaxCalculations.
-     * @param {TaxCalculationDeleteManyArgs} args - Arguments to filter TaxCalculations to delete.
-     * @example
-     * // Delete a few TaxCalculations
-     * const { count } = await prisma.taxCalculation.deleteMany({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     * 
-     */
-    deleteMany<T extends TaxCalculationDeleteManyArgs>(args?: SelectSubset<T, TaxCalculationDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more TaxCalculations.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {TaxCalculationUpdateManyArgs} args - Arguments to update one or more rows.
-     * @example
-     * // Update many TaxCalculations
-     * const taxCalculation = await prisma.taxCalculation.updateMany({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    updateMany<T extends TaxCalculationUpdateManyArgs>(args: SelectSubset<T, TaxCalculationUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more TaxCalculations and returns the data updated in the database.
-     * @param {TaxCalculationUpdateManyAndReturnArgs} args - Arguments to update many TaxCalculations.
-     * @example
-     * // Update many TaxCalculations
-     * const taxCalculation = await prisma.taxCalculation.updateManyAndReturn({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Update zero or more TaxCalculations and only return the `id`
-     * const taxCalculationWithIdOnly = await prisma.taxCalculation.updateManyAndReturn({
-     *   select: { id: true },
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    updateManyAndReturn<T extends TaxCalculationUpdateManyAndReturnArgs>(args: SelectSubset<T, TaxCalculationUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TaxCalculationPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Create or update one TaxCalculation.
-     * @param {TaxCalculationUpsertArgs} args - Arguments to update or create a TaxCalculation.
-     * @example
-     * // Update or create a TaxCalculation
-     * const taxCalculation = await prisma.taxCalculation.upsert({
-     *   create: {
-     *     // ... data to create a TaxCalculation
-     *   },
-     *   update: {
-     *     // ... in case it already exists, update
-     *   },
-     *   where: {
-     *     // ... the filter for the TaxCalculation we want to update
-     *   }
-     * })
-     */
-    upsert<T extends TaxCalculationUpsertArgs>(args: SelectSubset<T, TaxCalculationUpsertArgs<ExtArgs>>): Prisma__TaxCalculationClient<$Result.GetResult<Prisma.$TaxCalculationPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-
-    /**
-     * Count the number of TaxCalculations.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {TaxCalculationCountArgs} args - Arguments to filter TaxCalculations to count.
-     * @example
-     * // Count the number of TaxCalculations
-     * const count = await prisma.taxCalculation.count({
-     *   where: {
-     *     // ... the filter for the TaxCalculations we want to count
-     *   }
-     * })
-    **/
-    count<T extends TaxCalculationCountArgs>(
-      args?: Subset<T, TaxCalculationCountArgs>,
-    ): Prisma.PrismaPromise<
-      T extends $Utils.Record<'select', any>
-        ? T['select'] extends true
-          ? number
-          : GetScalarType<T['select'], TaxCalculationCountAggregateOutputType>
-        : number
-    >
-
-    /**
-     * Allows you to perform aggregations operations on a TaxCalculation.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {TaxCalculationAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
-     * @example
-     * // Ordered by age ascending
-     * // Where email contains prisma.io
-     * // Limited to the 10 users
-     * const aggregations = await prisma.user.aggregate({
-     *   _avg: {
-     *     age: true,
-     *   },
-     *   where: {
-     *     email: {
-     *       contains: "prisma.io",
-     *     },
-     *   },
-     *   orderBy: {
-     *     age: "asc",
-     *   },
-     *   take: 10,
-     * })
-    **/
-    aggregate<T extends TaxCalculationAggregateArgs>(args: Subset<T, TaxCalculationAggregateArgs>): Prisma.PrismaPromise<GetTaxCalculationAggregateType<T>>
-
-    /**
-     * Group by TaxCalculation.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {TaxCalculationGroupByArgs} args - Group by arguments.
-     * @example
-     * // Group by city, order by createdAt, get count
-     * const result = await prisma.user.groupBy({
-     *   by: ['city', 'createdAt'],
-     *   orderBy: {
-     *     createdAt: true
-     *   },
-     *   _count: {
-     *     _all: true
-     *   },
-     * })
-     * 
-    **/
-    groupBy<
-      T extends TaxCalculationGroupByArgs,
-      HasSelectOrTake extends Or<
-        Extends<'skip', Keys<T>>,
-        Extends<'take', Keys<T>>
-      >,
-      OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: TaxCalculationGroupByArgs['orderBy'] }
-        : { orderBy?: TaxCalculationGroupByArgs['orderBy'] },
-      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
-      ByFields extends MaybeTupleToUnion<T['by']>,
-      ByValid extends Has<ByFields, OrderFields>,
-      HavingFields extends GetHavingFields<T['having']>,
-      HavingValid extends Has<ByFields, HavingFields>,
-      ByEmpty extends T['by'] extends never[] ? True : False,
-      InputErrors extends ByEmpty extends True
-      ? `Error: "by" must not be empty.`
-      : HavingValid extends False
-      ? {
-          [P in HavingFields]: P extends ByFields
-            ? never
-            : P extends string
-            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
-            : [
-                Error,
-                'Field ',
-                P,
-                ` in "having" needs to be provided in "by"`,
-              ]
-        }[HavingFields]
-      : 'take' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "take", you also need to provide "orderBy"'
-      : 'skip' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "skip", you also need to provide "orderBy"'
-      : ByValid extends True
-      ? {}
-      : {
-          [P in OrderFields]: P extends ByFields
-            ? never
-            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-        }[OrderFields]
-    >(args: SubsetIntersection<T, TaxCalculationGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetTaxCalculationGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
-  /**
-   * Fields of the TaxCalculation model
-   */
-  readonly fields: TaxCalculationFieldRefs;
-  }
-
-  /**
-   * The delegate class that acts as a "Promise-like" for TaxCalculation.
-   * Why is this prefixed with `Prisma__`?
-   * Because we want to prevent naming conflicts as mentioned in
-   * https://github.com/prisma/prisma-client-js/issues/707
-   */
-  export interface Prisma__TaxCalculationClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
-    readonly [Symbol.toStringTag]: "PrismaPromise"
-    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    /**
-     * Attaches callbacks for the resolution and/or rejection of the Promise.
-     * @param onfulfilled The callback to execute when the Promise is resolved.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of which ever callback is executed.
-     */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
-    /**
-     * Attaches a callback for only the rejection of the Promise.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of the callback.
-     */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
-    /**
-     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
-     * resolved value cannot be modified from the callback.
-     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
-     * @returns A Promise for the completion of the callback.
-     */
-    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
-  }
-
-
-
-
-  /**
-   * Fields of the TaxCalculation model
-   */
-  interface TaxCalculationFieldRefs {
-    readonly id: FieldRef<"TaxCalculation", 'String'>
-    readonly userId: FieldRef<"TaxCalculation", 'String'>
-    readonly year: FieldRef<"TaxCalculation", 'Int'>
-    readonly regime: FieldRef<"TaxCalculation", 'String'>
-    readonly country: FieldRef<"TaxCalculation", 'String'>
-    readonly totalIncome: FieldRef<"TaxCalculation", 'Decimal'>
-    readonly totalExpense: FieldRef<"TaxCalculation", 'Decimal'>
-    readonly netProfit: FieldRef<"TaxCalculation", 'Decimal'>
-    readonly taxableIncome: FieldRef<"TaxCalculation", 'Decimal'>
-    readonly estimatedTax: FieldRef<"TaxCalculation", 'Decimal'>
-    readonly taxRate: FieldRef<"TaxCalculation", 'Decimal'>
-    readonly deductions: FieldRef<"TaxCalculation", 'Decimal'>
-    readonly currency: FieldRef<"TaxCalculation", 'String'>
-    readonly notes: FieldRef<"TaxCalculation", 'String'>
-    readonly metadata: FieldRef<"TaxCalculation", 'Json'>
-    readonly clientRequestId: FieldRef<"TaxCalculation", 'String'>
-    readonly syncStatus: FieldRef<"TaxCalculation", 'String'>
-    readonly createdAt: FieldRef<"TaxCalculation", 'DateTime'>
-    readonly updatedAt: FieldRef<"TaxCalculation", 'DateTime'>
-    readonly deletedAt: FieldRef<"TaxCalculation", 'DateTime'>
-  }
-    
-
-  // Custom InputTypes
-  /**
-   * TaxCalculation findUnique
-   */
-  export type TaxCalculationFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the TaxCalculation
-     */
-    select?: TaxCalculationSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the TaxCalculation
-     */
-    omit?: TaxCalculationOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: TaxCalculationInclude<ExtArgs> | null
-    /**
-     * Filter, which TaxCalculation to fetch.
-     */
-    where: TaxCalculationWhereUniqueInput
-  }
-
-  /**
-   * TaxCalculation findUniqueOrThrow
-   */
-  export type TaxCalculationFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the TaxCalculation
-     */
-    select?: TaxCalculationSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the TaxCalculation
-     */
-    omit?: TaxCalculationOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: TaxCalculationInclude<ExtArgs> | null
-    /**
-     * Filter, which TaxCalculation to fetch.
-     */
-    where: TaxCalculationWhereUniqueInput
-  }
-
-  /**
-   * TaxCalculation findFirst
-   */
-  export type TaxCalculationFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the TaxCalculation
-     */
-    select?: TaxCalculationSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the TaxCalculation
-     */
-    omit?: TaxCalculationOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: TaxCalculationInclude<ExtArgs> | null
-    /**
-     * Filter, which TaxCalculation to fetch.
-     */
-    where?: TaxCalculationWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of TaxCalculations to fetch.
-     */
-    orderBy?: TaxCalculationOrderByWithRelationInput | TaxCalculationOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for TaxCalculations.
-     */
-    cursor?: TaxCalculationWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` TaxCalculations from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` TaxCalculations.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of TaxCalculations.
-     */
-    distinct?: TaxCalculationScalarFieldEnum | TaxCalculationScalarFieldEnum[]
-  }
-
-  /**
-   * TaxCalculation findFirstOrThrow
-   */
-  export type TaxCalculationFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the TaxCalculation
-     */
-    select?: TaxCalculationSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the TaxCalculation
-     */
-    omit?: TaxCalculationOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: TaxCalculationInclude<ExtArgs> | null
-    /**
-     * Filter, which TaxCalculation to fetch.
-     */
-    where?: TaxCalculationWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of TaxCalculations to fetch.
-     */
-    orderBy?: TaxCalculationOrderByWithRelationInput | TaxCalculationOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for TaxCalculations.
-     */
-    cursor?: TaxCalculationWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` TaxCalculations from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` TaxCalculations.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of TaxCalculations.
-     */
-    distinct?: TaxCalculationScalarFieldEnum | TaxCalculationScalarFieldEnum[]
-  }
-
-  /**
-   * TaxCalculation findMany
-   */
-  export type TaxCalculationFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the TaxCalculation
-     */
-    select?: TaxCalculationSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the TaxCalculation
-     */
-    omit?: TaxCalculationOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: TaxCalculationInclude<ExtArgs> | null
-    /**
-     * Filter, which TaxCalculations to fetch.
-     */
-    where?: TaxCalculationWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of TaxCalculations to fetch.
-     */
-    orderBy?: TaxCalculationOrderByWithRelationInput | TaxCalculationOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for listing TaxCalculations.
-     */
-    cursor?: TaxCalculationWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` TaxCalculations from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` TaxCalculations.
-     */
-    skip?: number
-    distinct?: TaxCalculationScalarFieldEnum | TaxCalculationScalarFieldEnum[]
-  }
-
-  /**
-   * TaxCalculation create
-   */
-  export type TaxCalculationCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the TaxCalculation
-     */
-    select?: TaxCalculationSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the TaxCalculation
-     */
-    omit?: TaxCalculationOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: TaxCalculationInclude<ExtArgs> | null
-    /**
-     * The data needed to create a TaxCalculation.
-     */
-    data: XOR<TaxCalculationCreateInput, TaxCalculationUncheckedCreateInput>
-  }
-
-  /**
-   * TaxCalculation createMany
-   */
-  export type TaxCalculationCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to create many TaxCalculations.
-     */
-    data: TaxCalculationCreateManyInput | TaxCalculationCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * TaxCalculation createManyAndReturn
-   */
-  export type TaxCalculationCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the TaxCalculation
-     */
-    select?: TaxCalculationSelectCreateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the TaxCalculation
-     */
-    omit?: TaxCalculationOmit<ExtArgs> | null
-    /**
-     * The data used to create many TaxCalculations.
-     */
-    data: TaxCalculationCreateManyInput | TaxCalculationCreateManyInput[]
-    skipDuplicates?: boolean
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: TaxCalculationIncludeCreateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * TaxCalculation update
-   */
-  export type TaxCalculationUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the TaxCalculation
-     */
-    select?: TaxCalculationSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the TaxCalculation
-     */
-    omit?: TaxCalculationOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: TaxCalculationInclude<ExtArgs> | null
-    /**
-     * The data needed to update a TaxCalculation.
-     */
-    data: XOR<TaxCalculationUpdateInput, TaxCalculationUncheckedUpdateInput>
-    /**
-     * Choose, which TaxCalculation to update.
-     */
-    where: TaxCalculationWhereUniqueInput
-  }
-
-  /**
-   * TaxCalculation updateMany
-   */
-  export type TaxCalculationUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to update TaxCalculations.
-     */
-    data: XOR<TaxCalculationUpdateManyMutationInput, TaxCalculationUncheckedUpdateManyInput>
-    /**
-     * Filter which TaxCalculations to update
-     */
-    where?: TaxCalculationWhereInput
-    /**
-     * Limit how many TaxCalculations to update.
-     */
-    limit?: number
-  }
-
-  /**
-   * TaxCalculation updateManyAndReturn
-   */
-  export type TaxCalculationUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the TaxCalculation
-     */
-    select?: TaxCalculationSelectUpdateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the TaxCalculation
-     */
-    omit?: TaxCalculationOmit<ExtArgs> | null
-    /**
-     * The data used to update TaxCalculations.
-     */
-    data: XOR<TaxCalculationUpdateManyMutationInput, TaxCalculationUncheckedUpdateManyInput>
-    /**
-     * Filter which TaxCalculations to update
-     */
-    where?: TaxCalculationWhereInput
-    /**
-     * Limit how many TaxCalculations to update.
-     */
-    limit?: number
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: TaxCalculationIncludeUpdateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * TaxCalculation upsert
-   */
-  export type TaxCalculationUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the TaxCalculation
-     */
-    select?: TaxCalculationSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the TaxCalculation
-     */
-    omit?: TaxCalculationOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: TaxCalculationInclude<ExtArgs> | null
-    /**
-     * The filter to search for the TaxCalculation to update in case it exists.
-     */
-    where: TaxCalculationWhereUniqueInput
-    /**
-     * In case the TaxCalculation found by the `where` argument doesn't exist, create a new TaxCalculation with this data.
-     */
-    create: XOR<TaxCalculationCreateInput, TaxCalculationUncheckedCreateInput>
-    /**
-     * In case the TaxCalculation was found with the provided `where` argument, update it with this data.
-     */
-    update: XOR<TaxCalculationUpdateInput, TaxCalculationUncheckedUpdateInput>
-  }
-
-  /**
-   * TaxCalculation delete
-   */
-  export type TaxCalculationDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the TaxCalculation
-     */
-    select?: TaxCalculationSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the TaxCalculation
-     */
-    omit?: TaxCalculationOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: TaxCalculationInclude<ExtArgs> | null
-    /**
-     * Filter which TaxCalculation to delete.
-     */
-    where: TaxCalculationWhereUniqueInput
-  }
-
-  /**
-   * TaxCalculation deleteMany
-   */
-  export type TaxCalculationDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which TaxCalculations to delete
-     */
-    where?: TaxCalculationWhereInput
-    /**
-     * Limit how many TaxCalculations to delete.
-     */
-    limit?: number
-  }
-
-  /**
-   * TaxCalculation without action
-   */
-  export type TaxCalculationDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the TaxCalculation
-     */
-    select?: TaxCalculationSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the TaxCalculation
-     */
-    omit?: TaxCalculationOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: TaxCalculationInclude<ExtArgs> | null
-  }
-
-
-  /**
    * Model GoldAsset
    */
 
@@ -64466,32 +63027,6 @@ export namespace Prisma {
   };
 
   export type BudgetScalarFieldEnum = (typeof BudgetScalarFieldEnum)[keyof typeof BudgetScalarFieldEnum]
-
-
-  export const TaxCalculationScalarFieldEnum: {
-    id: 'id',
-    userId: 'userId',
-    year: 'year',
-    regime: 'regime',
-    country: 'country',
-    totalIncome: 'totalIncome',
-    totalExpense: 'totalExpense',
-    netProfit: 'netProfit',
-    taxableIncome: 'taxableIncome',
-    estimatedTax: 'estimatedTax',
-    taxRate: 'taxRate',
-    deductions: 'deductions',
-    currency: 'currency',
-    notes: 'notes',
-    metadata: 'metadata',
-    clientRequestId: 'clientRequestId',
-    syncStatus: 'syncStatus',
-    createdAt: 'createdAt',
-    updatedAt: 'updatedAt',
-    deletedAt: 'deletedAt'
-  };
-
-  export type TaxCalculationScalarFieldEnum = (typeof TaxCalculationScalarFieldEnum)[keyof typeof TaxCalculationScalarFieldEnum]
 
 
   export const GoldAssetScalarFieldEnum: {
@@ -67151,7 +65686,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseListRelationFilter
     recurringTransactions?: RecurringTransactionListRelationFilter
     budgets?: BudgetListRelationFilter
-    taxCalculations?: TaxCalculationListRelationFilter
     goldAssets?: GoldAssetListRelationFilter
     collaborationParticipations?: CollaborationParticipantListRelationFilter
     collaborationInvitesSent?: CollaborationParticipantListRelationFilter
@@ -67212,7 +65746,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseOrderByRelationAggregateInput
     recurringTransactions?: RecurringTransactionOrderByRelationAggregateInput
     budgets?: BudgetOrderByRelationAggregateInput
-    taxCalculations?: TaxCalculationOrderByRelationAggregateInput
     goldAssets?: GoldAssetOrderByRelationAggregateInput
     collaborationParticipations?: CollaborationParticipantOrderByRelationAggregateInput
     collaborationInvitesSent?: CollaborationParticipantOrderByRelationAggregateInput
@@ -67276,7 +65809,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseListRelationFilter
     recurringTransactions?: RecurringTransactionListRelationFilter
     budgets?: BudgetListRelationFilter
-    taxCalculations?: TaxCalculationListRelationFilter
     goldAssets?: GoldAssetListRelationFilter
     collaborationParticipations?: CollaborationParticipantListRelationFilter
     collaborationInvitesSent?: CollaborationParticipantListRelationFilter
@@ -69294,138 +67826,6 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<"Budget"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Budget"> | Date | string
     deletedAt?: DateTimeNullableWithAggregatesFilter<"Budget"> | Date | string | null
-  }
-
-  export type TaxCalculationWhereInput = {
-    AND?: TaxCalculationWhereInput | TaxCalculationWhereInput[]
-    OR?: TaxCalculationWhereInput[]
-    NOT?: TaxCalculationWhereInput | TaxCalculationWhereInput[]
-    id?: StringFilter<"TaxCalculation"> | string
-    userId?: StringFilter<"TaxCalculation"> | string
-    year?: IntFilter<"TaxCalculation"> | number
-    regime?: StringNullableFilter<"TaxCalculation"> | string | null
-    country?: StringFilter<"TaxCalculation"> | string
-    totalIncome?: DecimalFilter<"TaxCalculation"> | Decimal | DecimalJsLike | number | string
-    totalExpense?: DecimalFilter<"TaxCalculation"> | Decimal | DecimalJsLike | number | string
-    netProfit?: DecimalFilter<"TaxCalculation"> | Decimal | DecimalJsLike | number | string
-    taxableIncome?: DecimalFilter<"TaxCalculation"> | Decimal | DecimalJsLike | number | string
-    estimatedTax?: DecimalFilter<"TaxCalculation"> | Decimal | DecimalJsLike | number | string
-    taxRate?: DecimalFilter<"TaxCalculation"> | Decimal | DecimalJsLike | number | string
-    deductions?: DecimalFilter<"TaxCalculation"> | Decimal | DecimalJsLike | number | string
-    currency?: StringFilter<"TaxCalculation"> | string
-    notes?: StringNullableFilter<"TaxCalculation"> | string | null
-    metadata?: JsonNullableFilter<"TaxCalculation">
-    clientRequestId?: StringNullableFilter<"TaxCalculation"> | string | null
-    syncStatus?: StringFilter<"TaxCalculation"> | string
-    createdAt?: DateTimeFilter<"TaxCalculation"> | Date | string
-    updatedAt?: DateTimeFilter<"TaxCalculation"> | Date | string
-    deletedAt?: DateTimeNullableFilter<"TaxCalculation"> | Date | string | null
-    user?: XOR<UserScalarRelationFilter, UserWhereInput>
-  }
-
-  export type TaxCalculationOrderByWithRelationInput = {
-    id?: SortOrder
-    userId?: SortOrder
-    year?: SortOrder
-    regime?: SortOrderInput | SortOrder
-    country?: SortOrder
-    totalIncome?: SortOrder
-    totalExpense?: SortOrder
-    netProfit?: SortOrder
-    taxableIncome?: SortOrder
-    estimatedTax?: SortOrder
-    taxRate?: SortOrder
-    deductions?: SortOrder
-    currency?: SortOrder
-    notes?: SortOrderInput | SortOrder
-    metadata?: SortOrderInput | SortOrder
-    clientRequestId?: SortOrderInput | SortOrder
-    syncStatus?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    deletedAt?: SortOrderInput | SortOrder
-    user?: UserOrderByWithRelationInput
-  }
-
-  export type TaxCalculationWhereUniqueInput = Prisma.AtLeast<{
-    id?: string
-    clientRequestId?: string
-    AND?: TaxCalculationWhereInput | TaxCalculationWhereInput[]
-    OR?: TaxCalculationWhereInput[]
-    NOT?: TaxCalculationWhereInput | TaxCalculationWhereInput[]
-    userId?: StringFilter<"TaxCalculation"> | string
-    year?: IntFilter<"TaxCalculation"> | number
-    regime?: StringNullableFilter<"TaxCalculation"> | string | null
-    country?: StringFilter<"TaxCalculation"> | string
-    totalIncome?: DecimalFilter<"TaxCalculation"> | Decimal | DecimalJsLike | number | string
-    totalExpense?: DecimalFilter<"TaxCalculation"> | Decimal | DecimalJsLike | number | string
-    netProfit?: DecimalFilter<"TaxCalculation"> | Decimal | DecimalJsLike | number | string
-    taxableIncome?: DecimalFilter<"TaxCalculation"> | Decimal | DecimalJsLike | number | string
-    estimatedTax?: DecimalFilter<"TaxCalculation"> | Decimal | DecimalJsLike | number | string
-    taxRate?: DecimalFilter<"TaxCalculation"> | Decimal | DecimalJsLike | number | string
-    deductions?: DecimalFilter<"TaxCalculation"> | Decimal | DecimalJsLike | number | string
-    currency?: StringFilter<"TaxCalculation"> | string
-    notes?: StringNullableFilter<"TaxCalculation"> | string | null
-    metadata?: JsonNullableFilter<"TaxCalculation">
-    syncStatus?: StringFilter<"TaxCalculation"> | string
-    createdAt?: DateTimeFilter<"TaxCalculation"> | Date | string
-    updatedAt?: DateTimeFilter<"TaxCalculation"> | Date | string
-    deletedAt?: DateTimeNullableFilter<"TaxCalculation"> | Date | string | null
-    user?: XOR<UserScalarRelationFilter, UserWhereInput>
-  }, "id" | "clientRequestId">
-
-  export type TaxCalculationOrderByWithAggregationInput = {
-    id?: SortOrder
-    userId?: SortOrder
-    year?: SortOrder
-    regime?: SortOrderInput | SortOrder
-    country?: SortOrder
-    totalIncome?: SortOrder
-    totalExpense?: SortOrder
-    netProfit?: SortOrder
-    taxableIncome?: SortOrder
-    estimatedTax?: SortOrder
-    taxRate?: SortOrder
-    deductions?: SortOrder
-    currency?: SortOrder
-    notes?: SortOrderInput | SortOrder
-    metadata?: SortOrderInput | SortOrder
-    clientRequestId?: SortOrderInput | SortOrder
-    syncStatus?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    deletedAt?: SortOrderInput | SortOrder
-    _count?: TaxCalculationCountOrderByAggregateInput
-    _avg?: TaxCalculationAvgOrderByAggregateInput
-    _max?: TaxCalculationMaxOrderByAggregateInput
-    _min?: TaxCalculationMinOrderByAggregateInput
-    _sum?: TaxCalculationSumOrderByAggregateInput
-  }
-
-  export type TaxCalculationScalarWhereWithAggregatesInput = {
-    AND?: TaxCalculationScalarWhereWithAggregatesInput | TaxCalculationScalarWhereWithAggregatesInput[]
-    OR?: TaxCalculationScalarWhereWithAggregatesInput[]
-    NOT?: TaxCalculationScalarWhereWithAggregatesInput | TaxCalculationScalarWhereWithAggregatesInput[]
-    id?: StringWithAggregatesFilter<"TaxCalculation"> | string
-    userId?: StringWithAggregatesFilter<"TaxCalculation"> | string
-    year?: IntWithAggregatesFilter<"TaxCalculation"> | number
-    regime?: StringNullableWithAggregatesFilter<"TaxCalculation"> | string | null
-    country?: StringWithAggregatesFilter<"TaxCalculation"> | string
-    totalIncome?: DecimalWithAggregatesFilter<"TaxCalculation"> | Decimal | DecimalJsLike | number | string
-    totalExpense?: DecimalWithAggregatesFilter<"TaxCalculation"> | Decimal | DecimalJsLike | number | string
-    netProfit?: DecimalWithAggregatesFilter<"TaxCalculation"> | Decimal | DecimalJsLike | number | string
-    taxableIncome?: DecimalWithAggregatesFilter<"TaxCalculation"> | Decimal | DecimalJsLike | number | string
-    estimatedTax?: DecimalWithAggregatesFilter<"TaxCalculation"> | Decimal | DecimalJsLike | number | string
-    taxRate?: DecimalWithAggregatesFilter<"TaxCalculation"> | Decimal | DecimalJsLike | number | string
-    deductions?: DecimalWithAggregatesFilter<"TaxCalculation"> | Decimal | DecimalJsLike | number | string
-    currency?: StringWithAggregatesFilter<"TaxCalculation"> | string
-    notes?: StringNullableWithAggregatesFilter<"TaxCalculation"> | string | null
-    metadata?: JsonNullableWithAggregatesFilter<"TaxCalculation">
-    clientRequestId?: StringNullableWithAggregatesFilter<"TaxCalculation"> | string | null
-    syncStatus?: StringWithAggregatesFilter<"TaxCalculation"> | string
-    createdAt?: DateTimeWithAggregatesFilter<"TaxCalculation"> | Date | string
-    updatedAt?: DateTimeWithAggregatesFilter<"TaxCalculation"> | Date | string
-    deletedAt?: DateTimeNullableWithAggregatesFilter<"TaxCalculation"> | Date | string | null
   }
 
   export type GoldAssetWhereInput = {
@@ -72415,7 +70815,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
     budgets?: BudgetCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
@@ -72476,7 +70875,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
@@ -72537,7 +70935,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
     budgets?: BudgetUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
@@ -72598,7 +70995,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
@@ -74924,166 +73320,6 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
-  export type TaxCalculationCreateInput = {
-    id?: string
-    year: number
-    regime?: string | null
-    country?: string
-    totalIncome: Decimal | DecimalJsLike | number | string
-    totalExpense: Decimal | DecimalJsLike | number | string
-    netProfit: Decimal | DecimalJsLike | number | string
-    taxableIncome: Decimal | DecimalJsLike | number | string
-    estimatedTax: Decimal | DecimalJsLike | number | string
-    taxRate: Decimal | DecimalJsLike | number | string
-    deductions?: Decimal | DecimalJsLike | number | string
-    currency?: string
-    notes?: string | null
-    metadata?: NullableJsonNullValueInput | InputJsonValue
-    clientRequestId?: string | null
-    syncStatus?: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-    user: UserCreateNestedOneWithoutTaxCalculationsInput
-  }
-
-  export type TaxCalculationUncheckedCreateInput = {
-    id?: string
-    userId: string
-    year: number
-    regime?: string | null
-    country?: string
-    totalIncome: Decimal | DecimalJsLike | number | string
-    totalExpense: Decimal | DecimalJsLike | number | string
-    netProfit: Decimal | DecimalJsLike | number | string
-    taxableIncome: Decimal | DecimalJsLike | number | string
-    estimatedTax: Decimal | DecimalJsLike | number | string
-    taxRate: Decimal | DecimalJsLike | number | string
-    deductions?: Decimal | DecimalJsLike | number | string
-    currency?: string
-    notes?: string | null
-    metadata?: NullableJsonNullValueInput | InputJsonValue
-    clientRequestId?: string | null
-    syncStatus?: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-  }
-
-  export type TaxCalculationUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    year?: IntFieldUpdateOperationsInput | number
-    regime?: NullableStringFieldUpdateOperationsInput | string | null
-    country?: StringFieldUpdateOperationsInput | string
-    totalIncome?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    totalExpense?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    netProfit?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    taxableIncome?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    estimatedTax?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    taxRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    deductions?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    currency?: StringFieldUpdateOperationsInput | string
-    notes?: NullableStringFieldUpdateOperationsInput | string | null
-    metadata?: NullableJsonNullValueInput | InputJsonValue
-    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
-    syncStatus?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    user?: UserUpdateOneRequiredWithoutTaxCalculationsNestedInput
-  }
-
-  export type TaxCalculationUncheckedUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
-    year?: IntFieldUpdateOperationsInput | number
-    regime?: NullableStringFieldUpdateOperationsInput | string | null
-    country?: StringFieldUpdateOperationsInput | string
-    totalIncome?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    totalExpense?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    netProfit?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    taxableIncome?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    estimatedTax?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    taxRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    deductions?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    currency?: StringFieldUpdateOperationsInput | string
-    notes?: NullableStringFieldUpdateOperationsInput | string | null
-    metadata?: NullableJsonNullValueInput | InputJsonValue
-    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
-    syncStatus?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  }
-
-  export type TaxCalculationCreateManyInput = {
-    id?: string
-    userId: string
-    year: number
-    regime?: string | null
-    country?: string
-    totalIncome: Decimal | DecimalJsLike | number | string
-    totalExpense: Decimal | DecimalJsLike | number | string
-    netProfit: Decimal | DecimalJsLike | number | string
-    taxableIncome: Decimal | DecimalJsLike | number | string
-    estimatedTax: Decimal | DecimalJsLike | number | string
-    taxRate: Decimal | DecimalJsLike | number | string
-    deductions?: Decimal | DecimalJsLike | number | string
-    currency?: string
-    notes?: string | null
-    metadata?: NullableJsonNullValueInput | InputJsonValue
-    clientRequestId?: string | null
-    syncStatus?: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-  }
-
-  export type TaxCalculationUpdateManyMutationInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    year?: IntFieldUpdateOperationsInput | number
-    regime?: NullableStringFieldUpdateOperationsInput | string | null
-    country?: StringFieldUpdateOperationsInput | string
-    totalIncome?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    totalExpense?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    netProfit?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    taxableIncome?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    estimatedTax?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    taxRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    deductions?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    currency?: StringFieldUpdateOperationsInput | string
-    notes?: NullableStringFieldUpdateOperationsInput | string | null
-    metadata?: NullableJsonNullValueInput | InputJsonValue
-    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
-    syncStatus?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  }
-
-  export type TaxCalculationUncheckedUpdateManyInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
-    year?: IntFieldUpdateOperationsInput | number
-    regime?: NullableStringFieldUpdateOperationsInput | string | null
-    country?: StringFieldUpdateOperationsInput | string
-    totalIncome?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    totalExpense?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    netProfit?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    taxableIncome?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    estimatedTax?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    taxRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    deductions?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    currency?: StringFieldUpdateOperationsInput | string
-    notes?: NullableStringFieldUpdateOperationsInput | string | null
-    metadata?: NullableJsonNullValueInput | InputJsonValue
-    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
-    syncStatus?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  }
-
   export type GoldAssetCreateInput = {
     id?: string
     type?: string
@@ -77233,12 +75469,6 @@ export namespace Prisma {
     none?: BudgetWhereInput
   }
 
-  export type TaxCalculationListRelationFilter = {
-    every?: TaxCalculationWhereInput
-    some?: TaxCalculationWhereInput
-    none?: TaxCalculationWhereInput
-  }
-
   export type GoldAssetListRelationFilter = {
     every?: GoldAssetWhereInput
     some?: GoldAssetWhereInput
@@ -77332,10 +75562,6 @@ export namespace Prisma {
   }
 
   export type BudgetOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type TaxCalculationOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -78585,95 +76811,6 @@ export namespace Prisma {
     threshold?: SortOrder
   }
 
-  export type TaxCalculationCountOrderByAggregateInput = {
-    id?: SortOrder
-    userId?: SortOrder
-    year?: SortOrder
-    regime?: SortOrder
-    country?: SortOrder
-    totalIncome?: SortOrder
-    totalExpense?: SortOrder
-    netProfit?: SortOrder
-    taxableIncome?: SortOrder
-    estimatedTax?: SortOrder
-    taxRate?: SortOrder
-    deductions?: SortOrder
-    currency?: SortOrder
-    notes?: SortOrder
-    metadata?: SortOrder
-    clientRequestId?: SortOrder
-    syncStatus?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    deletedAt?: SortOrder
-  }
-
-  export type TaxCalculationAvgOrderByAggregateInput = {
-    year?: SortOrder
-    totalIncome?: SortOrder
-    totalExpense?: SortOrder
-    netProfit?: SortOrder
-    taxableIncome?: SortOrder
-    estimatedTax?: SortOrder
-    taxRate?: SortOrder
-    deductions?: SortOrder
-  }
-
-  export type TaxCalculationMaxOrderByAggregateInput = {
-    id?: SortOrder
-    userId?: SortOrder
-    year?: SortOrder
-    regime?: SortOrder
-    country?: SortOrder
-    totalIncome?: SortOrder
-    totalExpense?: SortOrder
-    netProfit?: SortOrder
-    taxableIncome?: SortOrder
-    estimatedTax?: SortOrder
-    taxRate?: SortOrder
-    deductions?: SortOrder
-    currency?: SortOrder
-    notes?: SortOrder
-    clientRequestId?: SortOrder
-    syncStatus?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    deletedAt?: SortOrder
-  }
-
-  export type TaxCalculationMinOrderByAggregateInput = {
-    id?: SortOrder
-    userId?: SortOrder
-    year?: SortOrder
-    regime?: SortOrder
-    country?: SortOrder
-    totalIncome?: SortOrder
-    totalExpense?: SortOrder
-    netProfit?: SortOrder
-    taxableIncome?: SortOrder
-    estimatedTax?: SortOrder
-    taxRate?: SortOrder
-    deductions?: SortOrder
-    currency?: SortOrder
-    notes?: SortOrder
-    clientRequestId?: SortOrder
-    syncStatus?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    deletedAt?: SortOrder
-  }
-
-  export type TaxCalculationSumOrderByAggregateInput = {
-    year?: SortOrder
-    totalIncome?: SortOrder
-    totalExpense?: SortOrder
-    netProfit?: SortOrder
-    taxableIncome?: SortOrder
-    estimatedTax?: SortOrder
-    taxRate?: SortOrder
-    deductions?: SortOrder
-  }
-
   export type GoldAssetCountOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
@@ -79874,13 +78011,6 @@ export namespace Prisma {
     connect?: BudgetWhereUniqueInput | BudgetWhereUniqueInput[]
   }
 
-  export type TaxCalculationCreateNestedManyWithoutUserInput = {
-    create?: XOR<TaxCalculationCreateWithoutUserInput, TaxCalculationUncheckedCreateWithoutUserInput> | TaxCalculationCreateWithoutUserInput[] | TaxCalculationUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: TaxCalculationCreateOrConnectWithoutUserInput | TaxCalculationCreateOrConnectWithoutUserInput[]
-    createMany?: TaxCalculationCreateManyUserInputEnvelope
-    connect?: TaxCalculationWhereUniqueInput | TaxCalculationWhereUniqueInput[]
-  }
-
   export type GoldAssetCreateNestedManyWithoutUserInput = {
     create?: XOR<GoldAssetCreateWithoutUserInput, GoldAssetUncheckedCreateWithoutUserInput> | GoldAssetCreateWithoutUserInput[] | GoldAssetUncheckedCreateWithoutUserInput[]
     connectOrCreate?: GoldAssetCreateOrConnectWithoutUserInput | GoldAssetCreateOrConnectWithoutUserInput[]
@@ -80114,13 +78244,6 @@ export namespace Prisma {
     connectOrCreate?: BudgetCreateOrConnectWithoutUserInput | BudgetCreateOrConnectWithoutUserInput[]
     createMany?: BudgetCreateManyUserInputEnvelope
     connect?: BudgetWhereUniqueInput | BudgetWhereUniqueInput[]
-  }
-
-  export type TaxCalculationUncheckedCreateNestedManyWithoutUserInput = {
-    create?: XOR<TaxCalculationCreateWithoutUserInput, TaxCalculationUncheckedCreateWithoutUserInput> | TaxCalculationCreateWithoutUserInput[] | TaxCalculationUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: TaxCalculationCreateOrConnectWithoutUserInput | TaxCalculationCreateOrConnectWithoutUserInput[]
-    createMany?: TaxCalculationCreateManyUserInputEnvelope
-    connect?: TaxCalculationWhereUniqueInput | TaxCalculationWhereUniqueInput[]
   }
 
   export type GoldAssetUncheckedCreateNestedManyWithoutUserInput = {
@@ -80564,20 +78687,6 @@ export namespace Prisma {
     update?: BudgetUpdateWithWhereUniqueWithoutUserInput | BudgetUpdateWithWhereUniqueWithoutUserInput[]
     updateMany?: BudgetUpdateManyWithWhereWithoutUserInput | BudgetUpdateManyWithWhereWithoutUserInput[]
     deleteMany?: BudgetScalarWhereInput | BudgetScalarWhereInput[]
-  }
-
-  export type TaxCalculationUpdateManyWithoutUserNestedInput = {
-    create?: XOR<TaxCalculationCreateWithoutUserInput, TaxCalculationUncheckedCreateWithoutUserInput> | TaxCalculationCreateWithoutUserInput[] | TaxCalculationUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: TaxCalculationCreateOrConnectWithoutUserInput | TaxCalculationCreateOrConnectWithoutUserInput[]
-    upsert?: TaxCalculationUpsertWithWhereUniqueWithoutUserInput | TaxCalculationUpsertWithWhereUniqueWithoutUserInput[]
-    createMany?: TaxCalculationCreateManyUserInputEnvelope
-    set?: TaxCalculationWhereUniqueInput | TaxCalculationWhereUniqueInput[]
-    disconnect?: TaxCalculationWhereUniqueInput | TaxCalculationWhereUniqueInput[]
-    delete?: TaxCalculationWhereUniqueInput | TaxCalculationWhereUniqueInput[]
-    connect?: TaxCalculationWhereUniqueInput | TaxCalculationWhereUniqueInput[]
-    update?: TaxCalculationUpdateWithWhereUniqueWithoutUserInput | TaxCalculationUpdateWithWhereUniqueWithoutUserInput[]
-    updateMany?: TaxCalculationUpdateManyWithWhereWithoutUserInput | TaxCalculationUpdateManyWithWhereWithoutUserInput[]
-    deleteMany?: TaxCalculationScalarWhereInput | TaxCalculationScalarWhereInput[]
   }
 
   export type GoldAssetUpdateManyWithoutUserNestedInput = {
@@ -81044,20 +79153,6 @@ export namespace Prisma {
     deleteMany?: BudgetScalarWhereInput | BudgetScalarWhereInput[]
   }
 
-  export type TaxCalculationUncheckedUpdateManyWithoutUserNestedInput = {
-    create?: XOR<TaxCalculationCreateWithoutUserInput, TaxCalculationUncheckedCreateWithoutUserInput> | TaxCalculationCreateWithoutUserInput[] | TaxCalculationUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: TaxCalculationCreateOrConnectWithoutUserInput | TaxCalculationCreateOrConnectWithoutUserInput[]
-    upsert?: TaxCalculationUpsertWithWhereUniqueWithoutUserInput | TaxCalculationUpsertWithWhereUniqueWithoutUserInput[]
-    createMany?: TaxCalculationCreateManyUserInputEnvelope
-    set?: TaxCalculationWhereUniqueInput | TaxCalculationWhereUniqueInput[]
-    disconnect?: TaxCalculationWhereUniqueInput | TaxCalculationWhereUniqueInput[]
-    delete?: TaxCalculationWhereUniqueInput | TaxCalculationWhereUniqueInput[]
-    connect?: TaxCalculationWhereUniqueInput | TaxCalculationWhereUniqueInput[]
-    update?: TaxCalculationUpdateWithWhereUniqueWithoutUserInput | TaxCalculationUpdateWithWhereUniqueWithoutUserInput[]
-    updateMany?: TaxCalculationUpdateManyWithWhereWithoutUserInput | TaxCalculationUpdateManyWithWhereWithoutUserInput[]
-    deleteMany?: TaxCalculationScalarWhereInput | TaxCalculationScalarWhereInput[]
-  }
-
   export type GoldAssetUncheckedUpdateManyWithoutUserNestedInput = {
     create?: XOR<GoldAssetCreateWithoutUserInput, GoldAssetUncheckedCreateWithoutUserInput> | GoldAssetCreateWithoutUserInput[] | GoldAssetUncheckedCreateWithoutUserInput[]
     connectOrCreate?: GoldAssetCreateOrConnectWithoutUserInput | GoldAssetCreateOrConnectWithoutUserInput[]
@@ -81378,20 +79473,6 @@ export namespace Prisma {
     upsert?: UserUpsertWithoutBudgetsInput
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutBudgetsInput, UserUpdateWithoutBudgetsInput>, UserUncheckedUpdateWithoutBudgetsInput>
-  }
-
-  export type UserCreateNestedOneWithoutTaxCalculationsInput = {
-    create?: XOR<UserCreateWithoutTaxCalculationsInput, UserUncheckedCreateWithoutTaxCalculationsInput>
-    connectOrCreate?: UserCreateOrConnectWithoutTaxCalculationsInput
-    connect?: UserWhereUniqueInput
-  }
-
-  export type UserUpdateOneRequiredWithoutTaxCalculationsNestedInput = {
-    create?: XOR<UserCreateWithoutTaxCalculationsInput, UserUncheckedCreateWithoutTaxCalculationsInput>
-    connectOrCreate?: UserCreateOrConnectWithoutTaxCalculationsInput
-    upsert?: UserUpsertWithoutTaxCalculationsInput
-    connect?: UserWhereUniqueInput
-    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutTaxCalculationsInput, UserUpdateWithoutTaxCalculationsInput>, UserUncheckedUpdateWithoutTaxCalculationsInput>
   }
 
   export type UserCreateNestedOneWithoutGoldAssetsInput = {
@@ -81820,7 +79901,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
     budgets?: BudgetCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
@@ -81880,7 +79960,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
@@ -82130,7 +80209,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
     budgets?: BudgetUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
@@ -82190,7 +80268,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
@@ -82380,7 +80457,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
     budgets?: BudgetCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
@@ -82440,7 +80516,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
@@ -82505,7 +80580,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
     budgets?: BudgetCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
@@ -82565,7 +80639,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
@@ -82641,7 +80714,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
     budgets?: BudgetUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
@@ -82701,7 +80773,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
@@ -82772,7 +80843,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
     budgets?: BudgetUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
@@ -82832,7 +80902,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
@@ -82892,7 +80961,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
     budgets?: BudgetCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
@@ -82952,7 +81020,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
@@ -83028,7 +81095,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
     budgets?: BudgetUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
@@ -83088,7 +81154,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
@@ -83148,7 +81213,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
     budgets?: BudgetCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
@@ -83208,7 +81272,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
@@ -83310,7 +81373,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
     budgets?: BudgetCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
@@ -83370,7 +81432,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
@@ -83503,7 +81564,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
     budgets?: BudgetUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
@@ -83563,7 +81623,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
@@ -83677,7 +81736,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
     budgets?: BudgetUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
@@ -83737,7 +81795,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
@@ -83902,7 +81959,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
     budgets?: BudgetCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
@@ -83962,7 +82018,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
@@ -84027,7 +82082,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
     budgets?: BudgetCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
@@ -84087,7 +82141,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
@@ -84208,7 +82261,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
     budgets?: BudgetUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
@@ -84268,7 +82320,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
@@ -84339,7 +82390,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
     budgets?: BudgetUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
@@ -84399,7 +82449,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
@@ -84459,7 +82508,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
     budgets?: BudgetCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
@@ -84519,7 +82567,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
@@ -84595,7 +82642,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
     budgets?: BudgetUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
@@ -84655,7 +82701,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
@@ -84715,7 +82760,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
     budgets?: BudgetCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
@@ -84775,7 +82819,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
@@ -84890,7 +82933,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
     budgets?: BudgetUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
@@ -84950,7 +82992,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
@@ -85055,7 +83096,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
     budgets?: BudgetCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
@@ -85115,7 +83155,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
@@ -85191,7 +83230,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
     budgets?: BudgetUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
@@ -85251,7 +83289,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
@@ -85311,7 +83348,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
     budgets?: BudgetCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
@@ -85371,7 +83407,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
@@ -85447,7 +83482,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
     budgets?: BudgetUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
@@ -85507,7 +83541,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
@@ -85567,7 +83600,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
     budgets?: BudgetCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
@@ -85627,7 +83659,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
@@ -85743,7 +83774,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
     budgets?: BudgetUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
@@ -85803,7 +83833,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
@@ -85898,7 +83927,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
     budgets?: BudgetCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
@@ -85958,7 +83986,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
@@ -86102,7 +84129,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
     budgets?: BudgetUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
@@ -86162,7 +84188,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
@@ -86359,7 +84384,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
     budgets?: BudgetCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
@@ -86419,7 +84443,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
@@ -86597,7 +84620,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
     budgets?: BudgetUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
@@ -86657,7 +84679,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
@@ -86717,7 +84738,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
     budgets?: BudgetCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
@@ -86777,7 +84797,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
@@ -86853,7 +84872,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
     budgets?: BudgetUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
@@ -86913,7 +84931,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
@@ -86973,7 +84990,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
     budgets?: BudgetCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
@@ -87033,7 +85049,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
@@ -87109,7 +85124,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
     budgets?: BudgetUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
@@ -87169,7 +85183,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
@@ -87229,7 +85242,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
     budgets?: BudgetCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
@@ -87289,7 +85301,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
@@ -87395,7 +85406,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
     budgets?: BudgetUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
@@ -87455,7 +85465,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
@@ -87681,7 +85690,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
     budgets?: BudgetCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
@@ -87741,7 +85749,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
@@ -87817,7 +85824,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
     budgets?: BudgetUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
@@ -87877,7 +85883,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
@@ -87937,7 +85942,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
     budgets?: BudgetCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
@@ -87997,7 +86001,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
@@ -88062,7 +86065,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
     budgets?: BudgetCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
@@ -88122,7 +86124,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
@@ -88237,7 +86238,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
     budgets?: BudgetUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
@@ -88297,7 +86297,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
@@ -88368,7 +86367,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
     budgets?: BudgetUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
@@ -88428,7 +86426,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
@@ -88533,7 +86530,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
     budgets?: BudgetCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
@@ -88593,7 +86589,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
@@ -88669,7 +86664,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
     budgets?: BudgetUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
@@ -88729,7 +86723,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
@@ -88789,7 +86782,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
     budgets?: BudgetCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
@@ -88849,7 +86841,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
@@ -88925,7 +86916,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
     budgets?: BudgetUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
@@ -88985,7 +86975,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
@@ -89151,7 +87140,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
     budgets?: BudgetCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
@@ -89211,7 +87199,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
@@ -89405,7 +87392,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
     budgets?: BudgetUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
@@ -89465,7 +87451,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
@@ -90858,60 +88843,6 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
-  export type TaxCalculationCreateWithoutUserInput = {
-    id?: string
-    year: number
-    regime?: string | null
-    country?: string
-    totalIncome: Decimal | DecimalJsLike | number | string
-    totalExpense: Decimal | DecimalJsLike | number | string
-    netProfit: Decimal | DecimalJsLike | number | string
-    taxableIncome: Decimal | DecimalJsLike | number | string
-    estimatedTax: Decimal | DecimalJsLike | number | string
-    taxRate: Decimal | DecimalJsLike | number | string
-    deductions?: Decimal | DecimalJsLike | number | string
-    currency?: string
-    notes?: string | null
-    metadata?: NullableJsonNullValueInput | InputJsonValue
-    clientRequestId?: string | null
-    syncStatus?: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-  }
-
-  export type TaxCalculationUncheckedCreateWithoutUserInput = {
-    id?: string
-    year: number
-    regime?: string | null
-    country?: string
-    totalIncome: Decimal | DecimalJsLike | number | string
-    totalExpense: Decimal | DecimalJsLike | number | string
-    netProfit: Decimal | DecimalJsLike | number | string
-    taxableIncome: Decimal | DecimalJsLike | number | string
-    estimatedTax: Decimal | DecimalJsLike | number | string
-    taxRate: Decimal | DecimalJsLike | number | string
-    deductions?: Decimal | DecimalJsLike | number | string
-    currency?: string
-    notes?: string | null
-    metadata?: NullableJsonNullValueInput | InputJsonValue
-    clientRequestId?: string | null
-    syncStatus?: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-  }
-
-  export type TaxCalculationCreateOrConnectWithoutUserInput = {
-    where: TaxCalculationWhereUniqueInput
-    create: XOR<TaxCalculationCreateWithoutUserInput, TaxCalculationUncheckedCreateWithoutUserInput>
-  }
-
-  export type TaxCalculationCreateManyUserInputEnvelope = {
-    data: TaxCalculationCreateManyUserInput | TaxCalculationCreateManyUserInput[]
-    skipDuplicates?: boolean
-  }
-
   export type GoldAssetCreateWithoutUserInput = {
     id?: string
     type?: string
@@ -92056,48 +89987,6 @@ export namespace Prisma {
     deletedAt?: DateTimeNullableFilter<"Budget"> | Date | string | null
   }
 
-  export type TaxCalculationUpsertWithWhereUniqueWithoutUserInput = {
-    where: TaxCalculationWhereUniqueInput
-    update: XOR<TaxCalculationUpdateWithoutUserInput, TaxCalculationUncheckedUpdateWithoutUserInput>
-    create: XOR<TaxCalculationCreateWithoutUserInput, TaxCalculationUncheckedCreateWithoutUserInput>
-  }
-
-  export type TaxCalculationUpdateWithWhereUniqueWithoutUserInput = {
-    where: TaxCalculationWhereUniqueInput
-    data: XOR<TaxCalculationUpdateWithoutUserInput, TaxCalculationUncheckedUpdateWithoutUserInput>
-  }
-
-  export type TaxCalculationUpdateManyWithWhereWithoutUserInput = {
-    where: TaxCalculationScalarWhereInput
-    data: XOR<TaxCalculationUpdateManyMutationInput, TaxCalculationUncheckedUpdateManyWithoutUserInput>
-  }
-
-  export type TaxCalculationScalarWhereInput = {
-    AND?: TaxCalculationScalarWhereInput | TaxCalculationScalarWhereInput[]
-    OR?: TaxCalculationScalarWhereInput[]
-    NOT?: TaxCalculationScalarWhereInput | TaxCalculationScalarWhereInput[]
-    id?: StringFilter<"TaxCalculation"> | string
-    userId?: StringFilter<"TaxCalculation"> | string
-    year?: IntFilter<"TaxCalculation"> | number
-    regime?: StringNullableFilter<"TaxCalculation"> | string | null
-    country?: StringFilter<"TaxCalculation"> | string
-    totalIncome?: DecimalFilter<"TaxCalculation"> | Decimal | DecimalJsLike | number | string
-    totalExpense?: DecimalFilter<"TaxCalculation"> | Decimal | DecimalJsLike | number | string
-    netProfit?: DecimalFilter<"TaxCalculation"> | Decimal | DecimalJsLike | number | string
-    taxableIncome?: DecimalFilter<"TaxCalculation"> | Decimal | DecimalJsLike | number | string
-    estimatedTax?: DecimalFilter<"TaxCalculation"> | Decimal | DecimalJsLike | number | string
-    taxRate?: DecimalFilter<"TaxCalculation"> | Decimal | DecimalJsLike | number | string
-    deductions?: DecimalFilter<"TaxCalculation"> | Decimal | DecimalJsLike | number | string
-    currency?: StringFilter<"TaxCalculation"> | string
-    notes?: StringNullableFilter<"TaxCalculation"> | string | null
-    metadata?: JsonNullableFilter<"TaxCalculation">
-    clientRequestId?: StringNullableFilter<"TaxCalculation"> | string | null
-    syncStatus?: StringFilter<"TaxCalculation"> | string
-    createdAt?: DateTimeFilter<"TaxCalculation"> | Date | string
-    updatedAt?: DateTimeFilter<"TaxCalculation"> | Date | string
-    deletedAt?: DateTimeNullableFilter<"TaxCalculation"> | Date | string | null
-  }
-
   export type GoldAssetUpsertWithWhereUniqueWithoutUserInput = {
     where: GoldAssetWhereUniqueInput
     update: XOR<GoldAssetUpdateWithoutUserInput, GoldAssetUncheckedUpdateWithoutUserInput>
@@ -92241,7 +90130,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
     budgets?: BudgetCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
@@ -92301,7 +90189,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
@@ -92377,7 +90264,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
     budgets?: BudgetUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
@@ -92437,7 +90323,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
@@ -92497,7 +90382,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
     budgets?: BudgetCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
@@ -92557,7 +90441,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
@@ -92633,7 +90516,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
     budgets?: BudgetUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
@@ -92693,7 +90575,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
@@ -92753,7 +90634,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
     budgets?: BudgetCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
@@ -92813,7 +90693,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
@@ -92889,7 +90768,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
     budgets?: BudgetUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
@@ -92949,7 +90827,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
@@ -93009,7 +90886,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
     budgets?: BudgetCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
@@ -93069,7 +90945,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
@@ -93145,7 +91020,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
     budgets?: BudgetUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
@@ -93205,7 +91079,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
@@ -93386,7 +91259,6 @@ export namespace Prisma {
     aiScans?: AiScanCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
     budgets?: BudgetCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
@@ -93446,7 +91318,6 @@ export namespace Prisma {
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
@@ -93631,7 +91502,6 @@ export namespace Prisma {
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
     budgets?: BudgetUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
@@ -93691,7 +91561,6 @@ export namespace Prisma {
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
@@ -93968,7 +91837,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
     budgets?: BudgetCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
   }
@@ -94028,7 +91896,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
   }
@@ -94093,7 +91960,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
     budgets?: BudgetCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
   }
@@ -94153,7 +92019,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
   }
@@ -94229,7 +92094,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
     budgets?: BudgetUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
   }
@@ -94289,7 +92153,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
   }
@@ -94360,7 +92223,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
     budgets?: BudgetUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
   }
@@ -94420,7 +92282,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
   }
@@ -94571,7 +92432,6 @@ export namespace Prisma {
     aiScans?: AiScanCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
     budgets?: BudgetCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
@@ -94631,7 +92491,6 @@ export namespace Prisma {
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
@@ -94707,7 +92566,6 @@ export namespace Prisma {
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
     budgets?: BudgetUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
@@ -94767,7 +92625,6 @@ export namespace Prisma {
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
@@ -94827,7 +92684,6 @@ export namespace Prisma {
     aiScans?: AiScanCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
@@ -94887,7 +92743,6 @@ export namespace Prisma {
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
@@ -94963,7 +92818,6 @@ export namespace Prisma {
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
@@ -95023,263 +92877,6 @@ export namespace Prisma {
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
-    goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
-    collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
-    collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
-  }
-
-  export type UserCreateWithoutTaxCalculationsInput = {
-    id?: string
-    email: string
-    name: string
-    password: string
-    role?: string
-    roleMode?: string
-    advisorStatus?: string
-    status?: string
-    isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
-    lastSynced?: Date | string | null
-    syncToken?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    avatarId?: string | null
-    city?: string | null
-    country?: string | null
-    gender?: string | null
-    state?: string | null
-    accounts?: AccountCreateNestedManyWithoutUserInput
-    advisorAvailability?: AdvisorAvailabilityCreateNestedManyWithoutAdvisorInput
-    advisorApplication?: AdvisorApplicationCreateNestedOneWithoutUserInput
-    reviewedApplications?: AdvisorApplicationCreateNestedManyWithoutReviewerInput
-    sessionsAsAdvisor?: AdvisorSessionCreateNestedManyWithoutAdvisorInput
-    sessionsAsClient?: AdvisorSessionCreateNestedManyWithoutClientInput
-    bookingsAsAdvisor?: BookingRequestCreateNestedManyWithoutAdvisorInput
-    bookingsAsClient?: BookingRequestCreateNestedManyWithoutClientInput
-    categories?: CategoryCreateNestedManyWithoutUserInput
-    chatMessages?: ChatMessageCreateNestedManyWithoutSenderInput
-    devices?: DeviceCreateNestedManyWithoutUserInput
-    expenseBills?: ExpenseBillCreateNestedManyWithoutUserInput
-    friends?: FriendCreateNestedManyWithoutUserInput
-    goals?: GoalCreateNestedManyWithoutUserInput
-    goalContributions?: GoalContributionCreateNestedManyWithoutUserInput
-    importLogs?: ImportLogCreateNestedManyWithoutUserInput
-    investments?: InvestmentCreateNestedManyWithoutUserInput
-    loans?: LoanCreateNestedManyWithoutUserInput
-    notifications?: NotificationCreateNestedManyWithoutUserInput
-    paymentsAsAdvisor?: PaymentCreateNestedManyWithoutAdvisorInput
-    paymentsAsClient?: PaymentCreateNestedManyWithoutClientInput
-    refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
-    todos?: TodoCreateNestedManyWithoutUserInput
-    transactions?: TransactionCreateNestedManyWithoutUserInput
-    userPin?: UserPinCreateNestedOneWithoutUserInput
-    userSettings?: UserSettingsCreateNestedOneWithoutUserInput
-    otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
-    aiScans?: AiScanCreateNestedManyWithoutUserInput
-    groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
-    recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
-    budgets?: BudgetCreateNestedManyWithoutUserInput
-    goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
-    collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
-    collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
-  }
-
-  export type UserUncheckedCreateWithoutTaxCalculationsInput = {
-    id?: string
-    email: string
-    name: string
-    password: string
-    role?: string
-    roleMode?: string
-    advisorStatus?: string
-    status?: string
-    isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
-    lastSynced?: Date | string | null
-    syncToken?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    avatarId?: string | null
-    city?: string | null
-    country?: string | null
-    gender?: string | null
-    state?: string | null
-    accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
-    advisorAvailability?: AdvisorAvailabilityUncheckedCreateNestedManyWithoutAdvisorInput
-    advisorApplication?: AdvisorApplicationUncheckedCreateNestedOneWithoutUserInput
-    reviewedApplications?: AdvisorApplicationUncheckedCreateNestedManyWithoutReviewerInput
-    sessionsAsAdvisor?: AdvisorSessionUncheckedCreateNestedManyWithoutAdvisorInput
-    sessionsAsClient?: AdvisorSessionUncheckedCreateNestedManyWithoutClientInput
-    bookingsAsAdvisor?: BookingRequestUncheckedCreateNestedManyWithoutAdvisorInput
-    bookingsAsClient?: BookingRequestUncheckedCreateNestedManyWithoutClientInput
-    categories?: CategoryUncheckedCreateNestedManyWithoutUserInput
-    chatMessages?: ChatMessageUncheckedCreateNestedManyWithoutSenderInput
-    devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
-    expenseBills?: ExpenseBillUncheckedCreateNestedManyWithoutUserInput
-    friends?: FriendUncheckedCreateNestedManyWithoutUserInput
-    goals?: GoalUncheckedCreateNestedManyWithoutUserInput
-    goalContributions?: GoalContributionUncheckedCreateNestedManyWithoutUserInput
-    importLogs?: ImportLogUncheckedCreateNestedManyWithoutUserInput
-    investments?: InvestmentUncheckedCreateNestedManyWithoutUserInput
-    loans?: LoanUncheckedCreateNestedManyWithoutUserInput
-    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
-    paymentsAsAdvisor?: PaymentUncheckedCreateNestedManyWithoutAdvisorInput
-    paymentsAsClient?: PaymentUncheckedCreateNestedManyWithoutClientInput
-    refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
-    todos?: TodoUncheckedCreateNestedManyWithoutUserInput
-    transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
-    userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
-    userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
-    otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
-    aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
-    groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
-    recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
-    budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
-    goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
-    collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
-    collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
-  }
-
-  export type UserCreateOrConnectWithoutTaxCalculationsInput = {
-    where: UserWhereUniqueInput
-    create: XOR<UserCreateWithoutTaxCalculationsInput, UserUncheckedCreateWithoutTaxCalculationsInput>
-  }
-
-  export type UserUpsertWithoutTaxCalculationsInput = {
-    update: XOR<UserUpdateWithoutTaxCalculationsInput, UserUncheckedUpdateWithoutTaxCalculationsInput>
-    create: XOR<UserCreateWithoutTaxCalculationsInput, UserUncheckedCreateWithoutTaxCalculationsInput>
-    where?: UserWhereInput
-  }
-
-  export type UserUpdateToOneWithWhereWithoutTaxCalculationsInput = {
-    where?: UserWhereInput
-    data: XOR<UserUpdateWithoutTaxCalculationsInput, UserUncheckedUpdateWithoutTaxCalculationsInput>
-  }
-
-  export type UserUpdateWithoutTaxCalculationsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    password?: StringFieldUpdateOperationsInput | string
-    role?: StringFieldUpdateOperationsInput | string
-    roleMode?: StringFieldUpdateOperationsInput | string
-    advisorStatus?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
-    isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
-    lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    syncToken?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    avatarId?: NullableStringFieldUpdateOperationsInput | string | null
-    city?: NullableStringFieldUpdateOperationsInput | string | null
-    country?: NullableStringFieldUpdateOperationsInput | string | null
-    gender?: NullableStringFieldUpdateOperationsInput | string | null
-    state?: NullableStringFieldUpdateOperationsInput | string | null
-    accounts?: AccountUpdateManyWithoutUserNestedInput
-    advisorAvailability?: AdvisorAvailabilityUpdateManyWithoutAdvisorNestedInput
-    advisorApplication?: AdvisorApplicationUpdateOneWithoutUserNestedInput
-    reviewedApplications?: AdvisorApplicationUpdateManyWithoutReviewerNestedInput
-    sessionsAsAdvisor?: AdvisorSessionUpdateManyWithoutAdvisorNestedInput
-    sessionsAsClient?: AdvisorSessionUpdateManyWithoutClientNestedInput
-    bookingsAsAdvisor?: BookingRequestUpdateManyWithoutAdvisorNestedInput
-    bookingsAsClient?: BookingRequestUpdateManyWithoutClientNestedInput
-    categories?: CategoryUpdateManyWithoutUserNestedInput
-    chatMessages?: ChatMessageUpdateManyWithoutSenderNestedInput
-    devices?: DeviceUpdateManyWithoutUserNestedInput
-    expenseBills?: ExpenseBillUpdateManyWithoutUserNestedInput
-    friends?: FriendUpdateManyWithoutUserNestedInput
-    goals?: GoalUpdateManyWithoutUserNestedInput
-    goalContributions?: GoalContributionUpdateManyWithoutUserNestedInput
-    importLogs?: ImportLogUpdateManyWithoutUserNestedInput
-    investments?: InvestmentUpdateManyWithoutUserNestedInput
-    loans?: LoanUpdateManyWithoutUserNestedInput
-    notifications?: NotificationUpdateManyWithoutUserNestedInput
-    paymentsAsAdvisor?: PaymentUpdateManyWithoutAdvisorNestedInput
-    paymentsAsClient?: PaymentUpdateManyWithoutClientNestedInput
-    refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
-    todos?: TodoUpdateManyWithoutUserNestedInput
-    transactions?: TransactionUpdateManyWithoutUserNestedInput
-    userPin?: UserPinUpdateOneWithoutUserNestedInput
-    userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
-    otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
-    aiScans?: AiScanUpdateManyWithoutUserNestedInput
-    groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
-    recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
-    budgets?: BudgetUpdateManyWithoutUserNestedInput
-    goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
-    collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
-    collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
-  }
-
-  export type UserUncheckedUpdateWithoutTaxCalculationsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    password?: StringFieldUpdateOperationsInput | string
-    role?: StringFieldUpdateOperationsInput | string
-    roleMode?: StringFieldUpdateOperationsInput | string
-    advisorStatus?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
-    isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
-    lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    syncToken?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    avatarId?: NullableStringFieldUpdateOperationsInput | string | null
-    city?: NullableStringFieldUpdateOperationsInput | string | null
-    country?: NullableStringFieldUpdateOperationsInput | string | null
-    gender?: NullableStringFieldUpdateOperationsInput | string | null
-    state?: NullableStringFieldUpdateOperationsInput | string | null
-    accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
-    advisorAvailability?: AdvisorAvailabilityUncheckedUpdateManyWithoutAdvisorNestedInput
-    advisorApplication?: AdvisorApplicationUncheckedUpdateOneWithoutUserNestedInput
-    reviewedApplications?: AdvisorApplicationUncheckedUpdateManyWithoutReviewerNestedInput
-    sessionsAsAdvisor?: AdvisorSessionUncheckedUpdateManyWithoutAdvisorNestedInput
-    sessionsAsClient?: AdvisorSessionUncheckedUpdateManyWithoutClientNestedInput
-    bookingsAsAdvisor?: BookingRequestUncheckedUpdateManyWithoutAdvisorNestedInput
-    bookingsAsClient?: BookingRequestUncheckedUpdateManyWithoutClientNestedInput
-    categories?: CategoryUncheckedUpdateManyWithoutUserNestedInput
-    chatMessages?: ChatMessageUncheckedUpdateManyWithoutSenderNestedInput
-    devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
-    expenseBills?: ExpenseBillUncheckedUpdateManyWithoutUserNestedInput
-    friends?: FriendUncheckedUpdateManyWithoutUserNestedInput
-    goals?: GoalUncheckedUpdateManyWithoutUserNestedInput
-    goalContributions?: GoalContributionUncheckedUpdateManyWithoutUserNestedInput
-    importLogs?: ImportLogUncheckedUpdateManyWithoutUserNestedInput
-    investments?: InvestmentUncheckedUpdateManyWithoutUserNestedInput
-    loans?: LoanUncheckedUpdateManyWithoutUserNestedInput
-    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
-    paymentsAsAdvisor?: PaymentUncheckedUpdateManyWithoutAdvisorNestedInput
-    paymentsAsClient?: PaymentUncheckedUpdateManyWithoutClientNestedInput
-    refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
-    todos?: TodoUncheckedUpdateManyWithoutUserNestedInput
-    transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
-    userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
-    userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
-    otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
-    aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
-    groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
-    recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
-    budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
@@ -95340,7 +92937,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
     budgets?: BudgetCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
   }
@@ -95400,7 +92996,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
     budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
-    taxCalculations?: TaxCalculationUncheckedCreateNestedManyWithoutUserInput
     collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
   }
@@ -95476,7 +93071,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
     budgets?: BudgetUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
   }
@@ -95536,7 +93130,6 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
-    taxCalculations?: TaxCalculationUncheckedUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
   }
@@ -96528,28 +94121,6 @@ export namespace Prisma {
     endDate?: Date | string | null
     alertEnabled?: boolean
     alertChannels?: JsonNullValueInput | InputJsonValue
-    clientRequestId?: string | null
-    syncStatus?: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-  }
-
-  export type TaxCalculationCreateManyUserInput = {
-    id?: string
-    year: number
-    regime?: string | null
-    country?: string
-    totalIncome: Decimal | DecimalJsLike | number | string
-    totalExpense: Decimal | DecimalJsLike | number | string
-    netProfit: Decimal | DecimalJsLike | number | string
-    taxableIncome: Decimal | DecimalJsLike | number | string
-    estimatedTax: Decimal | DecimalJsLike | number | string
-    taxRate: Decimal | DecimalJsLike | number | string
-    deductions?: Decimal | DecimalJsLike | number | string
-    currency?: string
-    notes?: string | null
-    metadata?: NullableJsonNullValueInput | InputJsonValue
     clientRequestId?: string | null
     syncStatus?: string
     createdAt?: Date | string
@@ -98085,72 +95656,6 @@ export namespace Prisma {
     endDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     alertEnabled?: BoolFieldUpdateOperationsInput | boolean
     alertChannels?: JsonNullValueInput | InputJsonValue
-    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
-    syncStatus?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  }
-
-  export type TaxCalculationUpdateWithoutUserInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    year?: IntFieldUpdateOperationsInput | number
-    regime?: NullableStringFieldUpdateOperationsInput | string | null
-    country?: StringFieldUpdateOperationsInput | string
-    totalIncome?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    totalExpense?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    netProfit?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    taxableIncome?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    estimatedTax?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    taxRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    deductions?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    currency?: StringFieldUpdateOperationsInput | string
-    notes?: NullableStringFieldUpdateOperationsInput | string | null
-    metadata?: NullableJsonNullValueInput | InputJsonValue
-    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
-    syncStatus?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  }
-
-  export type TaxCalculationUncheckedUpdateWithoutUserInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    year?: IntFieldUpdateOperationsInput | number
-    regime?: NullableStringFieldUpdateOperationsInput | string | null
-    country?: StringFieldUpdateOperationsInput | string
-    totalIncome?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    totalExpense?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    netProfit?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    taxableIncome?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    estimatedTax?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    taxRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    deductions?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    currency?: StringFieldUpdateOperationsInput | string
-    notes?: NullableStringFieldUpdateOperationsInput | string | null
-    metadata?: NullableJsonNullValueInput | InputJsonValue
-    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
-    syncStatus?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  }
-
-  export type TaxCalculationUncheckedUpdateManyWithoutUserInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    year?: IntFieldUpdateOperationsInput | number
-    regime?: NullableStringFieldUpdateOperationsInput | string | null
-    country?: StringFieldUpdateOperationsInput | string
-    totalIncome?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    totalExpense?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    netProfit?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    taxableIncome?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    estimatedTax?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    taxRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    deductions?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    currency?: StringFieldUpdateOperationsInput | string
-    notes?: NullableStringFieldUpdateOperationsInput | string | null
-    metadata?: NullableJsonNullValueInput | InputJsonValue
     clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
     syncStatus?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string

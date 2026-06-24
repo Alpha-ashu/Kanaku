@@ -115,20 +115,6 @@ sequenceDiagram
     API-->>FE: 201
 ```
 
-## Tax — calculation CRUD
-```mermaid
-sequenceDiagram
-    participant U as User
-    participant FE as TaxCalculator.tsx
-    participant API as /api/v1/tax
-    participant PG as PostgreSQL
-    U->>FE: choose year/regime/country + incomes
-    FE->>FE: compute taxableIncome, estimatedTax, taxRate
-    FE->>API: POST / (taxCalcCreateSchema)
-    API->>PG: insert TaxCalculation
-    API-->>FE: saved; compare regimes
-```
-
 ## Statement import — upload → review → confirm
 ```mermaid
 sequenceDiagram

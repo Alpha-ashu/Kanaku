@@ -305,22 +305,6 @@ export interface Notification {
   metadata?: Record<string, string>;
 }
 
-export interface TaxCalculation {
-  id?: number;
-  year: number;
-  totalIncome: number;
-  totalExpense: number;
-  netProfit: number;
-  taxableIncome: number;
-  estimatedTax: number;
-  taxRate: number;
-  deductions: number;
-  currency: string;
-  notes?: string;
-  createdAt: Date;
-  updatedAt?: Date;
-}
-
 export interface FinanceAdvisor {
   id?: number;
   userId: string; // Linked to auth user
@@ -683,7 +667,6 @@ export class ProductionDB extends KANAKUDB {
   importHistories!: Table<ImportHistory>;
   budgets!: Table<{ id: string; category: string; amount: number; period: string; spent: number; createdAt: Date }>;
   groups!: Table<{ id: string; name: string; members: string[]; createdAt: Date }>;
-  taxCalculations!: Table<TaxCalculation>;
   financeAdvisors!: Table<FinanceAdvisor>;
   advisorSessions!: Table<AdvisorSession>;
   expenseCategories!: Table<ExpenseCategory>;
@@ -721,7 +704,6 @@ export class ProductionDB extends KANAKUDB {
       categories: 'id, type',
       budgets: 'id, category, period',
       groups: 'id',
-      taxCalculations: '++id, year',
       financeAdvisors: '++id, verified, rating',
       advisorSessions: '++id, advisorId, date, status',
       expenseCategories: 'id, type',
@@ -754,7 +736,6 @@ export class ProductionDB extends KANAKUDB {
       categories: 'id, type',
       budgets: 'id, category, period',
       groups: 'id',
-      taxCalculations: '++id, year',
       financeAdvisors: '++id, verified, rating',
       advisorSessions: '++id, advisorId, date, status',
       expenseCategories: 'id, type',
@@ -787,7 +768,6 @@ export class ProductionDB extends KANAKUDB {
       categories: 'id, type',
       budgets: 'id, category, period',
       groups: 'id',
-      taxCalculations: '++id, year',
       financeAdvisors: '++id, verified, rating',
       advisorSessions: '++id, advisorId, date, status',
       expenseCategories: 'id, type',
@@ -860,7 +840,6 @@ export class ProductionDB extends KANAKUDB {
       importHistories: '++id, createdAt, fileType, sourceKind, userId',
       budgets: 'id, category, period',
       groups: 'id',
-      taxCalculations: '++id, year',
       financeAdvisors: '++id, verified, rating',
       advisorSessions: '++id, advisorId, date, status',
       expenseCategories: 'id, type',
@@ -894,7 +873,6 @@ export class ProductionDB extends KANAKUDB {
       importHistories: '++id, createdAt, fileType, sourceKind, userId',
       budgets: 'id, category, period',
       groups: 'id',
-      taxCalculations: '++id, year',
       financeAdvisors: '++id, verified, rating',
       advisorSessions: '++id, advisorId, date, status',
       expenseCategories: 'id, type',
@@ -931,7 +909,6 @@ export class ProductionDB extends KANAKUDB {
       importHistories: '++id, createdAt, fileType, sourceKind, userId',
       budgets: 'id, category, period',
       groups: 'id',
-      taxCalculations: '++id, year',
       financeAdvisors: '++id, verified, rating',
       advisorSessions: '++id, advisorId, date, status',
       expenseCategories: 'id, type',
@@ -968,7 +945,6 @@ export class ProductionDB extends KANAKUDB {
       importHistories: '++id, createdAt, fileType, sourceKind, userId',
       budgets: 'id, category, period',
       groups: 'id',
-      taxCalculations: '++id, year',
       financeAdvisors: '++id, verified, rating',
       advisorSessions: '++id, advisorId, date, status',
       expenseCategories: 'id, type',
@@ -1047,7 +1023,6 @@ export class OfflineSyncDB extends ProductionDB {
       importHistories: '++id, createdAt, fileType, sourceKind, userId',
       budgets:      'id, category, period',
       groups:       'id',
-      taxCalculations: '++id, year',
       financeAdvisors: '++id, verified, rating',
       advisorSessions: '++id, advisorId, date, status',
       expenseCategories: 'id, type',
@@ -1092,7 +1067,6 @@ export class OfflineSyncDB extends ProductionDB {
       importHistories: '++id, createdAt, fileType, sourceKind, userId',
       budgets:      'id, category, period',
       groups:       'id',
-      taxCalculations: '++id, year',
       financeAdvisors: '++id, verified, rating',
       advisorSessions: '++id, advisorId, date, status',
       expenseCategories: 'id, type',
@@ -1133,7 +1107,6 @@ export class OfflineSyncDB extends ProductionDB {
       importHistories: '++id, createdAt, fileType, sourceKind, userId',
       budgets:      'id, category, period',
       groups:       'id',
-      taxCalculations: '++id, year',
       financeAdvisors: '++id, verified, rating',
       advisorSessions: '++id, advisorId, date, status',
       expenseCategories: 'id, type',

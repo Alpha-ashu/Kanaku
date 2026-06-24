@@ -494,19 +494,6 @@ Offline-first client↔server data synchronization.
 
 ---
 
-### `tax` — `/api/v1/tax`
-
-Tax estimation and calculators.
-
-| Method | Path | Guards | Handler |
-|---|---|---|---|
-| GET | `/tax` | auth, validated | `TaxController.getTaxCalculations` |
-| POST | `/tax` | auth, validated | `TaxController.createTaxCalculation` |
-| GET | `/tax/:id` | auth, validated | `TaxController.getTaxCalculation` |
-| PUT | `/tax/:id` | auth, validated | `TaxController.updateTaxCalculation` |
-| DELETE | `/tax/:id` | auth, validated | `TaxController.deleteTaxCalculation` |
-
----
 
 ### `todos` — `/api/v1/todos`
 

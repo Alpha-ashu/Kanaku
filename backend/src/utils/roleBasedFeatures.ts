@@ -17,7 +17,6 @@ export type FeatureKey =
   | 'calendar'
   | 'todoLists'
   | 'transfer'
-  | 'taxCalculator'
   | 'bookAdvisor'
   | 'payments'
   | 'adminPanel'
@@ -53,7 +52,6 @@ export const ROLE_FEATURES: Record<UserRole, Partial<Record<FeatureKey, boolean>
     calendar: true,
     todoLists: true,
     transfer: true,
-    taxCalculator: true,
     bookAdvisor: true,
     payments: true,
     adminPanel: true,
@@ -81,7 +79,6 @@ export const ROLE_FEATURES: Record<UserRole, Partial<Record<FeatureKey, boolean>
     calendar: true,
     todoLists: true,
     transfer: true,
-    taxCalculator: false,
     bookAdvisor: false,
     payments: false,
     adminPanel: false,
@@ -109,7 +106,6 @@ export const ROLE_FEATURES: Record<UserRole, Partial<Record<FeatureKey, boolean>
     calendar: true,
     todoLists: true,
     transfer: true,
-    taxCalculator: true,
     bookAdvisor: false,
     payments: false,
     adminPanel: false,
@@ -137,7 +133,6 @@ export const ROLE_FEATURES: Record<UserRole, Partial<Record<FeatureKey, boolean>
     calendar: true,
     todoLists: true,
     transfer: true,
-    taxCalculator: true,
     bookAdvisor: true,
     payments: false,
     adminPanel: false,
@@ -428,7 +423,6 @@ export function getVisibleFeaturesForRole(
     'calendar',
     'todoLists',
     'transfer',
-    'taxCalculator',
     'bookAdvisor',
     'payments',
     'adminPanel',

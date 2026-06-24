@@ -13,7 +13,6 @@ import {
   ShieldCheck,
   Shield,
   Brain,
-  Calculator,
   Sparkles,
   Download,
   Repeat,
@@ -54,7 +53,6 @@ export const headerMenuItems: NavigationItem[] = [
   { id: 'user-profile', label: 'Profile', icon: User, feature: 'userProfile' },
   { id: 'settings', label: 'Settings', icon: Settings, feature: 'settings' },
   // Advanced features
-  { id: 'tax-calculator', label: 'Tax Calculator', icon: Calculator, feature: 'taxCalculator' },
   { id: 'ai-insights', label: 'AI Insights', icon: Sparkles, feature: 'aiInsights' },
   { id: 'data-export', label: 'Data Export', icon: Download, feature: 'dataExport' },
   { id: 'recurring-transactions', label: 'Recurring', icon: Repeat, feature: 'recurringTransactions' },
@@ -83,7 +81,6 @@ export const sidebarMenuItems: NavigationItem[] = [
   { id: 'receipt-scanner', label: 'Receipt Scanner', icon: ScanLine, feature: 'transactions' },
   { id: 'notifications', label: 'Notifications', icon: Bell, feature: 'notifications' },
   // Advanced features — visible when enabled by admin
-  { id: 'tax-calculator', label: 'Tax Calculator', icon: Calculator, feature: 'taxCalculator' },
   { id: 'ai-insights', label: 'AI Insights', icon: Sparkles, feature: 'aiInsights' },
   { id: 'data-export', label: 'Data Export', icon: Download, feature: 'dataExport' },
   { id: 'recurring-transactions', label: 'Recurring', icon: Repeat, feature: 'recurringTransactions' },

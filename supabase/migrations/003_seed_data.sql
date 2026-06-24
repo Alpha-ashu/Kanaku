@@ -205,15 +205,6 @@ BEGIN
   RAISE NOTICE 'Created 3 notifications';
 
   -- =====================================================
-  -- TAX CALCULATIONS
-  -- =====================================================
-  INSERT INTO public.tax_calculations (user_id, year, total_income, total_expense, net_profit, taxable_income, estimated_tax, tax_rate, deductions, currency, notes)
-  VALUES 
-    (v_user_id, 2024, 65000.00, 35000.00, 30000.00, 28000.00, 5600.00, 20.00, 2000.00, 'USD', '2024 tax estimate');
-
-  RAISE NOTICE 'Created 1 tax calculation';
-
-  -- =====================================================
   -- TODO LISTS
   -- =====================================================
   INSERT INTO public.todo_lists (user_id, name, description, archived)
@@ -256,7 +247,6 @@ BEGIN
   RAISE NOTICE '- 2 Group Expenses';
   RAISE NOTICE '- 4 Investments (Stocks, Crypto, Gold)';
   RAISE NOTICE '- 3 Notifications';
-  RAISE NOTICE '- 1 Tax Calculation';
   RAISE NOTICE '- 3 Todo Lists';
   RAISE NOTICE '- 3 Todo Items';
   RAISE NOTICE '========================================';

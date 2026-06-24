@@ -52,7 +52,6 @@
 | Gold | `investments/AddGold` | gold | `lib/metalPriceService` | `/gold/*` |
 | Budgets | `features/BudgetAlertsPage` | budgets, budgetAlerts | `services/budgetCoachService` | `/budgets/*` |
 | Recurring | `features/RecurringTransactions` | recurringTransactions | — | `/recurring/*` |
-| Tax | `features/TaxCalculator`, `features/TaxCalculatorPage`, `pages/tax-calculator` | taxCalculations | — | `/tax/*` |
 | Reports / Export | `features/Reports`, `features/ExportReports`, `features/Calendar` | — | `lib/statementReportPdf`, `importExport` | `/dashboard/*` |
 
 ## Social & Collaboration

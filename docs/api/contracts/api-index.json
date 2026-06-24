@@ -1300,38 +1300,6 @@
                                       "auth":  "public"
                                   }
                               ],
-                     "tax":  [
-                                 {
-                                     "method":  "GET",
-                                     "endpoint":  "/api/v1/tax",
-                                     "file":  "docs/api/contracts/tax/list.api.json",
-                                     "auth":  "public"
-                                 },
-                                 {
-                                     "method":  "POST",
-                                     "endpoint":  "/api/v1/tax",
-                                     "file":  "docs/api/contracts/tax/create.api.json",
-                                     "auth":  "public"
-                                 },
-                                 {
-                                     "method":  "GET",
-                                     "endpoint":  "/api/v1/tax/:id",
-                                     "file":  "docs/api/contracts/tax/get.by-id.api.json",
-                                     "auth":  "public"
-                                 },
-                                 {
-                                     "method":  "PUT",
-                                     "endpoint":  "/api/v1/tax/:id",
-                                     "file":  "docs/api/contracts/tax/put.by-id.api.json",
-                                     "auth":  "public"
-                                 },
-                                 {
-                                     "method":  "DELETE",
-                                     "endpoint":  "/api/v1/tax/:id",
-                                     "file":  "docs/api/contracts/tax/delete.by-id.api.json",
-                                     "auth":  "public"
-                                 }
-                             ],
                      "todos":  [
                                    {
                                        "method":  "GET",

@@ -28,7 +28,6 @@ import { otpRoutes } from '../features/otp/otp.routes';
 import { aaRoutes } from '../features/aa/aa.routes';
 import { recurringRoutes } from '../features/recurring/recurring.routes';
 import { budgetRoutes } from '../features/budgets/budget.routes';
-import { taxRoutes } from '../features/tax/tax.routes';
 import { goldRoutes } from '../features/gold/gold.routes';
 import { collaborationRoutes } from '../features/collaboration/collaboration.routes';
 import { webhookRoutes } from '../features/webhooks/webhook.routes';
@@ -133,10 +132,9 @@ if (moduleEnabled('aa')) {
   router.use('/aa', aaRoutes);
 }
 
-// Sub-feature modules (Recurring, Budgets, Tax, Gold)
+// Sub-feature modules (Recurring, Budgets, Gold)
 router.use('/recurring', recurringRoutes);
 router.use('/budgets', budgetRoutes);
-router.use('/tax', taxRoutes);
 router.use('/gold', goldRoutes);
 
 // Unified collaboration/invitation management (Group Expenses, To-Do Lists, Goals)

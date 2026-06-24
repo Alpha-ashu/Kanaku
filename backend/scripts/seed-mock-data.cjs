@@ -10,7 +10,7 @@
  *
  * Covers: Accounts, Transactions (30+/user), Goals, Loans, Friends,
  *         Investments, GoldAssets, Budgets, RecurringTransactions,
- *         GroupExpenses, TaxCalculations, Notifications, Todos,
+ *         GroupExpenses, Notifications, Todos,
  *         AdvisorApplication, AdvisorAvailability, BookingRequest, AdvisorSession
  */
 
@@ -541,37 +541,7 @@ async function seedGroupExpenses(userId, role, acc, friends) {
   return created;
 }
 
-// ── 11. Tax Calculations ──────────────────────────────────────────────────────
-
-async function seedTaxCalcs(userId, role) {
-  const annualSalary = { admin: 1800000, manager: 1200000, advisor: 2400000, user: 600000 }[role];
-  const deductions   = { admin: 250000, manager: 150000, advisor: 350000, user: 75000 }[role];
-  const created = [];
-
-  for (const year of [2024, 2025]) {
-    const taxableIncome = Math.max(0, annualSalary - deductions);
-    let tax = 0;
-    if (taxableIncome > 1500000) tax = (taxableIncome - 1500000) * 0.30 + 187500;
-    else if (taxableIncome > 1200000) tax = (taxableIncome - 1200000) * 0.20 + 127500;
-    else if (taxableIncome > 900000)  tax = (taxableIncome - 900000)  * 0.15 + 82500;
-    else if (taxableIncome > 600000)  tax = (taxableIncome - 600000)  * 0.10 + 52500;
-    else if (taxableIncome > 300000)  tax = (taxableIncome - 300000)  * 0.05;
-    const taxRate = taxableIncome > 0 ? Math.round(tax / taxableIncome * 10000) / 100 : 0;
-    const expenses = Math.round(annualSalary * 0.45);
-    try {
-      const t = await prisma.taxCalculation.create({ data: {
-        userId, year, regime: 'new', country: 'India', currency: 'INR',
-        totalIncome: annualSalary, totalExpense: expenses, netProfit: annualSalary - expenses,
-        taxableIncome, estimatedTax: Math.round(tax), taxRate, deductions,
-        notes: `FY ${year}-${(year + 1).toString().slice(-2)} – New Tax Regime`,
-      }});
-      created.push(t);
-    } catch (e) { /* skip duplicates */ }
-  }
-  return created;
-}
-
-// ── 12. Notifications ─────────────────────────────────────────────────────────
+// ── 11. Notifications ─────────────────────────────────────────────────────────
 
 async function seedNotifications(userId, role) {
   const emi = { admin: '65,000', manager: '12,500', advisor: '45,000', user: '5,500' }[role];
@@ -754,7 +724,6 @@ async function cleanupUser(userId) {
   await prisma.$executeRaw`DELETE FROM public.todo_lists WHERE user_id = ${userId}::uuid`
     .catch((err) => console.warn(`[mock-data] todo_lists cleanup failed for ${userId}:`, err.message));
   await prisma.notification.deleteMany({ where: { userId } }).catch(() => {});
-  await prisma.taxCalculation.deleteMany({ where: { userId } }).catch(() => {});
   await prisma.goldAsset.deleteMany({ where: { userId } }).catch(() => {});
   await prisma.recurringTransaction.deleteMany({ where: { userId } }).catch(() => {});
   await prisma.budget.deleteMany({ where: { userId } }).catch(() => {});
@@ -835,9 +804,6 @@ async function main() {
 
     const groups = await seedGroupExpenses(userId, role, acc, friends);
     console.log(`  ✓ Group Expenses:        ${groups.length} created`);
-
-    const taxes = await seedTaxCalcs(userId, role);
-    console.log(`  ✓ Tax Calculations:      ${taxes.length} created`);
 
     const notifs = await seedNotifications(userId, role);
     console.log(`  ✓ Notifications:         ${notifs.length} created`);
