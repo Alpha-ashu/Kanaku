@@ -95,7 +95,8 @@ describe('Advisor System', () => {
           qualifications: ['CFA'],
           experienceYears: 10,
         });
-      expect([200, 201, 400, 409, 500]).toContain(res.status);
+      // 503 = DB unavailable (DB-less local runs); tolerated like the rest of the suite.
+      expect([200, 201, 400, 409, 500, 503]).toContain(res.status);
       expect(res.status).not.toBe(401);
       expect(res.status).not.toBe(403);
       expect(res.status).not.toBe(404);
@@ -230,7 +231,8 @@ describe('Advisor System', () => {
       const res = await request(app)
         .get(`${API}/advisors/admin/applications`)
         .set(managerAuth());
-      expect([200, 403, 500]).toContain(res.status);
+      // 503 = DB unavailable (DB-less local runs); tolerated like the rest of the suite.
+      expect([200, 403, 500, 503]).toContain(res.status);
       expect(res.status).not.toBe(401);
     });
 
