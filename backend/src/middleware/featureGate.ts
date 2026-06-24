@@ -38,6 +38,12 @@ const DEFAULT_MODULE_ACCESS: Record<string, Record<string, boolean>> = {
   accounts: { admin: true, manager: true, advisor: true, user: true },
   transactions: { admin: true, manager: true, advisor: true, user: true },
   reports: { admin: true, manager: true, advisor: true, user: true },
+  // Deferred (Phase 4) — admin-only until the admin enables it for other roles.
+  payments: { admin: true, manager: false, advisor: false, user: false },
+  // Deferred (Phase 2) — advisor marketplace consumer surface (browse/book);
+  // admin-only until the admin enables it for users. Advisor/manager OPERATOR
+  // endpoints are role-gated separately and are unaffected by this default.
+  bookAdvisor: { admin: true, manager: false, advisor: false, user: false },
 };
 
 export const invalidateFeatureCache = () => {

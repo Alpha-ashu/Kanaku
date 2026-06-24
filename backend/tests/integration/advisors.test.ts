@@ -33,17 +33,21 @@ const managerAuth = (userId = 'advisor-test-manager') => ({
 describe('Advisor System', () => {
   // ── PUBLIC / USER SIDE ────────────────────────────────────────────────────
   describe('GET /advisors — browse advisors (user role)', () => {
-    it('returns advisor list for authenticated user', async () => {
+    it('returns advisor list for authenticated user (403 when bookAdvisor disabled)', async () => {
       const res = await request(app).get(`${API}/advisors`).set(userAuth());
-      expect([200, 500, 503]).toContain(res.status);
+      // Browse is gated by the admin feature flag `bookAdvisor` (deny-by-default),
+      // so a user sees 403 until an admin enables the module.
+      expect([200, 403, 500, 503]).toContain(res.status);
       expect(res.status).not.toBe(401);
       expect(res.status).not.toBe(404);
     });
 
-    it('GET /advisors is a public route (no auth required)', async () => {
+    it('GET /advisors is reachable without auth but feature-gated', async () => {
       const res = await request(app).get(`${API}/advisors`);
-      // Public route — returns 200 (or 503 if DB unavailable), never 401
-      expect([200, 500, 503]).toContain(res.status);
+      // No longer unconditionally public: anonymous callers are treated as role
+      // `user` and the `bookAdvisor` gate returns 403 while the module is disabled.
+      // Never 401 (the gate does not require authentication).
+      expect([200, 403, 500, 503]).toContain(res.status);
       expect(res.status).not.toBe(401);
     });
 
@@ -60,7 +64,7 @@ describe('Advisor System', () => {
       const res = await request(app)
         .get(`${API}/advisors?specialization=investments&minRating=4`)
         .set(userAuth());
-      expect([200, 400, 500, 503]).toContain(res.status);
+      expect([200, 400, 403, 500, 503]).toContain(res.status);
     });
   });
 
@@ -139,11 +143,12 @@ describe('Advisor System', () => {
       expect(res.status).not.toBe(403);
     });
 
-    it('GET /advisors/:id/availability returns slots', async () => {
+    it('GET /advisors/:id/availability returns slots (403 when bookAdvisor disabled)', async () => {
       const res = await request(app)
         .get(`${API}/advisors/some-advisor-id/availability`)
         .set(userAuth());
-      expect([200, 404, 500, 503]).toContain(res.status);
+      // Viewing slots is part of the booking flow, gated by `bookAdvisor`.
+      expect([200, 403, 404, 500, 503]).toContain(res.status);
       expect(res.status).not.toBe(401);
     });
 
@@ -178,14 +183,15 @@ describe('Advisor System', () => {
       expect(res.status).toBe(401);
     });
 
-    it('user can book advisor session', async () => {
+    it('user booking is gated by bookAdvisor (403 when disabled, else processed)', async () => {
       const res = await request(app)
         .post(`${API}/bookings`)
         .set(userAuth())
         .send({ advisorId: 'non-existent-advisor', slotId: 'non-existent-slot', date: '2026-07-01' });
-      expect([201, 200, 400, 404, 500, 503]).toContain(res.status);
+      // POST /bookings now enforces the admin `bookAdvisor` flag (deny-by-default),
+      // so a user gets 403 until an admin enables the module.
+      expect([201, 200, 400, 403, 404, 500, 503]).toContain(res.status);
       expect(res.status).not.toBe(401);
-      expect(res.status).not.toBe(403);
     });
 
     it('PATCH /bookings/:id/cancel requires auth', async () => {

@@ -1,6 +1,10 @@
 import { Router } from 'express';
 import { authMiddleware } from '../../middleware/auth';
-import { requireFeature, requireRole, requireApproved } from '../../middleware/rbac';
+import { requireRole, requireApproved } from '../../middleware/rbac';
+// Panel-backed feature gate (admin_global_feature_settings), NOT the static
+// role check in rbac.ts — so disabling `bookAdvisor` in the admin panel actually
+// blocks new bookings at the API layer.
+import { requireFeature } from '../../middleware/featureGate';
 import { validateBody, validateParams } from '../../middleware/validate';
 import * as BookingController from './booking.controller';
 import {

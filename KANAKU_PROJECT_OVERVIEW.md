@@ -1224,41 +1224,57 @@ repository already contains scaffolding for later phases, but the product being
 |---|---|---|
 | **1 — Admin** | Central feature control, user/role management, configuration | Active |
 | **1 — User (MVP)** | Dashboard, accounts, transactions, budgets, goals, loans, calendar, manual investments, group expenses, to-do, notifications, profile & settings | Active |
-| **2 — Advisor Marketplace** | Advisors, bookings, sessions | Deferred (scaffolding) |
+| **2 — Advisor Marketplace** | Advisors, bookings, sessions | Full admin-flag module; consumer surface (browse/book) enforced via `bookAdvisor`, deny-by-default; operator/admin endpoints role-gated |
 | **3 — AI Assistant** | Insights, categorization, voice, receipts | Partial / behind admin AI flags |
-| **4 — Payments** | Payment initiate/complete/refund + provider webhook | Deferred (scaffolding) |
-| **5 — Bank Integrations / Account Aggregator** | Setu AA consent + data pull (RBI) | Deferred (scaffolding) |
+| **4 — Payments** | Payment initiate/complete/refund + provider webhook | Full admin-flag module, deny-by-default (admin-only) |
+| **5 — Bank Integrations / Account Aggregator** | Setu AA consent + data pull (RBI) | Deferred — mount-gated off (`ENABLED_MODULES`) |
 
-### Why gating is enforced at the route mount, not just the admin flag
+### Two enforcement mechanisms
 
 The admin feature-flag engine (`requireFeature`, `src/middleware/featureGate.ts`)
-governs **UI visibility** and enforces on routers that opt into it. However, several
-later-phase routers — **payments, Account Aggregator, advisor** — historically did
-**not** call `requireFeature`, so toggling them "off" in the admin panel hid the
-button but left the API endpoint reachable by any authenticated caller. For
-deferred and especially *regulated* surfaces (payments, AA), "UI-hidden" is not the
-same as "disabled".
+governs **UI visibility** *and* backend access — but only on routers that actually
+call it. Historically several later-phase routers (**payments, advisor, Account
+Aggregator**) did **not** call `requireFeature`, so toggling them "off" in the admin
+panel hid the button while leaving the API endpoint reachable by any authenticated
+caller. "UI-hidden" is not the same as "disabled". Kanaku now uses two mechanisms,
+chosen by how a module should be controlled:
 
-To close that gap, deferred routers are now **phase-gated at the mount layer** in
-[`src/routes/index.ts`](backend/src/routes/index.ts):
+**1. Admin feature flag (`requireFeature`) — runtime control by the admin panel.**
+Use for modules the admin should be able to enable/disable (and grant per-role)
+without a redeploy. A module is "full" when it appears in the registry
+(`utils/roleBasedFeatures.ts` backend, `lib/featureFlags.ts` frontend), in the admin
+panel list (`AdminFeaturePanel.tsx`), and its router calls `requireFeature('<key>')`.
 
-- A comma-separated env var **`ENABLED_MODULES`** acts as an allowlist of deferred
-  modules to mount. Recognized keys: `advisor`, `payments`, `aa`.
-- **Unset (the production default)** → those routers are never mounted and their
-  paths return `404`. A deferred/regulated endpoint cannot be reached just because
-  its code exists in the repo.
-- MVP modules are **always** mounted regardless of this variable.
+- **`payments`** is now a full module: registered in both registries + the admin
+  panel, **deny-by-default** (admin-only until the admin grants other roles), and
+  enforced at the API layer via `requireFeature('payments')` in
+  `features/payments/payment.routes.ts`. Disabling it in the panel now returns `403`
+  on every payment endpoint, not just hiding the UI. *(The public payment webhook is
+  intentionally exempt so providers can still post settlement events.)*
+- **`bookAdvisor`** is now enforced on the advisor marketplace's **consumer
+  surface** — browse advisors (`GET /advisors`), view profile-availability
+  (`GET /advisors/:id/availability`), and create booking (`POST /bookings`, switched
+  from the static `rbac.requireFeature` to the panel-backed `featureGate` one). It is
+  **deny-by-default**, so disabling it in the panel returns `403` on browse + booking
+  (including the formerly-public advisor directory). **Operator** endpoints (an
+  approved advisor setting availability / accepting bookings) and **admin/manager**
+  approval endpoints are deliberately left on their `requireRole` guards, NOT gated by
+  `bookAdvisor` — otherwise disabling the module would lock advisors out of their own
+  workspace and managers out of approvals. The `GET /advisors/:id` catch-all is also
+  left ungated because it doubles as the self-profile lookup (`/advisors/me`).
+
+**2. Mount-level allowlist (`ENABLED_MODULES`) — deploy-time gating for regulated
+integrations.** Use for a router that should not even be *mounted* until its phase
+ships. Currently only the **Account Aggregator** (`/aa`, Setu/RBI, Phase 5) is gated
+this way in [`src/routes/index.ts`](backend/src/routes/index.ts): with the env var
+unset (the production default) `/aa` returns `404`. The integration suite opts it in
+via `tests/setup.ts`.
 
 ```bash
-# Production (manual MVP): leave it unset → advisor/payments/aa are 404.
-# Local development of a later phase:
-ENABLED_MODULES=advisor,payments,aa
+# Production (manual MVP): leave ENABLED_MODULES unset → /aa is 404.
+# Local development of the AA phase:
+ENABLED_MODULES=aa
 ```
-
-The integration test suite opts these in automatically (`tests/setup.ts`) so the
-advisor/payments/AA suites keep running. When a phase is ready to ship, add its key
-to `ENABLED_MODULES` in that environment (and, for fine-grained per-role/per-feature
-control, wire `requireFeature` into the router so the admin panel governs it too).
 
 ---
 

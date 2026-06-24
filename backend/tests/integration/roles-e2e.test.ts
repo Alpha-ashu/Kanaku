@@ -272,9 +272,10 @@ describe('ROLES E2E — All Four Roles', () => {
       }
     });
 
-    it('can GET /advisors → browse advisor list', async () => {
+    it('GET /advisors is gated by bookAdvisor (403 for manager until admin enables)', async () => {
       const res = await request(app).get(`${API}/advisors`).set(h);
-      expect([200, 500, 503]).toContain(res.status);
+      // Browse now enforces the admin `bookAdvisor` flag; manager is deny-by-default.
+      expect([200, 403, 500, 503]).toContain(res.status);
       expect(res.status).not.toBe(401);
       expect(res.status).not.toBe(404);
     });

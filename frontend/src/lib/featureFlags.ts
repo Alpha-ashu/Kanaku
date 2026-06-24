@@ -13,6 +13,7 @@ export type FeatureKey =
   | 'transfer'
   | 'taxCalculator'
   | 'bookAdvisor'
+  | 'payments'
   | 'adminPanel'
   | 'managerPanel'
   | 'advisorPanel'
@@ -40,6 +41,7 @@ export interface FeatureVisibility extends Record<FeatureKey, boolean> {
   transfer: boolean;
   taxCalculator: boolean;
   bookAdvisor: boolean;
+  payments: boolean;
   adminPanel: boolean;
   managerPanel: boolean;
   advisorPanel: boolean;
@@ -68,6 +70,7 @@ const DEFAULT_FEATURES: FeatureVisibility = {
   transfer: true,
   taxCalculator: true,
   bookAdvisor: true,
+  payments: true,
   adminPanel: true,
   managerPanel: true,
   advisorPanel: true,
@@ -107,6 +110,7 @@ export const ROLE_FEATURES: Record<UserRole, FeatureVisibility> = {
     transfer: true,
     taxCalculator: true,
     bookAdvisor: true,
+    payments: true,
     adminPanel: true,
     managerPanel: true,
     advisorPanel: false,
@@ -138,6 +142,7 @@ export const ROLE_FEATURES: Record<UserRole, FeatureVisibility> = {
     transfer: false,
     taxCalculator: false,
     bookAdvisor: false,
+    payments: false,
     adminPanel: false,
     managerPanel: true,   // structural — manager workspace
     advisorPanel: false,
@@ -165,6 +170,7 @@ export const ROLE_FEATURES: Record<UserRole, FeatureVisibility> = {
     transfer: false,
     taxCalculator: false,
     bookAdvisor: false,
+    payments: false,
     adminPanel: false,
     managerPanel: false,
     advisorPanel: true,   // structural — advisor workspace
@@ -192,6 +198,7 @@ export const ROLE_FEATURES: Record<UserRole, FeatureVisibility> = {
     transfer: false,
     taxCalculator: false,
     bookAdvisor: false,
+    payments: false,
     adminPanel: false,
     managerPanel: false,
     advisorPanel: false,

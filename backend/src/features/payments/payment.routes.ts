@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { authMiddleware } from '../../middleware/auth';
+import { requireFeature } from '../../middleware/featureGate';
 import { validateBody } from '../../middleware/validate';
 import * as PaymentController from './payment.controller';
 import {
@@ -16,6 +17,12 @@ router.post('/webhook', PaymentController.handleWebhook);
 
 // Protected routes
 router.use(authMiddleware);
+
+// Whole module is governed by the admin feature flag `payments`. When the admin
+// has it disabled (the default — Phase 4 is deferred), every authenticated
+// payment endpoint returns 403, not just the UI being hidden. The public webhook
+// above is intentionally exempt so providers can still post settlement events.
+router.use(requireFeature('payments'));
 
 // Get payments
 router.get('/', PaymentController.getPayments);
