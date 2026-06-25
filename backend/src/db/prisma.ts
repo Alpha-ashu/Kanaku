@@ -5,6 +5,24 @@ config();
 
 import { PrismaClient } from './prisma-client';
 import { logger } from '../config/logger';
+import { getRequestActor } from '../middleware/requestContext';
+import { redact } from '../utils/redact';
+
+// ── Audit interceptor config ────────────────────────────────────────────────
+// Every create/update/delete on these (financial) models is recorded in the
+// AuditLog table — covering ALL write paths (API, sync, scripts), not just
+// controllers. Append-only immutability is enforced at the DB level
+// (see backend/scripts/harden-financial-constraints.sql).
+const AUDIT_MODELS = new Set([
+  'Account', 'Transaction', 'Loan', 'LoanPayment', 'Goal', 'GoalContribution',
+  'GoalMember', 'Investment', 'GoldAsset', 'Budget', 'GroupExpense',
+  'GroupExpenseMember', 'RecurringTransaction',
+]);
+const WRITE_OPS = new Set(['create', 'update', 'delete', 'upsert', 'createMany', 'updateMany', 'deleteMany']);
+const BULK_OPS = new Set(['createMany', 'updateMany', 'deleteMany']);
+const lcFirst = (s: string) => s.charAt(0).toLowerCase() + s.slice(1);
+const auditAction = (op: string) =>
+  op.startsWith('create') ? 'data.create' : op.startsWith('delete') ? 'data.delete' : 'data.update';
 
 const QUERY_TIMEOUT_MS = 30_000;
 const SLOW_QUERY_MS    = 2_000;
@@ -13,7 +31,7 @@ const SLOW_QUERY_MS    = 2_000;
 // Falls back to DATABASE_URL if not configured (e.g. local dev).
 const READ_REPLICA_URL = process.env.READ_REPLICA_URL;
 
-function buildClient(datasourceUrl?: string): PrismaClient {
+function buildClient(datasourceUrl?: string, opts?: { audit?: boolean }): PrismaClient {
   const base = new PrismaClient({
     log: [
       { emit: 'event', level: 'warn'  },
@@ -26,7 +44,7 @@ function buildClient(datasourceUrl?: string): PrismaClient {
   (base as any).$on('error', (e: any) => logger.error('[Prisma]', e));
 
   // Query timeout + slow-query logging via $extends (Prisma v5+)
-  return base.$extends({
+  const timed = base.$extends({
     query: {
       $allModels: {
         async $allOperations({ args, query }: { args: any; query: (args: any) => Promise<any> }) {
@@ -46,14 +64,68 @@ function buildClient(datasourceUrl?: string): PrismaClient {
         },
       },
     },
-  }) as unknown as PrismaClient;
+  });
+
+  if (!opts?.audit) return timed as unknown as PrismaClient;
+
+  // Audit interceptor — records every financial mutation. Best-effort: a failed
+  // audit write is logged but never blocks the user operation. `timed` (the
+  // pre-audit client) is used for the before-read and the AuditLog insert so the
+  // audit path can never recurse through this interceptor.
+  const audited = timed.$extends({
+    query: {
+      $allModels: {
+        async $allOperations(
+          { model, operation, args, query }:
+          { model?: string; operation: string; args: any; query: (args: any) => Promise<any> },
+        ) {
+          if (!model || !AUDIT_MODELS.has(model) || !WRITE_OPS.has(operation)) return query(args);
+
+          let before: unknown;
+          if ((operation === 'update' || operation === 'delete' || operation === 'upsert') && args?.where) {
+            try { before = await (timed as any)[lcFirst(model)].findFirst({ where: args.where }); } catch { /* ignore */ }
+          }
+
+          const result = await query(args);
+
+          try {
+            const actor = getRequestActor();
+            const bulk = BULK_OPS.has(operation);
+            const resourceId = !bulk ? ((result as any)?.id ?? args?.where?.id ?? null) : null;
+            await (timed as any).auditLog.create({
+              data: {
+                userId: actor.userId ?? 'system',
+                action: auditAction(operation),
+                resource: resourceId ? `${model}:${resourceId}` : model,
+                status: 'success',
+                ip: actor.ip ?? null,
+                userAgent: actor.userAgent ?? null,
+                // JSON round-trip first: Prisma Decimal/Date values are not valid
+                // inputs for a Json column and would make auditLog.create throw.
+                details: redact(JSON.parse(JSON.stringify({
+                  model, operation,
+                  before: before ?? null,
+                  after: bulk ? { count: (result as any)?.count } : result,
+                }))) as any,
+              },
+            });
+          } catch (e) {
+            logger.warn('[audit] mutation audit failed', { model, operation, error: e instanceof Error ? e.message : String(e) });
+          }
+          return result;
+        },
+      },
+    },
+  });
+
+  return audited as unknown as PrismaClient;
 }
 
 // Write client — always hits primary DB
 let _writer: PrismaClient | null = null;
 const getWriteClient = (): PrismaClient => {
   if (!_writer) {
-    try { _writer = buildClient(); }
+    try { _writer = buildClient(undefined, { audit: true }); }
     catch (err) { logger.error('[Prisma] Failed to init write client:', err); throw err; }
   }
   return _writer;
