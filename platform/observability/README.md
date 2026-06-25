@@ -28,5 +28,54 @@ Prometheus exposition at `GET /metrics` on **port 9091** (the Fly `[[metrics]]` 
 - `api-dashboard.json` — request volume, error rate, latency p50/p95/p99, uptime.
 - `worker-dashboard.json` — drain rate, failures, queue depth, drain latency, uptime.
 - `notification-dashboard.json` — deliveries by channel/status, success rate, outcomes, pending.
+- `audit-dashboard.json` — audit volume/actions/actors/failures + search by actor/requestId (queries the immutable `AuditLog` via Postgres).
 
-Each has a `datasource` template variable — pick your Prometheus datasource on import.
+Each Prometheus dashboard has a `datasource` template variable — pick your datasource on import.
+
+---
+
+# Phase 4 — Centralized observability (config-as-code)
+
+Stack = **Loki** (log store) + **Grafana** (dashboards/alerts) + **Vector log-shipper**
+(the Fly-native Promtail). Metrics come from **Fly's managed Prometheus**, which
+already scrapes `/metrics:9091` on both machines.
+
+```
+app + worker (stdout Pino JSON) → Fly log stream → Vector → Loki ┐
+                                                                 ├→ Grafana ← dashboards + alerts
+Fly Prometheus (scrapes /metrics:9091) ───────────────────────── ┘
+AuditLog table (Postgres, read-only) ──────────────────────────── ┘ (Audit dashboard)
+```
+
+## Files
+- `loki/loki-config.yaml` — single-binary Loki, 14-day retention, compactor (bounded storage).
+- `log-shipper/vector.toml` — Fly NATS log stream → Loki; **low-cardinality labels only** (`app`,`service`,`level`).
+- `grafana/provisioning/` — datasources (Loki, Fly Prometheus, AuditDB), dashboard provider, **alert rules**.
+- `docker-compose.observability.yml` — runs the stack (local: `loki`+`grafana`; Fly: + `log-shipper`).
+
+## Deploy options (host decided later)
+- **Self-hosted on Fly (Machine 3):** new `kanaku-observability` app from the compose; add a volume for `loki-data`; deploy `fly-log-shipper` with `ORG`/`ACCESS_TOKEN`/`LOKI_URL`.
+- **Grafana Cloud:** run only the `log-shipper` with `LOKI_URL`→Cloud + `LOKI_USER`/`LOKI_PASSWORD`; import the dashboards into hosted Grafana.
+
+## Log search (LogQL) — request IDs / users / entities are CONTENT, not labels
+```logql
+{app="kanaku"} | json | requestId="req-7f3a9c21"      # by Request ID (end-to-end)
+{app="kanaku"} | json | userId="u_123"                  # by User
+{app="kanaku", service="worker"} | json | resource=~"Account:.*"   # by Entity
+{app="kanaku", level="error"} | json                    # all errors
+{app="kanaku"} |= "[AUDIT]" | json | action="auth.login"          # audit events
+```
+Labels stay low-cardinality (`app`,`service`,`level`); high-cardinality fields are filtered from the JSON body — so Loki streams never explode.
+
+## Alerts (`grafana/provisioning/alerting/alert-rules.yaml`)
+| Alert | Fires when |
+|---|---|
+| Worker stopped | no outbox drains in 5m |
+| Outbox backlog growing | queue depth > 100 for 10m |
+| Notification failures | failed deliveries > 0.1/s for 10m |
+| High API error rate | 5xx share > 5% for 5m |
+| Health check / target down | `up{app="kanaku"}` < 1 for 3m |
+
+Wire a contact point (Slack/email/PagerDuty) + notification policy at deploy time — the destination is environment-specific.
+
+> Note: financial-mutation audits live in the `AuditLog` table (interceptor, DB-only); the Audit dashboard reads them via the read-only `AuditDB` datasource. Event audits (`audit()`) also appear in Loki as `[AUDIT]` lines.

@@ -1,0 +1,112 @@
+apiVersion: 1
+
+# Grafana unified-alerting rules (Grafana 10+). Each rule: A = metric/log query,
+# B = reduce(last), C = threshold condition. Targets the Fly Prometheus + Loki
+# datasources provisioned alongside. Wire a contact point (Slack/email/PagerDuty)
+# under Alerting → Contact points, then a notification policy — left to ops since
+# the destination is environment-specific.
+groups:
+  - orgId: 1
+    name: kanaku-critical
+    folder: KANAKU
+    interval: 1m
+    rules:
+      # 1) Worker stopped — no outbox drains in 5m (the drainer ticks every ~15s).
+      - uid: kanaku-worker-stopped
+        title: Worker stopped (no outbox drains)
+        condition: C
+        for: 5m
+        labels: { severity: critical, service: worker }
+        annotations:
+          summary: "Worker has not drained the outbox in 5 minutes — process down or stuck."
+        data:
+          - refId: A
+            datasourceUid: prometheus
+            relativeTimeRange: { from: 600, to: 0 }
+            model: { expr: "sum(increase(kanaku_outbox_drains_total{service=\"worker\"}[5m]))", instant: true, refId: A }
+          - refId: B
+            datasourceUid: __expr__
+            model: { type: reduce, reducer: last, expression: A, refId: B }
+          - refId: C
+            datasourceUid: __expr__
+            model: { type: threshold, expression: B, refId: C, conditions: [ { evaluator: { type: lt, params: [1] } } ] }
+
+      # 2) Outbox backlog growing — pending/retrying depth high for 10m.
+      - uid: kanaku-outbox-backlog
+        title: Outbox backlog growing
+        condition: C
+        for: 10m
+        labels: { severity: warning, service: worker }
+        annotations:
+          summary: "Outbox queue depth > 100 for 10m — deliveries falling behind."
+        data:
+          - refId: A
+            datasourceUid: prometheus
+            relativeTimeRange: { from: 600, to: 0 }
+            model: { expr: "max(kanaku_outbox_queue_depth)", instant: true, refId: A }
+          - refId: B
+            datasourceUid: __expr__
+            model: { type: reduce, reducer: last, expression: A, refId: B }
+          - refId: C
+            datasourceUid: __expr__
+            model: { type: threshold, expression: B, refId: C, conditions: [ { evaluator: { type: gt, params: [100] } } ] }
+
+      # 3) Notification failures — any sustained failed deliveries.
+      - uid: kanaku-notification-failures
+        title: Notification delivery failures
+        condition: C
+        for: 10m
+        labels: { severity: warning, service: worker }
+        annotations:
+          summary: "Notifications failing to deliver (>0.1/s over 10m)."
+        data:
+          - refId: A
+            datasourceUid: prometheus
+            relativeTimeRange: { from: 600, to: 0 }
+            model: { expr: "sum(rate(kanaku_notification_deliveries_total{status=\"failed\"}[10m]))", instant: true, refId: A }
+          - refId: B
+            datasourceUid: __expr__
+            model: { type: reduce, reducer: last, expression: A, refId: B }
+          - refId: C
+            datasourceUid: __expr__
+            model: { type: threshold, expression: B, refId: C, conditions: [ { evaluator: { type: gt, params: [0.1] } } ] }
+
+      # 4) High API error rate — 5xx share > 5% over 5m.
+      - uid: kanaku-api-error-rate
+        title: High API error rate (5xx)
+        condition: C
+        for: 5m
+        labels: { severity: critical, service: api }
+        annotations:
+          summary: "API 5xx error rate > 5% for 5m."
+        data:
+          - refId: A
+            datasourceUid: prometheus
+            relativeTimeRange: { from: 300, to: 0 }
+            model: { expr: "100 * sum(rate(kanaku_http_requests_total{service=\"api\",status_class=\"5xx\"}[5m])) / clamp_min(sum(rate(kanaku_http_requests_total{service=\"api\"}[5m])), 1)", instant: true, refId: A }
+          - refId: B
+            datasourceUid: __expr__
+            model: { type: reduce, reducer: last, expression: A, refId: B }
+          - refId: C
+            datasourceUid: __expr__
+            model: { type: threshold, expression: B, refId: C, conditions: [ { evaluator: { type: gt, params: [5] } } ] }
+
+      # 5) Health-check failure — a Fly metrics target is down (scrape failing).
+      - uid: kanaku-target-down
+        title: Health check / target down
+        condition: C
+        for: 3m
+        labels: { severity: critical }
+        annotations:
+          summary: "A kanaku process is not being scraped (up == 0) — likely unhealthy/down."
+        data:
+          - refId: A
+            datasourceUid: prometheus
+            relativeTimeRange: { from: 300, to: 0 }
+            model: { expr: "min(up{app=\"kanaku\"})", instant: true, refId: A }
+          - refId: B
+            datasourceUid: __expr__
+            model: { type: reduce, reducer: last, expression: A, refId: B }
+          - refId: C
+            datasourceUid: __expr__
+            model: { type: threshold, expression: B, refId: C, conditions: [ { evaluator: { type: lt, params: [1] } } ] }

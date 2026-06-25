@@ -1,0 +1,59 @@
+{
+  "title": "KANAKU — Audit Trail",
+  "uid": "kanaku-audit",
+  "tags": ["kanaku", "audit"],
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "1m",
+  "time": { "from": "now-24h", "to": "now" },
+  "templating": {
+    "list": [
+      { "name": "ds", "type": "datasource", "query": "postgres", "label": "Audit DB", "current": {} },
+      { "name": "actor", "type": "textbox", "label": "Actor (userId)", "current": { "value": "" } },
+      { "name": "reqid", "type": "textbox", "label": "Request ID", "current": { "value": "" } }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1, "type": "timeseries", "title": "Audit events over time",
+      "gridPos": { "h": 7, "w": 16, "x": 0, "y": 0 },
+      "datasource": { "type": "postgres", "uid": "${ds}" },
+      "targets": [
+        { "format": "time_series", "rawSql": "SELECT $__timeGroupAlias(\"createdAt\", '1h'), action AS metric, count(*) AS value FROM \"AuditLog\" WHERE $__timeFilter(\"createdAt\") GROUP BY 1, action ORDER BY 1" }
+      ]
+    },
+    {
+      "id": 2, "type": "stat", "title": "Failures (selected range)",
+      "gridPos": { "h": 7, "w": 8, "x": 16, "y": 0 },
+      "datasource": { "type": "postgres", "uid": "${ds}" },
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "steps": [ { "color": "green", "value": null }, { "color": "red", "value": 1 } ] } }, "overrides": [] },
+      "targets": [
+        { "format": "table", "rawSql": "SELECT count(*) AS failures FROM \"AuditLog\" WHERE status = 'failure' AND $__timeFilter(\"createdAt\")" }
+      ]
+    },
+    {
+      "id": 3, "type": "barchart", "title": "Top actions",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 7 },
+      "datasource": { "type": "postgres", "uid": "${ds}" },
+      "targets": [
+        { "format": "table", "rawSql": "SELECT action, count(*) AS count FROM \"AuditLog\" WHERE $__timeFilter(\"createdAt\") GROUP BY action ORDER BY count DESC LIMIT 20" }
+      ]
+    },
+    {
+      "id": 4, "type": "barchart", "title": "Top actors (userId)",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 7 },
+      "datasource": { "type": "postgres", "uid": "${ds}" },
+      "targets": [
+        { "format": "table", "rawSql": "SELECT \"userId\", count(*) AS count FROM \"AuditLog\" WHERE $__timeFilter(\"createdAt\") GROUP BY \"userId\" ORDER BY count DESC LIMIT 20" }
+      ]
+    },
+    {
+      "id": 5, "type": "table", "title": "Audit records — search by actor / request ID (filters above)",
+      "gridPos": { "h": 11, "w": 24, "x": 0, "y": 15 },
+      "datasource": { "type": "postgres", "uid": "${ds}" },
+      "targets": [
+        { "format": "table", "rawSql": "SELECT \"createdAt\", \"userId\" AS actor, action, resource, status, \"requestId\", ip FROM \"AuditLog\" WHERE $__timeFilter(\"createdAt\") AND (''='${actor}' OR \"userId\" = '${actor}') AND (''='${reqid}' OR \"requestId\" = '${reqid}') ORDER BY \"createdAt\" DESC LIMIT 200" }
+      ]
+    }
+  ]
+}

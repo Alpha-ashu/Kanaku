@@ -1,0 +1,58 @@
+# Vector — Fly log stream → Loki (Phase 4 log shipping; the Fly-native Promtail).
+#
+# Reads ALL kanaku app + worker logs (Pino JSON on stdout) from Fly's internal
+# NATS log stream and ships them to Loki. Deploy as a small Fly machine using the
+# `ghcr.io/superfly/fly-log-shipper` image (which bundles Vector), or run Vector
+# directly. The SAME config targets self-hosted Loki OR Grafana Cloud — only
+# LOKI_URL (+ basic auth for Cloud) changes.
+#
+# Required env:
+#   ORG          Fly org slug (NATS user)
+#   ACCESS_TOKEN Fly API token, read-only (NATS password) — set via `fly secrets`
+#   LOKI_URL     e.g. http://kanaku-observability.internal:3100  (self-hosted)
+#                 or  https://logs-prod-xxx.grafana.net          (Grafana Cloud)
+#   LOKI_USER / LOKI_PASSWORD  (Grafana Cloud only — uncomment the auth block)
+
+[sources.fly]
+type = "nats"
+url = "nats://[fdaa::3]:4223"
+subject = "logs.>"
+queue = "kanaku-log-shipper"
+connection_name = "kanaku-log-shipper"
+auth.strategy = "user_password"
+auth.user_password.user = "${ORG}"
+auth.user_password.password = "${ACCESS_TOKEN}"
+
+# Unwrap the Fly envelope and hoist our Pino JSON fields to the top level so
+# `service`/`level` become Loki labels and requestId/userId stay queryable.
+[transforms.parse]
+type = "remap"
+inputs = ["fly"]
+source = '''
+parsed, err = parse_json(string!(.message))
+if err == null {
+  . = merge(., object!(parsed))
+}
+.service = .service || "unknown"
+.level = .level || "info"
+'''
+
+[sinks.loki]
+type = "loki"
+inputs = ["parse"]
+endpoint = "${LOKI_URL}"
+encoding.codec = "json"
+out_of_order_action = "accept"
+# ── Cardinality discipline ───────────────────────────────────────────────────
+# LOW-cardinality labels ONLY. requestId / userId / entityId are searched as JSON
+# CONTENT via LogQL (| json | requestId="…") — never as labels, which would
+# explode Loki streams. This mirrors the metrics rule from Phase 3.
+labels.app = "kanaku"
+labels.service = "{{ service }}"
+labels.level = "{{ level }}"
+
+# Grafana Cloud only — uncomment and set LOKI_USER/LOKI_PASSWORD:
+# [sinks.loki.auth]
+# strategy = "basic"
+# user = "${LOKI_USER}"
+# password = "${LOKI_PASSWORD}"

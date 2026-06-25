@@ -1,0 +1,15 @@
+apiVersion: 1
+
+# Auto-load the dashboard JSONs (the Phase 3 API/Worker/Notification dashboards +
+# the Phase 4 Audit dashboard) from a mounted directory.
+providers:
+  - name: kanaku
+    orgId: 1
+    folder: KANAKU
+    type: file
+    disableDeletion: false
+    allowUiUpdates: true
+    updateIntervalSeconds: 30
+    options:
+      path: /var/lib/grafana/dashboards
+      foldersFromFilesStructure: false
