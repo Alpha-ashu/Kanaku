@@ -1,0 +1,53 @@
+# Centralized observability stack (Phase 4) — Loki + Grafana + Vector log-shipper.
+#
+#   Local (Loki + Grafana dev/dashboards):
+#     docker compose -f platform/observability/docker-compose.observability.yml up loki grafana
+#   Self-hosted on Fly ("Machine 3"): adapt this into the kanaku-observability app.
+#   Grafana Cloud: run ONLY `log-shipper` with LOKI_URL → Cloud; skip loki+grafana.
+#
+# NOTE: `log-shipper` reads Fly's internal NATS log stream and therefore only
+# works when running ON Fly (6PN network). Locally, run loki+grafana only.
+services:
+  loki:
+    image: grafana/loki:3.1.1
+    command: -config.file=/etc/loki/loki-config.yaml
+    ports: ["3100:3100"]
+    volumes:
+      - ./loki/loki-config.yaml:/etc/loki/loki-config.yaml:ro
+      - loki-data:/loki
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    ports: ["3001:3000"]
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      LOKI_URL: http://loki:3100
+      PROMETHEUS_URL: ${PROMETHEUS_URL:-https://api.fly.io/prometheus/personal}
+      FLY_PROMETHEUS_TOKEN: ${FLY_PROMETHEUS_TOKEN:-}
+      # No AUDIT_DB_* — Grafana has NO connection to the production database.
+      # Audit visibility comes from the [AUDIT] log stream via Loki.
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./dashboards:/var/lib/grafana/dashboards:ro
+      - grafana-data:/var/lib/grafana
+    depends_on: [loki]
+    restart: unless-stopped
+
+  # Fly-only: ships ALL kanaku app+worker logs (Pino JSON on stdout) → Loki.
+  log-shipper:
+    image: ghcr.io/superfly/fly-log-shipper:latest
+    environment:
+      ORG: ${FLY_ORG:-personal}
+      ACCESS_TOKEN: ${FLY_ACCESS_TOKEN:-}
+      LOKI_URL: ${LOKI_URL:-http://loki:3100}
+    volumes:
+      - ./log-shipper/vector.toml:/etc/vector/vector.toml:ro
+    depends_on: [loki]
+    restart: unless-stopped
+
+volumes:
+  loki-data:
+  grafana-data:

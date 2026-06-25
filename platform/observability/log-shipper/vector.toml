@@ -1,0 +1,61 @@
+# Vector — Fly log stream → Loki (Phase 4 log shipping; the Fly-native Promtail).
+#
+# Reads ALL kanaku app + worker logs (Pino JSON on stdout) from Fly's internal
+# NATS log stream and ships them to Loki. Deploy as a small Fly machine using the
+# `ghcr.io/superfly/fly-log-shipper` image (which bundles Vector), or run Vector
+# directly. The SAME config targets self-hosted Loki OR Grafana Cloud — only
+# LOKI_URL (+ basic auth for Cloud) changes.
+#
+# Required env:
+#   ORG          Fly org slug (NATS user)
+#   ACCESS_TOKEN Fly API token, read-only (NATS password) — set via `fly secrets`
+#   LOKI_URL     e.g. http://kanaku-observability.internal:3100  (self-hosted)
+#                 or  https://logs-prod-xxx.grafana.net          (Grafana Cloud)
+#   LOKI_USER / LOKI_PASSWORD  (Grafana Cloud only — uncomment the auth block)
+
+[sources.fly]
+type = "nats"
+url = "nats://[fdaa::3]:4223"
+subject = "logs.>"
+queue = "kanaku-log-shipper"
+connection_name = "kanaku-log-shipper"
+auth.strategy = "user_password"
+auth.user_password.user = "${ORG}"
+auth.user_password.password = "${ACCESS_TOKEN}"
+
+# Unwrap the Fly envelope and hoist our Pino JSON fields to the top level so
+# `service`/`level` become Loki labels and requestId/userId stay queryable.
+[transforms.parse]
+type = "remap"
+inputs = ["fly"]
+source = '''
+# 1) The NATS payload is the Fly log ENVELOPE (JSON): { fly, host, message, ... }.
+env, e1 = parse_json(string!(.message))
+if e1 == null { . = merge(., object!(env)) }
+# 2) .message is now the app's PINO JSON line (a string) — parse it and hoist its
+#    fields (service, level, requestId, message, timestamp, ...) to the top so the
+#    Loki labels resolve and `| json` extracts requestId at query time.
+app, e2 = parse_json(string!(.message))
+if e2 == null { . = merge(., object!(app)) }
+.service = .service || "unknown"
+.level = .level || "info"
+'''
+
+[sinks.loki]
+type = "loki"
+inputs = ["parse"]
+endpoint = "${LOKI_URL}"
+encoding.codec = "json"
+out_of_order_action = "accept"
+# ── Cardinality discipline ───────────────────────────────────────────────────
+# LOW-cardinality labels ONLY. requestId / userId / entityId are searched as JSON
+# CONTENT via LogQL (| json | requestId="…") — never as labels, which would
+# explode Loki streams. This mirrors the metrics rule from Phase 3.
+labels.app = "{{ fly.app.name }}"
+labels.service = "{{ service }}"
+labels.level = "{{ level }}"
+
+# Grafana Cloud only: add a [sinks.loki.auth] block (strategy = basic, with your
+# Cloud user/key). Omitted for self-hosted Loki (no auth). NOTE: Vector resolves
+# every dollar-brace reference in this file (even in comments), so do NOT leave
+# unset placeholders here — add real auth env vars when you switch to Cloud.

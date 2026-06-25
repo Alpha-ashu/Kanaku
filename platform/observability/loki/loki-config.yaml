@@ -1,0 +1,59 @@
+# Loki — single-binary, filesystem storage (Phase 4 centralized logging).
+# Host-portable: runs the same locally (docker-compose) or on a Fly "Machine 3".
+# For Grafana Cloud you would NOT run this — you'd point Vector at the Cloud Loki
+# push URL instead (see README).
+auth_enabled: false
+
+server:
+  http_listen_port: 3100
+  grpc_listen_port: 9095
+  log_level: info
+
+common:
+  instance_addr: 127.0.0.1
+  path_prefix: /loki
+  storage:
+    filesystem:
+      chunks_directory: /loki/chunks
+      rules_directory: /loki/rules
+  replication_factor: 1
+  ring:
+    kvstore:
+      store: inmemory
+
+schema_config:
+  configs:
+    - from: 2024-01-01
+      store: tsdb
+      object_store: filesystem
+      schema: v13
+      index:
+        prefix: index_
+        period: 24h
+
+limits_config:
+  # Centralized retention is intentionally longer than the on-box app-log file
+  # retention (3 days): this is the searchable archive. Tune via the compactor.
+  retention_period: 336h        # 14 days
+  reject_old_samples: true
+  reject_old_samples_max_age: 168h
+  max_query_series: 5000
+  allow_structured_metadata: true
+
+# Compactor enforces retention (deletes chunks older than retention_period) so the
+# Loki volume cannot grow without bound.
+compactor:
+  working_directory: /loki/compactor
+  retention_enabled: true
+  delete_request_store: filesystem
+  compaction_interval: 10m
+
+# Ruler evaluates LogQL alert rules (log-based alerts, e.g. error spikes) and can
+# forward to Alertmanager/Grafana. Metric-based alerts live in Grafana (see alerting/).
+ruler:
+  storage:
+    type: local
+    local:
+      directory: /loki/rules
+  rule_path: /loki/rules-temp
+  enable_api: true
