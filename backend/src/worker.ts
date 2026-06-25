@@ -24,7 +24,7 @@ import { startCleanupWorker, stopCleanupWorker } from './workers/cleanup.worker'
 import { getWorkerHealth } from './workers/health';
 import { renderMetrics, metricsContentType } from './config/metrics';
 
-logger.info('Worker starting', { service: 'worker' });
+logger.info('Worker starting');
 
 // ── Internal health + metrics server ─────────────────────────────────────────
 // Liveness/health AND Prometheus metrics for the worker. Bound to the Fly private
@@ -50,7 +50,7 @@ const healthServer = http.createServer((req, res) => {
   res.end(JSON.stringify({ error: 'not_found' }));
 });
 healthServer.listen(HEALTH_PORT, () => {
-  logger.info(`Worker health + metrics server listening on :${HEALTH_PORT}`, { service: 'worker' });
+  logger.info(`Worker health + metrics server listening on :${HEALTH_PORT}`);
 });
 
 void initRedis();
@@ -67,13 +67,13 @@ try {
 startAIBackgroundJobs();
 startCleanupWorker();
 
-logger.info('Worker ready — background jobs running', { service: 'worker' });
+logger.info('Worker ready — background jobs running');
 
 let shuttingDown = false;
 const shutdown = async (signal: string) => {
   if (shuttingDown) return;
   shuttingDown = true;
-  logger.info(`Received ${signal}. Shutting down worker...`, { service: 'worker' });
+  logger.info(`Received ${signal}. Shutting down worker...`);
 
   stopAIBackgroundJobs();
   stopCleanupWorker();
@@ -100,7 +100,6 @@ process.on('SIGTERM', () => {
 // so a fresh instance starts).
 process.on('unhandledRejection', (reason: unknown) => {
   logger.error('Unhandled promise rejection', {
-    service: 'worker',
     reason: reason instanceof Error ? reason.message : String(reason),
     stack: reason instanceof Error ? reason.stack : undefined,
   });
@@ -108,7 +107,6 @@ process.on('unhandledRejection', (reason: unknown) => {
 
 process.on('uncaughtException', (error: Error) => {
   logger.error('Uncaught exception — shutting down worker', {
-    service: 'worker',
     message: error.message,
     stack: error.stack,
   });
