@@ -1,0 +1,53 @@
+{
+  "title": "KANAKU — API",
+  "uid": "kanaku-api",
+  "tags": ["kanaku", "api"],
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "30s",
+  "time": { "from": "now-6h", "to": "now" },
+  "templating": {
+    "list": [
+      { "name": "datasource", "type": "datasource", "query": "prometheus", "label": "Datasource", "current": {} }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1, "type": "timeseries", "title": "Request volume (req/s by route)",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(kanaku_http_requests_total{service=\"api\"}[5m])) by (route)", "legendFormat": "{{route}}" }
+      ]
+    },
+    {
+      "id": 2, "type": "timeseries", "title": "Error rate (5xx %)",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "unit": "percent" }, "overrides": [] },
+      "targets": [
+        { "expr": "100 * sum(rate(kanaku_http_requests_total{service=\"api\",status_class=\"5xx\"}[5m])) / clamp_min(sum(rate(kanaku_http_requests_total{service=\"api\"}[5m])), 1)", "legendFormat": "5xx %" }
+      ]
+    },
+    {
+      "id": 3, "type": "timeseries", "title": "Latency p50 / p95 / p99 (s)",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum(rate(kanaku_http_request_duration_seconds_bucket{service=\"api\"}[5m])) by (le))", "legendFormat": "p50" },
+        { "expr": "histogram_quantile(0.95, sum(rate(kanaku_http_request_duration_seconds_bucket{service=\"api\"}[5m])) by (le))", "legendFormat": "p95" },
+        { "expr": "histogram_quantile(0.99, sum(rate(kanaku_http_request_duration_seconds_bucket{service=\"api\"}[5m])) by (le))", "legendFormat": "p99" }
+      ]
+    },
+    {
+      "id": 4, "type": "stat", "title": "API health (uptime)",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] },
+      "targets": [
+        { "expr": "time() - process_start_time_seconds{service=\"api\"}", "legendFormat": "uptime" }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "title": "KANAKU — Notifications",
+  "uid": "kanaku-notifications",
+  "tags": ["kanaku", "notifications"],
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "30s",
+  "time": { "from": "now-6h", "to": "now" },
+  "templating": {
+    "list": [
+      { "name": "datasource", "type": "datasource", "query": "prometheus", "label": "Datasource", "current": {} }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1, "type": "timeseries", "title": "Deliveries by channel & status (per s)",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(kanaku_notification_deliveries_total[5m])) by (channel, status)", "legendFormat": "{{channel}} {{status}}" }
+      ]
+    },
+    {
+      "id": 2, "type": "timeseries", "title": "Delivery success rate (%) by channel",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "unit": "percent" }, "overrides": [] },
+      "targets": [
+        { "expr": "100 * sum(rate(kanaku_notification_deliveries_total{status=\"sent\"}[5m])) by (channel) / clamp_min(sum(rate(kanaku_notification_deliveries_total[5m])) by (channel), 1)", "legendFormat": "{{channel}} success %" }
+      ]
+    },
+    {
+      "id": 3, "type": "timeseries", "title": "Notification outcomes (sent / failed / retried per s)",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(kanaku_notification_outcomes_total[5m])) by (outcome)", "legendFormat": "{{outcome}}" }
+      ]
+    },
+    {
+      "id": 4, "type": "stat", "title": "Pending (queue depth)",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "max(kanaku_outbox_queue_depth)", "legendFormat": "pending" }
+      ]
+    }
+  ]
+}

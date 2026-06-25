@@ -22,16 +22,17 @@ import { startAIBackgroundJobs, stopAIBackgroundJobs } from './features/ai/ai.en
 import { startNotificationOutbox, stopNotificationOutbox } from './workers/index';
 import { startCleanupWorker, stopCleanupWorker } from './workers/cleanup.worker';
 import { getWorkerHealth } from './workers/health';
+import { renderMetrics, metricsContentType } from './config/metrics';
 
 logger.info('Worker starting', { service: 'worker' });
 
-// ── Internal health server ───────────────────────────────────────────────────
-// Liveness/health for the worker. Bound to the Fly private network only — NOT
-// declared under any [http_service]/[[services]] in fly.toml, so it is not
-// publicly routable (the worker stays free of public endpoints). Fly's machine
-// health check (fly.toml `[checks]`) probes /health and restarts the machine if
-// the outbox stops draining. `GET /health` → 200 (ok|starting) | 503 (stale).
-const HEALTH_PORT = Number(process.env.WORKER_HEALTH_PORT || 9090);
+// ── Internal health + metrics server ─────────────────────────────────────────
+// Liveness/health AND Prometheus metrics for the worker. Bound to the Fly private
+// network only (port 9091 = the fly.toml `[[metrics]]` port) — NOT declared under
+// any [http_service]/[[services]], so it is not publicly routable (the worker
+// stays free of public endpoints). Fly's machine check (`[checks]`) probes
+// /health (→ 200 ok|starting / 503 stale) and Fly scrapes /metrics.
+const HEALTH_PORT = Number(process.env.WORKER_HEALTH_PORT || 9091);
 const healthServer = http.createServer((req, res) => {
   if (req.method === 'GET' && (req.url === '/health' || req.url === '/health/worker')) {
     const { healthy, body } = getWorkerHealth();
@@ -39,11 +40,17 @@ const healthServer = http.createServer((req, res) => {
     res.end(JSON.stringify(body));
     return;
   }
+  if (req.method === 'GET' && req.url === '/metrics') {
+    renderMetrics()
+      .then((text) => { res.writeHead(200, { 'content-type': metricsContentType }); res.end(text); })
+      .catch(() => { res.writeHead(500); res.end(); });
+    return;
+  }
   res.writeHead(404, { 'content-type': 'application/json' });
   res.end(JSON.stringify({ error: 'not_found' }));
 });
 healthServer.listen(HEALTH_PORT, () => {
-  logger.info(`Worker health server listening on :${HEALTH_PORT}`, { service: 'worker' });
+  logger.info(`Worker health + metrics server listening on :${HEALTH_PORT}`, { service: 'worker' });
 });
 
 void initRedis();
