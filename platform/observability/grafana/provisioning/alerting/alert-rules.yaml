@@ -56,6 +56,8 @@ groups:
         title: Notification delivery failures
         condition: C
         for: 10m
+        noDataState: OK
+        execErrState: OK
         labels: { severity: warning, service: worker }
         annotations:
           summary: "Notifications failing to deliver (>0.1/s over 10m)."
@@ -76,6 +78,8 @@ groups:
         title: High API error rate (5xx)
         condition: C
         for: 5m
+        noDataState: OK
+        execErrState: OK
         labels: { severity: critical, service: api }
         annotations:
           summary: "API 5xx error rate > 5% for 5m."
