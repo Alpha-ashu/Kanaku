@@ -25,6 +25,9 @@ primary_region = 'sin'
   GF_SMTP_ENABLED   = 'true'
   GF_SMTP_HOST      = 'smtp-relay.brevo.com:587'
   GF_SMTP_FROM_NAME = 'KANAKU'
+  # Fly allows ONE volume per machine: a single volume is mounted at /loki and
+  # Grafana's data (sqlite/alert-state) lives under /loki/grafana on it.
+  GF_PATHS_DATA  = '/loki/grafana'
   # Datasources read these:
   LOKI_URL       = 'http://localhost:3100'
   PROMETHEUS_URL = 'https://api.fly.io/prometheus/personal'
@@ -38,10 +41,6 @@ primary_region = 'sin'
 [[mounts]]
   source      = 'loki_data'
   destination = '/loki'
-
-[[mounts]]
-  source      = 'grafana_data'
-  destination = '/var/lib/grafana'
 
 [[vm]]
   size   = 'shared-cpu-1x'
