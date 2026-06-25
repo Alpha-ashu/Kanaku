@@ -12,6 +12,7 @@ import { logger } from './config/logger';
 import { prisma } from './db/prisma';
 import { requestTimeout } from './middleware/timeout';
 import { authMiddleware, type AuthRequest } from './middleware/auth';
+import { requestContext } from './middleware/requestContext';
 import { requireRole } from './middleware/rbac';
 import { metricsMiddleware, getMetricsSnapshot } from './middleware/metrics';
 import { getCacheMetricsSnapshot } from './cache/redis';
@@ -21,13 +22,23 @@ import { isAllowedOrigin } from './config/cors';
 
 const app = express();
 
-//  Request ID stamping (B-1) 
-// Every request gets a unique ID for log correlation & error responses.
+//  Request ID stamping (B-1)
+// End-to-end correlation: honor a caller-supplied `X-Request-Id` (so the chain
+// Frontend → API → DB/AuditLog → Worker shares one ID) and otherwise mint one.
+// The incoming value is format-validated to avoid log-forging / header injection
+// (bounded length, id-safe charset); anything else is replaced with a fresh UUID.
+const REQUEST_ID_RE = /^[A-Za-z0-9_-]{8,128}$/;
 app.use((req, res, next) => {
-  (req as any).id = randomUUID();
+  const incoming = req.headers['x-request-id'];
+  const candidate = Array.isArray(incoming) ? incoming[0] : incoming;
+  (req as any).id = candidate && REQUEST_ID_RE.test(candidate) ? candidate : randomUUID();
   res.setHeader('X-Request-Id', (req as any).id);
   next();
 });
+
+// Per-request context (AsyncLocalStorage) — lets the Prisma audit interceptor
+// attribute every financial mutation to the acting user/IP/User-Agent.
+app.use(requestContext);
 
 // Hard request timeout — prevents a stuck DB query / hung upstream call
 // from holding a worker indefinitely. Configurable via REQUEST_TIMEOUT_MS.

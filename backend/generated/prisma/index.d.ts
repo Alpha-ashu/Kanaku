@@ -25488,6 +25488,7 @@ export namespace Prisma {
     category: string | null
     deepLink: string | null
     priority: string | null
+    requestId: string | null
     encryptedPayload: string | null
     isRead: boolean | null
     createdAt: Date | null
@@ -25511,6 +25512,7 @@ export namespace Prisma {
     category: string | null
     deepLink: string | null
     priority: string | null
+    requestId: string | null
     encryptedPayload: string | null
     isRead: boolean | null
     createdAt: Date | null
@@ -25535,6 +25537,7 @@ export namespace Prisma {
     deepLink: number
     priority: number
     channels: number
+    requestId: number
     metadata: number
     deliveryStatus: number
     encryptedPayload: number
@@ -25570,6 +25573,7 @@ export namespace Prisma {
     category?: true
     deepLink?: true
     priority?: true
+    requestId?: true
     encryptedPayload?: true
     isRead?: true
     createdAt?: true
@@ -25593,6 +25597,7 @@ export namespace Prisma {
     category?: true
     deepLink?: true
     priority?: true
+    requestId?: true
     encryptedPayload?: true
     isRead?: true
     createdAt?: true
@@ -25617,6 +25622,7 @@ export namespace Prisma {
     deepLink?: true
     priority?: true
     channels?: true
+    requestId?: true
     metadata?: true
     deliveryStatus?: true
     encryptedPayload?: true
@@ -25730,6 +25736,7 @@ export namespace Prisma {
     deepLink: string | null
     priority: string
     channels: JsonValue
+    requestId: string | null
     metadata: JsonValue | null
     deliveryStatus: JsonValue
     encryptedPayload: string | null
@@ -25775,6 +25782,7 @@ export namespace Prisma {
     deepLink?: boolean
     priority?: boolean
     channels?: boolean
+    requestId?: boolean
     metadata?: boolean
     deliveryStatus?: boolean
     encryptedPayload?: boolean
@@ -25802,6 +25810,7 @@ export namespace Prisma {
     deepLink?: boolean
     priority?: boolean
     channels?: boolean
+    requestId?: boolean
     metadata?: boolean
     deliveryStatus?: boolean
     encryptedPayload?: boolean
@@ -25829,6 +25838,7 @@ export namespace Prisma {
     deepLink?: boolean
     priority?: boolean
     channels?: boolean
+    requestId?: boolean
     metadata?: boolean
     deliveryStatus?: boolean
     encryptedPayload?: boolean
@@ -25856,6 +25866,7 @@ export namespace Prisma {
     deepLink?: boolean
     priority?: boolean
     channels?: boolean
+    requestId?: boolean
     metadata?: boolean
     deliveryStatus?: boolean
     encryptedPayload?: boolean
@@ -25871,7 +25882,7 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type NotificationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "sourceUserId" | "title" | "message" | "type" | "category" | "deepLink" | "priority" | "channels" | "metadata" | "deliveryStatus" | "encryptedPayload" | "isRead" | "createdAt" | "readAt" | "deletedAt" | "status" | "attempts" | "nextRetryAt" | "errorMessage" | "sentAt" | "updatedAt", ExtArgs["result"]["notification"]>
+  export type NotificationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "sourceUserId" | "title" | "message" | "type" | "category" | "deepLink" | "priority" | "channels" | "requestId" | "metadata" | "deliveryStatus" | "encryptedPayload" | "isRead" | "createdAt" | "readAt" | "deletedAt" | "status" | "attempts" | "nextRetryAt" | "errorMessage" | "sentAt" | "updatedAt", ExtArgs["result"]["notification"]>
   export type NotificationInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
   }
@@ -25898,6 +25909,7 @@ export namespace Prisma {
       deepLink: string | null
       priority: string
       channels: Prisma.JsonValue
+      requestId: string | null
       metadata: Prisma.JsonValue | null
       deliveryStatus: Prisma.JsonValue
       encryptedPayload: string | null
@@ -26345,6 +26357,7 @@ export namespace Prisma {
     readonly deepLink: FieldRef<"Notification", 'String'>
     readonly priority: FieldRef<"Notification", 'String'>
     readonly channels: FieldRef<"Notification", 'Json'>
+    readonly requestId: FieldRef<"Notification", 'String'>
     readonly metadata: FieldRef<"Notification", 'Json'>
     readonly deliveryStatus: FieldRef<"Notification", 'Json'>
     readonly encryptedPayload: FieldRef<"Notification", 'String'>
@@ -43632,6 +43645,7 @@ export namespace Prisma {
     status: string | null
     ip: string | null
     userAgent: string | null
+    requestId: string | null
     createdAt: Date | null
   }
 
@@ -43643,6 +43657,7 @@ export namespace Prisma {
     status: string | null
     ip: string | null
     userAgent: string | null
+    requestId: string | null
     createdAt: Date | null
   }
 
@@ -43654,6 +43669,7 @@ export namespace Prisma {
     status: number
     ip: number
     userAgent: number
+    requestId: number
     details: number
     createdAt: number
     _all: number
@@ -43668,6 +43684,7 @@ export namespace Prisma {
     status?: true
     ip?: true
     userAgent?: true
+    requestId?: true
     createdAt?: true
   }
 
@@ -43679,6 +43696,7 @@ export namespace Prisma {
     status?: true
     ip?: true
     userAgent?: true
+    requestId?: true
     createdAt?: true
   }
 
@@ -43690,6 +43708,7 @@ export namespace Prisma {
     status?: true
     ip?: true
     userAgent?: true
+    requestId?: true
     details?: true
     createdAt?: true
     _all?: true
@@ -43775,6 +43794,7 @@ export namespace Prisma {
     status: string
     ip: string | null
     userAgent: string | null
+    requestId: string | null
     details: JsonValue | null
     createdAt: Date
     _count: AuditLogCountAggregateOutputType | null
@@ -43804,6 +43824,7 @@ export namespace Prisma {
     status?: boolean
     ip?: boolean
     userAgent?: boolean
+    requestId?: boolean
     details?: boolean
     createdAt?: boolean
   }, ExtArgs["result"]["auditLog"]>
@@ -43816,6 +43837,7 @@ export namespace Prisma {
     status?: boolean
     ip?: boolean
     userAgent?: boolean
+    requestId?: boolean
     details?: boolean
     createdAt?: boolean
   }, ExtArgs["result"]["auditLog"]>
@@ -43828,6 +43850,7 @@ export namespace Prisma {
     status?: boolean
     ip?: boolean
     userAgent?: boolean
+    requestId?: boolean
     details?: boolean
     createdAt?: boolean
   }, ExtArgs["result"]["auditLog"]>
@@ -43840,11 +43863,12 @@ export namespace Prisma {
     status?: boolean
     ip?: boolean
     userAgent?: boolean
+    requestId?: boolean
     details?: boolean
     createdAt?: boolean
   }
 
-  export type AuditLogOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "action" | "resource" | "status" | "ip" | "userAgent" | "details" | "createdAt", ExtArgs["result"]["auditLog"]>
+  export type AuditLogOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "action" | "resource" | "status" | "ip" | "userAgent" | "requestId" | "details" | "createdAt", ExtArgs["result"]["auditLog"]>
 
   export type $AuditLogPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "AuditLog"
@@ -43857,6 +43881,7 @@ export namespace Prisma {
       status: string
       ip: string | null
       userAgent: string | null
+      requestId: string | null
       details: Prisma.JsonValue | null
       createdAt: Date
     }, ExtArgs["result"]["auditLog"]>
@@ -44289,6 +44314,7 @@ export namespace Prisma {
     readonly status: FieldRef<"AuditLog", 'String'>
     readonly ip: FieldRef<"AuditLog", 'String'>
     readonly userAgent: FieldRef<"AuditLog", 'String'>
+    readonly requestId: FieldRef<"AuditLog", 'String'>
     readonly details: FieldRef<"AuditLog", 'Json'>
     readonly createdAt: FieldRef<"AuditLog", 'DateTime'>
   }
@@ -62492,6 +62518,7 @@ export namespace Prisma {
     deepLink: 'deepLink',
     priority: 'priority',
     channels: 'channels',
+    requestId: 'requestId',
     metadata: 'metadata',
     deliveryStatus: 'deliveryStatus',
     encryptedPayload: 'encryptedPayload',
@@ -62755,6 +62782,7 @@ export namespace Prisma {
     status: 'status',
     ip: 'ip',
     userAgent: 'userAgent',
+    requestId: 'requestId',
     details: 'details',
     createdAt: 'createdAt'
   };
@@ -64980,6 +65008,7 @@ export namespace Prisma {
     deepLink?: StringNullableFilter<"Notification"> | string | null
     priority?: StringFilter<"Notification"> | string
     channels?: JsonFilter<"Notification">
+    requestId?: StringNullableFilter<"Notification"> | string | null
     metadata?: JsonNullableFilter<"Notification">
     deliveryStatus?: JsonFilter<"Notification">
     encryptedPayload?: StringNullableFilter<"Notification"> | string | null
@@ -65007,6 +65036,7 @@ export namespace Prisma {
     deepLink?: SortOrderInput | SortOrder
     priority?: SortOrder
     channels?: SortOrder
+    requestId?: SortOrderInput | SortOrder
     metadata?: SortOrderInput | SortOrder
     deliveryStatus?: SortOrder
     encryptedPayload?: SortOrderInput | SortOrder
@@ -65037,6 +65067,7 @@ export namespace Prisma {
     deepLink?: StringNullableFilter<"Notification"> | string | null
     priority?: StringFilter<"Notification"> | string
     channels?: JsonFilter<"Notification">
+    requestId?: StringNullableFilter<"Notification"> | string | null
     metadata?: JsonNullableFilter<"Notification">
     deliveryStatus?: JsonFilter<"Notification">
     encryptedPayload?: StringNullableFilter<"Notification"> | string | null
@@ -65064,6 +65095,7 @@ export namespace Prisma {
     deepLink?: SortOrderInput | SortOrder
     priority?: SortOrder
     channels?: SortOrder
+    requestId?: SortOrderInput | SortOrder
     metadata?: SortOrderInput | SortOrder
     deliveryStatus?: SortOrder
     encryptedPayload?: SortOrderInput | SortOrder
@@ -65098,6 +65130,7 @@ export namespace Prisma {
     deepLink?: StringNullableWithAggregatesFilter<"Notification"> | string | null
     priority?: StringWithAggregatesFilter<"Notification"> | string
     channels?: JsonWithAggregatesFilter<"Notification">
+    requestId?: StringNullableWithAggregatesFilter<"Notification"> | string | null
     metadata?: JsonNullableWithAggregatesFilter<"Notification">
     deliveryStatus?: JsonWithAggregatesFilter<"Notification">
     encryptedPayload?: StringNullableWithAggregatesFilter<"Notification"> | string | null
@@ -66423,6 +66456,7 @@ export namespace Prisma {
     status?: StringFilter<"AuditLog"> | string
     ip?: StringNullableFilter<"AuditLog"> | string | null
     userAgent?: StringNullableFilter<"AuditLog"> | string | null
+    requestId?: StringNullableFilter<"AuditLog"> | string | null
     details?: JsonNullableFilter<"AuditLog">
     createdAt?: DateTimeFilter<"AuditLog"> | Date | string
   }
@@ -66435,6 +66469,7 @@ export namespace Prisma {
     status?: SortOrder
     ip?: SortOrderInput | SortOrder
     userAgent?: SortOrderInput | SortOrder
+    requestId?: SortOrderInput | SortOrder
     details?: SortOrderInput | SortOrder
     createdAt?: SortOrder
   }
@@ -66450,6 +66485,7 @@ export namespace Prisma {
     status?: StringFilter<"AuditLog"> | string
     ip?: StringNullableFilter<"AuditLog"> | string | null
     userAgent?: StringNullableFilter<"AuditLog"> | string | null
+    requestId?: StringNullableFilter<"AuditLog"> | string | null
     details?: JsonNullableFilter<"AuditLog">
     createdAt?: DateTimeFilter<"AuditLog"> | Date | string
   }, "id">
@@ -66462,6 +66498,7 @@ export namespace Prisma {
     status?: SortOrder
     ip?: SortOrderInput | SortOrder
     userAgent?: SortOrderInput | SortOrder
+    requestId?: SortOrderInput | SortOrder
     details?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     _count?: AuditLogCountOrderByAggregateInput
@@ -66480,6 +66517,7 @@ export namespace Prisma {
     status?: StringWithAggregatesFilter<"AuditLog"> | string
     ip?: StringNullableWithAggregatesFilter<"AuditLog"> | string | null
     userAgent?: StringNullableWithAggregatesFilter<"AuditLog"> | string | null
+    requestId?: StringNullableWithAggregatesFilter<"AuditLog"> | string | null
     details?: JsonNullableWithAggregatesFilter<"AuditLog">
     createdAt?: DateTimeWithAggregatesFilter<"AuditLog"> | Date | string
   }
@@ -70002,6 +70040,7 @@ export namespace Prisma {
     deepLink?: string | null
     priority?: string
     channels?: JsonNullValueInput | InputJsonValue
+    requestId?: string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
     deliveryStatus?: JsonNullValueInput | InputJsonValue
     encryptedPayload?: string | null
@@ -70029,6 +70068,7 @@ export namespace Prisma {
     deepLink?: string | null
     priority?: string
     channels?: JsonNullValueInput | InputJsonValue
+    requestId?: string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
     deliveryStatus?: JsonNullValueInput | InputJsonValue
     encryptedPayload?: string | null
@@ -70054,6 +70094,7 @@ export namespace Prisma {
     deepLink?: NullableStringFieldUpdateOperationsInput | string | null
     priority?: StringFieldUpdateOperationsInput | string
     channels?: JsonNullValueInput | InputJsonValue
+    requestId?: NullableStringFieldUpdateOperationsInput | string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
     deliveryStatus?: JsonNullValueInput | InputJsonValue
     encryptedPayload?: NullableStringFieldUpdateOperationsInput | string | null
@@ -70081,6 +70122,7 @@ export namespace Prisma {
     deepLink?: NullableStringFieldUpdateOperationsInput | string | null
     priority?: StringFieldUpdateOperationsInput | string
     channels?: JsonNullValueInput | InputJsonValue
+    requestId?: NullableStringFieldUpdateOperationsInput | string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
     deliveryStatus?: JsonNullValueInput | InputJsonValue
     encryptedPayload?: NullableStringFieldUpdateOperationsInput | string | null
@@ -70107,6 +70149,7 @@ export namespace Prisma {
     deepLink?: string | null
     priority?: string
     channels?: JsonNullValueInput | InputJsonValue
+    requestId?: string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
     deliveryStatus?: JsonNullValueInput | InputJsonValue
     encryptedPayload?: string | null
@@ -70132,6 +70175,7 @@ export namespace Prisma {
     deepLink?: NullableStringFieldUpdateOperationsInput | string | null
     priority?: StringFieldUpdateOperationsInput | string
     channels?: JsonNullValueInput | InputJsonValue
+    requestId?: NullableStringFieldUpdateOperationsInput | string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
     deliveryStatus?: JsonNullValueInput | InputJsonValue
     encryptedPayload?: NullableStringFieldUpdateOperationsInput | string | null
@@ -70158,6 +70202,7 @@ export namespace Prisma {
     deepLink?: NullableStringFieldUpdateOperationsInput | string | null
     priority?: StringFieldUpdateOperationsInput | string
     channels?: JsonNullValueInput | InputJsonValue
+    requestId?: NullableStringFieldUpdateOperationsInput | string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
     deliveryStatus?: JsonNullValueInput | InputJsonValue
     encryptedPayload?: NullableStringFieldUpdateOperationsInput | string | null
@@ -71670,6 +71715,7 @@ export namespace Prisma {
     status: string
     ip?: string | null
     userAgent?: string | null
+    requestId?: string | null
     details?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
   }
@@ -71682,6 +71728,7 @@ export namespace Prisma {
     status: string
     ip?: string | null
     userAgent?: string | null
+    requestId?: string | null
     details?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
   }
@@ -71694,6 +71741,7 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     ip?: NullableStringFieldUpdateOperationsInput | string | null
     userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    requestId?: NullableStringFieldUpdateOperationsInput | string | null
     details?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -71706,6 +71754,7 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     ip?: NullableStringFieldUpdateOperationsInput | string | null
     userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    requestId?: NullableStringFieldUpdateOperationsInput | string | null
     details?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -71718,6 +71767,7 @@ export namespace Prisma {
     status: string
     ip?: string | null
     userAgent?: string | null
+    requestId?: string | null
     details?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
   }
@@ -71730,6 +71780,7 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     ip?: NullableStringFieldUpdateOperationsInput | string | null
     userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    requestId?: NullableStringFieldUpdateOperationsInput | string | null
     details?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -71742,6 +71793,7 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     ip?: NullableStringFieldUpdateOperationsInput | string | null
     userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    requestId?: NullableStringFieldUpdateOperationsInput | string | null
     details?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -74975,6 +75027,7 @@ export namespace Prisma {
     deepLink?: SortOrder
     priority?: SortOrder
     channels?: SortOrder
+    requestId?: SortOrder
     metadata?: SortOrder
     deliveryStatus?: SortOrder
     encryptedPayload?: SortOrder
@@ -75004,6 +75057,7 @@ export namespace Prisma {
     category?: SortOrder
     deepLink?: SortOrder
     priority?: SortOrder
+    requestId?: SortOrder
     encryptedPayload?: SortOrder
     isRead?: SortOrder
     createdAt?: SortOrder
@@ -75027,6 +75081,7 @@ export namespace Prisma {
     category?: SortOrder
     deepLink?: SortOrder
     priority?: SortOrder
+    requestId?: SortOrder
     encryptedPayload?: SortOrder
     isRead?: SortOrder
     createdAt?: SortOrder
@@ -75980,6 +76035,7 @@ export namespace Prisma {
     status?: SortOrder
     ip?: SortOrder
     userAgent?: SortOrder
+    requestId?: SortOrder
     details?: SortOrder
     createdAt?: SortOrder
   }
@@ -75992,6 +76048,7 @@ export namespace Prisma {
     status?: SortOrder
     ip?: SortOrder
     userAgent?: SortOrder
+    requestId?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -76003,6 +76060,7 @@ export namespace Prisma {
     status?: SortOrder
     ip?: SortOrder
     userAgent?: SortOrder
+    requestId?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -88297,6 +88355,7 @@ export namespace Prisma {
     deepLink?: string | null
     priority?: string
     channels?: JsonNullValueInput | InputJsonValue
+    requestId?: string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
     deliveryStatus?: JsonNullValueInput | InputJsonValue
     encryptedPayload?: string | null
@@ -88322,6 +88381,7 @@ export namespace Prisma {
     deepLink?: string | null
     priority?: string
     channels?: JsonNullValueInput | InputJsonValue
+    requestId?: string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
     deliveryStatus?: JsonNullValueInput | InputJsonValue
     encryptedPayload?: string | null
@@ -89618,6 +89678,7 @@ export namespace Prisma {
     deepLink?: StringNullableFilter<"Notification"> | string | null
     priority?: StringFilter<"Notification"> | string
     channels?: JsonFilter<"Notification">
+    requestId?: StringNullableFilter<"Notification"> | string | null
     metadata?: JsonNullableFilter<"Notification">
     deliveryStatus?: JsonFilter<"Notification">
     encryptedPayload?: StringNullableFilter<"Notification"> | string | null
@@ -93946,6 +94007,7 @@ export namespace Prisma {
     deepLink?: string | null
     priority?: string
     channels?: JsonNullValueInput | InputJsonValue
+    requestId?: string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
     deliveryStatus?: JsonNullValueInput | InputJsonValue
     encryptedPayload?: string | null
@@ -95093,6 +95155,7 @@ export namespace Prisma {
     deepLink?: NullableStringFieldUpdateOperationsInput | string | null
     priority?: StringFieldUpdateOperationsInput | string
     channels?: JsonNullValueInput | InputJsonValue
+    requestId?: NullableStringFieldUpdateOperationsInput | string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
     deliveryStatus?: JsonNullValueInput | InputJsonValue
     encryptedPayload?: NullableStringFieldUpdateOperationsInput | string | null
@@ -95118,6 +95181,7 @@ export namespace Prisma {
     deepLink?: NullableStringFieldUpdateOperationsInput | string | null
     priority?: StringFieldUpdateOperationsInput | string
     channels?: JsonNullValueInput | InputJsonValue
+    requestId?: NullableStringFieldUpdateOperationsInput | string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
     deliveryStatus?: JsonNullValueInput | InputJsonValue
     encryptedPayload?: NullableStringFieldUpdateOperationsInput | string | null
@@ -95143,6 +95207,7 @@ export namespace Prisma {
     deepLink?: NullableStringFieldUpdateOperationsInput | string | null
     priority?: StringFieldUpdateOperationsInput | string
     channels?: JsonNullValueInput | InputJsonValue
+    requestId?: NullableStringFieldUpdateOperationsInput | string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
     deliveryStatus?: JsonNullValueInput | InputJsonValue
     encryptedPayload?: NullableStringFieldUpdateOperationsInput | string | null

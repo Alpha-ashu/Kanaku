@@ -7,6 +7,7 @@ import { establishPinUnlock } from '../../security/pinUnlock';
 import { validateBody } from '../../middleware/validate';
 import { AppError } from '../../utils/AppError';
 import { logger } from '../../config/logger';
+import { auditFromRequest } from '../../utils/auditLogger';
 import {
   createPinSchema,
   verifyPinSchema,
@@ -175,6 +176,7 @@ router.post('/update', securityGate, validateBody(updatePinSchema), async (req: 
     if (!result.success) {
       throw AppError.badRequest(result.message, 'INVALID_PIN');
     }
+    auditFromRequest(req, 'security.pin_change', { resource: 'pin', resourceId: userId });
     res.json(result);
   } catch (error) {
     next(error);

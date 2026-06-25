@@ -16,6 +16,7 @@ import { setRefreshCookie, clearRefreshCookie, readRefreshCookie } from '../../s
 import { establishIdleSession, clearIdleSession } from '../../security/idleSession';
 import { clearPinUnlock, isPinUnlocked } from '../../security/pinUnlock';
 import { sendWelcomeEmail } from '../../emails';
+import { auditFromRequest } from '../../utils/auditLogger';
 
 const authService = new AuthService();
 const challengeMemoryCache = new Map<string, { payload: any; expiresAt: number }>();
@@ -906,6 +907,7 @@ export const logout = async (req: AuthRequest, res: Response, next: NextFunction
     }
 
     clearRefreshCookie(res);
+    auditFromRequest(req, 'auth.logout');
     res.json({ success: true, message: 'Logged out successfully' });
   } catch (error) {
     // Even on error, clear the cookie and report success.

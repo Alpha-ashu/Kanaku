@@ -193,6 +193,7 @@ interface OutboxRow {
   channels: unknown;
   deliveryStatus: unknown;
   attempts: number;
+  requestId: string | null;
 }
 
 const isTerminal = (s: string | undefined) => s === 'sent' || s === 'failed';
@@ -249,6 +250,7 @@ export async function deliverNotification(row: OutboxRow): Promise<void> {
       lastError = (err instanceof Error ? err.message : String(err)).slice(0, 500);
       logger.warn(`[outbox] ${channel} delivery failed for ${row.id} (attempt ${attemptsMade}/${MAX_ATTEMPTS})`, {
         error: lastError,
+        requestId: row.requestId ?? undefined,
       });
       if (attemptsMade >= MAX_ATTEMPTS) {
         // Retries exhausted — mark the channel failed (queryable dead-letter).
@@ -314,6 +316,7 @@ export async function drainNotificationOutbox(): Promise<number> {
       select: {
         id: true, userId: true, title: true, message: true, category: true,
         deepLink: true, priority: true, channels: true, deliveryStatus: true, attempts: true,
+        requestId: true,
       },
     })) as OutboxRow[];
 

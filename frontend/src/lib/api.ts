@@ -440,11 +440,17 @@ class HTTPClient {
       resolvedIdempotencyKey = idempotencyKey ?? generateClientId();
     }
 
+    // End-to-end correlation: a per-request ID the backend honors (X-Request-Id)
+    // and propagates through API → DB/AuditLog → Worker. Reused below for any
+    // client-side error log so a failure can be matched to its server trace.
+    const requestId = (fetchConfig.headers as Record<string, string> | undefined)?.['X-Request-Id'] ?? generateClientId();
+
     const headers = {
       ...this.defaultConfig.headers,
       ...fetchConfig.headers,
       ...(token && { Authorization: `Bearer ${token}` }),
       ...(resolvedIdempotencyKey && { 'Idempotency-Key': resolvedIdempotencyKey }),
+      'X-Request-Id': requestId,
       // Marks native (Capacitor) clients so the backend returns the refresh
       // token in the body for device storage (cross-origin cookie is unreliable).
       ...(isNativePlatform() && { 'X-Client-Platform': 'native' }),
@@ -606,7 +612,7 @@ class HTTPClient {
             }
 
             const timeoutMsg = USER_FRIENDLY_MESSAGES['TIMEOUT_ERROR'];
-            logger.error('[API Error] Request timed out', { endpoint });
+            logger.error('[API Error] Request timed out', { endpoint, requestId });
             const timeoutError = new APIError('TIMEOUT_ERROR', timeoutMsg, 0);
             if (showErrorToast) {
               ErrorHandler.handle(ErrorFactory.fromHTTPStatus(408, timeoutMsg), true);

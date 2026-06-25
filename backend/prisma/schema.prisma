@@ -438,6 +438,7 @@ model Notification {
   deepLink         String?
   priority         String    @default("normal") // high, normal, low
   channels         Json      @default("[\"app\"]") // JSON array: ["app", "email", "push"]
+  requestId        String? // Correlation ID from the originating API request (propagated to worker delivery audits)
   metadata         Json?
   // Multi-channel Delivery Tracking
   deliveryStatus   Json      @default("{}") // JSON: {app: sent, email: queued, push: failed}
@@ -805,11 +806,13 @@ model AuditLog {
   status    String
   ip        String?
   userAgent String?
+  requestId String?
   details   Json?
   createdAt DateTime @default(now())
 
   @@index([userId])
   @@index([createdAt])
+  @@index([requestId])
   @@schema("public")
 }
 
