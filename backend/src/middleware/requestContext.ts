@@ -20,7 +20,7 @@ export function requestContext(req: Request, _res: Response, next: NextFunction)
 }
 
 /** Actor for audit rows — resolved at call time from the active request. */
-export function getRequestActor(): { userId?: string; ip?: string; userAgent?: string } {
+export function getRequestActor(): { userId?: string; ip?: string; userAgent?: string; requestId?: string } {
   const req = storage.getStore()?.req as any;
   if (!req) return {};
   const fwd = req.headers?.['x-forwarded-for'];
@@ -28,5 +28,6 @@ export function getRequestActor(): { userId?: string; ip?: string; userAgent?: s
     userId: req.userId,
     ip: req.ip || (Array.isArray(fwd) ? fwd[0] : fwd)?.split(',')[0]?.trim(),
     userAgent: req.headers?.['user-agent'],
+    requestId: req.id,
   };
 }

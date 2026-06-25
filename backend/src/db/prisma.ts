@@ -13,10 +13,12 @@ import { redact } from '../utils/redact';
 // AuditLog table — covering ALL write paths (API, sync, scripts), not just
 // controllers. Append-only immutability is enforced at the DB level
 // (see backend/scripts/harden-financial-constraints.sql).
-const AUDIT_MODELS = new Set([
+export const AUDIT_MODELS = new Set([
   'Account', 'Transaction', 'Loan', 'LoanPayment', 'Goal', 'GoalContribution',
   'GoalMember', 'Investment', 'GoldAsset', 'Budget', 'GroupExpense',
   'GroupExpenseMember', 'RecurringTransaction',
+  // Phase 2 — complete coverage for the remaining financial / collaboration entities
+  'CollaborationParticipant', 'ExpenseBill', 'Friend', 'AaTransaction',
 ]);
 const WRITE_OPS = new Set(['create', 'update', 'delete', 'upsert', 'createMany', 'updateMany', 'deleteMany']);
 const BULK_OPS = new Set(['createMany', 'updateMany', 'deleteMany']);
@@ -66,13 +68,39 @@ function buildClient(datasourceUrl?: string, opts?: { audit?: boolean }): Prisma
     },
   });
 
-  if (!opts?.audit) return timed as unknown as PrismaClient;
+  // Auto-stamp the originating request's correlation ID onto Notification rows
+  // so the worker (a separate process with no request context) can tie a
+  // delivery back to the API request that produced it. Done centrally here so
+  // every create path (dispatcher, service, controllers) is covered.
+  const stampReqId = (data: any) => {
+    if (data && data.requestId == null) {
+      const rid = getRequestActor().requestId;
+      if (rid) data.requestId = rid;
+    }
+  };
+  const withReqId = timed.$extends({
+    query: {
+      notification: {
+        async create({ args, query }: { args: any; query: (args: any) => Promise<any> }) {
+          stampReqId(args?.data);
+          return query(args);
+        },
+        async createMany({ args, query }: { args: any; query: (args: any) => Promise<any> }) {
+          if (Array.isArray(args?.data)) args.data.forEach(stampReqId);
+          else stampReqId(args?.data);
+          return query(args);
+        },
+      },
+    },
+  });
+
+  if (!opts?.audit) return withReqId as unknown as PrismaClient;
 
   // Audit interceptor — records every financial mutation. Best-effort: a failed
   // audit write is logged but never blocks the user operation. `timed` (the
   // pre-audit client) is used for the before-read and the AuditLog insert so the
   // audit path can never recurse through this interceptor.
-  const audited = timed.$extends({
+  const audited = withReqId.$extends({
     query: {
       $allModels: {
         async $allOperations(
@@ -100,6 +128,7 @@ function buildClient(datasourceUrl?: string, opts?: { audit?: boolean }): Prisma
                 status: 'success',
                 ip: actor.ip ?? null,
                 userAgent: actor.userAgent ?? null,
+                requestId: actor.requestId ?? null,
                 // JSON round-trip first: Prisma Decimal/Date values are not valid
                 // inputs for a Json column and would make auditLog.create throw.
                 details: redact(JSON.parse(JSON.stringify({

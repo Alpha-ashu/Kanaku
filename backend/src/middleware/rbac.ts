@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { AuthRequest } from './auth';
 import { prisma } from '../db/prisma';
 import { logger } from '../config/logger';
+import { getRequestActor } from './requestContext';
 
 export type UserRole = 'admin' | 'manager' | 'advisor' | 'user';
 
@@ -133,6 +134,7 @@ export const auditLog = async (
         status,
         ip,
         userAgent,
+        requestId: details?.requestId ?? getRequestActor().requestId ?? null,
         details: detailsJson,
       },
     });

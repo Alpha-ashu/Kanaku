@@ -30,6 +30,7 @@
 import type { Request } from 'express';
 import { logger } from '../config/logger';
 import { prisma } from '../db/prisma';
+import { getRequestActor } from '../middleware/requestContext';
 import { redact } from './redact';
 
 export type AuditEventType =
@@ -66,6 +67,7 @@ export type AuditEventType =
   | 'security.invalid_file'
   | 'security.circuit_open'
   | 'security.webhook_invalid_signature'
+  | 'security.pin_change'
   | 'admin.feature_toggle'
   | 'admin.user_role_update'
   | 'admin.advisor_approve'
@@ -84,6 +86,8 @@ interface AuditPayload {
   userId?: string;
   ip?: string;
   userAgent?: string;
+  /** Correlation ID — defaults to the active request's X-Request-Id when omitted. */
+  requestId?: string;
   /** Entity being acted on (e.g. "transaction", "account") */
   resource?: string;
   /** The specific resource ID */
@@ -126,6 +130,9 @@ const persistAuditRow = async (payload: AuditPayload): Promise<void> => {
         status: isFailureEvent(payload.event) ? 'failure' : 'success',
         ip: payload.ip ?? null,
         userAgent: payload.userAgent ?? null,
+        // Auto-correlate to the active request when the caller didn't pass one,
+        // so every audit() emitted inside a request shares the chain's ID.
+        requestId: payload.requestId ?? getRequestActor().requestId ?? null,
         details: safeDetails as any,
       },
     });
@@ -174,6 +181,7 @@ export function auditFromRequest(
     userId: extras.userId ?? (req as any).userId,
     ip: req.ip || (req.headers['x-forwarded-for'] as string | undefined)?.split(',')[0]?.trim(),
     userAgent: req.headers['user-agent'] as string | undefined,
+    requestId: (req as any).id,
     action: `${req.method} ${req.path}`,
     ...extras,
   });

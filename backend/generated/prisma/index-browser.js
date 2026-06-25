@@ -422,6 +422,7 @@ exports.Prisma.NotificationScalarFieldEnum = {
   deepLink: 'deepLink',
   priority: 'priority',
   channels: 'channels',
+  requestId: 'requestId',
   metadata: 'metadata',
   deliveryStatus: 'deliveryStatus',
   encryptedPayload: 'encryptedPayload',
@@ -640,6 +641,7 @@ exports.Prisma.AuditLogScalarFieldEnum = {
   status: 'status',
   ip: 'ip',
   userAgent: 'userAgent',
+  requestId: 'requestId',
   details: 'details',
   createdAt: 'createdAt'
 };
