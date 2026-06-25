@@ -18,13 +18,10 @@ datasources:
     uid: prometheus
     type: prometheus
     access: proxy
-    # https://api.fly.io/prometheus/<org-slug>  (org = "personal" for kanaku)
-    url: $__env{PROMETHEUS_URL}
+    # Self-hosted Prometheus on THIS machine, scraping kanaku /metrics:9091 over
+    # the private 6PN (prometheus.yml). No dependency on Fly's managed Prometheus.
+    url: http://localhost:9090
     isDefault: true
-    jsonData:
-      httpHeaderName1: Authorization
-    secureJsonData:
-      httpHeaderValue1: Bearer $__env{FLY_PROMETHEUS_TOKEN}
 
 # DELIBERATELY NO Postgres/AuditDB datasource: Grafana must never have a network
 # path or credentials to the production database. Audit visibility comes entirely

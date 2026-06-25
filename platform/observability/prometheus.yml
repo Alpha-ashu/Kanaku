@@ -1,0 +1,21 @@
+# Self-hosted Prometheus on Machine 3 — scrapes kanaku's /metrics:9091 (app +
+# worker) over Fly's private 6PN, so Grafana renders metrics without depending on
+# Fly's managed Prometheus. DNS service discovery on `kanaku.internal` (AAAA)
+# returns every kanaku machine's 6PN address; each is scraped on :9091.
+global:
+  scrape_interval: 15s
+  scrape_timeout: 10s
+
+scrape_configs:
+  - job_name: kanaku
+    metrics_path: /metrics
+    scheme: http
+    dns_sd_configs:
+      - names: ['kanaku.internal']
+        type: AAAA
+        port: 9091
+
+  - job_name: observability-self
+    metrics_path: /metrics
+    static_configs:
+      - targets: ['localhost:9090']
