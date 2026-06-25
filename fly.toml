@@ -9,6 +9,20 @@ primary_region = 'sin'
 [env]
   NODE_ENV = 'production'
   PORT     = '3000'
+  # API/Worker split: the public `app` process serves requests only; all
+  # background jobs run on the dedicated `worker` process. (Shared across both
+  # process groups — the worker entrypoint ignores it and always runs the jobs.)
+  RUN_WORKERS_IN_API = 'false'
+
+# Two process groups from ONE image (no extra app, no developer-workflow change):
+#   - `app`    is the only group bound to [http_service] below → public API + Socket.IO.
+#   - `worker` has no service → no public endpoints; runs the notification outbox,
+#     AI tasks and cleanup jobs in isolation.
+# `fly deploy` provisions/updates one machine per group automatically; roll back
+# with `fly releases` / `fly deploy` to a prior image (unchanged workflow).
+[processes]
+  app    = 'node dist/server.js'
+  worker = 'node dist/worker.js'
 
 [http_service]
   internal_port       = 3000
@@ -38,3 +52,17 @@ primary_region = 'sin'
 [[metrics]]
   port = 9091
   path = '/metrics'
+
+# Machine health check for the `worker` process group. Probes the worker's
+# internal health server (port 9090, private network only — not publicly routed)
+# and restarts the machine if the notification outbox stops draining. Scoped to
+# `worker` so it never runs against the API machine.
+[checks.worker_outbox]
+  type         = 'http'
+  port         = 9090
+  method       = 'get'
+  path         = '/health'
+  interval     = '30s'
+  timeout      = '5s'
+  grace_period = '30s'
+  processes    = ['worker']

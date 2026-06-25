@@ -9,6 +9,7 @@ import cron, { ScheduledTask } from 'node-cron';
 import { prisma } from '../db/prisma';
 import { logger } from '../config/logger';
 import { audit } from '../utils/auditLogger';
+import { markCleanupRun } from './health';
 
 let cleanupJob: ScheduledTask | null = null;
 
@@ -139,6 +140,8 @@ export const runCleanupTasks = async (): Promise<void> => {
 
   // 5. GDPR hard-delete sweep (runs after the generic cleanup).
   await runAccountDeletionSweep();
+
+  markCleanupRun(); // liveness heartbeat for worker health monitoring
 };
 
 /**

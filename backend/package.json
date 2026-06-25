@@ -6,6 +6,7 @@
     "main": "dist/server.js",
     "scripts": {
         "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
+        "worker": "ts-node-dev --respawn --transpile-only src/worker.ts",
         "generate:prisma": "prisma generate",
         "db:test:reset": "node ../quality/diagnostics/backend/test-db.mjs",
         "ensure:cloud-sync-schema": "node ./scripts/ensure-cloud-sync-schema.cjs",
@@ -20,6 +21,7 @@
         "seed:all": "npm run seed:demo && npm run seed:test",
         "build": "tsc",
         "start": "node dist/server.js",
+        "start:worker": "node dist/worker.js",
         "test": "jest",
         "test:smoke": "jest --runInBand tests/integration/smoke.test.ts",
         "test:sanity": "jest --runInBand tests/integration/sanity.test.ts",

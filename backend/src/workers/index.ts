@@ -20,6 +20,7 @@ import { logger } from '../config/logger';
 import { prisma } from '../db/prisma';
 import { sendNotificationEmail } from '../emails';
 import { sendPushNotification, initializeFirebase } from '../config/firebase';
+import { markOutboxDrain } from './health';
 
 // ── Delivery policy ──────────────────────────────────────────────────────────
 export const MAX_ATTEMPTS = Number(process.env.NOTIFICATION_MAX_ATTEMPTS || 5);
@@ -319,6 +320,7 @@ export async function drainNotificationOutbox(): Promise<number> {
     for (const row of due) {
       await deliverNotification(row);
     }
+    markOutboxDrain(due.length); // liveness heartbeat for worker health monitoring
     return due.length;
   } catch (err) {
     logger.error('[outbox] drain failed', { error: err instanceof Error ? err.message : String(err) });
@@ -333,7 +335,19 @@ let outboxJob: ScheduledTask | null = null;
 
 /** Start the notification outbox drainer (replaces the BullMQ workers). */
 export const startNotificationOutbox = (): void => {
-  initializeFirebase();
+  // Push delivery needs Firebase, but a missing/invalid Firebase config must NOT
+  // prevent the drainer (and SendGrid email delivery) from starting. In
+  // production initializeFirebase() throws when FIREBASE_* env vars are absent;
+  // previously that threw out of startNotificationOutbox() and the outbox cron
+  // was never scheduled — so nothing drained. Degrade push gracefully instead:
+  // per-row push sends still fail safely via the outbox retry/fail lifecycle.
+  try {
+    initializeFirebase();
+  } catch (err) {
+    logger.warn('[outbox] Firebase not initialized — push delivery degraded; email + drainer still active', {
+      error: err instanceof Error ? err.message : String(err),
+    });
+  }
 
   if (!cron.validate(OUTBOX_SCHEDULE)) {
     logger.error(`Invalid NOTIFICATION_OUTBOX_CRON: "${OUTBOX_SCHEDULE}". Outbox drainer NOT started.`);
