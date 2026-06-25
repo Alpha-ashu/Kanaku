@@ -1,11 +1,23 @@
 apiVersion: 1
 
-# Email contact point — delivered through our existing SendGrid SMTP (configured
-# via GF_SMTP_* in fly.observability.toml; password = SENDGRID_API_KEY secret).
+# Multi-channel contact point (resilience for a fintech app): one firing alert
+# notifies BOTH a webhook AND email, so a Brevo/SMTP outage can't silence
+# critical alerts.
+#   - ops-webhook (Slack/Discord): primary. No SMTP, NO IP allowlisting — immune
+#     to Brevo's "525 Unauthorized IP". Discord works via a Slack-format webhook
+#     (append /slack to the Discord webhook URL). Set SLACK_WEBHOOK_URL secret.
+#   - ops-email (Brevo SMTP): secondary. Requires the Fly egress IP authorized in
+#     Brevo OR Brevo's IP restriction disabled. Set ALERT_EMAIL.
+# Future: add a PagerDuty/Opsgenie receiver here as the product grows.
 contactPoints:
   - orgId: 1
     name: ops-email
     receivers:
+      - uid: ops-webhook
+        type: slack
+        settings:
+          url: $__env{SLACK_WEBHOOK_URL}
+        disableResolveMessage: false
       - uid: ops-email
         type: email
         settings:
