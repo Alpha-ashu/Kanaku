@@ -28,7 +28,7 @@ Prometheus exposition at `GET /metrics` on **port 9091** (the Fly `[[metrics]]` 
 - `api-dashboard.json` — request volume, error rate, latency p50/p95/p99, uptime.
 - `worker-dashboard.json` — drain rate, failures, queue depth, drain latency, uptime.
 - `notification-dashboard.json` — deliveries by channel/status, success rate, outcomes, pending.
-- `audit-dashboard.json` — audit volume/actions/actors/failures + search by actor/requestId (queries the immutable `AuditLog` via Postgres).
+- `audit-dashboard.json` — audit volume/actions/actors/failures + search by actor/requestId (queries the **`[AUDIT]` log stream via Loki** — Grafana has NO DB access).
 
 Each Prometheus dashboard has a `datasource` template variable — pick your datasource on import.
 
@@ -41,16 +41,20 @@ Stack = **Loki** (log store) + **Grafana** (dashboards/alerts) + **Vector log-sh
 already scrapes `/metrics:9091` on both machines.
 
 ```
-app + worker (stdout Pino JSON) → Fly log stream → Vector → Loki ┐
-                                                                 ├→ Grafana ← dashboards + alerts
-Fly Prometheus (scrapes /metrics:9091) ───────────────────────── ┘
-AuditLog table (Postgres, read-only) ──────────────────────────── ┘ (Audit dashboard)
+app + worker (stdout Pino JSON, incl. [AUDIT] lines) → Fly log stream → Vector → Loki ┐
+                                                                                      ├→ Grafana ← dashboards + alerts
+Fly Prometheus (scrapes /metrics:9091) ──────────────────────────────────────────────┘
 ```
+**Grafana has NO connection to the production database.** Audit visibility is
+log-based: the Prisma interceptor emits a redacted `[AUDIT]` line for every
+financial mutation (alongside the immutable AuditLog DB row), `audit()` emits one
+for auth/security events, and the audit dashboard reads them via Loki. The
+immutable `AuditLog` table stays the authoritative system-of-record, untouched.
 
 ## Files
 - `loki/loki-config.yaml` — single-binary Loki, 14-day retention, compactor (bounded storage).
 - `log-shipper/vector.toml` — Fly NATS log stream → Loki; **low-cardinality labels only** (`app`,`service`,`level`).
-- `grafana/provisioning/` — datasources (Loki, Fly Prometheus, AuditDB), dashboard provider, **alert rules**.
+- `grafana/provisioning/` — datasources (Loki, Fly Prometheus — **no DB datasource**), dashboard provider, **alert rules**.
 - `docker-compose.observability.yml` — runs the stack (local: `loki`+`grafana`; Fly: + `log-shipper`).
 
 ## Deploy options (host decided later)
@@ -78,4 +82,7 @@ Labels stay low-cardinality (`app`,`service`,`level`); high-cardinality fields a
 
 Wire a contact point (Slack/email/PagerDuty) + notification policy at deploy time — the destination is environment-specific.
 
-> Note: financial-mutation audits live in the `AuditLog` table (interceptor, DB-only); the Audit dashboard reads them via the read-only `AuditDB` datasource. Event audits (`audit()`) also appear in Loki as `[AUDIT]` lines.
+> Audit visibility is **log-based, with zero Grafana→DB access**: the Prisma
+> interceptor emits a redacted `[AUDIT]` line per financial mutation (the full
+> before/after stays in the immutable `AuditLog` table), `audit()` emits one for
+> auth/security events, and the audit dashboard queries them via Loki.

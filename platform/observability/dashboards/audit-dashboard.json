@@ -3,56 +3,57 @@
   "uid": "kanaku-audit",
   "tags": ["kanaku", "audit"],
   "schemaVersion": 39,
-  "version": 1,
+  "version": 2,
   "refresh": "1m",
   "time": { "from": "now-24h", "to": "now" },
   "templating": {
     "list": [
-      { "name": "ds", "type": "datasource", "query": "postgres", "label": "Audit DB", "current": {} },
+      { "name": "ds", "type": "datasource", "query": "loki", "label": "Loki", "current": {} },
       { "name": "actor", "type": "textbox", "label": "Actor (userId)", "current": { "value": "" } },
       { "name": "reqid", "type": "textbox", "label": "Request ID", "current": { "value": "" } }
     ]
   },
   "panels": [
     {
-      "id": 1, "type": "timeseries", "title": "Audit events over time",
+      "id": 1, "type": "timeseries", "title": "Audit events over time (by action)",
       "gridPos": { "h": 7, "w": 16, "x": 0, "y": 0 },
-      "datasource": { "type": "postgres", "uid": "${ds}" },
+      "datasource": { "type": "loki", "uid": "${ds}" },
       "targets": [
-        { "format": "time_series", "rawSql": "SELECT $__timeGroupAlias(\"createdAt\", '1h'), action AS metric, count(*) AS value FROM \"AuditLog\" WHERE $__timeFilter(\"createdAt\") GROUP BY 1, action ORDER BY 1" }
+        { "expr": "sum by (event) (count_over_time({app=\"kanaku\"} |= \"[AUDIT]\" | json | event != `` [5m]))", "legendFormat": "{{event}}" }
       ]
     },
     {
-      "id": 2, "type": "stat", "title": "Failures (selected range)",
+      "id": 2, "type": "stat", "title": "Failure events (range)",
       "gridPos": { "h": 7, "w": 8, "x": 16, "y": 0 },
-      "datasource": { "type": "postgres", "uid": "${ds}" },
+      "datasource": { "type": "loki", "uid": "${ds}" },
       "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "steps": [ { "color": "green", "value": null }, { "color": "red", "value": 1 } ] } }, "overrides": [] },
       "targets": [
-        { "format": "table", "rawSql": "SELECT count(*) AS failures FROM \"AuditLog\" WHERE status = 'failure' AND $__timeFilter(\"createdAt\")" }
+        { "expr": "sum(count_over_time({app=\"kanaku\"} |= \"[AUDIT]\" | json | status = `failure` [$__range]))", "instant": true }
       ]
     },
     {
-      "id": 3, "type": "barchart", "title": "Top actions",
+      "id": 3, "type": "table", "title": "Top actions",
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 7 },
-      "datasource": { "type": "postgres", "uid": "${ds}" },
+      "datasource": { "type": "loki", "uid": "${ds}" },
       "targets": [
-        { "format": "table", "rawSql": "SELECT action, count(*) AS count FROM \"AuditLog\" WHERE $__timeFilter(\"createdAt\") GROUP BY action ORDER BY count DESC LIMIT 20" }
+        { "expr": "topk(20, sum by (event) (count_over_time({app=\"kanaku\"} |= \"[AUDIT]\" | json | event != `` [$__range])))", "instant": true, "format": "table" }
       ]
     },
     {
-      "id": 4, "type": "barchart", "title": "Top actors (userId)",
+      "id": 4, "type": "table", "title": "Top actors (userId)",
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 7 },
-      "datasource": { "type": "postgres", "uid": "${ds}" },
+      "datasource": { "type": "loki", "uid": "${ds}" },
       "targets": [
-        { "format": "table", "rawSql": "SELECT \"userId\", count(*) AS count FROM \"AuditLog\" WHERE $__timeFilter(\"createdAt\") GROUP BY \"userId\" ORDER BY count DESC LIMIT 20" }
+        { "expr": "topk(20, sum by (userId) (count_over_time({app=\"kanaku\"} |= \"[AUDIT]\" | json | userId != `` [$__range])))", "instant": true, "format": "table" }
       ]
     },
     {
-      "id": 5, "type": "table", "title": "Audit records — search by actor / request ID (filters above)",
+      "id": 5, "type": "logs", "title": "Audit records — search by actor / request ID (filters above)",
       "gridPos": { "h": 11, "w": 24, "x": 0, "y": 15 },
-      "datasource": { "type": "postgres", "uid": "${ds}" },
+      "datasource": { "type": "loki", "uid": "${ds}" },
+      "options": { "showTime": true, "wrapLogMessage": true, "dedupStrategy": "none" },
       "targets": [
-        { "format": "table", "rawSql": "SELECT \"createdAt\", \"userId\" AS actor, action, resource, status, \"requestId\", ip FROM \"AuditLog\" WHERE $__timeFilter(\"createdAt\") AND (''='${actor}' OR \"userId\" = '${actor}') AND (''='${reqid}' OR \"requestId\" = '${reqid}') ORDER BY \"createdAt\" DESC LIMIT 200" }
+        { "expr": "{app=\"kanaku\"} |= \"[AUDIT]\" | json | userId =~ `${actor:value}.*` | requestId =~ `${reqid:value}.*`" }
       ]
     }
   ]

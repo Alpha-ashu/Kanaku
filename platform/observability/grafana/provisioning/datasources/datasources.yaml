@@ -26,18 +26,10 @@ datasources:
     secureJsonData:
       httpHeaderValue1: Bearer ${FLY_PROMETHEUS_TOKEN}
 
-  # Read-only connection to the immutable AuditLog table — the authoritative
-  # audit source (all financial mutations + events). Use a READ-ONLY DB role.
-  - name: AuditDB
-    uid: auditdb
-    type: postgres
-    access: proxy
-    url: ${AUDIT_DB_HOST}
-    user: ${AUDIT_DB_USER}
-    database: ${AUDIT_DB_NAME:-postgres}
-    isDefault: false
-    jsonData:
-      sslmode: require
-      postgresVersion: 1500
-    secureJsonData:
-      password: ${AUDIT_DB_PASSWORD}
+# DELIBERATELY NO Postgres/AuditDB datasource: Grafana must never have a network
+# path or credentials to the production database. Audit visibility comes entirely
+# from the centralized log stream — the Prisma interceptor emits a redacted
+# `[AUDIT]` log line for every financial mutation (alongside the immutable
+# AuditLog DB row), and audit() emits one for security/auth events. The audit
+# dashboard queries those via Loki. The immutable AuditLog table remains the
+# authoritative system-of-record, untouched by Grafana.

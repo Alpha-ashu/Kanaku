@@ -27,10 +27,8 @@ services:
       LOKI_URL: http://loki:3100
       PROMETHEUS_URL: ${PROMETHEUS_URL:-https://api.fly.io/prometheus/personal}
       FLY_PROMETHEUS_TOKEN: ${FLY_PROMETHEUS_TOKEN:-}
-      AUDIT_DB_HOST: ${AUDIT_DB_HOST:-}
-      AUDIT_DB_USER: ${AUDIT_DB_USER:-}
-      AUDIT_DB_NAME: ${AUDIT_DB_NAME:-postgres}
-      AUDIT_DB_PASSWORD: ${AUDIT_DB_PASSWORD:-}
+      # No AUDIT_DB_* — Grafana has NO connection to the production database.
+      # Audit visibility comes from the [AUDIT] log stream via Loki.
     volumes:
       - ./grafana/provisioning:/etc/grafana/provisioning:ro
       - ./dashboards:/var/lib/grafana/dashboards:ro

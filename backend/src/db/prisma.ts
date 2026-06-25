@@ -120,11 +120,20 @@ function buildClient(datasourceUrl?: string, opts?: { audit?: boolean }): Prisma
             const actor = getRequestActor();
             const bulk = BULK_OPS.has(operation);
             const resourceId = !bulk ? ((result as any)?.id ?? args?.where?.id ?? null) : null;
+            const resource = resourceId ? `${model}:${resourceId}` : model;
+            // Phase 4: emit a compact structured audit log line so financial
+            // mutations also reach the centralized log store (Loki) — letting the
+            // audit dashboard read from logs WITHOUT Grafana ever touching the DB.
+            // The full before/after stays in the immutable AuditLog table below.
+            logger.info('[AUDIT]', {
+              audit: true, event: auditAction(operation),
+              userId: actor.userId ?? 'system', resource, status: 'success',
+            });
             await (timed as any).auditLog.create({
               data: {
                 userId: actor.userId ?? 'system',
                 action: auditAction(operation),
-                resource: resourceId ? `${model}:${resourceId}` : model,
+                resource,
                 status: 'success',
                 ip: actor.ip ?? null,
                 userAgent: actor.userAgent ?? null,
