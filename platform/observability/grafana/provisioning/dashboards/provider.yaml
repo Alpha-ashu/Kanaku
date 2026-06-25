@@ -7,8 +7,11 @@ providers:
     orgId: 1
     folder: KANAKU
     type: file
-    disableDeletion: false
-    allowUiUpdates: true
+    # Git is the source of truth: provisioned dashboards are READ-ONLY in the UI.
+    # Changes must be committed to platform/observability/dashboards/ and
+    # redeployed — production UI edits cannot silently become the primary source.
+    disableDeletion: true
+    allowUiUpdates: false
     updateIntervalSeconds: 30
     options:
       path: /var/lib/grafana/dashboards

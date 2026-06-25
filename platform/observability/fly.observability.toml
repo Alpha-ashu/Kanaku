@@ -1,6 +1,6 @@
 # Machine 3 — kanaku-observability (Grafana + Loki + Vector). Deploy:
 #   fly apps create kanaku-observability
-#   fly volumes create loki_data    --size 10 -a kanaku-observability -r sin
+#   fly volumes create loki_data    --size 20 -a kanaku-observability -r sin
 #   fly volumes create grafana_data --size 1  -a kanaku-observability -r sin
 #   fly secrets set -a kanaku-observability \
 #       GF_SECURITY_ADMIN_PASSWORD=<strong> \

@@ -86,3 +86,13 @@ Wire a contact point (Slack/email/PagerDuty) + notification policy at deploy tim
 > interceptor emits a redacted `[AUDIT]` line per financial mutation (the full
 > before/after stays in the immutable `AuditLog` table), `audit()` emits one for
 > auth/security events, and the audit dashboard queries them via Loki.
+
+## Source of truth: Git (enforced)
+Dashboards, datasources, and alert rules are **provisioned from this repo** and are
+**read-only in the Grafana UI** (`allowUiUpdates: false`, `disableDeletion: true`).
+- Edit dashboards by changing `dashboards/*.json` here, commit, and redeploy.
+- Production UI edits cannot become the primary source — they won't persist a
+  redeploy and the provider blocks UI updates.
+- Any dashboard/alert change **must** be committed to
+  `platform/observability/` to take effect.
+
