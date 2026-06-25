@@ -25,6 +25,15 @@
 export const runWorkersInApiProcess = (): boolean =>
   process.env.RUN_WORKERS_IN_API !== 'false';
 
-/** Human-readable name for the current process — used in structured logs. */
-export const serviceName = (): 'api' | 'worker' =>
-  process.env.SERVICE_NAME === 'worker' ? 'worker' : 'api';
+/**
+ * Human-readable name for the current process — stamped on every structured log
+ * line. Resolved from SERVICE_NAME when set, else inferred from the entrypoint
+ * (dist/worker.js vs dist/server.js) so the worker self-identifies without any
+ * env needing to be set before imports are hoisted.
+ */
+export const serviceName = (): 'api' | 'worker' => {
+  if (process.env.SERVICE_NAME === 'worker' || process.env.SERVICE_NAME === 'api') {
+    return process.env.SERVICE_NAME;
+  }
+  return (process.argv[1] || '').includes('worker') ? 'worker' : 'api';
+};

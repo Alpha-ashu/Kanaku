@@ -1,82 +1,112 @@
-import winston from 'winston';
+import pino from 'pino';
+import { createStream } from 'rotating-file-stream';
 import { redact } from '../utils/redact';
-
-const isVercel = process.env.VERCEL === '1' || !!process.env.NOW_REGION;
-const isProduction = process.env.NODE_ENV === 'production';
+import { getRequestActor } from '../middleware/requestContext';
+import { serviceName } from './serviceRole';
 
 /**
- * Custom Winston format that deep-redacts PII / secret fields from every
- * structured log payload before it is serialized. Critical for fintech
- * apps where passwords, PINs, OTPs, and JWTs must never appear in logs.
+ * Centralized structured logging (Phase 3).
+ *
+ * Engine: Pino (high-performance structured JSON). The public surface keeps the
+ * Winston-style `logger.x(message, meta?)` signature so the ~hundreds of existing
+ * call sites are unchanged — but every line is now consistent JSON of the form:
+ *
+ *   { "timestamp", "level", "service", "requestId"?, "action"?, "message", ...meta }
+ *
+ * Cross-cutting guarantees:
+ *  - `requestId` is auto-injected from the active request context (AsyncLocalStorage)
+ *    so frontend → API → worker → audit logs share one correlation id.
+ *  - `service` ("api" | "worker") identifies the emitting process.
+ *  - Every meta payload is deep-redacted (passwords, PINs, OTPs, JWTs, refresh/
+ *    access tokens, private keys, financial secrets) via `redact()`.
+ *
+ * Destinations:
+ *  - stdout ALWAYS — Fly.io captures it (this is what makes worker logs visible
+ *    in `fly logs`, fixing the prior gap) and is the Loki ingestion path (Phase 4).
+ *  - a rotating, gzip-compressed file with 3-day / 100 MB retention for local
+ *    on-box history (skipped on Vercel's read-only FS).
  */
-const redactFormat = winston.format((info) => {
-  const { level, message, timestamp, stack, ...meta } = info as Record<string, unknown>;
-  const safeMeta = redact(meta) as Record<string, unknown>;
-  return { level, message, timestamp, stack, ...safeMeta } as winston.Logform.TransformableInfo;
-});
 
-const transports: winston.transport[] = [
-  new winston.transports.Console(),
-];
+const isVercel = process.env.VERCEL === '1' || !!process.env.NOW_REGION;
+const level = process.env.LOG_LEVEL || 'info';
 
-// Only add file transports if NOT on Vercel (read-only filesystem)
-if (!isVercel && !isProduction) {
+// ── Destinations ──────────────────────────────────────────────────────────────
+const streams: pino.StreamEntry[] = [{ level: level as pino.Level, stream: process.stdout }];
+
+if (!isVercel) {
   try {
-    transports.push(
-      new winston.transports.File({ filename: 'logs/error.log', level: 'error' }),
-      new winston.transports.File({ filename: 'logs/combined.log' })
-    );
+    // Rotation/retention: rotate daily OR at 100 MB, keep 3 generations, gzip
+    // rotated files, and hard-cap total rotated storage — no uncontrolled growth.
+    const fileStream = createStream('app.log', {
+      path: process.env.LOG_DIR || 'logs',
+      size: process.env.LOG_MAX_SIZE || '100M',
+      interval: process.env.LOG_ROTATE_INTERVAL || '1d',
+      maxFiles: Number(process.env.LOG_RETENTION_DAYS || 3),
+      maxSize: process.env.LOG_TOTAL_CAP || '100M',
+      compress: 'gzip',
+    });
+    fileStream.on('error', () => { /* never let a log-file error crash the process */ });
+    streams.push({ level: level as pino.Level, stream: fileStream });
   } catch (err) {
-    console.warn('Failed to initialize file transports:', err);
+    // eslint-disable-next-line no-console
+    console.warn('Failed to initialise rotating log file:', err);
   }
 }
 
-const logger = winston.createLogger({
-  level: process.env.LOG_LEVEL || 'info',
-  format: winston.format.combine(
-    winston.format.timestamp(),
-    winston.format.errors({ stack: true }),
-    redactFormat(),
-    winston.format.json()
-  ),
-  transports,
-});
+const base = pino(
+  {
+    level,
+    base: { service: serviceName() },
+    messageKey: 'message',
+    // Emit `"timestamp":"<ISO>"` (the agreed field name) instead of pino's default `time`.
+    timestamp: () => `,"timestamp":"${new Date().toISOString()}"`,
+    // Level as its string label ("info"/"warn"/…) rather than the numeric code.
+    formatters: { level: (label) => ({ level: label }) },
+  },
+  pino.multistream(streams),
+);
 
-if (process.env.NODE_ENV !== 'production') {
-  logger.add(
-    new winston.transports.Console({
-      format: winston.format.simple(),
-    })
-  );
-}
+// ── Winston-compatible facade ─────────────────────────────────────────────────
+type Meta = unknown;
 
-// API Keys and Credentials
+const buildFields = (meta: Meta): Record<string, unknown> => {
+  const fields: Record<string, unknown> = {};
+  const requestId = getRequestActor().requestId;
+  if (requestId) fields.requestId = requestId;
+
+  if (meta instanceof Error) {
+    fields.err = { name: meta.name, message: meta.message, stack: meta.stack };
+  } else if (meta && typeof meta === 'object') {
+    Object.assign(fields, redact(meta) as Record<string, unknown>);
+  } else if (meta !== undefined) {
+    fields.detail = meta;
+  }
+  return fields;
+};
+
+const emit = (lvl: 'info' | 'warn' | 'error' | 'debug', message: string, meta?: Meta): void => {
+  try {
+    base[lvl](buildFields(meta), message);
+  } catch {
+    // Logging must never throw and never affect request handling.
+  }
+};
+
+export const logger = {
+  info: (message: string, meta?: Meta): void => emit('info', message, meta),
+  warn: (message: string, meta?: Meta): void => emit('warn', message, meta),
+  error: (message: string, meta?: Meta): void => emit('error', message, meta),
+  debug: (message: string, meta?: Meta): void => emit('debug', message, meta),
+};
+
+// ── API key / credential helpers (preserved from the previous module) ─────────
 export const getApiKey = (key: string): string | undefined => {
   return process.env[key as keyof NodeJS.ProcessEnv] as string | undefined;
 };
 
-export const getStripeApiKey = (): string | undefined => {
-  return getApiKey('STRIPE_API_KEY');
-};
-
-export const getOpenAIApiKey = (): string | undefined => {
-  return getApiKey('OPENAI_API_KEY');
-};
-
-export const getGoogleApiKey = (): string | undefined => {
-  return getApiKey('GOOGLE_API_KEY');
-};
-
-export const getFirebaseSecret = (): string | undefined => {
-  return getApiKey('FIREBASE_SECRET');
-};
-
-export const getAwsSecretAccessKey = (): string | undefined => {
-  return getApiKey('AWS_SECRET_ACCESS_KEY');
-};
-
-export const getSendGridApiKey = (): string | undefined => {
-  return getApiKey('SENDGRID_API_KEY');
-};
-
-export { logger };
+export const getStripeApiKey = (): string | undefined => getApiKey('STRIPE_API_KEY');
+export const getOpenAIApiKey = (): string | undefined => getApiKey('OPENAI_API_KEY');
+export const getGoogleApiKey = (): string | undefined => getApiKey('GOOGLE_API_KEY');
+export const getFirebaseSecret = (): string | undefined => getApiKey('FIREBASE_SECRET');
+export const getAwsSecretAccessKey = (): string | undefined => getApiKey('AWS_SECRET_ACCESS_KEY');
+export const getSendGridApiKey = (): string | undefined => getApiKey('SENDGRID_API_KEY');
