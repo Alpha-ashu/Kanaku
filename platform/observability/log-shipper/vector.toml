@@ -51,8 +51,7 @@ labels.app = "kanaku"
 labels.service = "{{ service }}"
 labels.level = "{{ level }}"
 
-# Grafana Cloud only — uncomment and set LOKI_USER/LOKI_PASSWORD:
-# [sinks.loki.auth]
-# strategy = "basic"
-# user = "${LOKI_USER}"
-# password = "${LOKI_PASSWORD}"
+# Grafana Cloud only: add a [sinks.loki.auth] block (strategy = basic, with your
+# Cloud user/key). Omitted for self-hosted Loki (no auth). NOTE: Vector resolves
+# every dollar-brace reference in this file (even in comments), so do NOT leave
+# unset placeholders here — add real auth env vars when you switch to Cloud.
