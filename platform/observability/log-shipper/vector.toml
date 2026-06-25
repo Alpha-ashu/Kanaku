@@ -29,10 +29,14 @@ auth.user_password.password = "${ACCESS_TOKEN}"
 type = "remap"
 inputs = ["fly"]
 source = '''
-parsed, err = parse_json(string!(.message))
-if err == null {
-  . = merge(., object!(parsed))
-}
+# 1) The NATS payload is the Fly log ENVELOPE (JSON): { fly, host, message, ... }.
+env, e1 = parse_json(string!(.message))
+if e1 == null { . = merge(., object!(env)) }
+# 2) .message is now the app's PINO JSON line (a string) — parse it and hoist its
+#    fields (service, level, requestId, message, timestamp, ...) to the top so the
+#    Loki labels resolve and `| json` extracts requestId at query time.
+app, e2 = parse_json(string!(.message))
+if e2 == null { . = merge(., object!(app)) }
 .service = .service || "unknown"
 .level = .level || "info"
 '''
