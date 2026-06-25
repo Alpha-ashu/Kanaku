@@ -234,6 +234,15 @@ export async function deliverNotification(row: OutboxRow): Promise<void> {
   const ds = parseDeliveryStatus(row.deliveryStatus);
   const pending = requested.filter((c) => !isTerminal(ds[c]));
 
+  // Delivery trace — emits the originating requestId for EVERY notification the
+  // worker handles (not just failures), so the request can be followed end-to-end
+  // through the worker in centralized logs.
+  if (pending.length > 0) {
+    logger.info(`[outbox] delivering ${row.id}`, {
+      notificationId: row.id, requestId: row.requestId ?? undefined, channels: pending,
+    });
+  }
+
   if (pending.length === 0) {
     // Nothing to do — reconcile a stuck 'pending'/'retrying' row to terminal.
     const anySent = requested.some((c) => ds[c] === 'sent');
