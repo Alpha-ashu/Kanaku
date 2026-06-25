@@ -13,6 +13,7 @@
  * Lifecycle mirrors server.ts (graceful shutdown + last-resort safety nets) so
  * the two entrypoints behave identically under signals and fatal errors.
  */
+import http from 'http';
 import 'dotenv/config';
 import { logger } from './config/logger';
 import { closeRedis, initRedis } from './cache/redis';
@@ -20,8 +21,30 @@ import { closePurposeClients } from './config/redis-connections';
 import { startAIBackgroundJobs, stopAIBackgroundJobs } from './features/ai/ai.engine';
 import { startNotificationOutbox, stopNotificationOutbox } from './workers/index';
 import { startCleanupWorker, stopCleanupWorker } from './workers/cleanup.worker';
+import { getWorkerHealth } from './workers/health';
 
 logger.info('Worker starting', { service: 'worker' });
+
+// ── Internal health server ───────────────────────────────────────────────────
+// Liveness/health for the worker. Bound to the Fly private network only — NOT
+// declared under any [http_service]/[[services]] in fly.toml, so it is not
+// publicly routable (the worker stays free of public endpoints). Fly's machine
+// health check (fly.toml `[checks]`) probes /health and restarts the machine if
+// the outbox stops draining. `GET /health` → 200 (ok|starting) | 503 (stale).
+const HEALTH_PORT = Number(process.env.WORKER_HEALTH_PORT || 9090);
+const healthServer = http.createServer((req, res) => {
+  if (req.method === 'GET' && (req.url === '/health' || req.url === '/health/worker')) {
+    const { healthy, body } = getWorkerHealth();
+    res.writeHead(healthy ? 200 : 503, { 'content-type': 'application/json' });
+    res.end(JSON.stringify(body));
+    return;
+  }
+  res.writeHead(404, { 'content-type': 'application/json' });
+  res.end(JSON.stringify({ error: 'not_found' }));
+});
+healthServer.listen(HEALTH_PORT, () => {
+  logger.info(`Worker health server listening on :${HEALTH_PORT}`, { service: 'worker' });
+});
 
 void initRedis();
 
@@ -48,6 +71,7 @@ const shutdown = async (signal: string) => {
   stopAIBackgroundJobs();
   stopCleanupWorker();
   await stopNotificationOutbox();
+  healthServer.close();
   await closePurposeClients();
   await closeRedis();
   process.exit(0);

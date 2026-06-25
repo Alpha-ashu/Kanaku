@@ -20,6 +20,7 @@ import { logger } from '../config/logger';
 import { prisma } from '../db/prisma';
 import { sendNotificationEmail } from '../emails';
 import { sendPushNotification, initializeFirebase } from '../config/firebase';
+import { markOutboxDrain } from './health';
 
 // ── Delivery policy ──────────────────────────────────────────────────────────
 export const MAX_ATTEMPTS = Number(process.env.NOTIFICATION_MAX_ATTEMPTS || 5);
@@ -319,6 +320,7 @@ export async function drainNotificationOutbox(): Promise<number> {
     for (const row of due) {
       await deliverNotification(row);
     }
+    markOutboxDrain(due.length); // liveness heartbeat for worker health monitoring
     return due.length;
   } catch (err) {
     logger.error('[outbox] drain failed', { error: err instanceof Error ? err.message : String(err) });
