@@ -51,7 +51,7 @@ out_of_order_action = "accept"
 # LOW-cardinality labels ONLY. requestId / userId / entityId are searched as JSON
 # CONTENT via LogQL (| json | requestId="…") — never as labels, which would
 # explode Loki streams. This mirrors the metrics rule from Phase 3.
-labels.app = "kanaku"
+labels.app = "{{ fly.app.name }}"
 labels.service = "{{ service }}"
 labels.level = "{{ level }}"
 
