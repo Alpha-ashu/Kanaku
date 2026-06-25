@@ -17,6 +17,7 @@
  */
 
 import type { NextFunction, Request, Response } from 'express';
+import { httpRequestsTotal, httpRequestDuration } from '../config/metrics';
 
 interface RouteMetric {
   count: number;
@@ -73,6 +74,7 @@ export const metricsMiddleware = (req: Request, res: Response, next: NextFunctio
   // Defer the route lookup until we have a matched route (after Express
   // routing). We capture the *eventual* route on `res.finish` instead of
   // freezing it here so wildcards / 404s land in the right bucket.
+  let recorded = false;
   const finalize = () => {
     const route = normalizeRoute(req);
     const m = getOrCreate(route);
@@ -93,6 +95,13 @@ export const metricsMiddleware = (req: Request, res: Response, next: NextFunctio
       m.latencies[Math.floor(Math.random() * MAX_SAMPLES)] = elapsedMs;
     } else {
       m.latencies.push(elapsedMs);
+    }
+
+    // Prometheus exposition (guard the finish+close double-fire so we count once).
+    if (!recorded) {
+      recorded = true;
+      httpRequestsTotal.inc({ method: req.method, route, status_class: `${Math.floor(status / 100)}xx` });
+      httpRequestDuration.observe({ method: req.method, route }, elapsedMs / 1000);
     }
   };
 

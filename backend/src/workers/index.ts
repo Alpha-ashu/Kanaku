@@ -21,6 +21,10 @@ import { prisma } from '../db/prisma';
 import { sendNotificationEmail } from '../emails';
 import { sendPushNotification, initializeFirebase } from '../config/firebase';
 import { markOutboxDrain } from './health';
+import {
+  outboxDrainsTotal, outboxDrainDuration, outboxQueueDepth,
+  notificationDeliveriesTotal, notificationOutcomesTotal, workerJobFailuresTotal,
+} from '../config/metrics';
 
 // ── Delivery policy ──────────────────────────────────────────────────────────
 export const MAX_ATTEMPTS = Number(process.env.NOTIFICATION_MAX_ATTEMPTS || 5);
@@ -246,7 +250,9 @@ export async function deliverNotification(row: OutboxRow): Promise<void> {
     try {
       const job = { data: await buildJob(row, channel) };
       await (channel === 'email' ? processEmail(job) : processPush(job));
+      notificationDeliveriesTotal.inc({ channel, status: 'sent' });
     } catch (err) {
+      notificationDeliveriesTotal.inc({ channel, status: 'failed' });
       lastError = (err instanceof Error ? err.message : String(err)).slice(0, 500);
       logger.warn(`[outbox] ${channel} delivery failed for ${row.id} (attempt ${attemptsMade}/${MAX_ATTEMPTS})`, {
         error: lastError,
@@ -269,6 +275,7 @@ export async function deliverNotification(row: OutboxRow): Promise<void> {
 
   if (stillPending.length > 0) {
     // Some channel can still be retried — schedule the next attempt.
+    notificationOutcomesTotal.inc({ outcome: 'retrying' });
     await prisma.notification
       .update({
         where: { id: row.id },
@@ -285,6 +292,7 @@ export async function deliverNotification(row: OutboxRow): Promise<void> {
 
   // All channels terminal: sent if at least one delivered, else failed.
   const anySent = requested.some((c) => freshDs[c] === 'sent');
+  notificationOutcomesTotal.inc({ outcome: anySent ? 'sent' : 'failed' });
   await prisma.notification
     .update({
       where: { id: row.id },
@@ -303,6 +311,7 @@ let draining = false;
 export async function drainNotificationOutbox(): Promise<number> {
   if (draining) return 0; // never let ticks overlap
   draining = true;
+  const endTimer = outboxDrainDuration.startTimer();
   try {
     const now = new Date();
     const due = (await prisma.notification.findMany({
@@ -324,11 +333,22 @@ export async function drainNotificationOutbox(): Promise<number> {
       await deliverNotification(row);
     }
     markOutboxDrain(due.length); // liveness heartbeat for worker health monitoring
+    outboxDrainsTotal.inc();
+    // Queue depth: a full batch means there may be more behind it — count then.
+    let depth = due.length;
+    if (due.length === OUTBOX_BATCH) {
+      depth = await prisma.notification.count({
+        where: { status: { in: ['pending', 'retrying'] }, deletedAt: null },
+      });
+    }
+    outboxQueueDepth.set(depth);
     return due.length;
   } catch (err) {
+    workerJobFailuresTotal.inc({ job: 'outbox' });
     logger.error('[outbox] drain failed', { error: err instanceof Error ? err.message : String(err) });
     return 0;
   } finally {
+    endTimer();
     draining = false;
   }
 }

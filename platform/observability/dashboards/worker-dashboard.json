@@ -1,0 +1,52 @@
+{
+  "title": "KANAKU — Worker",
+  "uid": "kanaku-worker",
+  "tags": ["kanaku", "worker"],
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "30s",
+  "time": { "from": "now-6h", "to": "now" },
+  "templating": {
+    "list": [
+      { "name": "datasource", "type": "datasource", "query": "prometheus", "label": "Datasource", "current": {} }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1, "type": "timeseries", "title": "Outbox drain rate (ticks/s) & failures",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "rate(kanaku_outbox_drains_total{service=\"worker\"}[5m])", "legendFormat": "drains/s" },
+        { "expr": "rate(kanaku_worker_job_failures_total{service=\"worker\"}[5m])", "legendFormat": "failures/s {{job}}" }
+      ]
+    },
+    {
+      "id": 2, "type": "timeseries", "title": "Outbox queue depth",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "kanaku_outbox_queue_depth{service=\"worker\"}", "legendFormat": "pending+retrying" }
+      ]
+    },
+    {
+      "id": 3, "type": "timeseries", "title": "Drain latency p50 / p95 (s)",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum(rate(kanaku_outbox_drain_duration_seconds_bucket{service=\"worker\"}[5m])) by (le))", "legendFormat": "p50" },
+        { "expr": "histogram_quantile(0.95, sum(rate(kanaku_outbox_drain_duration_seconds_bucket{service=\"worker\"}[5m])) by (le))", "legendFormat": "p95" }
+      ]
+    },
+    {
+      "id": 4, "type": "stat", "title": "Worker uptime",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] },
+      "targets": [
+        { "expr": "time() - process_start_time_seconds{service=\"worker\"}", "legendFormat": "uptime" }
+      ]
+    }
+  ]
+}
