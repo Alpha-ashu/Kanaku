@@ -1,0 +1,48 @@
+# Machine 3 — kanaku-observability (Grafana + Loki + Vector). Deploy:
+#   fly apps create kanaku-observability
+#   fly volumes create loki_data    --size 10 -a kanaku-observability -r sin
+#   fly volumes create grafana_data --size 1  -a kanaku-observability -r sin
+#   fly secrets set -a kanaku-observability \
+#       GF_SECURITY_ADMIN_PASSWORD=<strong> \
+#       GF_SMTP_PASSWORD=<SENDGRID_API_KEY> \
+#       ORG=personal ACCESS_TOKEN=<fly-read-token> \
+#       ALERT_EMAIL=<ops@...> FLY_PROMETHEUS_TOKEN=<fly-read-token>
+#   fly deploy -c platform/observability/fly.observability.toml
+app = 'kanaku-observability'
+primary_region = 'sin'
+
+[build]
+  dockerfile = 'Dockerfile'
+
+[env]
+  GF_USERS_ALLOW_SIGN_UP    = 'false'
+  GF_AUTH_ANONYMOUS_ENABLED = 'false'
+  GF_SECURITY_ADMIN_USER    = 'admin'
+  # Alert email via our existing SendGrid (password = SENDGRID_API_KEY secret).
+  GF_SMTP_ENABLED      = 'true'
+  GF_SMTP_HOST         = 'smtp.sendgrid.net:587'
+  GF_SMTP_USER         = 'apikey'
+  GF_SMTP_FROM_ADDRESS = 'alerts@kanaku.com'   # must be a verified SendGrid sender
+  GF_SMTP_FROM_NAME    = 'KANAKU Alerts'
+  # Datasources read these:
+  LOKI_URL       = 'http://localhost:3100'
+  PROMETHEUS_URL = 'https://api.fly.io/prometheus/personal'
+
+# NO [http_service]: Grafana is PRIVATE (6PN only). Reach the UI via
+#   fly proxy 3000:3000 -a kanaku-observability   → http://localhost:3000
+# Loki (3100) is internal-only too; the app's log-shipper pushes over 6PN.
+# (To expose Grafana publicly later, add an [http_service] internal_port=3000 —
+#  Grafana's own auth still gates it; prefer Cloudflare Access / Fly tokens.)
+
+[[mounts]]
+  source      = 'loki_data'
+  destination = '/loki'
+
+[[mounts]]
+  source      = 'grafana_data'
+  destination = '/var/lib/grafana'
+
+[[vm]]
+  size   = 'shared-cpu-1x'
+  memory = '1024'
+  cpus   = 1
