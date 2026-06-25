@@ -9,6 +9,20 @@ primary_region = 'sin'
 [env]
   NODE_ENV = 'production'
   PORT     = '3000'
+  # API/Worker split: the public `app` process serves requests only; all
+  # background jobs run on the dedicated `worker` process. (Shared across both
+  # process groups — the worker entrypoint ignores it and always runs the jobs.)
+  RUN_WORKERS_IN_API = 'false'
+
+# Two process groups from ONE image (no extra app, no developer-workflow change):
+#   - `app`    is the only group bound to [http_service] below → public API + Socket.IO.
+#   - `worker` has no service → no public endpoints; runs the notification outbox,
+#     AI tasks and cleanup jobs in isolation.
+# `fly deploy` provisions/updates one machine per group automatically; roll back
+# with `fly releases` / `fly deploy` to a prior image (unchanged workflow).
+[processes]
+  app    = 'node dist/server.js'
+  worker = 'node dist/worker.js'
 
 [http_service]
   internal_port       = 3000

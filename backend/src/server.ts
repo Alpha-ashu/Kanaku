@@ -7,6 +7,7 @@ import { closePurposeClients } from './config/redis-connections';
 import { startAIBackgroundJobs, stopAIBackgroundJobs } from './features/ai/ai.engine';
 import { startNotificationOutbox, stopNotificationOutbox } from './workers/index';
 import { startCleanupWorker, stopCleanupWorker } from './workers/cleanup.worker';
+import { runWorkersInApiProcess } from './config/serviceRole';
 
 const PORT = process.env.PORT || 3000;
 
@@ -48,23 +49,37 @@ initializeSocket(server);
 
 void initRedis();
 
-// Start the notification outbox drainer (email/push delivery via PostgreSQL —
-// no Redis/queue broker). It polls for notification rows at status='pending'.
-try {
-  startNotificationOutbox();
-} catch (error) {
-  logger.error('Failed to start notification outbox drainer:', error);
-}
+// Background jobs (notification outbox, AI tasks, cleanup) run in THIS API
+// process only in single-machine / local mode. In the split Fly topology they
+// run exclusively on the dedicated worker machine (dist/worker.js) and the API
+// sets RUN_WORKERS_IN_API=false so a slow/failing job can never affect API
+// responsiveness. Default (flag unset) preserves the original single-process
+// behaviour exactly.
+if (runWorkersInApiProcess()) {
+  logger.info('[api] running background jobs in-process (combined mode)');
 
-startAIBackgroundJobs();
-startCleanupWorker();
+  // Start the notification outbox drainer (email/push delivery via PostgreSQL —
+  // no Redis/queue broker). It polls for notification rows at status='pending'.
+  try {
+    startNotificationOutbox();
+  } catch (error) {
+    logger.error('Failed to start notification outbox drainer:', error);
+  }
+
+  startAIBackgroundJobs();
+  startCleanupWorker();
+} else {
+  logger.info('[api] background jobs delegated to worker machine (RUN_WORKERS_IN_API=false)');
+}
 
 const shutdown = async (signal: string) => {
   logger.info(`Received ${signal}. Shutting down server...`);
   server.close(async () => {
-    stopAIBackgroundJobs();
-    stopCleanupWorker();
-    await stopNotificationOutbox();
+    if (runWorkersInApiProcess()) {
+      stopAIBackgroundJobs();
+      stopCleanupWorker();
+      await stopNotificationOutbox();
+    }
     await closePurposeClients();
     await closeRedis();
     process.exit(0);
