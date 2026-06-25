@@ -52,3 +52,17 @@ primary_region = 'sin'
 [[metrics]]
   port = 9091
   path = '/metrics'
+
+# Machine health check for the `worker` process group. Probes the worker's
+# internal health server (port 9090, private network only — not publicly routed)
+# and restarts the machine if the notification outbox stops draining. Scoped to
+# `worker` so it never runs against the API machine.
+[checks.worker_outbox]
+  type         = 'http'
+  port         = 9090
+  method       = 'get'
+  path         = '/health'
+  interval     = '30s'
+  timeout      = '5s'
+  grace_period = '30s'
+  processes    = ['worker']
