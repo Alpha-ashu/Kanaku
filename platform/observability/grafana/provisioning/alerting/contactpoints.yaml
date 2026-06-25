@@ -9,5 +9,5 @@ contactPoints:
       - uid: ops-email
         type: email
         settings:
-          addresses: ${ALERT_EMAIL:-ops@kanaku.com}
+          addresses: $__env{ALERT_EMAIL}
           singleEmail: false
