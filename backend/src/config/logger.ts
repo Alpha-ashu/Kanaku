@@ -98,15 +98,3 @@ export const logger = {
   error: (message: string, meta?: Meta): void => emit('error', message, meta),
   debug: (message: string, meta?: Meta): void => emit('debug', message, meta),
 };
-
-// ── API key / credential helpers (preserved from the previous module) ─────────
-export const getApiKey = (key: string): string | undefined => {
-  return process.env[key as keyof NodeJS.ProcessEnv] as string | undefined;
-};
-
-export const getStripeApiKey = (): string | undefined => getApiKey('STRIPE_API_KEY');
-export const getOpenAIApiKey = (): string | undefined => getApiKey('OPENAI_API_KEY');
-export const getGoogleApiKey = (): string | undefined => getApiKey('GOOGLE_API_KEY');
-export const getFirebaseSecret = (): string | undefined => getApiKey('FIREBASE_SECRET');
-export const getAwsSecretAccessKey = (): string | undefined => getApiKey('AWS_SECRET_ACCESS_KEY');
-export const getSendGridApiKey = (): string | undefined => getApiKey('SENDGRID_API_KEY');

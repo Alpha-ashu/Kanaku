@@ -1,4 +1,9 @@
 import 'dotenv/config';
+// `./config/env` is imported BEFORE `./app` and self-validates on import, so a
+// misconfigured production process fails fast — refusing to boot before any port
+// binds. `validateConfig('api')` below is the explicit, logged startup gate.
+import { validateConfig } from './config/env';
+import { initTracing } from './config/tracing';
 import http from 'http';
 import app from './app';
 import { logger } from './config/logger';
@@ -11,36 +16,13 @@ import { startNotificationOutbox, stopNotificationOutbox } from './workers/index
 import { startCleanupWorker, stopCleanupWorker } from './workers/cleanup.worker';
 import { runWorkersInApiProcess } from './config/serviceRole';
 
+// Explicit startup gate (config/env already validated on import above) +
+// distributed-tracing hook (a no-op until OpenTelemetry is adopted — see
+// docs/04_App_Flow/OPENTELEMETRY_READINESS.md).
+validateConfig('api');
+initTracing();
+
 const PORT = process.env.PORT || 3000;
-
-// API Keys and Credentials
-const getApiKey = (key: string): string | undefined => {
-  return process.env[key as keyof NodeJS.ProcessEnv] as string | undefined;
-};
-
-const getStripeApiKey = (): string | undefined => {
-  return getApiKey('STRIPE_API_KEY');
-};
-
-const getOpenAIApiKey = (): string | undefined => {
-  return getApiKey('OPENAI_API_KEY');
-};
-
-const getGoogleApiKey = (): string | undefined => {
-  return getApiKey('GOOGLE_API_KEY');
-};
-
-const getFirebaseSecret = (): string | undefined => {
-  return getApiKey('FIREBASE_SECRET');
-};
-
-const getAwsSecretAccessKey = (): string | undefined => {
-  return getApiKey('AWS_SECRET_ACCESS_KEY');
-};
-
-const getSendGridApiKey = (): string | undefined => {
-  return getApiKey('SENDGRID_API_KEY');
-};
 
 const server = app.listen(PORT, () => {
   logger.info(`Server running on port ${PORT}`);

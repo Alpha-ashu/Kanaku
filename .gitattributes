@@ -1,0 +1,5 @@
+# Shell scripts MUST keep LF endings — they run in Linux containers (the
+# observability image), where CRLF breaks the shebang (`/bin/sh^M: bad
+# interpreter`). The repo has core.autocrlf=true, so without this the working
+# tree (and Docker build context) would get CRLF.
+*.sh text eol=lf

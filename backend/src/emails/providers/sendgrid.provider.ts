@@ -5,15 +5,22 @@
  */
 import sgMail from '@sendgrid/mail';
 import { logger } from '../../config/logger';
+import { env } from '../../config/env';
 
-export const FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || 'shaik.social.life@gmail.com';
-export const FROM_NAME = process.env.SENDGRID_FROM_NAME || 'Kanaku';
+// Sender identity comes ONLY from validated configuration. SENDGRID_FROM_EMAIL is
+// a `required` config item in production (config/env.ts) — the app refuses to
+// boot without it — so there is deliberately NO fallback sender address here (and
+// never a personal one). FROM_NAME is a non-secret display label; 'Kanaku' is the
+// brand default when SENDGRID_FROM_NAME is unset.
+export const FROM_EMAIL = env.SENDGRID_FROM_EMAIL;
+export const FROM_NAME = env.SENDGRID_FROM_NAME || 'Kanaku';
 
 let initialized = false;
 function ensureInitialized(): boolean {
   if (initialized) return true;
   const key = process.env.SENDGRID_API_KEY;
-  if (!key) return false;
+  // Need both an API key AND a validated sender address to send.
+  if (!key || !FROM_EMAIL) return false;
   sgMail.setApiKey(key);
   initialized = true;
   return true;
@@ -30,15 +37,16 @@ export interface SendEmailOptions {
 }
 
 export async function sendEmail(opts: SendEmailOptions): Promise<boolean> {
-  if (!ensureInitialized()) {
-    logger.warn('[Email] SENDGRID_API_KEY not set — skipping send', { to: opts.to, subject: opts.subject });
+  const from = FROM_EMAIL;
+  if (!ensureInitialized() || !from) {
+    logger.warn('[Email] SendGrid not configured (SENDGRID_API_KEY / SENDGRID_FROM_EMAIL) — skipping send', { to: opts.to, subject: opts.subject });
     return false;
   }
 
   try {
     await sgMail.send({
       to: opts.to,
-      from: { email: FROM_EMAIL, name: FROM_NAME },
+      from: { email: from, name: FROM_NAME },
       subject: opts.subject,
       html: opts.html,
       categories: opts.categories,
