@@ -13,8 +13,13 @@
  * Lifecycle mirrors server.ts (graceful shutdown + last-resort safety nets) so
  * the two entrypoints behave identically under signals and fatal errors.
  */
-import http from 'http';
 import 'dotenv/config';
+// `./config/env` self-validates on import (imported before any job module), so a
+// misconfigured worker fails fast and refuses to run with partial config.
+// `validateConfig('worker')` below is the explicit, logged startup gate.
+import { validateConfig } from './config/env';
+import { initTracing } from './config/tracing';
+import http from 'http';
 import { logger } from './config/logger';
 import { closeRedis, initRedis } from './cache/redis';
 import { closePurposeClients } from './config/redis-connections';
@@ -23,6 +28,12 @@ import { startNotificationOutbox, stopNotificationOutbox } from './workers/index
 import { startCleanupWorker, stopCleanupWorker } from './workers/cleanup.worker';
 import { getWorkerHealth } from './workers/health';
 import { renderMetrics, metricsContentType } from './config/metrics';
+
+// Explicit startup gate (config/env already validated on import above) +
+// distributed-tracing hook (a no-op until OpenTelemetry is adopted — see
+// docs/04_App_Flow/OPENTELEMETRY_READINESS.md).
+validateConfig('worker');
+initTracing();
 
 logger.info('Worker starting');
 

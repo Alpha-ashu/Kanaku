@@ -7,6 +7,14 @@ talks to Postgres and a few external providers. **There is no Redis or queue
 broker:** cache, rate‑limiting and session state run in‑process, and async
 notification delivery runs off a PostgreSQL outbox drained by `node-cron`.
 
+The backend runs as **two Fly process groups from one image** — a public **`api`**
+process and a non‑public **`worker`** process (background jobs only) — and is
+fronted by a dedicated **observability machine** (self‑hosted Loki + Grafana +
+Prometheus + Vector). Every request carries a **`requestId`** that flows through
+structured **Pino** logs and the immutable **audit** trail. Each process
+**validates its configuration at startup and refuses to boot on missing required
+config** ([`config/env.ts`](../../backend/src/config/env.ts)).
+
 > Companion: [SEQUENCE_DIAGRAMS.md](./SEQUENCE_DIAGRAMS.md) — communication flows
 > for Login, PIN, Sync, and Account Aggregator.
 
@@ -26,18 +34,30 @@ flowchart TB
     Fn["Serverless fn — market data"]
   end
 
-  subgraph BACKEND["Backend — Fly.io 'kanaku' · region sin · shared-cpu-1x / 1 GB · single instance<br/>Node 22 + Express 4 + TypeScript"]
+  subgraph BACKEND["Backend — Fly.io 'kanaku' · region sin · Node 22 + Express 4 + TS<br/>two process groups from one image"]
     direction TB
-    MW["Middleware — global: requestId → timeout → helmet/CSP → CORS → sanitize → rateLimit<br/>per-route: auth (JWT + idle-session) → pinGate → validate (Zod)"]
-    Feat["Feature routers — MVP always-on +<br/>phase-gated (advisor · payments · aa)"]
-    InMem["In-process stores:<br/>cache · rate-limit · idle/PIN markers"]
-    WS["Socket.IO (realtime)"]
-    Outbox["Notification outbox drainer<br/>(node-cron, every 15s)"]
-    Prisma["Prisma ORM"]
+    subgraph APIPROC["api process (public · RUN_WORKERS_IN_API=false)"]
+      MW["Middleware — global: requestId → timeout → metrics → helmet/CSP → CORS → sanitize → rateLimit<br/>per-route: auth (JWT + idle-session) → pinGate → validate (Zod)"]
+      Feat["Feature routers — MVP always-on +<br/>phase-gated (advisor · payments · aa)"]
+      InMem["In-process stores:<br/>cache · rate-limit · idle/PIN markers"]
+      WS["Socket.IO (realtime)"]
+    end
+    subgraph WORKERPROC["worker process (no public port)"]
+      Outbox["Notification outbox drainer<br/>(node-cron, every 15s) + AI + cleanup jobs"]
+    end
+    Prisma["Prisma ORM (audit interceptor → immutable AuditLog)"]
+  end
+
+  subgraph OBS["Observability — Fly.io 'kanaku-observability' (Machine 3)"]
+    direction TB
+    Vector["Vector — ships api+worker stdout (Pino JSON) over 6PN"]
+    Loki["Loki — log store (14d)"]
+    Prom["Prometheus — scrapes /metrics:9091 over 6PN"]
+    Graf["Grafana — dashboards + multi-channel alerting<br/>(Loki + Prometheus only · no DB)"]
   end
 
   subgraph DATA["Data"]
-    PG[("PostgreSQL · Supabase<br/>48 models · pooler 6543 / direct 5432<br/>+ notification outbox rows")]
+    PG[("PostgreSQL · Supabase<br/>48 models · pooler 6543 / direct 5432<br/>+ notification outbox rows + immutable AuditLog")]
   end
 
   subgraph EXTERNAL["External services"]
@@ -71,6 +91,14 @@ flowchart TB
   Outbox -- "poll due rows" --> PG
   Outbox -- "email" --> SG
   Outbox -- "push" --> FCM
+
+  APIPROC -. "stdout · Pino JSON" .-> Vector
+  WORKERPROC -. "stdout · Pino JSON" .-> Vector
+  Vector --> Loki
+  Prom -. "scrape /metrics:9091 (6PN)" .-> APIPROC
+  Prom -. "scrape /metrics:9091 (6PN)" .-> WORKERPROC
+  Graf --> Loki
+  Graf --> Prom
 ```
 
 ## Request lifecycle
@@ -145,8 +173,10 @@ Tunable via env (all optional): `NOTIFICATION_OUTBOX_CRON` (default `*/15 * * * 
 | **Identity / storage** | Supabase Auth (GoTrue) as the server‑side credential backend; Supabase Storage (avatars, bills, signed URLs) |
 | **AI / OCR** | Google Gemini (`@google/generative-ai`), Tesseract.js + `sharp`, `pdf-parse`; guarded by circuit breakers |
 | **Open Banking** | Setu — RBI Account Aggregator (consent + HMAC webhooks; AES‑256‑GCM at rest) |
-| **Observability** | Winston logs; Prometheus metrics on `:9091/metrics`; `/api/v1/health/*` JSON probes |
-| **Backend host** | Fly.io — app `kanaku`, region `sin`, shared‑cpu‑1x / 1 GB, always‑on single machine |
+| **Logging** | **Pino** structured JSON on stdout (Winston‑compatible facade so call sites are unchanged); auto‑injected `requestId` + `service`; deep‑redacted; rotating on‑box file + shipped to Loki |
+| **Observability** | Self‑hosted **Loki + Grafana + Prometheus + Vector** on a dedicated Fly app `kanaku-observability` (Machine 3); Prometheus scrapes `:9091/metrics` over 6PN; Grafana dashboards + multi‑channel alerting; Grafana has **no production‑DB path** (audit visibility comes from the `[AUDIT]` log stream). `/api/v1/health/*` JSON probes remain. Tracing is **OpenTelemetry‑ready** (see [OPENTELEMETRY_READINESS.md](./OPENTELEMETRY_READINESS.md)) |
+| **Config validation** | Centralized startup validation per process — [`config/env.ts`](../../backend/src/config/env.ts) (Node, zod + service‑aware required/recommended manifest) and `platform/observability/validate-config.sh` (the observability container pre‑flight). Missing **required** config ⇒ the service refuses to boot |
+| **Backend host** | Fly.io — app `kanaku`, region `sin`, shared‑cpu‑1x / 1 GB; **two process groups** (`api` public + `worker` non‑public) from one image |
 | **CI/CD** | GitHub Actions → `flyctl deploy` (backend); Vercel auto‑deploy (frontend) |
 
 ## API surface
@@ -187,9 +217,29 @@ Redis/queue health; those were removed). Admin: `GET /api/v1/health/metrics`.
   `pending → processing → sent | retrying | failed` with exponential backoff. A row
   that exhausts its retries rests at `status='failed'` — the queryable dead‑letter
   equivalent (the `Notification @@index([status, nextRetryAt])` powers the sweep).
-- **Single backend instance.** The in‑memory stores assume one Fly machine
-  (`min_machines_running = 1`, auto‑stop off). Scaling horizontally would require
-  re‑homing cache / rate‑limit / session state to a shared store.
+- **API / worker split.** One image, two Fly process groups. The public **`api`**
+  process serves HTTP + Socket.IO and (with `RUN_WORKERS_IN_API=false`) runs **no**
+  background jobs; the non‑public **`worker`** process owns the outbox drainer, AI
+  and cleanup jobs, so a slow/failing job can never affect API responsiveness. The
+  default (flag unset) keeps jobs in the API process for local/single‑machine runs
+  — behaviour‑preserving. Both expose `/metrics:9091` on the private 6PN; the
+  worker also serves an internal `/health` for Fly checks. See
+  [`config/serviceRole.ts`](../../backend/src/config/serviceRole.ts).
+- **Single API instance.** The in‑memory stores (cache / rate‑limit / idle‑PIN
+  markers) live in the **`api`** process and assume one instance
+  (`min_machines_running = 1`, auto‑stop off). Horizontal scaling would require
+  re‑homing that state to a shared store. The worker holds no such state.
+- **Fail‑fast configuration.** Every process validates its configuration at
+  startup ([`config/env.ts`](../../backend/src/config/env.ts) for Node;
+  `validate-config.sh` for the observability container) and **refuses to boot** when
+  a required value is missing or malformed — `recommended` values only degrade a
+  feature (push, AA) and warn. This turns silent misconfiguration into an
+  immediate, explained startup failure.
+- **Observability & audit.** Structured Pino logs and Prometheus metrics flow to
+  the self‑hosted Machine 3 stack; the Prisma audit interceptor writes an
+  **immutable** `AuditLog` row (append‑only trigger) and a redacted `[AUDIT]` log
+  line per financial mutation. Distributed tracing is prepared but not yet enabled
+  ([OPENTELEMETRY_READINESS.md](./OPENTELEMETRY_READINESS.md)).
 - **Module phasing.** Deferred regulated modules stay unmounted unless
   `ENABLED_MODULES` opts them in; MVP modules are always mounted.
 

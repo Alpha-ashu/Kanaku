@@ -39,5 +39,13 @@ COPY grafana/provisioning           /etc/grafana/provisioning
 COPY dashboards                     /var/lib/grafana/dashboards
 COPY supervisord.conf               /etc/supervisor/conf.d/observability.conf
 
+# Fail-fast config validation (counterpart to the backend's validateConfig()):
+# entrypoint.sh runs validate-config.sh BEFORE supervisord, so a misconfigured
+# observability machine refuses to boot instead of coming up half-wired.
+COPY validate-config.sh             /usr/local/bin/validate-config.sh
+COPY entrypoint.sh                  /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/validate-config.sh /usr/local/bin/entrypoint.sh
+
 EXPOSE 3000 3100
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 CMD ["/usr/bin/supervisord", "-n", "-c", "/etc/supervisor/supervisord.conf"]
