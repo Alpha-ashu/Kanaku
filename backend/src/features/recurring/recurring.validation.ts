@@ -12,6 +12,12 @@ export const recurringCreateSchema = z.object({
   description: z.string().trim().max(200).optional(),
   merchant: z.string().trim().max(120).optional(),
   clientRequestId: z.string().trim().max(100).optional(),
+  type: z.enum(['income', 'expense', 'transfer']).optional(),
+  startDate: z.coerce.date().optional(),
+  endDate: z.coerce.date().optional(),
+  reminderDaysBefore: z.coerce.number().int().min(0).max(30).optional(),
+  notes: z.string().trim().max(500).optional(),
+  transferToAccountId: z.string().trim().optional(),
 });
 
 export const recurringUpdateSchema = recurringCreateSchema.partial().refine(

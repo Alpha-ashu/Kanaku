@@ -984,6 +984,8 @@ class BackendService {
     autoProcess?: boolean;
     accountId?: string;
     description?: string;
+    type?: 'income' | 'expense' | 'transfer';
+    notes?: string;
   }) {
     const response = await this.api.post('/recurring', data);
     return response.data?.data;
@@ -997,6 +999,8 @@ class BackendService {
     nextDueDate?: string;
     autoProcess?: boolean;
     description?: string;
+    type?: 'income' | 'expense' | 'transfer';
+    notes?: string;
   }) {
     const response = await this.api.put(`/recurring/${id}`, updates);
     return response.data?.data;

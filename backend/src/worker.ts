@@ -26,7 +26,9 @@ import { closePurposeClients } from './config/redis-connections';
 import { startAIBackgroundJobs, stopAIBackgroundJobs } from './features/ai/ai.engine';
 import { startNotificationOutbox, stopNotificationOutbox } from './workers/index';
 import { startCleanupWorker, stopCleanupWorker } from './workers/cleanup.worker';
+import { startRecurringWorker, stopRecurringWorker } from './workers/recurring.worker';
 import { getWorkerHealth } from './workers/health';
+import './features/budgets/budget.listener';
 import { renderMetrics, metricsContentType } from './config/metrics';
 
 // Explicit startup gate (config/env already validated on import above) +
@@ -77,6 +79,7 @@ try {
 
 startAIBackgroundJobs();
 startCleanupWorker();
+startRecurringWorker();
 
 logger.info('Worker ready — background jobs running');
 
@@ -88,6 +91,7 @@ const shutdown = async (signal: string) => {
 
   stopAIBackgroundJobs();
   stopCleanupWorker();
+  stopRecurringWorker();
   await stopNotificationOutbox();
   healthServer.close();
   await closePurposeClients();

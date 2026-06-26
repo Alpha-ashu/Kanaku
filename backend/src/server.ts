@@ -15,6 +15,7 @@ import { startAIBackgroundJobs, stopAIBackgroundJobs } from './features/ai/ai.en
 import { startNotificationOutbox, stopNotificationOutbox } from './workers/index';
 import { startCleanupWorker, stopCleanupWorker } from './workers/cleanup.worker';
 import { runWorkersInApiProcess } from './config/serviceRole';
+import './features/budgets/budget.listener';
 
 // Explicit startup gate (config/env already validated on import above) +
 // distributed-tracing hook (a no-op until OpenTelemetry is adopted — see

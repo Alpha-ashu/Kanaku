@@ -97,11 +97,13 @@ export const RecurringTransactions: React.FC = () => {
         const resp = await backendService.createRecurringTransaction({
           title: form.name.trim(),
           amount,
+          type: form.type as 'income' | 'expense' | 'transfer',
           category: form.category,
           interval: form.frequency as 'weekly' | 'monthly' | 'yearly',
           nextDueDate: nextDue.toISOString(),
           accountId: account?.cloudId,
           description: form.notes.trim() || undefined,
+          notes: form.notes.trim() || undefined,
         });
         if (resp?.id) {
           await db.recurringTransactions.update(localId as number, { cloudId: String(resp.id), syncStatus: 'synced' });

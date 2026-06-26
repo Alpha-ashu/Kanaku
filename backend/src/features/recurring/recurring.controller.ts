@@ -60,6 +60,12 @@ export const createRecurringTransaction = async (req: AuthRequest, res: Response
         merchant: body.merchant ? sanitize(body.merchant) : null,
         clientRequestId: body.clientRequestId || null,
         status: 'active',
+        type: body.type || 'expense',
+        startDate: body.startDate ? new Date(body.startDate) : null,
+        endDate: body.endDate ? new Date(body.endDate) : null,
+        reminderDaysBefore: body.reminderDaysBefore != null ? Number(body.reminderDaysBefore) : null,
+        notes: body.notes ? sanitize(body.notes) : null,
+        transferToAccountId: body.transferToAccountId || null,
       },
     });
 
@@ -109,6 +115,12 @@ export const updateRecurringTransaction = async (req: AuthRequest, res: Response
     if (body.description !== undefined) updates.description = body.description ? sanitize(body.description) : null;
     if (body.merchant !== undefined) updates.merchant = body.merchant ? sanitize(body.merchant) : null;
     if (body.status !== undefined) updates.status = body.status;
+    if (body.type !== undefined) updates.type = body.type;
+    if (body.startDate !== undefined) updates.startDate = body.startDate ? new Date(body.startDate) : null;
+    if (body.endDate !== undefined) updates.endDate = body.endDate ? new Date(body.endDate) : null;
+    if (body.reminderDaysBefore !== undefined) updates.reminderDaysBefore = body.reminderDaysBefore != null ? Number(body.reminderDaysBefore) : null;
+    if (body.notes !== undefined) updates.notes = body.notes ? sanitize(body.notes) : null;
+    if (body.transferToAccountId !== undefined) updates.transferToAccountId = body.transferToAccountId || null;
 
     const updated = await prisma.recurringTransaction.update({
       where: { id },

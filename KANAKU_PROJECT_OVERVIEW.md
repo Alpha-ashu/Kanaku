@@ -134,6 +134,14 @@ Kanaku/
 - DiceBear avatar SVGs are already served with a 1-week `immutable` cache header
   from the backend proxy, so they are browser-cached after first paint.
 
+### A2. Financial Hardening & Document Consolidation (2026-06-26)
+- **Recurring Transactions Hardening:** Updated Zod validation schemas (`recurringCreateSchema`, `recurringUpdateSchema` in `recurring.validation.ts`) to include missing parameters (`type`, `notes`, `transferToAccountId`). Controllers and routes were aligned to store these fields.
+- **Recurring Background Worker:** Created `recurring.worker.ts` and registered it in `worker.ts`. Runs hourly on a cron schedule (`0 * * * *`) to automatically post due recurring transactions, compute next due dates, and queue manual payment reminder notifications.
+- **Real-Time Budget Recalculator & Listener:** Implemented `budget.listener.ts` to subscribe to transaction events (`TRANSACTION_CREATED`, `TRANSACTION_UPDATED`, `TRANSACTION_DELETED`). It recomputes monthly budget spent and triggers threshold notifications (warning at 80%, critical limit breach at 100%) restricted to a single notification of each level per budget cycle.
+- **Unified Documentation Set:** Consolidated over 20+ scattered markdown files under `docs/` subdirectories into 6 clean, topic-specific documents: `01_PRD.md`, `02_TRD.md`, `03_UI_UX_DESIGN.md`, `04_APP_FLOW.md`, `05_DATABASE_SCHEMA.md`, and `06_IMPLEMENTATION_PLAN.md`. Cleaned up directories and updated `00_DOCS_INDEX.md`.
+- **Observability Setup & Secrets Rotation:** rotated the Fly API token, staged all required observability credentials to the Fly.io observability app, and verified the sender email in Brevo.
+- **Integration Test Coverage:** Created `recurring-processor.test.ts` and `budget-alerts.test.ts` under `quality/backend/tests/integration/` to guarantee correct processing logic.
+
 ---
 
 ## B. Authoritative Tech Stack (June 2026)
@@ -147,7 +155,7 @@ Kanaku/
 | Styling | **TailwindCSS 3** + shadcn/ui + Framer Motion | |
 | Routing | **React Router 6** | Lazy routes per feature |
 | State | React Context + `useReducer` + Zustand for local stores | No Redux |
-| Local DB | **Dexie 4** (IndexedDB) + `dexie-cloud-addon` | Offline-first, schema v14 |
+| Local DB | **Dexie 4** (IndexedDB) + `dexie-cloud-addon` | Offline-first, schema **v15** (gold.cloudId indexed) |
 | Network | `fetch` + custom `apiClient` (retry, dedupe, JWT refresh) | |
 | Realtime | **Socket.IO client** (user-scoped channels) + Supabase Realtime fallback | |
 | Mobile shell | **Capacitor 6** (Android first, iOS scaffold ready) | Native plugins: Camera, Filesystem, Preferences |
@@ -165,34 +173,35 @@ Kanaku/
 | Framework | **Express 4** | Modular feature routers |
 | ORM | **Prisma 6.19.2** | snake_case `@map`, transactional balance writes |
 | DB | **PostgreSQL 16** | Production: Fly.io managed; dev: Docker |
-| Cache / sessions | **Redis 7** (Upstash in prod) | OTP, JWT denylist, feature-gate cache, idempotency keys |
+| Cache / sessions | **In-process memory cache** | No external Redis/Dragonfly. Thread-safe fast cache for OTP, denylist, feature-gates |
 | Auth | **Supabase Auth** (identity) + **custom JWT** (authz) | Multi-strategy verify (see §E) |
 | Realtime | **Socket.IO 4** + Supabase Realtime | User-scoped, delta-based |
 | Validation | **Zod 3** middleware (`validate(schema)` per route) | |
-| Logging | **Winston** (structured JSON) + Morgan (HTTP) | |
-| Security | **Helmet 7**, **CORS** (allow-list), **express-rate-limit** (Redis store) | |
-| Background | BullMQ-style workers (recurring, AA polling, notifications) | |
+| Logging | **Winston** (structured JSON) + Pino (production log stream) + Morgan (HTTP) | |
+| Security | **Helmet 7**, **CORS** (allow-list), **express-rate-limit** (In-memory store) | |
+| Background | **PostgreSQL outbox + node-cron workers** | Drains outbox tables for recurring payments, notifications, and AA polling |
 | AI (OCR) | **Tesseract** (text) + **Google Gemini 1.5 Flash** (semantic structuring) | wrapped in `withCircuitBreaker` |
 | AI (Voice) | Keyword segmentation + Gemini for ambiguous transcripts | |
 | Email | Resend (transactional) | |
 | SMS / OTP | MSG91 + Twilio (regional fallback) | |
 | Account Aggregator | **Setu AA** (RBI-licensed AA) | |
-| Tests | **Jest 30** + Supertest | 30/30 suites green (2026-06-11) |
+| Tests | **Jest 30** + Supertest | Includes integration tests for recurring workers and budget alert engines |
 
 ### Database & Persistence Layout
 | Layer | Where | Used for |
 |---|---|---|
-| **PostgreSQL** | Fly Postgres (prod), Docker (dev) | System of record for users, accounts, transactions, balances, loans, goals, investments, advisor data, audit, AA consent |
-| **Redis** | Upstash (prod), Docker (dev) | OTP TTL, refresh-token blocklist, feature-gate cache, idempotency keys, rate-limit counters |
-| **Dexie (IndexedDB)** | Browser/WebView | Local-first mirror, schema v14, `sync: 'pending' \| 'synced' \| 'conflict'` per record |
+| **PostgreSQL** | Fly Postgres (prod), Docker (dev) | System of record for users, accounts, transactions, balances, loans, goals, investments, advisor data, audit logs, AA consent, and outbox tables |
+| **In-Process Cache** | Server Memory | OTP TTL, refresh-token blocklist, feature-gate cache, and rate-limiting counters |
+| **Dexie (IndexedDB)** | Browser/WebView | Local-first mirror, schema **v15**, `syncStatus: 'pending' \| 'synced' \| 'conflict'` per record |
 | **Supabase Storage** | Cloud bucket | Receipt images, KYC documents, profile avatars |
 | **dexie-cloud** | Managed sync | User-scoped delta sync between devices |
 
 ### API Surface
 - **All HTTP routes** are mounted under `/api/v1/<module>/...` (versioned).
 - **Edge proxies** in `api/` (Vercel) handle CORS and forward to Express on Fly.io.
-- **OpenAPI spec** generated from Zod schemas; published at `/api/v1/docs`.
+- **OpenAPI spec** generated from Zod schemas; published at `/api/v1/docs` (withSwagger).
 - **WebSocket namespace**: `wss://<host>/socket.io` with auth handshake via JWT.
+
 
 ### DevOps / Hosting
 | Concern | Choice |
