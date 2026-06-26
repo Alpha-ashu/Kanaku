@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { AppError } from '../../utils/AppError';
 import { logger } from '../../config/logger';
+import { asString } from '../../utils/requestParams';
 
 // In-memory cache to reduce API calls and avoid Yahoo Finance rate limits
 const cache = new Map<string, { data: any; expiry: number }>();
@@ -128,15 +129,15 @@ async function fetchYahooChart(ySymbol: string): Promise<{ meta: any, ySymbol: s
 }
 
 export const getMarkets = (req: Request, res: Response) => {
-  const market = ((req.query.market as string) || 'nse').toLowerCase() as MarketCategory;
+  const market = (asString(req.query.market) || 'nse').toLowerCase() as MarketCategory;
   const symbols = MARKET_DEFAULTS[market] || MARKET_DEFAULTS.nse;
   res.json({ success: true, status: 'success', market, symbols });
 };
 
 export const searchStocks = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const query = (req.query.q as string) || '';
-    const market = (req.query.market as string) || '';
+    const query = asString(req.query.q);
+    const market = asString(req.query.market);
     if (!query) {
       return res.json({ success: true, results: [] });
     }
@@ -197,8 +198,8 @@ export const searchStocks = async (req: Request, res: Response, next: NextFuncti
 
 export const getStockQuote = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    let symbol = (req.query.symbol as string) || '';
-    const market = (req.query.market as string) || '';
+    let symbol = asString(req.query.symbol);
+    const market = asString(req.query.market);
     if (!symbol) throw AppError.badRequest('Symbol is required', 'SYMBOL_REQUIRED');
 
     const ySymbol = toYahooSymbol(symbol, market);
@@ -259,8 +260,8 @@ export const getStockQuote = async (req: Request, res: Response, next: NextFunct
 
 export const getBatchQuotes = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const symbolsParam = (req.query.symbols as string) || '';
-    const market = (req.query.market as string) || '';
+    const symbolsParam = asString(req.query.symbols);
+    const market = asString(req.query.market);
     if (!symbolsParam) throw AppError.badRequest('Symbols are required', 'SYMBOLS_REQUIRED');
 
     const symbols = symbolsParam.split(',').map(s => s.trim()).filter(Boolean).slice(0, 20);

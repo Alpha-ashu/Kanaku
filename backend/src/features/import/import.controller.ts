@@ -31,6 +31,11 @@ function detectColumns(headers: string[], aliases: { amount: string[]; descripti
 
 //  CSV parsing (no external dependency) 
 
+// Bound the per-row scan so a maliciously huge single line (a CSV upload is
+// user-controlled) cannot drive an effectively unbounded loop (CWE-834 DoS).
+// Legitimate CSV rows are far below this cap, so real data is never truncated.
+const MAX_CSV_LINE_LENGTH = 100_000;
+
 function parseCSV(text: string): JsonRow[] {
   const lines = text.split(/\r?\n/).filter(l => l.trim());
   if (lines.length < 2) return [];
@@ -39,7 +44,8 @@ function parseCSV(text: string): JsonRow[] {
     const result: string[] = [];
     let current = '';
     let inQuotes = false;
-    for (let i = 0; i < line.length; i++) {
+    const len = Math.min(line.length, MAX_CSV_LINE_LENGTH);
+    for (let i = 0; i < len; i++) {
       const ch = line[i];
       if (ch === '"') {
         inQuotes = !inQuotes;

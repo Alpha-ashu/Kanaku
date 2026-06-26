@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { authMiddleware } from '../../middleware/auth';
 import { requireFeature } from '../../middleware/featureGate';
 import { validateBody } from '../../middleware/validate';
+import { rateLimit, authenticatedRateLimit } from '../../middleware/rateLimit';
 import * as PaymentController from './payment.controller';
 import {
   initiatePaymentSchema,
@@ -12,11 +13,20 @@ import {
 
 const router = Router();
 
-// Webhook endpoint (public, no auth)
-router.post('/webhook', PaymentController.handleWebhook);
+// Webhook endpoint (public, no auth). Unauthenticated + DB-backed, so it is the
+// prime DoS target — rate-limit per source IP (provider settlement traffic is
+// low-volume, so a generous cap won't impede legitimate callers).
+router.post(
+  '/webhook',
+  rateLimit({ windowMs: 60_000, max: 120, scope: 'payment-webhook' }),
+  PaymentController.handleWebhook,
+);
 
 // Protected routes
 router.use(authMiddleware);
+
+// Per-user rate limit across all authenticated payment operations (abuse/DoS guard).
+router.use(authenticatedRateLimit({ windowMs: 60_000, max: 60, scope: 'payment' }));
 
 // Whole module is governed by the admin feature flag `payments`. When the admin
 // has it disabled (the default — Phase 4 is deferred), every authenticated

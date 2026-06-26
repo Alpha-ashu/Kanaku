@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { logger } from '../../config/logger';
 import { validateParams, validateQuery, z } from '../../middleware/validate';
+import { asString } from '../../utils/requestParams';
 
 const router = Router();
 
@@ -43,7 +44,7 @@ router.get(
   validateQuery(avatarQuerySchema),
   async (req, res) => {
   const { style } = req.params;
-  const seed = req.query.seed as string;
+  const seed = asString(req.query.seed);
 
   if (!ALLOWED_STYLES_SET.has(style)) {
     res.status(400).json({ error: 'Invalid or disallowed avatar style' });
