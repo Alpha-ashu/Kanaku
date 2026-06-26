@@ -162,16 +162,30 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
     const digits = "0123456789";
     const specials = "!@#$%^&*()_+";
 
-    password += uppers[Math.floor(Math.random() * uppers.length)];
-    password += lowers[Math.floor(Math.random() * lowers.length)];
-    password += digits[Math.floor(Math.random() * digits.length)];
-    password += specials[Math.floor(Math.random() * specials.length)];
+    // Use the Web Crypto CSPRNG — Math.random() is not cryptographically secure
+    // and must not generate security-sensitive values like passwords (CWE-338).
+    const secureIndex = (maxExclusive: number): number => {
+      const buf = new Uint32Array(1);
+      crypto.getRandomValues(buf);
+      return buf[0] % maxExclusive;
+    };
+
+    password += uppers[secureIndex(uppers.length)];
+    password += lowers[secureIndex(lowers.length)];
+    password += digits[secureIndex(digits.length)];
+    password += specials[secureIndex(specials.length)];
 
     for (let i = 4; i < length; i++) {
-      password += charset[Math.floor(Math.random() * charset.length)];
+      password += charset[secureIndex(charset.length)];
     }
 
-    const shuffled = password.split('').sort(() => 0.5 - Math.random()).join('');
+    // Secure Fisher–Yates shuffle (replaces a Math.random() sort comparator).
+    const chars = password.split('');
+    for (let i = chars.length - 1; i > 0; i--) {
+      const j = secureIndex(i + 1);
+      [chars[i], chars[j]] = [chars[j], chars[i]];
+    }
+    const shuffled = chars.join('');
 
     setFormData(prev => ({
       ...prev,

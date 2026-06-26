@@ -3,6 +3,7 @@ import { AuthRequest, getUserId } from '../../middleware/auth';
 import { prisma, prismaRead } from '../../db/prisma';
 import { Prisma } from '../../db/prisma-client';
 import { AppError } from '../../utils/AppError';
+import { asString } from '../../utils/requestParams';
 
 /**
  * GET /api/v1/dashboard/summary
@@ -12,7 +13,9 @@ import { AppError } from '../../utils/AppError';
 export const getDashboardSummary = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const userId = getUserId(req);
-    const monthParam = req.query.month as string | undefined;
+    // Coerce to a real string (defeats array/object parameter tampering) — empty
+    // string is falsy, so an absent or tampered `month` falls back to the current month.
+    const monthParam = asString(req.query.month);
 
     const now = new Date();
     const year = monthParam ? parseInt(monthParam.slice(0, 4), 10) : now.getFullYear();

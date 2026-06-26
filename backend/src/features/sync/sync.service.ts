@@ -237,7 +237,10 @@ class SyncService {
         try {
           await this.processEntityOperation(userId, deviceId, entity, conflicts);
         } catch (error) {
-          console.error(`Failed to process ${entity.entityType} ${entity.entityId}:`, error);
+          // Pass the client-controlled entity fields as separate arguments, not
+          // interpolated into the format string, so a crafted entityType/entityId
+          // (e.g. "%s%s") cannot be interpreted as a console format specifier.
+          console.error('Failed to process sync entity:', entity.entityType, entity.entityId, error);
           const message = error instanceof Error ? error.message : 'Unknown sync error';
           errors.push(`Failed to sync ${entity.entityType}: ${message}`);
         }
