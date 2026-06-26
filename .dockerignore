@@ -1,1 +1,44 @@
+# Build context trimming. The backend image runs `npm ci` (build stage) and
+# `npm install` (runner stage), so NO node_modules from the host are needed —
+# shipping them only bloated the context to ~2.3GB. Keep all source + manifests
+# + configs so `npm run build:backend` is unaffected. Note: backend/Dockerfile
+# does an explicit `COPY frontend/package.json`, so frontend/ is NOT excluded
+# wholesale (only its heavy subdirs).
+
 fly.toml
+
+# Dependencies — regenerated inside the image from package-lock.json
+**/node_modules
+
+# VCS / CI metadata — not needed to build
+.git
+.github
+
+# Build outputs — backend/dist is rebuilt in-image; copied from the builder stage
+**/dist
+**/build
+frontend/.vite
+frontend/.next
+
+# Generated RBAC export (untracked working artifact)
+rbac-export/
+
+# Test / coverage / report artifacts
+**/coverage
+**/test-results
+**/playwright-report
+quality/reports
+**/*.webm
+**/*.zip
+
+# Secrets must never enter the build context (runtime secrets come from Fly)
+**/.env
+**/.env.*
+!**/.env.example
+
+# Logs, editor, OS cruft
+**/*.log
+.vscode
+.idea
+**/.DS_Store
+**/Thumbs.db
