@@ -447,35 +447,6 @@ export class AuthService {
     return advisors;
   }
 
-  // API Keys and Credentials
-  getApiKey(key: string): string | undefined {
-    return process.env[key as keyof NodeJS.ProcessEnv] as string | undefined;
-  }
-
-  getStripeApiKey(): string | undefined {
-    return this.getApiKey('STRIPE_API_KEY');
-  }
-
-  getOpenAIApiKey(): string | undefined {
-    return this.getApiKey('OPENAI_API_KEY');
-  }
-
-  getGoogleApiKey(): string | undefined {
-    return this.getApiKey('GOOGLE_API_KEY');
-  }
-
-  getFirebaseSecret(): string | undefined {
-    return this.getApiKey('FIREBASE_SECRET');
-  }
-
-  getAwsSecretAccessKey(): string | undefined {
-    return this.getApiKey('AWS_SECRET_ACCESS_KEY');
-  }
-
-  getSendGridApiKey(): string | undefined {
-    return this.getApiKey('SENDGRID_API_KEY');
-  }
-
   async deleteAccount(userId: string): Promise<void> {
     logger.info(`[AuthService] Deleting account for userId: ${userId}`);
 

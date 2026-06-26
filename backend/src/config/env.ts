@@ -12,7 +12,7 @@ const envSchema = z.object({
   SUPABASE_JWT_SECRET: z.string().min(1).optional(),
   // Auth source of truth. 'custom' = backend-issued JWT (default, current behavior).
   // 'supabase' = Supabase Auth canonical (Option A) — only flip after users are
-  // migrated and validated in staging. See docs/AUTH_CONSOLIDATION_PLAN.md.
+  // migrated and validated in staging.
   AUTH_CANONICAL: z.enum(['custom', 'supabase']).default('custom'),
   FRONTEND_URL: z.string().url().optional(),
   LOG_LEVEL: z.enum(['error', 'warn', 'info', 'debug']).default('info'),
@@ -43,12 +43,9 @@ const envSchema = z.object({
   // inactive this long. See backend/src/security/idleSession.ts.
   IDLE_TIMEOUT_MINUTES: z.coerce.number().nonnegative().optional(),
 
-  // API Keys and Credentials
-  STRIPE_API_KEY: z.string().optional(),
-  OPENAI_API_KEY: z.string().optional(),
-  GOOGLE_API_KEY: z.string().optional(),
-  FIREBASE_SECRET: z.string().optional(),
-  AWS_SECRET_ACCESS_KEY: z.string().optional(),
+  // API Keys and Credentials (only those actually consumed by the codebase).
+  OPENAI_API_KEY: z.string().optional(),   // voice transcription (whisper)
+  GOOGLE_API_KEY: z.string().optional(),   // Gemini / OCR engine
   RECEIPT_OCR_ENDPOINT: z.string().url().optional(),
   RECEIPT_OCR_API_KEY: z.string().optional(),
   RECEIPT_OCR_TIMEOUT_MS: z.coerce.number().int().positive().optional(),
