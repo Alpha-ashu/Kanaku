@@ -1,28 +1,26 @@
 # Kanaku Docs — Structured Documentation Set
 
-Numbered folders preserve reading order. All docs are Markdown for easy editing + version control. Diagrams use Mermaid (renders in GitHub/VS Code) or are exported from draw.io / Figma.
+All documentation files have been consolidated into single, topic-specific files directly in the `docs` directory to make reading, search, and editing efficient.
 
 > **📕 Build governance:** Before creating any new feature, read **`RULEBOOK.md`** (binding rules derived from the app Terms & Conditions + guardrails) and fill **`FEATURE_TEMPLATE.md`**. A feature is only "done" when the Rulebook §9 Definition of Done is satisfied.
 
 > **Depth note (updated):** These docs are now mined directly from the live codebase — **36 backend feature modules**, every `/api/v1` endpoint, **48 Prisma models**, **Dexie schema v15** (40+ local tables), and **every React screen/component**. For the full canonical context, also read the repo-root `KANAKU_PROJECT_OVERVIEW.md` (living architecture reference) and `docs/FEATURE_INVENTORY.md`.
 
-| # | Folder | Key deep docs |
-|---|--------|----------|
-| 01 | `01_Product_Requirement_Document_PRD/` | PRD_Main, User_Stories, Acceptance_Criteria, **Detailed_Feature_Specifications.md**, **Feature_List.csv** (every feature + sub-feature) |
-| 02 | `02_Technical_Requirement_Document_TRD/` | TRD_Main, Architecture_Diagram, **API_Specifications.md** (all endpoints), **Request_Response_Schemas.md** (exact Zod shapes), **openapi.yaml** (OpenAPI 3.1, Swagger-ready) + **api-viewer.html** (Redoc/Swagger viewer), **Tech_Stack.md** (authoritative) |
-| 03 | `03_UI_UX_Design/` | **Screen_Component_Map.md** (every screen→component→service→API), Wireframes, Sequence_Diagrams |
-| 04 | `04_App_Flow/` | **App_Flow.md** (end-to-end), **Module_Sequence_Diagrams.md** (per-module Mermaid), User_Journey, Sequence_Diagrams, Flowcharts |
-| 05 | `05_Backend_Data_Schema/` | **Database_Schema.md** (48 models), **Tables_Definition.md** (Dexie v15), ER_Diagram, API_Data_Contracts |
-| 06 | `06_Implementation_Plan/` | Roadmap, Sprint_Plan, Task_Breakdown, Prompts_For_AI, **Sprint_2026-07_Hardening.md** (security/reliability follow-ups) |
+| Topic # | Consolidated File | Scope & Contents |
+|:---:|---|---|
+| 01 | [01_PRD.md](./01_PRD.md) | Product Requirement Document: overview, goals, features, user stories, acceptance criteria, detailed feature specifications. |
+| 02 | [02_TRD.md](./02_TRD.md) | Technical Requirement Document: system architecture, tech stack reference, full API specifications catalog, validation schemas, third-party integrations, component diagrams. |
+| 03 | [03_UI_UX_DESIGN.md](./03_UI_UX_DESIGN.md) | UI/UX Design & Screen Map: marketing surfaces, auth and onboarding, accounts and transactions, wealth screens, social, context hooks, wireframes, and UI flows. |
+| 04 | [04_APP_FLOW.md](./04_APP_FLOW.md) | System Architecture & App Flows: Component diagrams, roles permission matrix, request lifecycles, and technical/non-technical visual flows (Login challenge, PIN gates, sync retry, Setu AA). |
+| 05 | [05_DATABASE_SCHEMA.md](./05_DATABASE_SCHEMA.md) | Database Schema & Tables Definition: cloud Postgres tables (Prisma) and client IndexedDB schemas (Dexie v15), Index history, local rules, and ERD diagrams. |
+| 06 | [06_IMPLEMENTATION_PLAN.md](./06_IMPLEMENTATION_PLAN.md) | Project Roadmap & Implementation Plan: sprint timelines, task breakdowns, dependency backlogs, and developer AI prompt guardrails. |
 
-## Traceability
-- Feature IDs in `Feature_List.csv` (e.g. `F-TXN-02`) are referenced from `Detailed_Feature_Specifications.md` and `API_Specifications.md`.
-- The endpoint catalog is generated from `backend/src/features/*/*.routes.ts`.
-- Local/cloud schema parity: `Tables_Definition.md` (Dexie v15) ↔ `Database_Schema.md` (Prisma).
+## Additional Resources
+- **[Feature_List.csv](./Feature_List.csv)**: Complete feature spreadsheet list.
+- **[openapi.yaml](./openapi.yaml)**: Swagger-ready API specifications.
+- **[api-viewer.html](./api-viewer.html)**: Interactive viewer interface for API specifications.
+- **[AUTOMATION_REGISTRY.md](./AUTOMATION_REGISTRY.md)**: Playwright test-ids reference.
+- **[DATABASE_MIGRATIONS.md](./DATABASE_MIGRATIONS.md)**: Database Baseline workflow documentation.
+- **[legal/](./legal/)**: User agreement and regulatory terms.
+- **[skills/](./skills/)**: Guidelines for engineering development agents.
 
-## Notes on binary files
-- `Feature_List.xlsx` → maintained as `Feature_List.csv` (version-control friendly).
-- `*.png` wireframes → add exported images into `03_UI_UX_Design/Wireframes/` (see its README).
-
-## Project guardrails
-See `06_Implementation_Plan/Prompts_For_AI.md` for the reusable guardrails prompt (offline-first, `/api/v1`, zod, server-authoritative money, ownership checks, no `any`).
