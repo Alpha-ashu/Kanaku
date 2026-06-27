@@ -1,0 +1,131 @@
+{
+  "profile": {
+    "uid": "usr_98421",
+    "display_name": "Ashraf",
+    "currency_code": "INR",
+    "country": "India"
+  },
+
+  "wallets": [
+    {
+      "wallet_id": "w1",
+      "title": "SBI Main Account",
+      "category": "bank",
+      "current_balance": 120000
+    },
+    {
+      "wallet_id": "w2",
+      "title": "Axis Savings",
+      "category": "bank",
+      "current_balance": 45000
+    },
+    {
+      "wallet_id": "w3",
+      "title": "HDFC Platinum Card",
+      "category": "credit",
+      "current_balance": -8000
+    },
+    {
+      "wallet_id": "w4",
+      "title": "Personal Cash",
+      "category": "cash",
+      "current_balance": 3200
+    },
+    {
+      "wallet_id": "w5",
+      "title": "PhonePe Wallet",
+      "category": "wallet",
+      "current_balance": 2700
+    }
+  ],
+
+  "contacts": [
+    { "cid": "c1", "name": "Ahmed", "relation": "friend" },
+    { "cid": "c2", "name": "Rahman", "relation": "friend" },
+    { "cid": "c3", "name": "Sameer", "relation": "colleague" },
+    { "cid": "c4", "name": "Faiz", "relation": "friend" }
+  ],
+
+  "records": [
+    {
+      "record_id": "r1",
+      "wallet_ref": "w1",
+      "kind": "income",
+      "amount": 60000,
+      "tag": "Salary",
+      "note": "Monthly salary",
+      "timestamp": "2026-03-01"
+    },
+    {
+      "record_id": "r2",
+      "wallet_ref": "w1",
+      "kind": "expense",
+      "amount": 1500,
+      "tag": "Food",
+      "note": "Dinner with friends",
+      "timestamp": "2026-03-02"
+    },
+    {
+      "record_id": "r3",
+      "wallet_ref": "w2",
+      "kind": "expense",
+      "amount": 900,
+      "tag": "Groceries",
+      "note": "Supermarket groceries",
+      "timestamp": "2026-03-03"
+    }
+  ],
+
+  "shared_costs": [
+    {
+      "event_id": "sc1",
+      "title": "Office Lunch",
+      "paid_by": "Ashraf",
+      "total": 1800,
+      "members": [
+        {"cid": "c1", "share": 600},
+        {"cid": "c2", "share": 600},
+        {"cid": "c3", "share": 600}
+      ]
+    }
+  ],
+
+  "debts": [
+    {
+      "debt_id": "d1",
+      "direction": "borrowed",
+      "contact": "c1",
+      "amount": 10000,
+      "due": "2026-06-01"
+    },
+    {
+      "debt_id": "d2",
+      "direction": "lent",
+      "contact": "c3",
+      "amount": 5000,
+      "due": "2026-05-01"
+    }
+  ],
+
+  "portfolio": [
+    {"asset": "TCS", "type": "stock", "qty": 15, "buy": 3500},
+    {"asset": "Infosys", "type": "stock", "qty": 10, "buy": 1500},
+    {"asset": "Gold ETF", "type": "gold", "qty": 4, "buy": 5900},
+    {"asset": "Silver Bar", "type": "silver", "qty": 12, "buy": 72}
+  ],
+
+  "targets": [
+    {
+      "goal": "Wedding Fund",
+      "target_value": 600000,
+      "saved": 150000,
+      "deadline": "2027-12-01"
+    },
+    {
+      "goal": "Europe Trip",
+      "target_value": 300000,
+      "saved": 50000,
+      "deadline": "2026-11-01"
+    }
+  ]
+}
