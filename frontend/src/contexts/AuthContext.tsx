@@ -665,6 +665,30 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [dataSyncError, setDataSyncError] = useState<string | null>(null);
   const activeSyncUserId = useRef<string | null>(null);
 
+  // Coordinated SOFT logout on confirmed session death (e.g. the refresh token
+  // was rejected). Dispatched by the apiClient / PINAuth instead of a hard
+  // `window.location` reload: clearing `user` re-renders the Login screen via
+  // state (no full-page reload, no lost SPA state). SecurityContext listens for
+  // the same event to re-lock the PIN. We only ever reach here for a GENUINE
+  // expiry — transient/network 401s no longer trigger it.
+  useEffect(() => {
+    const onSessionExpired = (e: Event) => {
+      const reason = (e as CustomEvent)?.detail?.reason || 'unknown';
+      console.log(`[KANAKU Redirect] → Login | Reason = Session Expired (${reason})`);
+      TokenManager.clearTokens();
+      backendService.clearToken();
+      socketClient.disconnect();
+      permissionService.clearPermissions();
+      setSession(null);
+      setUser(null);
+      setRole('user');
+      setDataReady(false);
+      setDataSyncing(false);
+    };
+    window.addEventListener('KANAKU_SESSION_EXPIRED', onSessionExpired);
+    return () => window.removeEventListener('KANAKU_SESSION_EXPIRED', onSessionExpired);
+  }, []);
+
   useEffect(() => {
     let isMounted = true;
     let unsubscribeUserCloudSync: (() => void) | null = null;

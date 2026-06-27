@@ -288,8 +288,8 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  }
  };
 
- // Session expired beyond recovery: clear the dead session and hard-navigate to
- // the login page so the user gets a fresh sign-in instead of a stuck PIN screen.
+ // Session expired beyond recovery: clear the dead session and return to the
+ // login page so the user gets a fresh sign-in instead of a stuck PIN screen.
  const handleReLogin = async () => {
  setIsReLoggingIn(true);
  try {
@@ -297,9 +297,14 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  clearSecurityData();
  await signOut();
  } catch {
- /* best-effort — redirect regardless so the user is never stranded */
+ /* best-effort — proceed regardless so the user is never stranded */
  } finally {
- window.location.href = '/login';
+ // Soft, coordinated logout (no page reload): signOut() above clears `user`
+ // so the Login screen renders via state; the event re-locks the PIN.
+ if (typeof window !== 'undefined') {
+ window.dispatchEvent(new CustomEvent('KANAKU_SESSION_EXPIRED', { detail: { reason: 'pin_relogin' } }));
+ }
+ setIsReLoggingIn(false);
  }
  };
 

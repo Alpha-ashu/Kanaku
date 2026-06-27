@@ -155,6 +155,24 @@ export const SecurityProvider: React.FC<{ children: ReactNode }> = ({ children }
     return () => window.removeEventListener('KANAKU_FORCE_PIN_LOCK', onForceLock);
   }, []);
 
+  // Re-lock when the backend session dies (refresh token rejected → SOFT logout
+  // dispatched by the apiClient). Without this, the unlock state in sessionStorage
+  // would survive into the next sign-in and the PIN screen would be skipped.
+  useEffect(() => {
+    const onSessionExpired = () => {
+      try { sessionStorage.setItem('KANAKU_lock_reason', 'session_expired'); } catch { /* ignore */ }
+      setIsAuthenticated(false);
+      setEncryptionKey(null);
+      sessionStorage.removeItem('session_active');
+      sessionStorage.removeItem('session_encryption_key');
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('KANAKU_PIN_LOCKED'));
+      }
+    };
+    window.addEventListener('KANAKU_SESSION_EXPIRED', onSessionExpired);
+    return () => window.removeEventListener('KANAKU_SESSION_EXPIRED', onSessionExpired);
+  }, []);
+
   const logout = async () => {
     handleLock();
 

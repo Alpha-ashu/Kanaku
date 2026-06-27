@@ -134,4 +134,63 @@ describe('api auth token resolution', () => {
       message: 'Something went wrong on our end. Please try again later.',
     });
   });
+
+  it('SOFT-logs out (dispatches KANAKU_SESSION_EXPIRED, no reload) when the refresh token is genuinely rejected', async () => {
+    TokenManager.setAccessToken('expired-access');
+    const dispatchSpy = vi.spyOn(window, 'dispatchEvent');
+
+    // Original call 401s AND the refresh endpoint 401s → fatal session death.
+    vi.stubGlobal('fetch', vi.fn((url: string) => {
+      if (String(url).includes('/auth/refresh')) {
+        return Promise.resolve({ ok: false, status: 401, statusText: 'Unauthorized', json: async () => ({}) });
+      }
+      return Promise.resolve({
+        ok: false, status: 401, statusText: 'Unauthorized',
+        json: async () => ({ code: 'HTTP_401', message: 'Unauthorized' }),
+      });
+    }));
+
+    await expect(api.auth.updateProfile({ firstName: 'Test' })).rejects.toMatchObject({
+      status: 401,
+      message: 'Your session has expired. Please sign in again.',
+    });
+
+    // Tokens cleared + a SOFT logout signalled — NOT a hard window.location reload.
+    expect(TokenManager.getAccessToken()).toBeNull();
+    const signalled = dispatchSpy.mock.calls.some(
+      ([e]) => e instanceof Event && e.type === 'KANAKU_SESSION_EXPIRED',
+    );
+    expect(signalled).toBe(true);
+    expect(window.location.pathname).toBe('/'); // no navigation occurred
+    dispatchSpy.mockRestore();
+  });
+
+  it('does NOT log out on a transient refresh failure (5xx / network) — the session is preserved', async () => {
+    TokenManager.setAccessToken('valid-access');
+    const dispatchSpy = vi.spyOn(window, 'dispatchEvent');
+
+    // Original call 401s, but the refresh endpoint is transiently down (503).
+    // A still-valid session must NOT be destroyed over a flaky connection.
+    vi.stubGlobal('fetch', vi.fn((url: string) => {
+      if (String(url).includes('/auth/refresh')) {
+        return Promise.resolve({ ok: false, status: 503, statusText: 'Service Unavailable', json: async () => ({}) });
+      }
+      return Promise.resolve({
+        ok: false, status: 401, statusText: 'Unauthorized',
+        json: async () => ({ code: 'HTTP_401', message: 'Unauthorized' }),
+      });
+    }));
+
+    await expect(api.auth.updateProfile({ firstName: 'Test' })).rejects.toMatchObject({
+      status: 503,
+    });
+
+    // Token preserved and NO session-expired signal → the user stays logged in.
+    expect(TokenManager.getAccessToken()).toBe('valid-access');
+    const signalled = dispatchSpy.mock.calls.some(
+      ([e]) => e instanceof Event && e.type === 'KANAKU_SESSION_EXPIRED',
+    );
+    expect(signalled).toBe(false);
+    dispatchSpy.mockRestore();
+  });
 });

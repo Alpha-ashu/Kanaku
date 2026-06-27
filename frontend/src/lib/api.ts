@@ -309,10 +309,18 @@ function handleAPIError(error: any): never {
 // Shared in-flight refresh promise so concurrent 401s only trigger one refresh
 let _refreshInFlight: Promise<string | null> | null = null;
 
+// Distinguishes a GENUINE session death (refresh token rejected with 401/403 →
+// the user must sign in again) from a TRANSIENT failure (network / timeout / 5xx
+// → keep the session; the call just fails and can be retried). Consumed by the
+// 401 handler so we never log a user out over a flaky connection.
+let _refreshFailureFatal = false;
+export const wasRefreshFailureFatal = (): boolean => _refreshFailureFatal;
+
 export const refreshAccessToken = async (): Promise<string | null> => {
   if (_refreshInFlight) return _refreshInFlight;
 
   _refreshInFlight = (async () => {
+    _refreshFailureFatal = false;
     try {
       // Direct fetch (NOT via apiClient) to avoid the 401→refresh recursion.
       // Web: the refresh token rides the HttpOnly cookie (credentials:'include')
@@ -331,7 +339,12 @@ export const refreshAccessToken = async (): Promise<string | null> => {
         },
         body: '{}',
       });
-      if (!res.ok) return null;
+      if (!res.ok) {
+        // 401/403 = refresh token genuinely rejected/expired → fatal (sign out).
+        // Anything else (5xx, etc.) is transient → keep the session intact.
+        _refreshFailureFatal = res.status === 401 || res.status === 403;
+        return null;
+      }
 
       const authHeader = res.headers?.get?.('Authorization') ?? null;
       let accessToken = authHeader ? authHeader.replace(/^Bearer\s+/i, '').trim() : null;
@@ -559,15 +572,29 @@ class HTTPClient {
                   } catch {
                     clearTimeout(retryTimeout);
                   }
+                  // We had a fresh, valid token but the call still failed — that is
+                  // an endpoint-specific 401/403, NOT session death. Surface the
+                  // error WITHOUT logging the user out.
+                  throw new APIError('UNAUTHORIZED', data.message || 'Request failed after refreshing the session.', response.status);
                 }
-                // Refresh failed or retry returned non-ok — clear the backend
-                // session and redirect. (Backend-managed auth: no Supabase session.)
-                TokenManager.clearTokens();
-                await new Promise(resolve => setTimeout(resolve, 100));
-                if (window.location.pathname !== '/login') {
-                  window.location.href = '/login';
+
+                // No new token. Only sign the user out when the refresh token was
+                // genuinely rejected (fatal). A transient failure (network / timeout /
+                // 5xx) must NOT destroy a still-valid session — fail soft so the call
+                // can be retried and the user stays logged in.
+                if (wasRefreshFailureFatal()) {
+                  TokenManager.clearTokens();
+                  if (typeof window !== 'undefined') {
+                    // Coordinated SOFT logout (no page reload): AuthContext clears the
+                    // user (→ Login renders via state) and SecurityContext re-locks the
+                    // PIN so the next sign-in correctly requires a fresh PIN unlock.
+                    window.dispatchEvent(new CustomEvent('KANAKU_SESSION_EXPIRED', {
+                      detail: { reason: 'refresh_rejected' },
+                    }));
+                  }
+                  throw new APIError('UNAUTHORIZED', 'Your session has expired. Please sign in again.', 401);
                 }
-                throw new APIError('UNAUTHORIZED', 'Your session has expired. Please sign in again.', 401);
+                throw new APIError('SERVICE_UNAVAILABLE', 'Could not reach the server. Please try again in a moment.', 503);
               }
               // isCredentialsError: fall through to standard error logging below
             }
