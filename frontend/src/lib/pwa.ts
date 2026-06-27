@@ -1,5 +1,21 @@
 // PWA Registration and Setup
+import { toast } from 'sonner';
+
 let hasReloadedForServiceWorkerUpdate = false;
+
+const showUpdateToast = (worker: ServiceWorker) => {
+  toast.info('New version available!', {
+    description: 'Update now to load the latest features and security fixes.',
+    duration: Infinity,
+    id: 'pwa-update-toast',
+    action: {
+      label: 'Update',
+      onClick: () => {
+        worker.postMessage({ type: 'SKIP_WAITING' });
+      },
+    },
+  });
+};
 
 export const registerServiceWorker = async () => {
   // Don't register service worker in development or for email confirmation flows
@@ -44,6 +60,20 @@ export const registerServiceWorker = async () => {
           return;
         }
 
+        // HARDENING ROUTE GUARD: Never automatically reload if the user is on the login page
+        // or during the registration/onboarding flow to avoid losing form data / active requests.
+        const isAuthFlowActive =
+          window.location.pathname.includes('/login') ||
+          window.location.pathname.includes('/register') ||
+          window.location.search.includes('confirm-email') ||
+          window.location.hash.includes('confirm-email') ||
+          document.getElementById('auth-flow-container') !== null;
+
+        if (isAuthFlowActive) {
+          console.warn('[PWA] Service Worker controller changed, but reload was suppressed during auth flow.');
+          return;
+        }
+
         hasReloadedForServiceWorkerUpdate = true;
         window.location.reload();
       });
@@ -51,7 +81,7 @@ export const registerServiceWorker = async () => {
       await registration.update();
 
       if (registration.waiting && navigator.serviceWorker.controller) {
-        registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+        showUpdateToast(registration.waiting);
       }
 
       // Check for updates periodically
@@ -67,12 +97,7 @@ export const registerServiceWorker = async () => {
             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
               // New service worker available
               console.log('New service worker available');
-              
-              // Show update notification
-              if (window.confirm('New version available! Reload to update?')) {
-                newWorker.postMessage({ type: 'SKIP_WAITING' });
-                window.location.reload();
-              }
+              showUpdateToast(newWorker);
             }
           });
         }

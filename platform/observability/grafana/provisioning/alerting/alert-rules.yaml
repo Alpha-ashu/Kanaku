@@ -107,7 +107,7 @@ groups:
           - refId: A
             datasourceUid: prometheus
             relativeTimeRange: { from: 300, to: 0 }
-            model: { expr: "min(up{app=\"kanaku\"})", instant: true, refId: A }
+            model: { expr: "sum(up{app=\"kanaku\"} * on(instance, region) group_left(process_group) (fly_instance_info{app=\"kanaku\"})) by (process_group)", instant: true, refId: A }
           - refId: B
             datasourceUid: __expr__
             model: { type: reduce, reducer: last, expression: A, refId: B }
