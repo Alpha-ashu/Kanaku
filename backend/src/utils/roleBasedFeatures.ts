@@ -29,7 +29,6 @@ export type FeatureKey =
   | 'aiManagement'
   | 'dashboard'
   | 'aiInsights'
-  | 'dataExport'
   | 'recurringTransactions'
   | 'budgetAlerts';
 
@@ -64,7 +63,6 @@ export const ROLE_FEATURES: Record<UserRole, Partial<Record<FeatureKey, boolean>
     aiManagement: true,
     dashboard: true,
     aiInsights: true,
-    dataExport: true,
     recurringTransactions: true,
     budgetAlerts: true,
   },
@@ -91,7 +89,6 @@ export const ROLE_FEATURES: Record<UserRole, Partial<Record<FeatureKey, boolean>
     aiManagement: false,
     dashboard: true,
     aiInsights: false,
-    dataExport: true,
     recurringTransactions: false,
     budgetAlerts: true,
   },
@@ -118,7 +115,6 @@ export const ROLE_FEATURES: Record<UserRole, Partial<Record<FeatureKey, boolean>
     aiManagement: false,
     dashboard: true,
     aiInsights: true,
-    dataExport: true,
     recurringTransactions: true,
     budgetAlerts: true,
   },
@@ -145,7 +141,6 @@ export const ROLE_FEATURES: Record<UserRole, Partial<Record<FeatureKey, boolean>
     aiManagement: false,
     dashboard: true,
     aiInsights: true,
-    dataExport: true,
     recurringTransactions: true,
     budgetAlerts: true,
   },
@@ -435,7 +430,6 @@ export function getVisibleFeaturesForRole(
     'aiManagement',
     'dashboard',
     'aiInsights',
-    'dataExport',
     'recurringTransactions',
     'budgetAlerts',
   ];

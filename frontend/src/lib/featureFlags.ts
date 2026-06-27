@@ -23,7 +23,6 @@ export type FeatureKey =
   | 'aiManagement'
   | 'dashboard'
   | 'aiInsights'
-  | 'dataExport'
   | 'recurringTransactions'
   | 'budgetAlerts';
 
@@ -50,7 +49,6 @@ export interface FeatureVisibility extends Record<FeatureKey, boolean> {
   aiManagement: boolean;
   dashboard: boolean;
   aiInsights: boolean;
-  dataExport: boolean;
   recurringTransactions: boolean;
   budgetAlerts: boolean;
 }
@@ -78,7 +76,6 @@ const DEFAULT_FEATURES: FeatureVisibility = {
   aiManagement: true,
   dashboard: true,
   aiInsights: true,
-  dataExport: true,
   recurringTransactions: true,
   budgetAlerts: true,
 };
@@ -117,7 +114,6 @@ export const ROLE_FEATURES: Record<UserRole, FeatureVisibility> = {
     aiManagement: true,
     dashboard: true,
     aiInsights: true,
-    dataExport: true,
     recurringTransactions: true,
     budgetAlerts: true,
   },
@@ -148,7 +144,6 @@ export const ROLE_FEATURES: Record<UserRole, FeatureVisibility> = {
     aiManagement: false,
     dashboard: true,      // structural
     aiInsights: false,
-    dataExport: false,
     recurringTransactions: false,
     budgetAlerts: false,
   },
@@ -175,7 +170,6 @@ export const ROLE_FEATURES: Record<UserRole, FeatureVisibility> = {
     aiManagement: false,
     dashboard: true,      // structural
     aiInsights: false,
-    dataExport: false,
     recurringTransactions: false,
     budgetAlerts: false,
   },
@@ -202,7 +196,6 @@ export const ROLE_FEATURES: Record<UserRole, FeatureVisibility> = {
     aiManagement: false,
     dashboard: true,      // structural
     aiInsights: false,
-    dataExport: false,
     recurringTransactions: false,
     budgetAlerts: false,
   },
@@ -279,8 +272,6 @@ export const PAGE_TO_FEATURE_MAPPING: Record<string, FeatureKey> = {
   'manager-advisor-verification': 'managerPanel',
   'advisor-verification': 'managerPanel',
   'ai-insights': 'aiInsights',
-  'export-reports': 'dataExport',
-  'data-export': 'dataExport',
   'recurring-transactions': 'recurringTransactions',
   'budget-alerts': 'budgetAlerts',
   'client-management': 'clientManagement',

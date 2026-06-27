@@ -79,7 +79,6 @@ const FEATURE_DEFAULT_ROLE_ACCESS: Record<string, Record<UserRole, boolean>> = {
   payments:               { admin: true, manager: false, advisor: false, user: false },
   clientManagement:       { admin: true, manager: false, advisor: false, user: false },
   aiInsights:             { admin: true, manager: false, advisor: false, user: false },
-  dataExport:             { admin: true, manager: false, advisor: false, user: false },
   recurringTransactions:  { admin: true, manager: false, advisor: false, user: false },
   budgetAlerts:           { admin: true, manager: false, advisor: false, user: false },
 };
@@ -101,7 +100,6 @@ const FEATURES_BASE: FeatureControlBase[] = [
   { name: 'User Profile', key: 'userProfile', description: 'Personal profile and account settings' },
   { name: 'Settings', key: 'settings', description: 'App preferences, currency, and theme settings' },
   { name: 'AI Insights', key: 'aiInsights', description: 'AI-powered spending insights and recommendations' },
-  { name: 'Data Export', key: 'dataExport', description: 'Export transactions and reports to CSV/PDF' },
   { name: 'Recurring Transactions', key: 'recurringTransactions', description: 'Automatic recurring income and expense entries' },
   { name: 'Budget Alerts', key: 'budgetAlerts', description: 'Notifications when spending exceeds budget limits' },
   { name: 'Client Management', key: 'clientManagement', description: 'Advisors and Managers can manage assigned clients' },

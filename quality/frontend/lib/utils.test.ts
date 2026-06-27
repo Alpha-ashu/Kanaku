@@ -86,7 +86,6 @@ function canAccessPage(page: string, features: FeatureVisibility): boolean {
     'ai-insights': 'aiInsights',
     'budget-alerts': 'budgetAlerts',
     'recurring-transactions': 'recurringTransactions',
-    'export-reports': 'dataExport',
   };
 
   const requiredFeature = PAGE_FEATURE_MAP[page];
@@ -100,7 +99,7 @@ describe('canAccessPage', () => {
     goals: true, groups: true, investments: true, reports: true,
     calendar: true, todoLists: true, transfer: true, settings: true,
     notifications: true, aiInsights: true,
-    budgetAlerts: true, recurringTransactions: true, dataExport: true,
+    budgetAlerts: true, recurringTransactions: true,
   };
 
   it('allows access to enabled features', () => {

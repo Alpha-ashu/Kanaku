@@ -1,6 +1,5 @@
 import { db } from './database';
 import { toast } from 'sonner';
-import { downloadFile } from './download';
 
 // Export all data to JSON
 export const exportDataToJSON = async (): Promise<string> => {
@@ -29,43 +28,6 @@ export const exportDataToJSON = async (): Promise<string> => {
   }
 };
 
-// Export data to CSV
-export const exportDataToCSV = async (dataType: 'transactions' | 'accounts' | 'loans' | 'all' = 'all'): Promise<string> => {
-  try {
-    let csvContent = '';
-
-    if (dataType === 'all' || dataType === 'transactions') {
-      const transactions = await db.transactions.toArray();
-      csvContent += 'Type,Amount,Account ID,Category,Description,Merchant,Date\n';
-      transactions.forEach(t => {
-        csvContent += `${t.type},${t.amount},${t.accountId},"${t.category}","${t.description}","${t.merchant || ''}",${new Date(t.date).toISOString()}\n`;
-      });
-      csvContent += '\n';
-    }
-
-    if (dataType === 'all' || dataType === 'accounts') {
-      const accounts = await db.accounts.toArray();
-      csvContent += 'Name,Type,Balance,Currency,IsActive\n';
-      accounts.forEach(a => {
-        csvContent += `"${a.name}",${a.type},${a.balance},${a.currency},${a.isActive}\n`;
-      });
-      csvContent += '\n';
-    }
-
-    if (dataType === 'all' || dataType === 'loans') {
-      const loans = await db.loans.toArray();
-      csvContent += 'Name,Type,Principal Amount,Outstanding Balance,Interest Rate,EMI Amount,Due Date,Status\n';
-      loans.forEach(l => {
-        csvContent += `"${l.name}",${l.type},${l.principalAmount},${l.outstandingBalance},${l.interestRate || ''},${l.emiAmount || ''},${l.dueDate ? new Date(l.dueDate).toISOString() : ''},${l.status}\n`;
-      });
-    }
-
-    return csvContent;
-  } catch (error) {
-    console.error('CSV export failed:', error);
-    throw error;
-  }
-};
 
 // Import data from JSON
 export const importDataFromJSON = async (jsonData: string): Promise<void> => {
@@ -136,38 +98,6 @@ export const importDataFromJSON = async (jsonData: string): Promise<void> => {
   }
 };
 
-// Download data to file
-export const downloadDataToFile = async (filename: string, dataType: 'json' | 'csv' = 'json'): Promise<void> => {
-  try {
-    let content: string;
-    let mimeType: string;
-
-    if (dataType === 'json') {
-      content = await exportDataToJSON();
-      mimeType = 'application/json';
-      filename = filename.endsWith('.json') ? filename : `${filename}.json`;
-    } else {
-      content = await exportDataToCSV();
-      mimeType = 'text/csv;charset=utf-8';
-      filename = filename.endsWith('.csv') ? filename : `${filename}.csv`;
-    }
-
-    const result = await downloadFile({
-      filename,
-      mimeType,
-      data: content,
-      shareTitle: 'Export data',
-    });
-
-    if (result !== 'cancelled') {
-      toast.success(`Data exported to ${filename}`);
-    }
-  } catch (error) {
-    console.error('Download failed:', error);
-    toast.error('Failed to export data');
-    throw error;
-  }
-};
 
 // Upload data from file
 export const uploadDataFromFile = async (file: File): Promise<void> => {

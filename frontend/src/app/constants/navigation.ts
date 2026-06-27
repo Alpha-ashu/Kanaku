@@ -14,7 +14,6 @@ import {
   Shield,
   Brain,
   Sparkles,
-  Download,
   Repeat,
   BellRing,
   Contact,
@@ -54,7 +53,6 @@ export const headerMenuItems: NavigationItem[] = [
   { id: 'settings', label: 'Settings', icon: Settings, feature: 'settings' },
   // Advanced features
   { id: 'ai-insights', label: 'AI Insights', icon: Sparkles, feature: 'aiInsights' },
-  { id: 'data-export', label: 'Data Export', icon: Download, feature: 'dataExport' },
   { id: 'recurring-transactions', label: 'Recurring', icon: Repeat, feature: 'recurringTransactions' },
   { id: 'budget-alerts', label: 'Budget Alerts', icon: BellRing, feature: 'budgetAlerts' },
   { id: 'client-management', label: 'Client Management', icon: Contact, feature: 'clientManagement' },
@@ -82,7 +80,6 @@ export const sidebarMenuItems: NavigationItem[] = [
   { id: 'notifications', label: 'Notifications', icon: Bell, feature: 'notifications' },
   // Advanced features — visible when enabled by admin
   { id: 'ai-insights', label: 'AI Insights', icon: Sparkles, feature: 'aiInsights' },
-  { id: 'data-export', label: 'Data Export', icon: Download, feature: 'dataExport' },
   { id: 'recurring-transactions', label: 'Recurring', icon: Repeat, feature: 'recurringTransactions' },
   { id: 'budget-alerts', label: 'Budget Alerts', icon: BellRing, feature: 'budgetAlerts' },
   { id: 'client-management', label: 'Clients', icon: Contact, feature: 'clientManagement', roles: ['admin', 'manager', 'advisor'] },

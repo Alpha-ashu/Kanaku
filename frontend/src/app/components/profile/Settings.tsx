@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { db } from '@/lib/database';
 import {
- Download, Upload, Trash2, Database, Globe,
+ Upload, Trash2, Database, Globe,
  Bell, ExternalLink, FileText,
  Smartphone, RefreshCw, Coins, Lock
 } from 'lucide-react';
@@ -15,7 +15,6 @@ import { PageHeader } from '@/app/components/ui/PageHeader';
 import { cn } from '@/lib/utils';
 import { useLiveQuery } from 'dexie-react-hooks';
 import {
- downloadDataToFile,
  createBackup,
  listBackups
 } from '@/lib/importExport';
@@ -222,16 +221,6 @@ export const Settings: React.FC = () => {
     setVisibleFeatures(updated);
     toast.success('Feature visibility updated');
   };
-
- const handleExportData = async (format: 'json' | 'csv' = 'json') => {
- try {
- const timestamp = new Date().toISOString().split('T')[0];
- const filename = `finance-life-backup-${timestamp}`;
- await downloadDataToFile(filename, format);
- } catch (error) {
- toast.error('Export failed');
- }
- };
 
  const handleCreateBackup = async () => {
  try {
@@ -601,7 +590,6 @@ export const Settings: React.FC = () => {
  },
  {
  id: 'data-management',
- featureKey: 'dataExport',
  node: (
  <motion.div
  key="data-management"
@@ -612,20 +600,6 @@ export const Settings: React.FC = () => {
  <h3 className="text-lg font-semibold text-gray-900">Data Management</h3>
  </div>
  <div className="divide-y divide-gray-200">
- <div className="p-6">
- <div className="flex items-center justify-between">
- <div className="flex items-center gap-3">
- <div className="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
- <Download className="text-green-600" size={20} />
- </div>
- <h4 className="font-medium text-gray-900">Export Data</h4>
- </div>
- <div className="flex gap-2">
- <button onClick={() => handleExportData('json')} className="px-4 py-2 bg-black text-white rounded-full hover:bg-gray-900 transition-all active:scale-95 shadow-lg" data-testid="settings-export-json-button">JSON</button>
- <button onClick={() => handleExportData('csv')} className="px-4 py-2 bg-black text-white rounded-full hover:bg-gray-900 transition-all active:scale-95 shadow-lg" data-testid="settings-export-csv-button">CSV</button>
- </div>
- </div>
- </div>
  <div className="p-6">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-3">

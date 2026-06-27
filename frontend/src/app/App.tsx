@@ -59,7 +59,6 @@ const AdminAdvisorVerification = lazy(() => import('@/app/components/admin/Admin
 const PayEMI = lazy(() => import('@/app/components/transactions/PayEMI').then(m => ({ default: m.PayEMI })));
 const Diagnostics = lazy(() => import('@/app/components/shared/Diagnostics').then(m => ({ default: m.Diagnostics })));
 const ManagerAdvisorVerification = lazy(() => import('@/app/components/manager/ManagerAdvisorVerification').then(m => ({ default: m.ManagerAdvisorVerification })));
-const ExportReports = lazy(() => import('@/app/components/features/ExportReports').then(m => ({ default: m.ExportReports })));
 const ToDoLists = lazy(() => import('@/app/components/features/ToDoLists').then(m => ({ default: m.ToDoLists })));
 const ToDoListDetail = lazy(() => import('@/app/components/features/ToDoListDetail').then(m => ({ default: m.ToDoListDetail })));
 const ToDoListShare = lazy(() => import('@/app/components/features/ToDoListShare').then(m => ({ default: m.ToDoListShare })));
@@ -237,8 +236,6 @@ const PAGE_REQUIRED_TABLES: Record<string, SyncedTableName[]> = {
   'todo-list-detail': ['to_do_lists', 'to_do_items', 'to_do_list_shares'],
   'todo-list-share': ['to_do_lists', 'to_do_items', 'to_do_list_shares'],
   reports: ['transactions', 'accounts'],
-  'export-reports': ['transactions', 'accounts'],
-  'data-export': ['transactions', 'accounts'],
   calendar: ['transactions', 'accounts'],
   'ai-insights': ['transactions', 'accounts', 'goals', 'investments'],
   'budget-alerts': ['accounts', 'transactions'],
@@ -940,7 +937,6 @@ const AppContent: React.FC = () => {
       case 'add-gold': return <AddGold />;
       case 'edit-investment': return <EditInvestment />;
       case 'reports': return <Reports />;
-      case 'export-reports': return <ExportReports />;
       case 'calendar': return <Calendar />;
       case 'todo-lists': return <ToDoLists />;
       case 'todo-list-detail': return <ToDoListDetail />;
@@ -976,7 +972,6 @@ const AppContent: React.FC = () => {
       case 'voice-review': return <VoiceReview />;
       case 'pay-emi': return <PayEMI />;
       case 'ai-insights': return <AIInsightsPage />;
-      case 'data-export': return <ExportReports />;
       case 'recurring-transactions': return <RecurringTransactions />;
       case 'budget-alerts': return <BudgetAlertsPage />;
       case 'client-management': return <ClientManagementPage />;
