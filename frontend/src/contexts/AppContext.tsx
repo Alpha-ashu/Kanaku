@@ -485,14 +485,21 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       try {
         const parsed = JSON.parse(adminSettings);
 
-        // DENY-BY-DEFAULT: Admin is the root configurator and always starts from
-        // code defaults. Non-admin roles start DENIED — they only receive access
-        // for feature keys that are explicitly present in the admin's saved DB
-        // settings. Any feature key absent from the DB (e.g. a newly-deployed
-        // feature not yet configured by admin) remains BLOCKED for non-admins.
+        // DENY-BY-DEFAULT for business features: non-admin roles only receive access
+        // for feature keys explicitly saved in the admin DB settings.
+        // EXCEPTION: structural shell features (dashboard, settings, notifications, etc.)
+        // are NOT stored in the DB flags table — they must be seeded from code defaults
+        // or the route guard will fire a redirect on the provisional-role frame (causing
+        // the "[Access Denied] User role admin cannot access page: dashboard" loop).
+        const STRUCTURAL_SHELL_KEYS: Array<keyof typeof roleFeatures> = [
+          'dashboard', 'settings', 'notifications', 'userProfile',
+          'managerPanel', 'advisorPanel',
+        ];
         const merged: Record<string, boolean> = role === 'admin'
           ? { ...roleFeatures }
-          : {};
+          : Object.fromEntries(
+              STRUCTURAL_SHELL_KEYS.map(k => [k, (roleFeatures as unknown as Record<string, boolean>)[k] ?? false])
+            );
 
         Object.entries(parsed).forEach(([key, value]: [string, any]) => {
           if (role !== 'admin') {

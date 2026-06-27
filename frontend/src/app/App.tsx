@@ -271,6 +271,7 @@ const AppContent: React.FC = () => {
   const closeOverlaysRef = useRef<() => boolean>(() => false);
   const lastStateLogged = useRef<string | null>(null);
   const hasTriggeredSyncRef = useRef<string | null>(null);
+  const hasAdminRedirectedRef = useRef(false);
   const [quickActionKey, setQuickActionKey] = useState(0);
   const [slidesViewed, setSlidesViewed] = useState(() => localStorage.getItem('onboarding_slides_viewed') === 'true');
 
@@ -480,7 +481,9 @@ const AppContent: React.FC = () => {
     }
   }, [user, isAuthenticated]);
 
-  // Trigger data sync after PIN verification
+  // Trigger data sync after PIN verification — runs once per user+auth session.
+  // currentPage is intentionally excluded from deps: we don't want to retrigger
+  // the full sync on every page navigation. Per-page syncs are handled below.
   useEffect(() => {
     if (user && isAuthenticated && !dataReady && !dataSyncing) {
       const syncKey = `${user.id}:${isAuthenticated}`;
@@ -488,11 +491,12 @@ const AppContent: React.FC = () => {
         return;
       }
       hasTriggeredSyncRef.current = syncKey;
-
-      const requiredTables = PAGE_REQUIRED_TABLES[currentPage] || [];
+      // Use empty tables on the admin page — admin console fetches its own data.
+      const requiredTables = currentPage === 'admin' ? [] : (PAGE_REQUIRED_TABLES[currentPage] || []);
       void triggerDataSync(requiredTables);
     }
-  }, [user, isAuthenticated, dataReady, dataSyncing, triggerDataSync, currentPage]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, isAuthenticated, dataReady, dataSyncing, triggerDataSync]);
 
   // SECURITY: re-sync the current page's tables when the network reconnects — only while
   // unlocked (replaces the eager re-sync removed from AuthContext.handleOnline).
@@ -518,15 +522,22 @@ const AppContent: React.FC = () => {
     }
   }, [currentPage, user, isAuthenticated, dataReady]);
 
-  // Ensure we land on dashboard after login when the URL is a stale auth path
-  // ALSO: Guard against disabled features
+  // Ensure we land on the correct default page after login, and guard disabled features.
   useEffect(() => {
     if (!user || authLoading) return;
     const staleAuthPaths = new Set(['login', 'signin', 'auth-callback', '']);
 
-    // 1. Handle stale auth paths (safe to do before dataReady)
+    const normalizedRole = role?.toLowerCase();
+    const isAdmin = normalizedRole === 'admin';
+
+    // 1. Handle stale auth paths (safe to do before dataReady).
+    //    Admin default redirect: only redirect from dashboard to /admin ONCE per session
+    //    using a ref to prevent an infinite loop (setCurrentPage → currentPage changes
+    //    → effect re-fires → redirect again).
     if (staleAuthPaths.has(currentPage)) {
-      if (visibleFeatures.dashboard) {
+      if (isAdmin) {
+        setCurrentPage('admin');
+      } else if (visibleFeatures.dashboard) {
         setCurrentPage('dashboard');
       } else {
         setCurrentPage('settings');
@@ -534,13 +545,24 @@ const AppContent: React.FC = () => {
       return;
     }
 
+    // Admin landing on dashboard: redirect to /admin exactly once per session.
+    if (currentPage === 'dashboard' && isAdmin && !hasAdminRedirectedRef.current) {
+      hasAdminRedirectedRef.current = true;
+      setCurrentPage('admin');
+      return;
+    }
+
+    // Reset the redirect guard when the user explicitly navigates away from admin pages,
+    // so re-login always gets redirected correctly.
+    if (!isAdmin) {
+      hasAdminRedirectedRef.current = false;
+    }
+
     // 2. Guard against disabled features — but ONLY once the backend role is resolved.
     // Without this check, the provisional role (set on permission-fetch timeout) fires
     // the guard and bounces the user off the correct page before the real role arrives.
     if (!dataReady) return;
 
-    const normalizedRole = role?.toLowerCase();
-    const isAdmin = normalizedRole === 'admin';
     const isManager = normalizedRole === 'manager';
 
     const isSystemAdminPage = ['admin', 'admin-feature-panel', 'admin-ai', 'ai-management', 'sync-monitor'].includes(currentPage);

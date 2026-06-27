@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useCallback, useRef, useMemo, useState, useEffect } from 'react';
 import { adminConsoleService, SystemStatsDto, AdminUserDto, UserActivityDto, UserStorageStatsDto } from '@/services/adminConsoleService';
 import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
 import { useApp } from '@/contexts/AppContext';
@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useFeatureFlags } from '@/hooks/useFeatureFlags';
 import { FeatureKey } from '@/lib/featureFlags';
 import {
- ChevronLeft, RotateCcw, Shield, Activity, Brain, LayoutDashboard, Wallet, Receipt,
+ ChevronLeft, ChevronRight, RotateCcw, Shield, Activity, Brain, LayoutDashboard, Wallet, Receipt,
  CreditCard, Target, Users, TrendingUp, BarChart3, Calendar, CheckSquare, Calculator,
  UserCog, Bell, User, Settings as SettingsIcon, ToggleLeft, ShieldCheck,
  Trash2, Ban, CheckCircle2, Database, CreditCard as CardIcon, Smartphone, Bot, UserCheck, FileText, PiggyBank, TrendingDown, ShoppingBag, AlertTriangle
@@ -29,82 +29,121 @@ export const AdminDashboard: React.FC = () => {
  const [userStorageStats, setUserStorageStats] = useState<UserStorageStatsDto | null>(null);
  const [storageLoading, setStorageLoading] = useState(false);
  const [loading, setLoading] = useState(true);
+  const [selectedRoleFilter, setSelectedRoleFilter] = useState<string>('all');
+  const [usersPage, setUsersPage] = useState<number>(1);
+  const itemsPerPage = 5;
+
+  const totalPages = Math.ceil(users.length / itemsPerPage);
+  const paginatedUsers = useMemo(() => {
+    const startIndex = (usersPage - 1) * itemsPerPage;
+    return users.slice(startIndex, startIndex + itemsPerPage);
+  }, [users, usersPage, itemsPerPage]);
+
+  useEffect(() => {
+    setUsersPage(1);
+  }, [users]);
+
+  const handleRoleFilterChange = async (newRole: string) => {
+    setSelectedRoleFilter(newRole);
+    try {
+      const u = await adminConsoleService.getUsers(newRole === 'all' ? undefined : newRole);
+      if (u) setUsers(u);
+    } catch (err) {
+      toast.error('Failed to filter users');
+    }
+  };
  const [deleteConfirm, setDeleteConfirm] = useState<{ open: boolean; user: AdminUserDto | null }>({ open: false, user: null });
  const [deleteLoading, setDeleteLoading] = useState(false);
 
- const fetchData = async () => {
- try {
- setLoading(true);
- const [s, u] = await Promise.all([
- adminConsoleService.getStats(),
- adminConsoleService.getUsers()
- ]);
- if (s) setStats(s);
- if (u) setUsers(u);
- } catch (err) {
- toast.error('Failed to connect to admin services');
- } finally {
- setLoading(false);
- }
- };
+  const hasFetchedRef = useRef(false);
+  const activityAbortRef = useRef<AbortController | null>(null);
 
- useEffect(() => {
- if (role === 'admin') {
- fetchData();
- }
- }, [role]);
+  // Stable fetch function — reads selectedRoleFilter from state via useCallback dep.
+  // This prevents the stale-closure bug where the effect captured the initial value.
+  const fetchData = useCallback(async (roleFilter = selectedRoleFilter) => {
+    try {
+      setLoading(true);
+      const [s, u] = await Promise.all([
+        adminConsoleService.getStats(),
+        adminConsoleService.getUsers(roleFilter === 'all' ? undefined : roleFilter)
+      ]);
+      if (s) setStats(s);
+      if (u) setUsers(u);
+    } catch (err) {
+      toast.error('Failed to connect to admin services');
+    } finally {
+      setLoading(false);
+    }
+  }, [selectedRoleFilter]);
+
+  // Initial load: fire exactly once when the component mounts with a confirmed admin role.
+  // Using a ref guard prevents the double-fetch that occurs when `role` transitions from
+  // the provisional value to the real backend value (which re-runs the effect).
+  useEffect(() => {
+    if (role !== 'admin' || hasFetchedRef.current) return;
+    hasFetchedRef.current = true;
+    void fetchData();
+  }, [role, fetchData]);
 
  const fetchUserActivity = async (user: AdminUserDto) => {
-  try {
-  setSelectedUser(user);
-  setUserActivity(null);
-  setUserStorageStats(null);
-  const activity = await adminConsoleService.getActivity(user.id);
-  if (activity) setUserActivity(activity);
-  // Fetch storage stats concurrently
-  setStorageLoading(true);
-  try {
-    const storage = await adminConsoleService.getUserStorageStats(user.id);
-    setUserStorageStats(storage);
-  } catch {
-    // non-blocking
-  } finally {
-    setStorageLoading(false);
-  }
-  } catch (err) {
-  toast.error('Failed to load user activity');
-  }
- };
+    // Cancel any previous in-flight activity/storage request to avoid stale responses
+    // overwriting the freshly selected user's data (multiple clicks → only last wins).
+    if (activityAbortRef.current) {
+      activityAbortRef.current.abort();
+    }
+    const controller = new AbortController();
+    activityAbortRef.current = controller;
+
+    try {
+      setSelectedUser(user);
+      setUserActivity(null);
+      setUserStorageStats(null);
+      const activity = await adminConsoleService.getActivity(user.id);
+      if (!controller.signal.aborted && activity) setUserActivity(activity);
+      // Fetch storage stats concurrently
+      setStorageLoading(true);
+      try {
+        const storage = await adminConsoleService.getUserStorageStats(user.id);
+        if (!controller.signal.aborted) setUserStorageStats(storage);
+      } catch {
+        // non-blocking
+      } finally {
+        if (!controller.signal.aborted) setStorageLoading(false);
+      }
+    } catch (err) {
+      if (!controller.signal.aborted) toast.error('Failed to load user activity');
+    }
+  };
 
  const handleToggleStatus = async (user: AdminUserDto) => {
- const newStatus = user.status === 'blocked' ? 'verified' : 'blocked';
- if (!confirm(`Are you sure you want to ${newStatus === 'blocked' ? 'BLOCK' : 'UNBLOCK'} ${user.name}?`)) return;
+   const newStatus = user.status === 'blocked' ? 'verified' : 'blocked';
+   if (!confirm(`Are you sure you want to ${newStatus === 'blocked' ? 'BLOCK' : 'UNBLOCK'} ${user.name}?`)) return;
 
- try {
- await adminConsoleService.toggleUserStatus(user.id, newStatus);
- toast.success(`User ${newStatus} successfully`);
- fetchData(); // Refresh list
- if (selectedUser?.id === user.id) {
- setSelectedUser({ ...user, status: newStatus });
- }
- } catch (err) {
- toast.error('Failed to update user status');
- }
+   try {
+     await adminConsoleService.toggleUserStatus(user.id, newStatus);
+     toast.success(`User ${newStatus} successfully`);
+     void fetchData();
+     if (selectedUser?.id === user.id) {
+       setSelectedUser({ ...user, status: newStatus });
+     }
+   } catch (err) {
+     toast.error('Failed to update user status');
+   }
  };
 
  const handleRoleChange = async (user: AdminUserDto, newRole: 'admin' | 'manager' | 'advisor' | 'user') => {
- if (!confirm(`Are you sure you want to change ${user.name}'s role to ${newRole.toUpperCase()}?`)) return;
+   if (!confirm(`Are you sure you want to change ${user.name}'s role to ${newRole.toUpperCase()}?`)) return;
 
- try {
- await adminConsoleService.updateUserRole(user.id, newRole);
- toast.success(`Role updated to ${newRole.toUpperCase()} successfully`);
- fetchData(); // Refresh list
- if (selectedUser?.id === user.id) {
- setSelectedUser({ ...user, role: newRole });
- }
- } catch (err) {
- toast.error('Failed to update user role');
- }
+   try {
+     await adminConsoleService.updateUserRole(user.id, newRole);
+     toast.success(`Role updated to ${newRole.toUpperCase()} successfully`);
+     void fetchData();
+     if (selectedUser?.id === user.id) {
+       setSelectedUser({ ...user, role: newRole });
+     }
+   } catch (err) {
+     toast.error('Failed to update user role');
+   }
  };
 
  const handleReset = () => {
@@ -179,6 +218,27 @@ export const AdminDashboard: React.FC = () => {
  <p className="text-slate-500 font-medium text-sm mt-0.5">System monitoring & feature control</p>
  </div>
  </div>
+
+  {/* Role Filter (only visible in User Activity tab) */}
+  {activeTab === 'users' ? (
+    <div className="flex items-center gap-2 bg-slate-50 border border-slate-200/60 px-4 py-2 rounded-2xl shadow-sm hover:border-slate-300 transition-colors">
+      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest select-none">Filter Role</span>
+      <select
+        value={selectedRoleFilter}
+        onChange={(e) => handleRoleFilterChange(e.target.value)}
+        className="bg-transparent text-slate-900 text-xs font-bold outline-none cursor-pointer pr-1"
+        data-testid="admin-dashboard-role-filter"
+      >
+        <option value="all">All Roles</option>
+        <option value="user">Users</option>
+        <option value="advisor">Advisors</option>
+        <option value="manager">Managers</option>
+        <option value="admin">Admins</option>
+      </select>
+    </div>
+  ) : (
+    <div className="hidden md:block w-32" />
+  )}
 
  {/* Tab Navigation */}
  <div className="flex gap-1 bg-slate-100 p-1 rounded-2xl w-fit">
@@ -319,7 +379,7 @@ export const AdminDashboard: React.FC = () => {
  <p className="text-xs text-slate-400 font-medium mt-1">Select a user to view detailed activity</p>
  </div>
  <div className="flex-1 overflow-y-auto">
- {users.map(user => (
+ {paginatedUsers.map(user => (
  <button data-testid={`admin-dashboard-button-3-${user.id}`}
  key={user.id}
  onClick={() => fetchUserActivity(user)}
@@ -339,7 +399,52 @@ export const AdminDashboard: React.FC = () => {
  </div>
  </button>
  ))}
+ {users.length === 0 && (
+   <div className="flex flex-col items-center justify-center h-full py-12 px-4 text-center opacity-40">
+     <User size={32} className="mb-2 text-slate-400" />
+     <p className="text-xs font-bold text-slate-900">No users found</p>
+     <p className="text-[10px] text-slate-500 mt-0.5">Try changing the filter option</p>
+   </div>
+ )}
  </div>
+
+ {/* Pagination Controls */}
+ {totalPages > 1 && (
+   <div className="p-4 border-t border-slate-50 flex items-center justify-between gap-2 bg-slate-50/50">
+     <button
+       onClick={() => setUsersPage(p => Math.max(1, p - 1))}
+       disabled={usersPage === 1}
+       className="p-1.5 rounded-xl hover:bg-slate-100 transition-colors disabled:opacity-40 disabled:hover:bg-transparent"
+       data-testid="admin-dashboard-prev-page"
+     >
+       <ChevronLeft size={16} />
+     </button>
+     <div className="flex items-center gap-1.5">
+       {Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNum => (
+         <button
+           key={pageNum}
+           onClick={() => setUsersPage(pageNum)}
+           className={cn(
+             "w-8 h-8 rounded-xl text-xs font-black transition-all",
+             usersPage === pageNum
+               ? "bg-slate-900 text-white shadow-sm"
+               : "text-slate-500 hover:bg-slate-100"
+           )}
+         >
+           {pageNum}
+         </button>
+       ))}
+     </div>
+     <button
+       onClick={() => setUsersPage(p => Math.min(totalPages, p + 1))}
+       disabled={usersPage === totalPages}
+       className="p-1.5 rounded-xl hover:bg-slate-100 transition-colors disabled:opacity-40 disabled:hover:bg-transparent"
+       data-testid="admin-dashboard-next-page"
+     >
+       <ChevronRight size={16} />
+     </button>
+   </div>
+ )}
  </div> {/* Activity Detail */}
  <div className="bg-white border border-slate-100 rounded-[32px] shadow-sm flex flex-col" style={{ minHeight: '480px' }}>
  {!selectedUser ? (
@@ -352,8 +457,8 @@ export const AdminDashboard: React.FC = () => {
  <div className="flex flex-col h-full">
  {/* User Header */}
  <div className="p-6 lg:p-8 border-b border-slate-100">
- <div className="flex items-start justify-between gap-4">
- <div className="flex items-center gap-4">
+ <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+ <div className="flex items-center gap-4 min-w-0 w-full sm:w-auto">
  <div className={cn(
  "w-14 h-14 rounded-2xl flex items-center justify-center text-white text-xl font-black flex-shrink-0",
  selectedUser.role === 'admin' ? 'bg-gradient-to-br from-violet-500 to-purple-600' :
@@ -374,7 +479,7 @@ export const AdminDashboard: React.FC = () => {
  </p>
  </div>
  </div>
- <div className="flex items-center gap-2 flex-shrink-0 flex-wrap justify-end">
+ <div className="flex items-center gap-2 flex-shrink-0 flex-wrap justify-start sm:justify-end w-full sm:w-auto">
  <select data-testid="admin-dashboard-select"
  value={selectedUser.role}
  onChange={(e) => handleRoleChange(selectedUser, e.target.value as any)}
