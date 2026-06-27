@@ -60,7 +60,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const isFirstSettingsMountRef = useRef(true);
   const skipBackendSyncRef = useRef(false);
   const lastFetchTimeRef = useRef<number>(0);
-  const prevSettingsRef = useRef({ currency, language });
 
   const currentPage = location.pathname.length > 1
     ? location.pathname.substring(1).split('?')[0].split('#')[0]
@@ -99,6 +98,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const initialPreferences = readStoredAppPreferences();
   const [currency, setCurrency] = useState(() => initialPreferences.currency);
   const [language, setLanguage] = useState(() => initialPreferences.language);
+  const prevSettingsRef = useRef({ currency, language });
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [manualRefreshToken, setManualRefreshToken] = useState(0);
 
