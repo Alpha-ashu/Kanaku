@@ -6,6 +6,12 @@ import { Prisma } from '../../db/prisma-client';
 import { logger } from '../../config/logger';
 import { getSupabaseAdminClient } from '../../db/supabase';
 import { authProvider } from './auth.provider';
+import {
+  normalizePhone,
+  deriveLocaleAndCurrency,
+  DEFAULT_NOTIFICATION_PREFERENCES,
+  DEFAULT_CATEGORIES,
+} from './registration.defaults';
 
 export class AuthService {
   async register(input: RegisterInput & {
@@ -19,90 +25,100 @@ export class AuthService {
   }): Promise<AuthTokens> {
     logger.info(`[AuthService] Starting registration process in service for email: ${input.email}`);
     try {
-      // Check if user already exists
-      const existingUser = await prisma.user.findUnique({
-        where: { email: input.email },
-      });
-
+      // ── Pre-checks (friendly errors). The DB unique constraints are the
+      // AUTHORITATIVE guard against races — the transaction + P2002 mapping in
+      // the controller handle the rare concurrent-duplicate case.
+      const existingUser = await prisma.user.findUnique({ where: { email: input.email } });
       if (existingUser) {
         logger.warn(`[AuthService] Registration failed: Email ${input.email} is already registered`);
         throw new Error('Email already registered');
       }
 
-      const resolvedPhone = input.phone ?? input.mobile ?? null;
-      if (resolvedPhone) {
-        // Check if phone number is already registered by another user
-        const existingPhoneProfile = await prisma.profiles.findFirst({
-          where: { phone: resolvedPhone }
-        });
+      const normalizedPhone = normalizePhone(input.phone ?? input.mobile);
+      if (normalizedPhone) {
+        const existingPhoneProfile = await prisma.profiles.findFirst({ where: { phone: normalizedPhone } });
         if (existingPhoneProfile) {
-          logger.warn(`[AuthService] Registration failed: Phone ${resolvedPhone} already in use`);
+          logger.warn('[AuthService] Registration failed: phone number already in use');
           throw new Error('Phone number already in use');
         }
       }
 
-      // Hash password
+      // Hash OUTSIDE the transaction — bcrypt is CPU-bound; never hold a DB
+      // transaction open while hashing.
       const hashedPassword = await bcrypt.hash(input.password, 12);
 
-      // Never trust a raw role value from the client. Users may request advisor
-      // onboarding, but privileged roles must still be granted by the backend.
+      // Never trust a client role — privileged roles are granted by the backend.
       const role = input.role === 'advisor' ? 'advisor' : 'user';
-      const isApproved = role === 'user'; // Advisors require explicit admin approval
+      const isApproved = role === 'user'; // advisors require explicit admin approval
 
-      logger.info(`[AuthService] Creating user record in database for email: ${input.email}, role: ${role}`);
-      // Create the auth/identity row. PII (names, dob, income, job) lives in
-      // `profiles` only — see the profiles insert below. `User` keeps just
-      // auth/role/approval + email/name.
-      const user = await prisma.user.create({
-        data: {
-          email: input.email,
-          name: input.name,
-          password: hashedPassword,
-          role,
-          isApproved,
-        },
-      });
-      logger.info(`[AuthService] User record created successfully with ID: ${user.id}`);
+      // Currency/locale derived from the signup country (calling code embedded in
+      // the submitted phone, e.g. "+91 …" → INR / en-IN). Sensible fallback otherwise.
+      const locale = deriveLocaleAndCurrency(input.phone ?? input.mobile);
 
-      // Sync user to public.profiles table
-      try {
-        const nameParts = input.name.trim().split(/\s+/).filter(Boolean);
-        const firstName = input.firstName || nameParts[0] || '';
-        const lastName = input.lastName || nameParts.slice(1).join(' ') || '';
-        logger.info(`[AuthService] Syncing registered user ${user.id} to public.profiles table`);
-        const annualIncome = input.salary != null ? Number(input.salary) : null;
-        const monthlyIncome = annualIncome != null ? Math.round(annualIncome / 12) : null;
-        await prisma.$executeRaw`
+      const nameParts = input.name.trim().split(/\s+/).filter(Boolean);
+      const firstName = input.firstName || nameParts[0] || '';
+      const lastName = input.lastName || nameParts.slice(1).join(' ') || '';
+      const annualIncome = input.salary != null ? Number(input.salary) : null;
+      const monthlyIncome = annualIncome != null ? Math.round(annualIncome / 12) : null;
+
+      // ── Atomic registration ────────────────────────────────────────────────
+      // User + profile + settings + default categories are ALL-OR-NOTHING. A
+      // failure in any step rolls the whole transaction back — no partial users.
+      const user = await prisma.$transaction(async (tx) => {
+        const created = await tx.user.create({
+          data: { email: input.email, name: input.name, password: hashedPassword, role, isApproved },
+        });
+
+        // Profile is MANDATORY now (previously best-effort/swallowed). The FK
+        // profiles.id → User.id is satisfied because `created` exists in this tx;
+        // any failure here throws and rolls back the User insert too.
+        await tx.$executeRaw`
           INSERT INTO public.profiles (
             id, email, first_name, last_name, full_name, phone,
             date_of_birth, job_type, monthly_income, annual_income, created_at, updated_at
           ) VALUES (
-            ${user.id}::uuid, ${user.email}, ${firstName || null}, ${lastName || null},
-            ${user.name}, ${resolvedPhone},
+            ${created.id}::uuid, ${created.email}, ${firstName || null}, ${lastName || null},
+            ${created.name}, ${normalizedPhone},
             ${input.dateOfBirth ?? null}, ${input.jobType ?? null}, ${monthlyIncome}, ${annualIncome},
             NOW(), NOW()
-          ) ON CONFLICT (id) DO NOTHING;
+          );
         `;
-        logger.info(`[AuthService] Initial profile synced for registered user: ${user.id}`);
-      } catch (syncError: any) {
-        logger.warn('[AuthService] Non-blocking initial profile sync failed', {
-          message: syncError.message,
-        });
-      }
 
-      // Match this email against any pending collaboration invitations
-      // (Group Expenses, Together To-Do Lists, Together Goals) and link them.
+        // Baseline settings: currency/locale derived from country + default
+        // notification preferences (stored in the existing settings JSON — no new table).
+        await tx.userSettings.create({
+          data: {
+            userId: created.id,
+            currency: locale.currency,
+            language: locale.language,
+            timezone: locale.timezone,
+            settings: { notifications: { ...DEFAULT_NOTIFICATION_PREFERENCES } },
+          },
+        });
+
+        // Seed the curated default personal-finance categories.
+        await tx.category.createMany({
+          data: DEFAULT_CATEGORIES.map((c) => ({
+            userId: created.id, name: c.name, type: c.type, color: c.color, icon: c.icon,
+          })),
+        });
+
+        return created;
+      });
+
+      logger.info(`[AuthService] Registered atomically (user+profile+settings+categories): ${user.id}`);
+
+      // Post-commit, best-effort: link any pending collaboration invitations.
+      // Intentionally OUTSIDE the transaction — an invitation-link failure must
+      // never roll back an otherwise-valid registration.
       try {
         const { linkPendingInvitationsForUser } = await import('../collaboration/invitation.service');
         await linkPendingInvitationsForUser(user.id, user.email);
       } catch (linkError: any) {
-        logger.warn('[AuthService] Non-blocking pending-invitation link failed', {
-          message: linkError.message,
-        });
+        logger.warn('[AuthService] Non-blocking pending-invitation link failed', { message: linkError.message });
       }
 
-      const tokens = generateTokens(user);
-      return tokens;
+      return generateTokens(user);
     } catch (error) {
       logger.error('[AuthService] Registration error:', error);
       throw error;

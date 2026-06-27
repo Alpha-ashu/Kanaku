@@ -290,6 +290,14 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
     const tokens = await authService.register(sanitizedInput);
     logger.info(`[AuthController] User registered successfully in service: ${tokens.user?.id}`);
 
+    // Immutable audit record of the successful registration. requestId, IP and
+    // User-Agent are auto-extracted from the request.
+    auditFromRequest(req, 'auth.register', {
+      userId: tokens.user?.id,
+      resource: 'User',
+      resourceId: tokens.user?.id,
+    });
+
     // Best-effort welcome email (no-op if SendGrid is unconfigured).
     if (tokens.user?.email) {
       void sendWelcomeEmail(tokens.user.email, tokens.user.name).catch(() => {});
@@ -319,6 +327,12 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
     });
   } catch (error: any) {
     logger.error(`[AuthController] Registration error for email ${req.body?.email}:`, { message: error?.message, stack: error?.stack });
+
+    // Immutable audit record of the FAILED registration (every attempt is recorded).
+    auditFromRequest(req, 'auth.register_failed', {
+      meta: { reason: error?.message, code: error?.code },
+    });
+
     // Map known service errors to AppError before passing to next()
     if (
       error instanceof AppError
@@ -327,6 +341,24 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
     }
 
     logger.error('Registration error', { message: error?.message, stack: error?.stack });
+
+    // Prisma unique-constraint race (P2002): the app-level pre-check passed but a
+    // concurrent insert won — the transaction rolled back cleanly; map to a 409.
+    if (error?.code === 'P2002') {
+      const target = Array.isArray(error?.meta?.target)
+        ? error.meta.target.join(',')
+        : String(error?.meta?.target ?? '');
+      if (target.toLowerCase().includes('phone')) {
+        return next(AppError.conflict(
+          'This phone number is already registered to another account. Please use a different phone number.',
+          'PHONE_EXISTS',
+        ));
+      }
+      return next(AppError.conflict(
+        'An account with this email already exists. Please sign in or use a different email.',
+        'EMAIL_EXISTS',
+      ));
+    }
 
     if (
       error?.message?.includes('UNIQUE constraint failed') ||
