@@ -388,10 +388,6 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
 export const loginChallenge = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { email, password } = req.body;
-    // x-pw-encoding header tells us if the client pre-hashed the password with SHA-256.
-    // 'sha256' — password field is a hex-encoded SHA-256 digest of the raw password.
-    // 'plain' or absent — password field is the raw plaintext (legacy / old browser fallback).
-    const pwEncoding = (req.headers['x-pw-encoding'] || 'plain') as string;
 
     if (!email || !password) {
       throw AppError.badRequest('Please enter your email and password.', 'MISSING_FIELDS');
@@ -401,13 +397,18 @@ export const loginChallenge = async (req: Request, res: Response, next: NextFunc
       throw AppError.badRequest('Please enter a valid email address.', 'INVALID_EMAIL');
     }
 
-    const isPasswordValid = await authService.verifyPasswordOnly(
-      email.toLowerCase().trim(),
-      password,
-      pwEncoding === 'sha256',
-    );
-    if (!isPasswordValid) {
+    const normalizedEmail = email.toLowerCase().trim();
+    // Password is sent plain over the HTTPS-encrypted wire; bcrypt is the security gate.
+    const { valid, status } = await authService.verifyPasswordOnly(normalizedEmail, password);
+    if (!valid) {
+      auditFromRequest(req, 'auth.login_failed', { meta: { email: normalizedEmail, reason: 'invalid_credentials' } });
       throw AppError.unauthorized('Incorrect email or password. Please check your credentials and try again.', 'INVALID_CREDENTIALS');
+    }
+
+    // Reject suspended accounts immediately — before any challenge or token is issued.
+    if (status === 'suspended') {
+      auditFromRequest(req, 'auth.login_failed', { meta: { email: normalizedEmail, reason: 'account_suspended' } });
+      throw new AppError(403, 'ACCOUNT_SUSPENDED', 'Account suspended. Contact support.', true);
     }
 
     const challengeCode = randomInt(100000, 1000000).toString();
@@ -508,6 +509,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
       }
 
       if (!challenge || challenge.code !== input.challengeCode) {
+        auditFromRequest(req, 'auth.login_failed', { meta: { email: input.email.toLowerCase().trim(), reason: 'challenge_invalid' } });
         throw AppError.unauthorized('Invalid or expired login challenge code. Please try again.', 'CHALLENGE_INVALID');
       }
 
@@ -517,6 +519,12 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
 
       if (!userRecord) {
         throw AppError.unauthorized('Invalid credentials');
+      }
+
+      // Defense in depth: reject suspended accounts at token issuance too.
+      if ((userRecord as any).status === 'suspended') {
+        auditFromRequest(req, 'auth.login_failed', { meta: { email: input.email.toLowerCase().trim(), reason: 'account_suspended' } });
+        throw new AppError(403, 'ACCOUNT_SUSPENDED', 'Account suspended. Contact support.', true);
       }
 
       tokens = generateTokens(userRecord);
@@ -550,6 +558,9 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
     // Start (or reset) the server-side inactivity window for this session.
     if (userId) await establishIdleSession(userId);
 
+    // Immutable audit record of the successful login (requestId/IP/UA auto-filled).
+    if (userId) auditFromRequest(req, 'auth.login', { userId, resource: 'User', resourceId: userId });
+
     res.json({
       success: true,
       message: 'Login successful',
@@ -578,7 +589,16 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
 
     logger.error('Login error', { message: error?.message, stack: error?.stack });
 
+    // Direct-path (legacy password) failures from authService.login. The challenge
+    // path audits at its throw sites; AppError instances already returned above, so
+    // these are the only un-audited login failures.
+    if (error?.message === 'Account suspended') {
+      auditFromRequest(req, 'auth.login_failed', { meta: { email: req.body?.email, reason: 'account_suspended' } });
+      return next(new AppError(403, 'ACCOUNT_SUSPENDED', 'Account suspended. Contact support.', true));
+    }
+
     if (error?.message === 'Invalid credentials') {
+      auditFromRequest(req, 'auth.login_failed', { meta: { email: req.body?.email, reason: 'invalid_credentials' } });
       return next(AppError.unauthorized(
         'Incorrect email or password. Please check your credentials and try again.',
         'INVALID_CREDENTIALS',
@@ -632,13 +652,16 @@ export const refreshToken = async (req: Request, res: Response, next: NextFuncti
     // how long the client has been idle — so a user returning after a long break
     // is silently re-issued an access token instead of being bounced to /login.
     //
-    // We deliberately do NOT gate refresh on the idle-session marker here (the
-    // previous `evaluateIdleSession(..., { allowFreshTokenGrace: false })` check).
+    // We deliberately do NOT gate refresh on the idle-session marker here.
     // Trade-off: this drops the "stolen refresh token can't be replayed after the
-    // idle window" protection. Logout (which revokes the token + clears the
-    // cookie) and the 7-day token expiry remain the hard session boundaries.
-    // Re-establishing the idle marker below means subsequent access-token
-    // requests pass the middleware idle check, so the session is self-healing.
+    // idle window" protection.
+    //
+    // IMPORTANT: refresh tokens are STATELESS JWTs — they are NOT tracked server-side
+    // and CANNOT be individually revoked. Logout clears the (web) HttpOnly cookie and
+    // the in-memory session/PIN state, but a captured refresh token stays valid until
+    // its 7-day expiry. The only hard session boundaries are that expiry and the
+    // cookie clear. DB-backed refresh-token tracking/revocation is a deferred
+    // architecture-phase item (see the currently-unused RefreshToken model).
 
     // Rotate: issue a brand-new access + refresh pair.
     const tokens = generateTokens(user);
@@ -927,8 +950,10 @@ export const logout = async (req: AuthRequest, res: Response, next: NextFunction
     const headerToken = (req.headers['x-refresh-token'] as string | undefined) || '';
     const token = (cookieToken || headerToken).trim();
 
-    // Revoke the stored refresh token (if we track it) so it cannot be
-    // reused even if it was captured.
+    // No-op today: refresh tokens are stateless JWTs and are not persisted, so there
+    // is nothing to delete (the RefreshToken table is unused). Kept forward-compatible
+    // so that, once DB-backed token tracking lands, logout already revokes the row.
+    // Logout's real effect now is clearing the cookie + in-memory session/PIN below.
     if (token) {
       await prisma.refreshToken.deleteMany({ where: { token } }).catch(() => null);
     }

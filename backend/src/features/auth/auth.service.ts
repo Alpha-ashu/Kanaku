@@ -361,29 +361,35 @@ export class AuthService {
       throw new Error('Invalid credentials');
     }
 
-    // Check if user is approved (especially important for advisors)
-    // For now, still allow login even if not approved, but token will indicate status
+    // Reject suspended accounts before issuing tokens (mirrors /refresh + the auth
+    // middleware). The controller maps this message to 403 ACCOUNT_SUSPENDED.
+    if ((user as any).status === 'suspended') {
+      throw new Error('Account suspended');
+    }
+
+    // Approval (e.g. advisors) is reflected in the token claims, not blocked here.
     return generateTokens(user);
   }
 
-  async verifyPasswordOnly(email: string, passwordStr: string, isSha256 = false): Promise<boolean> {
+  /**
+   * Verify a password without issuing tokens (used by /login/challenge).
+   * Returns the validity plus the account status so the caller can reject
+   * suspended accounts before issuing a challenge. Passwords are always plain
+   * over the (HTTPS-encrypted) wire — bcrypt is the security gate.
+   */
+  async verifyPasswordOnly(email: string, passwordStr: string): Promise<{ valid: boolean; status: string | null }> {
     const user = await prisma.user.findUnique({
       where: { email },
     });
 
     if (!user) {
-      return false;
+      return { valid: false, status: null };
     }
 
     let isPasswordValid = false;
 
     if (!user.password || user.password === 'supabase-managed-account') {
       logger.info(`[AuthService] User ${email} has a Supabase-managed or unmigrated account. Authenticating via Supabase...`);
-      if (isSha256) {
-        // Cannot verify a SHA-256 pre-hash against Supabase auth (needs plaintext).
-        // Return false; frontend will fall back to plain encoding on retry.
-        return false;
-      }
       // Verify against the external identity provider (hidden behind AuthProvider).
       if (await authProvider.verifyCredentials(email, passwordStr)) {
         isPasswordValid = true;
@@ -399,23 +405,11 @@ export class AuthService {
           logger.warn(`[AuthService] Password migration failed for user ${email}:`, migrateErr);
         }
       }
-    } else if (isSha256) {
-      // Client sent SHA-256(plaintext). We cannot bcrypt.compare a sha256 digest
-      // directly — bcrypt requires the original plaintext. So we fall through to
-      // treating the digest as-is; if the column doesn't exist this will fail and
-      // return false, causing the frontend to retry with plain encoding.
-      // This is safe: SHA-256 only obscures the wire representation (HTTPS already
-      // encrypts the payload). Bcrypt comparison is the actual security gate.
-      try {
-        isPasswordValid = await bcrypt.compare(passwordStr, user.password);
-      } catch {
-        isPasswordValid = false;
-      }
     } else {
       isPasswordValid = await bcrypt.compare(passwordStr, user.password);
     }
 
-    return isPasswordValid;
+    return { valid: isPasswordValid, status: (user as any).status ?? null };
   }
 
   async getUser(userId: string): Promise<User> {

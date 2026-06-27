@@ -5,6 +5,7 @@
 import request from 'supertest';
 import jwt from 'jsonwebtoken';
 import { app } from '../../../../backend/src/app';
+import { prisma } from '../../../../backend/src/db/prisma';
 
 const API = '/api/v1';
 
@@ -345,5 +346,86 @@ describe('AUTH MODULE', () => {
         expect(res.body.data).toHaveProperty('refreshToken');
       }
     });
+  });
+});
+
+describe('AUTH MODULE — Login & Auth remediation', () => {
+  const email = `login_${Date.now()}_${Math.random().toString(36).slice(2)}@example.com`;
+  const password = 'SecurePass123!';
+  const mobile = `+91 9${String(Date.now()).slice(-9)}`;
+  let userId: string | null = null;
+
+  const waitFor = async <T>(fn: () => Promise<T | null>, timeoutMs = 2500): Promise<T | null> => {
+    const start = Date.now();
+    while (Date.now() - start < timeoutMs) {
+      const r = await fn();
+      if (r) return r;
+      await new Promise((res) => setTimeout(res, 150));
+    }
+    return null;
+  };
+
+  const challenge = (pw: string) => request(app).post(`${API}/auth/login/challenge`).send({ email, password: pw });
+
+  beforeAll(async () => {
+    const res = await request(app).post(`${API}/auth/register`).send({ name: 'Login Remediation', email, password, mobile });
+    if (res.status === 201) userId = res.body?.data?.user?.id ?? null;
+  });
+
+  afterAll(async () => {
+    if (userId) {
+      try { await prisma.user.delete({ where: { id: userId } }); } catch { /* ignore */ }
+      try { await prisma.profiles.deleteMany({ where: { email } }); } catch { /* ignore */ }
+    }
+    await prisma.$disconnect().catch(() => {});
+  });
+
+  it('logs in with a plain password — no x-pw-encoding/SHA-256 (Item 2)', async () => {
+    if (!userId) return; // DB unavailable in this environment
+    const ch = await challenge(password);
+    expect(ch.status).toBe(200);
+    expect(ch.body.data).toHaveProperty('code');
+    const login = await request(app).post(`${API}/auth/login`).send({ email, challengeCode: ch.body.data.code });
+    expect(login.status).toBe(200);
+    expect(login.headers).toHaveProperty('authorization');
+  });
+
+  it('writes an auth.login audit on successful login (Item 1)', async () => {
+    if (!userId) return;
+    const ch = await challenge(password);
+    if (ch.status !== 200) return;
+    await request(app).post(`${API}/auth/login`).send({ email, challengeCode: ch.body.data.code });
+    const audit = await waitFor(async () => {
+      const a = await prisma.auditLog.findMany({ where: { userId: userId!, action: 'auth.login' } });
+      return a.length ? a[0] : null;
+    });
+    expect(audit).not.toBeNull();
+    expect(audit!.requestId).toBeTruthy();
+    expect(audit!.status).toBe('success');
+  });
+
+  it('writes an auth.login_failed audit on a bad password (Item 1)', async () => {
+    if (!userId) return;
+    const ch = await challenge('WrongPassword123!');
+    expect(ch.status).toBe(401);
+    expect(ch.body.code).toBe('INVALID_CREDENTIALS');
+    const audit = await waitFor(async () => {
+      const a = await prisma.auditLog.findMany({ where: { action: 'auth.login_failed' }, orderBy: { createdAt: 'desc' }, take: 1 });
+      return a.length ? a[0] : null;
+    });
+    expect(audit).not.toBeNull();
+    expect(audit!.status).toBe('failure');
+  });
+
+  it('rejects a suspended user at login with 403 ACCOUNT_SUSPENDED (Item 3)', async () => {
+    if (!userId) return;
+    await prisma.user.update({ where: { id: userId }, data: { status: 'suspended' } });
+    try {
+      const ch = await challenge(password);
+      expect(ch.status).toBe(403);
+      expect(ch.body.code).toBe('ACCOUNT_SUSPENDED');
+    } finally {
+      await prisma.user.update({ where: { id: userId }, data: { status: 'verified' } });
+    }
   });
 });
