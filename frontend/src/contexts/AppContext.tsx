@@ -568,7 +568,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   // Fetch and apply both global and AI feature flags from the backend DB.
   // Exposed as a stable callback so it can be triggered both by the polling
   // interval below and by the real-time WebSocket subscriber.
-  const fetchGlobalFlags = useCallback(async (force = false) => {
+  const fetchGlobalFlags = useCallback(async (scope: 'app' | 'ai' | 'all' = 'app', force = false) => {
     if (typeof document !== 'undefined' && document.hidden) {
       return;
     }
@@ -585,8 +585,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
       let changed = false;
 
-      // 1. Fetch normal feature flags
-      const flags = await backendService.getGlobalFeatureFlags();
+      // 1. Fetch app feature flags (drives app-wide nav/route gating). Skipped
+      //    when scope === 'ai' (an AI-only broadcast).
+      const flags = (scope === 'app' || scope === 'all')
+        ? await backendService.getGlobalFeatureFlags()
+        : null;
       if (flags && Object.keys(flags).length > 0) {
         const currentFlags = localStorage.getItem('admin_global_feature_settings');
 
@@ -616,8 +619,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         }
       }
 
-      // 2. Fetch AI feature flags
-      const aiFlags = await backendService.getAIFeatureFlags();
+      // 2. Fetch AI feature flags — DEFERRED from app startup. Only pulled when
+      //    scope includes AI (a live `ai` broadcast), so opening the Admin Console
+      //    or the Application Features tab never calls /admin/ai-features. The
+      //    System Gating Control AI tab loads its own data via /ai-features/matrix.
+      const aiFlags = (scope === 'ai' || scope === 'all')
+        ? await backendService.getAIFeatureFlags()
+        : null;
       if (aiFlags && Object.keys(aiFlags).length > 0) {
         const currentAIFlags = localStorage.getItem('admin_ai_feature_settings');
 
@@ -673,9 +681,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   useEffect(() => {
     if (!user?.id) return;
 
-    const unsubscribe = socketClient.on('feature_flags_updated', () => {
-      console.log('[AppContext] feature_flags_updated received via WebSocket — re-fetching flags');
-      void fetchGlobalFlags(true); // force: bypass the render throttle for the live broadcast
+    const unsubscribe = socketClient.on('feature_flags_updated', (payload: any) => {
+      // Refetch only the scope that actually changed: an `ai` broadcast pulls the
+      // AI flags, anything else pulls the app flags. force=true bypasses the throttle.
+      const scope = payload?.type === 'ai' ? 'ai' : 'app';
+      console.log(`[AppContext] feature_flags_updated (${scope}) — re-fetching ${scope} flags`);
+      void fetchGlobalFlags(scope, true);
     });
 
     return unsubscribe;
