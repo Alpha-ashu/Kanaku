@@ -269,6 +269,7 @@ const AppContent: React.FC = () => {
   const currentPageRef = useRef<string>('dashboard');
   const goBackRef = useRef<(() => void) | undefined>(undefined);
   const closeOverlaysRef = useRef<() => boolean>(() => false);
+  const lastStateLogged = useRef<string | null>(null);
   const [quickActionKey, setQuickActionKey] = useState(0);
   const [slidesViewed, setSlidesViewed] = useState(() => localStorage.getItem('onboarding_slides_viewed') === 'true');
 
@@ -337,6 +338,14 @@ const AppContent: React.FC = () => {
 
   // Static initialization (runs once)
   useEffect(() => {
+    console.log('[KANAKU Startup] App Started');
+    const hasProfileDataVal = localStorage.getItem('user_profile') || localStorage.getItem('user_settings');
+    console.log('[KANAKU Startup] Cache Restored:', {
+      hasProfile: !!localStorage.getItem('user_profile'),
+      hasSettings: !!localStorage.getItem('user_settings'),
+      hasProfileData: !!hasProfileDataVal,
+    });
+
     if (Capacitor.isNativePlatform()) {
       setupNativeFeatures();
     }
@@ -674,6 +683,11 @@ const AppContent: React.FC = () => {
   const isNewUser = !onboardingCompleted;
 
   if (!user) {
+    if (lastStateLogged.current !== 'login') {
+      lastStateLogged.current = 'login';
+      const hasToken = !!localStorage.getItem('auth_token');
+      console.log('[KANAKU Startup] Redirected to Login: Reason = ' + (hasToken ? 'Invalid/Expired Token' : 'Missing Token'));
+    }
     if (showLanding) {
       switch (publicPage) {
         case 'about':
@@ -813,6 +827,10 @@ const AppContent: React.FC = () => {
 
   // Gate 2: PIN authentication
   if (user && !isAuthenticated) {
+    if (lastStateLogged.current !== 'pin') {
+      lastStateLogged.current = 'pin';
+      console.log('[KANAKU Startup] PIN Required: Reason = App Locked');
+    }
     return <PINAuth onAuthenticated={setAuthenticated} />;
   }
 

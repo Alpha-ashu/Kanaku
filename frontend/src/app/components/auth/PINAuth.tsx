@@ -115,13 +115,14 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  setTimeout(() => setShake(false), 500);
  };
 
- const finalizeAuth = useCallback(async (key: string, msg: string) => {
- if (Capacitor.isNativePlatform()) {
- await Preferences.set({ key: 'user_authenticated', value: 'true' });
- }
- toast.success(msg);
- onAuthenticated(key);
- }, [onAuthenticated]);
+  const finalizeAuth = useCallback(async (key: string, msg: string) => {
+  if (Capacitor.isNativePlatform()) {
+  await Preferences.set({ key: 'user_authenticated', value: 'true' });
+  }
+  console.log('[KANAKU Startup] PIN Verified & Application Unlocked');
+  toast.success(msg);
+  onAuthenticated(key);
+  }, [onAuthenticated]);
 
  // PIN input handler (hidden input + numpad both write here) 
   const appendDigit = (d: string) => {

@@ -316,10 +316,11 @@ class BackendService {
 
     // Add token to every request
     this.api.interceptors.request.use((config) => {
-      let token = this.token;
+      // ALWAYS read dynamically from TokenManager first to stay in sync with background silent refreshes
+      let token = TokenManager.getAccessToken();
 
       if (!token) {
-        token = TokenManager.getAccessToken();
+        token = this.token;
       }
 
       if (!token) {
@@ -346,14 +347,15 @@ class BackendService {
       return config;
     });
 
-    // Normalize error responses so callers always receive a clean Error message
+    // Normalize error responses and handle token refreshes
     this.api.interceptors.response.use(
       (response) => response,
-      (error) => {
+      async (error) => {
         if (!axios.isAxiosError(error)) return Promise.reject(error);
 
         const status = error.response?.status;
         const serverMessage = error.response?.data?.error;
+        const originalRequest = error.config as any;
 
         if (!error.response) {
           const wrappedError = new Error('No internet connection. Please check your network.') as Error & {
@@ -374,12 +376,28 @@ class BackendService {
           return wrappedError;
         };
 
-        if (status === 401) {
-          // Backend-managed auth: clearing the backend tokens is the full sign-out.
+        // Handle 401 with silent token refresh
+        if (status === 401 && originalRequest && !originalRequest._retry) {
+          originalRequest._retry = true;
+          try {
+            console.log('[BackendService] Request returned 401. Attempting silent token refresh...');
+            const { refreshAccessToken } = await import('./api');
+            const newToken = await refreshAccessToken();
+            if (newToken) {
+              console.log('[BackendService] Token refreshed successfully. Retrying request...');
+              originalRequest.headers.Authorization = `Bearer ${newToken}`;
+              return this.api(originalRequest);
+            }
+          } catch (refreshErr) {
+            console.error('[BackendService] Silent refresh failed:', refreshErr);
+          }
+
+          console.warn('[BackendService] Unauthorized request, performing clean signout.');
           TokenManager.clearTokens();
           // Wait a tiny bit for local storage to actually clear before redirecting
           setTimeout(() => {
             if (window.location.pathname !== '/login') {
+              console.log('[KANAKU Navigation] Redirected to Login: Reason = Unauthorized / Session Expired');
               window.location.href = '/login';
             }
           }, 100);

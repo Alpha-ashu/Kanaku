@@ -73,6 +73,11 @@ const getCardStyle = (account: any) => {
 
 export function Dashboard({ setCurrentPage }: DashboardProps) {
  const { accounts, transactions, goals, loans, investments, groupExpenses, currency } = useApp();
+
+ useEffect(() => {
+   console.log('[KANAKU Startup] Dashboard Loaded: Reason = Valid Session');
+ }, []);
+
  const showAiSummary = useSubFeature('dashboard', 'aiSummary');
  const showQuickActions = useSubFeature('dashboard', 'quickActions');
  const showRecentActivity = useSubFeature('dashboard', 'recentActivity');

@@ -930,6 +930,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         const provisionalRole = resolveUserRole(nextUser);
         setRole(provisionalRole);
 
+        console.log('[KANAKU Startup] Authentication Loaded', {
+          hasUser: !!nextUser,
+          eventId: event,
+          hasAccessToken: !!TokenManager.getAccessToken(),
+          hasRefreshToken: !!TokenManager.getRefreshToken(),
+        });
+        if (nextUser) {
+          console.log('[KANAKU Startup] Access Token Loaded:', !!TokenManager.getAccessToken());
+          console.log('[KANAKU Startup] Refresh Token Loaded:', !!TokenManager.getRefreshToken());
+        }
+
         // ── TOKEN_REFRESHED early-return ────────────────────────────────────────
         // Supabase fires this every ~1 hour and on tab-focus restore.
         // We must NOT re-run the full data sync — only rotate the token on

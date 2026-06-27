@@ -221,6 +221,17 @@ export const TokenManager = {
     // Clear in-memory copies too
     _memoryAccessToken = null;
     _memoryRefreshToken = null;
+
+    // Clear session storage auth & lock states to prevent PIN lock bypasses
+    try {
+      if (typeof sessionStorage !== 'undefined') {
+        sessionStorage.removeItem('session_active');
+        sessionStorage.removeItem('session_encryption_key');
+        sessionStorage.removeItem('KANAKU_lock_reason');
+      }
+    } catch {
+      // Ignore sessionStorage availability issues
+    }
   },
 
   setTokens: (accessToken: string, refreshToken?: string): void => {
