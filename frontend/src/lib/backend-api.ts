@@ -717,8 +717,7 @@ class BackendService {
   // ===== GLOBAL FEATURE FLAGS =====
   async getGlobalFeatureFlags() {
     try {
-      const response = await this.api.get('/admin/features');
-      return response.data ?? null;
+      return await this.get('/admin/features');
     } catch {
       // Non-critical: fall back to hardcoded defaults. Errors are intentionally swallowed
       // here so a failed feature-flag fetch never disrupts the app startup.
@@ -734,8 +733,7 @@ class BackendService {
   // ===== AI FEATURE FLAGS =====
   async getAIFeatureFlags() {
     try {
-      const response = await this.api.get('/admin/ai-features');
-      return response.data ?? null;
+      return await this.get('/admin/ai-features');
     } catch {
       // Non-critical: fall back to hardcoded defaults.
       return null;

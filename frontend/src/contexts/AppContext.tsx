@@ -60,6 +60,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const isFirstSettingsMountRef = useRef(true);
   const skipBackendSyncRef = useRef(false);
   const lastFetchTimeRef = useRef<number>(0);
+  const prevSettingsRef = useRef({ currency, language });
 
   const currentPage = location.pathname.length > 1
     ? location.pathname.substring(1).split('?')[0].split('#')[0]
@@ -425,6 +426,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       skipBackendSyncRef.current = false;
       return;
     }
+
+    // Only sync if currency or language has actually changed from previous values
+    if (currency === prevSettingsRef.current.currency && language === prevSettingsRef.current.language) {
+      return;
+    }
+    prevSettingsRef.current = { currency, language };
 
     if (user?.id) {
       const syncSettingsToBackend = async () => {

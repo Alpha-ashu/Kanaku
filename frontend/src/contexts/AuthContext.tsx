@@ -927,7 +927,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 // Validate the token against the backend in background
                 void (async () => {
                   try {
-                    const profileResponse = await api.auth.getProfile();
+                    const profileResponse = await api.auth.getProfile({ includePrivate: true });
                     if (!profileResponse.success) {
                       console.warn('Backend custom JWT profile verification failed:', profileResponse.message);
                     }
