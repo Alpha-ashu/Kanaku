@@ -285,7 +285,7 @@ export class AuthService {
             country, state, city, phone, avatar_url, avatar_id, monthly_income, annual_income, 
             date_of_birth, job_type, updated_at
           ) VALUES (
-            ${userId}::uuid, ${finalActiveEmail || null}, ${merged.firstName || null}, ${merged.lastName || null}, 
+            ${userId}::uuid, ${finalActiveEmail || null}, ${merged.firstName || null}, ${merged.lastName || null},
             ${(`${merged.firstName || ''} ${merged.lastName || ''}`.trim() || null)}, ${merged.gender || null},
             ${merged.country || null}, ${merged.state || null}, ${merged.city || null}, ${resolvedPhone}, ${merged.avatarUrl || null}, ${merged.avatarId || null},
             ${decimalMonthlyIncome}, ${decimalAnnualIncome}, 
