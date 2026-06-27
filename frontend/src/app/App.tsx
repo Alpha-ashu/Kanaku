@@ -270,6 +270,7 @@ const AppContent: React.FC = () => {
   const goBackRef = useRef<(() => void) | undefined>(undefined);
   const closeOverlaysRef = useRef<() => boolean>(() => false);
   const lastStateLogged = useRef<string | null>(null);
+  const hasTriggeredSyncRef = useRef<string | null>(null);
   const [quickActionKey, setQuickActionKey] = useState(0);
   const [slidesViewed, setSlidesViewed] = useState(() => localStorage.getItem('onboarding_slides_viewed') === 'true');
 
@@ -482,6 +483,12 @@ const AppContent: React.FC = () => {
   // Trigger data sync after PIN verification
   useEffect(() => {
     if (user && isAuthenticated && !dataReady && !dataSyncing) {
+      const syncKey = `${user.id}:${isAuthenticated}`;
+      if (hasTriggeredSyncRef.current === syncKey) {
+        return;
+      }
+      hasTriggeredSyncRef.current = syncKey;
+
       const requiredTables = PAGE_REQUIRED_TABLES[currentPage] || [];
       void triggerDataSync(requiredTables);
     }

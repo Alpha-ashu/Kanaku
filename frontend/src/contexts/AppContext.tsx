@@ -58,6 +58,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const historyStackRef = useRef<string[]>([]);
   const isFirstSettingsMountRef = useRef(true);
+  const skipBackendSyncRef = useRef(false);
+  const lastFetchTimeRef = useRef<number>(0);
 
   const currentPage = location.pathname.length > 1
     ? location.pathname.substring(1).split('?')[0].split('#')[0]
@@ -132,7 +134,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       return computeAICapabilityMap('user', null);
     }
   });
-  const { role, user, dataReady } = useAuth();
+  const { role, user, dataReady, dataSyncing } = useAuth();
   const { isAuthenticated } = useSecurity();
   const attemptedBalanceRepairKeyRef = useRef<string | null>(null);
   const syncStats = useSyncStats();
@@ -279,7 +281,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       }
     };
 
-    const handleSettingsUpdate = () => {
+    const handleSettingsUpdate = (e: Event) => {
+      const isExternal = (e as CustomEvent)?.detail?.isExternal;
+      if (isExternal) {
+        skipBackendSyncRef.current = true;
+      }
       applyStoredPreferences();
     };
 
@@ -415,6 +421,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       return;
     }
 
+    if (skipBackendSyncRef.current) {
+      skipBackendSyncRef.current = false;
+      return;
+    }
+
     if (user?.id) {
       const syncSettingsToBackend = async () => {
         try {
@@ -547,6 +558,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     if (typeof document !== 'undefined' && document.hidden) {
       return;
     }
+    // Throttle to prevent rapid sequential rendering triggers from hammering the backend
+    if (Date.now() - lastFetchTimeRef.current < 5000) {
+      return;
+    }
+    lastFetchTimeRef.current = Date.now();
+
     try {
       const { backendService } = await import('@/lib/backend-api');
 
@@ -625,14 +642,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   // Sync global feature flags from the backend on mount and every 30 s as a fallback.
   // Real-time updates come from the WebSocket subscriber below.
   useEffect(() => {
-    if (!user?.id || !dataReady) return;
+    if (!user?.id || !dataReady || dataSyncing) return;
 
-    // Fetch immediately on mount/auth if active
+    // Fetch immediately on mount/auth if active and sync is completed
     if (typeof document !== 'undefined' && !document.hidden) {
       void fetchGlobalFlags();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id, dataReady, fetchGlobalFlags]);
+  }, [user?.id, dataReady, dataSyncing, fetchGlobalFlags]);
 
   // Real-time feature flag sync via WebSocket.
   // When the admin saves flags the backend broadcasts 'feature_flags_updated'

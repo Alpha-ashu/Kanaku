@@ -492,6 +492,7 @@ const syncProfileFromBackend = async (user: User) => {
         detail: {
           currency: remoteProfile.currency,
           language: remoteProfile.language,
+          isExternal: true,
         }
       }));
     };
@@ -1163,7 +1164,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
       const permissions = await permissionService.fetchUserPermissions(targetUserId, resolveUserRole(user));
       setRole(permissions.role);
-      await syncFromSupabase(user, true, requestedTables);
+
+      // CTO OPTIMIZATION: Skip heavy database/profile sync if the page does not require financial data
+      if (requestedTables && requestedTables.length > 0) {
+        await syncFromSupabase(user, true, requestedTables);
+      }
+
       if (activeSyncUserId.current === targetUserId) {
         setDataReady(true);
       }
