@@ -37,6 +37,7 @@ export type AuditEventType =
   | 'auth.login'
   | 'auth.login_failed'
   | 'auth.register'
+  | 'auth.register_failed'
   | 'auth.token_refresh'
   | 'auth.logout'
   | 'auth.password_change'

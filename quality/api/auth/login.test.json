@@ -1,0 +1,38 @@
+{
+  "test_name": "auth.login.valid_credentials",
+  "feature": "auth",
+  "linkedDoc": "api-docs/auth/login.api.json",
+  "endpoint": "/api/v1/auth/login",
+  "method": "POST",
+  "headers": { "Content-Type": "application/json" },
+  "request": {
+    "body": { "email": "qa+login@kanaku.test", "password": "CorrectHorseBattery9!" }
+  },
+  "expected_response": {
+    "status": 200,
+    "body_contains": ["accessToken", "refreshToken", "user.id", "user.email"],
+    "schema": {
+      "accessToken": "jwt",
+      "refreshToken": "jwt",
+      "user": { "id": "uuid", "email": "string", "role": "user|admin", "approved": "boolean" }
+    }
+  },
+  "assertions": [
+    "response.body.accessToken matches /^eyJ/",
+    "response.body.refreshToken matches /^eyJ/",
+    "response.body.user.email == request.body.email",
+    "jwt.decode(accessToken).type == 'access'",
+    "jwt.decode(accessToken).exp - now <= 900"
+  ],
+  "negativeCases": [
+    { "name": "invalid_password", "body": { "email": "qa+login@kanaku.test", "password": "wrong" }, "expected_status": 401, "expected_body_contains": ["invalid_credentials"] },
+    { "name": "malformed_email", "body": { "email": "not-an-email", "password": "whatever12" }, "expected_status": 400, "expected_body_contains": ["validation_error"] },
+    { "name": "rate_limit", "repeat": 25, "body": { "email": "qa+login@kanaku.test", "password": "wrong" }, "expected_status_on_last": 429 }
+  ],
+  "fixtures": {
+    "seedUser": { "email": "qa+login@kanaku.test", "password": "CorrectHorseBattery9!", "approved": true, "role": "user" }
+  },
+  "owner": "auth-team",
+  "lastUpdated": "2026-06-19"
+}
+

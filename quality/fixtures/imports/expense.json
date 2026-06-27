@@ -1,0 +1,201 @@
+{
+  "user": {
+    "user_id": "U1001",
+    "name": "Ashraf",
+    "currency": "INR"
+  },
+
+  "accounts": [
+    {
+      "account_id": "A1",
+      "account_name": "HDFC Salary Account",
+      "type": "bank",
+      "balance": 85000
+    },
+    {
+      "account_id": "A2",
+      "account_name": "ICICI Credit Card",
+      "type": "credit_card",
+      "balance": -12000
+    },
+    {
+      "account_id": "A3",
+      "account_name": "Cash Wallet",
+      "type": "cash",
+      "balance": 3500
+    },
+    {
+      "account_id": "A4",
+      "account_name": "Paytm Wallet",
+      "type": "digital_wallet",
+      "balance": 2400
+    }
+  ],
+
+  "friends": [
+    {
+      "friend_id": "F1",
+      "name": "Ahmed",
+      "email": "ahmed@example.com",
+      "phone": "9876543210"
+    },
+    {
+      "friend_id": "F2",
+      "name": "Rahman",
+      "email": "rahman@example.com",
+      "phone": "9876543220"
+    },
+    {
+      "friend_id": "F3",
+      "name": "Imran",
+      "email": "imran@example.com",
+      "phone": "9876543230"
+    }
+  ],
+
+  "transactions": [
+    {
+      "transaction_id": "T1",
+      "account_id": "A1",
+      "type": "credit",
+      "amount": 50000,
+      "category": "Salary",
+      "description": "Monthly salary credited",
+      "date": "2026-03-01"
+    },
+    {
+      "transaction_id": "T2",
+      "account_id": "A1",
+      "type": "debit",
+      "amount": 2500,
+      "category": "Food",
+      "description": "Dinner at restaurant",
+      "date": "2026-03-03"
+    },
+    {
+      "transaction_id": "T3",
+      "account_id": "A2",
+      "type": "debit",
+      "amount": 5000,
+      "category": "Shopping",
+      "description": "Amazon purchase",
+      "date": "2026-03-05"
+    },
+    {
+      "transaction_id": "T4",
+      "account_id": "A4",
+      "type": "debit",
+      "amount": 600,
+      "category": "Transport",
+      "description": "Uber ride payment",
+      "date": "2026-03-06"
+    }
+  ],
+
+  "group_expenses": [
+    {
+      "group_id": "G1",
+      "title": "Dinner Party",
+      "total_amount": 3000,
+      "paid_by": "Ashraf",
+      "date": "2026-03-07",
+      "members": [
+        {
+          "friend_id": "F1",
+          "share": 1000,
+          "status": "pending"
+        },
+        {
+          "friend_id": "F2",
+          "share": 1000,
+          "status": "paid"
+        },
+        {
+          "friend_id": "F3",
+          "share": 1000,
+          "status": "pending"
+        }
+      ]
+    }
+  ],
+
+  "loans": [
+    {
+      "loan_id": "L1",
+      "type": "borrow",
+      "friend_id": "F1",
+      "amount": 20000,
+      "interest_rate": 5,
+      "start_date": "2026-01-01",
+      "due_date": "2026-06-01",
+      "status": "ongoing"
+    },
+    {
+      "loan_id": "L2",
+      "type": "emi",
+      "loan_name": "Bike Loan",
+      "total_amount": 120000,
+      "emi_amount": 5000,
+      "remaining_emi": 10,
+      "next_due_date": "2026-04-05",
+      "status": "ongoing"
+    }
+  ],
+
+  "investments": [
+    {
+      "investment_id": "I1",
+      "type": "stock",
+      "asset_name": "Reliance Industries",
+      "symbol": "RELIANCE",
+      "quantity": 10,
+      "buy_price": 2500,
+      "current_price": 2750,
+      "market": "NSE"
+    },
+    {
+      "investment_id": "I2",
+      "type": "gold",
+      "asset_name": "Gold ETF",
+      "quantity": 5,
+      "buy_price": 5800,
+      "current_price": 6100
+    },
+    {
+      "investment_id": "I3",
+      "type": "silver",
+      "asset_name": "Silver Investment",
+      "quantity": 20,
+      "buy_price": 70,
+      "current_price": 78
+    }
+  ],
+
+  "goals": [
+    {
+      "goal_id": "GO1",
+      "goal_name": "Wedding Savings",
+      "target_amount": 500000,
+      "saved_amount": 120000,
+      "monthly_saving_plan": 15000,
+      "target_date": "2027-12-01"
+    },
+    {
+      "goal_id": "GO2",
+      "goal_name": "Goa Trip with Friends",
+      "target_amount": 100000,
+      "saved_amount": 25000,
+      "target_date": "2026-10-01",
+      "friends": [
+        {
+          "friend_id": "F1",
+          "contribution": 20000
+        },
+        {
+          "friend_id": "F2",
+          "contribution": 15000
+        }
+      ]
+    }
+  ]
+}

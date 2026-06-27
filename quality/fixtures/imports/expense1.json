@@ -1,0 +1,252 @@
+{
+  "accounts": [
+    {
+      "account_id": "A1",
+      "account_name": "HDFC Salary Account",
+      "type": "bank",
+      "balance": 90000
+    },
+    {
+      "account_id": "A2",
+      "account_name": "ICICI Credit Card",
+      "type": "credit_card",
+      "balance": -15000
+    },
+    {
+      "account_id": "A3",
+      "account_name": "Cash Wallet",
+      "type": "cash",
+      "balance": 4000
+    },
+    {
+      "account_id": "A5",
+      "account_name": "Google Pay Wallet",
+      "type": "digital_wallet",
+      "balance": 1800
+    }
+  ],
+
+  "friends": [
+    {
+      "friend_id": "F1",
+      "name": "Ahmed",
+      "email": "ahmed@example.com",
+      "phone": "9876543210"
+    },
+    {
+      "friend_id": "F2",
+      "name": "Rahman",
+      "email": "rahman@example.com",
+      "phone": "9876543220"
+    },
+    {
+      "friend_id": "F4",
+      "name": "Sajid",
+      "email": "sajid@example.com",
+      "phone": "9876543250"
+    }
+  ],
+
+  "transactions": [
+    {
+      "transaction_id": "T1",
+      "account_id": "A1",
+      "type": "credit",
+      "amount": 50000,
+      "category": "Salary",
+      "description": "Monthly salary credited",
+      "date": "2026-03-01"
+    },
+
+    {
+      "transaction_id": "T1",
+      "account_id": "A1",
+      "type": "credit",
+      "amount": 50000,
+      "category": "Salary",
+      "description": "Monthly salary credited",
+      "date": "2026-03-01"
+    },
+
+    {
+      "transaction_id": "T5",
+      "account_id": "A1",
+      "type": "debit",
+      "amount": 1200,
+      "category": "Groceries",
+      "description": "Weekly grocery shopping at supermarket",
+      "date": "2026-03-10"
+    },
+
+    {
+      "transaction_id": "T6",
+      "account_id": "A5",
+      "type": "debit",
+      "amount": 450,
+      "category": "Food",
+      "description": "Lunch order via Swiggy",
+      "date": "2026-03-11"
+    },
+
+    {
+      "transaction_id": "T7",
+      "account_id": "A3",
+      "type": "debit",
+      "amount": 300,
+      "category": "Transport",
+      "description": "Auto rickshaw fare",
+      "date": "2026-03-12"
+    }
+  ],
+
+  "group_expenses": [
+    {
+      "group_id": "G1",
+      "title": "Dinner Party",
+      "total_amount": 3000,
+      "paid_by": "Ashraf",
+      "date": "2026-03-07",
+      "members": [
+        {
+          "friend_id": "F1",
+          "share": 1000,
+          "status": "pending"
+        },
+        {
+          "friend_id": "F2",
+          "share": 1000,
+          "status": "paid"
+        }
+      ]
+    },
+
+    {
+      "group_id": "G2",
+      "title": "Weekend Movie Night",
+      "total_amount": 2000,
+      "paid_by": "Ashraf",
+      "date": "2026-03-12",
+      "members": [
+        {
+          "friend_id": "F1",
+          "share": 700,
+          "status": "pending"
+        },
+        {
+          "friend_id": "F2",
+          "share": 700,
+          "status": "pending"
+        },
+        {
+          "friend_id": "F4",
+          "share": 600,
+          "status": "paid"
+        }
+      ]
+    }
+  ],
+
+  "loans": [
+    {
+      "loan_id": "L1",
+      "type": "borrow",
+      "friend_id": "F1",
+      "amount": 20000,
+      "interest_rate": 5,
+      "start_date": "2026-01-01",
+      "due_date": "2026-06-01",
+      "status": "ongoing"
+    },
+
+    {
+      "loan_id": "L3",
+      "type": "lend",
+      "friend_id": "F2",
+      "amount": 15000,
+      "interest_rate": 0,
+      "start_date": "2026-03-01",
+      "due_date": "2026-08-01",
+      "status": "ongoing"
+    },
+
+    {
+      "loan_id": "L4",
+      "type": "emi",
+      "loan_name": "Laptop Loan",
+      "total_amount": 80000,
+      "emi_amount": 4000,
+      "remaining_emi": 15,
+      "next_due_date": "2026-04-10",
+      "status": "ongoing"
+    }
+  ],
+
+  "investments": [
+    {
+      "investment_id": "I1",
+      "type": "stock",
+      "asset_name": "Reliance Industries",
+      "symbol": "RELIANCE",
+      "quantity": 10,
+      "buy_price": 2500,
+      "current_price": 2750
+    },
+
+    {
+      "investment_id": "I4",
+      "type": "stock",
+      "asset_name": "Tata Motors",
+      "symbol": "TATAMOTORS",
+      "quantity": 25,
+      "buy_price": 620,
+      "current_price": 680
+    },
+
+    {
+      "investment_id": "I5",
+      "type": "gold",
+      "asset_name": "Gold ETF",
+      "quantity": 3,
+      "buy_price": 6000,
+      "current_price": 6200
+    }
+  ],
+
+  "goals": [
+    {
+      "goal_id": "GO1",
+      "goal_name": "Wedding Savings",
+      "target_amount": 500000,
+      "saved_amount": 140000,
+      "monthly_saving_plan": 15000,
+      "target_date": "2027-12-01"
+    },
+
+    {
+      "goal_id": "GO3",
+      "goal_name": "Dubai Trip",
+      "target_amount": 200000,
+      "saved_amount": 40000,
+      "monthly_saving_plan": 10000,
+      "target_date": "2026-12-01"
+    },
+
+    {
+      "goal_id": "GO4",
+      "goal_name": "Friends Goa Trip",
+      "target_amount": 120000,
+      "saved_amount": 30000,
+      "target_date": "2026-10-01",
+      "friends": [
+        {
+          "friend_id": "F1",
+          "contribution": 15000
+        },
+        {
+          "friend_id": "F4",
+          "contribution": 15000
+        }
+      ]
+    }
+  ]
+}

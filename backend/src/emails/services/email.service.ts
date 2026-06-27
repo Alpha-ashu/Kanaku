@@ -30,7 +30,17 @@ export async function sendRoleAssignedEmail(to: string, role: string, name?: str
   return sendEmail({ to, subject, html, categories: ['kanaku-role'] });
 }
 
-/** Account verification — `verifyUrl` must be an app-generated, single-use link. */
+/**
+ * Account verification — `verifyUrl` must be an app-generated, single-use link.
+ *
+ * ⚠️ DEFERRED (Registration remediation, decision 6): email verification is NOT
+ * enforced at registration yet. On the current free email tier (personal verified
+ * sender) deliverability is unreliable, so mandatory verification would lock users
+ * out. This function + `renderVerificationEmail` are kept intentionally so the full
+ * flow (token issuance, `User.status='pending'` gate, a `/auth/verify-email`
+ * endpoint) can be wired once we move to a paid provider on a custom domain.
+ * Do not remove.
+ */
 export async function sendVerificationEmail(to: string, verifyUrl: string, name?: string): Promise<boolean> {
   const { subject, html } = renderVerificationEmail({ name, verifyUrl });
   return sendEmail({ to, subject, html, categories: ['kanaku-verification'] });

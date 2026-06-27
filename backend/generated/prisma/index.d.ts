@@ -33118,6 +33118,7 @@ export namespace Prisma {
     transactions?: boolean | User$transactionsArgs<ExtArgs>
     userPin?: boolean | User$userPinArgs<ExtArgs>
     userSettings?: boolean | User$userSettingsArgs<ExtArgs>
+    profile?: boolean | User$profileArgs<ExtArgs>
     otpCodes?: boolean | User$otpCodesArgs<ExtArgs>
     aiScans?: boolean | User$aiScansArgs<ExtArgs>
     groupExpenses?: boolean | User$groupExpensesArgs<ExtArgs>
@@ -33235,6 +33236,7 @@ export namespace Prisma {
     transactions?: boolean | User$transactionsArgs<ExtArgs>
     userPin?: boolean | User$userPinArgs<ExtArgs>
     userSettings?: boolean | User$userSettingsArgs<ExtArgs>
+    profile?: boolean | User$profileArgs<ExtArgs>
     otpCodes?: boolean | User$otpCodesArgs<ExtArgs>
     aiScans?: boolean | User$aiScansArgs<ExtArgs>
     groupExpenses?: boolean | User$groupExpensesArgs<ExtArgs>
@@ -33277,6 +33279,7 @@ export namespace Prisma {
       transactions: Prisma.$TransactionPayload<ExtArgs>[]
       userPin: Prisma.$UserPinPayload<ExtArgs> | null
       userSettings: Prisma.$UserSettingsPayload<ExtArgs> | null
+      profile: Prisma.$profilesPayload<ExtArgs> | null
       otpCodes: Prisma.$OtpCodePayload<ExtArgs>[]
       aiScans: Prisma.$AiScanPayload<ExtArgs>[]
       groupExpenses: Prisma.$GroupExpensePayload<ExtArgs>[]
@@ -33730,6 +33733,7 @@ export namespace Prisma {
     transactions<T extends User$transactionsArgs<ExtArgs> = {}>(args?: Subset<T, User$transactionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TransactionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     userPin<T extends User$userPinArgs<ExtArgs> = {}>(args?: Subset<T, User$userPinArgs<ExtArgs>>): Prisma__UserPinClient<$Result.GetResult<Prisma.$UserPinPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     userSettings<T extends User$userSettingsArgs<ExtArgs> = {}>(args?: Subset<T, User$userSettingsArgs<ExtArgs>>): Prisma__UserSettingsClient<$Result.GetResult<Prisma.$UserSettingsPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    profile<T extends User$profileArgs<ExtArgs> = {}>(args?: Subset<T, User$profileArgs<ExtArgs>>): Prisma__profilesClient<$Result.GetResult<Prisma.$profilesPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     otpCodes<T extends User$otpCodesArgs<ExtArgs> = {}>(args?: Subset<T, User$otpCodesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OtpCodePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     aiScans<T extends User$aiScansArgs<ExtArgs> = {}>(args?: Subset<T, User$aiScansArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AiScanPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     groupExpenses<T extends User$groupExpensesArgs<ExtArgs> = {}>(args?: Subset<T, User$groupExpensesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GroupExpensePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -34784,6 +34788,25 @@ export namespace Prisma {
      */
     include?: UserSettingsInclude<ExtArgs> | null
     where?: UserSettingsWhereInput
+  }
+
+  /**
+   * User.profile
+   */
+  export type User$profileArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the profiles
+     */
+    select?: profilesSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the profiles
+     */
+    omit?: profilesOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: profilesInclude<ExtArgs> | null
+    where?: profilesWhereInput
   }
 
   /**
@@ -51006,6 +51029,7 @@ export namespace Prisma {
     visible_features?: boolean
     created_at?: boolean
     updated_at?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["profiles"]>
 
   export type profilesSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -51028,6 +51052,7 @@ export namespace Prisma {
     visible_features?: boolean
     created_at?: boolean
     updated_at?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["profiles"]>
 
   export type profilesSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -51050,6 +51075,7 @@ export namespace Prisma {
     visible_features?: boolean
     created_at?: boolean
     updated_at?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["profiles"]>
 
   export type profilesSelectScalar = {
@@ -51075,10 +51101,21 @@ export namespace Prisma {
   }
 
   export type profilesOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "email" | "full_name" | "first_name" | "last_name" | "avatar_url" | "avatar_id" | "phone" | "gender" | "date_of_birth" | "monthly_income" | "annual_income" | "job_type" | "country" | "state" | "city" | "visible_features" | "created_at" | "updated_at", ExtArgs["result"]["profiles"]>
+  export type profilesInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type profilesIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type profilesIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
 
   export type $profilesPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "profiles"
-    objects: {}
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs>
+    }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       email: string | null
@@ -51493,6 +51530,7 @@ export namespace Prisma {
    */
   export interface Prisma__profilesClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -51558,6 +51596,10 @@ export namespace Prisma {
      */
     omit?: profilesOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: profilesInclude<ExtArgs> | null
+    /**
      * Filter, which profiles to fetch.
      */
     where: profilesWhereUniqueInput
@@ -51576,6 +51618,10 @@ export namespace Prisma {
      */
     omit?: profilesOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: profilesInclude<ExtArgs> | null
+    /**
      * Filter, which profiles to fetch.
      */
     where: profilesWhereUniqueInput
@@ -51593,6 +51639,10 @@ export namespace Prisma {
      * Omit specific fields from the profiles
      */
     omit?: profilesOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: profilesInclude<ExtArgs> | null
     /**
      * Filter, which profiles to fetch.
      */
@@ -51642,6 +51692,10 @@ export namespace Prisma {
      */
     omit?: profilesOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: profilesInclude<ExtArgs> | null
+    /**
      * Filter, which profiles to fetch.
      */
     where?: profilesWhereInput
@@ -51690,6 +51744,10 @@ export namespace Prisma {
      */
     omit?: profilesOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: profilesInclude<ExtArgs> | null
+    /**
      * Filter, which profiles to fetch.
      */
     where?: profilesWhereInput
@@ -51733,6 +51791,10 @@ export namespace Prisma {
      */
     omit?: profilesOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: profilesInclude<ExtArgs> | null
+    /**
      * The data needed to create a profiles.
      */
     data: XOR<profilesCreateInput, profilesUncheckedCreateInput>
@@ -51766,6 +51828,10 @@ export namespace Prisma {
      */
     data: profilesCreateManyInput | profilesCreateManyInput[]
     skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: profilesIncludeCreateManyAndReturn<ExtArgs> | null
   }
 
   /**
@@ -51780,6 +51846,10 @@ export namespace Prisma {
      * Omit specific fields from the profiles
      */
     omit?: profilesOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: profilesInclude<ExtArgs> | null
     /**
      * The data needed to update a profiles.
      */
@@ -51832,6 +51902,10 @@ export namespace Prisma {
      * Limit how many profiles to update.
      */
     limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: profilesIncludeUpdateManyAndReturn<ExtArgs> | null
   }
 
   /**
@@ -51846,6 +51920,10 @@ export namespace Prisma {
      * Omit specific fields from the profiles
      */
     omit?: profilesOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: profilesInclude<ExtArgs> | null
     /**
      * The filter to search for the profiles to update in case it exists.
      */
@@ -51872,6 +51950,10 @@ export namespace Prisma {
      * Omit specific fields from the profiles
      */
     omit?: profilesOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: profilesInclude<ExtArgs> | null
     /**
      * Filter which profiles to delete.
      */
@@ -51904,6 +51986,10 @@ export namespace Prisma {
      * Omit specific fields from the profiles
      */
     omit?: profilesOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: profilesInclude<ExtArgs> | null
   }
 
 
@@ -65714,6 +65800,7 @@ export namespace Prisma {
     transactions?: TransactionListRelationFilter
     userPin?: XOR<UserPinNullableScalarRelationFilter, UserPinWhereInput> | null
     userSettings?: XOR<UserSettingsNullableScalarRelationFilter, UserSettingsWhereInput> | null
+    profile?: XOR<ProfilesNullableScalarRelationFilter, profilesWhereInput> | null
     otpCodes?: OtpCodeListRelationFilter
     aiScans?: AiScanListRelationFilter
     groupExpenses?: GroupExpenseListRelationFilter
@@ -65774,6 +65861,7 @@ export namespace Prisma {
     transactions?: TransactionOrderByRelationAggregateInput
     userPin?: UserPinOrderByWithRelationInput
     userSettings?: UserSettingsOrderByWithRelationInput
+    profile?: profilesOrderByWithRelationInput
     otpCodes?: OtpCodeOrderByRelationAggregateInput
     aiScans?: AiScanOrderByRelationAggregateInput
     groupExpenses?: GroupExpenseOrderByRelationAggregateInput
@@ -65837,6 +65925,7 @@ export namespace Prisma {
     transactions?: TransactionListRelationFilter
     userPin?: XOR<UserPinNullableScalarRelationFilter, UserPinWhereInput> | null
     userSettings?: XOR<UserSettingsNullableScalarRelationFilter, UserSettingsWhereInput> | null
+    profile?: XOR<ProfilesNullableScalarRelationFilter, profilesWhereInput> | null
     otpCodes?: OtpCodeListRelationFilter
     aiScans?: AiScanListRelationFilter
     groupExpenses?: GroupExpenseListRelationFilter
@@ -67044,6 +67133,7 @@ export namespace Prisma {
     visible_features?: JsonNullableFilter<"profiles">
     created_at?: DateTimeNullableFilter<"profiles"> | Date | string | null
     updated_at?: DateTimeNullableFilter<"profiles"> | Date | string | null
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
   }
 
   export type profilesOrderByWithRelationInput = {
@@ -67066,11 +67156,13 @@ export namespace Prisma {
     visible_features?: SortOrderInput | SortOrder
     created_at?: SortOrderInput | SortOrder
     updated_at?: SortOrderInput | SortOrder
+    user?: UserOrderByWithRelationInput
   }
 
   export type profilesWhereUniqueInput = Prisma.AtLeast<{
     id?: string
     email?: string
+    phone?: string
     AND?: profilesWhereInput | profilesWhereInput[]
     OR?: profilesWhereInput[]
     NOT?: profilesWhereInput | profilesWhereInput[]
@@ -67079,7 +67171,6 @@ export namespace Prisma {
     last_name?: StringNullableFilter<"profiles"> | string | null
     avatar_url?: StringNullableFilter<"profiles"> | string | null
     avatar_id?: StringNullableFilter<"profiles"> | string | null
-    phone?: StringNullableFilter<"profiles"> | string | null
     gender?: StringNullableFilter<"profiles"> | string | null
     date_of_birth?: DateTimeNullableFilter<"profiles"> | Date | string | null
     monthly_income?: DecimalNullableFilter<"profiles"> | Decimal | DecimalJsLike | number | string | null
@@ -67091,7 +67182,8 @@ export namespace Prisma {
     visible_features?: JsonNullableFilter<"profiles">
     created_at?: DateTimeNullableFilter<"profiles"> | Date | string | null
     updated_at?: DateTimeNullableFilter<"profiles"> | Date | string | null
-  }, "id" | "email">
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }, "id" | "email" | "phone">
 
   export type profilesOrderByWithAggregationInput = {
     id?: SortOrder
@@ -70855,6 +70947,7 @@ export namespace Prisma {
     transactions?: TransactionCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
+    profile?: profilesCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
     aiScans?: AiScanCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
@@ -70915,6 +71008,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
+    profile?: profilesUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
@@ -70975,6 +71069,7 @@ export namespace Prisma {
     transactions?: TransactionUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
+    profile?: profilesUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
@@ -71035,6 +71130,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+    profile?: profilesUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
@@ -72367,7 +72463,6 @@ export namespace Prisma {
   }
 
   export type profilesCreateInput = {
-    id: string
     email?: string | null
     full_name?: string | null
     first_name?: string | null
@@ -72386,6 +72481,7 @@ export namespace Prisma {
     visible_features?: NullableJsonNullValueInput | InputJsonValue
     created_at?: Date | string | null
     updated_at?: Date | string | null
+    user: UserCreateNestedOneWithoutProfileInput
   }
 
   export type profilesUncheckedCreateInput = {
@@ -72411,7 +72507,6 @@ export namespace Prisma {
   }
 
   export type profilesUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
     full_name?: NullableStringFieldUpdateOperationsInput | string | null
     first_name?: NullableStringFieldUpdateOperationsInput | string | null
@@ -72430,6 +72525,7 @@ export namespace Prisma {
     visible_features?: NullableJsonNullValueInput | InputJsonValue
     created_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    user?: UserUpdateOneRequiredWithoutProfileNestedInput
   }
 
   export type profilesUncheckedUpdateInput = {
@@ -72477,7 +72573,6 @@ export namespace Prisma {
   }
 
   export type profilesUpdateManyMutationInput = {
-    id?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
     full_name?: NullableStringFieldUpdateOperationsInput | string | null
     first_name?: NullableStringFieldUpdateOperationsInput | string | null
@@ -75500,6 +75595,11 @@ export namespace Prisma {
     isNot?: UserSettingsWhereInput | null
   }
 
+  export type ProfilesNullableScalarRelationFilter = {
+    is?: profilesWhereInput | null
+    isNot?: profilesWhereInput | null
+  }
+
   export type OtpCodeListRelationFilter = {
     every?: OtpCodeWhereInput
     some?: OtpCodeWhereInput
@@ -78034,6 +78134,12 @@ export namespace Prisma {
     connect?: UserSettingsWhereUniqueInput
   }
 
+  export type profilesCreateNestedOneWithoutUserInput = {
+    create?: XOR<profilesCreateWithoutUserInput, profilesUncheckedCreateWithoutUserInput>
+    connectOrCreate?: profilesCreateOrConnectWithoutUserInput
+    connect?: profilesWhereUniqueInput
+  }
+
   export type OtpCodeCreateNestedManyWithoutUserInput = {
     create?: XOR<OtpCodeCreateWithoutUserInput, OtpCodeUncheckedCreateWithoutUserInput> | OtpCodeCreateWithoutUserInput[] | OtpCodeUncheckedCreateWithoutUserInput[]
     connectOrCreate?: OtpCodeCreateOrConnectWithoutUserInput | OtpCodeCreateOrConnectWithoutUserInput[]
@@ -78267,6 +78373,12 @@ export namespace Prisma {
     create?: XOR<UserSettingsCreateWithoutUserInput, UserSettingsUncheckedCreateWithoutUserInput>
     connectOrCreate?: UserSettingsCreateOrConnectWithoutUserInput
     connect?: UserSettingsWhereUniqueInput
+  }
+
+  export type profilesUncheckedCreateNestedOneWithoutUserInput = {
+    create?: XOR<profilesCreateWithoutUserInput, profilesUncheckedCreateWithoutUserInput>
+    connectOrCreate?: profilesCreateOrConnectWithoutUserInput
+    connect?: profilesWhereUniqueInput
   }
 
   export type OtpCodeUncheckedCreateNestedManyWithoutUserInput = {
@@ -78675,6 +78787,16 @@ export namespace Prisma {
     delete?: UserSettingsWhereInput | boolean
     connect?: UserSettingsWhereUniqueInput
     update?: XOR<XOR<UserSettingsUpdateToOneWithWhereWithoutUserInput, UserSettingsUpdateWithoutUserInput>, UserSettingsUncheckedUpdateWithoutUserInput>
+  }
+
+  export type profilesUpdateOneWithoutUserNestedInput = {
+    create?: XOR<profilesCreateWithoutUserInput, profilesUncheckedCreateWithoutUserInput>
+    connectOrCreate?: profilesCreateOrConnectWithoutUserInput
+    upsert?: profilesUpsertWithoutUserInput
+    disconnect?: profilesWhereInput | boolean
+    delete?: profilesWhereInput | boolean
+    connect?: profilesWhereUniqueInput
+    update?: XOR<XOR<profilesUpdateToOneWithWhereWithoutUserInput, profilesUpdateWithoutUserInput>, profilesUncheckedUpdateWithoutUserInput>
   }
 
   export type OtpCodeUpdateManyWithoutUserNestedInput = {
@@ -79141,6 +79263,16 @@ export namespace Prisma {
     update?: XOR<XOR<UserSettingsUpdateToOneWithWhereWithoutUserInput, UserSettingsUpdateWithoutUserInput>, UserSettingsUncheckedUpdateWithoutUserInput>
   }
 
+  export type profilesUncheckedUpdateOneWithoutUserNestedInput = {
+    create?: XOR<profilesCreateWithoutUserInput, profilesUncheckedCreateWithoutUserInput>
+    connectOrCreate?: profilesCreateOrConnectWithoutUserInput
+    upsert?: profilesUpsertWithoutUserInput
+    disconnect?: profilesWhereInput | boolean
+    delete?: profilesWhereInput | boolean
+    connect?: profilesWhereUniqueInput
+    update?: XOR<XOR<profilesUpdateToOneWithWhereWithoutUserInput, profilesUpdateWithoutUserInput>, profilesUncheckedUpdateWithoutUserInput>
+  }
+
   export type OtpCodeUncheckedUpdateManyWithoutUserNestedInput = {
     create?: XOR<OtpCodeCreateWithoutUserInput, OtpCodeUncheckedCreateWithoutUserInput> | OtpCodeCreateWithoutUserInput[] | OtpCodeUncheckedCreateWithoutUserInput[]
     connectOrCreate?: OtpCodeCreateOrConnectWithoutUserInput | OtpCodeCreateOrConnectWithoutUserInput[]
@@ -79503,6 +79635,20 @@ export namespace Prisma {
     upsert?: GoalUpsertWithoutGoalMembersInput
     connect?: GoalWhereUniqueInput
     update?: XOR<XOR<GoalUpdateToOneWithWhereWithoutGoalMembersInput, GoalUpdateWithoutGoalMembersInput>, GoalUncheckedUpdateWithoutGoalMembersInput>
+  }
+
+  export type UserCreateNestedOneWithoutProfileInput = {
+    create?: XOR<UserCreateWithoutProfileInput, UserUncheckedCreateWithoutProfileInput>
+    connectOrCreate?: UserCreateOrConnectWithoutProfileInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserUpdateOneRequiredWithoutProfileNestedInput = {
+    create?: XOR<UserCreateWithoutProfileInput, UserUncheckedCreateWithoutProfileInput>
+    connectOrCreate?: UserCreateOrConnectWithoutProfileInput
+    upsert?: UserUpsertWithoutProfileInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutProfileInput, UserUpdateWithoutProfileInput>, UserUncheckedUpdateWithoutProfileInput>
   }
 
   export type UserCreateNestedOneWithoutRecurringTransactionsInput = {
@@ -79954,6 +80100,7 @@ export namespace Prisma {
     transactions?: TransactionCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
+    profile?: profilesCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
     aiScans?: AiScanCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
@@ -80013,6 +80160,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
+    profile?: profilesUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
@@ -80262,6 +80410,7 @@ export namespace Prisma {
     transactions?: TransactionUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
+    profile?: profilesUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
@@ -80321,6 +80470,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+    profile?: profilesUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
@@ -80510,6 +80660,7 @@ export namespace Prisma {
     transactions?: TransactionCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
+    profile?: profilesCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
     aiScans?: AiScanCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
@@ -80569,6 +80720,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
+    profile?: profilesUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
@@ -80633,6 +80785,7 @@ export namespace Prisma {
     transactions?: TransactionCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
+    profile?: profilesCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
     aiScans?: AiScanCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
@@ -80692,6 +80845,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
+    profile?: profilesUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
@@ -80767,6 +80921,7 @@ export namespace Prisma {
     transactions?: TransactionUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
+    profile?: profilesUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
@@ -80826,6 +80981,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+    profile?: profilesUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
@@ -80896,6 +81052,7 @@ export namespace Prisma {
     transactions?: TransactionUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
+    profile?: profilesUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
@@ -80955,6 +81112,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+    profile?: profilesUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
@@ -81014,6 +81172,7 @@ export namespace Prisma {
     transactions?: TransactionCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
+    profile?: profilesCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
     aiScans?: AiScanCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
@@ -81073,6 +81232,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
+    profile?: profilesUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
@@ -81148,6 +81308,7 @@ export namespace Prisma {
     transactions?: TransactionUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
+    profile?: profilesUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
@@ -81207,6 +81368,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+    profile?: profilesUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
@@ -81266,6 +81428,7 @@ export namespace Prisma {
     transactions?: TransactionCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
+    profile?: profilesCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
     aiScans?: AiScanCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
@@ -81325,6 +81488,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
+    profile?: profilesUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
@@ -81426,6 +81590,7 @@ export namespace Prisma {
     transactions?: TransactionCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
+    profile?: profilesCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
     aiScans?: AiScanCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
@@ -81485,6 +81650,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
+    profile?: profilesUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
@@ -81617,6 +81783,7 @@ export namespace Prisma {
     transactions?: TransactionUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
+    profile?: profilesUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
@@ -81676,6 +81843,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+    profile?: profilesUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
@@ -81789,6 +81957,7 @@ export namespace Prisma {
     transactions?: TransactionUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
+    profile?: profilesUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
@@ -81848,6 +82017,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+    profile?: profilesUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
@@ -82012,6 +82182,7 @@ export namespace Prisma {
     transactions?: TransactionCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
+    profile?: profilesCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
     aiScans?: AiScanCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
@@ -82071,6 +82242,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
+    profile?: profilesUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
@@ -82135,6 +82307,7 @@ export namespace Prisma {
     transactions?: TransactionCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
+    profile?: profilesCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
     aiScans?: AiScanCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
@@ -82194,6 +82367,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
+    profile?: profilesUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
@@ -82314,6 +82488,7 @@ export namespace Prisma {
     transactions?: TransactionUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
+    profile?: profilesUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
@@ -82373,6 +82548,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+    profile?: profilesUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
@@ -82443,6 +82619,7 @@ export namespace Prisma {
     transactions?: TransactionUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
+    profile?: profilesUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
@@ -82502,6 +82679,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+    profile?: profilesUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
@@ -82561,6 +82739,7 @@ export namespace Prisma {
     transactions?: TransactionCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
+    profile?: profilesCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
     aiScans?: AiScanCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
@@ -82620,6 +82799,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
+    profile?: profilesUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
@@ -82695,6 +82875,7 @@ export namespace Prisma {
     transactions?: TransactionUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
+    profile?: profilesUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
@@ -82754,6 +82935,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+    profile?: profilesUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
@@ -82813,6 +82995,7 @@ export namespace Prisma {
     transactions?: TransactionCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
+    profile?: profilesCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
     aiScans?: AiScanCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
@@ -82872,6 +83055,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
+    profile?: profilesUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
@@ -82986,6 +83170,7 @@ export namespace Prisma {
     transactions?: TransactionUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
+    profile?: profilesUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
@@ -83045,6 +83230,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+    profile?: profilesUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
@@ -83149,6 +83335,7 @@ export namespace Prisma {
     transactions?: TransactionCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
+    profile?: profilesCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
     aiScans?: AiScanCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
@@ -83208,6 +83395,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
+    profile?: profilesUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
@@ -83283,6 +83471,7 @@ export namespace Prisma {
     transactions?: TransactionUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
+    profile?: profilesUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
@@ -83342,6 +83531,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+    profile?: profilesUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
@@ -83401,6 +83591,7 @@ export namespace Prisma {
     transactions?: TransactionCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
+    profile?: profilesCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
     aiScans?: AiScanCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
@@ -83460,6 +83651,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
+    profile?: profilesUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
@@ -83535,6 +83727,7 @@ export namespace Prisma {
     transactions?: TransactionUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
+    profile?: profilesUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
@@ -83594,6 +83787,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+    profile?: profilesUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
@@ -83653,6 +83847,7 @@ export namespace Prisma {
     transactions?: TransactionCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
+    profile?: profilesCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
     aiScans?: AiScanCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
@@ -83712,6 +83907,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
+    profile?: profilesUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
@@ -83827,6 +84023,7 @@ export namespace Prisma {
     transactions?: TransactionUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
+    profile?: profilesUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
@@ -83886,6 +84083,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+    profile?: profilesUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
@@ -83980,6 +84178,7 @@ export namespace Prisma {
     transactions?: TransactionCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
+    profile?: profilesCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
     aiScans?: AiScanCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
@@ -84039,6 +84238,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
+    profile?: profilesUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
@@ -84182,6 +84382,7 @@ export namespace Prisma {
     transactions?: TransactionUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
+    profile?: profilesUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
@@ -84241,6 +84442,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+    profile?: profilesUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
@@ -84437,6 +84639,7 @@ export namespace Prisma {
     transactions?: TransactionCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
+    profile?: profilesCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
     aiScans?: AiScanCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
@@ -84496,6 +84699,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
+    profile?: profilesUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
@@ -84673,6 +84877,7 @@ export namespace Prisma {
     transactions?: TransactionUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
+    profile?: profilesUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
@@ -84732,6 +84937,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+    profile?: profilesUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
@@ -84791,6 +84997,7 @@ export namespace Prisma {
     transactions?: TransactionCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
+    profile?: profilesCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
     aiScans?: AiScanCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
@@ -84850,6 +85057,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
+    profile?: profilesUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
@@ -84925,6 +85133,7 @@ export namespace Prisma {
     transactions?: TransactionUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
+    profile?: profilesUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
@@ -84984,6 +85193,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+    profile?: profilesUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
@@ -85043,6 +85253,7 @@ export namespace Prisma {
     transactions?: TransactionCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
+    profile?: profilesCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
     aiScans?: AiScanCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
@@ -85102,6 +85313,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
+    profile?: profilesUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
@@ -85177,6 +85389,7 @@ export namespace Prisma {
     transactions?: TransactionUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
+    profile?: profilesUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
@@ -85236,6 +85449,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+    profile?: profilesUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
@@ -85295,6 +85509,7 @@ export namespace Prisma {
     transactions?: TransactionCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
+    profile?: profilesCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
     aiScans?: AiScanCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
@@ -85354,6 +85569,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
+    profile?: profilesUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
@@ -85459,6 +85675,7 @@ export namespace Prisma {
     transactions?: TransactionUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
+    profile?: profilesUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
@@ -85518,6 +85735,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+    profile?: profilesUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
@@ -85743,6 +85961,7 @@ export namespace Prisma {
     transactions?: TransactionCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
+    profile?: profilesCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
     aiScans?: AiScanCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
@@ -85802,6 +86021,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
+    profile?: profilesUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
@@ -85877,6 +86097,7 @@ export namespace Prisma {
     transactions?: TransactionUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
+    profile?: profilesUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
@@ -85936,6 +86157,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+    profile?: profilesUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
@@ -85995,6 +86217,7 @@ export namespace Prisma {
     transactions?: TransactionCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
+    profile?: profilesCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
     aiScans?: AiScanCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
@@ -86054,6 +86277,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
+    profile?: profilesUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
@@ -86118,6 +86342,7 @@ export namespace Prisma {
     transactions?: TransactionCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
+    profile?: profilesCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
     aiScans?: AiScanCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
@@ -86177,6 +86402,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
+    profile?: profilesUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
@@ -86291,6 +86517,7 @@ export namespace Prisma {
     transactions?: TransactionUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
+    profile?: profilesUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
@@ -86350,6 +86577,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+    profile?: profilesUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
@@ -86420,6 +86648,7 @@ export namespace Prisma {
     transactions?: TransactionUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
+    profile?: profilesUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
@@ -86479,6 +86708,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+    profile?: profilesUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
@@ -86583,6 +86813,7 @@ export namespace Prisma {
     transactions?: TransactionCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
+    profile?: profilesCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
     aiScans?: AiScanCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
@@ -86642,6 +86873,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
+    profile?: profilesUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
@@ -86717,6 +86949,7 @@ export namespace Prisma {
     transactions?: TransactionUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
+    profile?: profilesUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
@@ -86776,6 +87009,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+    profile?: profilesUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
@@ -86835,6 +87069,7 @@ export namespace Prisma {
     transactions?: TransactionCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
+    profile?: profilesCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
     aiScans?: AiScanCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
@@ -86894,6 +87129,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
+    profile?: profilesUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
@@ -86969,6 +87205,7 @@ export namespace Prisma {
     transactions?: TransactionUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
+    profile?: profilesUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
@@ -87028,6 +87265,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+    profile?: profilesUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
@@ -87193,6 +87431,7 @@ export namespace Prisma {
     todos?: TodoCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
+    profile?: profilesCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
     aiScans?: AiScanCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
@@ -87252,6 +87491,7 @@ export namespace Prisma {
     todos?: TodoUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
+    profile?: profilesUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
@@ -87445,6 +87685,7 @@ export namespace Prisma {
     todos?: TodoUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
+    profile?: profilesUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
@@ -87504,6 +87745,7 @@ export namespace Prisma {
     todos?: TodoUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+    profile?: profilesUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
@@ -88663,6 +88905,53 @@ export namespace Prisma {
   export type UserSettingsCreateOrConnectWithoutUserInput = {
     where: UserSettingsWhereUniqueInput
     create: XOR<UserSettingsCreateWithoutUserInput, UserSettingsUncheckedCreateWithoutUserInput>
+  }
+
+  export type profilesCreateWithoutUserInput = {
+    email?: string | null
+    full_name?: string | null
+    first_name?: string | null
+    last_name?: string | null
+    avatar_url?: string | null
+    avatar_id?: string | null
+    phone?: string | null
+    gender?: string | null
+    date_of_birth?: Date | string | null
+    monthly_income?: Decimal | DecimalJsLike | number | string | null
+    annual_income?: Decimal | DecimalJsLike | number | string | null
+    job_type?: string | null
+    country?: string | null
+    state?: string | null
+    city?: string | null
+    visible_features?: NullableJsonNullValueInput | InputJsonValue
+    created_at?: Date | string | null
+    updated_at?: Date | string | null
+  }
+
+  export type profilesUncheckedCreateWithoutUserInput = {
+    email?: string | null
+    full_name?: string | null
+    first_name?: string | null
+    last_name?: string | null
+    avatar_url?: string | null
+    avatar_id?: string | null
+    phone?: string | null
+    gender?: string | null
+    date_of_birth?: Date | string | null
+    monthly_income?: Decimal | DecimalJsLike | number | string | null
+    annual_income?: Decimal | DecimalJsLike | number | string | null
+    job_type?: string | null
+    country?: string | null
+    state?: string | null
+    city?: string | null
+    visible_features?: NullableJsonNullValueInput | InputJsonValue
+    created_at?: Date | string | null
+    updated_at?: Date | string | null
+  }
+
+  export type profilesCreateOrConnectWithoutUserInput = {
+    where: profilesWhereUniqueInput
+    create: XOR<profilesCreateWithoutUserInput, profilesUncheckedCreateWithoutUserInput>
   }
 
   export type OtpCodeCreateWithoutUserInput = {
@@ -89885,6 +90174,59 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type profilesUpsertWithoutUserInput = {
+    update: XOR<profilesUpdateWithoutUserInput, profilesUncheckedUpdateWithoutUserInput>
+    create: XOR<profilesCreateWithoutUserInput, profilesUncheckedCreateWithoutUserInput>
+    where?: profilesWhereInput
+  }
+
+  export type profilesUpdateToOneWithWhereWithoutUserInput = {
+    where?: profilesWhereInput
+    data: XOR<profilesUpdateWithoutUserInput, profilesUncheckedUpdateWithoutUserInput>
+  }
+
+  export type profilesUpdateWithoutUserInput = {
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    full_name?: NullableStringFieldUpdateOperationsInput | string | null
+    first_name?: NullableStringFieldUpdateOperationsInput | string | null
+    last_name?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar_url?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar_id?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableStringFieldUpdateOperationsInput | string | null
+    date_of_birth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    monthly_income?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    annual_income?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    job_type?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    state?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: NullableStringFieldUpdateOperationsInput | string | null
+    visible_features?: NullableJsonNullValueInput | InputJsonValue
+    created_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type profilesUncheckedUpdateWithoutUserInput = {
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    full_name?: NullableStringFieldUpdateOperationsInput | string | null
+    first_name?: NullableStringFieldUpdateOperationsInput | string | null
+    last_name?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar_url?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar_id?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableStringFieldUpdateOperationsInput | string | null
+    date_of_birth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    monthly_income?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    annual_income?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    job_type?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    state?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: NullableStringFieldUpdateOperationsInput | string | null
+    visible_features?: NullableJsonNullValueInput | InputJsonValue
+    created_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
   export type OtpCodeUpsertWithWhereUniqueWithoutUserInput = {
     where: OtpCodeWhereUniqueInput
     update: XOR<OtpCodeUpdateWithoutUserInput, OtpCodeUncheckedUpdateWithoutUserInput>
@@ -90186,6 +90528,7 @@ export namespace Prisma {
     todos?: TodoCreateNestedManyWithoutUserInput
     transactions?: TransactionCreateNestedManyWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
+    profile?: profilesCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
     aiScans?: AiScanCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
@@ -90245,6 +90588,7 @@ export namespace Prisma {
     todos?: TodoUncheckedCreateNestedManyWithoutUserInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
+    profile?: profilesUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
@@ -90320,6 +90664,7 @@ export namespace Prisma {
     todos?: TodoUpdateManyWithoutUserNestedInput
     transactions?: TransactionUpdateManyWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
+    profile?: profilesUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
@@ -90379,6 +90724,7 @@ export namespace Prisma {
     todos?: TodoUncheckedUpdateManyWithoutUserNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+    profile?: profilesUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
@@ -90438,6 +90784,7 @@ export namespace Prisma {
     todos?: TodoCreateNestedManyWithoutUserInput
     transactions?: TransactionCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
+    profile?: profilesCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
     aiScans?: AiScanCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
@@ -90497,6 +90844,7 @@ export namespace Prisma {
     todos?: TodoUncheckedCreateNestedManyWithoutUserInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
+    profile?: profilesUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
@@ -90572,6 +90920,7 @@ export namespace Prisma {
     todos?: TodoUpdateManyWithoutUserNestedInput
     transactions?: TransactionUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
+    profile?: profilesUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
@@ -90631,6 +90980,7 @@ export namespace Prisma {
     todos?: TodoUncheckedUpdateManyWithoutUserNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
+    profile?: profilesUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
@@ -90691,6 +91041,7 @@ export namespace Prisma {
     transactions?: TransactionCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
+    profile?: profilesCreateNestedOneWithoutUserInput
     aiScans?: AiScanCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
@@ -90750,6 +91101,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
+    profile?: profilesUncheckedCreateNestedOneWithoutUserInput
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
@@ -90825,6 +91177,7 @@ export namespace Prisma {
     transactions?: TransactionUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
+    profile?: profilesUpdateOneWithoutUserNestedInput
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
@@ -90884,6 +91237,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+    profile?: profilesUncheckedUpdateOneWithoutUserNestedInput
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
@@ -90943,6 +91297,7 @@ export namespace Prisma {
     transactions?: TransactionCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
+    profile?: profilesCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
@@ -91002,6 +91357,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
+    profile?: profilesUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
@@ -91077,6 +91433,7 @@ export namespace Prisma {
     transactions?: TransactionUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
+    profile?: profilesUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
@@ -91136,6 +91493,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+    profile?: profilesUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
@@ -91316,6 +91674,7 @@ export namespace Prisma {
     transactions?: TransactionCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
+    profile?: profilesCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
     aiScans?: AiScanCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
@@ -91375,6 +91734,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
+    profile?: profilesUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
     recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
@@ -91559,6 +91919,7 @@ export namespace Prisma {
     transactions?: TransactionUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
+    profile?: profilesUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
@@ -91618,6 +91979,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+    profile?: profilesUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
@@ -91893,6 +92255,7 @@ export namespace Prisma {
     transactions?: TransactionCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
+    profile?: profilesCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
     aiScans?: AiScanCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
@@ -91952,6 +92315,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
+    profile?: profilesUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
@@ -92016,6 +92380,7 @@ export namespace Prisma {
     transactions?: TransactionCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
+    profile?: profilesCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
     aiScans?: AiScanCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
@@ -92075,6 +92440,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
+    profile?: profilesUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
@@ -92150,6 +92516,7 @@ export namespace Prisma {
     transactions?: TransactionUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
+    profile?: profilesUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
@@ -92209,6 +92576,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+    profile?: profilesUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
@@ -92279,6 +92647,7 @@ export namespace Prisma {
     transactions?: TransactionUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
+    profile?: profilesUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
@@ -92338,6 +92707,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+    profile?: profilesUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
@@ -92439,6 +92809,262 @@ export namespace Prisma {
     goalContributions?: GoalContributionUncheckedUpdateManyWithoutGoalNestedInput
   }
 
+  export type UserCreateWithoutProfileInput = {
+    id?: string
+    email: string
+    name: string
+    password: string
+    role?: string
+    roleMode?: string
+    advisorStatus?: string
+    status?: string
+    isApproved?: boolean
+    firstName?: string | null
+    lastName?: string | null
+    salary?: Decimal | DecimalJsLike | number | string | null
+    dateOfBirth?: Date | string | null
+    jobType?: string | null
+    lastSynced?: Date | string | null
+    syncToken?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    avatarId?: string | null
+    city?: string | null
+    country?: string | null
+    gender?: string | null
+    state?: string | null
+    accounts?: AccountCreateNestedManyWithoutUserInput
+    advisorAvailability?: AdvisorAvailabilityCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationCreateNestedManyWithoutReviewerInput
+    sessionsAsAdvisor?: AdvisorSessionCreateNestedManyWithoutAdvisorInput
+    sessionsAsClient?: AdvisorSessionCreateNestedManyWithoutClientInput
+    bookingsAsAdvisor?: BookingRequestCreateNestedManyWithoutAdvisorInput
+    bookingsAsClient?: BookingRequestCreateNestedManyWithoutClientInput
+    categories?: CategoryCreateNestedManyWithoutUserInput
+    chatMessages?: ChatMessageCreateNestedManyWithoutSenderInput
+    devices?: DeviceCreateNestedManyWithoutUserInput
+    expenseBills?: ExpenseBillCreateNestedManyWithoutUserInput
+    friends?: FriendCreateNestedManyWithoutUserInput
+    goals?: GoalCreateNestedManyWithoutUserInput
+    goalContributions?: GoalContributionCreateNestedManyWithoutUserInput
+    importLogs?: ImportLogCreateNestedManyWithoutUserInput
+    investments?: InvestmentCreateNestedManyWithoutUserInput
+    loans?: LoanCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    paymentsAsAdvisor?: PaymentCreateNestedManyWithoutAdvisorInput
+    paymentsAsClient?: PaymentCreateNestedManyWithoutClientInput
+    refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
+    todos?: TodoCreateNestedManyWithoutUserInput
+    transactions?: TransactionCreateNestedManyWithoutUserInput
+    userPin?: UserPinCreateNestedOneWithoutUserInput
+    userSettings?: UserSettingsCreateNestedOneWithoutUserInput
+    otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
+    aiScans?: AiScanCreateNestedManyWithoutUserInput
+    groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
+    budgets?: BudgetCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
+  }
+
+  export type UserUncheckedCreateWithoutProfileInput = {
+    id?: string
+    email: string
+    name: string
+    password: string
+    role?: string
+    roleMode?: string
+    advisorStatus?: string
+    status?: string
+    isApproved?: boolean
+    firstName?: string | null
+    lastName?: string | null
+    salary?: Decimal | DecimalJsLike | number | string | null
+    dateOfBirth?: Date | string | null
+    jobType?: string | null
+    lastSynced?: Date | string | null
+    syncToken?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    avatarId?: string | null
+    city?: string | null
+    country?: string | null
+    gender?: string | null
+    state?: string | null
+    accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
+    advisorAvailability?: AdvisorAvailabilityUncheckedCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationUncheckedCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationUncheckedCreateNestedManyWithoutReviewerInput
+    sessionsAsAdvisor?: AdvisorSessionUncheckedCreateNestedManyWithoutAdvisorInput
+    sessionsAsClient?: AdvisorSessionUncheckedCreateNestedManyWithoutClientInput
+    bookingsAsAdvisor?: BookingRequestUncheckedCreateNestedManyWithoutAdvisorInput
+    bookingsAsClient?: BookingRequestUncheckedCreateNestedManyWithoutClientInput
+    categories?: CategoryUncheckedCreateNestedManyWithoutUserInput
+    chatMessages?: ChatMessageUncheckedCreateNestedManyWithoutSenderInput
+    devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
+    expenseBills?: ExpenseBillUncheckedCreateNestedManyWithoutUserInput
+    friends?: FriendUncheckedCreateNestedManyWithoutUserInput
+    goals?: GoalUncheckedCreateNestedManyWithoutUserInput
+    goalContributions?: GoalContributionUncheckedCreateNestedManyWithoutUserInput
+    importLogs?: ImportLogUncheckedCreateNestedManyWithoutUserInput
+    investments?: InvestmentUncheckedCreateNestedManyWithoutUserInput
+    loans?: LoanUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    paymentsAsAdvisor?: PaymentUncheckedCreateNestedManyWithoutAdvisorInput
+    paymentsAsClient?: PaymentUncheckedCreateNestedManyWithoutClientInput
+    refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
+    todos?: TodoUncheckedCreateNestedManyWithoutUserInput
+    transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
+    userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
+    userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
+    otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
+    aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
+    groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
+    budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
+  }
+
+  export type UserCreateOrConnectWithoutProfileInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutProfileInput, UserUncheckedCreateWithoutProfileInput>
+  }
+
+  export type UserUpsertWithoutProfileInput = {
+    update: XOR<UserUpdateWithoutProfileInput, UserUncheckedUpdateWithoutProfileInput>
+    create: XOR<UserCreateWithoutProfileInput, UserUncheckedCreateWithoutProfileInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutProfileInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutProfileInput, UserUncheckedUpdateWithoutProfileInput>
+  }
+
+  export type UserUpdateWithoutProfileInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    isApproved?: BoolFieldUpdateOperationsInput | boolean
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    jobType?: NullableStringFieldUpdateOperationsInput | string | null
+    lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    syncToken?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    avatarId?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableStringFieldUpdateOperationsInput | string | null
+    state?: NullableStringFieldUpdateOperationsInput | string | null
+    accounts?: AccountUpdateManyWithoutUserNestedInput
+    advisorAvailability?: AdvisorAvailabilityUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUpdateManyWithoutReviewerNestedInput
+    sessionsAsAdvisor?: AdvisorSessionUpdateManyWithoutAdvisorNestedInput
+    sessionsAsClient?: AdvisorSessionUpdateManyWithoutClientNestedInput
+    bookingsAsAdvisor?: BookingRequestUpdateManyWithoutAdvisorNestedInput
+    bookingsAsClient?: BookingRequestUpdateManyWithoutClientNestedInput
+    categories?: CategoryUpdateManyWithoutUserNestedInput
+    chatMessages?: ChatMessageUpdateManyWithoutSenderNestedInput
+    devices?: DeviceUpdateManyWithoutUserNestedInput
+    expenseBills?: ExpenseBillUpdateManyWithoutUserNestedInput
+    friends?: FriendUpdateManyWithoutUserNestedInput
+    goals?: GoalUpdateManyWithoutUserNestedInput
+    goalContributions?: GoalContributionUpdateManyWithoutUserNestedInput
+    importLogs?: ImportLogUpdateManyWithoutUserNestedInput
+    investments?: InvestmentUpdateManyWithoutUserNestedInput
+    loans?: LoanUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    paymentsAsAdvisor?: PaymentUpdateManyWithoutAdvisorNestedInput
+    paymentsAsClient?: PaymentUpdateManyWithoutClientNestedInput
+    refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
+    todos?: TodoUpdateManyWithoutUserNestedInput
+    transactions?: TransactionUpdateManyWithoutUserNestedInput
+    userPin?: UserPinUpdateOneWithoutUserNestedInput
+    userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
+    otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
+    aiScans?: AiScanUpdateManyWithoutUserNestedInput
+    groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutProfileInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    isApproved?: BoolFieldUpdateOperationsInput | boolean
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    jobType?: NullableStringFieldUpdateOperationsInput | string | null
+    lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    syncToken?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    avatarId?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableStringFieldUpdateOperationsInput | string | null
+    state?: NullableStringFieldUpdateOperationsInput | string | null
+    accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
+    advisorAvailability?: AdvisorAvailabilityUncheckedUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUncheckedUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUncheckedUpdateManyWithoutReviewerNestedInput
+    sessionsAsAdvisor?: AdvisorSessionUncheckedUpdateManyWithoutAdvisorNestedInput
+    sessionsAsClient?: AdvisorSessionUncheckedUpdateManyWithoutClientNestedInput
+    bookingsAsAdvisor?: BookingRequestUncheckedUpdateManyWithoutAdvisorNestedInput
+    bookingsAsClient?: BookingRequestUncheckedUpdateManyWithoutClientNestedInput
+    categories?: CategoryUncheckedUpdateManyWithoutUserNestedInput
+    chatMessages?: ChatMessageUncheckedUpdateManyWithoutSenderNestedInput
+    devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
+    expenseBills?: ExpenseBillUncheckedUpdateManyWithoutUserNestedInput
+    friends?: FriendUncheckedUpdateManyWithoutUserNestedInput
+    goals?: GoalUncheckedUpdateManyWithoutUserNestedInput
+    goalContributions?: GoalContributionUncheckedUpdateManyWithoutUserNestedInput
+    importLogs?: ImportLogUncheckedUpdateManyWithoutUserNestedInput
+    investments?: InvestmentUncheckedUpdateManyWithoutUserNestedInput
+    loans?: LoanUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    paymentsAsAdvisor?: PaymentUncheckedUpdateManyWithoutAdvisorNestedInput
+    paymentsAsClient?: PaymentUncheckedUpdateManyWithoutClientNestedInput
+    refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
+    todos?: TodoUncheckedUpdateManyWithoutUserNestedInput
+    transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
+    userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
+    userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+    otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
+    aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
+    groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
+  }
+
   export type UserCreateWithoutRecurringTransactionsInput = {
     id?: string
     email: string
@@ -92489,6 +93115,7 @@ export namespace Prisma {
     transactions?: TransactionCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
+    profile?: profilesCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
     aiScans?: AiScanCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
@@ -92548,6 +93175,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
+    profile?: profilesUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
@@ -92623,6 +93251,7 @@ export namespace Prisma {
     transactions?: TransactionUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
+    profile?: profilesUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
@@ -92682,6 +93311,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+    profile?: profilesUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
@@ -92741,6 +93371,7 @@ export namespace Prisma {
     transactions?: TransactionCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
+    profile?: profilesCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
     aiScans?: AiScanCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
@@ -92800,6 +93431,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
+    profile?: profilesUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
@@ -92875,6 +93507,7 @@ export namespace Prisma {
     transactions?: TransactionUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
+    profile?: profilesUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
@@ -92934,6 +93567,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+    profile?: profilesUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
@@ -92993,6 +93627,7 @@ export namespace Prisma {
     transactions?: TransactionCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
+    profile?: profilesCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
     aiScans?: AiScanCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
@@ -93052,6 +93687,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
+    profile?: profilesUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
     groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
@@ -93127,6 +93763,7 @@ export namespace Prisma {
     transactions?: TransactionUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
+    profile?: profilesUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
@@ -93186,6 +93823,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+    profile?: profilesUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
