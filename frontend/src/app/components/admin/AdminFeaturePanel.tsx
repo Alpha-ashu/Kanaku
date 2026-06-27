@@ -8,11 +8,13 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
 import { backendService } from '@/lib/backend-api';
-import { ROLE_FEATURES, SUB_FEATURE_DEFINITIONS, UserRole } from '@/lib/featureFlags';
+import { ROLE_FEATURES, SUB_FEATURE_DEFINITIONS, AI_MODULE_DEFINITIONS, UserRole, AIModuleKey, AIModuleDef } from '@/lib/featureFlags';
 import { AdminAIFeatureSection } from './AdminAIFeatureSection';
 
 const ADMIN_FEATURE_SETTINGS_KEY = 'admin_global_feature_settings';
+const ADMIN_AI_FEATURE_SETTINGS_KEY = 'admin_ai_feature_settings';
 const FEATURE_BROADCAST_CHANNEL = 'feature_settings_channel';
+const AI_FEATURE_BROADCAST_CHANNEL = 'ai_feature_settings_channel';
 
 interface SubFeatureControl {
   name: string;
@@ -139,6 +141,7 @@ export const AdminFeaturePanel: React.FC = () => {
   const [expandedFeature, setExpandedFeature] = useState<string | null>(null);
   const [selectedSubFeatureModule, setSelectedSubFeatureModule] = useState<FeatureControl | null>(null);
 
+  // ── App features state (initialized from localStorage cache) ──────────────
   const [features, setFeatures] = useState<FeatureControl[]>(() => {
     const saved = localStorage.getItem(ADMIN_FEATURE_SETTINGS_KEY);
     if (saved) {
@@ -185,21 +188,61 @@ export const AdminFeaturePanel: React.FC = () => {
     return FEATURES;
   });
 
-  const broadcastChannel = React.useMemo(() => {
-    try {
-      return new BroadcastChannel(FEATURE_BROADCAST_CHANNEL);
-    } catch {
-      return null;
+  // ── AI features state — lifted from AdminAIFeatureSection into this parent ─
+  // Previously AdminAIFeatureSection fetched /admin/ai-features on every mount
+  // because the tab switcher used a ternary (unmount/remount on each switch).
+  // Now the parent owns the data: one fetch per page load, zero on tab switch.
+  const [aiFeatures, setAiFeatures] = useState<Record<AIModuleKey, AIModuleDef>>(() => {
+    const saved = localStorage.getItem(ADMIN_AI_FEATURE_SETTINGS_KEY);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        const merged = { ...AI_MODULE_DEFINITIONS };
+        (Object.keys(AI_MODULE_DEFINITIONS) as AIModuleKey[]).forEach((key) => {
+          if (parsed[key]) {
+            merged[key] = {
+              ...merged[key],
+              enabled: typeof parsed[key].enabled === 'boolean' ? parsed[key].enabled : merged[key].enabled,
+              roleAccess: { ...merged[key].roleAccess, ...(parsed[key].roleAccess || {}) },
+              capabilities: Object.keys(merged[key].capabilities).reduce((acc, capKey) => {
+                const defaultCap = merged[key].capabilities[capKey];
+                const savedCap = parsed[key].capabilities?.[capKey] || {};
+                acc[capKey] = {
+                  ...defaultCap,
+                  enabled: typeof savedCap.enabled === 'boolean' ? savedCap.enabled : defaultCap.enabled,
+                  roleAccess: { ...defaultCap.roleAccess, ...(savedCap.roleAccess || {}) }
+                };
+                return acc;
+              }, {} as Record<string, any>)
+            };
+          }
+        });
+        return merged;
+      } catch {
+        return AI_MODULE_DEFINITIONS;
+      }
     }
+    return AI_MODULE_DEFINITIONS;
+  });
+  const [aiLoading, setAiLoading] = useState(false);
+
+  // ── Broadcast channels ───────────────────────────────────────────────────
+  const broadcastChannel = React.useMemo(() => {
+    try { return new BroadcastChannel(FEATURE_BROADCAST_CHANNEL); } catch { return null; }
   }, []);
 
-  // Guards against a GET-after-POST race: the initial loadFromDb() fetch can still
-  // be in flight when the admin clicks a toggle. If it resolves after the toggle,
-  // it would silently overwrite the just-made change with the pre-toggle DB state,
-  // making the first click look like a no-op (it only "works" on the second click,
-  // once the stale fetch has already resolved). Once the admin has made any local
-  // change, ignore late-arriving results from that initial load.
+  const aiBroadcastChannel = React.useMemo(() => {
+    try { return new BroadcastChannel(AI_FEATURE_BROADCAST_CHANNEL); } catch { return null; }
+  }, []);
+
+  // ── Race-condition guards ────────────────────────────────────────────────
+  // Once the admin has made any local change, ignore late-arriving results
+  // from the initial matrix fetch (GET-after-POST race prevention).
   const userInteractedRef = useRef(false);
+  const aiUserInteractedRef = useRef(false);
+  // Prevent double-fetch in React StrictMode / HMR (one ref per matrix fetch)
+  const hasFetchedMatrixRef = useRef(false);
+  const hasFetchedAIMatrixRef = useRef(false);
 
   const applyFeatureVisibility = useCallback((featureList: FeatureControl[]) => {
     const newVisibility: Record<string, boolean> = {};
@@ -209,16 +252,18 @@ export const AdminFeaturePanel: React.FC = () => {
     setVisibleFeatures((prev: any) => ({ ...prev, ...newVisibility }));
   }, [role, setVisibleFeatures]);
 
-  // Load flags from DB on mount
+  // ── Fetch app feature RBAC matrix on mount (once, from dedicated endpoint) ─
+  // Uses GET /admin/features/matrix instead of GET /admin/features so the admin
+  // panel gets the full role-access matrix without sharing the startup endpoint.
   useEffect(() => {
-    if (loading || !user) return;
+    if (loading || !user || hasFetchedMatrixRef.current) return;
+    hasFetchedMatrixRef.current = true;
 
     const loadFromDb = async () => {
       try {
-        const dbFlags = await backendService.getGlobalFeatureFlags();
+        const dbFlags = await backendService.getFeatureFlagsMatrix();
         if (userInteractedRef.current) {
-          // The admin already toggled something while this fetch was in flight —
-          // applying this now would silently revert their change.
+          // Admin toggled something while fetch was in flight — don't overwrite.
           return;
         }
         if (dbFlags && Object.keys(dbFlags).length > 0) {
@@ -265,6 +310,74 @@ export const AdminFeaturePanel: React.FC = () => {
     };
     void loadFromDb();
   }, [applyFeatureVisibility, user, loading]);
+
+  // ── Fetch AI feature RBAC matrix on mount (once, from dedicated endpoint) ──
+  // Uses GET /admin/ai-features/matrix — admin-only, returns full RBAC matrix.
+  // Previously this fetch lived inside AdminAIFeatureSection and fired on every
+  // tab switch (the component was unmounted/remounted on each ternary switch).
+  useEffect(() => {
+    if (loading || !user || hasFetchedAIMatrixRef.current) return;
+    hasFetchedAIMatrixRef.current = true;
+
+    const loadAIMatrix = async () => {
+      setAiLoading(true);
+      try {
+        const dbFlags = await backendService.getAIFeatureFlagsMatrix();
+        if (aiUserInteractedRef.current) return;
+        if (dbFlags && Object.keys(dbFlags).length > 0) {
+          localStorage.setItem(ADMIN_AI_FEATURE_SETTINGS_KEY, JSON.stringify(dbFlags));
+          const merged = { ...AI_MODULE_DEFINITIONS };
+          (Object.keys(AI_MODULE_DEFINITIONS) as AIModuleKey[]).forEach((key) => {
+            if (dbFlags[key]) {
+              merged[key] = {
+                ...merged[key],
+                enabled: typeof dbFlags[key].enabled === 'boolean' ? dbFlags[key].enabled : merged[key].enabled,
+                roleAccess: { ...merged[key].roleAccess, ...(dbFlags[key].roleAccess || {}) },
+                capabilities: Object.keys(merged[key].capabilities).reduce((acc, capKey) => {
+                  const defaultCap = merged[key].capabilities[capKey];
+                  const savedCap = dbFlags[key].capabilities?.[capKey] || {};
+                  acc[capKey] = {
+                    ...defaultCap,
+                    enabled: typeof savedCap.enabled === 'boolean' ? savedCap.enabled : defaultCap.enabled,
+                    roleAccess: { ...defaultCap.roleAccess, ...(savedCap.roleAccess || {}) }
+                  };
+                  return acc;
+                }, {} as Record<string, any>)
+              };
+            }
+          });
+          setAiFeatures(merged);
+        }
+      } catch (err) {
+        console.error('[AdminFeaturePanel] Failed to load AI feature matrix from backend:', err);
+      } finally {
+        setAiLoading(false);
+      }
+    };
+    void loadAIMatrix();
+  }, [user, loading]);
+
+  // ── AI save handler (owned by parent, passed as prop to child) ────────────
+  const handleSaveAIFeatures = useCallback((updated: Record<AIModuleKey, AIModuleDef>) => {
+    aiUserInteractedRef.current = true;
+    setAiFeatures(updated);
+    localStorage.setItem(ADMIN_AI_FEATURE_SETTINGS_KEY, JSON.stringify(updated));
+
+    if (aiBroadcastChannel) {
+      aiBroadcastChannel.postMessage({
+        type: 'AI_FEATURE_UPDATE',
+        features: updated,
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    void backendService.saveAIFeatureFlagsMatrix(updated).catch((err) => {
+      console.error('[AdminFeaturePanel] Failed to sync AI feature flags matrix to backend:', err);
+      toast.error('Failed to save AI feature settings');
+    });
+
+    window.dispatchEvent(new CustomEvent('adminAIFeatureUpdate', { detail: { features: updated } }));
+  }, [aiBroadcastChannel]);
 
   // Sync listener
   useEffect(() => {
@@ -359,8 +472,8 @@ export const AdminFeaturePanel: React.FC = () => {
       });
     }
 
-    void backendService.saveGlobalFeatureFlags(settingsToSave).catch((err) => {
-      console.error('Failed to sync global feature flags to backend database:', err);
+    void backendService.saveFeatureFlagsMatrix(settingsToSave).catch((err) => {
+      console.error('Failed to sync global feature flags matrix to backend database:', err);
     });
 
     window.dispatchEvent(new CustomEvent('adminFeatureUpdate', { detail: { features: updatedFeatures } }));
@@ -500,7 +613,13 @@ export const AdminFeaturePanel: React.FC = () => {
           </button>
         </div>
 
-        {activeTab === 'app' ? (
+        {/* Both panels always rendered — CSS hidden prevents unmount/remount.
+             This is the fix: previously, the ternary caused <AdminAIFeatureSection>
+             to unmount on tab-away and remount on return, firing a useEffect DB
+             fetch on every switch. With CSS visibility both panels stay mounted. */}
+
+        {/* ── Application Features Tab ── */}
+        <div className={activeTab === 'app' ? '' : 'hidden'}>
           <div className="space-y-6">
             {/* Search Header */}
             <div className="relative max-w-md">
@@ -610,9 +729,16 @@ export const AdminFeaturePanel: React.FC = () => {
               })}
             </div>
           </div>
-        ) : (
-          <AdminAIFeatureSection />
-        )}
+        </div>
+
+        {/* ── AI Intelligence Systems Tab ── */}
+        <div className={activeTab === 'ai' ? '' : 'hidden'}>
+          <AdminAIFeatureSection
+            aiFeatures={aiFeatures}
+            onSave={handleSaveAIFeatures}
+            loading={aiLoading}
+          />
+        </div>
       </div>
 
       <AnimatePresence>

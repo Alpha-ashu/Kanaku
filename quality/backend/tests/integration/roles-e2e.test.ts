@@ -56,6 +56,10 @@ const ADMIN_ONLY_ROUTES = [
   { method: 'get', path: `${API}/admin/users` },
   { method: 'get', path: `${API}/admin/stats` },
   { method: 'get', path: `${API}/admin/users/pending` },
+  // Feature-flag RBAC matrix (admin-only) — distinct from the role-resolution
+  // /admin/features + /admin/ai-features GETs, which ALL authenticated users may call.
+  { method: 'get', path: `${API}/admin/features/matrix` },
+  { method: 'get', path: `${API}/admin/ai-features/matrix` },
 ];
 
 // ── Manager-accessible routes ─────────────────────────────────────────────────

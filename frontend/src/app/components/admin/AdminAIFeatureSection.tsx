@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Brain, Shield, ChevronDown, ChevronUp, Layers } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -6,13 +6,22 @@ import {
   UserRole,
   AIModuleKey,
   AIModuleDef,
-  AICapabilityDef,
-  AI_MODULE_DEFINITIONS
 } from '@/lib/featureFlags';
-import { backendService } from '@/lib/backend-api';
 
-const ADMIN_AI_FEATURE_SETTINGS_KEY = 'admin_ai_feature_settings';
-const AI_FEATURE_BROADCAST_CHANNEL = 'ai_feature_settings_channel';
+// ─────────────────────────────────────────────────────────────────────────────
+// CONTROLLED COMPONENT — no internal data fetching.
+//
+// Root cause of the repeated GET /admin/ai-features calls:
+//   AdminFeaturePanel rendered <AdminAIFeatureSection /> with a ternary, which
+//   caused React to UNMOUNT the component on tab-away and REMOUNT it on return.
+//   Each mount fired a useEffect → GET /admin/ai-features.
+//
+// Fix: AdminFeaturePanel now fetches AI flags ONCE on its own mount using
+//   GET /admin/ai-features/matrix (the new focused admin-only endpoint), stores
+//   them in parent state, and passes them here as props. This component has no
+//   useEffect, no internal fetch, and no network side-effects. The parent renders
+//   both tab panels permanently via CSS hidden, so this component is never unmounted.
+// ─────────────────────────────────────────────────────────────────────────────
 
 const AI_MODULE_DESCRIPTIONS: Record<AIModuleKey, string> = {
   ocrEngine: 'Converts receipt images and PDF document uploads into structured transactional entries.',
@@ -20,130 +29,26 @@ const AI_MODULE_DESCRIPTIONS: Record<AIModuleKey, string> = {
   aiAutomation: 'Automated background algorithms executing smart category suggestions and health analysis.',
 };
 
-export const AdminAIFeatureSection: React.FC = () => {
-  const [aiFeatures, setAiFeatures] = useState<Record<AIModuleKey, AIModuleDef>>(() => {
-    const saved = localStorage.getItem(ADMIN_AI_FEATURE_SETTINGS_KEY);
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        const merged = { ...AI_MODULE_DEFINITIONS };
-        (Object.keys(AI_MODULE_DEFINITIONS) as AIModuleKey[]).forEach((key) => {
-          if (parsed[key]) {
-            merged[key] = {
-              ...merged[key],
-              enabled: typeof parsed[key].enabled === 'boolean' ? parsed[key].enabled : merged[key].enabled,
-              roleAccess: { ...merged[key].roleAccess, ...(parsed[key].roleAccess || {}) },
-              capabilities: Object.keys(merged[key].capabilities).reduce((acc, capKey) => {
-                const defaultCap = merged[key].capabilities[capKey];
-                const savedCap = parsed[key].capabilities?.[capKey] || {};
-                acc[capKey] = {
-                  ...defaultCap,
-                  enabled: typeof savedCap.enabled === 'boolean' ? savedCap.enabled : defaultCap.enabled,
-                  roleAccess: { ...defaultCap.roleAccess, ...(savedCap.roleAccess || {}) }
-                };
-                return acc;
-              }, {} as Record<string, AICapabilityDef>)
-            };
-          }
-        });
-        return merged;
-      } catch {
-        return AI_MODULE_DEFINITIONS;
-      }
-    }
-    return AI_MODULE_DEFINITIONS;
-  });
+interface Props {
+  /** Full AI module RBAC data from parent — never fetched internally */
+  aiFeatures: Record<AIModuleKey, AIModuleDef>;
+  /** Parent-owned save handler: persists to DB, updates localStorage, broadcasts */
+  onSave: (updated: Record<AIModuleKey, AIModuleDef>) => void;
+  /** Whether the parent is still loading the initial data */
+  loading?: boolean;
+}
 
+export const AdminAIFeatureSection: React.FC<Props> = ({ aiFeatures, onSave, loading = false }) => {
   const [expandedModule, setExpandedModule] = useState<AIModuleKey | null>('ocrEngine');
 
-  const broadcastChannel = React.useMemo(() => {
-    try {
-      return new BroadcastChannel(AI_FEATURE_BROADCAST_CHANNEL);
-    } catch {
-      return null;
-    }
-  }, []);
-
-  // Fetch settings from DB on mount
-  useEffect(() => {
-    const loadFromDb = async () => {
-      try {
-        const dbFlags = await backendService.getAIFeatureFlags();
-        if (dbFlags && Object.keys(dbFlags).length > 0) {
-          localStorage.setItem(ADMIN_AI_FEATURE_SETTINGS_KEY, JSON.stringify(dbFlags));
-          const merged = { ...AI_MODULE_DEFINITIONS };
-          (Object.keys(AI_MODULE_DEFINITIONS) as AIModuleKey[]).forEach((key) => {
-            if (dbFlags[key]) {
-              merged[key] = {
-                ...merged[key],
-                enabled: typeof dbFlags[key].enabled === 'boolean' ? dbFlags[key].enabled : merged[key].enabled,
-                roleAccess: { ...merged[key].roleAccess, ...(dbFlags[key].roleAccess || {}) },
-                capabilities: Object.keys(merged[key].capabilities).reduce((acc, capKey) => {
-                  const defaultCap = merged[key].capabilities[capKey];
-                  const savedCap = dbFlags[key].capabilities?.[capKey] || {};
-                  acc[capKey] = {
-                    ...defaultCap,
-                    enabled: typeof savedCap.enabled === 'boolean' ? savedCap.enabled : defaultCap.enabled,
-                    roleAccess: { ...defaultCap.roleAccess, ...(savedCap.roleAccess || {}) }
-                  };
-                  return acc;
-                }, {} as Record<string, AICapabilityDef>)
-              };
-            }
-          });
-          setAiFeatures(merged);
-        }
-      } catch (err) {
-        console.error('Failed to load global AI feature flags from backend database:', err);
-      }
-    };
-    void loadFromDb();
-  }, []);
-
-  // Sync listener for cross-tab updates
-  useEffect(() => {
-    if (!broadcastChannel) return;
-
-    const handleMessage = (event: MessageEvent) => {
-      if (event.data.type === 'AI_FEATURE_UPDATE') {
-        setAiFeatures(event.data.features);
-        toast.info('AI Feature settings updated by admin');
-      }
-    };
-
-    broadcastChannel.addEventListener('message', handleMessage);
-    return () => broadcastChannel.removeEventListener('message', handleMessage);
-  }, [broadcastChannel]);
-
-  const saveAndBroadcast = (updated: Record<AIModuleKey, AIModuleDef>) => {
-    setAiFeatures(updated);
-    localStorage.setItem(ADMIN_AI_FEATURE_SETTINGS_KEY, JSON.stringify(updated));
-
-    if (broadcastChannel) {
-      broadcastChannel.postMessage({
-        type: 'AI_FEATURE_UPDATE',
-        features: updated,
-        timestamp: new Date().toISOString()
-      });
-    }
-
-    void backendService.saveAIFeatureFlags(updated).catch((err) => {
-      console.error('Failed to sync global AI feature flags to backend database:', err);
-    });
-
-    // Fire generic update event for context reload
-    window.dispatchEvent(new CustomEvent('adminAIFeatureUpdate', { detail: { features: updated } }));
-  };
+  // ── Toggle handlers — all delegate to parent via onSave ──────────────────
 
   const handleToggleModuleEnabled = (key: AIModuleKey, isEnabled: boolean) => {
     const updated = {
       ...aiFeatures,
-      [key]: {
-        ...aiFeatures[key],
-        enabled: isEnabled,
-      }
+      [key]: { ...aiFeatures[key], enabled: isEnabled },
     };
-    saveAndBroadcast(updated);
+    onSave(updated);
     toast.success(`AI Module "${aiFeatures[key].name}" is now ${isEnabled ? 'ENABLED' : 'DISABLED'}`);
   };
 
@@ -152,13 +57,10 @@ export const AdminAIFeatureSection: React.FC = () => {
       ...aiFeatures,
       [key]: {
         ...aiFeatures[key],
-        roleAccess: {
-          ...aiFeatures[key].roleAccess,
-          [role]: isGranted
-        }
-      }
+        roleAccess: { ...aiFeatures[key].roleAccess, [role]: isGranted },
+      },
     };
-    saveAndBroadcast(updated);
+    onSave(updated);
     toast.success(`AI Module "${aiFeatures[key].name}" access for ${role} ${isGranted ? 'GRANTED' : 'REVOKED'}`);
   };
 
@@ -169,18 +71,20 @@ export const AdminAIFeatureSection: React.FC = () => {
         ...aiFeatures[moduleKey],
         capabilities: {
           ...aiFeatures[moduleKey].capabilities,
-          [capKey]: {
-            ...aiFeatures[moduleKey].capabilities[capKey],
-            enabled: isEnabled
-          }
-        }
-      }
+          [capKey]: { ...aiFeatures[moduleKey].capabilities[capKey], enabled: isEnabled },
+        },
+      },
     };
-    saveAndBroadcast(updated);
+    onSave(updated);
     toast.success(`AI Capability "${capKey}" is now ${isEnabled ? 'ENABLED' : 'DISABLED'}`);
   };
 
-  const handleToggleCapabilityRoleAccess = (moduleKey: AIModuleKey, capKey: string, role: UserRole, isGranted: boolean) => {
+  const handleToggleCapabilityRoleAccess = (
+    moduleKey: AIModuleKey,
+    capKey: string,
+    role: UserRole,
+    isGranted: boolean,
+  ) => {
     const updated = {
       ...aiFeatures,
       [moduleKey]: {
@@ -189,17 +93,36 @@ export const AdminAIFeatureSection: React.FC = () => {
           ...aiFeatures[moduleKey].capabilities,
           [capKey]: {
             ...aiFeatures[moduleKey].capabilities[capKey],
-            roleAccess: {
-              ...aiFeatures[moduleKey].capabilities[capKey].roleAccess,
-              [role]: isGranted
-            }
-          }
-        }
-      }
+            roleAccess: { ...aiFeatures[moduleKey].capabilities[capKey].roleAccess, [role]: isGranted },
+          },
+        },
+      },
     };
-    saveAndBroadcast(updated);
+    onSave(updated);
     toast.success(`AI Capability "${capKey}" access for ${role} ${isGranted ? 'GRANTED' : 'REVOKED'}`);
   };
+
+  // ── Loading skeleton ─────────────────────────────────────────────────────
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="bg-white/80 rounded-3xl border border-slate-100 p-8 shadow-sm animate-pulse">
+            <div className="h-6 bg-slate-100 rounded-xl w-1/3 mb-4" />
+            <div className="h-4 bg-slate-100 rounded-xl w-2/3 mb-6" />
+            <div className="grid grid-cols-4 gap-4">
+              {[1, 2, 3, 4].map((j) => (
+                <div key={j} className="h-12 bg-slate-100 rounded-2xl" />
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  // ── Render ───────────────────────────────────────────────────────────────
 
   return (
     <div className="space-y-6">
@@ -214,7 +137,7 @@ export const AdminAIFeatureSection: React.FC = () => {
               key={key}
               className="bg-white/80 backdrop-blur-xl rounded-3xl border border-slate-100 p-8 shadow-sm hover:shadow-md transition-all duration-300"
             >
-              {/* Header Info */}
+              {/* Header */}
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-slate-100">
                 <div className="flex items-start gap-4">
                   <div className="p-3 bg-indigo-50 text-indigo-600 rounded-2xl shrink-0 mt-0.5">
@@ -228,59 +151,63 @@ export const AdminAIFeatureSection: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Master Status & Toggle */}
+                {/* Master Switch */}
                 <div className="flex items-center gap-4 bg-slate-50 rounded-2xl px-5 py-3 border border-slate-100 self-start md:self-auto">
                   <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Master Switch</span>
-                  <button data-testid={`admin-aifeature-section-button-${key}`}
+                  <button
+                    data-testid={`admin-aifeature-section-button-${key}`}
                     type="button"
                     onClick={() => handleToggleModuleEnabled(key, !mod.enabled)}
                     className={cn(
-                      "w-12 h-6 rounded-full relative transition-all duration-200 outline-none",
-                      mod.enabled ? "bg-indigo-600" : "bg-slate-200"
+                      'w-12 h-6 rounded-full relative transition-all duration-200 outline-none',
+                      mod.enabled ? 'bg-indigo-600' : 'bg-slate-200',
                     )}
                   >
                     <div
                       className={cn(
-                        "absolute top-1 w-4 h-4 rounded-full bg-white shadow-sm transition-all duration-200",
-                        mod.enabled ? "right-1" : "left-1"
+                        'absolute top-1 w-4 h-4 rounded-full bg-white shadow-sm transition-all duration-200',
+                        mod.enabled ? 'right-1' : 'left-1',
                       )}
                     />
                   </button>
                 </div>
               </div>
 
-              {/* Role Permissions Matrix */}
+              {/* Role Visibility Matrix */}
               <div className="py-6 border-b border-slate-100">
                 <div className="flex items-center gap-2 mb-4">
                   <Shield size={14} className="text-slate-400" />
-                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Role Visibility Matrix</span>
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                    Role Visibility Matrix
+                  </span>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                   {(['admin', 'manager', 'advisor', 'user'] as const).map((role) => (
                     <div
                       key={role}
                       className={cn(
-                        "flex items-center justify-between p-3.5 rounded-2xl border transition-all duration-200",
+                        'flex items-center justify-between p-3.5 rounded-2xl border transition-all duration-200',
                         mod.roleAccess[role] && mod.enabled
-                          ? "bg-slate-50/50 border-slate-200/60"
-                          : "bg-slate-50/20 border-slate-100 opacity-60"
+                          ? 'bg-slate-50/50 border-slate-200/60'
+                          : 'bg-slate-50/20 border-slate-100 opacity-60',
                       )}
                     >
                       <span className="text-xs font-bold text-slate-700 capitalize">{role}</span>
-                      <button data-testid={`admin-aifeature-section-button-2-${role}`}
+                      <button
+                        data-testid={`admin-aifeature-section-button-2-${role}`}
                         type="button"
                         onClick={() => handleToggleModuleRoleAccess(key, role, !mod.roleAccess[role])}
                         disabled={!mod.enabled}
                         className={cn(
-                          "w-9 h-5 rounded-full relative transition-all duration-200",
-                          mod.roleAccess[role] ? "bg-indigo-600" : "bg-slate-300",
-                          !mod.enabled && "opacity-40 cursor-not-allowed"
+                          'w-9 h-5 rounded-full relative transition-all duration-200',
+                          mod.roleAccess[role] ? 'bg-indigo-600' : 'bg-slate-300',
+                          !mod.enabled && 'opacity-40 cursor-not-allowed',
                         )}
                       >
                         <div
                           className={cn(
-                            "absolute top-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-all duration-200",
-                            mod.roleAccess[role] ? "right-0.5" : "left-0.5"
+                            'absolute top-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-all duration-200',
+                            mod.roleAccess[role] ? 'right-0.5' : 'left-0.5',
                           )}
                         />
                       </button>
@@ -289,10 +216,11 @@ export const AdminAIFeatureSection: React.FC = () => {
                 </div>
               </div>
 
-              {/* Granular Capabilities Accordion Toggle */}
+              {/* Granular Capabilities */}
               {capabilities.length > 0 && (
                 <div className="pt-4">
-                  <button data-testid={`admin-aifeature-section-button-3-${key}`}
+                  <button
+                    data-testid={`admin-aifeature-section-button-3-${key}`}
                     type="button"
                     onClick={() => setExpandedModule(isExpanded ? null : key)}
                     className="w-full flex items-center justify-between text-slate-500 hover:text-slate-900 transition-colors py-2"
@@ -304,7 +232,6 @@ export const AdminAIFeatureSection: React.FC = () => {
                     {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                   </button>
 
-                  {/* Capabilities List */}
                   {isExpanded && (
                     <div className="mt-4 space-y-4 animate-in slide-in-from-top-2 duration-200">
                       {capabilities.map((cap) => (
@@ -315,23 +242,25 @@ export const AdminAIFeatureSection: React.FC = () => {
                           <div className="flex items-center justify-between gap-4 mb-4">
                             <div>
                               <h4 className="text-sm font-bold text-slate-900">{cap.name}</h4>
-                              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{cap.key}</p>
+                              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
+                                {cap.key}
+                              </p>
                             </div>
-
-                            <button data-testid={`admin-aifeature-section-button-4-${cap.key}`}
+                            <button
+                              data-testid={`admin-aifeature-section-button-4-${cap.key}`}
                               type="button"
                               onClick={() => handleToggleCapabilityEnabled(key, cap.key, !cap.enabled)}
                               disabled={!mod.enabled}
                               className={cn(
-                                "w-10 h-5 rounded-full relative transition-all duration-200",
-                                cap.enabled && mod.enabled ? "bg-indigo-600" : "bg-slate-300",
-                                !mod.enabled && "opacity-40 cursor-not-allowed"
+                                'w-10 h-5 rounded-full relative transition-all duration-200',
+                                cap.enabled && mod.enabled ? 'bg-indigo-600' : 'bg-slate-300',
+                                !mod.enabled && 'opacity-40 cursor-not-allowed',
                               )}
                             >
                               <div
                                 className={cn(
-                                  "absolute top-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-all duration-200",
-                                  cap.enabled && mod.enabled ? "right-0.5" : "left-0.5"
+                                  'absolute top-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-all duration-200',
+                                  cap.enabled && mod.enabled ? 'right-0.5' : 'left-0.5',
                                 )}
                               />
                             </button>
@@ -345,20 +274,23 @@ export const AdminAIFeatureSection: React.FC = () => {
                                 className="flex items-center justify-between px-3 py-2 rounded-xl bg-white border border-slate-100"
                               >
                                 <span className="text-[10px] font-bold text-slate-500 capitalize">{r}</span>
-                                <button data-testid={`admin-aifeature-section-button-5-${r}`}
+                                <button
+                                  data-testid={`admin-aifeature-section-button-5-${r}`}
                                   type="button"
-                                  onClick={() => handleToggleCapabilityRoleAccess(key, cap.key, r, !cap.roleAccess[r])}
+                                  onClick={() =>
+                                    handleToggleCapabilityRoleAccess(key, cap.key, r, !cap.roleAccess[r])
+                                  }
                                   disabled={!cap.enabled || !mod.enabled}
                                   className={cn(
-                                    "w-8 h-4 rounded-full relative transition-all duration-200",
-                                    cap.roleAccess[r] ? "bg-indigo-600" : "bg-slate-200",
-                                    (!cap.enabled || !mod.enabled) && "opacity-40 cursor-not-allowed"
+                                    'w-8 h-4 rounded-full relative transition-all duration-200',
+                                    cap.roleAccess[r] ? 'bg-indigo-600' : 'bg-slate-200',
+                                    (!cap.enabled || !mod.enabled) && 'opacity-40 cursor-not-allowed',
                                   )}
                                 >
                                   <div
                                     className={cn(
-                                      "absolute top-0.5 w-3 h-3 bg-white rounded-full shadow-sm transition-all duration-200",
-                                      cap.roleAccess[r] ? "right-0.5" : "left-0.5"
+                                      'absolute top-0.5 w-3 h-3 bg-white rounded-full shadow-sm transition-all duration-200',
+                                      cap.roleAccess[r] ? 'right-0.5' : 'left-0.5',
                                     )}
                                   />
                                 </button>

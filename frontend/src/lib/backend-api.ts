@@ -745,6 +745,42 @@ class BackendService {
     return response.data;
   }
 
+  // ── Admin Panel RBAC Matrix endpoints (admin only) ──────────────────────────
+  // These call the new /matrix sub-routes that always return the full role-access
+  // matrix regardless of the caller's role (only admins can reach them).
+  // The admin panel uses these instead of the startup /features and /ai-features
+  // endpoints, eliminating the shared-endpoint coupling that caused duplicate calls.
+
+  async getFeatureFlagsMatrix() {
+    try {
+      return await this.get('/admin/features/matrix');
+    } catch {
+      // Fall back to the regular endpoint (same data for admin)
+      return await this.get('/admin/features');
+    }
+  }
+
+  async saveFeatureFlagsMatrix(features: any) {
+    const response = await this.api.post('/admin/features/matrix', { features });
+    return response.data;
+  }
+
+  async getAIFeatureFlagsMatrix() {
+    try {
+      return await this.get('/admin/ai-features/matrix');
+    } catch {
+      // Fall back to the regular endpoint (same data for admin)
+      return await this.get('/admin/ai-features');
+    }
+  }
+
+  async saveAIFeatureFlagsMatrix(features: any) {
+    const response = await this.api.post('/admin/ai-features/matrix', { features });
+    return response.data;
+  }
+
+
+
   // ===== FRIENDS =====
   async createFriend(friend: {
     name: string;

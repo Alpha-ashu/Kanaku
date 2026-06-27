@@ -143,9 +143,17 @@ const getResponseCache = new Map<string, CachedGetEntry>();
 // caches to absorb navigation bursts, not a source of truth.
 const GET_CACHE_TTL_BY_PREFIX: Array<{ prefix: string; ttlMs: number }> = [
   { prefix: '/settings', ttlMs: 15_000 },
+  // Startup role-resolution endpoints (all authenticated users)
   { prefix: '/admin/features', ttlMs: 60_000 },
   { prefix: '/admin/ai-features', ttlMs: 60_000 },
+  // Admin panel RBAC matrix endpoints (admin only) — listed after because
+  // resolveGetCacheTtl uses startsWith, so /admin/features/matrix inherits
+  // the /admin/features TTL correctly; explicit entries are a no-op here but
+  // serve as documentation that these are distinct cached resources.
+  { prefix: '/admin/features/matrix', ttlMs: 60_000 },
+  { prefix: '/admin/ai-features/matrix', ttlMs: 60_000 },
   { prefix: '/notifications', ttlMs: 10_000 },
+
 ];
 
 const resolveGetCacheTtl = (endpoint: string): number => {

@@ -50,6 +50,16 @@ router.get('/cache/metrics', validateQuery(adminCacheMetricsQuerySchema), AdminC
 router.post('/features/toggle', AdminController.toggleFeatureFlag);
 router.post('/ai-features/toggle', AdminController.toggleAIFeatureFlags);
 
+// Feature flag RBAC matrix management (admin only)
+// Separate from the startup role-resolution endpoints (/features, /ai-features)
+// so the admin panel fetches the full matrix independently from what other
+// roles receive at login. This eliminates the shared-endpoint coupling.
+router.get('/features/matrix', AdminController.getFeatureFlagsMatrix);
+router.post('/features/matrix', AdminController.saveFeatureFlagsMatrix);
+router.get('/ai-features/matrix', AdminController.getAIFeatureFlagsMatrix);
+router.post('/ai-features/matrix', AdminController.saveAIFeatureFlagsMatrix);
+
+
 // Reports
 router.get('/reports/users', AdminController.getUsersReport);
 router.get('/reports/revenue', AdminController.getRevenueReport);

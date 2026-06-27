@@ -392,6 +392,129 @@ export const toggleAIFeatureFlags = async (req: AuthRequest, res: Response) => {
   }
 };
 
+// ─────────────────────────────────────────────────────────────────────────────
+// RBAC Matrix endpoints (admin only)
+// These are the feature-based counterparts to the page-based /features and
+// /ai-features endpoints. They always return the FULL role-access matrix
+// (no stripping) because only admins can reach them (requireRole middleware).
+// Separate from the startup role-resolution endpoints so the admin panel
+// fetches its own data independently, eliminating shared-endpoint coupling.
+// ─────────────────────────────────────────────────────────────────────────────
+
+// GET /admin/features/matrix — full app feature RBAC matrix (admin panel)
+export const getFeatureFlagsMatrix = async (req: AuthRequest, res: Response) => {
+  try {
+    res.setHeader('Cache-Control', 'private, no-store, no-cache, must-revalidate');
+    res.setHeader('Vary', 'Authorization');
+
+    const platformSettings = await getPlatformSettings();
+    const globalFeatures: Record<string, any> = platformSettings.admin_global_feature_settings || {};
+
+    // No targetRole — full matrix for admin configuration UI
+    const reconstructed = reconstructFeatures(globalFeatures);
+    res.json(reconstructed);
+  } catch (error: any) {
+    logger.error('Failed to fetch feature flags matrix', { error, userId: req.userId });
+    res.status(500).json({ error: 'Failed to fetch feature flags matrix' });
+  }
+};
+
+// POST /admin/features/matrix — save full app feature RBAC matrix
+export const saveFeatureFlagsMatrix = async (req: AuthRequest, res: Response) => {
+  try {
+    const { features } = req.body;
+
+    if (!features) {
+      return res.status(400).json({ error: 'Missing required field: features' });
+    }
+
+    const roleCentricFeatures = transformFeaturesToRoleCentric(features);
+    await updatePlatformSettings({ admin_global_feature_settings: roleCentricFeatures });
+
+    invalidateFeatureCache();
+
+    await auditLog(req.userId, 'FEATURE_FLAGS_UPDATE', 'platform_settings:global_features_matrix', 'success', {
+      keys: Object.keys(roleCentricFeatures),
+    });
+
+    try {
+      getSocketManager().broadcastToAll('feature_flags_updated', {
+        type: 'global',
+        timestamp: new Date().toISOString(),
+      });
+    } catch {
+      // Socket not initialized — non-blocking
+    }
+
+    const reconstructed = reconstructFeatures(roleCentricFeatures);
+    res.json({
+      message: 'Global feature flags matrix saved successfully',
+      features: reconstructed,
+    });
+  } catch (error: any) {
+    logger.error('Failed to save feature flags matrix', { error });
+    res.status(500).json({ error: 'Failed to save feature flags matrix' });
+  }
+};
+
+// GET /admin/ai-features/matrix — full AI module RBAC matrix (admin panel)
+export const getAIFeatureFlagsMatrix = async (req: AuthRequest, res: Response) => {
+  try {
+    res.setHeader('Cache-Control', 'private, no-store, no-cache, must-revalidate');
+    res.setHeader('Vary', 'Authorization');
+
+    const platformSettings = await getPlatformSettings();
+    const globalAIFeatures: Record<string, any> = platformSettings.admin_ai_feature_settings || {};
+
+    // No targetRole — full matrix for admin configuration UI
+    const reconstructed = reconstructAIFeatures(globalAIFeatures);
+    res.json(reconstructed);
+  } catch (error: any) {
+    logger.error('Failed to fetch AI feature flags matrix', { error, userId: req.userId });
+    res.status(500).json({ error: 'Failed to fetch AI feature flags matrix' });
+  }
+};
+
+// POST /admin/ai-features/matrix — save full AI module RBAC matrix
+export const saveAIFeatureFlagsMatrix = async (req: AuthRequest, res: Response) => {
+  try {
+    const { features } = req.body;
+
+    if (!features) {
+      return res.status(400).json({ error: 'Missing required field: features' });
+    }
+
+    const roleCentricAIFeatures = transformAIFeaturesToRoleCentric(features);
+    await updatePlatformSettings({ admin_ai_feature_settings: roleCentricAIFeatures });
+
+    invalidateAIFeatureCache();
+
+    await auditLog(req.userId, 'FEATURE_FLAGS_UPDATE', 'platform_settings:ai_features_matrix', 'success', {
+      keys: Object.keys(roleCentricAIFeatures),
+    });
+
+    try {
+      getSocketManager().broadcastToAll('feature_flags_updated', {
+        type: 'ai',
+        timestamp: new Date().toISOString(),
+      });
+    } catch {
+      // Socket not initialized — non-blocking
+    }
+
+    const reconstructed = reconstructAIFeatures(roleCentricAIFeatures);
+    res.json({
+      message: 'AI feature flags matrix saved successfully',
+      features: reconstructed,
+    });
+  } catch (error: any) {
+    logger.error('Failed to save AI feature flags matrix', { error });
+    res.status(500).json({ error: 'Failed to save AI feature flags matrix' });
+  }
+};
+
+
+
 
 // Get users report (admin only)
 export const getUsersReport = async (req: AuthRequest, res: Response) => {
