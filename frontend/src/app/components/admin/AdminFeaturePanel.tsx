@@ -311,12 +311,14 @@ export const AdminFeaturePanel: React.FC = () => {
     void loadFromDb();
   }, [applyFeatureVisibility, user, loading]);
 
-  // ── Fetch AI feature RBAC matrix on mount (once, from dedicated endpoint) ──
-  // Uses GET /admin/ai-features/matrix — admin-only, returns full RBAC matrix.
-  // Previously this fetch lived inside AdminAIFeatureSection and fired on every
-  // tab switch (the component was unmounted/remounted on each ternary switch).
+  // ── Lazy-fetch the AI feature RBAC matrix on first AI-tab open ─────────────
+  // GET /admin/ai-features/matrix is admin-only and returns the full RBAC matrix.
+  // It is DEFERRED until the AI Intelligence Systems tab is actually opened, so
+  // viewing the Application Features tab never loads AI data. Both panels stay
+  // mounted (CSS hidden) and the ref guard fires this exactly once — subsequent
+  // tab switches reuse the cached parent state and issue zero requests.
   useEffect(() => {
-    if (loading || !user || hasFetchedAIMatrixRef.current) return;
+    if (loading || !user || activeTab !== 'ai' || hasFetchedAIMatrixRef.current) return;
     hasFetchedAIMatrixRef.current = true;
 
     const loadAIMatrix = async () => {
@@ -355,7 +357,7 @@ export const AdminFeaturePanel: React.FC = () => {
       }
     };
     void loadAIMatrix();
-  }, [user, loading]);
+  }, [user, loading, activeTab]);
 
   // ── AI save handler (owned by parent, passed as prop to child) ────────────
   const handleSaveAIFeatures = useCallback((updated: Record<AIModuleKey, AIModuleDef>) => {

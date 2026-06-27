@@ -568,12 +568,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   // Fetch and apply both global and AI feature flags from the backend DB.
   // Exposed as a stable callback so it can be triggered both by the polling
   // interval below and by the real-time WebSocket subscriber.
-  const fetchGlobalFlags = useCallback(async () => {
+  const fetchGlobalFlags = useCallback(async (force = false) => {
     if (typeof document !== 'undefined' && document.hidden) {
       return;
     }
-    // Throttle to prevent rapid sequential rendering triggers from hammering the backend
-    if (Date.now() - lastFetchTimeRef.current < 5000) {
+    // Throttle rapid render-triggered fetches so they don't hammer the backend —
+    // but a real-time `feature_flags_updated` broadcast (force) is an authoritative
+    // "flags changed now" signal and must bypass the throttle to apply immediately.
+    if (!force && Date.now() - lastFetchTimeRef.current < 5000) {
       return;
     }
     lastFetchTimeRef.current = Date.now();
@@ -673,7 +675,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
     const unsubscribe = socketClient.on('feature_flags_updated', () => {
       console.log('[AppContext] feature_flags_updated received via WebSocket — re-fetching flags');
-      void fetchGlobalFlags();
+      void fetchGlobalFlags(true); // force: bypass the render throttle for the live broadcast
     });
 
     return unsubscribe;
