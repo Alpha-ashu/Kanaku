@@ -240,6 +240,16 @@ export default defineConfig(({ mode }) => {
 
     assetsInclude: ['**/*.svg', '**/*.csv'],
 
+    // Strip noisy / PII-prone debug logging from PRODUCTION bundles only. `pure`
+    // marks these calls as side-effect-free, so esbuild drops them when their
+    // result is unused (console.* always is). console.warn / console.error are
+    // deliberately retained for production troubleshooting.
+    esbuild: {
+      pure: mode === 'production'
+        ? ['console.log', 'console.debug', 'console.info', 'console.trace']
+        : [],
+    },
+
     build: {
       // Target modern browsers for smaller output
       target: 'es2020',

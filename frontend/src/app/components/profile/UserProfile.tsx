@@ -296,10 +296,6 @@ export const UserProfile: React.FC = () => {
 
  const [isLoading, setIsLoading] = useState(true);
 
- useEffect(() => {
- console.log('[UserProfile] Component mounted, isLoading:', isLoading);
- }, []);
-
  // States for Delete Account functionality
  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
  const [deletePassword, setDeletePassword] = useState('');
@@ -340,9 +336,7 @@ export const UserProfile: React.FC = () => {
  resolveAvatarSelection({ avatarUrl, avatarId });
 
  const fetchProfileData = async () => {
- console.log('[UserProfile] fetchProfileData called, user:', user?.id);
  if (!user) {
- console.log('[UserProfile] No user found, stopping fetch');
  setIsLoading(false);
  return;
  }
@@ -407,13 +401,9 @@ export const UserProfile: React.FC = () => {
  let finalData: any = null;
  if (!shouldSkipOptionalBackendRequests()) {
  try {
- console.log('[UserProfile] Fetching from backend API...');
  const backendRes = await api.auth.getProfile({ includePrivate: true });
  if (backendRes.success && backendRes.data) {
  finalData = backendRes.data;
- console.log('[UserProfile] Received data from backend:', finalData);
- } else {
- console.log('[UserProfile] Backend fetch returned no data or success=false:', backendRes);
  }
  } catch (backendError) {
  console.warn('[UserProfile] Backend profile fetch failed:', backendError);
