@@ -460,12 +460,24 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
  }));
  localStorage.setItem('profile_sync_pending', 'true');
 
- try {
- await api.auth.updateProfile(profilePayload);
- localStorage.removeItem('profile_sync_pending');
- } catch (profileError) {
- internalLog.warn('handleSalarySetupComplete/profileSync', profileError);
- }
+  try {
+  await api.auth.updateProfile(profilePayload);
+  localStorage.removeItem('profile_sync_pending');
+  } catch (profileError: any) {
+  internalLog.warn('handleSalarySetupComplete/profileSync', profileError);
+  const errMsg = profileError?.message || '';
+  if (
+    profileError?.code === 'PHONE_EXISTS' ||
+    profileError?.status === 409 ||
+    errMsg.toLowerCase().includes('phone')
+  ) {
+    toast.error('This phone number is already registered to another account. Please use a different phone number.');
+    setStep('profile-setup');
+    saveFlowState('profile-setup');
+    setIsLoading(false);
+    return;
+  }
+  }
 
  localStorage.setItem('device_id', localStorage.getItem('device_id') || generateDeviceId());
  }
@@ -727,11 +739,11 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
  e.preventDefault();
  const formData = new FormData(e.target as HTMLFormElement);
  handleProfileComplete({
- // Read firstName/lastName from the actual form inputs (not stale state)
+ // Read firstName/lastName/mobile from the actual form inputs (not stale state)
  firstName: (formData.get('firstName') as string) || userProfile?.firstName || '',
  lastName: (formData.get('lastName') as string) || userProfile?.lastName || '',
  email: email,
- mobile: userProfile?.mobile || '',
+ mobile: (formData.get('mobile') as string) || userProfile?.mobile || '',
  dateOfBirth: formData.get('dob') as string,
  jobType: formData.get('jobType') as string,
  jobIndustry: formData.get('jobIndustry') as string,
@@ -801,6 +813,19 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
         max={new Date().toISOString().split('T')[0]}
       />
     </div>
+  </div>
+
+  <div>
+  <label htmlFor="ps-mobile" className="block text-sm font-medium text-gray-700 mb-1">Mobile Number</label>
+  <input data-testid="auth-flow-mobile"
+  type="tel"
+  id="ps-mobile"
+  name="mobile"
+  defaultValue={userProfile?.mobile}
+  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+  placeholder="e.g. 9876543210"
+  required
+  />
   </div>
 
  <div className="grid grid-cols-2 gap-4">

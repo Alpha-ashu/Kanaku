@@ -14,6 +14,7 @@ interface OnboardingCompleteStepProps {
  displayName: string;
  dateOfBirth: string;
  gender: string;
+ mobile: string;
  jobType: string;
  salary: string;
  bankName: string;
@@ -28,12 +29,14 @@ interface OnboardingCompleteStepProps {
  };
  onComplete: () => void;
  onBack: () => void;
+ onGoToStep?: (step: number) => void;
 }
 
 export const OnboardingCompleteStep: React.FC<OnboardingCompleteStepProps> = ({
- data,
- onComplete,
- onBack,
+  data,
+  onComplete,
+  onBack,
+  onGoToStep,
 }) => {
  const [isProcessing, setIsProcessing] = useState(false);
  const [progress, setProgress] = useState(0);
@@ -122,23 +125,33 @@ export const OnboardingCompleteStep: React.FC<OnboardingCompleteStepProps> = ({
  try {
   // Step 1: Save profile through backend API only
   setProgress(15);
-  try {
-  await api.auth.updateProfile({
-  firstName,
-  lastName,
-  gender: data.gender,
-  country: data.country,
-  state: data.state,
-  city: data.city,
-  monthlyIncome: monthlyBudget,
-  dateOfBirth: data.dateOfBirth,
-  jobType: data.jobType,
-  avatarId: resolvedAvatar.id,
-  avatarUrl: resolvedAvatar.url
-  });
-  } catch (apiErr) {
-  console.warn('Backend API sync failed:', apiErr);
-  }
+   try {
+   await api.auth.updateProfile({
+   firstName,
+   lastName,
+   gender: data.gender,
+   phone: data.mobile || null,
+   mobile: data.mobile || null,
+   country: data.country,
+   state: data.state,
+   city: data.city,
+   monthlyIncome: monthlyBudget,
+   dateOfBirth: data.dateOfBirth,
+   jobType: data.jobType,
+   avatarId: resolvedAvatar.id,
+   avatarUrl: resolvedAvatar.url
+   });
+   } catch (apiErr: any) {
+   console.warn('Backend API sync failed:', apiErr);
+   const errMsg = apiErr?.message || '';
+   if (
+     apiErr?.code === 'PHONE_EXISTS' ||
+     apiErr?.status === 409 ||
+     errMsg.toLowerCase().includes('phone')
+   ) {
+     throw apiErr;
+   }
+   }
 
   try {
   await apiClient.put('/settings', {
@@ -206,13 +219,31 @@ export const OnboardingCompleteStep: React.FC<OnboardingCompleteStepProps> = ({
  await new Promise(resolve => setTimeout(resolve, 500));
  toast.success('Account setup complete!');
  onComplete();
- } catch (err) {
- // Last-resort: if anything truly fatal happens, still mark onboarding done
- // and proceed so the user is never stuck on this screen.
- localStorage.setItem('onboarding_completed', 'true');
- toast.success('Setup complete! Some data will sync when you reconnect.');
- onComplete();
- }
+ } catch (err: any) {
+  const errMsg = err?.message || '';
+  if (
+    err?.code === 'PHONE_EXISTS' ||
+    err?.status === 409 ||
+    errMsg.toLowerCase().includes('phone')
+  ) {
+    localStorage.removeItem('onboarding_completed');
+    localStorage.setItem('profile_sync_pending', 'true');
+    setIsProcessing(false);
+    setProgress(0);
+    toast.error('This phone number is already registered to another account. Please use a different phone number.');
+    if (onGoToStep) {
+      onGoToStep(1);
+    } else {
+      onBack();
+    }
+    return;
+  }
+  // Last-resort: if anything truly fatal happens, still mark onboarding done
+  // and proceed so the user is never stuck on this screen.
+  localStorage.setItem('onboarding_completed', 'true');
+  toast.success('Setup complete! Some data will sync when you reconnect.');
+  onComplete();
+  }
  };
 
  const retrySetup = () => {

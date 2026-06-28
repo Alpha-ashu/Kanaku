@@ -7,6 +7,7 @@ interface ProfileSetupStepProps {
  displayName: string;
  dateOfBirth: string;
  gender: string;
+ mobile: string;
  jobType: string;
  salary: string;
  avatarUrl?: string;
@@ -67,6 +68,15 @@ export const ProfileSetupStep: React.FC<ProfileSetupStepProps> = ({
  if (ageValue < 13 || ageValue > 120) {
  newErrors.dateOfBirth = 'You must be between 13 and 120 years old';
  }
+ }
+
+ if (!data.mobile) {
+  newErrors.mobile = 'Mobile number is required';
+ } else {
+  const digits = data.mobile.replace(/\D/g, '');
+  if (digits.length < 8 || digits.length > 15) {
+    newErrors.mobile = 'Please enter a valid mobile number';
+  }
  }
 
  if (!data.jobType) {
@@ -187,6 +197,26 @@ export const ProfileSetupStep: React.FC<ProfileSetupStepProps> = ({
             </select>
             {errors.gender && (
               <p className="mt-1 text-sm text-red-600">{errors.gender}</p>
+            )}
+          </div>
+
+          <div>
+            <label htmlFor="mobile" className="block text-sm font-medium text-gray-700 mb-1">
+              Mobile Number
+            </label>
+            <input data-testid="profile-setup-step-mobile"
+              type="tel"
+              id="mobile"
+              value={data.mobile || ''}
+              onChange={(e) => onUpdate({ mobile: e.target.value })}
+              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white ${
+                errors.mobile ? 'border-red-500' : 'border-gray-300'
+              }`}
+              placeholder="e.g. +91 98765 43210"
+              required
+            />
+            {errors.mobile && (
+              <p className="mt-1 text-sm text-red-600">{errors.mobile}</p>
             )}
           </div>
 

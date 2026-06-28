@@ -11,6 +11,7 @@ interface OnboardingData {
  displayName: string;
  dateOfBirth: string;
  gender: string;
+ mobile: string;
  jobType: string;
  salary: string;
  bankName: string;
@@ -31,6 +32,7 @@ export const NewUserOnboarding: React.FC = () => {
  displayName: '',
  dateOfBirth: '',
  gender: '',
+ mobile: '',
  jobType: '',
  salary: '',
  bankName: '',
@@ -49,6 +51,7 @@ export const NewUserOnboarding: React.FC = () => {
  React.useEffect(() => {
    const initProfile = async () => {
      let metaName = '';
+     let metaMobile = '';
 
      // 1. Try local profile cache first
      try {
@@ -57,6 +60,7 @@ export const NewUserOnboarding: React.FC = () => {
          const localProfile = JSON.parse(localProfileStr);
          metaName = localProfile.displayName || localProfile.fullName || 
            `${localProfile.firstName || ''} ${localProfile.lastName || ''}`.trim();
+         metaMobile = localProfile.mobile || '';
        }
      } catch (e) {
        console.warn('Failed to parse local profile:', e);
@@ -89,6 +93,7 @@ export const NewUserOnboarding: React.FC = () => {
              lastName: p.lastName || '',
              avatarUrl: p.avatarUrl || '',
              avatarId: p.avatarId || '',
+             mobile: metaMobile || p.phone || '',
            }));
            if (p.currency) localStorage.setItem('currency', p.currency);
            window.dispatchEvent(new CustomEvent('ONBOARDING_COMPLETED'));
@@ -99,11 +104,12 @@ export const NewUserOnboarding: React.FC = () => {
        console.warn('Failed to fetch profile during onboarding init:', e);
      }
 
-     if (metaName) {
+     if (metaName || metaMobile) {
        setOnboardingData(prev => ({
          ...prev,
          displayName: metaName,
-         accountHolderName: metaName
+         accountHolderName: metaName,
+         mobile: metaMobile || prev.mobile
        }));
      }
      setIsInitializing(false);
@@ -160,6 +166,7 @@ export const NewUserOnboarding: React.FC = () => {
    // Handled reactively via ONBOARDING_COMPLETED event in App.tsx
  }}
  onBack={prevStep}
+ onGoToStep={(step) => setCurrentStep(step)}
  />
  );
  default:

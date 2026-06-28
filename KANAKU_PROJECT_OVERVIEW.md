@@ -6,7 +6,7 @@ This document serves as the single source of truth for the project's architectur
 
 ---
 
-# 🟢 LIVING ARCHITECTURE REFERENCE — Authoritative Snapshot (2026-06-19)
+# 🟢 LIVING ARCHITECTURE REFERENCE — Authoritative Snapshot (changelog refreshed 2026-06-29)
 
 > **This block is the canonical context** for Kanaku. Read this section in full before reading anything below it; the older walkthroughs and phase logs that follow are kept for historical traceability only. When facts in older sections contradict this block, **this block wins**.
 
@@ -53,10 +53,87 @@ Kanaku/
 
 ---
 
-## A1. Recent Hardening & Fixes (2026-06-19 → 2026-06-23)
+## A1. Recent Hardening & Fixes (last 7 days — 2026-06-22 → 2026-06-29)
 
-> Logged here because these changes alter request validation, monetary
-> persistence, AI behaviour, and client request volume. Treat as authoritative.
+> Rolling 1-week changelog. Entries older than 2026-06-22 have been pruned (see
+> git history); the architecture/governance sections below are unaffected. Treat
+> as authoritative — these changes alter auth/session, RBAC, monetary
+> persistence, security headers, and accessibility.
+
+### Auth, session & PIN lifecycle remediation (2026-06-27 → 06-29)
+- **Atomic, profile-complete registration:** `auth.controller.register` wraps
+  user + profile creation in one `prisma.$transaction` (no orphan users), seeds
+  country-derived currency/locale + the 19 default categories + notification
+  prefs, and normalises/uniquely-indexes phone (`profiles_phone_key`, migration
+  `20260627000000_registration_integrity`). The `profiles↔User` FK stays deferred
+  (uuid vs text + Supabase RLS `auth.uid()=id`).
+- **Login & Auth remediation:** login now writes `auth.login` /
+  `auth.login_failed` audit events, rejects suspended users with
+  `403 ACCOUNT_SUSPENDED` **before** issuing tokens, drops the dead client-side
+  SHA-256 password path (single plain challenge over TLS), and corrects the
+  `/refresh` + `logout` revocation comments.
+- **Session/PIN lifecycle fix (native + web):** a 401 whose refresh **genuinely**
+  fails (refresh token rejected) now triggers a *coordinated soft logout* — a
+  `KANAKU_SESSION_EXPIRED` event makes AuthContext clear `user` and SecurityContext
+  re-lock the PIN — instead of a hard `window.location='/login'` reload. A
+  **transient** refresh failure (network/5xx) no longer logs the user out. Kills
+  the "PIN unlock → reload → back to login, then re-login skips the PIN" loop.
+
+### Feature-flag RBAC — page-based → feature-based (2026-06-29)
+- **New admin-only matrix endpoints** (mounted after `requireRole('admin')` →
+  `403` for non-admins): `GET/POST /admin/features/matrix` and
+  `/admin/ai-features/matrix` return/persist the **full** role-access matrix; the
+  legacy role-resolution `GET /admin/features` + `/admin/ai-features` stay open to
+  all authenticated users.
+- **System Gating Control page (`AdminFeaturePanel`):** both tabs stay mounted
+  (CSS `hidden`, no remount-refetch); the **AI matrix loads lazily on first
+  AI-tab open**; `AdminAIFeatureSection` is now a controlled component.
+- **AppContext:** the startup flag fetch is **scoped**
+  (`fetchGlobalFlags('app' | 'ai' | 'all')`) so opening the Admin Console / App
+  Features tab no longer pulls `/admin/ai-features`; the `feature_flags_updated`
+  WebSocket broadcast **force-bypasses** the 5s throttle and refetches only the
+  changed scope.
+
+### Monetary integrity — no-overdraw guard (2026-06-29)
+- Standard accounts can no longer be overdrawn. A debit (expense / transfer-out /
+  withdrawal) that would push `account.balance` below `0` is rejected with
+  `400 INSUFFICIENT_BALANCE`, validated **atomically inside the `$transaction`**
+  (`applyBalanceDeltas` in `transaction.repository.ts`; the `account.update`
+  row-lock serialises concurrent debits — no TOCTOU). Pure predicate
+  `isOverdraw()` + `NEGATIVE_BALANCE_ALLOWED_TYPES` in `utils/money.ts`.
+  Income/credits are unrestricted; bulk/statement imports and deletes are exempt
+  (`enforceBalance` flag). `AddTransaction` shows an "Insufficient Balance" modal
+  before save. (Reverses the prior "show real negatives" rule for new spending.)
+
+### Webhint security/compat + accessibility sweep (2026-06-28 → 06-29)
+- **Refresh cookie:** `Secure` enforced under HTTPS; `SameSite` env-configurable
+  (`REFRESH_COOKIE_SAMESITE`, default `Strict`) with Secure forced when `None`.
+- **Headers/CSS:** removed the deprecated `X-XSS-Protection` header; added
+  `text-size-adjust` + `-webkit-user-select` base rules; CSS-compatibility
+  post-processing middleware (correct MIME, vendor-prefix ordering); Firefox
+  `theme-color` meta handling; local-dev secure-cookie refinement.
+- **Accessibility:** `id` + `name` + `aria-label` added to ~40 previously
+  unlabelled form controls across AddAccount / AddGoal / AddGold / AddInvestment /
+  AddFriends / FriendProfile / VoiceAICommandCenter (the public auth forms were
+  already compliant). Repo-wide `eslint-plugin-jsx-a11y` enforcement is deferred —
+  the lint runs `--max-warnings 0`, so it needs an app-wide cleanup first.
+
+### Protected role accounts & security alerts (2026-06-29)
+- The four canonical `@kanaku.com` role accounts (admin / manager / advisor /
+  user) are code-guarded against deletion; **each login fires a SendGrid security
+  alert** to `SECURITY_ALERT_EMAIL`; vulnerable default PINs were replaced with
+  **role-specific secure PINs** in the DB seeding + QA scripts. Credentials live
+  only in gitignored `backend/.env` / `fly secrets`.
+
+### Privacy — PII console logging removed (2026-06-28)
+- `UserProfile.tsx` no longer dumps the full profile (email / name / DOB / income …)
+  to the browser console; Vite **production** builds now drop
+  `console.log/debug/info/trace` (keeping `warn`/`error`) via `esbuild.pure`.
+
+### Platform / ops (2026-06-29)
+- New automated **DB cleanup worker** (`cleanup.worker.ts`); `SearchableDropdown`
+  scroll-reflow perf fix. Prod redeployed from a clean `main` worktree →
+  **Fly v113 → v115** (worker/API process split intact; `main == prod`, no drift).
 
 ### 0a. Refresh token no longer exposed to web JavaScript (2026-06-23)
 - **Issue:** `login`/`refresh` returned the long-lived refresh token in the JSON
@@ -86,55 +163,7 @@ Kanaku/
   so a stray/keyboard-dismiss back can never quit the app. (Native-only path; web
   back is unaffected.)
 
-### 1. Onboarding `PUT /api/v1/auth/profile` 500 → numeric overflow fixed
-- **Root cause:** `User.salary` is `Decimal(12, 2)` (max ≈ 9,999,999,999.99). An
-  oversized onboarding salary produced an annual value of ~100 billion (11
-  digits) → Prisma overflow → 500, which blocked profile persistence (and made
-  saved details appear "not reflected" after login).
-- **Fixes:**
-  - New `backend/src/features/auth/auth.validation.ts` (`updateProfileSchema`)
-    wired via `validateBody` on `PUT /auth/profile`. Bounds `monthlyIncome` ≤
-    `MAX_MONTHLY_INCOME` and `salary` ≤ `MAX_ANNUAL_INCOME` (1,000,000,000),
-    enforces a `gender` enum, and length-bounds all free-text fields.
-  - Defensive clamp in `auth.service.updateProfile` so the derived annual salary
-    can never overflow the column even via other code paths.
-
-### 2. SQL-injection hardening on user-supplied text
-- Prisma already parameterises every query (incl. tagged-template `$executeRaw`),
-  so prior payloads were stored, not executed. They are now rejected at the edge.
-- New `containsSqlInjection()` in `backend/src/utils/sanitize.ts`.
-- Applied to profile text fields and to account `name`/`type`/`provider`/`country`
-  (`account.validation.ts`). Covers the onboarding salary, location, bank/account
-  name, and balance inputs.
-- Unit coverage: `backend/src/features/auth/input-hardening.test.ts`.
-
-### 3. Settings blob is server-authoritative for money
-- `settings.controller.ts` now normalises the free-form settings JSON and clamps
-  `monthlyBudget` to a column-safe range (kills the `8333333333` overflow value).
-
-### 4. AI insights now reflect declared financials (not just transactions)
-- **Root cause:** Every agent derived income only from 30–90 days of
-  transactions; a new user (no transactions) scored `healthScore 20`,
-  `savings 0%`, `DTI 1.00`, `EMI 0` regardless of declared salary/balances.
-- New `backend/src/features/ai/financial-baseline.ts` resolves income from
-  transactions → declared profile income (`profiles.monthly_income` / `User.salary`)
-  and sums active account balances.
-- `agents.ts` updated: Financial Health Score (adds **Months of Runway** from
-  balances), Loan Approval (DTI falls back to declared income; reports `0.00`
-  instead of a misleading `1.00` when there is no debt), plus Goal, Budget, and
-  Investment agents.
-
-### 5. Frontend request-volume reduction
-- `frontend/src/lib/api.ts` adds a short-TTL GET **response cache** on top of the
-  existing 2s concurrent-dedup + 30s profile cache: `/settings` 15s,
-  `/admin/features` & `/admin/ai-features` 60s, `/notifications` 10s, with a
-  per-call `cacheTtlMs` override. The cache is flushed on every
-  POST/PUT/PATCH/DELETE and via `api.clearCache()`, so writes never read stale
-  data. This collapses the navigation-burst repeats seen in the network log.
-- DiceBear avatar SVGs are already served with a 1-week `immutable` cache header
-  from the backend proxy, so they are browser-cached after first paint.
-
-### A2. Financial Hardening & Document Consolidation (2026-06-26)
+### Earlier this week — Financial Hardening & Document Consolidation (2026-06-26)
 - **Recurring Transactions Hardening:** Updated Zod validation schemas (`recurringCreateSchema`, `recurringUpdateSchema` in `recurring.validation.ts`) to include missing parameters (`type`, `notes`, `transferToAccountId`). Controllers and routes were aligned to store these fields.
 - **Recurring Background Worker:** Created `recurring.worker.ts` and registered it in `worker.ts`. Runs hourly on a cron schedule (`0 * * * *`) to automatically post due recurring transactions, compute next due dates, and queue manual payment reminder notifications.
 - **Real-Time Budget Recalculator & Listener:** Implemented `budget.listener.ts` to subscribe to transaction events (`TRANSACTION_CREATED`, `TRANSACTION_UPDATED`, `TRANSACTION_DELETED`). It recomputes monthly budget spent and triggers threshold notifications (warning at 80%, critical limit breach at 100%) restricted to a single notification of each level per budget cycle.
