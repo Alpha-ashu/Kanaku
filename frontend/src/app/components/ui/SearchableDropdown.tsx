@@ -77,48 +77,59 @@ export const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
 
  const flatFiltered = filtered;
 
+ const requestRef = useRef<number | null>(null);
+
  const updateCoords = useCallback(() => {
- if (containerRef.current) {
- const rect = containerRef.current.getBoundingClientRect();
- setCoords({
- top: rect.bottom,
- left: rect.left,
- width: rect.width,
- });
- }
+   if (requestRef.current !== null) return;
+   
+   requestRef.current = requestAnimationFrame(() => {
+     if (containerRef.current) {
+       const rect = containerRef.current.getBoundingClientRect();
+       setCoords({
+         top: rect.bottom,
+         left: rect.left,
+         width: rect.width,
+       });
+     }
+     requestRef.current = null;
+   });
  }, []);
 
  const openDropdown = useCallback(() => {
- if (disabled) return;
- updateCoords();
- setOpen(true);
- setQuery('');
- setHighlighted(0);
- setTimeout(() => searchRef.current?.focus(), 50);
+   if (disabled) return;
+   updateCoords();
+   setOpen(true);
+   setQuery('');
+   setHighlighted(0);
+   setTimeout(() => searchRef.current?.focus(), 50);
  }, [disabled, updateCoords]);
 
  const closeDropdown = useCallback(() => {
- setOpen(false);
- setQuery('');
+   setOpen(false);
+   setQuery('');
  }, []);
 
  const selectOption = useCallback(
- (opt: DropdownOption) => {
- onChange(opt.value);
- closeDropdown();
- },
- [onChange, closeDropdown],
+   (opt: DropdownOption) => {
+     onChange(opt.value);
+     closeDropdown();
+   },
+   [onChange, closeDropdown],
  );
 
  useEffect(() => {
- if (open) {
- window.addEventListener('resize', updateCoords);
- window.addEventListener('scroll', updateCoords, true);
- }
- return () => {
- window.removeEventListener('resize', updateCoords);
- window.removeEventListener('scroll', updateCoords, true);
- };
+   if (open) {
+     window.addEventListener('resize', updateCoords);
+     window.addEventListener('scroll', updateCoords, true);
+   }
+   return () => {
+     window.removeEventListener('resize', updateCoords);
+     window.removeEventListener('scroll', updateCoords, true);
+     if (requestRef.current !== null) {
+       cancelAnimationFrame(requestRef.current);
+       requestRef.current = null;
+     }
+   };
  }, [open, updateCoords]);
 
  useEffect(() => {
