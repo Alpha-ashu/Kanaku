@@ -93,7 +93,7 @@ export const AddFriends: React.FC = () => {
  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Friend Name</label>
  <div className="relative">
  <User className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
- <input data-testid="add-friends-full-name" type="text" value={formData.name} onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))} className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-300 text-xs" placeholder="Full Name" />
+ <input id="add-friend-name" name="name" aria-label="Friend name" data-testid="add-friends-full-name" type="text" value={formData.name} onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))} className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-300 text-xs" placeholder="Full Name" />
  </div>
  </div>
 
@@ -102,14 +102,14 @@ export const AddFriends: React.FC = () => {
  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Email</label>
  <div className="relative">
  <Mail className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
- <input data-testid="add-friends-optional" type="email" value={formData.email} onChange={e => setFormData(prev => ({ ...prev, email: e.target.value }))} className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-300 text-xs" placeholder="Optional" />
+ <input id="add-friend-email" name="email" aria-label="Friend email" data-testid="add-friends-optional" type="email" value={formData.email} onChange={e => setFormData(prev => ({ ...prev, email: e.target.value }))} className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-300 text-xs" placeholder="Optional" />
  </div>
  </div>
  <div className="space-y-1">
  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Phone</label>
  <div className="relative">
  <Phone className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
- <input data-testid="add-friends-optional-2" type="tel" value={formData.phone} onChange={e => setFormData(prev => ({ ...prev, phone: e.target.value }))} className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-300 text-xs" placeholder="Optional" />
+ <input id="add-friend-phone" name="phone" aria-label="Friend phone" data-testid="add-friends-optional-2" type="tel" value={formData.phone} onChange={e => setFormData(prev => ({ ...prev, phone: e.target.value }))} className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-300 text-xs" placeholder="Optional" />
  </div>
  </div>
  </div>

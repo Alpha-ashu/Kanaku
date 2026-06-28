@@ -299,6 +299,9 @@ const RealEstateForm: React.FC<{
       <div className="space-y-1">
         <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Location</label>
         <input
+          id="investment-property-location"
+          name="location"
+          aria-label="Location"
           type="text"
           value={metadata.location || ''}
           onChange={e => onChange('location', e.target.value)}
@@ -310,6 +313,9 @@ const RealEstateForm: React.FC<{
       <div className="space-y-1">
         <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Area (sq.ft)</label>
         <input
+          id="investment-property-area"
+          name="areaSqft"
+          aria-label="Area (sq.ft)"
           type="number"
           value={metadata.areaSqft || ''}
           onChange={e => onChange('areaSqft', parseFloat(e.target.value) || 0)}
@@ -321,6 +327,9 @@ const RealEstateForm: React.FC<{
       <div className="space-y-1">
         <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Rental Yield %</label>
         <input
+          id="investment-property-yield"
+          name="rentalYield"
+          aria-label="Rental yield %"
           type="number"
           value={metadata.rentalYield || ''}
           onChange={e => onChange('rentalYield', parseFloat(e.target.value) || 0)}
@@ -333,6 +342,9 @@ const RealEstateForm: React.FC<{
     <div className="space-y-1">
       <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Document Storage</label>
       <input
+        id="investment-property-docsafe"
+        name="documentSafe"
+        aria-label="Document storage"
         type="text"
         value={metadata.documentSafe || ''}
         onChange={e => onChange('documentSafe', e.target.value)}
@@ -358,6 +370,9 @@ const BusinessForm: React.FC<{
       <div className="space-y-1">
         <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Ownership %</label>
         <input
+          id="investment-business-percent"
+          name="ownershipPercent"
+          aria-label="Ownership %"
           type="number"
           value={metadata.ownershipPercent || ''}
           onChange={e => onChange('ownershipPercent', parseFloat(e.target.value) || 0)}
@@ -370,6 +385,9 @@ const BusinessForm: React.FC<{
       <div className="space-y-1">
         <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Sector</label>
         <input
+          id="investment-business-sector"
+          name="sector"
+          aria-label="Sector"
           type="text"
           value={metadata.sector || ''}
           onChange={e => onChange('sector', e.target.value)}
@@ -805,6 +823,8 @@ export const AddInvestment: React.FC = () => {
               <div className="relative">
                 <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
                 <input
+                  id="investment-name"
+                  aria-label="Asset name or search"
                   type="text"
                   name="name"
                   value={formData.name}
@@ -873,7 +893,7 @@ export const AddInvestment: React.FC = () => {
                 <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Broker / Platform</label>
                 <div className="relative">
                   <Globe className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
-                  <input type="text" value={formData.broker} onChange={e => setFormData(prev => ({ ...prev, broker: e.target.value }))} data-testid="investments-create-broker-input" className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-300 text-xs" placeholder="e.g. Zerodha" />
+                  <input id="investment-broker" name="broker" aria-label="Broker / Platform" type="text" value={formData.broker} onChange={e => setFormData(prev => ({ ...prev, broker: e.target.value }))} data-testid="investments-create-broker-input" className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-300 text-xs" placeholder="e.g. Zerodha" />
                 </div>
               </div>
               <div className="space-y-1">
@@ -887,7 +907,7 @@ export const AddInvestment: React.FC = () => {
 
             <div className="space-y-1">
               <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Notes</label>
-              <textarea value={formData.description} onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))} data-testid="investments-create-notes-textarea" className="w-full bg-slate-50 border-none rounded-xl py-2.5 px-3 font-bold text-slate-900 text-xs min-h-[60px] resize-none" placeholder="Long term holding..." />
+              <textarea id="investment-notes" name="description" aria-label="Notes" value={formData.description} onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))} data-testid="investments-create-notes-textarea" className="w-full bg-slate-50 border-none rounded-xl py-2.5 px-3 font-bold text-slate-900 text-xs min-h-[60px] resize-none" placeholder="Long term holding..." />
             </div>
           </div>
 
@@ -927,12 +947,15 @@ export const AddInvestment: React.FC = () => {
                     name="quantity"
                     value={physicalMeta.weightValue || ''}
                     onChange={e => setPhysicalMeta(prev => ({ ...prev, weightValue: parseFloat(e.target.value) || 0 }))}
+                    aria-label="Quantity"
                     data-testid="investments-create-quantity-input"
                     className="bg-transparent text-3xl font-black text-slate-900 outline-none w-full text-center tracking-tighter"
                     placeholder="0.00"
                   />
                 ) : (
                   <input
+                    id="investment-quantity"
+                    aria-label="Quantity"
                     type="number"
                     name="quantity"
                     value={formData.quantity || ''}
@@ -948,6 +971,8 @@ export const AddInvestment: React.FC = () => {
                   {isPhysicalMetal ? `Total Cost (${currency})` : `Buy Price (${assetCurrency})`}
                 </span>
                 <input
+                  id="investment-price"
+                  aria-label="Buy price"
                   type="number"
                   name={isPhysicalMetal ? "pricePerGram" : (formData.type === 'mutual-funds' ? "amount" : "purchasePrice")}
                   value={formData.purchasePrice || ''}
@@ -964,7 +989,7 @@ export const AddInvestment: React.FC = () => {
             <div className="flex items-center justify-between">
               <div className="space-y-1">
                 <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Fees ({currency})</label>
-                <input type="number" value={formData.purchaseFees || ''} onChange={e => setFormData(prev => ({ ...prev, purchaseFees: parseFloat(e.target.value) || 0 }))} data-testid="investments-create-fees-input" className="w-full bg-slate-50 border-none rounded-xl py-2.5 px-3 font-bold text-xs" placeholder="0" />
+                <input id="investment-fees" name="purchaseFees" aria-label="Fees" type="number" value={formData.purchaseFees || ''} onChange={e => setFormData(prev => ({ ...prev, purchaseFees: parseFloat(e.target.value) || 0 }))} data-testid="investments-create-fees-input" className="w-full bg-slate-50 border-none rounded-xl py-2.5 px-3 font-bold text-xs" placeholder="0" />
               </div>
               <div className="text-right">
                 <p className="text-[8px] font-black text-slate-300 uppercase tracking-widest">Subtotal</p>

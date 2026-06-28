@@ -157,16 +157,16 @@ export const FriendProfile: React.FC = () => {
           <div className="rounded-3xl border border-gray-200 bg-white p-5 shadow-sm space-y-3">
             <div className="space-y-1">
               <label className="text-xs font-bold text-slate-400 uppercase tracking-wide">Name</label>
-              <input data-testid="friend-profile-input" value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} className="w-full bg-slate-50 rounded-xl py-2.5 px-3 text-sm font-medium" />
+              <input id="friend-edit-name" name="name" aria-label="Friend name" data-testid="friend-profile-input" value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} className="w-full bg-slate-50 rounded-xl py-2.5 px-3 text-sm font-medium" />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
                 <label className="text-xs font-bold text-slate-400 uppercase tracking-wide">Email</label>
-                <input data-testid="friend-profile-input-2" value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} className="w-full bg-slate-50 rounded-xl py-2.5 px-3 text-sm font-medium" />
+                <input id="friend-edit-email" name="email" aria-label="Friend email" data-testid="friend-profile-input-2" value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} className="w-full bg-slate-50 rounded-xl py-2.5 px-3 text-sm font-medium" />
               </div>
               <div className="space-y-1">
                 <label className="text-xs font-bold text-slate-400 uppercase tracking-wide">Phone</label>
-                <input data-testid="friend-profile-input-3" value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} className="w-full bg-slate-50 rounded-xl py-2.5 px-3 text-sm font-medium" />
+                <input id="friend-edit-phone" name="phone" aria-label="Friend phone" data-testid="friend-profile-input-3" value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} className="w-full bg-slate-50 rounded-xl py-2.5 px-3 text-sm font-medium" />
               </div>
             </div>
             <p className="text-xs text-slate-400">Changes update across all expenses this friend is part of.</p>

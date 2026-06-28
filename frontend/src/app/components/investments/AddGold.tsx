@@ -177,9 +177,10 @@ export const AddGold: React.FC = () => {
  </div>
  <div className="flex flex-col items-center">
  <span className="text-[9px] font-black text-slate-300 uppercase tracking-[0.2em] mb-2">Weight ({formData.unit})</span>
- <input data-testid="add-gold-0-00" 
- type="number" 
- value={formData.quantity || ''} 
+ <input data-testid="add-gold-0-00"
+ id="add-gold-weight" name="quantity" aria-label="Weight"
+ type="number"
+ value={formData.quantity || ''}
  onChange={e => setFormData(prev => ({ ...prev, quantity: parseFloat(e.target.value) || 0 }))}
  className="bg-transparent text-5xl font-black text-slate-900 outline-none w-full text-center tracking-tighter" 
  placeholder="0.00"

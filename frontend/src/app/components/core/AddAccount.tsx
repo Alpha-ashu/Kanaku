@@ -268,6 +268,9 @@ export const AddAccount: React.FC = () => {
  <div className="relative">
  <Landmark className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
  <input
+ id="account-provider"
+ name="provider"
+ aria-label="Bank or wallet name"
  type="text"
  value={provider}
  onChange={e => setProvider(e.target.value)}
@@ -526,6 +529,7 @@ export const AddAccount: React.FC = () => {
  <div className="flex items-center justify-center gap-3 w-full max-w-full">
  <span className="text-xl md:text-2xl font-black text-indigo-300 select-none shrink-0">{currency}</span>
  <input
+ id="account-opening-balance" name="balance" aria-label="Opening balance"
  type="number"
  value={formData.balance}
  onChange={e => setFormData(prev => ({ ...prev, balance: e.target.value }))}
