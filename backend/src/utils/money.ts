@@ -115,3 +115,27 @@ export const sum = (values: MoneyInput[]): Prisma.Decimal => {
   return acc;
 };
 
+/**
+ * Account types permitted to carry a negative balance (credit cards, overdraft,
+ * loan accounts). Standard bank / cash / wallet / savings accounts must never go
+ * below zero. None of these types exist in the product yet — this future-proofs
+ * the exemption so they can be added without touching the guard.
+ */
+export const NEGATIVE_BALANCE_ALLOWED_TYPES = new Set(['credit', 'credit_card', 'overdraft', 'loan']);
+
+/**
+ * The no-overdraw rule. Returns true when applying `delta` to an account that
+ * ends at `balanceAfter` constitutes a forbidden overdraw — i.e. a debit
+ * (negative delta) that drives a STANDARD account's balance below zero. Income
+ * and other credits (delta >= 0) never overdraw; credit / overdraft / loan
+ * account types are exempt and may carry a negative balance.
+ */
+export const isOverdraw = (
+  balanceAfter: MoneyInput,
+  delta: MoneyInput,
+  accountType: string | null | undefined,
+): boolean => {
+  if (NEGATIVE_BALANCE_ALLOWED_TYPES.has(String(accountType ?? '').toLowerCase())) return false;
+  return isNegative(delta) && isNegative(balanceAfter);
+};
+

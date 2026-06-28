@@ -1,6 +1,8 @@
 import { createHash } from 'crypto';
 import { prisma } from '../../db/prisma';
 import { Prisma } from '../../db/prisma-client';
+import { AppError } from '../../utils/AppError';
+import { isOverdraw } from '../../utils/money';
 
 export type TransactionWithTags = {
   tags?: any;
@@ -76,16 +78,44 @@ export class TransactionRepository {
     });
   }
 
-  async createWithBalanceUpdate(data: any, deltas: Map<string, Prisma.Decimal>) {
+  /**
+   * Apply per-account balance deltas inside an open DB transaction, enforcing the
+   * no-overdraw invariant: a debit (negative delta) must not drive a standard
+   * account's balance below zero. The `account.update` takes a row lock, so
+   * concurrent debits on the same account serialise — the check always sees the
+   * latest committed balance and a race cannot sneak a balance below zero.
+   * Throwing rolls back the whole transaction, leaving the balance untouched.
+   */
+  private async applyBalanceDeltas(
+    tx: Prisma.TransactionClient,
+    deltas: Map<string, Prisma.Decimal>,
+    enforceBalance = true,
+  ) {
+    for (const [accountId, delta] of deltas.entries()) {
+      const account = await tx.account.update({
+        where: { id: accountId },
+        data: { balance: { increment: delta } },
+        select: { balance: true, type: true, name: true },
+      });
+
+      // Only debits (negative delta) can overdraw; income/credits never block.
+      // Bulk/statement imports pass enforceBalance=false — they record real
+      // history rather than authorising new spending, so must not be rejected.
+      if (enforceBalance && isOverdraw(account.balance, delta, account.type)) {
+        const available = account.balance.minus(delta); // balance before this debit
+        throw AppError.badRequest(
+          `Insufficient balance. Available balance is ${available.toFixed(2)}. This transaction would overdraw "${account.name}". Please enter an amount less than or equal to the available balance.`,
+          'INSUFFICIENT_BALANCE',
+        );
+      }
+    }
+  }
+
+  async createWithBalanceUpdate(data: any, deltas: Map<string, Prisma.Decimal>, enforceBalance = true) {
     return prisma.$transaction(async (tx) => {
       const created = await tx.transaction.create({ data });
 
-      for (const [accountId, delta] of deltas.entries()) {
-        await tx.account.update({
-          where: { id: accountId },
-          data: { balance: { increment: delta } },
-        });
-      }
+      await this.applyBalanceDeltas(tx, deltas, enforceBalance);
 
       return this.normalizeTransaction(created);
     });
@@ -98,12 +128,7 @@ export class TransactionRepository {
         data,
       });
 
-      for (const [accountId, delta] of deltas.entries()) {
-        await tx.account.update({
-          where: { id: accountId },
-          data: { balance: { increment: delta } },
-        });
-      }
+      await this.applyBalanceDeltas(tx, deltas);
 
       return this.normalizeTransaction(updated);
     });
