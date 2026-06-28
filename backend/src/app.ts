@@ -97,9 +97,13 @@ app.use((req, res, next) => {
   })(req, res, next);
 });
 
-// Ensure same-origin policies and legacy XSS filter protection are set explicitly
+// Ensure the same-origin resource policy is set explicitly.
+// NOTE: X-XSS-Protection is intentionally NOT set. The legacy auditor/filter it
+// controls is deprecated and removed from modern browsers; `1; mode=block` can
+// itself introduce vulnerabilities, so the current guidance is to omit it (or
+// send `0`). CSP above is the real XSS defence. helmet already emits
+// `X-XSS-Protection: 0` by default.
 app.use((req, res, next) => {
-  res.setHeader('X-XSS-Protection', '1; mode=block');
   res.setHeader('Cross-Origin-Resource-Policy', 'same-origin');
   next();
 });

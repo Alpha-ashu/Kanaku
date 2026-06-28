@@ -17,6 +17,19 @@ body,
   max-width: 100%;
 }
 
+/* Browser-compatibility base rules (Webhint P4). WebKit prefix is listed
+   BEFORE the standard property so the standard wins on engines that support
+   both. `html` (element selector) keeps specificity low so Tailwind's
+   `select-none` / `select-text` utilities still override per-element. */
+html {
+  /* Stop iOS Safari from auto-inflating text on orientation change */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  /* Pair the WebKit prefix with the standard user-select (older Safari) */
+  -webkit-user-select: auto;
+  user-select: auto;
+}
+
 /* CSS Variables for Layout */
 :root {
   /* Bottom navigation height (64px = h-16) */
