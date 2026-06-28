@@ -31,6 +31,7 @@ import { budgetRoutes } from '../features/budgets/budget.routes';
 import { goldRoutes } from '../features/gold/gold.routes';
 import { collaborationRoutes } from '../features/collaboration/collaboration.routes';
 import { webhookRoutes } from '../features/webhooks/webhook.routes';
+import { reportsRoutes } from '../features/reports/reports.routes';
 
 const router = Router();
 
@@ -87,6 +88,7 @@ router.use('/loans', loanRoutes);
 router.use('/settings', settingsRoutes);
 router.use('/friends', friendRoutes);
 router.use('/investments', investmentRoutes);
+router.use('/reports', reportsRoutes);
 router.use('/todos', todoRoutes);
 router.use('/groups', groupRoutes);
 router.use('/categorize', categorizationRoutes);

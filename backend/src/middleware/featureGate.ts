@@ -9,29 +9,70 @@ let cachedFeatures: any = null;
 let cacheTimestamp = 0;
 const CACHE_TTL_MS = 30000; // 30 seconds
 
-// Default sub-feature role access and state (matching frontend featureFlags.ts)
+// Default sub-feature role access and state.
+// Mirrors roleBasedFeatures.ts SUB_FEATURES exactly — this is the server-side
+// source of truth when the admin has not yet saved custom settings to the DB.
+// ALL 7 functional modules are represented here so requireFeature(module, child)
+// never falls through to an undefined default.
 const DEFAULT_SUB_FEATURES: Record<string, Record<string, { enabled: boolean; roleAccess: Record<string, boolean> }>> = {
+  // ── Accounts ─────────────────────────────────────────────────────────────
   accounts: {
-    importStatement: { enabled: true, roleAccess: { admin: true, manager: true, advisor: true, user: true } },
-    exportData:      { enabled: true, roleAccess: { admin: true, manager: true, advisor: true, user: true } },
-    createAccount:   { enabled: true, roleAccess: { admin: true, manager: true, advisor: true, user: true } },
-    editAccount:     { enabled: true, roleAccess: { admin: true, manager: true, advisor: true, user: true } },
+    importStatement: { enabled: true, roleAccess: { admin: true, manager: true, advisor: true,  user: true  } },
+    exportData:      { enabled: true, roleAccess: { admin: true, manager: true, advisor: true,  user: true  } },
+    createAccount:   { enabled: true, roleAccess: { admin: true, manager: true, advisor: true,  user: true  } },
+    editAccount:     { enabled: true, roleAccess: { admin: true, manager: true, advisor: true,  user: true  } },
     deleteAccount:   { enabled: true, roleAccess: { admin: true, manager: true, advisor: false, user: false } },
-    accountTransfer: { enabled: true, roleAccess: { admin: true, manager: true, advisor: true, user: true } },
+    accountTransfer: { enabled: true, roleAccess: { admin: true, manager: true, advisor: true,  user: true  } },
+    reconciliation:  { enabled: true, roleAccess: { admin: true, manager: true, advisor: true,  user: true  } },
   },
+  // ── Transactions ─────────────────────────────────────────────────────────
   transactions: {
-    addTransaction:    { enabled: true, roleAccess: { admin: true, manager: true, advisor: true, user: true } },
-    editTransaction:   { enabled: true, roleAccess: { admin: true, manager: true, advisor: true, user: true } },
-    deleteTransaction: { enabled: true, roleAccess: { admin: true, manager: true, advisor: false, user: false } },
-    importStatement:   { enabled: true, roleAccess: { admin: true, manager: true, advisor: true, user: true } },
-    exportStatement:   { enabled: true, roleAccess: { admin: true, manager: true, advisor: true, user: true } },
+    addTransaction:       { enabled: true, roleAccess: { admin: true, manager: true, advisor: true,  user: true  } },
+    editTransaction:      { enabled: true, roleAccess: { admin: true, manager: true, advisor: true,  user: true  } },
+    deleteTransaction:    { enabled: true, roleAccess: { admin: true, manager: true, advisor: false, user: false } },
+    importStatement:      { enabled: true, roleAccess: { admin: true, manager: true, advisor: true,  user: true  } },
+    exportStatement:      { enabled: true, roleAccess: { admin: true, manager: true, advisor: true,  user: true  } },
+    attachBill:           { enabled: true, roleAccess: { admin: true, manager: true, advisor: true,  user: true  } },
+    importThirdPartyData: { enabled: true, roleAccess: { admin: true, manager: true, advisor: true,  user: true  } },
   },
+  // ── Goals ────────────────────────────────────────────────────────────────
+  goals: {
+    createGoal:  { enabled: true, roleAccess: { admin: true, manager: true, advisor: true,  user: true  } },
+    editGoal:    { enabled: true, roleAccess: { admin: true, manager: true, advisor: true,  user: true  } },
+    deleteGoal:  { enabled: true, roleAccess: { admin: true, manager: true, advisor: false, user: true  } },
+    groupGoals:  { enabled: true, roleAccess: { admin: true, manager: true, advisor: true,  user: true  } },
+    goalSharing: { enabled: true, roleAccess: { admin: true, manager: false, advisor: true, user: true  } },
+  },
+  // ── Loans ────────────────────────────────────────────────────────────────
+  loans: {
+    borrowMoney:     { enabled: true, roleAccess: { admin: true, manager: true, advisor: true,  user: true  } },
+    lendMoney:       { enabled: true, roleAccess: { admin: true, manager: true, advisor: true,  user: true  } },
+    emiReminder:     { enabled: true, roleAccess: { admin: true, manager: true, advisor: true,  user: true  } },
+    loanSettlement:  { enabled: true, roleAccess: { admin: true, manager: true, advisor: false, user: true  } },
+  },
+  // ── Investments ──────────────────────────────────────────────────────────
+  investments: {
+    addInvestment:       { enabled: true, roleAccess: { admin: true, manager: true, advisor: true,  user: true  } },
+    portfolioAnalytics:  { enabled: true, roleAccess: { admin: true, manager: true, advisor: true,  user: true  } },
+    sipTracking:         { enabled: true, roleAccess: { admin: true, manager: false, advisor: true, user: true  } },
+    groupInvestments:    { enabled: true, roleAccess: { admin: true, manager: true, advisor: true,  user: false } },
+  },
+  // ── Reports ──────────────────────────────────────────────────────────────
   reports: {
-    pdfExport:       { enabled: true, roleAccess: { admin: true, manager: true, advisor: true, user: true } },
-    excelExport:     { enabled: true, roleAccess: { admin: true, manager: true, advisor: true, user: true } },
-    csvExport:       { enabled: true, roleAccess: { admin: true, manager: true, advisor: true, user: true } },
+    pdfExport:        { enabled: true, roleAccess: { admin: true, manager: true, advisor: true,  user: true  } },
+    excelExport:      { enabled: true, roleAccess: { admin: true, manager: true, advisor: true,  user: true  } },
+    csvExport:        { enabled: true, roleAccess: { admin: true, manager: true, advisor: true,  user: true  } },
+    aiInsightsReport: { enabled: true, roleAccess: { admin: true, manager: false, advisor: true, user: true  } },
+    forecasting:      { enabled: true, roleAccess: { admin: true, manager: true, advisor: true,  user: false } },
+  },
+  // ── Book Advisor ─────────────────────────────────────────────────────────
+  bookAdvisor: {
+    createBooking: { enabled: true, roleAccess: { admin: true, manager: false, advisor: false, user: true  } },
+    chat:          { enabled: true, roleAccess: { admin: true, manager: true,  advisor: true,  user: true  } },
+    reviews:       { enabled: true, roleAccess: { admin: true, manager: false, advisor: false, user: true  } },
   },
 };
+
 
 // Default module baseline role access
 const DEFAULT_MODULE_ACCESS: Record<string, Record<string, boolean>> = {

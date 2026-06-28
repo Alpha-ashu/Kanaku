@@ -265,3 +265,62 @@ export const addLoanPayment = async (req: AuthRequest, res: Response, next: Next
     next(error);
   }
 };
+
+// ── Loan Settlement ───────────────────────────────────────────────────────────
+// Settlement is a deliberate negotiated closure of a loan, which may be at a
+// discounted amount (partial settlement). Unlike a normal payment, it immediately
+// marks the loan as 'settled' and zeroes the outstanding balance, regardless of
+// any remaining principal. Gated by the `loanSettlement` sub-feature.
+export const settleLoan = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const userId = getUserId(req);
+    const { id } = req.params;
+    const { settledAmount, accountId, notes } = req.body;
+
+    if (!settledAmount) {
+      throw AppError.badRequest('settledAmount is required', 'AMOUNT_REQUIRED');
+    }
+
+    const numericAmount = Number(settledAmount);
+    if (!isFinite(numericAmount) || numericAmount < 0) {
+      throw AppError.badRequest('settledAmount must be a non-negative number', 'INVALID_AMOUNT');
+    }
+
+    const loan = await prisma.loan.findFirst({ where: { id, userId } });
+    if (!loan) {
+      throw AppError.notFound('Loan');
+    }
+
+    if (loan.status === 'settled' || loan.status === 'completed') {
+      throw AppError.badRequest('Loan is already settled or completed', 'LOAN_ALREADY_CLOSED');
+    }
+
+    const [payment, updatedLoan] = await prisma.$transaction([
+      prisma.loanPayment.create({
+        data: {
+          loanId: id,
+          amount: numericAmount,
+          accountId: accountId || null,
+          date: new Date(),
+          notes: notes ? sanitize(notes) : 'Loan settlement',
+        },
+      }),
+      prisma.loan.update({
+        where: { id },
+        data: {
+          outstandingBalance: 0,
+          status: 'settled',
+        },
+        include: { payments: true },
+      }),
+    ]);
+
+    await cacheDeleteByPrefix('loans:');
+    logger.info(`Loan ${id} settled by user ${userId} for amount ${numericAmount}`);
+
+    res.json({ success: true, data: { loan: updatedLoan, settlement: payment } });
+  } catch (error) {
+    next(error);
+  }
+};
+

@@ -22,7 +22,7 @@ router.use(authMiddleware);
 // Create booking (users only)
 router.post(
   '/',
-  requireFeature('bookAdvisor'),
+  requireFeature('bookAdvisor', 'createBooking'),
   validateBody(bookingCreateSchema),
   BookingController.createBooking
 );
@@ -82,4 +82,12 @@ router.post(
   BookingController.markFeePaid
 );
 
+// Submit Session Review (client only)
+router.post(
+  '/sessions/:sessionId/review',
+  requireFeature('bookAdvisor', 'reviews'),
+  BookingController.submitSessionReview
+);
+
 export { router as bookingRoutes };
+

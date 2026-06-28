@@ -97,3 +97,65 @@ export const getAccountTransactions = async (req: AuthRequest, res: Response, ne
     handleTransactionDatabaseError(error, next);
   }
 };
+
+// ── Export Statement (exportStatement sub-feature) ───────────────────────────
+// Formats and exports the user's transactions as a simple CSV string response.
+export const exportTransactions = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const userId = getUserId(req);
+    const { transactions } = await transactionService.fetchTransactions(userId, { limit: 10000 });
+
+    // Build CSV
+    const headers = ['ID', 'Date', 'Type', 'Category', 'Subcategory', 'Amount', 'Description', 'Merchant'];
+    const rows = transactions.map((t) => [
+      t.id,
+      t.date.toISOString(),
+      t.type,
+      t.category,
+      t.subcategory || '',
+      t.amount.toString(),
+      t.description || '',
+      t.merchant || '',
+    ]);
+
+    const csvContent = [headers.join(','), ...rows.map((r) => r.map((val) => `"${val.replace(/"/g, '""')}"`).join(','))].join('\n');
+
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename=transactions_export_${Date.now()}.csv`);
+    res.status(200).send(csvContent);
+  } catch (error) {
+    handleTransactionDatabaseError(error, next);
+  }
+};
+
+// ── Import Third-Party Data (importThirdPartyData sub-feature) ───────────────
+// Accepts transaction feeds in third-party schemas (e.g. Plaid, OFX) and converts
+// them to standard Kanaku transactions.
+export const importThirdPartyData = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const userId = getUserId(req);
+    const { provider, accountId, transactions } = req.body;
+
+    if (!accountId || !transactions || !Array.isArray(transactions)) {
+      throw AppError.badRequest('accountId and transactions array are required', 'MISSING_FIELDS');
+    }
+
+    // Map third party formats (e.g. { amount, name, date, category }) to Kanaku body
+    const mapped = transactions.map((tx: any) => ({
+      accountId,
+      amount: Math.abs(tx.amount || 0),
+      category: tx.category?.[0] || tx.category || 'Uncategorized',
+      type: tx.amount < 0 ? 'income' : 'expense', // Plaid: positive is outflow, negative is inflow
+      date: tx.date || new Date().toISOString(),
+      description: tx.name || tx.description || 'Imported Transaction',
+      merchant: tx.merchant_name || null,
+      importSource: provider || 'third_party_api',
+    }));
+
+    const result = await transactionService.createTransactionsBulk(userId, mapped);
+    res.status(201).json({ success: true, data: result });
+  } catch (error) {
+    handleTransactionDatabaseError(error, next);
+  }
+};
+

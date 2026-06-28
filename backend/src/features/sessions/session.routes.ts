@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { authMiddleware } from '../../middleware/auth';
 import { validateBody, validateParams } from '../../middleware/validate';
+import { requireFeature } from '../../middleware/featureGate';
 import * as SessionController from './session.controller';
 import {
   sessionIdParamSchema,
@@ -17,9 +18,10 @@ router.use(authMiddleware);
 // Get session details
 router.get('/:id', validateParams(sessionIdParamSchema), SessionController.getSession);
 
-// Chat messages
-router.post('/:id/messages', validateParams(sessionIdParamSchema), validateBody(sendMessageSchema), SessionController.sendMessage);
-router.get('/:id/messages', validateParams(sessionIdParamSchema), SessionController.getMessages);
+// Chat messages (gated by chat sub-feature under bookAdvisor)
+router.post('/:id/messages', requireFeature('bookAdvisor', 'chat'), validateParams(sessionIdParamSchema), validateBody(sendMessageSchema), SessionController.sendMessage);
+router.get('/:id/messages', requireFeature('bookAdvisor', 'chat'), validateParams(sessionIdParamSchema), SessionController.getMessages);
+
 
 // Session control (advisor)
 router.post('/:id/start', validateParams(sessionIdParamSchema), SessionController.startSession);

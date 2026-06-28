@@ -35,6 +35,17 @@ router.post(
 	validateBody(transactionCreateValidatedSchema),
 	TransactionController.createTransaction
 );
+// Sub-feature operations: Export & Third-Party integration
+router.get(
+	'/export',
+	requireFeature('transactions', 'exportStatement'),
+	TransactionController.exportTransactions
+);
+router.post(
+	'/import/third-party',
+	requireFeature('transactions', 'importThirdPartyData'),
+	TransactionController.importThirdPartyData
+);
 router.post(
 	'/bulk',
 	requireFeature('transactions', 'addTransaction'),
@@ -42,6 +53,7 @@ router.post(
 	validateBody(transactionBulkCreateSchema),
 	TransactionController.createTransactionsBulk
 );
+
 router.get(
 	'/:id',
 	validateParams(transactionIdParamSchema),

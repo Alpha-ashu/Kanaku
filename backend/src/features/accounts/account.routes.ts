@@ -19,4 +19,9 @@ router.get('/:id', validateParams(accountIdParamSchema), responseCache({ prefix:
 router.put('/:id', requireFeature('accounts', 'editAccount'), validateParams(accountIdParamSchema), validateBody(accountUpdateSchema), AccountController.updateAccount);
 router.delete('/:id', requireFeature('accounts', 'deleteAccount'), validateParams(accountIdParamSchema), AccountController.deleteAccount);
 
+// Sub-feature operations
+router.post('/:id/transfer', requireFeature('accounts', 'accountTransfer'), validateParams(accountIdParamSchema), AccountController.transferAccount);
+router.post('/:id/reconcile', requireFeature('accounts', 'reconciliation'), validateParams(accountIdParamSchema), AccountController.reconcileAccount);
+
 export { router as accountRoutes };
+

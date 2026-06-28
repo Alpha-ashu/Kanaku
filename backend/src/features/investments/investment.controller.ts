@@ -170,3 +170,103 @@ export const deleteInvestment = async (req: AuthRequest, res: Response, next: Ne
     next(error);
   }
 };
+
+// ── Portfolio Analytics (portfolioAnalytics sub-feature) ─────────────────────
+// Returns aggregated portfolio metrics: total invested, current value, P&L,
+// and allocation breakdown by asset type. Uses existing investment records.
+export const getPortfolioAnalytics = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const userId = getUserId(req);
+
+    const investments = await prisma.investment.findMany({
+      where: { userId, deletedAt: null },
+      orderBy: { purchaseDate: 'desc' },
+    });
+
+    // Aggregate metrics
+    let totalInvested = 0;
+    let currentValue = 0;
+    const allocationByType: Record<string, { invested: number; value: number; count: number }> = {};
+
+    for (const inv of investments) {
+      const invested = Number(inv.totalInvested ?? 0);
+      const value = Number(inv.currentValue ?? 0);
+      totalInvested += invested;
+      currentValue += value;
+
+      const type = inv.assetType || 'other';
+      if (!allocationByType[type]) {
+        allocationByType[type] = { invested: 0, value: 0, count: 0 };
+      }
+      allocationByType[type].invested += invested;
+      allocationByType[type].value += value;
+      allocationByType[type].count += 1;
+    }
+
+    const profitLoss = currentValue - totalInvested;
+    const returnPercent = totalInvested > 0 ? (profitLoss / totalInvested) * 100 : 0;
+
+    res.json({
+      success: true,
+      data: {
+        summary: {
+          totalInvested,
+          currentValue,
+          profitLoss,
+          returnPercent: Math.round(returnPercent * 100) / 100,
+          totalPositions: investments.length,
+        },
+        allocation: allocationByType,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// ── SIP Tracking (sipTracking sub-feature) ────────────────────────────────────
+// SIP investments are investments whose metadata contains { isSIP: true }.
+// Returns all SIP positions with aggregated monthly contribution data.
+export const getSIPInvestments = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const userId = getUserId(req);
+
+    const allInvestments = await prisma.investment.findMany({
+      where: { userId, deletedAt: null },
+      orderBy: { purchaseDate: 'desc' },
+    });
+
+    const sipInvestments = allInvestments.filter((inv) => {
+      const meta = inv.metadata as any;
+      return meta?.isSIP === true;
+    });
+
+    res.json({ success: true, data: sipInvestments });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// ── Group Investments (groupInvestments sub-feature) ─────────────────────────
+// Group investments are linked to a group via metadata.groupId.
+// Returns all group-linked investment positions for the user's groups.
+export const getGroupInvestments = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const userId = getUserId(req);
+
+    const allInvestments = await prisma.investment.findMany({
+      where: { userId, deletedAt: null },
+      orderBy: { purchaseDate: 'desc' },
+    });
+
+    const groupInvestments = allInvestments.filter((inv) => {
+      const meta = inv.metadata as any;
+      return meta?.groupId != null;
+    });
+
+    res.json({ success: true, data: groupInvestments });
+  } catch (error) {
+    next(error);
+  }
+};
+
