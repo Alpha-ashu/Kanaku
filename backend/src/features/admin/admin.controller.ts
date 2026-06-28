@@ -675,14 +675,32 @@ export const deleteUser = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ error: 'Administrators cannot delete their own account via the admin panel' });
     }
 
-    const user = await prisma.user.findUnique({ where: { id: userId } });
-    if (!user) {
+    const [user, profile] = await Promise.all([
+      prisma.user.findUnique({ where: { id: userId } }),
+      prisma.profiles.findUnique({ where: { id: userId } }),
+    ]);
+
+    if (!user && !profile) {
       return res.status(404).json({ error: 'User not found' });
     }
 
+    const email = user?.email || profile?.email || 'Unknown';
+
+    // Delete from profiles first since it is not cascaded via schema.prisma's User model
+    try {
+      await prisma.profiles.delete({ where: { id: userId } });
+      logger.info(`[AdminController] Profiles row deleted for user: ${userId}`);
+    } catch (profileErr: any) {
+      if (profileErr.code !== 'P2025') {
+        logger.warn(`[AdminController] Non-fatal error deleting profiles row for user ${userId}:`, profileErr);
+      }
+    }
+
     // Cascade-delete from Prisma (all related data via onDelete: Cascade)
-    await prisma.user.delete({ where: { id: userId } });
-    logger.info(`[AdminController] Prisma user deleted by admin ${adminId}: ${userId}`);
+    if (user) {
+      await prisma.user.delete({ where: { id: userId } });
+      logger.info(`[AdminController] Prisma user deleted by admin ${adminId}: ${userId}`);
+    }
 
     // Best-effort Supabase Auth deletion
     try {
@@ -699,7 +717,7 @@ export const deleteUser = async (req: AuthRequest, res: Response) => {
       logger.warn('[AdminController] Non-blocking Supabase auth deletion failed:', { userId, message: supabaseErr.message });
     }
 
-    res.json({ message: `User ${user.email} deleted successfully`, userId });
+    res.json({ message: `User ${email} deleted successfully`, userId });
   } catch (error: any) {
     logger.error('[AdminController] Failed to delete user', { error });
     res.status(500).json({ error: 'Failed to delete user' });

@@ -121,6 +121,8 @@ export const SearchHeader = ({ value, onChange, placeholder ="Search..." }: { va
  </div>
  <input data-testid="page-header-placeholder"
  type="text"
+ id="page-header-search"
+ name="page-header-search"
  value={value}
  onChange={e => onChange(e.target.value)}
  placeholder={placeholder}

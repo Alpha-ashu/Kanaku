@@ -19,6 +19,33 @@
 
   <title>KANAKU</title>
 
+  <!-- Prevent compatibility errors for dynamic styles (like Sonner) -->
+  <script>
+    (function() {
+      function patchStyle(el) {
+        if (!el || el.tagName !== 'STYLE') return;
+        const patch = () => {
+          if (el.textContent && el.textContent.includes('user-select: none') && !el.textContent.includes('-webkit-user-select')) {
+            el.textContent = el.textContent.replace(/user-select:\s*none/g, '-webkit-user-select: none; user-select: none;');
+          }
+        };
+        const observer = new MutationObserver(patch);
+        observer.observe(el, { childList: true, characterData: true });
+        patch();
+      }
+      const origAppend = document.head.appendChild;
+      document.head.appendChild = function(el) {
+        patchStyle(el);
+        return origAppend.apply(this, arguments);
+      };
+      const origInsertBefore = document.head.insertBefore;
+      document.head.insertBefore = function(el, ref) {
+        patchStyle(el);
+        return origInsertBefore.apply(this, arguments);
+      };
+    })();
+  </script>
+
   <!-- Prevent FOUC (Flash of Unstyled Content) -->
   <style>
     body {
@@ -42,15 +69,22 @@
 <body>
   <div id="root">
     <div class="loading">
-      <div
-        style="width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #2563eb; border-radius: 50%; animation: spin 1s linear infinite;">
-      </div>
+      <div class="loading-spinner"></div>
     </div>
   </div>
   <script type="module" src="/src/index.tsx"></script>
 
   <!-- Loading animation -->
   <style>
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #2563eb;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
     @keyframes spin {
       0% {
         transform: rotate(0deg);

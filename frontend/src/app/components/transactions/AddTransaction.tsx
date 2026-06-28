@@ -1518,41 +1518,48 @@ export function AddTransaction() {
  )}
  </div>
 
- {/* No receipt attached yet */}
- {!scanDocumentId && !attachmentDocumentId && (
- <div className={cn("grid gap-3", isOcrEnabled ? "grid-cols-2" : "grid-cols-1")}>
-   {isOcrEnabled && (
-     <button
-       type="button"
-       onClick={() => { setScannerMode('scan'); setShowScanner(true); }}
-       data-testid="transaction-scan-receipt-button"
-       className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-slate-900 text-white hover:bg-slate-800 active:scale-[0.97] transition-all shadow-lg shadow-slate-200"
-     >
-       <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center">
-         <ScanLine size={18} />
-       </div>
-       <div className="text-center">
-         <p className="text-[10px] font-black uppercase tracking-wide leading-none">Scan Receipt</p>
-         <p className="text-[9px] font-semibold text-white/40 mt-0.5 leading-none">OCR auto-fill</p>
-       </div>
-     </button>
-   )}
-
-   <button
-     type="button"
-     onClick={() => { setScannerMode('attachment'); setShowScanner(true); }}
-     data-testid="transaction-add-attachment-button"
-     className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-slate-50 text-slate-900 hover:bg-slate-100 active:scale-[0.97] transition-all border border-slate-100"
-   >
-     <div className="w-9 h-9 rounded-xl bg-slate-200 flex items-center justify-center">
-       <Paperclip size={18} className="text-slate-600" />
-     </div>
-      <div className="text-center">
-        <p className="text-[10px] font-black uppercase tracking-wide leading-none">Add Attachment</p>
+  {/* No receipt attached yet */}
+  {!scanDocumentId && !attachmentDocumentId && (
+  <div className="grid grid-cols-2 gap-3">
+    <button
+      type="button"
+      onClick={() => { setScannerMode('scan'); setShowScanner(true); }}
+      data-testid="transaction-scan-receipt-button"
+      disabled={!isOcrEnabled}
+      className={cn(
+        "flex flex-col items-center gap-2 p-4 rounded-2xl active:scale-[0.97] transition-all shadow-lg",
+        isOcrEnabled 
+          ? "bg-slate-900 text-white hover:bg-slate-800 shadow-slate-200" 
+          : "bg-slate-100 text-slate-400 border border-slate-200 shadow-none cursor-not-allowed"
+      )}
+    >
+      <div className={cn(
+        "w-9 h-9 rounded-xl flex items-center justify-center",
+        isOcrEnabled ? "bg-white/10" : "bg-slate-200"
+      )}>
+        <ScanLine size={18} />
       </div>
-   </button>
- </div>
- )}
+      <div className="text-center">
+        <p className="text-[10px] font-black uppercase tracking-wide leading-none">Scan Receipt</p>
+        <p className={cn("text-[9px] font-semibold mt-0.5 leading-none", isOcrEnabled ? "text-white/40" : "text-slate-400/60")}>OCR auto-fill</p>
+      </div>
+    </button>
+
+    <button
+      type="button"
+      onClick={() => { setScannerMode('attachment'); setShowScanner(true); }}
+      data-testid="transaction-add-attachment-button"
+      className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-slate-50 text-slate-900 hover:bg-slate-100 active:scale-[0.97] transition-all border border-slate-100"
+    >
+      <div className="w-9 h-9 rounded-xl bg-slate-200 flex items-center justify-center">
+        <Paperclip size={18} className="text-slate-600" />
+      </div>
+       <div className="text-center">
+         <p className="text-[10px] font-black uppercase tracking-wide leading-none">Add Attachment</p>
+       </div>
+    </button>
+  </div>
+  )}
 
  {/* Receipt attached show summary + remove option */}
  {(scanDocumentId || attachmentDocumentId) && (

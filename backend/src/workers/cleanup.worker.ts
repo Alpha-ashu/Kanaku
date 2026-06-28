@@ -59,6 +59,15 @@ export const runAccountDeletionSweep = async (): Promise<void> => {
       }
 
       try {
+        try {
+          await prisma.profiles.delete({ where: { id: user.id } });
+          logger.info(`[deletion-sweep] Profiles row deleted for user: ${user.id}`);
+        } catch (profileErr: any) {
+          if (profileErr.code !== 'P2025') {
+            logger.warn(`[deletion-sweep] Non-fatal error deleting profiles row for user ${user.id}:`, profileErr);
+          }
+        }
+
         await prisma.user.delete({ where: { id: user.id } });
         deleted += 1;
         audit({

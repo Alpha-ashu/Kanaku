@@ -476,6 +476,8 @@ export const TopBar: React.FC = () => {
  <input data-testid="top-bar-search-transactions-assets"
  ref={searchInputRef}
  type="text"
+ id="topbar-search-desktop"
+ name="topbar-search-desktop"
  value={searchQuery}
  onChange={(e) => setSearchQuery(e.target.value)}
  onFocus={() => setIsFocused(true)}
@@ -569,6 +571,7 @@ export const TopBar: React.FC = () => {
  <motion.button data-testid="top-bar-button-3"
  whileTap={{ scale: 0.95 }}
  onClick={handleNotificationClick}
+ aria-label="Notifications"
  className="relative rounded-xl bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 shadow-sm w-10 h-10 shrink-0 flex items-center justify-center transition-colors"
  >
  <Bell size={20} />
@@ -588,6 +591,7 @@ export const TopBar: React.FC = () => {
  <motion.button data-testid="top-bar-button-4"
  whileTap={{ scale: 0.95 }}
  onClick={handleProfileClick}
+ aria-label="User profile"
  className="w-10 h-10 rounded-xl bg-gray-200 overflow-hidden shadow-sm shrink-0 hover:shadow-md transition-shadow flex items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-bold text-sm"
  >
  {(() => {
@@ -629,6 +633,8 @@ export const TopBar: React.FC = () => {
  <input data-testid="top-bar-search-transactions-assets-2"
  autoFocus
  type="text"
+ id="topbar-search-mobile"
+ name="topbar-search-mobile"
  value={searchQuery}
  onChange={(e) => setSearchQuery(e.target.value)}
  placeholder="Search transactions, assets..."

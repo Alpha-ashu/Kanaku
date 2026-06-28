@@ -155,6 +155,15 @@ async function upsertIdentity(spec, hashedPassword) {
       city = EXCLUDED.city, updated_at = NOW()
   `.catch((err) => console.warn(`[test-users] profile sync failed for ${spec.email}: ${err.message}`));
 
+  const pinHash = await bcrypt.hash('123456', 10);
+  const expiresAt = new Date();
+  expiresAt.setDate(expiresAt.getDate() + 90);
+  await prisma.userPin.upsert({
+    where: { userId: user.id },
+    update: { pinHash, expiresAt, isActive: true, failedAttempts: 0, lockedUntil: null },
+    create: { userId: user.id, pinHash, expiresAt, isActive: true }
+  }).catch((err) => console.warn(`[test-users] PIN seeding failed for ${spec.email}: ${err.message}`));
+
   return user;
 }
 

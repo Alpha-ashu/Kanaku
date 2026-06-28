@@ -156,6 +156,7 @@ async function upsertRoleUser({ email, password, role }) {
     }).catch(() => {});
 
     await syncProfileRow(updated, profile);
+    await ensureUserPin(updated.id);
     return updated;
   }
 
@@ -169,6 +170,7 @@ async function upsertRoleUser({ email, password, role }) {
   }).catch(() => {});
 
   await syncProfileRow(created, profile);
+  await ensureUserPin(created.id);
   return created;
 }
 
@@ -200,6 +202,29 @@ async function syncProfileRow(user, profile) {
   } catch (err) {
     console.warn(`[seed] Profile sync failed for ${user.email}:`, err.message);
   }
+}
+
+async function ensureUserPin(userId) {
+  const pinHash = await bcrypt.hash('123456', 10);
+  const expiresAt = new Date();
+  expiresAt.setDate(expiresAt.getDate() + 90);
+
+  await prisma.userPin.upsert({
+    where: { userId },
+    update: {
+      pinHash,
+      expiresAt,
+      isActive: true,
+      failedAttempts: 0,
+      lockedUntil: null,
+    },
+    create: {
+      userId,
+      pinHash,
+      expiresAt,
+      isActive: true,
+    },
+  });
 }
 
 async function main() {
