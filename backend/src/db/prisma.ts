@@ -68,7 +68,6 @@ function buildClient(datasourceUrl?: string, opts?: { audit?: boolean }): Prisma
     },
   });
 
-<<<<<<< HEAD
   // Auto-stamp the originating request's correlation ID onto Notification rows
   // so the worker (a separate process with no request context) can tie a
   // delivery back to the API request that produced it. Done centrally here so
