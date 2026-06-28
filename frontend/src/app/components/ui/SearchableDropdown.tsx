@@ -238,6 +238,8 @@ export const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
  <input
  ref={searchRef}
  type="text"
+ id={testId ? `${testId}-search-input` : 'searchable-dropdown-search'}
+ name={testId ? `${testId}-search` : 'searchable-dropdown-search'}
  value={query}
  onChange={(e) => {
  setQuery(e.target.value);

@@ -28,8 +28,11 @@ export class AuthService {
       // ── Pre-checks (friendly errors). The DB unique constraints are the
       // AUTHORITATIVE guard against races — the transaction + P2002 mapping in
       // the controller handle the rare concurrent-duplicate case.
-      const existingUser = await prisma.user.findUnique({ where: { email: input.email } });
-      if (existingUser) {
+      const [existingUser, existingProfile] = await Promise.all([
+        prisma.user.findUnique({ where: { email: input.email } }),
+        prisma.profiles.findFirst({ where: { email: input.email } }),
+      ]);
+      if (existingUser || existingProfile) {
         logger.warn(`[AuthService] Registration failed: Email ${input.email} is already registered`);
         throw new Error('Email already registered');
       }
@@ -467,7 +470,16 @@ export class AuthService {
       logger.warn(`[AuthService] Prisma user not found for deletion: ${userId}`);
     }
 
-    // 2. Delete from Prisma (cascades to all related data: transactions, accounts, etc.)
+    // 2. Delete from profiles & Prisma (cascades to all related data: transactions, accounts, etc.)
+    try {
+      await prisma.profiles.delete({ where: { id: userId } });
+      logger.info(`[AuthService] Profiles row deleted successfully: ${userId}`);
+    } catch (profileErr: any) {
+      if (profileErr.code !== 'P2025') {
+        logger.warn(`[AuthService] Non-fatal error deleting profiles row for user ${userId}:`, profileErr);
+      }
+    }
+
     if (user) {
       try {
         await prisma.user.delete({ where: { id: userId } });

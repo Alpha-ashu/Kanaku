@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { useApp, useSubFeature } from '@/contexts/AppContext';
+import { useApp, useSubFeature, useAICapability } from '@/contexts/AppContext';
 import { db } from '@/lib/database';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Plus, DollarSign, TrendingUp, AlertCircle, Edit2, Trash2, Home, Users, ScanLine, Paperclip, ChevronDown, ExternalLink, FileText, Check, X } from 'lucide-react';
@@ -609,6 +609,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ loanId, accounts, onClose }
  const [showScanner, setShowScanner] = useState(false);
  const [scannerMode, setScannerMode] = useState<'scan' | 'attachment' | null>(null);
  const [documentId, setDocumentId] = useState<number | null>(null);
+ const isOcrEnabled = useAICapability('ocrEngine', 'loanOCR');
 
  const handleSubmit = async (e: React.FormEvent) => {
  e.preventDefault();
@@ -688,44 +689,76 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ loanId, accounts, onClose }
  </div>
 
  <div>
- <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Receipt / Bill</label>
- {documentId ? (
- <div className="flex items-center justify-between p-3 bg-emerald-50 border border-emerald-100 rounded-xl">
- <div className="flex items-center gap-2 text-emerald-700">
- <Check size={16} strokeWidth={3} />
- <span className="text-xs font-bold">Bill Attached</span>
- </div>
- <button 
- type="button" 
- onClick={() => setDocumentId(null)}
- data-testid="loans-payment-remove-bill-button"
- className="p-1 text-emerald-400 hover:text-rose-500 transition-colors"
- >
- <X size={14} strokeWidth={3} />
- </button>
- </div>
- ) : (
- <div className="grid grid-cols-2 gap-3">
- <button
- type="button"
- onClick={() => { setScannerMode('scan'); setShowScanner(true); }}
- data-testid="loans-payment-scan-button"
- className="flex flex-col items-center gap-2 p-3 rounded-xl bg-white border border-gray-100 hover:bg-gray-100 transition-all group"
- >
- <ScanLine size={18} className="text-gray-400 group-hover:text-indigo-600 transition-colors" />
- <span className="text-[10px] font-black uppercase text-gray-500">Scan Bill</span>
- </button>
- <button
- type="button"
- onClick={() => { setScannerMode('attachment'); setShowScanner(true); }}
- data-testid="loans-payment-attach-button"
- className="flex flex-col items-center gap-2 p-3 rounded-xl bg-white border border-gray-100 hover:bg-gray-100 transition-all group"
- >
- <Paperclip size={18} className="text-gray-400 group-hover:text-indigo-600 transition-colors" />
- <span className="text-[10px] font-black uppercase text-gray-500">Attach File</span>
- </button>
- </div>
- )}
+  {/* Receipt Section */}
+  <div className="premium-glass-card p-4 space-y-3">
+    <div className="flex items-center justify-between">
+      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Receipt / Bill</label>
+      {documentId && (
+        <span className="flex items-center gap-1 text-[9px] font-black text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg uppercase tracking-wide">
+          <Check size={10} strokeWidth={3} /> Attached
+        </span>
+      )}
+    </div>
+
+    {documentId ? (
+      <div className="flex items-center gap-3 p-3 bg-emerald-50 rounded-xl border border-emerald-100">
+        <Paperclip size={16} className="text-emerald-600 shrink-0" />
+        <div className="flex-1">
+          <p className="text-[10px] font-black text-emerald-700 uppercase">Bill Attached</p>
+          <p className="text-[9px] font-semibold text-emerald-500">Document saved successfully</p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setDocumentId(null)}
+          data-testid="loans-payment-remove-bill-button"
+          className="p-1.5 text-emerald-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
+          title="Remove attachment"
+        >
+          <X size={13} strokeWidth={3} />
+        </button>
+      </div>
+    ) : (
+      <div className="grid grid-cols-2 gap-3">
+        <button
+          type="button"
+          onClick={() => { setScannerMode('scan'); setShowScanner(true); }}
+          data-testid="loans-payment-scan-button"
+          disabled={!isOcrEnabled}
+          className={cn(
+            "flex flex-col items-center gap-2 p-4 rounded-2xl active:scale-[0.97] transition-all shadow-lg",
+            isOcrEnabled 
+              ? "bg-slate-900 text-white hover:bg-slate-800 shadow-slate-200" 
+              : "bg-slate-100 text-slate-400 border border-slate-200 shadow-none cursor-not-allowed"
+          )}
+        >
+          <div className={cn(
+            "w-9 h-9 rounded-xl flex items-center justify-center",
+            isOcrEnabled ? "bg-white/10" : "bg-slate-200"
+          )}>
+            <ScanLine size={18} />
+          </div>
+          <div className="text-center">
+            <p className="text-[10px] font-black uppercase tracking-wide leading-none">Scan Bill</p>
+            <p className={cn("text-[9px] font-semibold mt-0.5 leading-none", isOcrEnabled ? "text-white/40" : "text-slate-400/60")}>OCR auto-fill</p>
+          </div>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => { setScannerMode('attachment'); setShowScanner(true); }}
+          data-testid="loans-payment-attach-button"
+          className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-slate-50 text-slate-900 hover:bg-slate-100 active:scale-[0.97] transition-all border border-slate-100"
+        >
+          <div className="w-9 h-9 rounded-xl bg-slate-200 flex items-center justify-center">
+            <Paperclip size={18} className="text-slate-600" />
+          </div>
+          <div className="text-center">
+            <p className="text-[10px] font-black uppercase tracking-wide leading-none">Attach File</p>
+          </div>
+        </button>
+      </div>
+    )}
+  </div>
  </div>
 
  <div>

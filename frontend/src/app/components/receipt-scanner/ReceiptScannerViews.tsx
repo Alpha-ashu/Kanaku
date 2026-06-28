@@ -35,36 +35,44 @@ export const ModeSelectionView: React.FC<{
  isOcrEnabled?: boolean;
 }> = ({ onSelectMode, isOcrEnabled = true }) => (
  <div className="space-y-4 pt-2">
- <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Choose an action</p>
- <div className="grid grid-cols-1 gap-3">
- {isOcrEnabled && (
-  <button data-testid="receipt-scanner-views-button"
-  onClick={() => onSelectMode('scan')}
-  className="flex items-center gap-4 p-5 rounded-[24px] bg-slate-900 text-white hover:bg-slate-800 active:scale-[0.98] transition-all shadow-xl shadow-slate-200"
-  >
-  <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center shrink-0">
-  <ScanLine size={22} />
-  </div>
-  <div className="text-left">
-  <p className="text-sm font-black uppercase tracking-wide">Scan Receipt</p>
-  <p className="text-[11px] font-semibold text-white/50 mt-0.5">AI reads &amp; auto-fills expense details</p>
-  </div>
-  </button>
- )}
+  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Choose an action</p>
+  <div className="grid grid-cols-2 gap-3">
+    <button
+      data-testid="receipt-scanner-views-button"
+      onClick={() => onSelectMode('scan')}
+      disabled={!isOcrEnabled}
+      className={cn(
+        "flex flex-col items-center justify-center gap-3 p-5 rounded-[24px] active:scale-[0.97] transition-all shadow-xl min-h-[140px]",
+        isOcrEnabled 
+          ? "bg-slate-900 text-white hover:bg-slate-800 shadow-slate-200" 
+          : "bg-slate-100 text-slate-400 border border-slate-200 shadow-none cursor-not-allowed"
+      )}
+    >
+      <div className={cn(
+        "w-12 h-12 rounded-2xl flex items-center justify-center",
+        isOcrEnabled ? "bg-white/10" : "bg-slate-200"
+      )}>
+        <ScanLine size={22} />
+      </div>
+      <div className="text-center">
+        <p className="text-xs font-black uppercase tracking-wide leading-none">Scan Receipt</p>
+        <p className={cn("text-[9px] font-semibold mt-1 leading-none", isOcrEnabled ? "text-white/40" : "text-slate-400/60")}>OCR auto-fill</p>
+      </div>
+    </button>
 
- <button data-testid="receipt-scanner-views-button-2"
- onClick={() => onSelectMode('attachment')}
- className="flex items-center gap-4 p-5 rounded-[24px] bg-slate-50 text-slate-900 hover:bg-slate-100 active:scale-[0.98] transition-all border border-slate-100"
- >
- <div className="w-12 h-12 rounded-2xl bg-slate-200 flex items-center justify-center shrink-0">
- <Paperclip size={22} className="text-slate-600" />
- </div>
- <div className="text-left">
- <p className="text-sm font-black uppercase tracking-wide">Add Attachment</p>
- <p className="text-[11px] font-semibold text-slate-400 mt-0.5">Save file as proof no OCR processing</p>
- </div>
- </button>
- </div>
+    <button
+      data-testid="receipt-scanner-views-button-2"
+      onClick={() => onSelectMode('attachment')}
+      className="flex flex-col items-center justify-center gap-3 p-5 rounded-[24px] bg-slate-50 text-slate-900 hover:bg-slate-100 active:scale-[0.97] transition-all border border-slate-100 min-h-[140px]"
+    >
+      <div className="w-12 h-12 rounded-2xl bg-slate-200 flex items-center justify-center">
+        <Paperclip size={22} className="text-slate-600" />
+      </div>
+      <div className="text-center">
+        <p className="text-xs font-black uppercase tracking-wide leading-none">Add Attachment</p>
+      </div>
+    </button>
+  </div>
  </div>
 );
 

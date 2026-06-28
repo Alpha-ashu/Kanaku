@@ -235,8 +235,8 @@ async function seedInvestments(userId) {
 }
 
 async function seedTodos(userId) {
-  const existingCount = await prisma.todo.count({ where: { userId } });
-  if (existingCount >= 6) return;
+  // Clear any existing todo lists for this user
+  await prisma.$executeRaw`DELETE FROM public.todo_lists WHERE user_id = ${userId}::uuid`.catch(() => {});
 
   const todos = [
     { title: 'Review monthly budget', completed: false },
@@ -247,8 +247,26 @@ async function seedTodos(userId) {
     { title: 'Export tax report draft', completed: false },
   ];
 
+  // Populate prisma.todo for compatibility
+  const existingCount = await prisma.todo.count({ where: { userId } });
+  if (existingCount < todos.length) {
+    for (const todo of todos) {
+      await prisma.todo.create({ data: { userId, ...todo } }).catch(() => {});
+    }
+  }
+
+  // Populate actual public.todo_lists / public.todo_items used by frontend
+  const [individualList] = await prisma.$queryRaw`
+    INSERT INTO public.todo_lists (user_id, name, description)
+    VALUES (${userId}::uuid, 'Admin Checklist', 'Individual list')
+    RETURNING id::int AS id
+  `;
+
   for (const todo of todos) {
-    await prisma.todo.create({ data: { userId, ...todo } });
+    await prisma.$executeRaw`
+      INSERT INTO public.todo_items (list_id, user_id, title, completed, created_by)
+      VALUES (${individualList.id}::bigint, ${userId}::uuid, ${todo.title}, ${todo.completed}, ${userId}::uuid)
+    `;
   }
 }
 

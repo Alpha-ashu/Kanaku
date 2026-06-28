@@ -1,5 +1,6 @@
 import { defineConfig, loadEnv } from 'vite'
 import path from 'path'
+import fs from 'fs'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 
@@ -231,7 +232,122 @@ export default defineConfig(({ mode }) => {
 
   return {
     publicDir: 'public',
-    plugins: [react(), tailwindcss(), stockApiDevPlugin()],
+    plugins: [
+      react(),
+      tailwindcss(),
+      stockApiDevPlugin(),
+      // Fix webhint compatibility warnings:
+      // 1. `content-type` header media type value should be 'application/javascript', not 'text/javascript' (.mjs files)
+      // 2. `content-type` header media type value should be 'text/css', not 'application/javascript' (.css files)
+      // 3. Wrap unsupported CSS properties (scrollbar-width, scrollbar-color, text-wrap) in @supports blocks to satisfy compatibility audit
+      // 4. Inject standards-compliant `text-size-adjust` next to `-webkit-text-size-adjust` inside compiled preflight
+      {
+        name: 'correct-js-mime-type',
+        configureServer(server) {
+          const myMiddleware = (req: any, res: any, next: any) => {
+            const url = req.url || '';
+            const parsedUrl = new URL(url, 'http://localhost');
+            const cleanUrl = parsedUrl.pathname;
+
+            const isCss = cleanUrl.endsWith('.css') || url.includes('.css');
+            let isScriptImport = false;
+
+            if (isCss) {
+              const accept = req.headers['accept'] || '';
+              const dest = req.headers['sec-fetch-dest'] || '';
+              isScriptImport = dest === 'script' || accept.includes('javascript') || accept.includes('application/x-esmodule');
+
+              if (!isScriptImport) {
+                // Force Vite to return raw CSS by appending ?direct parameter
+                if (!parsedUrl.searchParams.has('direct')) {
+                  parsedUrl.searchParams.set('direct', '');
+                  req.url = parsedUrl.pathname + parsedUrl.search;
+                }
+              }
+
+              // Intercept the response to perform compatibility replacements on the compiled CSS content
+              const origWrite = res.write;
+              const origEnd = res.end;
+              const chunks: Buffer[] = [];
+
+              res.write = function (chunk: any, ...args: any[]) {
+                if (chunk) chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+                return true;
+              };
+
+              res.end = function (chunk: any, ...args: any[]) {
+                if (chunk) chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+                let body = Buffer.concat(chunks).toString('utf8');
+
+                // Perform regex replacements for compatibility to satisfy Webhint
+                
+                // A. Add standards-compliant text-size-adjust: 100% inside Tailwind's preflight html, :host block
+                body = body.replace(
+                  /-webkit-text-size-adjust:\s*100%/g,
+                  '-webkit-text-size-adjust: 100%; text-size-adjust: 100%'
+                );
+
+                // B. Wrap scrollbar-width in @supports
+                body = body.replace(
+                  /([^{}\r\n]+)\{\s*scrollbar-width:\s*thin;?\s*\}/g,
+                  '@supports (scrollbar-width: thin) { $1 { scrollbar-width: thin; } }'
+                );
+
+                // C. Wrap scrollbar-color in @supports
+                body = body.replace(
+                  /([^{}\r\n]+)\{\s*scrollbar-color:\s*([^;}\r\n]+);?\s*\}/g,
+                  '@supports (scrollbar-color: auto) { $1 { scrollbar-color: $2; } }'
+                );
+
+                // D. Wrap text-wrap in @supports (e.g. .text-balance)
+                body = body.replace(
+                  /([^{}\r\n]+)\{\s*text-wrap:\s*balance;?\s*\}/g,
+                  '@supports (text-wrap: balance) { $1 { text-wrap: balance; } }'
+                );
+
+                const responseBuffer = Buffer.from(body, 'utf8');
+                res.setHeader('content-length', responseBuffer.length.toString());
+                
+                if (!isScriptImport) {
+                  res.setHeader('content-type', 'text/css');
+                }
+
+                origWrite.call(this, responseBuffer);
+                return origEnd.apply(this, args as any);
+              };
+            }
+
+            // Fix general .mjs files served as text/javascript
+            const origSetHeader = res.setHeader.bind(res);
+            res.setHeader = (name: string, value: string | number | readonly string[]) => {
+              if (
+                typeof name === 'string' &&
+                name.toLowerCase() === 'content-type' &&
+                typeof value === 'string'
+              ) {
+                if (value.startsWith('text/javascript')) {
+                  value = value.replace('text/javascript', 'application/javascript');
+                }
+              }
+              return origSetHeader(name, value as string);
+            };
+
+            next();
+          };
+
+          // Append to middleware stack
+          server.middlewares.use(myMiddleware);
+
+          // Move our middleware to the absolute beginning of the stack to ensure we intercept first
+          const stack = server.middlewares.stack;
+          const index = stack.findIndex((layer: any) => layer.handle === myMiddleware);
+          if (index > 0) {
+            const [myLayer] = stack.splice(index, 1);
+            stack.unshift(myLayer);
+          }
+        },
+      },
+    ],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './src'),

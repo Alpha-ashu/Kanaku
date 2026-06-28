@@ -76,17 +76,20 @@ const getSeed = (value: string) => {
   }
 };
 
+const LOCAL_AVATAR_FILES = [
+  '1.png', '1 (1).png', '3.png', '4.png', '5.png', '6.png',
+  '6 (1).png', '6 (2).png', '6 (3).png', '6 (4).png', '6 (5).png', '6 (6).png',
+  '6 (7).png', '6 (8).png', '6 (9).png', '6 (10).png', '6 (11).png', '6 (12).png',
+  '6 (13).png', '6 (14).png', '6 (15).png', '6 (16).png', '6 (17).png', '6 (18).png',
+  '6 (19).png', '6 (20).png', '6 (21).png'
+];
+
 const buildOptions = (): AvatarOption[] => {
   const options = [...CURATED_AVATARS];
 
   try {
-    const localAvatarModules = import.meta.glob<string>('../assets/avatars/*.png', {
-      eager: true,
-      import: 'default',
-    });
-
-    const localOptions: AvatarOption[] = Object.entries(localAvatarModules).map(([filePath, url]) => {
-      const filename = filePath.split('/').pop()?.replace('.png', '') || 'avatar';
+    const localOptions: AvatarOption[] = LOCAL_AVATAR_FILES.map((file) => {
+      const filename = file.replace('.png', '');
       
       const label = filename
         .replace(/_/g, ' ')
@@ -101,7 +104,7 @@ const buildOptions = (): AvatarOption[] => {
 
       return {
         id: `local-${filename.toLowerCase().replace(/[^a-z0-9]/g, '-')}`,
-        url,
+        url: `/avatars/${file}`,
         gender,
         style: 'casual' as AvatarStyle,
         skinTone: 'tan' as AvatarSkinTone,

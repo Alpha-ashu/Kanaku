@@ -360,6 +360,23 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
       ));
     }
 
+    // Handle raw query unique violations (P2010 / Postgres 23505) in profiles table
+    if (error?.code === 'P2010' || error?.message?.includes('23505')) {
+      const errMsg = error?.message ?? '';
+      if (errMsg.includes('phone') || errMsg.includes('Key (phone)')) {
+        return next(AppError.conflict(
+          'This phone number is already registered to another account. Please use a different phone number.',
+          'PHONE_EXISTS',
+        ));
+      }
+      if (errMsg.includes('email') || errMsg.includes('Key (email)')) {
+        return next(AppError.conflict(
+          'An account with this email already exists. Please sign in or use a different email.',
+          'EMAIL_EXISTS',
+        ));
+      }
+    }
+
     if (
       error?.message?.includes('UNIQUE constraint failed') ||
       error?.message === 'Email already registered'
