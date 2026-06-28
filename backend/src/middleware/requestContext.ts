@@ -19,7 +19,6 @@ export function requestContext(req: Request, _res: Response, next: NextFunction)
   storage.run({ req }, () => next());
 }
 
-/** Actor for audit rows — resolved at call time from the active request. */
 export function getRequestActor(): { userId?: string; ip?: string; userAgent?: string; requestId?: string } {
   const req = storage.getStore()?.req as any;
   if (!req) return {};

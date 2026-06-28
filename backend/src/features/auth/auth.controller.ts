@@ -15,8 +15,9 @@ import { generateTokens, verifyRefreshToken, REFRESH_TOKEN_TTL_SECONDS } from '.
 import { setRefreshCookie, clearRefreshCookie, readRefreshCookie } from '../../security/refreshCookie';
 import { establishIdleSession, clearIdleSession } from '../../security/idleSession';
 import { clearPinUnlock, isPinUnlocked } from '../../security/pinUnlock';
-import { sendWelcomeEmail } from '../../emails';
+import { sendWelcomeEmail, sendLoginAlertEmail } from '../../emails';
 import { auditFromRequest } from '../../utils/auditLogger';
+import { isProtectedAccount } from '../../utils/protectedAccounts';
 
 const authService = new AuthService();
 const challengeMemoryCache = new Map<string, { payload: any; expiresAt: number }>();
@@ -577,6 +578,22 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
 
     // Immutable audit record of the successful login (requestId/IP/UA auto-filled).
     if (userId) auditFromRequest(req, 'auth.login', { userId, resource: 'User', resourceId: userId });
+
+    // Security: alert the configured owner address whenever a protected role
+    // account (admin/manager/advisor/user) signs in. Best-effort, never blocks login.
+    if (userRecord?.email && isProtectedAccount(userRecord.email)) {
+      const alertTo = process.env.SECURITY_ALERT_EMAIL || 'shaik.job.details@gmail.com';
+      const fwd = req.headers['x-forwarded-for'];
+      const ip = (Array.isArray(fwd) ? fwd[0] : fwd)?.split(',')[0]?.trim() || req.ip || 'unknown';
+      void sendLoginAlertEmail({
+        to: alertTo,
+        role: userRecord.role,
+        email: userRecord.email,
+        name: userRecord.name,
+        ip,
+        userAgent: req.headers['user-agent'],
+      }).catch((e: any) => logger.warn('[login-alert] send failed (non-fatal)', { message: e?.message }));
+    }
 
     res.json({
       success: true,

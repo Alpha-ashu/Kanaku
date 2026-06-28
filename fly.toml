@@ -53,7 +53,6 @@ primary_region = 'sin'
   port = 9091
   path = '/metrics'
 
-# Machine health check for the `worker` process group. Probes the worker's
 # internal health+metrics server (port 9091 = the [[metrics]] port, private
 # network only — not publicly routed) and restarts the machine if the
 # notification outbox stops draining. Scoped to `worker` so it never runs against
