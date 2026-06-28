@@ -13,7 +13,7 @@ import {
  CreditCard, Banknote, Smartphone,
  Zap, ChevronDown, Search, Check, Users, UserPlus, Mail, Phone, Trash2,
  Plus, Loader2, ArrowRightLeft, Menu, ArrowDown, Info, HelpCircle, Settings, ArrowLeft,
- ArrowUp, User, X, ScanLine, Paperclip, ArrowUpRight
+ ArrowUp, User, X, ScanLine, Paperclip, ArrowUpRight, AlertTriangle
 } from 'lucide-react';
 
 import { toast } from 'sonner';
@@ -272,6 +272,7 @@ export function AddTransaction() {
  const [scanDocumentId, setScanDocumentId] = useState<number | null>(null);
  const [attachmentDocumentId, setAttachmentDocumentId] = useState<number | null>(null);
  const [amountStr, setAmountStr] = useState('');
+ const [balanceError, setBalanceError] = useState<{ available: number; entered: number; accountName: string; currency: string } | null>(null);
  const [expenseMode, setExpenseMode] = useState<ExpenseMode>(() => {
  const mode = localStorage.getItem('quickExpenseMode') as ExpenseMode | null;
  return mode || 'individual';
@@ -441,6 +442,20 @@ export function AddTransaction() {
   const handleSubmit = async () => {
     if (!selectedAccount) { toast.error('Select an account'); return; }
     if (!formData.amount || formData.amount <= 0) { toast.error('Enter amount'); return; }
+
+    // No-overdraw guard (mirrors the backend INSUFFICIENT_BALANCE check): a debit
+    // — expense, transfer, or withdrawal — may not exceed the source account's
+    // available balance. Income/credits are never restricted. Credit/overdraft/
+    // loan account types (none exist yet) may carry a negative and are exempt.
+    {
+      const isDebit = formData.type === 'expense' || formData.type === 'transfer' || formData.type === 'withdrawal';
+      const allowsNegative = ['credit', 'credit_card', 'overdraft', 'loan'].includes(String(selectedAccount.type || '').toLowerCase());
+      const available = Number(selectedAccount.balance ?? 0);
+      if (isDebit && !allowsNegative && formData.amount > available) {
+        setBalanceError({ available, entered: formData.amount, accountName: selectedAccount.name, currency: selectedAccount.currency || 'INR' });
+        return; // prevent save — nothing written locally or to the backend
+      }
+    }
 
     setIsSubmitting(true);
     try {
@@ -1278,10 +1293,10 @@ export function AddTransaction() {
  type="number"
  name="amount"
  value={amountStr}
- onChange={e => { setAmountStr(e.target.value); setFormData(prev => ({ ...prev, amount: parseFloat(e.target.value) || 0 })); }}
+ onChange={e => { setAmountStr(e.target.value); setFormData(prev => ({ ...prev, amount: parseFloat(e.target.value) || 0 })); if (balanceError) setBalanceError(null); }}
  aria-label="Transaction amount"
  data-testid="transaction-amount-input"
- className="bg-transparent text-4xl min-[400px]:text-5xl sm:text-6xl font-black text-slate-900 outline-none w-full text-center tracking-tighter placeholder:text-slate-100 p-0 m-0"
+ className={cn("bg-transparent text-4xl min-[400px]:text-5xl sm:text-6xl font-black outline-none w-full text-center tracking-tighter placeholder:text-slate-100 p-0 m-0", balanceError ? "text-rose-600" : "text-slate-900")}
  placeholder="0"
  autoFocus
  />
@@ -1586,6 +1601,57 @@ export function AddTransaction() {
  </main>
 
  {/* Floating Scanner Overlay */}
+ {balanceError && (
+ <div
+ className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+ onClick={() => setBalanceError(null)}
+ data-testid="insufficient-balance-modal"
+ >
+ <div
+ className="bg-white rounded-3xl shadow-2xl border border-slate-100 w-full max-w-sm p-6 animate-in fade-in zoom-in-95 duration-200"
+ onClick={(e) => e.stopPropagation()}
+ >
+ <div className="flex items-center gap-3 mb-4">
+ <div className="p-2.5 bg-rose-50 text-rose-600 rounded-2xl shrink-0"><AlertTriangle size={22} /></div>
+ <h3 className="text-lg font-black text-slate-900 tracking-tight">Insufficient Balance</h3>
+ </div>
+ <p className="text-sm font-medium text-slate-600 mb-4 leading-relaxed">
+ You don&apos;t have enough balance in <span className="font-bold text-slate-900">{balanceError.accountName}</span>.
+ </p>
+ <div className="space-y-2.5 mb-4 bg-slate-50 rounded-2xl p-4">
+ <div className="flex items-center justify-between">
+ <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Available Balance</span>
+ <span className="text-sm font-black text-slate-900">{formatCurrencyAmount(balanceError.available, balanceError.currency)}</span>
+ </div>
+ <div className="flex items-center justify-between">
+ <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Entered Amount</span>
+ <span className="text-sm font-black text-rose-600">{formatCurrencyAmount(balanceError.entered, balanceError.currency)}</span>
+ </div>
+ </div>
+ <p className="text-xs font-medium text-slate-400 mb-5 leading-relaxed">
+ Please enter an amount less than or equal to your available balance.
+ </p>
+ <div className="flex gap-3">
+ <button
+ type="button"
+ onClick={() => setBalanceError(null)}
+ className="flex-1 py-3 rounded-2xl bg-slate-100 text-slate-700 font-black text-[11px] uppercase tracking-widest hover:bg-slate-200 transition-all"
+ >
+ Cancel
+ </button>
+ <button
+ type="button"
+ data-testid="insufficient-balance-edit-button"
+ onClick={() => setBalanceError(null)}
+ className="flex-1 py-3 rounded-2xl bg-slate-900 text-white font-black text-[11px] uppercase tracking-widest hover:bg-slate-800 transition-all"
+ >
+ Edit Amount
+ </button>
+ </div>
+ </div>
+ </div>
+ )}
+
  {showScanner && (
  <ReceiptScanner
  isOpen={showScanner}

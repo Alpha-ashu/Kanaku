@@ -85,7 +85,7 @@ export class TransactionService {
     return transactionRepository.findMany(userId, { accountId });
   }
 
-  async createTransaction(userId: string, body: any) {
+  async createTransaction(userId: string, body: any, options: { enforceBalance?: boolean } = {}) {
     const {
       accountId,
       amount,
@@ -181,7 +181,7 @@ export class TransactionService {
       dedupHash: activeDedupHash,
       synced: true,
       syncStatus: 'synced',
-    }, balanceDeltas);
+    }, balanceDeltas, options.enforceBalance ?? true);
 
     await cacheDeleteByPrefix('transactions:');
     await cacheDeleteByPrefix('accounts:');
@@ -336,7 +336,8 @@ export class TransactionService {
 
     for (let i = 0; i < items.length; i++) {
       try {
-        const tx = await this.createTransaction(userId, items[i]);
+        // Bulk = statement/CSV import: record history, don't enforce overdraw.
+        const tx = await this.createTransaction(userId, items[i], { enforceBalance: false });
         created.push(tx);
       } catch (err) {
         const appErr = err as AppError | Error;

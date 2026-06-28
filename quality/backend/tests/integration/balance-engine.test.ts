@@ -22,6 +22,7 @@ jest.mock('../../../../backend/src/features/accounts/account.repository', () => 
 jest.mock('../../../../backend/src/utils/eventBus', () => ({ eventBus: { emit: jest.fn() } }));
 
 import { transactionService } from '../../../../backend/src/features/transactions/transaction.service';
+import { isOverdraw } from '../../../../backend/src/utils/money';
 
 // getBalanceImpactDeltas is private; access it directly for unit testing.
 const deltasFor = (tx: Record<string, unknown>): Map<string, number> => {
@@ -97,5 +98,47 @@ describe('BALANCE ENGINE - spec scenarios (opening + Σ deltas)', () => {
   it('many small expenses are each counted once', () => {
     const txns = Array.from({ length: 10 }, () => ({ type: 'expense', amount: 100, accountId: 'A' }));
     expect(balanceAfter('A', 5000, txns)).toBe(4000);
+  });
+});
+
+describe('NO-OVERDRAW RULE - isOverdraw', () => {
+  // balanceAfter applies the delta; an expense of `amt` on balance `bal` ends at
+  // bal-amt with delta -amt. This is exactly what the repository checks.
+  const expenseDecision = (bal: number, amt: number, type = 'bank') =>
+    isOverdraw(bal - amt, -amt, type);
+
+  it('rejects an expense that exceeds the available balance', () => {
+    // Opening 200, expense 60 -> 140 available; new expense 150 -> would be -10.
+    expect(expenseDecision(140, 150)).toBe(true);
+  });
+
+  it('allows an expense equal to the available balance (ends exactly at 0)', () => {
+    expect(expenseDecision(10, 10)).toBe(false);
+  });
+
+  it('allows an expense within the available balance', () => {
+    expect(expenseDecision(140, 60)).toBe(false);
+  });
+
+  it('never blocks income / credits (positive delta)', () => {
+    expect(isOverdraw(250, 100, 'bank')).toBe(false); // income raises balance
+    expect(isOverdraw(-10, 100, 'bank')).toBe(false); // a credit paying down a negative
+  });
+
+  it('blocks a further debit on an already-negative account', () => {
+    expect(expenseDecision(-10, 20)).toBe(true); // -10 -> -30
+  });
+
+  it('exempts credit / overdraft / loan account types', () => {
+    expect(expenseDecision(140, 150, 'credit')).toBe(false);
+    expect(expenseDecision(140, 150, 'overdraft')).toBe(false);
+    expect(expenseDecision(140, 150, 'loan')).toBe(false);
+  });
+
+  it('reproduces the reported bug as an overdraw: opening 200, -60, then -150', () => {
+    const afterFirst = balanceAfter('A', 200, [{ type: 'expense', amount: 60, accountId: 'A' }]);
+    expect(afterFirst).toBe(140);
+    // The second expense (150) would drive the balance to -10 — now rejected.
+    expect(isOverdraw(afterFirst - 150, -150, 'bank')).toBe(true);
   });
 });
