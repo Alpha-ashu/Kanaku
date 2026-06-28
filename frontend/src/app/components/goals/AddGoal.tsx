@@ -357,6 +357,7 @@ export const AddGoal: React.FC = () => {
   <div className="flex flex-col gap-2 p-3 bg-slate-50 rounded-xl animate-in slide-in-from-top-2">
   <div className="flex gap-2">
   <input
+  id="goal-member-name" name="memberName" aria-label="Member name"
   type="text"
   value={memberInput.name}
   onChange={e => setMemberInput(prev => ({ ...prev, name: e.target.value }))}
@@ -378,6 +379,7 @@ export const AddGoal: React.FC = () => {
   </div>
   <div className="flex gap-2">
   <input
+  id="goal-member-contact" name="memberContact" aria-label="Member contact (email or phone)"
   type="text"
   value={memberInput.contactValue}
   onChange={e => setMemberInput(prev => ({ ...prev, contactValue: e.target.value }))}
@@ -452,6 +454,8 @@ export const AddGoal: React.FC = () => {
   {/* Center: Input */}
   <div className="shrink-0 flex justify-center max-w-[60%]">
   <input
+  id="goal-target-amount"
+  aria-label="Target amount"
   type="number"
   name="targetAmount"
   value={amountStr}
@@ -505,7 +509,7 @@ export const AddGoal: React.FC = () => {
   <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Initial Deposit</label>
   <div className="flex items-center w-full bg-slate-50 border border-transparent rounded-xl h-10 px-3 focus-within:ring-2 focus-within:ring-indigo-500/20">
   <span className="text-slate-300 text-[10px] font-black select-none mr-1.5 shrink-0">{currency}</span>
-  <input type="number" value={initialAmtStr} onChange={e => { setInitialAmtStr(e.target.value); setFormData(prev => ({ ...prev, currentAmount: parseFloat(e.target.value) || 0 })); }} data-testid="goals-create-initial-deposit-input" className="flex-1 bg-transparent border-none p-0 font-bold text-xs focus:ring-0 text-slate-900 placeholder:text-slate-300" placeholder="0" />
+  <input id="goal-initial-deposit" name="initialDeposit" aria-label="Initial deposit" type="number" value={initialAmtStr} onChange={e => { setInitialAmtStr(e.target.value); setFormData(prev => ({ ...prev, currentAmount: parseFloat(e.target.value) || 0 })); }} data-testid="goals-create-initial-deposit-input" className="flex-1 bg-transparent border-none p-0 font-bold text-xs focus:ring-0 text-slate-900 placeholder:text-slate-300" placeholder="0" />
   </div>
   </div>
   <div className="space-y-1">

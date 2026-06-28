@@ -600,7 +600,7 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
  <div className="bg-slate-50/80 p-3 md:p-5 rounded-2xl md:rounded-[28px] border border-slate-100 relative flex md:flex-col justify-between items-center md:items-start">
  <span className="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Account</span>
  <div className="relative mt-0 md:mt-1">
- <select value={selectedAccountId} onChange={(e) => setSelectedAccountId(Number(e.target.value))} className="bg-transparent text-slate-900 font-bold focus:outline-none appearance-none cursor-pointer pr-6 text-sm md:text-xl" data-testid="voice-ai-account-select">
+ <select aria-label="Select account" value={selectedAccountId} onChange={(e) => setSelectedAccountId(Number(e.target.value))} className="bg-transparent text-slate-900 font-bold focus:outline-none appearance-none cursor-pointer pr-6 text-sm md:text-xl" data-testid="voice-ai-account-select">
  {accounts.map(acc => ( <option data-testid={`voice-aicommand-center-option-${acc.id}`} key={acc.id} value={acc.id}>{acc.name}</option> ))}
  </select>
  <div className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
@@ -665,8 +665,9 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
  value={action.entities.description || ''} 
  onChange={e => handleEntityUpdate(index, { description: e.target.value })} 
  onBlur={() => setEditingIndex(null)} 
- onKeyDown={e => e.key === 'Enter' && setEditingIndex(null)} 
+ onKeyDown={e => e.key === 'Enter' && setEditingIndex(null)}
  data-testid={`voice-ai-action-desc-input-${index}`}
+ aria-label="Edit action description"
  />
  ) : (
  <h4 className="text-sm md:text-xl font-bold text-slate-900 cursor-text hover:bg-slate-50 rounded px-1 transition-colors break-words line-clamp-4" onClick={() => setEditingIndex(index)} data-testid={`voice-ai-action-desc-${index}`}>
@@ -683,6 +684,7 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
  onChange={e => handleEntityUpdate(index, { category: e.target.value })}
  onBlur={() => setEditingIndex(null)}
  data-testid={`voice-ai-action-category-select-${index}`}
+ aria-label="Action category"
  >
  {ALL_CATEGORIES.map(cat => (
  <option data-testid={`voice-aicommand-center-option-2-${cat}`} key={cat} value={cat}>{cat}</option>
@@ -701,10 +703,11 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
  <div className="text-right flex flex-col items-end shrink-0">
  <div className="text-xs md:text-lg font-bold text-slate-400 uppercase tracking-tighter">{currency}</div>
  {editingIndex === index ? (
- <input 
- type="number" 
- className="text-xl md:text-3xl font-black text-slate-900 bg-white border-b-2 border-indigo-500 w-20 md:w-24 text-right outline-none" 
- value={action.entities.amount || ''} 
+ <input
+ type="number"
+ aria-label="Action amount"
+ className="text-xl md:text-3xl font-black text-slate-900 bg-white border-b-2 border-indigo-500 w-20 md:w-24 text-right outline-none"
+ value={action.entities.amount || ''}
  onChange={e => handleEntityUpdate(index, { amount: parseFloat(e.target.value) || 0 })} 
  onBlur={() => setEditingIndex(null)} 
  onKeyDown={e => e.key === 'Enter' && setEditingIndex(null)} 
