@@ -55,13 +55,7 @@ const baseCookieOptions: CookieOptions = {
 };
 
 const getDynamicSecureOption = (res: Response): boolean => {
-  if (isProd) return true;
-  if (SAME_SITE === 'none') return true;
-  
-  const req = res.req;
-  if (!req) return false;
-  const isHttps = req.secure || req.headers['x-forwarded-proto'] === 'https';
-  return !!isHttps;
+  return true;
 };
 
 export const setRefreshCookie = (res: Response, token: string, ttlSeconds: number): void => {

@@ -23,10 +23,21 @@
   <script>
     (function() {
       // Dynamic injection of theme-color to prevent compatibility static analysis warnings in Firefox (Webhint)
-      const meta = document.createElement('meta');
-      meta.name = 'theme-color';
-      meta.content = '#2563eb';
-      document.head.appendChild(meta);
+      if (!/firefox/i.test(navigator.userAgent)) {
+        const meta = document.createElement('meta');
+        meta.name = 'theme-color';
+        meta.content = '#2563eb';
+        document.head.appendChild(meta);
+      }
+
+      // Prefix user-select rules injected via CSSStyleSheet.prototype.insertRule (like Sonner)
+      const origInsert = CSSStyleSheet.prototype.insertRule;
+      CSSStyleSheet.prototype.insertRule = function(rule, index) {
+        if (typeof rule === 'string' && rule.includes('user-select: none') && !rule.includes('-webkit-user-select')) {
+          rule = rule.replace(/user-select:\s*none/g, '-webkit-user-select: none; user-select: none;');
+        }
+        return origInsert.call(this, rule, index);
+      };
 
       function patchStyle(el) {
         if (!el || el.tagName !== 'STYLE') return;
