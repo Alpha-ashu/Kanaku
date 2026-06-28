@@ -279,8 +279,19 @@ export default defineConfig(({ mode }) => {
                 if (chunk) chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
                 let body = Buffer.concat(chunks).toString('utf8');
 
-                // Perform regex replacements for compatibility to satisfy Webhint
-                
+                const wrapCssProperty = (css: string, property: string, supportsQuery: string): string => {
+                  const regex = new RegExp(`([^;{}\\r\\n]+)\\s*\\{([^}]*?)(${property}:\\s*[^;}\\r\\n]+;?)([^}]*?)\\}`, 'g');
+                  return css.replace(regex, (match, selector, before, propDecl, after) => {
+                    const cleanBefore = before.trim();
+                    const cleanAfter = after.trim();
+                    const baseBlock = (cleanBefore || cleanAfter) 
+                      ? `${selector} { ${cleanBefore} ${cleanAfter} }\n` 
+                      : '';
+                    const supportsBlock = `@supports (${supportsQuery}) { ${selector} { ${propDecl} } }`;
+                    return `${baseBlock}${supportsBlock}`;
+                  });
+                };
+
                 // A. Add standards-compliant text-size-adjust: 100% inside Tailwind's preflight html, :host block
                 body = body.replace(
                   /-webkit-text-size-adjust:\s*100%/g,
@@ -288,22 +299,16 @@ export default defineConfig(({ mode }) => {
                 );
 
                 // B. Wrap scrollbar-width in @supports
-                body = body.replace(
-                  /([^{}\r\n]+)\{\s*scrollbar-width:\s*thin;?\s*\}/g,
-                  '@supports (scrollbar-width: thin) { $1 { scrollbar-width: thin; } }'
-                );
+                body = wrapCssProperty(body, 'scrollbar-width', 'scrollbar-width: thin');
 
                 // C. Wrap scrollbar-color in @supports
-                body = body.replace(
-                  /([^{}\r\n]+)\{\s*scrollbar-color:\s*([^;}\r\n]+);?\s*\}/g,
-                  '@supports (scrollbar-color: auto) { $1 { scrollbar-color: $2; } }'
-                );
+                body = wrapCssProperty(body, 'scrollbar-color', 'scrollbar-color: auto');
 
                 // D. Wrap text-wrap in @supports (e.g. .text-balance)
-                body = body.replace(
-                  /([^{}\r\n]+)\{\s*text-wrap:\s*balance;?\s*\}/g,
-                  '@supports (text-wrap: balance) { $1 { text-wrap: balance; } }'
-                );
+                body = wrapCssProperty(body, 'text-wrap', 'text-wrap: balance');
+
+                // E. Wrap text-size-adjust in @supports
+                body = wrapCssProperty(body, 'text-size-adjust', 'text-size-adjust: none');
 
                 const responseBuffer = Buffer.from(body, 'utf8');
                 res.setHeader('content-length', responseBuffer.length.toString());
