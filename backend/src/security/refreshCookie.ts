@@ -55,12 +55,13 @@ const baseCookieOptions: CookieOptions = {
 };
 
 const getDynamicSecureOption = (res: Response): boolean => {
-  if (COOKIE_SECURE) return true;
-  // If Express response has request reference, check host.
-  // Modern browsers treat localhost/127.0.0.1 as secure contexts,
-  // so we can safely use secure: true to satisfy audit.
-  const host = res.req?.headers.host || '';
-  return host.includes('localhost') || host.includes('127.0.0.1');
+  if (isProd) return true;
+  if (SAME_SITE === 'none') return true;
+  
+  const req = res.req;
+  if (!req) return false;
+  const isHttps = req.secure || req.headers['x-forwarded-proto'] === 'https';
+  return !!isHttps;
 };
 
 export const setRefreshCookie = (res: Response, token: string, ttlSeconds: number): void => {

@@ -10,7 +10,6 @@ import { CreditCard, UserPlus, X, Check, ArrowLeft, Loader2, Calculator, Calenda
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
-import '@/styles/premium-transactions.css';
 import { FloatingSaveBar } from '@/app/components/ui/FloatingSaveBar';
 
 export const AddLoan: React.FC = () => {

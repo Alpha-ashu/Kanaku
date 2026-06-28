@@ -18,7 +18,6 @@ import { takeVoiceDraft, VOICE_GOAL_DRAFT_KEY, type VoiceGoalDraft } from '@/lib
 import { SearchableDropdown } from '@/app/components/ui/SearchableDropdown';
 import { formatCurrencyAmount } from '@/lib/currencyUtils';
 
-import '@/styles/premium-transactions.css';
 import { FloatingSaveBar } from '@/app/components/ui/FloatingSaveBar';
 
 // --- Helpers ---

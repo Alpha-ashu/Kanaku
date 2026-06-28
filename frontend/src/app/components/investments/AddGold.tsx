@@ -8,7 +8,6 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { takeVoiceDraft, VOICE_INVESTMENT_DRAFT_KEY, type VoiceInvestmentDraft } from '@/lib/voiceDrafts';
 
-import '@/styles/premium-transactions.css';
 import { FloatingSaveBar } from '@/app/components/ui/FloatingSaveBar';
 
 // --- Constants ---

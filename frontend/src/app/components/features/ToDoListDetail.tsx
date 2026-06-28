@@ -16,8 +16,6 @@ import {
 } from '@/lib/auth-sync-integration';
 import { cn } from '@/lib/utils';
 
-import '@/styles/premium-transactions.css';
-
 const PRIORITY_CONFIG = {
   low:    { label: 'Low',    bg: 'bg-emerald-50',  text: 'text-emerald-700',  dot: 'bg-emerald-400' },
   medium: { label: 'Medium', bg: 'bg-amber-50',    text: 'text-amber-700',    dot: 'bg-amber-400'   },

@@ -30,7 +30,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { parseDateInputValue, toLocalDateKey } from '@/lib/dateUtils';
 
-import '@/styles/premium-transactions.css';
 import { FloatingSaveBar } from '@/app/components/ui/FloatingSaveBar';
 
 // --- Types ---

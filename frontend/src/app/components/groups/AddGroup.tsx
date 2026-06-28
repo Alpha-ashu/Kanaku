@@ -7,7 +7,6 @@ import { Users, UserPlus, X, Check, ArrowLeft, Loader2, Calculator, Tag, AlignLe
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
-import '@/styles/premium-transactions.css';
 import { FloatingSaveBar } from '@/app/components/ui/FloatingSaveBar';
 import { db } from '@/lib/database';
 import { formatCurrencyAmount } from '@/lib/currencyUtils';

@@ -8,7 +8,6 @@ import { Users, UserPlus, X, ChevronLeft, Loader2, Check, Save, ArrowLeft, Mail,
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
-import '@/styles/premium-transactions.css';
 import { FloatingSaveBar } from '@/app/components/ui/FloatingSaveBar';
 
 // --- Constants ---

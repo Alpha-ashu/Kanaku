@@ -13,8 +13,6 @@ import {
 } from '@/lib/auth-sync-integration';
 import { cn } from '@/lib/utils';
 
-import '@/styles/premium-transactions.css';
-
 export const ToDoListShare: React.FC = () => {
   const { setCurrentPage } = useApp();
   const [listId, setListId] = useState<number | null>(null);

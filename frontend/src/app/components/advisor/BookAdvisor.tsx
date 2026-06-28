@@ -12,8 +12,6 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 
-import '@/styles/premium-transactions.css';
-
 interface Advisor {
  id: string;
  name: string;

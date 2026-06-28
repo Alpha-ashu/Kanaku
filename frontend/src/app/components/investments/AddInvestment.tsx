@@ -21,7 +21,6 @@ import { inferInvestmentTypeFromText } from '@/lib/voiceExpenseParser';
 import { takeVoiceDraft, VOICE_INVESTMENT_DRAFT_KEY, type VoiceInvestmentDraft } from '@/lib/voiceDrafts';
 import { extractAssetMetadata, ExtractedAssetMetadata } from '@/lib/assetOcrParser';
 
-import '@/styles/premium-transactions.css';
 import { FloatingSaveBar } from '@/app/components/ui/FloatingSaveBar';
 
 // ─── Types ──────────────────────────────────────────────────────────────────────

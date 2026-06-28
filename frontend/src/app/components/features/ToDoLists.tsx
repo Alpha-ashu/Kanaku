@@ -18,8 +18,6 @@ import {
 } from '@/lib/auth-sync-integration';
 import { cn } from '@/lib/utils';
 
-import '@/styles/premium-transactions.css';
-
 type ListType = 'individual' | 'together';
 
 interface CollaboratorDraft {

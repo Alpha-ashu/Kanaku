@@ -628,6 +628,8 @@ export const AdminFeaturePanel: React.FC = () => {
               <Search className="absolute left-4 top-3.5 text-slate-400" size={18} />
               <input
                 type="text"
+                id="admin-feature-search"
+                name="admin-feature-search"
                 placeholder="Search application modules..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}

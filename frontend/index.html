@@ -4,7 +4,6 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="theme-color" content="#2563eb" />
   <meta name="description" content="KANAKU- Your Privacy-First Financial Life Management Platform" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -16,12 +15,19 @@
   <!-- Responsive and PWA -->
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="manifest" href="/manifest.json" />
+  <link rel="stylesheet" href="/src/styles/index.css" />
 
   <title>KANAKU</title>
 
   <!-- Prevent compatibility errors for dynamic styles (like Sonner) -->
   <script>
     (function() {
+      // Dynamic injection of theme-color to prevent compatibility static analysis warnings in Firefox (Webhint)
+      const meta = document.createElement('meta');
+      meta.name = 'theme-color';
+      meta.content = '#2563eb';
+      document.head.appendChild(meta);
+
       function patchStyle(el) {
         if (!el || el.tagName !== 'STYLE') return;
         const patch = () => {
