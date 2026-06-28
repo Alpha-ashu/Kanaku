@@ -30,10 +30,26 @@ const COOKIE_NAME = process.env.REFRESH_COOKIE_NAME || 'kanaku_rt';
 const COOKIE_DOMAIN = process.env.REFRESH_COOKIE_DOMAIN || undefined;
 const isProd = process.env.NODE_ENV === 'production';
 
+// SameSite policy. Default: 'strict' in prod (strongest CSRF posture for the
+// same-origin web app), 'lax' in dev. Override with REFRESH_COOKIE_SAMESITE —
+// set it to 'none' if cross-site auth is required (e.g. the native Capacitor
+// webview calling the API cross-origin); browsers only honour SameSite=None
+// when the cookie is also Secure, which we enforce below.
+const SAME_SITE = (() => {
+  const v = (process.env.REFRESH_COOKIE_SAMESITE || '').toLowerCase();
+  if (v === 'none' || v === 'lax' || v === 'strict') return v as 'none' | 'lax' | 'strict';
+  return isProd ? 'strict' : 'lax';
+})();
+
+// Secure is REQUIRED under HTTPS (all prod traffic) and whenever SameSite=None.
+// It is omitted only on local dev over plain HTTP, where browsers reject Secure
+// cookies. This is what makes the refresh cookie `HttpOnly; Secure; SameSite`.
+const COOKIE_SECURE = isProd || SAME_SITE === 'none';
+
 const baseCookieOptions: CookieOptions = {
   httpOnly: true,
-  secure: isProd,                  // Allow over HTTP in dev for localhost.
-  sameSite: isProd ? 'strict' : 'lax',
+  secure: COOKIE_SECURE,
+  sameSite: SAME_SITE,
   path: '/api/v1/auth',            // Scope to auth routes only.
   domain: COOKIE_DOMAIN,
 };
