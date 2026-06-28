@@ -137,7 +137,7 @@ export const AddGold: React.FC = () => {
  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Storage Location</label>
  <div className="relative">
  <MapPin className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
- <input data-testid="add-gold-locker-safe" type="text" value={formData.location} onChange={e => setFormData(prev => ({ ...prev, location: e.target.value }))} className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-300 text-xs" placeholder="Locker, Safe..." />
+ <input id="add-gold-location" name="location" aria-label="Storage location" data-testid="add-gold-locker-safe" type="text" value={formData.location} onChange={e => setFormData(prev => ({ ...prev, location: e.target.value }))} className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-300 text-xs" placeholder="Locker, Safe..." />
  </div>
  </div>
  <div className="space-y-1">
@@ -151,7 +151,7 @@ export const AddGold: React.FC = () => {
 
  <div className="space-y-1">
  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Certificate / Notes</label>
- <textarea data-testid="add-gold-cert-12345" value={formData.notes} onChange={e => setFormData(prev => ({ ...prev, notes: e.target.value }))} className="w-full bg-slate-50 border-none rounded-xl py-2.5 px-3 font-bold text-slate-900 text-xs min-h-[60px] resize-none" placeholder="Cert #12345..." />
+ <textarea id="add-gold-notes" name="notes" aria-label="Certificate or notes" data-testid="add-gold-cert-12345" value={formData.notes} onChange={e => setFormData(prev => ({ ...prev, notes: e.target.value }))} className="w-full bg-slate-50 border-none rounded-xl py-2.5 px-3 font-bold text-slate-900 text-xs min-h-[60px] resize-none" placeholder="Cert #12345..." />
  </div>
  </div>
  

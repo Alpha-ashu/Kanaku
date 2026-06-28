@@ -10,7 +10,7 @@ import {
   TrendingUp, Loader2, RefreshCw, ChevronLeft, ArrowLeft, Check,
   Search, Calendar, Wallet, AlignLeft, Info, Plus, ArrowUpRight,
   BarChart3, Globe, Shield, Scan, Upload, CheckCircle2, AlertCircle,
-  Weight, Tag, MapPin, Users, Gift, ShoppingBag, Building2, Briefcase, Gem,
+  Weight, Tag, MapPin, Users, Gift, ShoppingBag, Building2, Briefcase, Gem, ScanLine, Paperclip,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -126,6 +126,9 @@ const PhysicalAssetForm: React.FC<{
           <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Weight</label>
           <div className="flex gap-1">
             <input
+              id="investment-weight"
+              name="weightValue"
+              aria-label="Weight"
               type="number"
               value={metadata.weightValue || ''}
               onChange={e => onChange('weightValue', parseFloat(e.target.value) || 0)}
@@ -152,6 +155,9 @@ const PhysicalAssetForm: React.FC<{
         <div className="space-y-1">
           <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Purity / Fineness</label>
           <input
+            id="investment-purity"
+            name="purity"
+            aria-label="Purity / Fineness"
             type="text"
             value={metadata.purity || ''}
             onChange={e => onChange('purity', e.target.value)}
@@ -184,6 +190,9 @@ const PhysicalAssetForm: React.FC<{
         <div className="space-y-1">
           <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">BIS HUID</label>
           <input
+            id="investment-huid"
+            name="hallmarkNumber"
+            aria-label="BIS HUID"
             type="text"
             value={metadata.hallmarkNumber || ''}
             onChange={e => onChange('hallmarkNumber', e.target.value.toUpperCase().slice(0, 6))}
@@ -199,6 +208,9 @@ const PhysicalAssetForm: React.FC<{
       <div className="space-y-1">
         <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Jeweler / Shop</label>
         <input
+          id="investment-jeweler"
+          name="jewelerName"
+          aria-label="Jeweler / Shop"
           type="text"
           value={metadata.jewelerName || ''}
           onChange={e => onChange('jewelerName', e.target.value)}
@@ -212,6 +224,9 @@ const PhysicalAssetForm: React.FC<{
       <div className="space-y-1">
         <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Storage / Locker</label>
         <input
+          id="investment-locker"
+          name="lockerName"
+          aria-label="Storage / Locker"
           type="text"
           value={metadata.lockerName || ''}
           onChange={e => onChange('lockerName', e.target.value)}
@@ -374,9 +389,16 @@ const OcrBillScanner: React.FC<{
 }> = ({ onExtracted, accentColor = '#D4AF37' }) => {
   const [scanning, setScanning] = useState(false);
   const [result, setResult] = useState<ExtractedAssetMetadata | null>(null);
+  const [attachedFileName, setAttachedFileName] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const [mode, setMode] = useState<'scan' | 'attachment' | null>(null);
 
-  const handleFile = async (file: File) => {
+  const handleFile = async (file: File, runOcr: boolean) => {
+    setAttachedFileName(file.name);
+    if (!runOcr) {
+      toast.success(`Attached ${file.name} successfully`);
+      return;
+    }
     setScanning(true);
     setResult(null);
     try {
@@ -415,7 +437,23 @@ const OcrBillScanner: React.FC<{
   };
 
   return (
-    <div className="space-y-2">
+    <div className="premium-glass-card p-4 space-y-3">
+      <div className="flex items-center justify-between">
+        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Jeweller Bill</label>
+        {attachedFileName && (
+          <button 
+            type="button"
+            onClick={() => {
+              setAttachedFileName(null);
+              setResult(null);
+            }}
+            className="text-[9px] font-black text-red-500 hover:text-red-600 uppercase tracking-wider"
+          >
+            Remove
+          </button>
+        )}
+      </div>
+
       <input
         ref={fileRef}
         type="file"
@@ -423,33 +461,63 @@ const OcrBillScanner: React.FC<{
         aria-label="Upload bill or document"
         data-testid="investments-ocr-file-input"
         className="hidden"
-        onChange={e => { if (e.target.files?.[0]) handleFile(e.target.files[0]); }}
-      />
-      <button
-        onClick={() => fileRef.current?.click()}
-        disabled={scanning}
-        data-testid="investments-ocr-scan-button"
-        ref={el => {
-          if (el) {
-            el.style.background = `${accentColor}0F`;
-            el.style.border = `1.5px dashed ${accentColor}50`;
-            el.style.color = accentColor;
+        onChange={e => { 
+          if (e.target.files?.[0]) {
+            handleFile(e.target.files[0], mode === 'scan'); 
           }
         }}
-        className="w-full flex items-center gap-3 p-3 rounded-xl transition-all active:scale-98"
-      >
-        {scanning
-          ? <Loader2 size={16} className="animate-spin shrink-0" />
-          : <Scan size={16} className="shrink-0" />}
-        <div className="text-left">
-          <p className="text-[11px] font-black">
-            {scanning ? 'Scanning bill…' : 'Scan Jeweller Bill (AI)'}
-          </p>
-          <p className="text-[9px] text-slate-400 font-semibold">
-            Upload invoice image or PDF to auto-fill fields
-          </p>
+      />
+
+      {!attachedFileName ? (
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            type="button"
+            onClick={() => {
+              setMode('scan');
+              setTimeout(() => fileRef.current?.click(), 0);
+            }}
+            disabled={scanning}
+            data-testid="investments-ocr-scan-button"
+            className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-slate-900 text-white hover:bg-slate-800 active:scale-[0.97] transition-all shadow-lg shadow-slate-200"
+          >
+            <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center">
+              {scanning ? <Loader2 size={18} className="animate-spin" /> : <ScanLine size={18} />}
+            </div>
+            <div className="text-center">
+              <p className="text-[10px] font-black uppercase tracking-wide leading-none">{scanning ? 'Scanning…' : 'Scan Bill'}</p>
+              <p className="text-[9px] font-semibold text-white/40 mt-0.5 leading-none">OCR auto-fill</p>
+            </div>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setMode('attachment');
+              setTimeout(() => fileRef.current?.click(), 0);
+            }}
+            className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-slate-50 text-slate-900 hover:bg-slate-100 active:scale-[0.97] transition-all border border-slate-100"
+          >
+            <div className="w-9 h-9 rounded-xl bg-slate-200 flex items-center justify-center">
+              <Paperclip size={18} className="text-slate-600" />
+            </div>
+            <div className="text-center">
+              <p className="text-[10px] font-black uppercase tracking-wide leading-none">Attach File</p>
+            </div>
+          </button>
         </div>
-      </button>
+      ) : (
+        <div className="flex items-center gap-3 p-3 bg-emerald-50 rounded-xl border border-emerald-100">
+          <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-600 shrink-0">
+            <Paperclip size={16} />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-[10px] font-bold text-slate-700 truncate leading-none">{attachedFileName}</p>
+            <p className="text-[8px] font-semibold text-emerald-600 uppercase tracking-wider mt-0.5 leading-none">
+              {result ? 'AI Analyzed' : 'Attached'}
+            </p>
+          </div>
+        </div>
+      )}
 
       {result && (
         <div
@@ -460,7 +528,7 @@ const OcrBillScanner: React.FC<{
               el.style.border = `1px solid ${ok ? 'rgba(74,222,128,0.2)' : 'rgba(251,191,36,0.2)'}`;
             }
           }}
-          className="p-2.5 rounded-xl text-[9px] font-bold"
+          className="p-2.5 rounded-xl text-[9px] font-bold mt-2"
         >
           {result.confidenceScore >= 50
             ? <CheckCircle2 size={12} className="inline mr-1 text-green-500" />
