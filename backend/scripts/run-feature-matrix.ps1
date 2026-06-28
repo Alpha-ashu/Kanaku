@@ -7,7 +7,7 @@ $token = $login.data.accessToken
 $headers = @{ Authorization = ('Bearer ' + $token) }
 
 $authUserData = Invoke-RestMethod -Uri ($base + '/auth/profile') -Method Get -Headers $headers
-$pinVerify = Invoke-RestMethod -Uri ($base + '/pin/verify') -Method Post -Headers $headers -ContentType 'application/json' -Body (@{ pin = '123456'; deviceId = 'qa-matrix-device' } | ConvertTo-Json)
+$pinVerify = Invoke-RestMethod -Uri ($base + '/pin/verify') -Method Post -Headers $headers -ContentType 'application/json' -Body (@{ pin = '847291'; deviceId = 'qa-matrix-device' } | ConvertTo-Json)
 
 $accounts = Invoke-RestMethod -Uri ($base + '/accounts') -Method Get -Headers $headers
 $transactions = Invoke-RestMethod -Uri ($base + '/transactions') -Method Get -Headers $headers

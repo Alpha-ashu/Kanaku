@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 
 const ADMIN_EMAIL = 'shaik.job.details@gmail.com';
 const ADMIN_PASSWORD = '123456789';
-const ADMIN_PIN = '123456';
+const ADMIN_PIN = '847291';
 
 function daysFromNow(days) {
   const date = new Date();

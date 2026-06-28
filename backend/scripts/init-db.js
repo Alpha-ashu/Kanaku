@@ -10,7 +10,7 @@ async function main() {
     // Create admin user
     const adminEmail = 'shaik.job.details@gmail.com';
     const adminPassword = '123456789';
-    const adminPin = '123456';
+    const adminPin = '847291';
     
     // Check if admin already exists
     const existingAdmin = await prisma.user.findUnique({

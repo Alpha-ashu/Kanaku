@@ -155,7 +155,14 @@ async function upsertIdentity(spec, hashedPassword) {
       city = EXCLUDED.city, updated_at = NOW()
   `.catch((err) => console.warn(`[test-users] profile sync failed for ${spec.email}: ${err.message}`));
 
-  const pinHash = await bcrypt.hash('123456', 10);
+  const ROLE_PINS = {
+    admin: '847291',
+    manager: '394827',
+    advisor: '582039',
+    user: '274915'
+  };
+  const pin = ROLE_PINS[spec.role] || '274915';
+  const pinHash = await bcrypt.hash(pin, 10);
   const expiresAt = new Date();
   expiresAt.setDate(expiresAt.getDate() + 90);
   await prisma.userPin.upsert({

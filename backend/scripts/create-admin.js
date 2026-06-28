@@ -27,7 +27,7 @@ async function createAdminUser() {
                     name: 'Admin User',
                     role: 'admin',
                     isEmailVerified: true,
-                    pin: '123456'
+                    pin: '847291'
                 }
             });
             console.log('Admin user created successfully:', {

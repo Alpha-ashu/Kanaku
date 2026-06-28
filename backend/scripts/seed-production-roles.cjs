@@ -156,7 +156,7 @@ async function upsertRoleUser({ email, password, role }) {
     }).catch(() => {});
 
     await syncProfileRow(updated, profile);
-    await ensureUserPin(updated.id);
+    await ensureUserPin(updated.id, role);
     return updated;
   }
 
@@ -170,7 +170,7 @@ async function upsertRoleUser({ email, password, role }) {
   }).catch(() => {});
 
   await syncProfileRow(created, profile);
-  await ensureUserPin(created.id);
+  await ensureUserPin(created.id, role);
   return created;
 }
 
@@ -204,8 +204,16 @@ async function syncProfileRow(user, profile) {
   }
 }
 
-async function ensureUserPin(userId) {
-  const pinHash = await bcrypt.hash('123456', 10);
+const ROLE_PINS = {
+  admin: '847291',
+  manager: '394827',
+  advisor: '582039',
+  user: '274915'
+};
+
+async function ensureUserPin(userId, role) {
+  const pin = ROLE_PINS[role] || '274915';
+  const pinHash = await bcrypt.hash(pin, 10);
   const expiresAt = new Date();
   expiresAt.setDate(expiresAt.getDate() + 90);
 
