@@ -134,6 +134,21 @@ Kanaku/
 - New automated **DB cleanup worker** (`cleanup.worker.ts`); `SearchableDropdown`
   scroll-reflow perf fix. Prod redeployed from a clean `main` worktree →
   **Fly v113 → v115** (worker/API process split intact; `main == prod`, no drift).
+- **Post-lock session hang fixed:** after the PIN / inactivity lock, a re-login hung
+  forever on "Loading your account…" and then re-locked. Root cause in `App.tsx`:
+  the post-PIN data-sync guard `hasTriggeredSyncRef` (keyed `user.id:isAuthenticated`)
+  was never cleared, so the SAME user could never re-trigger the sync after a lock —
+  `handlePinLocked` resets `dataReady → false` but the guard stayed set, leaving
+  `dataReady` stuck false. Fix: clear the guard whenever `isAuthenticated` flips to
+  false (lock / sign-out).
+- **Onboarding crash fixed:** `AuthFlow.tsx` referenced `saveFlowState(...)` 6× but
+  it was never defined — a `tsc` error and a runtime `ReferenceError` on every
+  onboarding step transition (pin / profile / salary-setup). Defined it to persist
+  the step to `localStorage`, mirroring the existing `checkFlowState` reader.
+- **Build is now type-checked:** the `frontend` build script changed from
+  `vite build` to `tsc --noEmit && vite build`, so an undefined reference like the
+  one above can no longer ship silently — `vite build` (esbuild) strips types
+  without checking them, which is how the crash reached production.
 
 ### 0a. Refresh token no longer exposed to web JavaScript (2026-06-23)
 - **Issue:** `login`/`refresh` returned the long-lived refresh token in the JSON
