@@ -6,9 +6,10 @@ import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 interface SignInFormProps {
  onSwitchToSignUp: () => void;
  onSubmit?: (credentials: { email: string; password: string }) => Promise<void>;
+ onForgotPassword?: () => void;
 }
 
-export const SignInForm: React.FC<SignInFormProps> = ({ onSwitchToSignUp, onSubmit }) => {
+export const SignInForm: React.FC<SignInFormProps> = ({ onSwitchToSignUp, onSubmit, onForgotPassword }) => {
  const { setCurrentPage } = useApp();
  const [formData, setFormData] = useState({ email: '', password: '' });
  const [errors, setErrors] = useState<Record<string, string>>({});
@@ -149,7 +150,15 @@ export const SignInForm: React.FC<SignInFormProps> = ({ onSwitchToSignUp, onSubm
           />
           <span className="text-sm text-gray-600 font-medium">Remember me</span>
         </label>
-        <a data-testid="sign-in-form-forgot-password" href="#" className="text-sm text-blue-600 hover:text-blue-700 font-semibold transition-colors">
+        <a 
+          data-testid="sign-in-form-forgot-password" 
+          href="#" 
+          onClick={(e) => {
+            e.preventDefault();
+            if (onForgotPassword) onForgotPassword();
+          }} 
+          className="text-sm text-blue-600 hover:text-blue-700 font-semibold transition-colors"
+        >
           Forgot password?
         </a>
       </div>

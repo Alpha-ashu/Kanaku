@@ -98,6 +98,37 @@ test.describe('Registration API validation (POST /api/v1/auth/register)', () => 
     expect(secondBody.code).toMatch(/EMAIL_EXISTS|CONFLICT/i);
   });
 
+  test('rejects duplicate mobile/phone with 409 Conflict', async ({ request }) => {
+    const user1 = generateValidUser();
+    const user2 = generateValidUser({ mobile: user1.mobile }); // same mobile!
+
+    // First registration
+    const firstResponse = await request.post('/api/v1/auth/register', {
+      data: {
+        email: user1.email,
+        name: user1.name,
+        password: user1.password,
+        mobile: user1.mobile,
+      },
+      headers: { 'Content-Type': 'application/json' },
+    });
+    expect(firstResponse.status()).toBe(201);
+
+    // Second registration with same mobile
+    const secondResponse = await request.post('/api/v1/auth/register', {
+      data: {
+        email: user2.email,
+        name: user2.name,
+        password: user2.password,
+        mobile: user2.mobile, // duplicate!
+      },
+      headers: { 'Content-Type': 'application/json' },
+    });
+    expect(secondResponse.status()).toBe(409);
+    const secondBody = await secondResponse.json();
+    expect(secondBody.code).toMatch(/PHONE_EXISTS/i);
+  });
+
   // Loop through negative scenarios
   for (const scenario of invalidUserScenarios) {
     if (scenario.expectedError === null) continue; // handle safety tests separately

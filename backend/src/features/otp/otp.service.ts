@@ -170,6 +170,7 @@ class OtpService {
         success: true,
         message: `OTP sent to your ${channel === 'sms' ? 'phone' : 'email'}.`,
         expiresIn: OTP_EXPIRY_SECONDS,
+        code: process.env.NODE_ENV !== 'production' ? otp : undefined,
       };
     } catch (error) {
       logger.error('[OTP] Send error:', error);

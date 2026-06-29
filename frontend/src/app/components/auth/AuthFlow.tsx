@@ -16,7 +16,7 @@ import { PublicNavbar } from '@/app/components/ui/PublicNavbar';
 import { enableGuestMode, isGuestMode, disableGuestMode, migrateGuestDataToUser, migrateGuestLocalStorage } from '@/lib/guestMode';
 import { pinService, isPinMissing } from '@/services/pinService';
 import { signIn as supabaseSignIn, signUp as supabaseSignUp, resendSignupConfirmation, DUPLICATE_ACCOUNT_MESSAGE } from '@/lib/supabase-helpers';
-import { MailCheck } from 'lucide-react';
+import { MailCheck, Mail } from 'lucide-react';
 
 // Auth source of truth for the login UI. 'custom' (default) keeps the backend-issued
 // JWT flow; 'supabase' (Option A) authenticates via Supabase Auth so the API client's
@@ -54,7 +54,9 @@ type AuthStep =
  | 'pin-setup'
  | 'complete'
  | 'privacy'
- | 'terms';
+ | 'terms'
+ | 'forgot-password'
+ | 'reset-password';
 
 interface UserProfile {
  firstName: string;
@@ -94,6 +96,16 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
  const [showGuestCaution, setShowGuestCaution] = useState(false);
  const [psDob, setPsDob] = useState('');
  const [resendLoading, setResendLoading] = useState(false);
+
+  const [forgotEmailState, setForgotEmailState] = useState('');
+  const [forgotErrorState, setForgotErrorState] = useState('');
+  const [forgotLoadingState, setForgotLoadingState] = useState(false);
+
+  const [resetOtpState, setResetOtpState] = useState('');
+  const [resetPasswordState, setResetPasswordState] = useState('');
+  const [resetConfirmPasswordState, setResetConfirmPasswordState] = useState('');
+  const [resetErrorState, setResetErrorState] = useState('');
+  const [resetLoadingState, setResetLoadingState] = useState(false);
 
  useEffect(() => {
    if (userProfile?.dateOfBirth) {
@@ -1065,10 +1077,210 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
  </div>
  );
 
+  const renderForgotPassword = () => {
+    const handleSubmit = async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!forgotEmailState) {
+        setForgotErrorState('Email address is required');
+        return;
+      }
+      setForgotLoadingState(true);
+      setForgotErrorState('');
+      try {
+        const res = await api.auth.forgotPassword(forgotEmailState);
+        if (res.success) {
+          setEmail(forgotEmailState);
+          toast.success('Verification code sent to your email.');
+          setStep('reset-password');
+        } else {
+          setForgotErrorState(res.message || 'Failed to send verification code.');
+        }
+      } catch (err: any) {
+        setForgotErrorState(err.message || 'Failed to send verification code.');
+      } finally {
+        setForgotLoadingState(false);
+      }
+    };
+
+    return (
+      <div className="relative min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50/50 flex items-center justify-center p-4 pt-24 select-none overflow-hidden">
+        <motion.div
+          initial={{ opacity: 0, y: 20, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.4 }}
+          className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-[0_20px_50px_rgba(37,99,235,0.06)] border border-white/60 w-full max-w-md overflow-hidden relative z-10"
+        >
+          <div className="h-1.5 w-full bg-gradient-to-r from-blue-500 to-indigo-600" />
+          <div className="p-6 sm:p-8 border-b border-gray-100/50">
+            <button
+              data-testid="forgot-password-back"
+              onClick={() => setStep('signin')}
+              className="text-gray-500 hover:text-gray-800 transition-colors mb-5 flex items-center gap-1.5 text-sm font-semibold group animate-none"
+            >
+              <span>←</span> Back to Sign In
+            </button>
+            <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Forgot Password</h2>
+            <p className="text-gray-500 mt-1.5 text-sm font-medium">Enter your email and we'll send you a 6-digit OTP verification code.</p>
+          </div>
+          <form onSubmit={handleSubmit} className="p-6 sm:p-8 space-y-4">
+            {forgotErrorState && (
+              <div className="bg-red-50 border border-red-200 rounded-xl p-3">
+                <p className="text-sm text-red-600 text-center">{forgotErrorState}</p>
+              </div>
+            )}
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                <Mail size={16} />
+              </div>
+              <input
+                data-testid="forgot-password-email-input"
+                type="email"
+                value={forgotEmailState}
+                onChange={(e) => setForgotEmailState(e.target.value)}
+                placeholder="Email Address"
+                required
+                className="w-full pl-10 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/25 focus:border-blue-400 transition-all duration-200"
+              />
+            </div>
+            <button
+              data-testid="forgot-password-submit-button"
+              type="submit"
+              disabled={forgotLoadingState}
+              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-3.5 px-4 rounded-xl transition-all duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
+            >
+              {forgotLoadingState ? 'Sending OTP...' : 'Send Verification OTP'}
+            </button>
+          </form>
+        </motion.div>
+      </div>
+    );
+  };
+
+  const renderResetPassword = () => {
+    const handleSubmit = async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (resetPasswordState.length < 8) {
+        setResetErrorState('Password must be at least 8 characters long');
+        return;
+      }
+      if (resetPasswordState !== resetConfirmPasswordState) {
+        setResetErrorState('Passwords do not match');
+        return;
+      }
+      setResetLoadingState(true);
+      setResetErrorState('');
+      try {
+        const res = await api.auth.resetPassword({
+          email,
+          otp: resetOtpState,
+          newPassword: resetPasswordState,
+        });
+        if (res.success) {
+          toast.success('Password reset successfully. Please sign in.');
+          // Clear reset state variables
+          setForgotEmailState('');
+          setResetOtpState('');
+          setResetPasswordState('');
+          setResetConfirmPasswordState('');
+          setStep('signin');
+        } else {
+          setResetErrorState(res.message || 'Failed to reset password.');
+        }
+      } catch (err: any) {
+        setResetErrorState(err.message || 'Failed to reset password.');
+      } finally {
+        setResetLoadingState(false);
+      }
+    };
+
+    return (
+      <div className="relative min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50/50 flex items-center justify-center p-4 pt-24 select-none overflow-hidden">
+        <motion.div
+          initial={{ opacity: 0, y: 20, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.4 }}
+          className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-[0_20px_50px_rgba(37,99,235,0.06)] border border-white/60 w-full max-w-md overflow-hidden relative z-10"
+        >
+          <div className="h-1.5 w-full bg-gradient-to-r from-blue-500 to-indigo-600" />
+          <div className="p-6 sm:p-8 border-b border-gray-100/50">
+            <button
+              data-testid="reset-password-back"
+              onClick={() => setStep('forgot-password')}
+              className="text-gray-500 hover:text-gray-800 transition-colors mb-5 flex items-center gap-1.5 text-sm font-semibold group animate-none"
+            >
+              <span>←</span> Back
+            </button>
+            <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Reset Password</h2>
+            <p className="text-gray-500 mt-1.5 text-sm font-medium">Verify your OTP code and setup a new password for {email}.</p>
+          </div>
+          <form onSubmit={handleSubmit} className="p-6 sm:p-8 space-y-4">
+            {resetErrorState && (
+              <div className="bg-red-50 border border-red-200 rounded-xl p-3">
+                <p className="text-sm text-red-600 text-center">{resetErrorState}</p>
+              </div>
+            )}
+            <div>
+              <label htmlFor="otp-input" className="block text-xs font-semibold text-gray-500 mb-1.5">Verification Code (OTP)</label>
+              <input
+                data-testid="reset-password-otp-input"
+                id="otp-input"
+                type="text"
+                maxLength={6}
+                value={resetOtpState}
+                onChange={(e) => setResetOtpState(e.target.value.replace(/\D/g, ''))}
+                placeholder="6-digit code"
+                required
+                className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/25 focus:border-blue-400 transition-all duration-200 text-center font-bold tracking-widest text-lg"
+              />
+            </div>
+            <div>
+              <label htmlFor="new-password-input" className="block text-xs font-semibold text-gray-500 mb-1.5">New Password</label>
+              <input
+                data-testid="reset-password-password-input"
+                id="new-password-input"
+                type="password"
+                value={resetPasswordState}
+                onChange={(e) => setResetPasswordState(e.target.value)}
+                placeholder="Min 8 characters"
+                required
+                className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/25 focus:border-blue-400 transition-all duration-200"
+              />
+            </div>
+            <div>
+              <label htmlFor="confirm-password-input" className="block text-xs font-semibold text-gray-500 mb-1.5">Confirm New Password</label>
+              <input
+                data-testid="reset-password-confirm-input"
+                id="confirm-password-input"
+                type="password"
+                value={resetConfirmPasswordState}
+                onChange={(e) => setResetConfirmPasswordState(e.target.value)}
+                placeholder="Confirm password"
+                required
+                className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/25 focus:border-blue-400 transition-all duration-200"
+              />
+            </div>
+            <button
+              data-testid="reset-password-submit-button"
+              type="submit"
+              disabled={resetLoadingState}
+              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-3.5 px-4 rounded-xl transition-all duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
+            >
+              {resetLoadingState ? 'Resetting Password...' : 'Reset Password'}
+            </button>
+          </form>
+        </motion.div>
+      </div>
+    );
+  };
+
  // Main render
  switch (step) {
  case 'welcome':
  return renderWelcome();
+ case 'forgot-password':
+ return renderForgotPassword();
+ case 'reset-password':
+ return renderResetPassword();
  case 'signin':
  return (
  <div className="relative min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50/50 flex items-center justify-center p-4 pt-24 select-none overflow-hidden">
@@ -1144,6 +1356,7 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
  <SignInForm
  onSwitchToSignUp={() => setStep('signup')}
  onSubmit={handleSignIn}
+ onForgotPassword={() => setStep('forgot-password')}
  />
  </div>
  </motion.div>

@@ -9,6 +9,8 @@ import { logger } from '../../config/logger';
 import { generateOtp, verifyOtp } from './otp.service';
 import { checkDeviceTrust, trustDevice, revokeDeviceTrust, listUserDevices } from './device.service';
 import { prisma } from '../../db/prisma';
+import { otpService } from '../otp/otp.service';
+import bcrypt from 'bcrypt';
 import { isDatabaseUnavailableError } from '../../utils/databaseAvailability';
 import { AppError } from '../../utils/AppError';
 import { generateTokens, verifyRefreshToken, REFRESH_TOKEN_TTL_SECONDS } from '../../utils/auth';
@@ -1031,5 +1033,91 @@ export const deleteAccount = async (req: AuthRequest, res: Response, next: NextF
       userId: req.userId,
     });
     return next(error instanceof AppError ? error : AppError.internal());
+  }
+};
+
+export const forgotPassword = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      throw AppError.badRequest('Email is required.', 'EMAIL_REQUIRED');
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { email: email.toLowerCase().trim() },
+    });
+
+    if (!user) {
+      // Return 200 with generic success to prevent user enumeration
+      return res.json({
+        success: true,
+        message: 'If a matching account is found, an OTP code will be sent to your email.',
+      });
+    }
+
+    const result = await otpService.sendOtp(
+      email.toLowerCase().trim(),
+      'reset_password',
+      'email',
+      user.id,
+      req.ip || undefined,
+      req.headers['user-agent'] || undefined
+    );
+
+    if (!result.success) {
+      return res.status(429).json(result);
+    }
+
+    res.json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const resetPassword = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+    if (!email || !otp || !newPassword) {
+      throw AppError.badRequest('Email, OTP, and new password are required.', 'MISSING_FIELDS');
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { email: email.toLowerCase().trim() },
+    });
+
+    if (!user) {
+      throw AppError.notFound('Account not found.', 'USER_NOT_FOUND');
+    }
+
+    // Verify OTP code
+    const otpVerify = await otpService.verifyOtp(email.toLowerCase().trim(), 'reset_password', otp);
+    if (!otpVerify.success) {
+      return res.status(400).json(otpVerify);
+    }
+
+    // Hash the new password and update User table
+    const saltRounds = 12;
+    const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        password: hashedPassword,
+        updatedAt: new Date(),
+      },
+    });
+
+    // Invalidate user caches
+    invalidateUserSnapshotCache(user.id);
+    await clearIdleSession(user.id);
+    await clearPinUnlock(user.id);
+
+    logger.info(`[AuthController] Password reset successfully for userId: ${user.id}`);
+    res.json({
+      success: true,
+      message: 'Your password has been successfully reset. Please sign in with your new password.',
+    });
+  } catch (error) {
+    next(error);
   }
 };

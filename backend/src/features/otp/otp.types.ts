@@ -40,6 +40,7 @@ export interface OtpResponse {
   message: string;
   expiresIn?: number;
   retryAfter?: number;
+  code?: string;
 }
 
 export interface OtpVerifyResponse {

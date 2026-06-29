@@ -86,3 +86,13 @@ export const updateProfileSchema = z.preprocess((val) => {
   return val;
 }, updateProfileObject);
 
+export const forgotPasswordSchema = z.object({
+  email: z.string().trim().email('Please enter a valid email address'),
+});
+
+export const resetPasswordSchema = z.object({
+  email: z.string().trim().email('Please enter a valid email address'),
+  otp: z.string().trim().length(6, 'Verification code must be 6 digits'),
+  newPassword: z.string().trim().min(8, 'Password must be at least 8 characters long'),
+});
+

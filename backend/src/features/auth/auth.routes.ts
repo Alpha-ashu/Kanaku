@@ -14,10 +14,12 @@ import {
   revokeDevice,
   deleteAccount,
   checkEmailAvailability,
+  forgotPassword,
+  resetPassword,
 } from './auth.controller';
 import { rateLimit } from '../../middleware/rateLimit';
 import { validateBody } from '../../middleware/validate';
-import { updateProfileSchema } from './auth.validation';
+import { updateProfileSchema, forgotPasswordSchema, resetPasswordSchema } from './auth.validation';
 
 const router = Router();
 
@@ -96,6 +98,10 @@ router.post('/refresh', refreshLimiter, refreshToken);
 router.post('/logout', logout);
 router.get('/profile', authMiddleware, getProfile);
 router.put('/profile', authMiddleware, validateBody(updateProfileSchema), updateProfile);
+
+// Password Reset endpoints (public)
+router.post('/forgot-password', authLimiter, validateBody(forgotPasswordSchema), forgotPassword);
+router.post('/reset-password', authLimiter, validateBody(resetPasswordSchema), resetPassword);
 
 // OTP routes (authenticated - user must have valid JWT) — 5 requests / 10 min / IP.
 router.post('/otp/send', otpLimiter, authMiddleware, sendOtp);

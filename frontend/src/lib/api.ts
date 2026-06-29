@@ -940,8 +940,11 @@ export const api = {
     verifyEmail: (token: string) =>
       apiClient.post('/auth/verify-email', { token }),
 
-    resetPassword: (email: string) =>
-      apiClient.post('/auth/reset-password', { email }),
+    forgotPassword: (email: string) =>
+      apiClient.post('/auth/forgot-password', { email }),
+
+    resetPassword: (data: any) =>
+      apiClient.post('/auth/reset-password', data),
 
     changePassword: (oldPassword: string, newPassword: string) =>
       apiClient.post('/auth/change-password', { oldPassword, newPassword }),
