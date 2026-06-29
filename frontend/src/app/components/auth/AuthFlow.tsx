@@ -123,6 +123,19 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
    }
  }, [userProfile]);
 
+  // Persist the current onboarding/auth step so a reload mid-flow can resume it
+  // (the matching reader is `checkFlowState` below). Was referenced but never
+  // defined — calling it threw a ReferenceError on every step transition.
+  const saveFlowState = (flowStep: AuthStep) => {
+    try {
+      if (email) localStorage.setItem('pending_auth_email', email);
+      localStorage.setItem('auth_flow_step', flowStep);
+      localStorage.setItem('auth_flow_step_timestamp', String(Date.now()));
+    } catch {
+      /* localStorage unavailable (private mode / SSR) — non-fatal */
+    }
+  };
+
   // Check if user is already partially through the flow
   useEffect(() => {
     const checkFlowState = async () => {

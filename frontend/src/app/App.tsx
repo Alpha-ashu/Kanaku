@@ -498,6 +498,19 @@ const AppContent: React.FC = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, isAuthenticated, dataReady, dataSyncing, triggerDataSync]);
 
+  // When the app LOCKS (PIN gate) or the user signs out, isAuthenticated flips to
+  // false and AuthContext resets dataReady→false to re-engage the data gate. The
+  // sync-trigger guard above is keyed only by `user.id:isAuthenticated`, so it is
+  // never cleared on its own — meaning the SAME user could never re-trigger the
+  // post-PIN sync after a lock, leaving the app stuck on "Loading your account..."
+  // on the next unlock/re-login. Clearing it here lets the next authenticated
+  // session run a fresh sync, matching handlePinLocked's contract in AuthContext.
+  useEffect(() => {
+    if (!isAuthenticated) {
+      hasTriggeredSyncRef.current = null;
+    }
+  }, [isAuthenticated]);
+
   // SECURITY: re-sync the current page's tables when the network reconnects — only while
   // unlocked (replaces the eager re-sync removed from AuthContext.handleOnline).
   useEffect(() => {
