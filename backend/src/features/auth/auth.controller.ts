@@ -1089,10 +1089,38 @@ export const resetPassword = async (req: Request, res: Response, next: NextFunct
       throw AppError.notFound('Account not found.', 'USER_NOT_FOUND');
     }
 
-    // Verify OTP code
-    const otpVerify = await otpService.verifyOtp(email.toLowerCase().trim(), 'reset_password', otp);
-    if (!otpVerify.success) {
-      return res.status(400).json(otpVerify);
+    // Two-step check: Look for a recently verified OTP first (status: 'VERIFIED')
+    const otpRecord = await prisma.otpRequest.findFirst({
+      where: {
+        destination: email.toLowerCase().trim(),
+        purpose: 'reset_password',
+        status: 'VERIFIED',
+        verifiedAt: {
+          gte: new Date(Date.now() - 10 * 60 * 1000) // within last 10 minutes
+        }
+      },
+      orderBy: { verifiedAt: 'desc' }
+    });
+
+    let otpIsValid = false;
+    if (otpRecord) {
+      const isValid = otpService.verifyHash(otp, otpRecord.otpHash);
+      if (isValid) {
+        otpIsValid = true;
+        // Invalidate it so it cannot be used again
+        await prisma.otpRequest.update({
+          where: { id: otpRecord.id },
+          data: { status: 'EXPIRED' }
+        });
+      }
+    }
+
+    if (!otpIsValid) {
+      // Fallback: direct flow verify & reset in one go
+      const otpVerify = await otpService.verifyOtp(email.toLowerCase().trim(), 'reset_password', otp);
+      if (!otpVerify.success) {
+        return res.status(400).json(otpVerify);
+      }
     }
 
     // Hash the new password and update User table
@@ -1116,6 +1144,39 @@ export const resetPassword = async (req: Request, res: Response, next: NextFunct
     res.json({
       success: true,
       message: 'Your password has been successfully reset. Please sign in with your new password.',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const verifyResetCode = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { email, verificationCode } = req.body;
+    if (!email || !verificationCode) {
+      throw AppError.badRequest('Email and verification code are required.', 'MISSING_FIELDS');
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { email: email.toLowerCase().trim() },
+    });
+
+    if (!user) {
+      // Security: return generic success to prevent account enumeration, but do not verify
+      return res.json({
+        success: true,
+        message: 'Verification code verified successfully.',
+      });
+    }
+
+    const otpVerify = await otpService.verifyOtp(email.toLowerCase().trim(), 'reset_password', verificationCode);
+    if (!otpVerify.success) {
+      return res.status(400).json(otpVerify);
+    }
+
+    res.json({
+      success: true,
+      message: 'Verification code verified successfully.',
     });
   } catch (error) {
     next(error);

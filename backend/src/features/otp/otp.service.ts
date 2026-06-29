@@ -27,9 +27,9 @@ const OTP_HMAC_SECRET = process.env.OTP_HMAC_SECRET || process.env.JWT_SECRET ||
  */
 
 const OTP_LENGTH = 6;
-const OTP_EXPIRY_SECONDS = 90;
+const OTP_EXPIRY_SECONDS = 30;
 const MAX_ATTEMPTS = 5;
-const COOLDOWN_SECONDS = 60;
+const COOLDOWN_SECONDS = 30;
 const BLOCK_THRESHOLD = 10; // Block after 10 total failed attempts in 1 hour
 
 class OtpService {
@@ -55,7 +55,7 @@ class OtpService {
   /**
    * Constant-time comparison of OTP hashes (prevents timing attacks)
    */
-  private verifyHash(inputOtp: string, storedHash: string): boolean {
+  public verifyHash(inputOtp: string, storedHash: string): boolean {
     const inputHash = this.hashOtp(inputOtp);
     try {
       return timingSafeEqual(

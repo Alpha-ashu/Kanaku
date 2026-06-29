@@ -943,6 +943,9 @@ export const api = {
     forgotPassword: (email: string) =>
       apiClient.post('/auth/forgot-password', { email }),
 
+    verifyResetCode: (email: string, verificationCode: string) =>
+      apiClient.post('/auth/verify-reset-code', { email, verificationCode }),
+
     resetPassword: (data: any) =>
       apiClient.post('/auth/reset-password', data),
 

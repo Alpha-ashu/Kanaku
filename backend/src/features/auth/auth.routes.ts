@@ -16,10 +16,11 @@ import {
   checkEmailAvailability,
   forgotPassword,
   resetPassword,
+  verifyResetCode,
 } from './auth.controller';
 import { rateLimit } from '../../middleware/rateLimit';
 import { validateBody } from '../../middleware/validate';
-import { updateProfileSchema, forgotPasswordSchema, resetPasswordSchema } from './auth.validation';
+import { updateProfileSchema, forgotPasswordSchema, resetPasswordSchema, verifyResetCodeSchema } from './auth.validation';
 
 const router = Router();
 
@@ -101,6 +102,7 @@ router.put('/profile', authMiddleware, validateBody(updateProfileSchema), update
 
 // Password Reset endpoints (public)
 router.post('/forgot-password', authLimiter, validateBody(forgotPasswordSchema), forgotPassword);
+router.post('/verify-reset-code', authLimiter, validateBody(verifyResetCodeSchema), verifyResetCode);
 router.post('/reset-password', authLimiter, validateBody(resetPasswordSchema), resetPassword);
 
 // OTP routes (authenticated - user must have valid JWT) — 5 requests / 10 min / IP.

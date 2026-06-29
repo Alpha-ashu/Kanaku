@@ -57,7 +57,7 @@ test.describe('Forgot Password E2E & API flow', () => {
     await forgotPasswordLink.click();
 
     // Verify Forgot Password screen is shown
-    await expect(page.getByRole('heading', { name: /Forgot Password/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Forgot.*Password/i })).toBeVisible();
 
     // Setup listener to intercept the OTP response from the UI submit click
     const responsePromise = page.waitForResponse(
@@ -76,15 +76,27 @@ test.describe('Forgot Password E2E & API flow', () => {
     expect(otpCode).toBeDefined();
     console.log(`Retrieved reset OTP: ${otpCode}`);
 
-    // Verify we redirected to reset password screen
-    await expect(page.getByRole('heading', { name: /Reset Password/i })).toBeVisible();
+    // Verify we redirected to OTP verification screen
+    await expect(page.getByRole('heading', { name: /Verify Your Email/i })).toBeVisible();
 
-    // Fill OTP and new password in the UI
+    // Fill the 6-digit OTP code in the separate input boxes
+    for (let i = 0; i < 6; i++) {
+      await page.getByTestId(`reset-otp-input-${i}`).fill(otpCode[i]);
+    }
+    await page.getByTestId('otp-verify-submit-button').click();
+
+    // Verify we redirected to reset password screen
+    await expect(page.getByRole('heading', { name: /Create New Password/i })).toBeVisible();
+
+    // Fill new password in the UI (strong password meeting regex checklist)
     const newPassword = 'NewCoolPassword123!';
-    await page.getByTestId('reset-password-otp-input').fill(otpCode);
     await page.getByTestId('reset-password-password-input').fill(newPassword);
     await page.getByTestId('reset-password-confirm-input').fill(newPassword);
     await page.getByTestId('reset-password-submit-button').click();
+
+    // Verify redirect to success screen
+    await expect(page.getByRole('heading', { name: /Password Reset Successfully/i })).toBeVisible();
+    await page.getByTestId('reset-success-back-to-login').click();
 
     // Verify redirect back to Welcome Back / Sign In screen
     await expect(page.getByRole('heading', { name: /Welcome Back/i })).toBeVisible();
