@@ -4,7 +4,7 @@
       "C:\\Program Files\\nodejs\\node.exe",
       "K:\\Project\\Kanaku\\node_modules\\@playwright\\test\\cli.js",
       "test",
-      "quality/automation_testing/registration_testing/registration_api.spec.ts"
+      "quality/e2e/10-inactivity-autolock.spec.ts"
     ],
     "configFile": "K:\\Project\\Kanaku\\playwright.config.ts",
     "rootDir": "K:/Project/Kanaku/quality/e2e",
@@ -17,14 +17,18 @@
     "grep": {},
     "grepInvert": null,
     "maxFailures": 0,
-    "metadata": {},
+    "metadata": {
+      "actualWorkers": 1
+    },
     "preserveOutput": "always",
     "projects": [
       {
         "outputDir": "K:/Project/Kanaku/quality/e2e/screenshots",
         "repeatEach": 1,
         "retries": 1,
-        "metadata": {},
+        "metadata": {
+          "actualWorkers": 1
+        },
         "id": "chromium",
         "name": "chromium",
         "testDir": "K:/Project/Kanaku/quality/e2e",
@@ -67,17 +71,70 @@
     "workers": 1,
     "webServer": null
   },
-  "suites": [],
-  "errors": [
+  "suites": [
     {
-      "message": "Error: No tests found.\nMake sure that arguments are regular expressions matching test files.\nYou may need to escape symbols like \"$\" or \"*\" and quote the arguments.",
-      "stack": "Error: No tests found.\nMake sure that arguments are regular expressions matching test files.\nYou may need to escape symbols like \"$\" or \"*\" and quote the arguments."
+      "title": "10-inactivity-autolock.spec.ts",
+      "file": "10-inactivity-autolock.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Inactivity auto-lock",
+          "file": "10-inactivity-autolock.spec.ts",
+          "line": 21,
+          "column": 6,
+          "specs": [
+            {
+              "title": "locks the app and shows the inactivity notice after inactivity",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 49082,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-29T18:54:42.980Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\10-inactivity-autolock-Ina-b9498-ity-notice-after-inactivity-chromium\\test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "13076032c028c3c376a3-afb95da2509683deb547",
+              "file": "10-inactivity-autolock.spec.ts",
+              "line": 25,
+              "column": 3
+            }
+          ]
+        }
+      ]
     }
   ],
+  "errors": [],
   "stats": {
-    "startTime": "2026-06-28T22:01:46.678Z",
-    "duration": 17.53800000000001,
-    "expected": 0,
+    "startTime": "2026-06-29T18:54:42.453Z",
+    "duration": 50325.845,
+    "expected": 1,
     "skipped": 0,
     "unexpected": 0,
     "flaky": 0
