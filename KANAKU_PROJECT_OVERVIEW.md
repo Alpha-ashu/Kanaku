@@ -53,12 +53,19 @@ Kanaku/
 
 ---
 
-## A1. Recent Hardening & Fixes (last 7 days — 2026-06-22 → 2026-06-29)
+## A1. Recent Hardening & Fixes (last 7 days — 2026-06-22 → 2026-07-05)
 
 > Rolling 1-week changelog. Entries older than 2026-06-22 have been pruned (see
 > git history); the architecture/governance sections below are unaffected. Treat
 > as authoritative — these changes alter auth/session, RBAC, monetary
 > persistence, security headers, and accessibility.
+
+### Observability — alert-spam fix + runbook (2026-07-05)
+- Grafana alerting: added `noDataState: OK`/`execErrState: OK` to the worker &
+  outbox rules and `noDataState: Alerting` to `target-down` — a scaled-down app now
+  yields one meaningful alert instead of a `DatasourceNoData` storm; raised the
+  critical `repeat_interval` 1h→6h; added a convention header + `alerting/README.md`
+  operator runbook. Redeploy `kanaku-observability` to apply.
 
 ### Auth, session & PIN lifecycle remediation (2026-06-27 → 06-29)
 - **Atomic, profile-complete registration:** `auth.controller.register` wraps

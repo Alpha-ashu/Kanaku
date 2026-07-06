@@ -2,9 +2,27 @@ apiVersion: 1
 
 # Grafana unified-alerting rules (Grafana 10+). Each rule: A = metric/log query,
 # B = reduce(last), C = threshold condition. Targets the Fly Prometheus + Loki
-# datasources provisioned alongside. Wire a contact point (Slack/email/PagerDuty)
-# under Alerting → Contact points, then a notification policy — left to ops since
-# the destination is environment-specific.
+# datasources provisioned alongside.
+#
+# ── CONVENTION — read before adding/editing ANY rule ──────────────────────────
+# EVERY rule MUST set BOTH `noDataState` and `execErrState`. If you omit them,
+# Grafana defaults to NoData/Error and fires generic `DatasourceNoData` /
+# `DatasourceError` alerts — this was the #1 cause of alert spam. Choose per rule:
+#
+#   • App-metric rule (worker / api / outbox / notifications):
+#         noDataState: OK
+#         execErrState: OK
+#     → goes quiet when there is simply nothing to measure (e.g. app scaled
+#       down). "App is gone" is caught by the target-down rule, so these don't
+#       need to double-report it.
+#
+#   • target-down / up==0 rule:
+#         noDataState: Alerting
+#     → here the ABSENCE of data IS the alert, so surface it as this rule
+#       (its own summary) instead of a confusing generic DatasourceNoData.
+#
+# Routing + cadence → notification-policy.yaml.  Channels → contactpoints.yaml.
+# Operator runbook (states, silencing, diagnostics) → README.md in this folder.
 groups:
   - orgId: 1
     name: kanaku-critical
@@ -16,6 +34,8 @@ groups:
         title: Worker stopped (no outbox drains)
         condition: C
         for: 5m
+        noDataState: OK
+        execErrState: OK
         labels: { severity: critical, service: worker }
         annotations:
           summary: "Worker has not drained the outbox in 5 minutes — process down or stuck."
@@ -36,6 +56,8 @@ groups:
         title: Outbox backlog growing
         condition: C
         for: 10m
+        noDataState: OK
+        execErrState: OK
         labels: { severity: warning, service: worker }
         annotations:
           summary: "Outbox queue depth > 100 for 10m — deliveries falling behind."
@@ -100,6 +122,10 @@ groups:
         title: Health check / target down
         condition: C
         for: 3m
+        # No data here means zero scrape targets == the app is down, which IS the
+        # alert — so surface it as this rule (not a generic DatasourceNoData).
+        noDataState: Alerting
+        execErrState: OK
         labels: { severity: critical }
         annotations:
           summary: "A kanaku process is not being scraped (up == 0) — likely unhealthy/down."
