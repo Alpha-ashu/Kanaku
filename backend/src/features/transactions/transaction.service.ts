@@ -69,6 +69,23 @@ export class TransactionService {
     };
   }
 
+  /**
+   * Yield ALL of a user's transactions in bounded batches, newest first, for
+   * streaming export. Uses the repository directly (not fetchTransactions, whose
+   * limit is capped at 100 — a cap that previously silently truncated CSV
+   * exports to the first 100 rows). Memory stays bounded to one batch.
+   */
+  async *iterateAllTransactions(userId: string, batchSize = 500) {
+    let skip = 0;
+    for (;;) {
+      const batch = await transactionRepository.findMany(userId, {}, batchSize, skip);
+      if (batch.length === 0) break;
+      yield batch;
+      if (batch.length < batchSize) break;
+      skip += batchSize;
+    }
+  }
+
   async fetchTransactionById(id: string, userId: string) {
     const transaction = await transactionRepository.findFirst({ id, userId, deletedAt: null });
     if (!transaction) {

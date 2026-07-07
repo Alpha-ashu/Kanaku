@@ -3,6 +3,7 @@ import { AuthRequest, getUserId } from '../../middleware/auth';
 import { transactionService } from './transaction.service';
 import { isDatabaseUnavailableError } from '../../utils/databaseAvailability';
 import { AppError } from '../../utils/AppError';
+import { logger } from '../../config/logger';
 
 const handleTransactionDatabaseError = (error: unknown, next: NextFunction) => {
   if (isDatabaseUnavailableError(error)) {
@@ -103,27 +104,49 @@ export const getAccountTransactions = async (req: AuthRequest, res: Response, ne
 export const exportTransactions = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const userId = getUserId(req);
-    const { transactions } = await transactionService.fetchTransactions(userId, { limit: 10000 });
 
-    // Build CSV
     const headers = ['ID', 'Date', 'Type', 'Category', 'Subcategory', 'Amount', 'Description', 'Merchant'];
-    const rows = transactions.map((t) => [
-      t.id,
-      t.date.toISOString(),
-      t.type,
-      t.category,
-      t.subcategory || '',
-      t.amount.toString(),
-      t.description || '',
-      t.merchant || '',
-    ]);
-
-    const csvContent = [headers.join(','), ...rows.map((r) => r.map((val) => `"${val.replace(/"/g, '""')}"`).join(','))].join('\n');
+    const escape = (val: unknown) => `"${String(val ?? '').replace(/"/g, '""')}"`;
 
     res.setHeader('Content-Type', 'text/csv');
     res.setHeader('Content-Disposition', `attachment; filename=transactions_export_${Date.now()}.csv`);
-    res.status(200).send(csvContent);
+    res.write(headers.join(',') + '\n');
+
+    // Stream in bounded batches so the whole (possibly large) statement is
+    // exported without materialising every row + the full CSV string in memory.
+    // This also fixes the prior truncation to 100 rows (fetchTransactions caps
+    // limit at 100; the batched iterator does not).
+    for await (const batch of transactionService.iterateAllTransactions(userId)) {
+      const chunk = batch
+        .map((t) =>
+          [
+            t.id,
+            t.date.toISOString(),
+            t.type,
+            t.category,
+            t.subcategory || '',
+            t.amount.toString(),
+            t.description || '',
+            t.merchant || '',
+          ]
+            .map(escape)
+            .join(','),
+        )
+        .join('\n');
+      res.write(chunk + '\n');
+    }
+
+    res.end();
   } catch (error) {
+    // If streaming already began we can't change the status; just terminate the
+    // response so the client sees a truncated (failed) download rather than a hang.
+    if (res.headersSent) {
+      logger.error('[Transactions] Export stream failed after headers sent', {
+        error: error instanceof Error ? error.message : String(error),
+      });
+      res.end();
+      return;
+    }
     handleTransactionDatabaseError(error, next);
   }
 };
