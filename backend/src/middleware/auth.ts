@@ -5,6 +5,7 @@ import { createClient } from '@supabase/supabase-js';
 import { audit } from '../utils/auditLogger';
 import { prisma } from '../db/prisma';
 import { evaluateIdleSession } from '../security/idleSession';
+import { isAccountLocked } from '../utils/accountStatus';
 
 // ─── Typed JWT payload interfaces ─────────────────────────────────────────────
 
@@ -251,7 +252,7 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
         }
 
         const authSnapshot = await getUserAuthSnapshot(userId);
-        if (authSnapshot?.status === 'suspended') {
+        if (isAccountLocked(authSnapshot?.status)) {
           return res.status(403).json({ error: 'Account suspended. Contact support.', code: 'ACCOUNT_SUSPENDED' });
         }
 
@@ -288,7 +289,7 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
 
         if (typeof userId === 'string' && userId.length > 0) {
           const authSnapshot = await getUserAuthSnapshot(userId);
-          if (authSnapshot?.status === 'suspended') {
+          if (isAccountLocked(authSnapshot?.status)) {
             return res.status(403).json({ error: 'Account suspended. Contact support.', code: 'ACCOUNT_SUSPENDED' });
           }
 
@@ -323,7 +324,7 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
 
         if (user && !error) {
           const authSnapshot = await getUserAuthSnapshot(user.id);
-          if (authSnapshot?.status === 'suspended') {
+          if (isAccountLocked(authSnapshot?.status)) {
             return res.status(403).json({ error: 'Account suspended. Contact support.', code: 'ACCOUNT_SUSPENDED' });
           }
 

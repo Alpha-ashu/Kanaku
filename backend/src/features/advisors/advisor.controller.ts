@@ -1,5 +1,5 @@
 import { Response } from 'express';
-import { AuthRequest, getUserId } from '../../middleware/auth';
+import { AuthRequest, getUserId, invalidateUserSnapshotCache } from '../../middleware/auth';
 import { prisma } from '../../db/prisma';
 import { logger } from '../../config/logger';
 import { isDatabaseUnavailableError } from '../../utils/databaseAvailability';
@@ -453,6 +453,7 @@ export const approveAdvisor = async (req: AuthRequest, res: Response) => {
         data: { status: 'APPROVED', reviewedBy: reviewerId, reviewedAt: new Date() },
       }),
     ]);
+    invalidateUserSnapshotCache(id);
 
     await prisma.notification.create({
       data: {
@@ -495,6 +496,7 @@ export const rejectAdvisor = async (req: AuthRequest, res: Response) => {
         data: { status: 'REJECTED', rejectionReason: reason || null, reviewedBy: reviewerId, reviewedAt: new Date() },
       }),
     ]);
+    invalidateUserSnapshotCache(id);
 
     await prisma.notification.create({
       data: {

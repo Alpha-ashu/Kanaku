@@ -6,6 +6,7 @@ import { Prisma } from '../../db/prisma-client';
 import { logger } from '../../config/logger';
 import { getSupabaseAdminClient } from '../../db/supabase';
 import { authProvider } from './auth.provider';
+import { isAccountLocked } from '../../utils/accountStatus';
 import {
   normalizePhone,
   deriveLocaleAndCurrency,
@@ -364,9 +365,9 @@ export class AuthService {
       throw new Error('Invalid credentials');
     }
 
-    // Reject suspended accounts before issuing tokens (mirrors /refresh + the auth
-    // middleware). The controller maps this message to 403 ACCOUNT_SUSPENDED.
-    if ((user as any).status === 'suspended') {
+    // Reject suspended/blocked accounts before issuing tokens (mirrors /refresh + the
+    // auth middleware). The controller maps this message to 403 ACCOUNT_SUSPENDED.
+    if (isAccountLocked((user as any).status)) {
       throw new Error('Account suspended');
     }
 

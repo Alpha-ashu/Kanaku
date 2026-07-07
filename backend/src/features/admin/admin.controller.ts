@@ -1,5 +1,6 @@
 import { Response } from 'express';
-import { AuthRequest, getUserId } from '../../middleware/auth';
+import { AuthRequest, getUserId, invalidateUserSnapshotCache } from '../../middleware/auth';
+import { ASSIGNABLE_ACCOUNT_STATUSES } from '../../utils/accountStatus';
 import { requireRole } from '../../middleware/rbac';
 import { prisma } from '../../db/prisma';
 import { logger } from '../../config/logger';
@@ -136,6 +137,7 @@ export const approveAdvisor = async (req: AuthRequest, res: Response) => {
       where: { id: advisorId },
       data: { isApproved: true },
     });
+    invalidateUserSnapshotCache(advisorId);
 
     // Notify advisor
     await prisma.notification.create({
@@ -185,6 +187,7 @@ export const rejectAdvisor = async (req: AuthRequest, res: Response) => {
         isApproved: false,
       },
     });
+    invalidateUserSnapshotCache(advisorId);
 
     // Notify user
     await prisma.notification.create({
@@ -779,6 +782,9 @@ export const deleteUser = async (req: AuthRequest, res: Response) => {
       await prisma.user.delete({ where: { id: userId } });
       logger.info(`[AdminController] Prisma user deleted by admin ${adminId}: ${userId}`);
     }
+    // Evict the auth snapshot cache so any still-valid access token stops
+    // resolving to the cached (now-deleted) account.
+    invalidateUserSnapshotCache(userId);
 
     // Best-effort Supabase Auth deletion
     try {
@@ -855,13 +861,20 @@ export const getUserStorageStats = async (req: AuthRequest, res: Response) => {
 export const toggleUserStatus = async (req: AuthRequest, res: Response) => {
   try {
     const { userId } = req.params;
-    const { status } = req.body; // 'verified' or 'blocked'
+    const { status } = req.body; // 'verified' or 'blocked' (admin UI vocabulary)
+
+    if (!ASSIGNABLE_ACCOUNT_STATUSES.includes(status)) {
+      return res.status(400).json({ error: 'Invalid status specified' });
+    }
 
     const user = await prisma.user.update({
       where: { id: userId },
       data: { status },
       select: { id: true, email: true, status: true }
     });
+    // Evict the 60s auth snapshot cache so a block takes effect immediately,
+    // not after the TTL expires.
+    invalidateUserSnapshotCache(userId);
 
     // Notify the affected user + email the admin a confirmation.
     void announceAdminChange(
@@ -902,6 +915,9 @@ export const updateUserRole = async (req: AuthRequest, res: Response) => {
         isApproved: true
       }
     });
+    // Evict the 60s auth snapshot cache so the role change (incl. demotions)
+    // takes effect immediately.
+    invalidateUserSnapshotCache(userId);
 
     // Notify user
     await prisma.notification.create({
