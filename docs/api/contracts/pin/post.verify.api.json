@@ -2,11 +2,11 @@
   "endpoint": "/api/v1/pin/verify",
   "method": "POST",
   "feature": "pin",
-  "description": "Verify PIN",
-  "auth": "public",
+  "description": "TODO: describe POST /api/v1/pin/verify",
+  "auth": "bearer",
   "rateLimit": "default",
   "implementation": {
-    "controller": "backend/src/features/pin/pin.controller.ts#a",
+    "controller": "backend/src/features/pin/pin.controller.ts#validateBodyverifyPinSchema",
     "route": "backend/src/features/pin/pin.routes.ts",
     "validation": {
       "body": "backend/src/features/pin/*.validation.ts#verifyPinSchema"
@@ -14,23 +14,17 @@
   },
   "request": {
     "headers": {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      "Authorization": "Bearer <jwt>"
     },
     "params": {},
     "query": {},
-    "body": {
-      "pin": "string",
-      "deviceId": "string"
-    }
+    "body": {}
   },
   "responses": {
     "200": {
       "description": "TODO success shape",
-      "body": {
-        "success": true,
-        "data": {},
-        "message": "string"
-      }
+      "body": {}
     },
     "400": {
       "description": "Validation failed",
@@ -39,34 +33,16 @@
         "issues": []
       }
     },
+    "401": {
+      "description": "Missing/invalid token",
+      "body": {
+        "error": "unauthorized"
+      }
+    },
     "403": {
       "description": "Forbidden",
       "body": {
-        "success": false,
-        "error": "Human-readable error",
-        "code": "MISSING_FIELDS",
-        "details": [
-          {
-            "path": "string",
-            "message": "string",
-            "code": "string"
-          }
-        ]
-      }
-    },
-    "404": {
-      "description": "Not found",
-      "body": {
-        "success": false,
-        "error": "Human-readable error",
-        "code": "MISSING_FIELDS",
-        "details": [
-          {
-            "path": "string",
-            "message": "string",
-            "code": "string"
-          }
-        ]
+        "error": "forbidden"
       }
     },
     "429": {
@@ -92,7 +68,6 @@
   "generator": {
     "auto": true,
     "version": 1,
-    "generatedAt": "2026-06-19",
-    "enrichedAt": "2026-06-20"
+    "generatedAt": "2026-07-07"
   }
 }

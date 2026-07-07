@@ -2,11 +2,11 @@
   "endpoint": "/api/v1/friends/:id",
   "method": "GET",
   "feature": "friends",
-  "description": "Get friends",
-  "auth": "public",
+  "description": "TODO: describe GET /api/v1/friends/:id",
+  "auth": "bearer",
   "rateLimit": "default",
   "implementation": {
-    "controller": "backend/src/features/friends/friends.controller.ts#a",
+    "controller": "backend/src/features/friends/friends.controller.ts#validateParamsfriendIdParamSchema",
     "route": "backend/src/features/friends/friend.routes.ts",
     "validation": {
       "params": "backend/src/features/friends/*.validation.ts#friendIdParamSchema"
@@ -14,45 +14,37 @@
   },
   "request": {
     "headers": {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      "Authorization": "Bearer <jwt>"
     },
     "params": {
       "id": "string (required)"
     },
-    "query": {}
+    "query": {},
+    "body": null
   },
   "responses": {
     "200": {
       "description": "TODO success shape",
-      "body": {
-        "success": true,
-        "data": {
-          "id": "d16f39bf-5e2e-4af8-babc-d49c775f2653",
-          "userId": "7c42a22b-30b8-4f8f-ad0f-e0b2a15872a7",
-          "deviceId": null,
-          "name": "Raj Kumar",
-          "email": "user@example.com",
-          "phone": "string",
-          "avatar": null,
-          "notes": null,
-          "syncStatus": "synced",
-          "createdAt": "2026-06-20T10:30:20.013Z",
-          "updatedAt": "2026-06-20T10:30:20.013Z",
-          "deletedAt": null,
-          "isRegistered": true,
-          "linkedUserId": "9aef2b9b-ecc8-4698-a24f-c0fb18fb5a19",
-          "expenses": [],
-          "totalOutstanding": 0,
-          "totalPaid": 0,
-          "totalExpenses": 0
-        }
-      }
+      "body": {}
     },
     "400": {
       "description": "Validation failed",
       "body": {
         "error": "validation_error",
         "issues": []
+      }
+    },
+    "401": {
+      "description": "Missing/invalid token",
+      "body": {
+        "error": "unauthorized"
+      }
+    },
+    "403": {
+      "description": "Forbidden",
+      "body": {
+        "error": "forbidden"
       }
     },
     "429": {
@@ -78,8 +70,6 @@
   "generator": {
     "auto": true,
     "version": 1,
-    "generatedAt": "2026-06-19",
-    "enrichedAt": "2026-06-20",
-    "expectedBackfilledAt": "2026-06-20"
+    "generatedAt": "2026-07-07"
   }
 }

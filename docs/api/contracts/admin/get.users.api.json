@@ -2,38 +2,27 @@
   "endpoint": "/api/v1/admin/users",
   "method": "GET",
   "feature": "admin",
-  "description": "List all users (Admin only)",
-  "auth": "public",
+  "description": "TODO: describe GET /api/v1/admin/users",
+  "auth": "bearer",
   "rateLimit": "default",
   "implementation": {
-    "controller": "backend/src/features/admin/admin.controller.ts#s",
+    "controller": "backend/src/features/admin/admin.controller.ts#AdminControllergetAllUsers",
     "route": "backend/src/features/admin/admin.routes.ts",
-    "validation": "inline or none -- verify"
+    "validation": "inline or none ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â verify"
   },
   "request": {
     "headers": {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      "Authorization": "Bearer <jwt>"
     },
     "params": {},
-    "query": {
-      "page": 1,
-      "limit": 20,
-      "role": "user",
-      "status": "active",
-      "search": "string"
-    }
+    "query": {},
+    "body": null
   },
   "responses": {
     "200": {
       "description": "TODO success shape",
-      "body": {
-        "success": true,
-        "data": {
-          "users": [],
-          "total": 0,
-          "page": 1
-        }
-      }
+      "body": {}
     },
     "400": {
       "description": "Validation failed",
@@ -43,48 +32,15 @@
       }
     },
     "401": {
-      "description": "Unauthorized",
+      "description": "Missing/invalid token",
       "body": {
-        "success": false,
-        "error": "Human-readable error",
-        "code": "MISSING_FIELDS",
-        "details": [
-          {
-            "path": "string",
-            "message": "string",
-            "code": "string"
-          }
-        ]
+        "error": "unauthorized"
       }
     },
     "403": {
       "description": "Forbidden",
       "body": {
-        "success": false,
-        "error": "Human-readable error",
-        "code": "MISSING_FIELDS",
-        "details": [
-          {
-            "path": "string",
-            "message": "string",
-            "code": "string"
-          }
-        ]
-      }
-    },
-    "404": {
-      "description": "Not found",
-      "body": {
-        "success": false,
-        "error": "Human-readable error",
-        "code": "MISSING_FIELDS",
-        "details": [
-          {
-            "path": "string",
-            "message": "string",
-            "code": "string"
-          }
-        ]
+        "error": "forbidden"
       }
     },
     "429": {
@@ -110,7 +66,6 @@
   "generator": {
     "auto": true,
     "version": 1,
-    "generatedAt": "2026-06-19",
-    "enrichedAt": "2026-06-20"
+    "generatedAt": "2026-07-07"
   }
 }

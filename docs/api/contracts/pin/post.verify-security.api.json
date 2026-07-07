@@ -2,11 +2,11 @@
   "endpoint": "/api/v1/pin/verify-security",
   "method": "POST",
   "feature": "pin",
-  "description": "Issue security token (biometric)",
-  "auth": "public",
+  "description": "TODO: describe POST /api/v1/pin/verify-security",
+  "auth": "bearer",
   "rateLimit": "default",
   "implementation": {
-    "controller": "backend/src/features/pin/pin.controller.ts#a",
+    "controller": "backend/src/features/pin/pin.controller.ts#validateBodyverifySecuritySchema",
     "route": "backend/src/features/pin/pin.routes.ts",
     "validation": {
       "body": "backend/src/features/pin/*.validation.ts#verifySecuritySchema"
@@ -14,22 +14,17 @@
   },
   "request": {
     "headers": {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      "Authorization": "Bearer <jwt>"
     },
     "params": {},
     "query": {},
-    "body": {
-      "pin": "string",
-      "freshAuthToken": "string"
-    }
+    "body": {}
   },
   "responses": {
     "200": {
       "description": "TODO success shape",
-      "body": {
-        "success": true,
-        "securityToken": "short-lived"
-      }
+      "body": {}
     },
     "400": {
       "description": "Validation failed",
@@ -39,48 +34,15 @@
       }
     },
     "401": {
-      "description": "Unauthorized",
+      "description": "Missing/invalid token",
       "body": {
-        "success": false,
-        "error": "Human-readable error",
-        "code": "MISSING_FIELDS",
-        "details": [
-          {
-            "path": "string",
-            "message": "string",
-            "code": "string"
-          }
-        ]
+        "error": "unauthorized"
       }
     },
     "403": {
       "description": "Forbidden",
       "body": {
-        "success": false,
-        "error": "Human-readable error",
-        "code": "MISSING_FIELDS",
-        "details": [
-          {
-            "path": "string",
-            "message": "string",
-            "code": "string"
-          }
-        ]
-      }
-    },
-    "404": {
-      "description": "Not found",
-      "body": {
-        "success": false,
-        "error": "Human-readable error",
-        "code": "MISSING_FIELDS",
-        "details": [
-          {
-            "path": "string",
-            "message": "string",
-            "code": "string"
-          }
-        ]
+        "error": "forbidden"
       }
     },
     "429": {
@@ -106,8 +68,6 @@
   "generator": {
     "auto": true,
     "version": 1,
-    "generatedAt": "2026-06-19",
-    "enrichedAt": "2026-06-20",
-    "zodEnrichedAt": "2026-06-20"
+    "generatedAt": "2026-07-07"
   }
 }

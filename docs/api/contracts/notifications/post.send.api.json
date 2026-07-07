@@ -2,13 +2,13 @@
   "endpoint": "/api/v1/notifications/send",
   "method": "POST",
   "feature": "notifications",
-  "description": "Send notification (Admin only)",
+  "description": "TODO: describe POST /api/v1/notifications/send",
   "auth": "bearer",
   "rateLimit": "default",
   "implementation": {
-    "controller": "backend/src/features/notifications/notifications.controller.ts#",
+    "controller": "backend/src/features/notifications/notifications.controller.ts#requireRoleadmin",
     "route": "backend/src/features/notifications/notification.routes.ts",
-    "validation": "inline or none -- verify"
+    "validation": "inline or none ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â verify"
   },
   "request": {
     "headers": {
@@ -17,36 +17,12 @@
     },
     "params": {},
     "query": {},
-    "body": {
-      "userId": "uuid",
-      "type": "string",
-      "title": "string",
-      "body": "string",
-      "data": {}
-    }
+    "body": {}
   },
   "responses": {
     "200": {
       "description": "TODO success shape",
-      "body": {
-        "success": true,
-        "data": {
-          "id": "00000000-0000-0000-0000-000000000000",
-          "userId": "uuid",
-          "type": "string",
-          "title": "string",
-          "body": "string",
-          "data": {}
-        }
-      }
-    },
-    "201": {
-      "description": "Sent",
-      "body": {
-        "success": true,
-        "data": {},
-        "message": "string"
-      }
+      "body": {}
     },
     "400": {
       "description": "Validation failed",
@@ -65,21 +41,6 @@
       "description": "Forbidden",
       "body": {
         "error": "forbidden"
-      }
-    },
-    "404": {
-      "description": "Not found",
-      "body": {
-        "success": false,
-        "error": "Human-readable error",
-        "code": "MISSING_FIELDS",
-        "details": [
-          {
-            "path": "string",
-            "message": "string",
-            "code": "string"
-          }
-        ]
       }
     },
     "429": {
@@ -105,9 +66,6 @@
   "generator": {
     "auto": true,
     "version": 1,
-    "generatedAt": "2026-06-19",
-    "enrichedAt": "2026-06-20",
-    "responseSource": "documented-default",
-    "finalizedAt": "2026-06-20"
+    "generatedAt": "2026-07-07"
   }
 }

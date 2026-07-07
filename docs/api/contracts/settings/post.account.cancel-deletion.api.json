@@ -1,0 +1,71 @@
+{
+  "endpoint": "/api/v1/settings/account/cancel-deletion",
+  "method": "POST",
+  "feature": "settings",
+  "description": "TODO: describe POST /api/v1/settings/account/cancel-deletion",
+  "auth": "bearer",
+  "rateLimit": "default",
+  "implementation": {
+    "controller": "backend/src/features/settings/settings.controller.ts#GdprControllercancelAccountDeletion",
+    "route": "backend/src/features/settings/settings.routes.ts",
+    "validation": "inline or none ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â verify"
+  },
+  "request": {
+    "headers": {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer <jwt>"
+    },
+    "params": {},
+    "query": {},
+    "body": {}
+  },
+  "responses": {
+    "200": {
+      "description": "TODO success shape",
+      "body": {}
+    },
+    "400": {
+      "description": "Validation failed",
+      "body": {
+        "error": "validation_error",
+        "issues": []
+      }
+    },
+    "401": {
+      "description": "Missing/invalid token",
+      "body": {
+        "error": "unauthorized"
+      }
+    },
+    "403": {
+      "description": "Forbidden",
+      "body": {
+        "error": "forbidden"
+      }
+    },
+    "429": {
+      "description": "Rate limited",
+      "body": {
+        "error": "too_many_requests"
+      }
+    },
+    "500": {
+      "description": "Server error",
+      "body": {
+        "error": "internal_error"
+      }
+    }
+  },
+  "sideEffects": {
+    "writesDb": true,
+    "emitsSocket": false,
+    "transactional": false,
+    "audited": false
+  },
+  "notes": "",
+  "generator": {
+    "auto": true,
+    "version": 1,
+    "generatedAt": "2026-07-07"
+  }
+}

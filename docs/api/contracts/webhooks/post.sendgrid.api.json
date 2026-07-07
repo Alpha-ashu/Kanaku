@@ -2,39 +2,29 @@
   "endpoint": "/api/v1/webhooks/sendgrid",
   "method": "POST",
   "feature": "webhooks",
-  "description": "Create webhooks sendgrid",
+  "description": "TODO: describe POST /api/v1/webhooks/sendgrid",
   "auth": "public",
   "rateLimit": "default",
   "implementation": {
-    "controller": "backend/src/features/webhooks/webhooks.controller.ts#s",
+    "controller": "backend/src/features/webhooks/webhooks.controller.ts#validateBodysendgridBodySchema",
     "route": "backend/src/features/webhooks/webhook.routes.ts",
-    "validation": "inline or none -- verify"
+    "validation": {
+      "body": "backend/src/features/webhooks/*.validation.ts#sendgridBodySchema"
+    }
   },
   "request": {
     "headers": {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      "Authorization": null
     },
     "params": {},
     "query": {},
-    "body": [
-      {
-        "email": "user@example.com",
-        "event": "delivered",
-        "timestamp": 1700000000,
-        "sg_event_id": "ZGVsaXZlcnk...",
-        "sg_message_id": "14c5d75ce93.dfd.64b469.filter0001.16648.5515E0B88.0"
-      }
-    ]
+    "body": {}
   },
   "responses": {
     "200": {
       "description": "TODO success shape",
-      "body": {
-        "success": true,
-        "data": {
-          "id": "00000000-0000-0000-0000-000000000000"
-        }
-      }
+      "body": {}
     },
     "400": {
       "description": "Validation failed",
@@ -66,9 +56,6 @@
   "generator": {
     "auto": true,
     "version": 1,
-    "generatedAt": "2026-06-19",
-    "enrichedAt": "2026-06-20",
-    "responseSource": "documented-default",
-    "finalizedAt": "2026-06-20"
+    "generatedAt": "2026-07-07"
   }
 }

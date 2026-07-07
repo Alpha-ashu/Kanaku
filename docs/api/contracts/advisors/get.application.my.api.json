@@ -2,36 +2,45 @@
   "endpoint": "/api/v1/advisors/application/my",
   "method": "GET",
   "feature": "advisors",
-  "description": "List advisors application my",
-  "auth": "public",
+  "description": "TODO: describe GET /api/v1/advisors/application/my",
+  "auth": "bearer",
   "rateLimit": "default",
   "implementation": {
-    "controller": "backend/src/features/advisors/advisors.controller.ts#n",
+    "controller": "backend/src/features/advisors/advisors.controller.ts#AdvisorControllergetMyApplication",
     "route": "backend/src/features/advisors/advisor.routes.ts",
-    "validation": "inline or none -- verify"
+    "validation": "inline or none ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â verify"
   },
   "request": {
     "headers": {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      "Authorization": "Bearer <jwt>"
     },
     "params": {},
-    "query": {}
+    "query": {},
+    "body": null
   },
   "responses": {
     "200": {
       "description": "TODO success shape",
-      "body": {
-        "application": null,
-        "isApproved": true,
-        "roleMode": "user",
-        "advisorStatus": "NOT_AVAILABLE"
-      }
+      "body": {}
     },
     "400": {
       "description": "Validation failed",
       "body": {
         "error": "validation_error",
         "issues": []
+      }
+    },
+    "401": {
+      "description": "Missing/invalid token",
+      "body": {
+        "error": "unauthorized"
+      }
+    },
+    "403": {
+      "description": "Forbidden",
+      "body": {
+        "error": "forbidden"
       }
     },
     "429": {
@@ -57,8 +66,6 @@
   "generator": {
     "auto": true,
     "version": 1,
-    "generatedAt": "2026-06-19",
-    "enrichedAt": "2026-06-20",
-    "expectedBackfilledAt": "2026-06-20"
+    "generatedAt": "2026-07-07"
   }
 }

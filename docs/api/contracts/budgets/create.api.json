@@ -2,11 +2,11 @@
   "endpoint": "/api/v1/budgets",
   "method": "POST",
   "feature": "budgets",
-  "description": "Create budgets",
-  "auth": "public",
+  "description": "TODO: describe POST /api/v1/budgets",
+  "auth": "bearer+stepUp",
   "rateLimit": "default",
   "implementation": {
-    "controller": "backend/src/features/budgets/budgets.controller.ts#a",
+    "controller": "backend/src/features/budgets/budgets.controller.ts#validateBodybudgetCreateSchema",
     "route": "backend/src/features/budgets/budget.routes.ts",
     "validation": {
       "body": "backend/src/features/budgets/*.validation.ts#budgetCreateSchema"
@@ -14,50 +14,35 @@
   },
   "request": {
     "headers": {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      "Authorization": "Bearer <jwt>"
     },
     "params": {},
     "query": {},
-    "body": {
-      "category": "string",
-      "amount": 0,
-      "period": "weekly",
-      "threshold": 1,
-      "startDate": "2026-06-20T08:14:56.671Z",
-      "endDate": "2026-06-20T08:14:56.672Z",
-      "alertEnabled": false,
-      "alertChannels": [
-        "app"
-      ],
-      "clientRequestId": "string"
-    }
+    "body": {}
   },
   "responses": {
     "200": {
       "description": "TODO success shape",
-      "body": {
-        "success": true,
-        "data": {
-          "id": "00000000-0000-0000-0000-000000000000",
-          "category": "string",
-          "amount": 0,
-          "period": "weekly",
-          "threshold": 1,
-          "startDate": "2026-06-20T08:14:56.671Z",
-          "endDate": "2026-06-20T08:14:56.672Z",
-          "alertEnabled": false,
-          "alertChannels": [
-            "app"
-          ],
-          "clientRequestId": "string"
-        }
-      }
+      "body": {}
     },
     "400": {
       "description": "Validation failed",
       "body": {
         "error": "validation_error",
         "issues": []
+      }
+    },
+    "401": {
+      "description": "Missing/invalid token",
+      "body": {
+        "error": "unauthorized"
+      }
+    },
+    "403": {
+      "description": "Forbidden",
+      "body": {
+        "error": "forbidden"
       }
     },
     "429": {
@@ -83,10 +68,6 @@
   "generator": {
     "auto": true,
     "version": 1,
-    "generatedAt": "2026-06-19",
-    "enrichedAt": "2026-06-20",
-    "zodEnrichedAt": "2026-06-20",
-    "responseSource": "documented-default",
-    "finalizedAt": "2026-06-20"
+    "generatedAt": "2026-07-07"
   }
 }

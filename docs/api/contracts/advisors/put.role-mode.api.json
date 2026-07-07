@@ -2,13 +2,13 @@
   "endpoint": "/api/v1/advisors/role-mode",
   "method": "PUT",
   "feature": "advisors",
-  "description": "Update advisors role-mode",
+  "description": "TODO: describe PUT /api/v1/advisors/role-mode",
   "auth": "bearer",
   "rateLimit": "default",
   "implementation": {
     "controller": "backend/src/features/advisors/advisors.controller.ts#manager",
     "route": "backend/src/features/advisors/advisor.routes.ts",
-    "validation": "inline or none -- verify"
+    "validation": "inline or none ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â verify"
   },
   "request": {
     "headers": {
@@ -17,20 +17,12 @@
     },
     "params": {},
     "query": {},
-    "body": {
-      "mode": "string"
-    }
+    "body": {}
   },
   "responses": {
     "200": {
       "description": "TODO success shape",
-      "body": {
-        "success": true,
-        "data": {
-          "id": "00000000-0000-0000-0000-000000000000",
-          "mode": "string"
-        }
-      }
+      "body": {}
     },
     "400": {
       "description": "Validation failed",
@@ -74,10 +66,6 @@
   "generator": {
     "auto": true,
     "version": 1,
-    "generatedAt": "2026-06-19",
-    "enrichedAt": "2026-06-20",
-    "zodEnrichedAt": "2026-06-20",
-    "responseSource": "documented-default",
-    "finalizedAt": "2026-06-20"
+    "generatedAt": "2026-07-07"
   }
 }

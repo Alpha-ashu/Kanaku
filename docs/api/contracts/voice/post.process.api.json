@@ -2,13 +2,13 @@
   "endpoint": "/api/v1/voice/process",
   "method": "POST",
   "feature": "voice",
-  "description": "Parse voice transcript to financial intents",
+  "description": "TODO: describe POST /api/v1/voice/process",
   "auth": "bearer",
   "rateLimit": "default",
   "implementation": {
     "controller": "backend/src/features/voice/voice.controller.ts#requireAIFeaturevoiceAssistant",
     "route": "backend/src/features/voice/voice.routes.ts",
-    "validation": "inline or none -- verify"
+    "validation": "inline or none ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â verify"
   },
   "request": {
     "headers": {
@@ -17,27 +17,12 @@
     },
     "params": {},
     "query": {},
-    "body": {
-      "transcript": "I spent 450 rupees on lunch at Swiggy today"
-    }
+    "body": {}
   },
   "responses": {
     "200": {
       "description": "TODO success shape",
-      "body": {
-        "success": true,
-        "data": {
-          "intents": [
-            {
-              "action": "add_expense",
-              "amount": 450,
-              "category": "Food & Dining",
-              "merchant": "Swiggy"
-            }
-          ],
-          "confidence": 0.92
-        }
-      }
+      "body": {}
     },
     "400": {
       "description": "Validation failed",
@@ -56,21 +41,6 @@
       "description": "Forbidden",
       "body": {
         "error": "forbidden"
-      }
-    },
-    "404": {
-      "description": "Not found",
-      "body": {
-        "success": false,
-        "error": "Human-readable error",
-        "code": "MISSING_FIELDS",
-        "details": [
-          {
-            "path": "string",
-            "message": "string",
-            "code": "string"
-          }
-        ]
       }
     },
     "429": {
@@ -96,7 +66,6 @@
   "generator": {
     "auto": true,
     "version": 1,
-    "generatedAt": "2026-06-19",
-    "enrichedAt": "2026-06-20"
+    "generatedAt": "2026-07-07"
   }
 }

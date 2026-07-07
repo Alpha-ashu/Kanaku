@@ -2,11 +2,11 @@
   "endpoint": "/api/v1/gold",
   "method": "GET",
   "feature": "gold",
-  "description": "List gold",
-  "auth": "public",
+  "description": "TODO: describe GET /api/v1/gold",
+  "auth": "bearer+stepUp",
   "rateLimit": "default",
   "implementation": {
-    "controller": "backend/src/features/gold/gold.controller.ts#a",
+    "controller": "backend/src/features/gold/gold.controller.ts#validateQuerygoldQuerySchema",
     "route": "backend/src/features/gold/gold.routes.ts",
     "validation": {
       "query": "backend/src/features/gold/*.validation.ts#goldQuerySchema"
@@ -14,26 +14,35 @@
   },
   "request": {
     "headers": {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      "Authorization": "Bearer <jwt>"
     },
     "params": {},
-    "query": {
-      "type": "gold"
-    }
+    "query": {},
+    "body": null
   },
   "responses": {
     "200": {
       "description": "TODO success shape",
-      "body": {
-        "success": true,
-        "data": []
-      }
+      "body": {}
     },
     "400": {
       "description": "Validation failed",
       "body": {
         "error": "validation_error",
         "issues": []
+      }
+    },
+    "401": {
+      "description": "Missing/invalid token",
+      "body": {
+        "error": "unauthorized"
+      }
+    },
+    "403": {
+      "description": "Forbidden",
+      "body": {
+        "error": "forbidden"
       }
     },
     "429": {
@@ -59,9 +68,6 @@
   "generator": {
     "auto": true,
     "version": 1,
-    "generatedAt": "2026-06-19",
-    "enrichedAt": "2026-06-20",
-    "expectedBackfilledAt": "2026-06-20",
-    "zodEnrichedAt": "2026-06-20"
+    "generatedAt": "2026-07-07"
   }
 }
