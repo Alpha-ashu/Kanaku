@@ -69,6 +69,7 @@ export type AuditEventType =
   | 'security.circuit_open'
   | 'security.webhook_invalid_signature'
   | 'security.pin_change'
+  | 'authz.denied'
   | 'admin.feature_toggle'
   | 'admin.user_role_update'
   | 'admin.advisor_approve'
@@ -109,6 +110,7 @@ const isFailureEvent = (event: AuditEventType): boolean =>
   event.includes('rate_limit') ||
   event.includes('invalid') ||
   event.includes('expired') ||
+  event.includes('denied') ||
   event.includes('circuit_open');
 
 /**

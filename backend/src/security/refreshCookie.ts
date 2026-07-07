@@ -54,14 +54,9 @@ const baseCookieOptions: CookieOptions = {
   domain: COOKIE_DOMAIN,
 };
 
-const getDynamicSecureOption = (res: Response): boolean => {
-  return true;
-};
-
 export const setRefreshCookie = (res: Response, token: string, ttlSeconds: number): void => {
   res.cookie(COOKIE_NAME, token, {
     ...baseCookieOptions,
-    secure: getDynamicSecureOption(res),
     maxAge: ttlSeconds * 1000,
   });
 };
@@ -69,7 +64,6 @@ export const setRefreshCookie = (res: Response, token: string, ttlSeconds: numbe
 export const clearRefreshCookie = (res: Response): void => {
   res.clearCookie(COOKIE_NAME, {
     ...baseCookieOptions,
-    secure: getDynamicSecureOption(res),
   });
 };
 

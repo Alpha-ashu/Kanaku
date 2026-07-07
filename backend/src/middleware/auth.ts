@@ -138,7 +138,16 @@ export const invalidateUserSnapshotCache = (userId: string) => {
   userSnapshotCache.delete(userId);
 };
 
-const getUserAuthSnapshot = async (userId: string): Promise<UserAuthSnapshot | null> => {
+// Distinguishes a user that DEFINITIVELY does not exist (deleted) from a lookup
+// we simply couldn't complete (test env, timeout, DB blip). The callers use
+// this to reject a still-valid token for a deleted account (our own JWTs imply
+// the user existed at issue time) WITHOUT accidentally locking everyone out on
+// a transient DB hiccup, and without re-provisioning a shadow row for a
+// deleted user. See audit finding M-4.
+export const USER_NOT_FOUND = Symbol('auth-user-not-found');
+type SnapshotLookup = UserAuthSnapshot | null | typeof USER_NOT_FOUND;
+
+const getUserAuthSnapshot = async (userId: string): Promise<SnapshotLookup> => {
   if (process.env.NODE_ENV === 'test' || AUTH_STATUS_LOOKUP_TIMEOUT_MS <= 0) {
     return null;
   }
@@ -176,9 +185,14 @@ const getUserAuthSnapshot = async (userId: string): Promise<UserAuthSnapshot | n
       return null;
     }
 
-    const snapshot = result ?? null;
-    userSnapshotCache.set(userId, { snapshot, expiresAt: Date.now() + SNAPSHOT_CACHE_TTL_MS });
-    return snapshot;
+    if (result === null) {
+      // Definitive: no such user row. Don't cache (a not-yet-provisioned
+      // Supabase user may be created moments later on this same request).
+      return USER_NOT_FOUND;
+    }
+
+    userSnapshotCache.set(userId, { snapshot: result, expiresAt: Date.now() + SNAPSHOT_CACHE_TTL_MS });
+    return result;
   } catch (error) {
     logger.warn('Auth user lookup failed after JWT verification, continuing with token claims.', {
       userId,
@@ -252,6 +266,13 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
         }
 
         const authSnapshot = await getUserAuthSnapshot(userId);
+        // Our own backend-issued JWT implies the user existed at issue time, so a
+        // now-missing row means the account was deleted — reject instead of
+        // resurrecting a shadow row via ensureUserInDb. (A timeout/blip returns
+        // null, not USER_NOT_FOUND, so a transient DB issue never locks users out.)
+        if (authSnapshot === USER_NOT_FOUND) {
+          return res.status(401).json({ error: 'Account no longer exists. Please sign in again.', code: 'USER_NOT_FOUND' });
+        }
         if (isAccountLocked(authSnapshot?.status)) {
           return res.status(403).json({ error: 'Account suspended. Contact support.', code: 'ACCOUNT_SUSPENDED' });
         }
@@ -288,7 +309,11 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
         const userId = supabaseDecoded?.sub;
 
         if (typeof userId === 'string' && userId.length > 0) {
-          const authSnapshot = await getUserAuthSnapshot(userId);
+          // Supabase identities may be provisioning their backend row for the
+          // first time, so a missing row is legitimate here → treat as null and
+          // provision below (unlike our own JWT path, which rejects deletions).
+          const lookup = await getUserAuthSnapshot(userId);
+          const authSnapshot = lookup === USER_NOT_FOUND ? null : lookup;
           if (isAccountLocked(authSnapshot?.status)) {
             return res.status(403).json({ error: 'Account suspended. Contact support.', code: 'ACCOUNT_SUSPENDED' });
           }
@@ -323,7 +348,10 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
         const { data: { user }, error } = await sb.auth.getUser(token);
 
         if (user && !error) {
-          const authSnapshot = await getUserAuthSnapshot(user.id);
+          // Supabase-verified identity: a missing backend row is a first-seen
+          // user to provision, so treat USER_NOT_FOUND as null here.
+          const lookup = await getUserAuthSnapshot(user.id);
+          const authSnapshot = lookup === USER_NOT_FOUND ? null : lookup;
           if (isAccountLocked(authSnapshot?.status)) {
             return res.status(403).json({ error: 'Account suspended. Contact support.', code: 'ACCOUNT_SUSPENDED' });
           }

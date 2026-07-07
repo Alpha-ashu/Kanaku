@@ -3,6 +3,28 @@ import { prisma } from '../db/prisma';
 import { logger } from '../config/logger';
 import { AuthRequest } from './auth';
 import { reconstructFeatures, reconstructAIFeatures } from '../utils/featureHelpers';
+import { audit } from '../utils/auditLogger';
+
+/**
+ * Respond 403 for a feature-gate denial AND record a structured authz.denied
+ * audit event (previously these denials produced no audit trail — 2026-07-07
+ * audit finding L-3). Returns the Response so callers can `return denyFeature(...)`.
+ */
+const denyFeature = (
+  req: AuthRequest,
+  res: Response,
+  error: string,
+  meta: Record<string, unknown>,
+): Response => {
+  audit({
+    event: 'authz.denied',
+    userId: req.userId,
+    ip: req.ip || undefined,
+    action: `${req.method} ${req.originalUrl || req.path}`,
+    meta: { role: req.user?.role ?? null, check: 'requireFeature', ...meta },
+  });
+  return res.status(403).json({ error });
+};
 
 // 30-second in-memory cache for global feature settings
 let cachedFeatures: any = null;
@@ -148,23 +170,23 @@ export const requireFeature = (moduleKey: string, childKey?: string) => {
       // 1. Check Module-Level access
       if (moduleSettings) {
         if (typeof moduleSettings.enabled === 'boolean' && !moduleSettings.enabled) {
-          return res.status(403).json({ error: `Feature module '${moduleKey}' is currently disabled.` });
+          return denyFeature(req, res, `Feature module '${moduleKey}' is currently disabled.`, { moduleKey, reason: 'module_disabled' });
         }
         const readiness = moduleSettings.readiness;
         if (readiness === 'deprecated') {
-          return res.status(403).json({ error: `Feature module '${moduleKey}' is currently disabled.` });
+          return denyFeature(req, res, `Feature module '${moduleKey}' is currently disabled.`, { moduleKey, reason: 'deprecated' });
         }
         if (readiness === 'unreleased' && userRole !== 'admin') {
-          return res.status(403).json({ error: `Feature module '${moduleKey}' is currently disabled.` });
+          return denyFeature(req, res, `Feature module '${moduleKey}' is currently disabled.`, { moduleKey, reason: 'unreleased' });
         }
         if (readiness === 'beta' && userRole !== 'admin' && userRole !== 'advisor' && userRole !== 'manager') {
-          return res.status(403).json({ error: `Feature module '${moduleKey}' is currently disabled.` });
+          return denyFeature(req, res, `Feature module '${moduleKey}' is currently disabled.`, { moduleKey, reason: 'beta' });
         }
 
         // Check module roleAccess override
         if (moduleSettings.roleAccess && typeof moduleSettings.roleAccess[userRole] === 'boolean') {
           if (!moduleSettings.roleAccess[userRole]) {
-            return res.status(403).json({ error: `You do not have access to feature module '${moduleKey}'.` });
+            return denyFeature(req, res, `You do not have access to feature module '${moduleKey}'.`, { moduleKey, reason: 'role_access' });
           }
         }
       } else if (hasSavedSettings) {
@@ -172,14 +194,14 @@ export const requireFeature = (moduleKey: string, childKey?: string) => {
         // not present — it is a newly-deployed feature that admin has not yet
         // enabled. Block non-admin users; admin can always access new features.
         if (userRole !== 'admin') {
-          return res.status(403).json({ error: `Feature module '${moduleKey}' has not been enabled by admin.` });
+          return denyFeature(req, res, `Feature module '${moduleKey}' has not been enabled by admin.`, { moduleKey, reason: 'not_enabled_by_admin' });
         }
       } else {
         // No DB settings at all (fresh install). Fall back to hardcoded defaults
         // using a conservative deny-by-default: unknown modules → admin only.
         const defaultRoleAllowed = DEFAULT_MODULE_ACCESS[moduleKey]?.[userRole] ?? (userRole === 'admin');
         if (!defaultRoleAllowed) {
-          return res.status(403).json({ error: `You do not have access to feature module '${moduleKey}'.` });
+          return denyFeature(req, res, `You do not have access to feature module '${moduleKey}'.`, { moduleKey, reason: 'default_deny' });
         }
       }
 

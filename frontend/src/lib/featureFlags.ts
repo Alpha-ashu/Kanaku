@@ -1,3 +1,5 @@
+import { ADMIN_UI_ENABLED } from '@/config/platform';
+
 export type UserRole = 'admin' | 'manager' | 'advisor' | 'user';
 
 export type FeatureKey =
@@ -215,6 +217,12 @@ export function getVisibleFeaturesForRole(
   env = 'development',
 ): FeatureVisibility {
   const base = ROLE_FEATURES[role] || ROLE_FEATURES.user;
+  // Customer-platform build (VITE_APP_SURFACE=user): the Admin/Manager UI is
+  // compiled out, so its nav entries/panels must never be offered here — the
+  // back-office lives on the separate admin origin.
+  if (!ADMIN_UI_ENABLED) {
+    return { ...base, adminPanel: false, managerPanel: false, aiManagement: false };
+  }
   return base;
 }
 

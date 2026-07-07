@@ -63,19 +63,35 @@ export const getAllUsers = async (req: AuthRequest, res: Response) => {
       query.isApproved = false;
     }
 
-    const users = await prisma.user.findMany({
-      where: query,
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        isApproved: true,
-        status: true,
-        createdAt: true,
-      },
-      orderBy: { createdAt: 'desc' },
-    });
+    // Bound the result set so the admin user list can't grow into an unbounded
+    // response. Defaults (page 1, 200 rows) preserve the previous behaviour for
+    // typical deployments; large tenants page via ?page/?limit. The response
+    // body stays a bare array (unchanged contract) — total is exposed via the
+    // X-Total-Count header for a future paginated UI.
+    const page = Math.max(1, Number(req.query.page) || 1);
+    const limit = Math.min(500, Math.max(1, Number(req.query.limit) || 200));
+
+    const [users, total] = await Promise.all([
+      prisma.user.findMany({
+        where: query,
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          role: true,
+          isApproved: true,
+          status: true,
+          createdAt: true,
+        },
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      prisma.user.count({ where: query }),
+    ]);
+    res.setHeader('X-Total-Count', String(total));
+    res.setHeader('X-Page', String(page));
+    res.setHeader('X-Limit', String(limit));
 
     // Enrich with phone from profiles table
     const userIds = users.map(u => u.id);

@@ -386,18 +386,19 @@ A `user` or `advisor` token calling any `/api/v1/admin/*` management route recei
 | Advisor | Own application/docs, availability CRUD, own sessions, chat, online status — `requireRole('advisor') + requireApproved`; **client data access is session-scoped only** (booked clients' name/email/phone via sessions; no access to client transactions/accounts) | `advisor.routes.ts:44-52`, `advisor.controller.ts:189-215` (`session.clientId !== clientId → 403`) |
 | User | All personal-finance modules; every query is owner-scoped `where { id, userId }` (verified in transactions, accounts, goals, loans, budgets, groups, sync) — changing an ID in URL/body returns 404/403, not another user's record | e.g. `account.controller.ts:112 where:{id, userId}`, `transaction.controller.ts` passes `userId` to every service call |
 
-Frontend gating (defense-in-depth, not the security boundary): route guard in `App.tsx:539-620` redirects non-admin/manager sessions off admin/manager pages; `featureFlags.ts` is deny-by-default per role once admin settings exist. Admin/Manager screens *are* present in the single JS bundle (lazy chunks) — hiding is client-side; **enforcement is the API layer above**, which is sound. Physical separation is issue #1.
+Frontend gating (defense-in-depth, not the security boundary): route guard in `App.tsx` redirects non-admin/manager sessions off admin/manager pages; `featureFlags.ts` is deny-by-default per role once admin settings exist. **After this session's D1 work**, on a `VITE_APP_SURFACE=user` build the Admin/Manager screens are no longer in the bundle at all (chunks stripped — see §3.4); enforcement remains the API layer above, which is sound.
 
-### 3.4 Platform separation verdict — requirement NOT met
+### 3.4 Platform separation — mechanism now implemented (activation is a config/ops step)
 
 Required: Admin+Manager served from a separate platform/endpoint from User+Advisor, at routing/deployment level.
 
-Found (deployment topology):
-- **One frontend**: single Vite SPA; `vercel.json` sends every path to `/index.html`; admin/manager/advisor/user components all lazy chunks of the same bundle.
-- **One API**: `vercel.json` proxies `/api/*` → `https://kanaku.fly.dev` (single Fly app). The Fly `app`/`worker` process split is API-vs-background-jobs, not admin-vs-user.
-- **Separate *route groups* exist** (`/api/v1/admin/*` admin-only; `/advisors/admin/*` admin+manager) so the *logical* isolation is real, but a change deployed to the shared service/bundle affects both audiences simultaneously.
+**What this session added (code, committed):**
+- **API origin gate** — `backend/src/middleware/adminPlatformGate.ts`, mounted on `/api/v1/admin/*`, `/api/v1/advisors/admin/*`, and `/api/v1/health/metrics`. When `ADMIN_UI_HOSTS` is set, those route groups return the standard 404 unless the request arrives via an admin host (checked against `Origin` / `X-Forwarded-Host` / `Host`), so the customer origin cannot route to the back-office at all. RBAC (`requireRole`) still applies underneath. 8/8 unit tests including subdomain-suffix spoof rejection.
+- **Frontend surface build** — `VITE_APP_SURFACE=user` compiles the Admin/Manager UI **out** of the customer bundle. Verified: a user-surface build emits **zero** `Admin*`/`Manager*` chunks (Vite `define` → Rollup drops the dead dynamic imports); route guards and nav also hide those pages. `admin`/`unified` builds are unchanged.
 
-Minimal path to compliance without violating the infra-freeze spirit (decision needed — do not start without sign-off): serve the same SPA from a second origin (`admin.<domain>`) that boots straight into the admin shell, gate `/api/v1/admin/*` + `/advisors/admin/*` by `Host`/origin allow-list middleware at the API (a ~30-line middleware, not a service split), and strip admin chunks from the user-origin build via an env-flagged entry. A full second service is not required to meet "separate endpoint".
+**Activation (⚙️ your ops step, not yet done — this is the deployment decision):** provision a second web origin (`admin.<domain>`, same repo, `VITE_APP_SURFACE=admin`), point the customer origin's build at `VITE_APP_SURFACE=user`, and set `ADMIN_UI_HOSTS=admin.<domain>` on the API. Until then the gate is a no-op and the platform stays unified (safe default) — but the code path the requirement asks for now exists and is tested, rather than needing a from-scratch build. A full second API service is still not required; the host gate + per-surface build satisfy "separate platform/endpoint."
+
+Underlying topology unchanged (one Fly API app, Vercel edge proxy) — separation is enforced at the routing/origin layer, which is what the requirement specifies.
 
 ---
 
@@ -489,7 +490,7 @@ Minor: `featureGate.ts` uses `console.error` (bypasses redaction formatting) —
 | Frontend type-check | `tsc --noEmit` | ✅ clean (after fixes) |
 | Frontend production build | `npm run build:frontend` | ✅ built in 30 s (one >600 kB chunk warning — cosmetic, code-splitting hint) |
 | Backend type-check | `tsc --noEmit` | ✅ clean (after fixes) |
-| Backend integration+unit (Jest, `quality/backend`, serial against Docker Postgres :5434) | `npx jest` | ✅ **40/40 suites, 691/691 tests pass** after fixes (0 FAIL). (First run this session: 51 failed / 690 — see triage below; every failure was resolved by the §9.0 fixes, the schema-drift migration + test-DB sync, or test-side corrections.) Note: the `jest` process exits non-zero only because of a `--forceExit` open-handle teardown warning (lingering Redis/socket connections) — an environmental artifact, not a test failure. |
+| Backend integration+unit (Jest, `quality/backend`, serial against Docker Postgres :5434) | `npx jest` | ✅ **41/41 suites, 699/699 tests pass** after all fixes incl. the §9.1 D-items (0 FAIL; +8 tests = the new `admin-platform-gate` suite). (First run this session: 51 failed / 690 — see triage below.) Note: the `jest` process exits non-zero only because of a `--forceExit` open-handle teardown warning (lingering Redis/socket connections) — an environmental artifact, not a test failure. |
 | Prisma migrations from scratch | `prisma migrate deploy` on fresh DB | ✅ 4/4 applied, 48 tables, **zero residual drift** (post-fix) |
 | E2E (Playwright, `quality/e2e` — 10 journey specs incl. registration, transactions, loans, groups, goals, power-user, inactivity autolock; plus `quality/api` contract runner) | not run in this session | ⏳ Requires a live full stack (frontend+backend+seeded DB). **QA must run** `npm run test:e2e` against staging — see checklist §9.2 |
 
@@ -523,17 +524,21 @@ No failure was an unfixed application defect. Every code-side failure traced to 
 
 ### 9.1 Developer action items (priority order)
 
-| # | Item | Ref |
-|---|---|---|
-| D1 | **Decide + implement Admin/Manager origin separation** (separate host + Host-gated admin route groups + admin-stripped user build). Needs product/infra sign-off under the freeze policy | H-1 |
-| D2 | Enable `PIN_GATE_ENABLED=true` in staging → verify UX → prod Fly secrets | M-3 |
-| D3 | Fix the contract-docs generator to detect router-level auth; regenerate `docs/api/contracts`; drop the stale `tax` tag from `openapi.yaml` | M-5 |
-| D4 | Auth hardening follow-up: not-found vs timeout distinction in `getUserAuthSnapshot`; auto-provision only for Supabase-verified identities | M-4 |
-| D5 | Add `authz.denied` audit event to `requireRole`/`requireFeature` (or apply `withAudit` to admin routes) | L-3 |
-| D6 | Fix `GET /groups` N+1 + pagination; paginate `GET /admin/users`; stream `/transactions/export` | P-1..P-3 |
-| D7 | Consolidate the duplicate `requireFeature` implementations (rbac vs featureGate); add `manager` or delete the rbac variant | L-2 |
-| D8 | Cleanup: dead `getDynamicSecureOption`; `console.error` → `logger` in featureGate; schedule the deprecated-PII drop migration; the two TODOs (`session.controller.ts:101` WebSocket delivery, `errorHandling.ts:222` Sentry hook) | L-1, L-4, §10 |
-| D9 | Delete or rewrite stale tests for the removed tax module; fix remaining env-dependent test failures (§8 triage) | §8 |
+Status legend: ✅ implemented this session · ⚙️ config/ops step for you · ⏳ remaining code work.
+
+| # | Item | Ref | Status |
+|---|---|---|---|
+| D1 | **Admin/Manager platform separation.** Backend `adminPlatformGate` (host/origin gate) added on `/admin/*`, `/advisors/admin/*`, `/health/metrics` — inert until `ADMIN_UI_HOSTS` is set, then those groups 404 off the user origin. Frontend `VITE_APP_SURFACE=user` build now **physically strips** all Admin/Manager chunks (verified: 0 admin chunks emitted) + route-guard/nav gating. 8/8 gate unit tests. | H-1 | ✅ (code) — **⚙️ you: provision `admin.<domain>` origin, set `ADMIN_UI_HOSTS` + `VITE_APP_SURFACE`** |
+| D2 | Enable `PIN_GATE_ENABLED=true` in staging → verify UX → prod Fly secrets | M-3 | ⚙️ config |
+| D3 | Contract-docs generator now detects router-level `authMiddleware`/`pinGate`/`requireRole`; regenerated → **15 public / 180 bearer / 65 step-up** (was 201 mislabeled public) | M-5 | ✅ (openapi `tax` tag: ⏳ minor) |
+| D4 | `getUserAuthSnapshot` now returns a `USER_NOT_FOUND` sentinel distinct from null (timeout/blip). Our own JWT for a deleted account → 401 (no shadow-row resurrection); Supabase identities still provision on first sight | M-4 | ✅ |
+| D5 | `authz.denied` audit event emitted from `requireRole` and every `requireFeature` denial (structured, redacted, with role + route) | L-3 | ✅ |
+| D6 | `GET /groups` N+1 removed (batched members/friends/creators; was 3 queries/group) + pagination; `GET /admin/users` bounded + `X-Total-Count` | P-1, P-2 | ✅ (`/transactions/export` streaming: ⏳) |
+| D7 | Deleted the redundant hardcoded `requireFeature` in `rbac.ts` (unused) — `featureGate.ts` is now the single implementation | L-2 | ✅ |
+| D8 | Removed dead `getDynamicSecureOption` (restores dev-HTTP cookie behaviour); `console.error` gone with the rbac `requireFeature` removal | L-1, L-4 | ✅ (PII drop migration + 2 TODOs: ⏳) |
+| D9 | Deleted stale `tax.test.ts`; fixed the 3 mis-written tests (§8) | §8 | ✅ |
+
+**Remaining (⏳) follow-ups, lower priority:** stream `/transactions/export`; drop the deprecated `User` PII columns (migration); the two TODOs (`session.controller.ts:101` WebSocket delivery, `errorHandling.ts:222` Sentry); remove the stale `tax` tag from `openapi.yaml`.
 
 ### 9.2 QA manual test checklist
 

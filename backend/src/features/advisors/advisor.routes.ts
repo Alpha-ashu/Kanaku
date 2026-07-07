@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { authMiddleware } from '../../middleware/auth';
+import { adminPlatformGate } from '../../middleware/adminPlatformGate';
 import { requireRole, requireApproved } from '../../middleware/rbac';
 import { requireFeature } from '../../middleware/featureGate';
 import { uploadFields } from '../../middleware/upload';
@@ -54,10 +55,11 @@ router.get('/me/sessions', requireRole('advisor'), requireApproved, AdvisorContr
 // Client only
 router.put('/sessions/:id/rate', validateParams(advisorIdParamSchema), validateBody(rateSessionSchema), AdvisorController.rateSession);
 
-// Admin / Manager
-router.get('/admin/applications', requireRole(['admin', 'manager']), AdvisorController.listPendingAdvisors);
-router.put('/admin/:id/approve', requireRole(['admin', 'manager']), validateParams(advisorIdParamSchema), AdvisorController.approveAdvisor);
-router.put('/admin/:id/reject', requireRole(['admin', 'manager']), validateParams(advisorIdParamSchema), validateBody(rejectApplicationSchema), AdvisorController.rejectAdvisor);
+// Admin / Manager — the verification queue is part of the Admin/Manager
+// platform, so it is also origin-gated (no-op until ADMIN_UI_HOSTS is set).
+router.get('/admin/applications', adminPlatformGate, requireRole(['admin', 'manager']), AdvisorController.listPendingAdvisors);
+router.put('/admin/:id/approve', adminPlatformGate, requireRole(['admin', 'manager']), validateParams(advisorIdParamSchema), AdvisorController.approveAdvisor);
+router.put('/admin/:id/reject', adminPlatformGate, requireRole(['admin', 'manager']), validateParams(advisorIdParamSchema), validateBody(rejectApplicationSchema), AdvisorController.rejectAdvisor);
 
 // Single advisor lookup (catch-all /:id MUST be last to avoid shadowing specific routes).
 // NOT feature-gated: this path also resolves self-profile lookups (e.g. /advisors/me),
