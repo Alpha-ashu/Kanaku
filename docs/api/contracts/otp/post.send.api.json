@@ -2,7 +2,7 @@
   "endpoint": "/api/v1/otp/send",
   "method": "POST",
   "feature": "otp",
-  "description": "Create otp send",
+  "description": "TODO: describe POST /api/v1/otp/send",
   "auth": "bearer",
   "rateLimit": "default",
   "implementation": {
@@ -19,20 +19,12 @@
     },
     "params": {},
     "query": {},
-    "body": {
-      "destination": "string",
-      "channel": "email",
-      "purpose": "signup"
-    }
+    "body": {}
   },
   "responses": {
     "200": {
       "description": "TODO success shape",
-      "body": {
-        "success": true,
-        "message": "OTP sent to your email.",
-        "expiresIn": 90
-      }
+      "body": {}
     },
     "400": {
       "description": "Validation failed",
@@ -76,9 +68,6 @@
   "generator": {
     "auto": true,
     "version": 1,
-    "generatedAt": "2026-06-19",
-    "enrichedAt": "2026-06-20",
-    "zodEnrichedAt": "2026-06-20",
-    "expectedBackfilledAt": "2026-06-20"
+    "generatedAt": "2026-07-07"
   }
 }

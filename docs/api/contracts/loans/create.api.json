@@ -2,84 +2,27 @@
   "endpoint": "/api/v1/loans",
   "method": "POST",
   "feature": "loans",
-  "description": "Create loan",
-  "auth": "public",
+  "description": "TODO: describe POST /api/v1/loans",
+  "auth": "bearer+stepUp",
   "rateLimit": "default",
   "implementation": {
-    "controller": "backend/src/features/loans/loans.controller.ts#a",
+    "controller": "backend/src/features/loans/loans.controller.ts#borrowMoney",
     "route": "backend/src/features/loans/loan.routes.ts",
-    "validation": {
-      "body": "backend/src/features/loans/*.validation.ts#loanCreateSchema"
-    }
+    "validation": "inline or none ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â verify"
   },
   "request": {
     "headers": {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      "Authorization": "Bearer <jwt>"
     },
     "params": {},
     "query": {},
-    "body": {
-      "type": "borrowed",
-      "name": "Home Loan",
-      "principalAmount": 500000,
-      "interestRate": 8.5,
-      "emiAmount": 4800,
-      "dueDate": "2026-07-05",
-      "frequency": "monthly",
-      "contactPerson": "string",
-      "clientRequestId": "string"
-    }
+    "body": {}
   },
   "responses": {
     "200": {
       "description": "TODO success shape",
-      "body": {
-        "success": true,
-        "data": {
-          "id": "1c6de0a2-30bc-4f24-b7f6-0979d662675c",
-          "userId": "9aef2b9b-ecc8-4698-a24f-c0fb18fb5a19",
-          "deviceId": null,
-          "type": "borrowed",
-          "name": "Home Loan",
-          "principalAmount": "500000",
-          "outstandingBalance": "500000",
-          "interestRate": "8.5",
-          "emiAmount": "4800",
-          "dueDate": "2026-07-05T00:00:00.000Z",
-          "frequency": "monthly",
-          "status": "active",
-          "contactPerson": "string",
-          "syncStatus": "synced",
-          "clientRequestId": "string",
-          "totalPayable": null,
-          "loanDate": null,
-          "contactEmail": null,
-          "contactPhone": null,
-          "bankName": null,
-          "tenureMonths": null,
-          "downPayment": null,
-          "loanCategory": null,
-          "notes": null,
-          "createdAt": "2026-06-20T08:00:48.716Z",
-          "updatedAt": "2026-06-20T08:00:48.716Z",
-          "deletedAt": null,
-          "payments": []
-        }
-      }
-    },
-    "201": {
-      "description": "Created",
-      "body": {
-        "success": true,
-        "data": {
-          "id": "uuid",
-          "type": "borrowed",
-          "principalAmount": 500000,
-          "outstandingBalance": 500000,
-          "status": "active",
-          "payments": []
-        }
-      }
+      "body": {}
     },
     "400": {
       "description": "Validation failed",
@@ -89,48 +32,15 @@
       }
     },
     "401": {
-      "description": "Unauthorized",
+      "description": "Missing/invalid token",
       "body": {
-        "success": false,
-        "error": "Human-readable error",
-        "code": "MISSING_FIELDS",
-        "details": [
-          {
-            "path": "string",
-            "message": "string",
-            "code": "string"
-          }
-        ]
+        "error": "unauthorized"
       }
     },
     "403": {
       "description": "Forbidden",
       "body": {
-        "success": false,
-        "error": "Human-readable error",
-        "code": "MISSING_FIELDS",
-        "details": [
-          {
-            "path": "string",
-            "message": "string",
-            "code": "string"
-          }
-        ]
-      }
-    },
-    "404": {
-      "description": "Not found",
-      "body": {
-        "success": false,
-        "error": "Human-readable error",
-        "code": "MISSING_FIELDS",
-        "details": [
-          {
-            "path": "string",
-            "message": "string",
-            "code": "string"
-          }
-        ]
+        "error": "forbidden"
       }
     },
     "429": {
@@ -156,8 +66,6 @@
   "generator": {
     "auto": true,
     "version": 1,
-    "generatedAt": "2026-06-19",
-    "enrichedAt": "2026-06-20",
-    "expectedBackfilledAt": "2026-06-20"
+    "generatedAt": "2026-07-07"
   }
 }

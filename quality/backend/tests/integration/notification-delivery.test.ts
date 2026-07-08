@@ -160,6 +160,7 @@ describe('deliverNotification (outbox lifecycle)', () => {
   const emailRow = (attempts: number) => ({
     id: 'n1', userId: 'u1', title: 't', message: 'm', category: null, deepLink: null,
     priority: null, channels: '["app","email"]', deliveryStatus: state.deliveryStatus, attempts,
+    requestId: null,
   });
 
   beforeEach(() => {

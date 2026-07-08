@@ -21,18 +21,18 @@ async function findUserByEmailOrPhone(email?: string | null, phone?: string | nu
   return null;
 }
 
-// Helper to convert internal Prisma model to the response format dynamically
-const buildGroupResponse = async (group: any, requestingUserId: string) => {
-  // Fetch active groupMembers
-  const members = await prisma.groupExpenseMember.findMany({
-    where: { groupExpenseId: group.id, deletedAt: null }
-  });
-
-  // Fetch requesting user's friends list
-  const userFriends = await prisma.friend.findMany({
-    where: { userId: requestingUserId, deletedAt: null }
-  });
-
+// Pure assembler — converts a GroupExpense + its already-fetched context into
+// the response shape. No DB access here so it can be reused by both the single-
+// group path (buildGroupResponse) and the batched list path (getGroups),
+// avoiding the previous N+1 (3 queries per group + the friends list re-fetched
+// once per group).
+const assembleGroupResponse = (
+  group: any,
+  requestingUserId: string,
+  members: any[],
+  userFriends: any[],
+  creatorName: string | undefined,
+) => {
   const memberResponses = members.map((m) => {
     const friendRecord = userFriends.find((f) =>
       (m.email && f.email === m.email) ||
@@ -53,13 +53,11 @@ const buildGroupResponse = async (group: any, requestingUserId: string) => {
     };
   });
 
-  // Creator item
-  const creatorUser = await prisma.user.findUnique({ where: { id: group.userId } });
   const isCreatorMe = group.userId === requestingUserId;
   const creatorShare = Number(group.yourShare ?? (group.totalAmount / (members.length + 1)));
 
   const creatorMember = {
-    name: isCreatorMe ? 'You' : (creatorUser?.name || 'Creator'),
+    name: isCreatorMe ? 'You' : (creatorName || 'Creator'),
     share: creatorShare,
     paid: true,
     isCurrentUser: isCreatorMe,
@@ -86,6 +84,17 @@ const buildGroupResponse = async (group: any, requestingUserId: string) => {
   };
 };
 
+// Single-group helper — fetches this group's context then assembles. Used by
+// the create/update/get-one paths where only one group is in play.
+const buildGroupResponse = async (group: any, requestingUserId: string) => {
+  const [members, userFriends, creatorUser] = await Promise.all([
+    prisma.groupExpenseMember.findMany({ where: { groupExpenseId: group.id, deletedAt: null } }),
+    prisma.friend.findMany({ where: { userId: requestingUserId, deletedAt: null } }),
+    prisma.user.findUnique({ where: { id: group.userId }, select: { name: true } }),
+  ]);
+  return assembleGroupResponse(group, requestingUserId, members, userFriends, creatorUser?.name);
+};
+
 export const getGroups = async (req: AuthRequest, res: Response) => {
   try {
     const userId = getUserId(req);
@@ -98,21 +107,65 @@ export const getGroups = async (req: AuthRequest, res: Response) => {
       ? [{ groupMembers: { some: { email: currentUser.email, deletedAt: null } } }]
       : [];
 
-    const groups = await prisma.groupExpense.findMany({
-      where: {
-        deletedAt: null,
-        OR: [
-          { userId },
-          { groupMembers: { some: { userId, deletedAt: null } } },
-          ...emailConditions,
-        ],
-      },
-      orderBy: { createdAt: 'desc' }
+    // Pagination — bounded page size so a user with many groups can't force an
+    // unbounded response. Defaults keep the previous "all recent" behaviour for
+    // typical accounts (page 1, 100 rows).
+    const page = Math.max(1, Number(req.query.page) || 1);
+    const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 100));
+
+    const where = {
+      deletedAt: null,
+      OR: [
+        { userId },
+        { groupMembers: { some: { userId, deletedAt: null } } },
+        ...emailConditions,
+      ],
+    };
+
+    const [groups, total] = await Promise.all([
+      prisma.groupExpense.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      prisma.groupExpense.count({ where }),
+    ]);
+
+    // Batch-load everything the assembler needs in a fixed number of queries
+    // (was 3 queries PER group + the friends list re-fetched each iteration):
+    //   1 members query for all groups, 1 friends query, 1 creators query.
+    const groupIds = groups.map((g) => g.id);
+    const creatorIds = [...new Set(groups.map((g) => g.userId))];
+    const [allMembers, userFriends, creators] = await Promise.all([
+      groupIds.length
+        ? prisma.groupExpenseMember.findMany({ where: { groupExpenseId: { in: groupIds }, deletedAt: null } })
+        : Promise.resolve([]),
+      prisma.friend.findMany({ where: { userId, deletedAt: null } }),
+      creatorIds.length
+        ? prisma.user.findMany({ where: { id: { in: creatorIds } }, select: { id: true, name: true } })
+        : Promise.resolve([]),
+    ]);
+
+    const membersByGroup = new Map<string, any[]>();
+    for (const m of allMembers) {
+      const list = membersByGroup.get(m.groupExpenseId) ?? [];
+      list.push(m);
+      membersByGroup.set(m.groupExpenseId, list);
+    }
+    const creatorNameById = new Map<string, string>(
+      creators.map((c): [string, string] => [c.id, c.name]),
+    );
+
+    const data = groups.map((g) =>
+      assembleGroupResponse(g, userId, membersByGroup.get(g.id) ?? [], userFriends, creatorNameById.get(g.userId)),
+    );
+
+    res.json({
+      success: true,
+      data,
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
     });
-
-    const data = await Promise.all(groups.map(g => buildGroupResponse(g, userId)));
-
-    res.json({ success: true, data });
   } catch (error) {
     if (isDatabaseUnavailableError(error)) {
       logger.warn('Groups fallback: database unavailable, returning empty dataset.');

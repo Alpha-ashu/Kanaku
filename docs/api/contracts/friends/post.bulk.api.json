@@ -2,11 +2,11 @@
   "endpoint": "/api/v1/friends/bulk",
   "method": "POST",
   "feature": "friends",
-  "description": "Create friends bulk",
-  "auth": "public",
+  "description": "TODO: describe POST /api/v1/friends/bulk",
+  "auth": "bearer",
   "rateLimit": "default",
   "implementation": {
-    "controller": "backend/src/features/friends/friends.controller.ts#a",
+    "controller": "backend/src/features/friends/friends.controller.ts#validateBodyfriendBulkSchema",
     "route": "backend/src/features/friends/friend.routes.ts",
     "validation": {
       "body": "backend/src/features/friends/*.validation.ts#friendBulkSchema"
@@ -14,43 +14,35 @@
   },
   "request": {
     "headers": {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      "Authorization": "Bearer <jwt>"
     },
     "params": {},
     "query": {},
-    "body": {
-      "friends": [
-        {
-          "name": "string",
-          "email": "string",
-          "phone": "string"
-        }
-      ]
-    }
+    "body": {}
   },
   "responses": {
     "200": {
       "description": "TODO success shape",
-      "body": {
-        "success": true,
-        "data": {
-          "created": [],
-          "skipped": [
-            {
-              "name": "string",
-              "reason": "Already added"
-            }
-          ],
-          "createdCount": 0,
-          "skippedCount": 1
-        }
-      }
+      "body": {}
     },
     "400": {
       "description": "Validation failed",
       "body": {
         "error": "validation_error",
         "issues": []
+      }
+    },
+    "401": {
+      "description": "Missing/invalid token",
+      "body": {
+        "error": "unauthorized"
+      }
+    },
+    "403": {
+      "description": "Forbidden",
+      "body": {
+        "error": "forbidden"
       }
     },
     "429": {
@@ -76,9 +68,6 @@
   "generator": {
     "auto": true,
     "version": 1,
-    "generatedAt": "2026-06-19",
-    "enrichedAt": "2026-06-20",
-    "zodEnrichedAt": "2026-06-20",
-    "expectedBackfilledAt": "2026-06-20"
+    "generatedAt": "2026-07-07"
   }
 }

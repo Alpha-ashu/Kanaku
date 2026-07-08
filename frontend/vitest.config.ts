@@ -3,6 +3,11 @@ import path from 'path';
 
 export default defineConfig({
   root: __dirname,
+  // Mirror the Vite `define` so App.tsx's raw `__ADMIN_UI_ENABLED__` guard
+  // resolves under vitest (unified/admin surface → true).
+  define: {
+    __ADMIN_UI_ENABLED__: true,
+  },
   test: {
     environment: 'jsdom',
     globals: true,

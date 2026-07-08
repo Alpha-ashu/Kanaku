@@ -1,6 +1,5 @@
 import { Response } from 'express';
 import { AuthRequest, getUserId } from '../../middleware/auth';
-import { requireFeature, requireRole, requireApproved } from '../../middleware/rbac';
 import { prisma } from '../../db/prisma';
 import { isDatabaseUnavailableError } from '../../utils/databaseAvailability';
 

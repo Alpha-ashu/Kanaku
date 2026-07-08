@@ -2,34 +2,31 @@
   "endpoint": "/api/v1/avatars/dicebear/:style/svg",
   "method": "GET",
   "feature": "avatars",
-  "description": "Get DiceBear avatar SVG (public)",
+  "description": "TODO: describe GET /api/v1/avatars/dicebear/:style/svg",
   "auth": "public",
   "rateLimit": "default",
   "implementation": {
-    "controller": "backend/src/features/avatars/avatars.controller.ts#res",
+    "controller": "backend/src/features/avatars/avatars.controller.ts#validateParamsavatarParamsSchema",
     "route": "backend/src/features/avatars/avatar.routes.ts",
-    "validation": "inline or none -- verify"
+    "validation": {
+      "params": "backend/src/features/avatars/*.validation.ts#avatarParamsSchema"
+    }
   },
   "request": {
     "headers": {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      "Authorization": null
     },
     "params": {
       "style": "string (required)"
     },
-    "query": {
-      "seed": "string"
-    }
+    "query": {},
+    "body": null
   },
   "responses": {
     "200": {
       "description": "TODO success shape",
-      "body": {
-        "success": true,
-        "data": {
-          "id": "00000000-0000-0000-0000-000000000000"
-        }
-      }
+      "body": {}
     },
     "400": {
       "description": "Validation failed",
@@ -61,9 +58,6 @@
   "generator": {
     "auto": true,
     "version": 1,
-    "generatedAt": "2026-06-19",
-    "enrichedAt": "2026-06-20",
-    "responseSource": "documented-default",
-    "finalizedAt": "2026-06-20"
+    "generatedAt": "2026-07-07"
   }
 }

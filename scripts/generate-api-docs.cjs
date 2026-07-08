@@ -102,6 +102,16 @@ const ROUTE_RE =
 
 function parseRoutes(filePath) {
   const src = fs.readFileSync(filePath, 'utf8');
+
+  // Router-level middleware (applies to EVERY route below it in the file) —
+  // e.g. `router.use(authMiddleware)`, `router.use(pinGate)`,
+  // `router.use(requireRole('admin'))`. Previously ignored, which mislabeled
+  // every router.use(authMiddleware)-protected route as "public" (audit M-5).
+  const routerAuth =
+    /router\.use\(\s*authMiddleware\b/.test(src) ||
+    /router\.use\([^)]*\brequireRole\(/.test(src);
+  const routerStepUp = /router\.use\(\s*pinGate\b/.test(src) || /router\.use\([^)]*\bsecurityGate\(/.test(src);
+
   const routes = [];
   let m;
   while ((m = ROUTE_RE.exec(src)) !== null) {
@@ -112,18 +122,19 @@ function parseRoutes(filePath) {
       method,
       subpath,
       argsRaw: argsRaw.trim(),
-      ...inferMetadata(argsRaw),
+      ...inferMetadata(argsRaw, { routerAuth, routerStepUp }),
     });
   }
   return routes;
 }
 
-function inferMetadata(args) {
+function inferMetadata(args, fileCtx = {}) {
   const hasAuth =
-    /authMiddleware|requireAuth\b|requireRole\(|requireApproved|requireAdmin/.test(
+    fileCtx.routerAuth ||
+    /authMiddleware|requireAuth\b|requireRole\(|requireApproved|requireAdmin|requireFeature\(/.test(
       args,
     );
-  const hasStepUp = /securityGate\(/.test(args);
+  const hasStepUp = fileCtx.routerStepUp || /securityGate\(|pinGate\b/.test(args);
   const auth = hasStepUp ? 'bearer+stepUp' : hasAuth ? 'bearer' : 'public';
 
   let rateLimit = 'default';

@@ -2,34 +2,45 @@
   "endpoint": "/api/v1/collaborations/pending",
   "method": "GET",
   "feature": "collaboration",
-  "description": "List collaborations pending",
-  "auth": "public",
+  "description": "TODO: describe GET /api/v1/collaborations/pending",
+  "auth": "bearer",
   "rateLimit": "default",
   "implementation": {
-    "controller": "backend/src/features/collaboration/collaboration.controller.ts#s",
+    "controller": "backend/src/features/collaboration/collaboration.controller.ts#CollaborationControllerlistPendingCollaborations",
     "route": "backend/src/features/collaboration/collaboration.routes.ts",
-    "validation": "inline or none -- verify"
+    "validation": "inline or none ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â verify"
   },
   "request": {
     "headers": {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      "Authorization": "Bearer <jwt>"
     },
     "params": {},
-    "query": {}
+    "query": {},
+    "body": null
   },
   "responses": {
     "200": {
       "description": "TODO success shape",
-      "body": {
-        "success": true,
-        "data": []
-      }
+      "body": {}
     },
     "400": {
       "description": "Validation failed",
       "body": {
         "error": "validation_error",
         "issues": []
+      }
+    },
+    "401": {
+      "description": "Missing/invalid token",
+      "body": {
+        "error": "unauthorized"
+      }
+    },
+    "403": {
+      "description": "Forbidden",
+      "body": {
+        "error": "forbidden"
       }
     },
     "429": {
@@ -55,8 +66,6 @@
   "generator": {
     "auto": true,
     "version": 1,
-    "generatedAt": "2026-06-19",
-    "enrichedAt": "2026-06-20",
-    "expectedBackfilledAt": "2026-06-20"
+    "generatedAt": "2026-07-07"
   }
 }

@@ -2,11 +2,11 @@
   "endpoint": "/api/v1/advisors/application/:id/document/:docType",
   "method": "GET",
   "feature": "advisors",
-  "description": "Get advisors application document",
-  "auth": "public",
+  "description": "TODO: describe GET /api/v1/advisors/application/:id/document/:docType",
+  "auth": "bearer",
   "rateLimit": "default",
   "implementation": {
-    "controller": "backend/src/features/advisors/advisors.controller.ts#a",
+    "controller": "backend/src/features/advisors/advisors.controller.ts#validateParamsdocumentParamSchema",
     "route": "backend/src/features/advisors/advisor.routes.ts",
     "validation": {
       "params": "backend/src/features/advisors/*.validation.ts#documentParamSchema"
@@ -14,29 +14,38 @@
   },
   "request": {
     "headers": {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      "Authorization": "Bearer <jwt>"
     },
     "params": {
       "id": "string (required)",
       "docType": "string (required)"
     },
-    "query": {}
+    "query": {},
+    "body": null
   },
   "responses": {
     "200": {
       "description": "TODO success shape",
-      "body": {
-        "success": true,
-        "data": {
-          "id": "00000000-0000-0000-0000-000000000000"
-        }
-      }
+      "body": {}
     },
     "400": {
       "description": "Validation failed",
       "body": {
         "error": "validation_error",
         "issues": []
+      }
+    },
+    "401": {
+      "description": "Missing/invalid token",
+      "body": {
+        "error": "unauthorized"
+      }
+    },
+    "403": {
+      "description": "Forbidden",
+      "body": {
+        "error": "forbidden"
       }
     },
     "429": {
@@ -62,9 +71,6 @@
   "generator": {
     "auto": true,
     "version": 1,
-    "generatedAt": "2026-06-19",
-    "enrichedAt": "2026-06-20",
-    "responseSource": "documented-default",
-    "finalizedAt": "2026-06-20"
+    "generatedAt": "2026-07-07"
   }
 }

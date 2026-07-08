@@ -14,6 +14,7 @@ import { requestTimeout } from './middleware/timeout';
 import { authMiddleware, type AuthRequest } from './middleware/auth';
 import { requestContext } from './middleware/requestContext';
 import { requireRole } from './middleware/rbac';
+import { adminPlatformGate } from './middleware/adminPlatformGate';
 import { metricsMiddleware, getMetricsSnapshot } from './middleware/metrics';
 import { getCacheMetricsSnapshot } from './cache/redis';
 import { isCryptoConfigured } from './security/crypto';
@@ -253,7 +254,7 @@ app.get('/api/v1/health/deep', authMiddleware, async (req: AuthRequest, res) => 
  * Designed as a drop-in for `prom-client` later — JSON shape mirrors
  * what a Histogram + Counter would produce.
  */
-app.get('/api/v1/health/metrics', authMiddleware, requireRole('admin'), (_req, res) => {
+app.get('/api/v1/health/metrics', adminPlatformGate, authMiddleware, requireRole('admin'), (_req, res) => {
   res.json({
     timestamp: new Date().toISOString(),
     requests: getMetricsSnapshot(),

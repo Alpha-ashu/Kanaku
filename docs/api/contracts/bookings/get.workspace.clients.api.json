@@ -2,13 +2,13 @@
   "endpoint": "/api/v1/bookings/workspace/clients",
   "method": "GET",
   "feature": "bookings",
-  "description": "Advisor client list (Advisor only)",
+  "description": "TODO: describe GET /api/v1/bookings/workspace/clients",
   "auth": "bearer",
   "rateLimit": "default",
   "implementation": {
-    "controller": "backend/src/features/bookings/bookings.controller.ts#",
+    "controller": "backend/src/features/bookings/bookings.controller.ts#requireRoleadvisor",
     "route": "backend/src/features/bookings/booking.routes.ts",
-    "validation": "inline or none -- verify"
+    "validation": "inline or none ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â verify"
   },
   "request": {
     "headers": {
@@ -16,16 +16,13 @@
       "Authorization": "Bearer <jwt>"
     },
     "params": {},
-    "query": {}
+    "query": {},
+    "body": null
   },
   "responses": {
     "200": {
       "description": "TODO success shape",
-      "body": {
-        "success": true,
-        "data": {},
-        "message": "string"
-      }
+      "body": {}
     },
     "400": {
       "description": "Validation failed",
@@ -44,21 +41,6 @@
       "description": "Forbidden",
       "body": {
         "error": "forbidden"
-      }
-    },
-    "404": {
-      "description": "Not found",
-      "body": {
-        "success": false,
-        "error": "Human-readable error",
-        "code": "MISSING_FIELDS",
-        "details": [
-          {
-            "path": "string",
-            "message": "string",
-            "code": "string"
-          }
-        ]
       }
     },
     "429": {
@@ -84,7 +66,6 @@
   "generator": {
     "auto": true,
     "version": 1,
-    "generatedAt": "2026-06-19",
-    "enrichedAt": "2026-06-20"
+    "generatedAt": "2026-07-07"
   }
 }

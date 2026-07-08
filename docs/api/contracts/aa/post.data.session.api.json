@@ -2,11 +2,11 @@
   "endpoint": "/api/v1/aa/data/session",
   "method": "POST",
   "feature": "aa",
-  "description": "Create aa data session",
-  "auth": "public",
+  "description": "TODO: describe POST /api/v1/aa/data/session",
+  "auth": "bearer",
   "rateLimit": "default",
   "implementation": {
-    "controller": "backend/src/features/aa/aa.controller.ts#a",
+    "controller": "backend/src/features/aa/aa.controller.ts#validateBodycreateDataSessionSchema",
     "route": "backend/src/features/aa/aa.routes.ts",
     "validation": {
       "body": "backend/src/features/aa/*.validation.ts#createDataSessionSchema"
@@ -14,30 +14,35 @@
   },
   "request": {
     "headers": {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      "Authorization": "Bearer <jwt>"
     },
     "params": {},
     "query": {},
-    "body": {
-      "consentId": "string"
-    }
+    "body": {}
   },
   "responses": {
     "200": {
       "description": "TODO success shape",
-      "body": {
-        "success": true,
-        "data": {
-          "id": "00000000-0000-0000-0000-000000000000",
-          "consentId": "string"
-        }
-      }
+      "body": {}
     },
     "400": {
       "description": "Validation failed",
       "body": {
         "error": "validation_error",
         "issues": []
+      }
+    },
+    "401": {
+      "description": "Missing/invalid token",
+      "body": {
+        "error": "unauthorized"
+      }
+    },
+    "403": {
+      "description": "Forbidden",
+      "body": {
+        "error": "forbidden"
       }
     },
     "429": {
@@ -63,10 +68,6 @@
   "generator": {
     "auto": true,
     "version": 1,
-    "generatedAt": "2026-06-19",
-    "enrichedAt": "2026-06-20",
-    "zodEnrichedAt": "2026-06-20",
-    "responseSource": "documented-default",
-    "finalizedAt": "2026-06-20"
+    "generatedAt": "2026-07-07"
   }
 }

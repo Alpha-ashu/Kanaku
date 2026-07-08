@@ -10,6 +10,13 @@ import { HealthChecker } from '@/lib/health';
 import { toast } from 'sonner';
 import { initializeSmsTransactionDetection } from '@/services/smsTransactionDetectionService';
 import { canAccessPage } from '@/lib/featureFlags';
+import { ADMIN_UI_ENABLED } from '@/config/platform';
+
+// Build-time boolean injected by Vite `define` (vite.config.ts; vitest provides
+// it too). Referenced RAW at the lazy() sites below so esbuild folds
+// `false ? lazy(() => import(...)) : null` and physically drops the Admin/Manager
+// chunks from a user-surface (VITE_APP_SURFACE=user) build.
+declare const __ADMIN_UI_ENABLED__: boolean;
 import { syncUserDataFromCloud, SyncedTableName } from '@/lib/auth-sync-integration';
 
 
@@ -48,17 +55,20 @@ const Calendar = lazy(() => import('@/app/components/features/Calendar').then(m 
 const VoiceInput = lazy(() => import('@/app/components/features/VoiceInput').then(m => ({ default: m.VoiceInput })));
 const VoiceReview = lazy(() => import('@/app/components/features/VoiceReview').then(m => ({ default: m.VoiceReview })));
 const AuthCallback = lazy(() => import('@/app/components/auth/AuthCallback').then(m => ({ default: m.AuthCallback })));
-const AdminDashboard = lazy(() => import('@/app/components/admin/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
-const AdminAIDashboard = lazy(() => import('@/app/components/admin/AdminAIDashboard').then(m => ({ default: m.AdminAIDashboard })));
-const SyncMonitorDashboard = lazy(() => import('@/app/components/admin/SyncMonitorDashboard').then(m => ({ default: m.SyncMonitorDashboard })));
+// Admin/Manager platform pages: on a VITE_APP_SURFACE=user build these resolve
+// to null so the chunks are dropped from the customer bundle entirely
+// (ADMIN_UI_ENABLED is a build-time constant — see src/config/platform.ts).
+const AdminDashboard = __ADMIN_UI_ENABLED__ ? lazy(() => import('@/app/components/admin/AdminDashboard').then(m => ({ default: m.AdminDashboard }))) : null;
+const AdminAIDashboard = __ADMIN_UI_ENABLED__ ? lazy(() => import('@/app/components/admin/AdminAIDashboard').then(m => ({ default: m.AdminAIDashboard }))) : null;
+const SyncMonitorDashboard = __ADMIN_UI_ENABLED__ ? lazy(() => import('@/app/components/admin/SyncMonitorDashboard').then(m => ({ default: m.SyncMonitorDashboard }))) : null;
 const AdvisorWorkspace = lazy(() => import('@/app/components/advisor/AdvisorWorkspace').then(m => ({ default: m.AdvisorWorkspace })));
-const AdminFeaturePanel = lazy(() => import('@/app/components/admin/AdminFeaturePanel').then(m => ({ default: m.AdminFeaturePanel })));
+const AdminFeaturePanel = __ADMIN_UI_ENABLED__ ? lazy(() => import('@/app/components/admin/AdminFeaturePanel').then(m => ({ default: m.AdminFeaturePanel }))) : null;
 const AdvisorPanel = lazy(() => import('@/app/components/advisor/AdvisorPanel').then(m => ({ default: m.AdvisorPanel })));
 const BookAdvisor = lazy(() => import('@/app/components/advisor/BookAdvisor').then(m => ({ default: m.BookAdvisor })));
-const AdminAdvisorVerification = lazy(() => import('@/app/components/admin/AdminAdvisorVerification').then(m => ({ default: m.AdminAdvisorVerification })));
+const AdminAdvisorVerification = __ADMIN_UI_ENABLED__ ? lazy(() => import('@/app/components/admin/AdminAdvisorVerification').then(m => ({ default: m.AdminAdvisorVerification }))) : null;
 const PayEMI = lazy(() => import('@/app/components/transactions/PayEMI').then(m => ({ default: m.PayEMI })));
 const Diagnostics = lazy(() => import('@/app/components/shared/Diagnostics').then(m => ({ default: m.Diagnostics })));
-const ManagerAdvisorVerification = lazy(() => import('@/app/components/manager/ManagerAdvisorVerification').then(m => ({ default: m.ManagerAdvisorVerification })));
+const ManagerAdvisorVerification = __ADMIN_UI_ENABLED__ ? lazy(() => import('@/app/components/manager/ManagerAdvisorVerification').then(m => ({ default: m.ManagerAdvisorVerification }))) : null;
 const ToDoLists = lazy(() => import('@/app/components/features/ToDoLists').then(m => ({ default: m.ToDoLists })));
 const ToDoListDetail = lazy(() => import('@/app/components/features/ToDoListDetail').then(m => ({ default: m.ToDoListDetail })));
 const ToDoListShare = lazy(() => import('@/app/components/features/ToDoListShare').then(m => ({ default: m.ToDoListShare })));
@@ -548,7 +558,7 @@ const AppContent: React.FC = () => {
     //    using a ref to prevent an infinite loop (setCurrentPage → currentPage changes
     //    → effect re-fires → redirect again).
     if (staleAuthPaths.has(currentPage)) {
-      if (isAdmin) {
+      if (isAdmin && ADMIN_UI_ENABLED) {
         setCurrentPage('admin');
       } else if (visibleFeatures.dashboard) {
         setCurrentPage('dashboard');
@@ -559,7 +569,7 @@ const AppContent: React.FC = () => {
     }
 
     // Admin landing on dashboard: redirect to /admin exactly once per session.
-    if (currentPage === 'dashboard' && isAdmin && !hasAdminRedirectedRef.current) {
+    if (currentPage === 'dashboard' && isAdmin && ADMIN_UI_ENABLED && !hasAdminRedirectedRef.current) {
       hasAdminRedirectedRef.current = true;
       setCurrentPage('admin');
       return;
@@ -581,6 +591,14 @@ const AppContent: React.FC = () => {
     const isSystemAdminPage = ['admin', 'admin-feature-panel', 'admin-ai', 'ai-management', 'sync-monitor'].includes(currentPage);
     const isManagerPage = ['manager-advisor-verification', 'admin-advisor-verification', 'advisor-verification'].includes(currentPage);
     const isPublicPage = ['privacy-policy', 'terms', 'diagnostics', 'auth-callback', 'settings', 'user-profile', 'notifications'].includes(currentPage);
+
+    // User-surface build: the Admin/Manager UI is compiled out, so bounce off
+    // those pages regardless of role (the back-office lives on the admin origin).
+    if (!ADMIN_UI_ENABLED && (isSystemAdminPage || isManagerPage)) {
+      console.warn(`[Route Guard] Admin/Manager UI not present on this platform build: ${currentPage}`);
+      setCurrentPage(visibleFeatures.dashboard ? 'dashboard' : 'settings');
+      return;
+    }
 
     const hasAdminBypass = isAdmin && (isSystemAdminPage || isManagerPage);
     const hasManagerBypass = isManager && isManagerPage;
@@ -947,6 +965,13 @@ const AppContent: React.FC = () => {
     const isManagerPage = ['manager-advisor-verification', 'admin-advisor-verification', 'advisor-verification'].includes(currentPage);
     const isPublicPage = ['privacy-policy', 'terms', 'diagnostics', 'auth-callback', 'settings', 'user-profile', 'notifications'].includes(currentPage);
 
+    // User-surface build: Admin/Manager pages are compiled out — render the
+    // default surface instead (the route-guard effect also redirects).
+    if (!ADMIN_UI_ENABLED && (isSystemAdminPage || isManagerPage)) {
+      if (!visibleFeatures.dashboard) return <Settings />;
+      return <Dashboard setCurrentPage={setCurrentPage} />;
+    }
+
     const hasAdminBypass = isAdmin && (isSystemAdminPage || isManagerPage);
     const hasManagerBypass = isManager && isManagerPage;
 
@@ -1018,15 +1043,17 @@ const AppContent: React.FC = () => {
       );
       case 'diagnostics': return <Diagnostics />;
       case 'auth-callback': return <AuthCallback />;
-      case 'admin-feature-panel': return <AdminFeaturePanel />;
-      case 'admin': return <AdminDashboard />;
+      // Admin/Manager pages: components are null on a user-surface build —
+      // fall through to the Dashboard (the route guard also redirects).
+      case 'admin-feature-panel': return AdminFeaturePanel ? <AdminFeaturePanel /> : <Dashboard setCurrentPage={setCurrentPage} />;
+      case 'admin': return AdminDashboard ? <AdminDashboard /> : <Dashboard setCurrentPage={setCurrentPage} />;
       case 'advisor-panel': return <AdvisorWorkspace />;
       case 'ai-management':
-      case 'admin-ai': return <AdminAIDashboard />;
-      case 'sync-monitor': return <SyncMonitorDashboard />;
-      case 'admin-advisor-verification': return <AdminAdvisorVerification />;
+      case 'admin-ai': return AdminAIDashboard ? <AdminAIDashboard /> : <Dashboard setCurrentPage={setCurrentPage} />;
+      case 'sync-monitor': return SyncMonitorDashboard ? <SyncMonitorDashboard /> : <Dashboard setCurrentPage={setCurrentPage} />;
+      case 'admin-advisor-verification': return AdminAdvisorVerification ? <AdminAdvisorVerification /> : <Dashboard setCurrentPage={setCurrentPage} />;
       case 'advisor-verification':
-      case 'manager-advisor-verification': return <ManagerAdvisorVerification />;
+      case 'manager-advisor-verification': return ManagerAdvisorVerification ? <ManagerAdvisorVerification /> : <Dashboard setCurrentPage={setCurrentPage} />;
       case 'advisor': return <AdvisorWorkspace />;
       case 'voice-input': return <VoiceInput />;
       case 'voice-review': return <VoiceReview />;

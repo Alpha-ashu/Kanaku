@@ -83,8 +83,11 @@ describe('BILLS SECURITY', () => {
 
     const previousNodeEnv = process.env.NODE_ENV;
 
-    // Rate limiting middleware is bypassed in test mode, so enable it only for this case.
-    process.env.NODE_ENV = 'development';
+    // The rate-limit middleware is bypassed when NODE_ENV is 'test', 'development',
+    // or unset (see middleware/rateLimit.ts). To actually exercise the limiter we
+    // must switch to 'production' for this one case — 'development' would ALSO be
+    // skipped, so the limiter never engaged and this assertion could not pass.
+    process.env.NODE_ENV = 'production';
 
     try {
       const statuses: number[] = [];

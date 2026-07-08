@@ -2,11 +2,11 @@
   "endpoint": "/api/v1/friends",
   "method": "POST",
   "feature": "friends",
-  "description": "Add contact",
-  "auth": "public",
+  "description": "TODO: describe POST /api/v1/friends",
+  "auth": "bearer",
   "rateLimit": "default",
   "implementation": {
-    "controller": "backend/src/features/friends/friends.controller.ts#a",
+    "controller": "backend/src/features/friends/friends.controller.ts#validateBodyfriendCreateSchema",
     "route": "backend/src/features/friends/friend.routes.ts",
     "validation": {
       "body": "backend/src/features/friends/*.validation.ts#friendCreateSchema"
@@ -14,46 +14,17 @@
   },
   "request": {
     "headers": {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      "Authorization": "Bearer <jwt>"
     },
     "params": {},
     "query": {},
-    "body": {
-      "name": "Raj Kumar",
-      "phone": "string",
-      "email": "user@example.com",
-      "upiId": "string",
-      "linkedUserId": "uuid"
-    }
+    "body": {}
   },
   "responses": {
     "200": {
       "description": "TODO success shape",
-      "body": {
-        "success": true,
-        "data": {
-          "id": "cf1c6026-81e5-4256-9fcd-f1bed088b00e",
-          "userId": "9aef2b9b-ecc8-4698-a24f-c0fb18fb5a19",
-          "deviceId": null,
-          "name": "Raj Kumar",
-          "email": "user@example.com",
-          "phone": "string",
-          "avatar": null,
-          "notes": null,
-          "syncStatus": "synced",
-          "createdAt": "2026-06-20T08:00:27.753Z",
-          "updatedAt": "2026-06-20T08:00:27.753Z",
-          "deletedAt": null
-        }
-      }
-    },
-    "201": {
-      "description": "Added",
-      "body": {
-        "success": true,
-        "data": {},
-        "message": "string"
-      }
+      "body": {}
     },
     "400": {
       "description": "Validation failed",
@@ -63,48 +34,15 @@
       }
     },
     "401": {
-      "description": "Unauthorized",
+      "description": "Missing/invalid token",
       "body": {
-        "success": false,
-        "error": "Human-readable error",
-        "code": "MISSING_FIELDS",
-        "details": [
-          {
-            "path": "string",
-            "message": "string",
-            "code": "string"
-          }
-        ]
+        "error": "unauthorized"
       }
     },
     "403": {
       "description": "Forbidden",
       "body": {
-        "success": false,
-        "error": "Human-readable error",
-        "code": "MISSING_FIELDS",
-        "details": [
-          {
-            "path": "string",
-            "message": "string",
-            "code": "string"
-          }
-        ]
-      }
-    },
-    "404": {
-      "description": "Not found",
-      "body": {
-        "success": false,
-        "error": "Human-readable error",
-        "code": "MISSING_FIELDS",
-        "details": [
-          {
-            "path": "string",
-            "message": "string",
-            "code": "string"
-          }
-        ]
+        "error": "forbidden"
       }
     },
     "429": {
@@ -130,8 +68,6 @@
   "generator": {
     "auto": true,
     "version": 1,
-    "generatedAt": "2026-06-19",
-    "enrichedAt": "2026-06-20",
-    "expectedBackfilledAt": "2026-06-20"
+    "generatedAt": "2026-07-07"
   }
 }

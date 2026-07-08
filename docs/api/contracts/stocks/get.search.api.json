@@ -2,88 +2,35 @@
   "endpoint": "/api/v1/stocks/search",
   "method": "GET",
   "feature": "stocks",
-  "description": "Search stocks (public)",
+  "description": "TODO: describe GET /api/v1/stocks/search",
   "auth": "public",
   "rateLimit": "default",
   "implementation": {
-    "controller": "backend/src/features/stocks/stocks.controller.ts#s",
+    "controller": "backend/src/features/stocks/stocks.controller.ts#validateQuerysearchQuery",
     "route": "backend/src/features/stocks/stock.routes.ts",
-    "validation": "inline or none -- verify"
+    "validation": {
+      "query": "backend/src/features/stocks/*.validation.ts#searchQuery"
+    }
   },
   "request": {
     "headers": {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      "Authorization": null
     },
     "params": {},
-    "query": {
-      "q": "string"
-    }
+    "query": {},
+    "body": null
   },
   "responses": {
     "200": {
       "description": "TODO success shape",
-      "body": {
-        "success": true,
-        "data": [
-          {
-            "symbol": "TATAMOTORS",
-            "name": "Tata Motors Ltd",
-            "exchange": "NSE",
-            "type": "equity"
-          }
-        ]
-      }
+      "body": {}
     },
     "400": {
       "description": "Validation failed",
       "body": {
         "error": "validation_error",
         "issues": []
-      }
-    },
-    "401": {
-      "description": "Unauthorized",
-      "body": {
-        "success": false,
-        "error": "Human-readable error",
-        "code": "MISSING_FIELDS",
-        "details": [
-          {
-            "path": "string",
-            "message": "string",
-            "code": "string"
-          }
-        ]
-      }
-    },
-    "403": {
-      "description": "Forbidden",
-      "body": {
-        "success": false,
-        "error": "Human-readable error",
-        "code": "MISSING_FIELDS",
-        "details": [
-          {
-            "path": "string",
-            "message": "string",
-            "code": "string"
-          }
-        ]
-      }
-    },
-    "404": {
-      "description": "Not found",
-      "body": {
-        "success": false,
-        "error": "Human-readable error",
-        "code": "MISSING_FIELDS",
-        "details": [
-          {
-            "path": "string",
-            "message": "string",
-            "code": "string"
-          }
-        ]
       }
     },
     "429": {
@@ -109,7 +56,6 @@
   "generator": {
     "auto": true,
     "version": 1,
-    "generatedAt": "2026-06-19",
-    "enrichedAt": "2026-06-20"
+    "generatedAt": "2026-07-07"
   }
 }

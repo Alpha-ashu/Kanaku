@@ -3,6 +3,18 @@ import { AuthRequest } from './auth';
 import { prisma } from '../db/prisma';
 import { logger } from '../config/logger';
 import { getRequestActor } from './requestContext';
+import { audit } from '../utils/auditLogger';
+
+/** Emit a structured authz.denied audit event for an RBAC/feature rejection. */
+const auditDenied = (req: AuthRequest, meta: Record<string, unknown>) => {
+  audit({
+    event: 'authz.denied',
+    userId: req.userId,
+    ip: req.ip || undefined,
+    action: `${req.method} ${req.originalUrl || req.path}`,
+    meta: { role: req.user?.role ?? null, ...meta },
+  });
+};
 
 export type UserRole = 'admin' | 'manager' | 'advisor' | 'user';
 
@@ -19,6 +31,7 @@ export const requireRole = (allowedRoles: UserRole | UserRole[]) => {
     }
 
     if (!roles.includes(req.user.role as UserRole)) {
+      auditDenied(req, { check: 'requireRole', requiredRoles: roles });
       return res.status(403).json({ error: 'Access denied' });
     }
 
@@ -26,49 +39,12 @@ export const requireRole = (allowedRoles: UserRole | UserRole[]) => {
   };
 };
 
-/**
- * Feature-based permission checking
- * Usage: router.get('/book', requireFeature('bookAdvisor'), handler)
- */
-const FEATURE_PERMISSIONS: Record<string, UserRole[]> = {
-  'accounts': ['admin', 'advisor', 'user'],
-  'transactions': ['admin', 'advisor', 'user'],
-  'loans': ['admin', 'advisor', 'user'],
-  'goals': ['admin', 'advisor', 'user'],
-  'investments': ['admin', 'advisor', 'user'],
-  'settings': ['admin', 'advisor', 'user'],
-
-  // Feature-specific
-  'bookAdvisor': ['user'],
-  'manageAvailability': ['advisor'],
-  'viewBookings': ['advisor', 'admin'],
-  'adminPanel': ['admin'],
-  'advisorPanel': ['advisor'],
-  'payments': ['user', 'advisor', 'admin'],
-};
-
-export const requireFeature = (feature: string) => {
-  return (req: AuthRequest, res: Response, next: NextFunction) => {
-    const allowedRoles = FEATURE_PERMISSIONS[feature];
-
-    if (!allowedRoles) {
-      // Log the specific feature not found for internal debugging
-      console.error(`Internal Server Error: Feature '${feature}' not found in FEATURE_PERMISSIONS.`);
-      // Return a generic error message to the client for privacy
-      return res.status(500).json({ error: 'An internal server error occurred.' });
-    }
-
-    if (!req.user?.role) {
-      return res.status(401).json({ error: 'User role not found' });
-    }
-
-    if (!allowedRoles.includes(req.user.role as UserRole)) {
-      return res.status(403).json({ error: 'Access denied' });
-    }
-
-    next();
-  };
-};
+// NOTE: feature-based permission checking lives in ONE place —
+// `middleware/featureGate.ts` → `requireFeature(module, childKey?)`, backed by
+// the admin panel's live feature-flag matrix (with deny-by-default + audit).
+// A second, hardcoded `requireFeature` used to live here; it was unused (the
+// only importer never called it) and risked silently diverging from the real
+// gate, so it was removed. Import `requireFeature` from `../middleware/featureGate`.
 
 /**
  * Approve-only middleware - Check if advisor is approved

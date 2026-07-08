@@ -20,6 +20,7 @@ import { clearPinUnlock, isPinUnlocked } from '../../security/pinUnlock';
 import { sendWelcomeEmail, sendLoginAlertEmail } from '../../emails';
 import { auditFromRequest } from '../../utils/auditLogger';
 import { isProtectedAccount } from '../../utils/protectedAccounts';
+import { isAccountLocked } from '../../utils/accountStatus';
 
 const authService = new AuthService();
 const challengeMemoryCache = new Map<string, { payload: any; expiresAt: number }>();
@@ -425,8 +426,8 @@ export const loginChallenge = async (req: Request, res: Response, next: NextFunc
       throw AppError.unauthorized('Incorrect email or password. Please check your credentials and try again.', 'INVALID_CREDENTIALS');
     }
 
-    // Reject suspended accounts immediately — before any challenge or token is issued.
-    if (status === 'suspended') {
+    // Reject suspended/blocked accounts immediately — before any challenge or token is issued.
+    if (isAccountLocked(status)) {
       auditFromRequest(req, 'auth.login_failed', { meta: { email: normalizedEmail, reason: 'account_suspended' } });
       throw new AppError(403, 'ACCOUNT_SUSPENDED', 'Account suspended. Contact support.', true);
     }
@@ -541,8 +542,8 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
         throw AppError.unauthorized('Invalid credentials');
       }
 
-      // Defense in depth: reject suspended accounts at token issuance too.
-      if ((userRecord as any).status === 'suspended') {
+      // Defense in depth: reject suspended/blocked accounts at token issuance too.
+      if (isAccountLocked((userRecord as any).status)) {
         auditFromRequest(req, 'auth.login_failed', { meta: { email: input.email.toLowerCase().trim(), reason: 'account_suspended' } });
         throw new AppError(403, 'ACCOUNT_SUSPENDED', 'Account suspended. Contact support.', true);
       }
@@ -679,7 +680,7 @@ export const refreshToken = async (req: Request, res: Response, next: NextFuncti
     if (!user) {
       throw AppError.unauthorized('Account no longer exists. Please sign in again.', 'USER_NOT_FOUND');
     }
-    if ((user as any).status === 'suspended') {
+    if (isAccountLocked((user as any).status)) {
       throw new AppError(403, 'ACCOUNT_SUSPENDED', 'Account suspended. Contact support.', true);
     }
 

@@ -2,11 +2,11 @@
   "endpoint": "/api/v1/recurring",
   "method": "GET",
   "feature": "recurring",
-  "description": "List recurring",
-  "auth": "public",
+  "description": "TODO: describe GET /api/v1/recurring",
+  "auth": "bearer+stepUp",
   "rateLimit": "default",
   "implementation": {
-    "controller": "backend/src/features/recurring/recurring.controller.ts#a",
+    "controller": "backend/src/features/recurring/recurring.controller.ts#validateQueryrecurringQuerySchema",
     "route": "backend/src/features/recurring/recurring.routes.ts",
     "validation": {
       "query": "backend/src/features/recurring/*.validation.ts#recurringQuerySchema"
@@ -14,27 +14,35 @@
   },
   "request": {
     "headers": {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      "Authorization": "Bearer <jwt>"
     },
     "params": {},
-    "query": {
-      "status": "active",
-      "interval": "weekly"
-    }
+    "query": {},
+    "body": null
   },
   "responses": {
     "200": {
       "description": "TODO success shape",
-      "body": {
-        "success": true,
-        "data": []
-      }
+      "body": {}
     },
     "400": {
       "description": "Validation failed",
       "body": {
         "error": "validation_error",
         "issues": []
+      }
+    },
+    "401": {
+      "description": "Missing/invalid token",
+      "body": {
+        "error": "unauthorized"
+      }
+    },
+    "403": {
+      "description": "Forbidden",
+      "body": {
+        "error": "forbidden"
       }
     },
     "429": {
@@ -60,9 +68,6 @@
   "generator": {
     "auto": true,
     "version": 1,
-    "generatedAt": "2026-06-19",
-    "enrichedAt": "2026-06-20",
-    "expectedBackfilledAt": "2026-06-20",
-    "zodEnrichedAt": "2026-06-20"
+    "generatedAt": "2026-07-07"
   }
 }

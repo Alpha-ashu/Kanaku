@@ -2,11 +2,11 @@
   "endpoint": "/api/v1/collaborations/:id",
   "method": "DELETE",
   "feature": "collaboration",
-  "description": "Delete collaborations",
-  "auth": "public",
+  "description": "TODO: describe DELETE /api/v1/collaborations/:id",
+  "auth": "bearer",
   "rateLimit": "default",
   "implementation": {
-    "controller": "backend/src/features/collaboration/collaboration.controller.ts#a",
+    "controller": "backend/src/features/collaboration/collaboration.controller.ts#validateParamscollaborationIdParamSchema",
     "route": "backend/src/features/collaboration/collaboration.routes.ts",
     "validation": {
       "params": "backend/src/features/collaboration/*.validation.ts#collaborationIdParamSchema"
@@ -14,26 +14,37 @@
   },
   "request": {
     "headers": {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      "Authorization": "Bearer <jwt>"
     },
     "params": {
       "id": "string (required)"
     },
-    "query": {}
+    "query": {},
+    "body": null
   },
   "responses": {
     "200": {
       "description": "TODO success shape",
-      "body": {
-        "success": true,
-        "message": "collaboration deleted successfully"
-      }
+      "body": {}
     },
     "400": {
       "description": "Validation failed",
       "body": {
         "error": "validation_error",
         "issues": []
+      }
+    },
+    "401": {
+      "description": "Missing/invalid token",
+      "body": {
+        "error": "unauthorized"
+      }
+    },
+    "403": {
+      "description": "Forbidden",
+      "body": {
+        "error": "forbidden"
       }
     },
     "429": {
@@ -59,9 +70,6 @@
   "generator": {
     "auto": true,
     "version": 1,
-    "generatedAt": "2026-06-19",
-    "enrichedAt": "2026-06-20",
-    "responseSource": "documented-default",
-    "finalizedAt": "2026-06-20"
+    "generatedAt": "2026-07-07"
   }
 }

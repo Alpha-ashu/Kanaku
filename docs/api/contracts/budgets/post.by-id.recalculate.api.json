@@ -2,11 +2,11 @@
   "endpoint": "/api/v1/budgets/:id/recalculate",
   "method": "POST",
   "feature": "budgets",
-  "description": "Create budgets recalculate",
-  "auth": "public",
+  "description": "TODO: describe POST /api/v1/budgets/:id/recalculate",
+  "auth": "bearer+stepUp",
   "rateLimit": "default",
   "implementation": {
-    "controller": "backend/src/features/budgets/budgets.controller.ts#a",
+    "controller": "backend/src/features/budgets/budgets.controller.ts#validateParamsbudgetIdParamSchema",
     "route": "backend/src/features/budgets/budget.routes.ts",
     "validation": {
       "params": "backend/src/features/budgets/*.validation.ts#budgetIdParamSchema"
@@ -14,30 +14,37 @@
   },
   "request": {
     "headers": {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      "Authorization": "Bearer <jwt>"
     },
     "params": {
       "id": "string (required)"
     },
     "query": {},
-    "body": {},
-    "noBody": true
+    "body": {}
   },
   "responses": {
     "200": {
       "description": "TODO success shape",
-      "body": {
-        "success": true,
-        "data": {
-          "id": "00000000-0000-0000-0000-000000000000"
-        }
-      }
+      "body": {}
     },
     "400": {
       "description": "Validation failed",
       "body": {
         "error": "validation_error",
         "issues": []
+      }
+    },
+    "401": {
+      "description": "Missing/invalid token",
+      "body": {
+        "error": "unauthorized"
+      }
+    },
+    "403": {
+      "description": "Forbidden",
+      "body": {
+        "error": "forbidden"
       }
     },
     "429": {
@@ -63,10 +70,6 @@
   "generator": {
     "auto": true,
     "version": 1,
-    "generatedAt": "2026-06-19",
-    "enrichedAt": "2026-06-20",
-    "zodEnrichedAt": "2026-06-20",
-    "responseSource": "documented-default",
-    "finalizedAt": "2026-06-20"
+    "generatedAt": "2026-07-07"
   }
 }

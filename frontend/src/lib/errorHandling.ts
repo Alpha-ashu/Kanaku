@@ -6,6 +6,35 @@
 import { toast } from 'sonner';
 import { logger } from './logger';
 
+// ==================== Pluggable error reporter ====================
+// Integration seam for an external error-tracking service (Sentry, Bugsnag, …)
+// WITHOUT hardwiring a dependency or breaking the strict CSP. The app works with
+// no reporter registered (default). To wire Sentry, call once at startup:
+//
+//   import * as Sentry from '@sentry/browser';
+//   Sentry.init({ dsn: import.meta.env.VITE_SENTRY_DSN });
+//   registerErrorReporter((err) => Sentry.captureException(err));
+//
+// (and add the Sentry ingest host to `connectSrc` in the backend CSP).
+export type ErrorReporter = (error: unknown, context?: Record<string, unknown>) => void;
+
+let externalReporter: ErrorReporter | null = null;
+
+/** Register (or clear, with null) the external error reporter. */
+export function registerErrorReporter(reporter: ErrorReporter | null): void {
+  externalReporter = reporter;
+}
+
+/** Forward to the registered reporter; never let a reporter failure throw. */
+export function reportError(error: unknown, context?: Record<string, unknown>): void {
+  if (!externalReporter) return;
+  try {
+    externalReporter(error, context);
+  } catch (reporterErr) {
+    logger.warn('[Error Service] External error reporter threw (ignored)', { reporterErr });
+  }
+}
+
 // ==================== Toast Duration Constants (F-8) ====================
 // Centralised durations so every toast in the app is consistent.
 export const TOAST_DURATION = {
@@ -219,8 +248,9 @@ export class ErrorHandler {
       code: error.code,
       timestamp: error.timestamp,
     });
-    // TODO: integrate Sentry or a similar service here:
-    // sentry.captureException(error);
+    // Forward to the external error-tracking service if one has been registered
+    // (no-op otherwise — see registerErrorReporter above).
+    reportError(error, { type: error.type, code: error.code });
   }
 }
 

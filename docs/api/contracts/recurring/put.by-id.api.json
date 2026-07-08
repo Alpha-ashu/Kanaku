@@ -2,11 +2,11 @@
   "endpoint": "/api/v1/recurring/:id",
   "method": "PUT",
   "feature": "recurring",
-  "description": "Update recurring",
-  "auth": "public",
+  "description": "TODO: describe PUT /api/v1/recurring/:id",
+  "auth": "bearer+stepUp",
   "rateLimit": "default",
   "implementation": {
-    "controller": "backend/src/features/recurring/recurring.controller.ts#a",
+    "controller": "backend/src/features/recurring/recurring.controller.ts#validateParamsrecurringIdParamSchema",
     "route": "backend/src/features/recurring/recurring.routes.ts",
     "validation": {
       "params": "backend/src/features/recurring/*.validation.ts#recurringIdParamSchema"
@@ -14,52 +14,37 @@
   },
   "request": {
     "headers": {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      "Authorization": "Bearer <jwt>"
     },
     "params": {
       "id": "string (required)"
     },
     "query": {},
-    "body": {
-      "title": "string",
-      "amount": 0,
-      "category": "string",
-      "subcategory": "string",
-      "interval": "weekly",
-      "nextDueDate": "2026-06-20T08:14:56.743Z",
-      "autoProcess": false,
-      "accountId": "string",
-      "description": "string",
-      "merchant": "string",
-      "clientRequestId": "string"
-    }
+    "body": {}
   },
   "responses": {
     "200": {
       "description": "TODO success shape",
-      "body": {
-        "success": true,
-        "data": {
-          "id": "00000000-0000-0000-0000-000000000000",
-          "title": "string",
-          "amount": 0,
-          "category": "string",
-          "subcategory": "string",
-          "interval": "weekly",
-          "nextDueDate": "2026-06-20T08:14:56.743Z",
-          "autoProcess": false,
-          "accountId": "string",
-          "description": "string",
-          "merchant": "string",
-          "clientRequestId": "string"
-        }
-      }
+      "body": {}
     },
     "400": {
       "description": "Validation failed",
       "body": {
         "error": "validation_error",
         "issues": []
+      }
+    },
+    "401": {
+      "description": "Missing/invalid token",
+      "body": {
+        "error": "unauthorized"
+      }
+    },
+    "403": {
+      "description": "Forbidden",
+      "body": {
+        "error": "forbidden"
       }
     },
     "429": {
@@ -85,10 +70,6 @@
   "generator": {
     "auto": true,
     "version": 1,
-    "generatedAt": "2026-06-19",
-    "enrichedAt": "2026-06-20",
-    "zodEnrichedAt": "2026-06-20",
-    "responseSource": "documented-default",
-    "finalizedAt": "2026-06-20"
+    "generatedAt": "2026-07-07"
   }
 }
