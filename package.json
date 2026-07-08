@@ -53,7 +53,7 @@
     "qa:regression": "node scripts/qa-regression-diff.mjs",
     "qa:reports": "npm run qa:ui-inventory && npm run qa:contract-audit",
     "clean": "rimraf frontend/dist backend/dist node_modules/.vite",
-    "postinstall": "npm run db:generate"
+    "postinstall": "node -e \"process.env.VERCEL === '1' || require('child_process').execSync('npm run db:generate', {stdio: 'inherit'});\""
   },
   "devDependencies": {
     "@capacitor/android": "^8.0.2",
