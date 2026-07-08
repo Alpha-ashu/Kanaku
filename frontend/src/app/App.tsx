@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { initializeSmsTransactionDetection } from '@/services/smsTransactionDetectionService';
 import { canAccessPage } from '@/lib/featureFlags';
 import { ADMIN_UI_ENABLED } from '@/config/platform';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 
 // Build-time boolean injected by Vite `define` (vite.config.ts; vitest provides
 // it too). Referenced RAW at the lazy() sites below so esbuild folds
@@ -1139,11 +1140,10 @@ const App: React.FC = () => (
       <AppProvider>
         <AppContent />
         <Toaster position="top-center" richColors closeButton />
+        <SpeedInsights />
       </AppProvider>
     </SecurityProvider>
   </AuthProvider>
 );
 
 export default App;
-
-
