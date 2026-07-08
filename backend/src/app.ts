@@ -270,7 +270,7 @@ app.use('/api-docs', docsRoutes);
 app.use('/api/v1', apiRoutes);
 
 // 404  unknown routes
-app.use('*', (req, res) => {
+app.use((req, res) => {
   res.status(404).json({
     success: false,
     error: 'The page or resource you are looking for does not exist.',
