@@ -28,11 +28,11 @@
     "test:backend": "npm run test --workspace backend",
     "test:e2e": "playwright test",
     "test:api": "playwright test -c quality/api/e2e/playwright.api.config.ts",
-    "db:migrate": "cd backend && npx prisma@6.19.2 migrate dev",
-    "db:seed": "cd backend && npx prisma@6.19.2 db seed",
-    "db:studio": "cd backend && npx prisma@6.19.2 studio",
+    "db:migrate": "cd backend && npx prisma migrate dev",
+    "db:seed": "cd backend && npx prisma db seed",
+    "db:studio": "cd backend && npx prisma studio",
     "predb:generate": "node -e \"require('fs').mkdirSync('backend/generated/prisma/runtime', { recursive: true })\"",
-    "db:generate": "npx prisma@6.19.2 generate --schema backend/prisma/schema.prisma",
+    "db:generate": "npx prisma generate --schema backend/prisma/schema.prisma",
     "cap:init": "npx cap init",
     "cap:add:android": "npx cap add android",
     "cap:add:ios": "npx cap add ios",
@@ -53,7 +53,7 @@
     "qa:regression": "node scripts/qa-regression-diff.mjs",
     "qa:reports": "npm run qa:ui-inventory && npm run qa:contract-audit",
     "clean": "rimraf frontend/dist backend/dist node_modules/.vite",
-    "postinstall": "npm run db:generate"
+    "postinstall": "node -e \"process.env.VERCEL === '1' || require('child_process').execSync('npm run db:generate', {stdio: 'inherit'});\""
   },
   "devDependencies": {
     "@capacitor/android": "^8.0.2",
@@ -61,10 +61,12 @@
     "@playwright/test": "^1.61.1",
     "@vercel/node": "^5.8.22",
     "ajv": "^6.14.0",
-    "prisma": "^7.8.0",
+    "prisma": "6.19.2",
     "typescript": "^6.0.3"
   },
   "overrides": {
+    "@prisma/client": "6.19.2",
+    "prisma": "6.19.2",
     "rollup": "^4.62.0",
     "tar": "^7.5.16",
     "socket.io-parser": "^4.2.6",
