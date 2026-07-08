@@ -61,13 +61,13 @@
     "@playwright/test": "^1.61.1",
     "@vercel/node": "^5.8.22",
     "ajv": "^6.14.0",
+    "@types/express": "^4.17.21",
     "prisma": "6.19.2",
     "typescript": "^5.5.4"
   },
   "overrides": {
     "@prisma/client": "6.19.2",
     "prisma": "6.19.2",
-    "@types/express": "4.17.21",
     "zod": "3.23.8",
     "rollup": "^4.62.0",
     "tar": "^7.5.16",
