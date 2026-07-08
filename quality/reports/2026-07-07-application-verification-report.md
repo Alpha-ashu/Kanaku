@@ -535,10 +535,38 @@ Status legend: ✅ implemented this session · ⚙️ config/ops step for you ·
 | D5 | `authz.denied` audit event emitted from `requireRole` and every `requireFeature` denial (structured, redacted, with role + route) | L-3 | ✅ |
 | D6 | `GET /groups` N+1 removed (batched members/friends/creators; was 3 queries/group) + pagination; `GET /admin/users` bounded + `X-Total-Count` | P-1, P-2 | ✅ (`/transactions/export` streaming: ⏳) |
 | D7 | Deleted the redundant hardcoded `requireFeature` in `rbac.ts` (unused) — `featureGate.ts` is now the single implementation | L-2 | ✅ |
-| D8 | Removed dead `getDynamicSecureOption` (restores dev-HTTP cookie behaviour); `console.error` gone with the rbac `requireFeature` removal | L-1, L-4 | ✅ (PII drop migration + 2 TODOs: ⏳) |
+| D8 | Removed dead `getDynamicSecureOption` (restores dev-HTTP cookie behaviour); `console.error` gone with the rbac `requireFeature` removal | L-1, L-4 | ✅ |
 | D9 | Deleted stale `tax.test.ts`; fixed the 3 mis-written tests (§8) | §8 | ✅ |
 
-**Remaining (⏳) follow-ups, lower priority:** stream `/transactions/export`; drop the deprecated `User` PII columns (migration); the two TODOs (`session.controller.ts:101` WebSocket delivery, `errorHandling.ts:222` Sentry); remove the stale `tax` tag from `openapi.yaml`.
+### 9.1b Second implementation pass — all remaining code items closed
+
+| Item | What was done | Status |
+|---|---|---|
+| `/transactions/export` | **Was a bug, not just perf:** it requested `limit: 10000` but the service caps limit at 100, so exports silently returned only the first 100 transactions. Now streams the complete statement in bounded batches (`iterateAllTransactions`); memory-bounded; new unit test covers batch boundaries. | ✅ |
+| Deprecated `User` PII columns | Dropped `firstName/lastName/salary/dateOfBirth/jobType` (migration `20260708000000_drop_user_pii`) after verifying zero Prisma reads/writes (all PII lives in `profiles`). Idempotent; from-scratch apply + zero residual drift; client regenerated; **live smoke test confirms the profile still resolves first/last name from `profiles` after the drop.** | ✅ |
+| `session.controller.ts` TODO | Wired real-time session-chat delivery — emits `new_message` to the recipient's socket room (best-effort) alongside the durable notification. | ✅ |
+| `errorHandling.ts` TODO | Replaced the Sentry TODO with a real pluggable reporter (`registerErrorReporter`/`reportError`) — no-op until a reporter is registered, no forced dependency/CSP change. | ✅ |
+| `openapi.yaml` | Removed the stale `tax` tag. | ✅ |
+
+**The codebase now contains 0 TODO/FIXME comments.**
+
+### 9.1c Live end-to-end verification (real HTTP against a migrated Postgres)
+
+Booted the built backend against a fresh migrated DB and exercised the real flow — every step passed:
+
+| Step | Result |
+|---|---|
+| `POST /auth/register` (native) | 201, tokens returned |
+| `GET /auth/profile` | 200; `firstName`/`lastName` resolve from `profiles` (validates the PII-column drop) |
+| `POST /accounts` → `POST /transactions` (income 5000, expense 450.75) | created |
+| `GET /dashboard/summary` | `net = 4549.25` (5000 − 450.75), category breakdown correct |
+| `GET /transactions/export` | CSV streams **both** rows (truncation fix confirmed live) |
+| `GET /admin/users` & `POST /admin/users/:id/role` with a **user** token | **403** (RBAC boundary holds) |
+| `GET /transactions` with no token | **401** |
+| `POST /transactions` amount `-50` | **400** (server-side validation) |
+| `AuditLog` rows | `authz.denied` (with `requestId`), `auth.register`, `data.create`, `data.update` all persisted — confirms D5 auditing + the schema-drift `requestId` fix work end-to-end |
+
+**Only non-code items remain, and they are yours (ops/config, not defects):** (1) activate platform separation by provisioning `admin.<domain>` + setting `ADMIN_UI_HOSTS`/`VITE_APP_SURFACE`; (2) enable `PIN_GATE_ENABLED=true` in prod after QA. Both are deployment decisions the code is ready for.
 
 ### 9.2 QA manual test checklist
 
