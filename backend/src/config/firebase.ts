@@ -1,4 +1,5 @@
-import * as admin from "firebase-admin";
+import { initializeApp, getApps, cert } from "firebase-admin/app";
+import { getMessaging } from "firebase-admin/messaging";
 
 /**
  * Firebase Admin SDK Initialization
@@ -35,7 +36,7 @@ const firebaseConfig = {
  * Called once on application startup
  */
 export function initializeFirebase() {
-  if (admin.apps.length > 0) return;
+  if (getApps().length > 0) return;
 
   // No credentials configured: skip cleanly (push disabled) in dev; hard-fail in
   // production where FCM is expected. Avoids dumping a full stack trace locally.
@@ -48,7 +49,7 @@ export function initializeFirebase() {
   }
 
   try {
-    admin.initializeApp({ credential: admin.credential.cert(firebaseConfig as any) });
+    initializeApp({ credential: cert(firebaseConfig as any) });
     console.log("✓ Firebase Admin SDK initialized");
   } catch (error) {
     if (process.env.NODE_ENV === "production") {
@@ -66,10 +67,10 @@ export function initializeFirebase() {
  * Returns the messaging service for sending push notifications
  */
 export function getFirebaseMessaging() {
-  if (admin.apps.length === 0) {
+  if (getApps().length === 0) {
     initializeFirebase();
   }
-  return admin.messaging();
+  return getMessaging();
 }
 
 /**
