@@ -32756,18 +32756,8 @@ export namespace Prisma {
 
   export type AggregateUser = {
     _count: UserCountAggregateOutputType | null
-    _avg: UserAvgAggregateOutputType | null
-    _sum: UserSumAggregateOutputType | null
     _min: UserMinAggregateOutputType | null
     _max: UserMaxAggregateOutputType | null
-  }
-
-  export type UserAvgAggregateOutputType = {
-    salary: Decimal | null
-  }
-
-  export type UserSumAggregateOutputType = {
-    salary: Decimal | null
   }
 
   export type UserMinAggregateOutputType = {
@@ -32780,11 +32770,6 @@ export namespace Prisma {
     advisorStatus: string | null
     status: string | null
     isApproved: boolean | null
-    firstName: string | null
-    lastName: string | null
-    salary: Decimal | null
-    dateOfBirth: Date | null
-    jobType: string | null
     lastSynced: Date | null
     syncToken: string | null
     createdAt: Date | null
@@ -32806,11 +32791,6 @@ export namespace Prisma {
     advisorStatus: string | null
     status: string | null
     isApproved: boolean | null
-    firstName: string | null
-    lastName: string | null
-    salary: Decimal | null
-    dateOfBirth: Date | null
-    jobType: string | null
     lastSynced: Date | null
     syncToken: string | null
     createdAt: Date | null
@@ -32832,11 +32812,6 @@ export namespace Prisma {
     advisorStatus: number
     status: number
     isApproved: number
-    firstName: number
-    lastName: number
-    salary: number
-    dateOfBirth: number
-    jobType: number
     lastSynced: number
     syncToken: number
     createdAt: number
@@ -32850,14 +32825,6 @@ export namespace Prisma {
   }
 
 
-  export type UserAvgAggregateInputType = {
-    salary?: true
-  }
-
-  export type UserSumAggregateInputType = {
-    salary?: true
-  }
-
   export type UserMinAggregateInputType = {
     id?: true
     email?: true
@@ -32868,11 +32835,6 @@ export namespace Prisma {
     advisorStatus?: true
     status?: true
     isApproved?: true
-    firstName?: true
-    lastName?: true
-    salary?: true
-    dateOfBirth?: true
-    jobType?: true
     lastSynced?: true
     syncToken?: true
     createdAt?: true
@@ -32894,11 +32856,6 @@ export namespace Prisma {
     advisorStatus?: true
     status?: true
     isApproved?: true
-    firstName?: true
-    lastName?: true
-    salary?: true
-    dateOfBirth?: true
-    jobType?: true
     lastSynced?: true
     syncToken?: true
     createdAt?: true
@@ -32920,11 +32877,6 @@ export namespace Prisma {
     advisorStatus?: true
     status?: true
     isApproved?: true
-    firstName?: true
-    lastName?: true
-    salary?: true
-    dateOfBirth?: true
-    jobType?: true
     lastSynced?: true
     syncToken?: true
     createdAt?: true
@@ -32975,18 +32927,6 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
-     * Select which fields to average
-    **/
-    _avg?: UserAvgAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to sum
-    **/
-    _sum?: UserSumAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
      * Select which fields to find the minimum value
     **/
     _min?: UserMinAggregateInputType
@@ -33017,8 +32957,6 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: UserCountAggregateInputType | true
-    _avg?: UserAvgAggregateInputType
-    _sum?: UserSumAggregateInputType
     _min?: UserMinAggregateInputType
     _max?: UserMaxAggregateInputType
   }
@@ -33033,11 +32971,6 @@ export namespace Prisma {
     advisorStatus: string
     status: string
     isApproved: boolean
-    firstName: string | null
-    lastName: string | null
-    salary: Decimal | null
-    dateOfBirth: Date | null
-    jobType: string | null
     lastSynced: Date | null
     syncToken: string | null
     createdAt: Date
@@ -33048,8 +32981,6 @@ export namespace Prisma {
     gender: string | null
     state: string | null
     _count: UserCountAggregateOutputType | null
-    _avg: UserAvgAggregateOutputType | null
-    _sum: UserSumAggregateOutputType | null
     _min: UserMinAggregateOutputType | null
     _max: UserMaxAggregateOutputType | null
   }
@@ -33078,11 +33009,6 @@ export namespace Prisma {
     advisorStatus?: boolean
     status?: boolean
     isApproved?: boolean
-    firstName?: boolean
-    lastName?: boolean
-    salary?: boolean
-    dateOfBirth?: boolean
-    jobType?: boolean
     lastSynced?: boolean
     syncToken?: boolean
     createdAt?: boolean
@@ -33139,11 +33065,6 @@ export namespace Prisma {
     advisorStatus?: boolean
     status?: boolean
     isApproved?: boolean
-    firstName?: boolean
-    lastName?: boolean
-    salary?: boolean
-    dateOfBirth?: boolean
-    jobType?: boolean
     lastSynced?: boolean
     syncToken?: boolean
     createdAt?: boolean
@@ -33165,11 +33086,6 @@ export namespace Prisma {
     advisorStatus?: boolean
     status?: boolean
     isApproved?: boolean
-    firstName?: boolean
-    lastName?: boolean
-    salary?: boolean
-    dateOfBirth?: boolean
-    jobType?: boolean
     lastSynced?: boolean
     syncToken?: boolean
     createdAt?: boolean
@@ -33191,11 +33107,6 @@ export namespace Prisma {
     advisorStatus?: boolean
     status?: boolean
     isApproved?: boolean
-    firstName?: boolean
-    lastName?: boolean
-    salary?: boolean
-    dateOfBirth?: boolean
-    jobType?: boolean
     lastSynced?: boolean
     syncToken?: boolean
     createdAt?: boolean
@@ -33207,7 +33118,7 @@ export namespace Prisma {
     state?: boolean
   }
 
-  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "email" | "name" | "password" | "role" | "roleMode" | "advisorStatus" | "status" | "isApproved" | "firstName" | "lastName" | "salary" | "dateOfBirth" | "jobType" | "lastSynced" | "syncToken" | "createdAt" | "updatedAt" | "avatarId" | "city" | "country" | "gender" | "state", ExtArgs["result"]["user"]>
+  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "email" | "name" | "password" | "role" | "roleMode" | "advisorStatus" | "status" | "isApproved" | "lastSynced" | "syncToken" | "createdAt" | "updatedAt" | "avatarId" | "city" | "country" | "gender" | "state", ExtArgs["result"]["user"]>
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     accounts?: boolean | User$accountsArgs<ExtArgs>
     advisorAvailability?: boolean | User$advisorAvailabilityArgs<ExtArgs>
@@ -33296,11 +33207,6 @@ export namespace Prisma {
       advisorStatus: string
       status: string
       isApproved: boolean
-      firstName: string | null
-      lastName: string | null
-      salary: Prisma.Decimal | null
-      dateOfBirth: Date | null
-      jobType: string | null
       lastSynced: Date | null
       syncToken: string | null
       createdAt: Date
@@ -33776,11 +33682,6 @@ export namespace Prisma {
     readonly advisorStatus: FieldRef<"User", 'String'>
     readonly status: FieldRef<"User", 'String'>
     readonly isApproved: FieldRef<"User", 'Boolean'>
-    readonly firstName: FieldRef<"User", 'String'>
-    readonly lastName: FieldRef<"User", 'String'>
-    readonly salary: FieldRef<"User", 'Decimal'>
-    readonly dateOfBirth: FieldRef<"User", 'DateTime'>
-    readonly jobType: FieldRef<"User", 'String'>
     readonly lastSynced: FieldRef<"User", 'DateTime'>
     readonly syncToken: FieldRef<"User", 'String'>
     readonly createdAt: FieldRef<"User", 'DateTime'>
@@ -62647,11 +62548,6 @@ export namespace Prisma {
     advisorStatus: 'advisorStatus',
     status: 'status',
     isApproved: 'isApproved',
-    firstName: 'firstName',
-    lastName: 'lastName',
-    salary: 'salary',
-    dateOfBirth: 'dateOfBirth',
-    jobType: 'jobType',
     lastSynced: 'lastSynced',
     syncToken: 'syncToken',
     createdAt: 'createdAt',
@@ -65674,11 +65570,6 @@ export namespace Prisma {
     advisorStatus?: StringFilter<"User"> | string
     status?: StringFilter<"User"> | string
     isApproved?: BoolFilter<"User"> | boolean
-    firstName?: StringNullableFilter<"User"> | string | null
-    lastName?: StringNullableFilter<"User"> | string | null
-    salary?: DecimalNullableFilter<"User"> | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: DateTimeNullableFilter<"User"> | Date | string | null
-    jobType?: StringNullableFilter<"User"> | string | null
     lastSynced?: DateTimeNullableFilter<"User"> | Date | string | null
     syncToken?: StringNullableFilter<"User"> | string | null
     createdAt?: DateTimeFilter<"User"> | Date | string
@@ -65734,11 +65625,6 @@ export namespace Prisma {
     advisorStatus?: SortOrder
     status?: SortOrder
     isApproved?: SortOrder
-    firstName?: SortOrderInput | SortOrder
-    lastName?: SortOrderInput | SortOrder
-    salary?: SortOrderInput | SortOrder
-    dateOfBirth?: SortOrderInput | SortOrder
-    jobType?: SortOrderInput | SortOrder
     lastSynced?: SortOrderInput | SortOrder
     syncToken?: SortOrderInput | SortOrder
     createdAt?: SortOrder
@@ -65797,11 +65683,6 @@ export namespace Prisma {
     advisorStatus?: StringFilter<"User"> | string
     status?: StringFilter<"User"> | string
     isApproved?: BoolFilter<"User"> | boolean
-    firstName?: StringNullableFilter<"User"> | string | null
-    lastName?: StringNullableFilter<"User"> | string | null
-    salary?: DecimalNullableFilter<"User"> | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: DateTimeNullableFilter<"User"> | Date | string | null
-    jobType?: StringNullableFilter<"User"> | string | null
     lastSynced?: DateTimeNullableFilter<"User"> | Date | string | null
     syncToken?: StringNullableFilter<"User"> | string | null
     createdAt?: DateTimeFilter<"User"> | Date | string
@@ -65857,11 +65738,6 @@ export namespace Prisma {
     advisorStatus?: SortOrder
     status?: SortOrder
     isApproved?: SortOrder
-    firstName?: SortOrderInput | SortOrder
-    lastName?: SortOrderInput | SortOrder
-    salary?: SortOrderInput | SortOrder
-    dateOfBirth?: SortOrderInput | SortOrder
-    jobType?: SortOrderInput | SortOrder
     lastSynced?: SortOrderInput | SortOrder
     syncToken?: SortOrderInput | SortOrder
     createdAt?: SortOrder
@@ -65872,10 +65748,8 @@ export namespace Prisma {
     gender?: SortOrderInput | SortOrder
     state?: SortOrderInput | SortOrder
     _count?: UserCountOrderByAggregateInput
-    _avg?: UserAvgOrderByAggregateInput
     _max?: UserMaxOrderByAggregateInput
     _min?: UserMinOrderByAggregateInput
-    _sum?: UserSumOrderByAggregateInput
   }
 
   export type UserScalarWhereWithAggregatesInput = {
@@ -65891,11 +65765,6 @@ export namespace Prisma {
     advisorStatus?: StringWithAggregatesFilter<"User"> | string
     status?: StringWithAggregatesFilter<"User"> | string
     isApproved?: BoolWithAggregatesFilter<"User"> | boolean
-    firstName?: StringNullableWithAggregatesFilter<"User"> | string | null
-    lastName?: StringNullableWithAggregatesFilter<"User"> | string | null
-    salary?: DecimalNullableWithAggregatesFilter<"User"> | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
-    jobType?: StringNullableWithAggregatesFilter<"User"> | string | null
     lastSynced?: DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
     syncToken?: StringNullableWithAggregatesFilter<"User"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
@@ -70815,11 +70684,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -70875,11 +70739,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -70935,11 +70794,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -70995,11 +70849,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -71055,11 +70904,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -71081,11 +70925,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -71107,11 +70946,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -75638,11 +75472,6 @@ export namespace Prisma {
     advisorStatus?: SortOrder
     status?: SortOrder
     isApproved?: SortOrder
-    firstName?: SortOrder
-    lastName?: SortOrder
-    salary?: SortOrder
-    dateOfBirth?: SortOrder
-    jobType?: SortOrder
     lastSynced?: SortOrder
     syncToken?: SortOrder
     createdAt?: SortOrder
@@ -75652,10 +75481,6 @@ export namespace Prisma {
     country?: SortOrder
     gender?: SortOrder
     state?: SortOrder
-  }
-
-  export type UserAvgOrderByAggregateInput = {
-    salary?: SortOrder
   }
 
   export type UserMaxOrderByAggregateInput = {
@@ -75668,11 +75493,6 @@ export namespace Prisma {
     advisorStatus?: SortOrder
     status?: SortOrder
     isApproved?: SortOrder
-    firstName?: SortOrder
-    lastName?: SortOrder
-    salary?: SortOrder
-    dateOfBirth?: SortOrder
-    jobType?: SortOrder
     lastSynced?: SortOrder
     syncToken?: SortOrder
     createdAt?: SortOrder
@@ -75694,11 +75514,6 @@ export namespace Prisma {
     advisorStatus?: SortOrder
     status?: SortOrder
     isApproved?: SortOrder
-    firstName?: SortOrder
-    lastName?: SortOrder
-    salary?: SortOrder
-    dateOfBirth?: SortOrder
-    jobType?: SortOrder
     lastSynced?: SortOrder
     syncToken?: SortOrder
     createdAt?: SortOrder
@@ -75708,10 +75523,6 @@ export namespace Prisma {
     country?: SortOrder
     gender?: SortOrder
     state?: SortOrder
-  }
-
-  export type UserSumOrderByAggregateInput = {
-    salary?: SortOrder
   }
 
   export type UserPinCountOrderByAggregateInput = {
@@ -79915,11 +79726,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -79974,11 +79780,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -80223,11 +80024,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -80282,11 +80078,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -80471,11 +80262,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -80530,11 +80316,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -80594,11 +80375,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -80653,11 +80429,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -80728,11 +80499,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -80787,11 +80553,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -80857,11 +80618,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -80916,11 +80672,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -80975,11 +80726,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -81034,11 +80780,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -81109,11 +80850,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -81168,11 +80904,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -81227,11 +80958,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -81286,11 +81012,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -81387,11 +81108,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -81446,11 +81162,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -81578,11 +81289,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -81637,11 +81343,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -81750,11 +81451,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -81809,11 +81505,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -81973,11 +81664,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -82032,11 +81718,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -82096,11 +81777,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -82155,11 +81831,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -82275,11 +81946,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -82334,11 +82000,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -82404,11 +82065,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -82463,11 +82119,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -82522,11 +82173,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -82581,11 +82227,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -82656,11 +82297,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -82715,11 +82351,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -82774,11 +82405,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -82833,11 +82459,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -82947,11 +82568,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -83006,11 +82622,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -83110,11 +82721,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -83169,11 +82775,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -83244,11 +82845,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -83303,11 +82899,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -83362,11 +82953,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -83421,11 +83007,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -83496,11 +83077,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -83555,11 +83131,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -83614,11 +83185,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -83673,11 +83239,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -83788,11 +83349,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -83847,11 +83403,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -83941,11 +83492,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -84000,11 +83546,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -84143,11 +83684,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -84202,11 +83738,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -84398,11 +83929,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -84457,11 +83983,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -84634,11 +84155,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -84693,11 +84209,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -84752,11 +84263,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -84811,11 +84317,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -84886,11 +84387,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -84945,11 +84441,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -85004,11 +84495,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -85063,11 +84549,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -85138,11 +84619,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -85197,11 +84673,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -85256,11 +84727,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -85315,11 +84781,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -85420,11 +84881,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -85479,11 +84935,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -85704,11 +85155,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -85763,11 +85209,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -85838,11 +85279,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -85897,11 +85333,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -85956,11 +85387,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -86015,11 +85441,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -86079,11 +85500,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -86138,11 +85554,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -86252,11 +85663,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -86311,11 +85717,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -86381,11 +85782,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -86440,11 +85836,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -86544,11 +85935,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -86603,11 +85989,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -86678,11 +86059,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -86737,11 +86113,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -86796,11 +86167,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -86855,11 +86221,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -86930,11 +86291,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -86989,11 +86345,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -87154,11 +86505,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -87213,11 +86559,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -87406,11 +86747,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -87465,11 +86801,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -90147,11 +89478,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -90206,11 +89532,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -90281,11 +89602,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -90340,11 +89656,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -90399,11 +89710,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -90458,11 +89764,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -90533,11 +89834,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -90592,11 +89888,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -90651,11 +89942,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -90710,11 +89996,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -90785,11 +90066,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -90844,11 +90120,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -90903,11 +90174,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -90962,11 +90228,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -91037,11 +90298,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -91096,11 +90352,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -91276,11 +90527,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -91335,11 +90581,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -91519,11 +90760,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -91578,11 +90814,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -91853,11 +91084,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -91912,11 +91138,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -91976,11 +91197,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -92035,11 +91251,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -92110,11 +91321,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -92169,11 +91375,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -92239,11 +91440,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -92298,11 +91494,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -92449,11 +91640,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -92508,11 +91694,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -92583,11 +91764,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -92642,11 +91818,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -92701,11 +91872,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -92760,11 +91926,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -92835,11 +91996,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -92894,11 +92050,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -92953,11 +92104,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -93012,11 +92158,6 @@ export namespace Prisma {
     advisorStatus?: string
     status?: string
     isApproved?: boolean
-    firstName?: string | null
-    lastName?: string | null
-    salary?: Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: Date | string | null
-    jobType?: string | null
     lastSynced?: Date | string | null
     syncToken?: string | null
     createdAt?: Date | string
@@ -93087,11 +92228,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -93146,11 +92282,6 @@ export namespace Prisma {
     advisorStatus?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     isApproved?: BoolFieldUpdateOperationsInput | boolean
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    salary?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    jobType?: NullableStringFieldUpdateOperationsInput | string | null
     lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     syncToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
