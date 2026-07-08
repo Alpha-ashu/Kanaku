@@ -97,13 +97,19 @@ describe('REGRESSION TESTS', () => {
       }
     }, 60000);
 
-    it('account balance cannot be negative on create', async () => {
+    it('accepts a negative opening balance (credit-card / overdraft accounts by design)', async () => {
+      // Negative balances are intentional — see account.service.ts
+      // ("Allow negative balances for credit card and overdraft accounts") and
+      // the derived-balance model ("overspend shows real negatives, no clamp").
+      // So creation must SUCCEED (201); 503 covers a DB-down local run.
       const res = await request(app)
         .post(`${API}/accounts`)
         .set(auth('validation-test-user'))
-        .send({ name: 'Test', type: 'bank', balance: -500 });
-      // Any rejection is acceptable (400/404/409/422); 500/503 cover DB-down.
-      expect([400, 404, 409, 422, 500, 503]).toContain(res.status);
+        .send({ name: `OverdraftAcct-${Date.now()}`, type: 'credit_card', balance: -500 });
+      expect([201, 503]).toContain(res.status);
+      if (res.status === 201) {
+        expect(Number(res.body.data.openingBalance ?? res.body.data.balance)).toBe(-500);
+      }
     });
 
     it('goal targetAmount must be positive', async () => {

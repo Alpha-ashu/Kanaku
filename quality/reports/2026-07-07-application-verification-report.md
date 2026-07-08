@@ -566,6 +566,42 @@ Booted the built backend against a fresh migrated DB and exercised the real flow
 | `POST /transactions` amount `-50` | **400** (server-side validation) |
 | `AuditLog` rows | `authz.denied` (with `requestId`), `auth.register`, `data.create`, `data.update` all persisted — confirms D5 auditing + the schema-drift `requestId` fix work end-to-end |
 
+### 9.1d Advisor cross-role flow — verified live, two bugs found & fixed
+
+Verified the full advisor lifecycle across four roles (client, applicant, manager, admin) with real HTTP + DB assertions. **Two integration bugs were found and fixed:**
+
+- **Booking notification named the wrong person** — `createBooking` sent the advisor a notification reading *"{advisor's own name} has requested a session"*. Fixed to name the **client** (`req.user.name`). Verified live: advisor now receives *"Client One has requested a consultation session"*.
+- **Advisor applications skipped managers** — `applyAsAdvisor` notified admins only, yet managers are equally authorized to review/approve (`requireRole(['admin','manager'])`). Fixed to notify **both**, each with a role-appropriate deep link (manager → `/manager-advisor-verification`). Covered by a new storage-mocked integration test.
+
+Full live flow (all steps passed):
+
+| Step | Result |
+|---|---|
+| User applies → `AdvisorApplication` row | recorded (PENDING) |
+| Admin `GET /advisors/admin/applications` | lists the applicant |
+| **Manager** `GET /advisors/admin/applications` | **200** — manager also sees the queue |
+| Admin `PUT /advisors/admin/:id/approve` | 200 |
+| Applicant `User` row after approve | `role=advisor`, `isApproved=true`; application → `APPROVED` (with `reviewedBy`) |
+| Applicant notification | **"Advisor Application Approved!"** (user told their account is now advisor) |
+| Client `POST /bookings` | 201; `BookingRequest` row = `consultation \| amt=500.00 \| pending \| dur=30` (all fields) |
+| Advisor booking notification | **"Client One has requested a consultation session"** (client-name fix) |
+| Advisor `GET /bookings?role=advisor` | sees the booking (frontend `AdvisorWorkspace` uses this exact call) |
+
+### 9.1e Field-level persistence spot-check (frontend contract → backend → DB)
+
+Created one record per money feature via the API and read the row straight back from Postgres — every submitted field persisted (amounts as `Decimal`):
+
+| Feature | DB row |
+|---|---|
+| Account | `Smoke Wallet`, type `cash` |
+| Transaction (income/expense) | `income 5000`, `expense 450.75` — dashboard net `4549.25` |
+| Goal | `Emergency Fund \| targetAmount=100000.00 \| category=savings` |
+| Loan | `Car Loan \| principal=500000.00 \| rate=9.50 \| type=borrowed` |
+| Budget | `Food & Dining \| amount=8000.00 \| period=monthly` |
+| Investment | `Reliance \| qty=10.0000 \| buy=2800.00 \| current=2950.00 \| totalInvested=28000.00` (auto-computed) |
+
+Server-side validation confirmed live: an investment with the wrong field names / missing `purchaseDate` → **400** (not a silent partial write).
+
 **Only non-code items remain, and they are yours (ops/config, not defects):** (1) activate platform separation by provisioning `admin.<domain>` + setting `ADMIN_UI_HOSTS`/`VITE_APP_SURFACE`; (2) enable `PIN_GATE_ENABLED=true` in prod after QA. Both are deployment decisions the code is ready for.
 
 ### 9.2 QA manual test checklist
