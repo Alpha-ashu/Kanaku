@@ -387,7 +387,54 @@ export class AuthService {
     });
 
     if (!user) {
-      return { valid: false, status: null };
+      // User doesn't exist in local DB — check if they exist in Supabase
+      // (registered via the Supabase auth path before BFF was the default).
+      const supabaseValid = await authProvider.verifyCredentials(email, passwordStr);
+      if (!supabaseValid) {
+        return { valid: false, status: null };
+      }
+
+      // Supabase confirmed the credentials — auto-provision a local user record
+      // so the challenge-flow can proceed and the account is usable via backend auth.
+      try {
+        const hashedPassword = await bcrypt.hash(passwordStr, 12);
+        const nameParts = email.split('@')[0].split(/[._-]/).filter(Boolean);
+        const name = nameParts.map((p) => p.charAt(0).toUpperCase() + p.slice(1)).join(' ') || email;
+        const { deriveLocaleAndCurrency, DEFAULT_NOTIFICATION_PREFERENCES, DEFAULT_CATEGORIES } = await import('./registration.defaults');
+        const locale = deriveLocaleAndCurrency(undefined);
+
+        await prisma.$transaction(async (tx) => {
+          const created = await tx.user.create({
+            data: { email, name, password: hashedPassword, role: 'user', isApproved: true },
+          });
+          await tx.$executeRaw`
+            INSERT INTO public.profiles (id, email, full_name, created_at, updated_at)
+            VALUES (${created.id}::uuid, ${email}, ${name}, NOW(), NOW())
+            ON CONFLICT (id) DO NOTHING;
+          `;
+          await tx.userSettings.create({
+            data: {
+              userId: created.id,
+              currency: locale.currency,
+              language: locale.language,
+              timezone: locale.timezone,
+              settings: { notifications: { ...DEFAULT_NOTIFICATION_PREFERENCES } },
+            },
+          });
+          await tx.category.createMany({
+            data: DEFAULT_CATEGORIES.map((c) => ({
+              userId: created.id, name: c.name, type: c.type, color: c.color, icon: c.icon,
+            })),
+          });
+        });
+        logger.info(`[AuthService] Auto-provisioned local user for Supabase account: ${email}`);
+      } catch (provisionErr: any) {
+        logger.warn(`[AuthService] Auto-provision failed for ${email}; login will proceed if user now exists`, { message: provisionErr.message });
+      }
+
+      // Re-fetch to get the status field for the caller
+      const provisioned = await prisma.user.findUnique({ where: { email } });
+      return { valid: true, status: (provisioned as any)?.status ?? null };
     }
 
     let isPasswordValid = false;

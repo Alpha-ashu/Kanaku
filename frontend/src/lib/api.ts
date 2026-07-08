@@ -552,6 +552,8 @@ class HTTPClient {
               const rawCode = data.code || 'HTTP_401';
               const isCredentialsError = [
                 'INVALID_CREDENTIALS',
+                'LOGIN_FAILED',
+                'CHALLENGE_INVALID',
                 'EMAIL_NOT_FOUND',
                 'ACCOUNT_LOCKED',
                 'ACCOUNT_DISABLED',
