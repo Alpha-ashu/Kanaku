@@ -57,11 +57,11 @@
   "devDependencies": {
     "@capacitor/android": "^8.0.2",
     "@capacitor/cli": "^8.0.2",
-    "@playwright/test": "^1.60.0",
-    "@vercel/node": "^5.8.17",
+    "@playwright/test": "^1.61.1",
+    "@vercel/node": "^5.8.22",
     "ajv": "^6.14.0",
-    "prisma": "^6.19.3",
-    "typescript": "^5.3.3"
+    "prisma": "^7.8.0",
+    "typescript": "^6.0.3"
   },
   "overrides": {
     "rollup": "^4.62.0",
