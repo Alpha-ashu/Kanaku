@@ -300,16 +300,22 @@ export const applyAsAdvisor = async (req: AuthRequest, res: Response) => {
     // Mark user as pending advisor
     await prisma.user.update({ where: { id: userId }, data: { role: 'advisor', isApproved: false } });
 
-    // Notify admins
-    const admins = await prisma.user.findMany({ where: { role: 'admin' }, select: { id: true } });
-    if (admins.length > 0) {
+    // Notify BOTH admins and managers — the advisor-verification queue is
+    // reviewable/approvable by either role (requireRole(['admin','manager']) on
+    // /advisors/admin/*), so both must see incoming applications. Each gets a
+    // deep link to their own verification surface.
+    const reviewers = await prisma.user.findMany({
+      where: { role: { in: ['admin', 'manager'] } },
+      select: { id: true, role: true },
+    });
+    if (reviewers.length > 0) {
       await prisma.notification.createMany({
-        data: admins.map((a) => ({
-          userId: a.id,
+        data: reviewers.map((r) => ({
+          userId: r.id,
           title: 'New Advisor Application',
           message: `${fullName} has applied to become an advisor. Review required.`,
           category: 'system',
-          deepLink: '/admin/advisor-verification',
+          deepLink: r.role === 'manager' ? '/manager-advisor-verification' : '/admin/advisor-verification',
         })),
       });
     }
