@@ -1,6 +1,8 @@
 import { Response } from 'express';
 import { AuthRequest, getUserId } from '../../middleware/auth';
 import { prisma } from '../../db/prisma';
+import { getSocketManager } from '../../sockets';
+import { logger } from '../../config/logger';
 
 // Get session details
 export const getSession = async (req: AuthRequest, res: Response) => {
@@ -98,8 +100,23 @@ export const sendMessage = async (req: AuthRequest, res: Response) => {
     const otherUserId = session.advisorId === userId ? session.clientId : session.advisorId;
     const senderName = req.user?.name || 'User';
 
-    // TODO: Implement WebSocket notification for real-time delivery
-    // For now, create a notification
+    // Real-time delivery: push the message straight to the recipient's socket
+    // room so an open chat updates instantly. Best-effort — a disconnected
+    // recipient still gets the durable DB notification below and sees the
+    // message on next fetch. Never let a socket hiccup fail the send.
+    try {
+      getSocketManager().notifyUser(otherUserId, 'new_message', {
+        sessionId,
+        message: chatMessage,
+      });
+    } catch (emitErr) {
+      logger.warn('[Sessions] Real-time message emit failed (non-fatal)', {
+        sessionId,
+        error: emitErr instanceof Error ? emitErr.message : String(emitErr),
+      });
+    }
+
+    // Durable fallback notification (covers offline recipients).
     await prisma.notification.create({
       data: {
         userId: otherUserId,

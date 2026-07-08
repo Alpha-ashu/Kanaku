@@ -78,7 +78,14 @@ describe('Registration remediation', () => {
   it('writes an immutable audit record for the successful registration', async () => {
     const res = await registerUser({ name: 'Audit User', email: uniqueEmail(), password: 'SecurePass123!', mobile: uniquePhone('+91') });
     if (!dbUp(res.status)) return;
-    const audits = await prisma.auditLog.findMany({ where: { userId: res.body.data.user.id, action: 'auth.register' } });
+    // The audit row is written fire-and-forget (never blocks the response), so
+    // poll briefly for it instead of reading once — otherwise this races the
+    // async persist and flakes.
+    let audits: Awaited<ReturnType<typeof prisma.auditLog.findMany>> = [];
+    for (let attempt = 0; attempt < 20 && audits.length === 0; attempt += 1) {
+      audits = await prisma.auditLog.findMany({ where: { userId: res.body.data.user.id, action: 'auth.register' } });
+      if (audits.length === 0) await new Promise((r) => setTimeout(r, 100));
+    }
     expect(audits.length).toBeGreaterThanOrEqual(1);
     expect(audits[0].requestId).toBeTruthy();
   });

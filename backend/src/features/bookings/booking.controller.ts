@@ -1,6 +1,5 @@
 import { Response } from 'express';
 import { AuthRequest, getUserId } from '../../middleware/auth';
-import { requireFeature, requireRole, requireApproved } from '../../middleware/rbac';
 import { prisma } from '../../db/prisma';
 import { isDatabaseUnavailableError } from '../../utils/databaseAvailability';
 
@@ -74,12 +73,15 @@ export const createBooking = async (req: AuthRequest, res: Response) => {
       },
     });
 
-    // Create notification for advisor
+    // Create notification for advisor. The message must name the CLIENT who
+    // booked (req.user), not the advisor themselves — the advisor is the
+    // recipient. (Previously used advisor.name, so advisors saw their own name.)
+    const clientName = req.user?.name || 'A client';
     await prisma.notification.create({
       data: {
         userId: advisorId,
         title: 'New Booking Request',
-        message: `${advisor.name} has requested a ${sessionType} session`,
+        message: `${clientName} has requested a ${sessionType} session`,
         category: 'booking',
         deepLink: '/bookings',
       },

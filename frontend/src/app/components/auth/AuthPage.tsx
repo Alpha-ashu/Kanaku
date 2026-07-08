@@ -40,52 +40,54 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
  };
 
  const handleSubmit = async (e: React.FormEvent) => {
- e.preventDefault();
- setLoading(true);
+  e.preventDefault();
+  setLoading(true);
 
- try {
- if (isLogin) {
- // Login
- await signIn(email, password);
- toast.success('Welcome back!');
- onAuthSuccess();
- // Signup
- if (!validateEmail(email)) {
- toast.error('Please enter a valid email address');
- setLoading(false);
- return;
- }
+  try {
+    if (isLogin) {
+      // Login
+      await signIn(email, password);
+      toast.success('Welcome back!');
+      onAuthSuccess();
+    } else {
+      // Signup — validate before calling the API
+      if (!validateEmail(email)) {
+        toast.error('Please enter a valid email address');
+        setLoading(false);
+        return;
+      }
 
- const passwordError = validatePasswordStrength(password);
- if (passwordError) {
- toast.error(passwordError);
- setLoading(false);
- return;
- }
+      const passwordError = validatePasswordStrength(password);
+      if (passwordError) {
+        toast.error(passwordError);
+        setLoading(false);
+        return;
+      }
 
- if (!fullName.trim()) {
- toast.error('Please enter your full name');
- setLoading(false);
- return;
- }
- await signUp(email, password, fullName);
- toast.success('Account created! Please check your email to verify.');
- // Auto-login after signup
- setTimeout(async () => {
- try {
- await signIn(email, password);
- onAuthSuccess();
- } catch (err) {
- console.error('Auto-login failed:', err);
- }
- }, 1000);
- }
- } catch (error: any) {
- console.error('Auth error:', error);
- toast.error(error.message || 'Authentication failed');
- } finally {
- setLoading(false);
- }
+      if (!fullName.trim()) {
+        toast.error('Please enter your full name');
+        setLoading(false);
+        return;
+      }
+
+      await signUp(email, password, fullName);
+      toast.success('Account created! Please check your email to verify.');
+      // Auto-login after signup
+      setTimeout(async () => {
+        try {
+          await signIn(email, password);
+          onAuthSuccess();
+        } catch (err) {
+          console.error('Auto-login failed:', err);
+        }
+      }, 1000);
+    }
+  } catch (error: any) {
+    console.error('Auth error:', error);
+    toast.error(error.message || 'Authentication failed');
+  } finally {
+    setLoading(false);
+  }
  };
 
  if (currentView === 'privacy') {

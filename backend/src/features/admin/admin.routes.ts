@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { authMiddleware } from '../../middleware/auth';
+import { adminPlatformGate } from '../../middleware/adminPlatformGate';
 import { requireRole } from '../../middleware/rbac';
 import * as AdminController from './admin.controller';
 import { adminCacheMetricsQuerySchema } from './admin.validation';
@@ -28,7 +29,11 @@ router.use(authMiddleware);
 router.get('/features', AdminController.getFeatureFlags);
 router.get('/ai-features', AdminController.getAIFeatureFlags);
 
-// All other admin routes require admin role
+// All other admin routes require the admin platform origin (no-op until
+// ADMIN_UI_HOSTS is configured — see adminPlatformGate) AND the admin role.
+// NOTE: the two /features reads above stay outside the gate on purpose —
+// every role fetches its feature flags from them at login.
+router.use(adminPlatformGate);
 router.use(requireRole('admin'));
 
 // User management

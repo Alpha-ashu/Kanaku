@@ -230,8 +230,18 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, __dirname, '')
   const apiProxyTarget = env.VITE_API_PROXY_TARGET || 'http://localhost:3000'
 
+  // Platform surface (Admin/Manager vs User/Advisor separation). Inlined as a
+  // literal boolean so Rollup constant-folds `__ADMIN_UI_ENABLED__` and
+  // tree-shakes the Admin/Manager lazy import() calls out of a user build
+  // (a cross-module const in platform.ts is not folded aggressively enough to
+  // drop the dynamic chunks — a define is).
+  const adminUiEnabled = (env.VITE_APP_SURFACE || 'unified') !== 'user'
+
   return {
     publicDir: 'public',
+    define: {
+      __ADMIN_UI_ENABLED__: JSON.stringify(adminUiEnabled),
+    },
     plugins: [
       react(),
       tailwindcss(),

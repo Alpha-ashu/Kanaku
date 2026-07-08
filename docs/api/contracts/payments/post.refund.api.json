@@ -2,11 +2,11 @@
   "endpoint": "/api/v1/payments/refund",
   "method": "POST",
   "feature": "payments",
-  "description": "Refund payment (Stripe)",
-  "auth": "public",
+  "description": "TODO: describe POST /api/v1/payments/refund",
+  "auth": "bearer",
   "rateLimit": "default",
   "implementation": {
-    "controller": "backend/src/features/payments/payments.controller.ts#a",
+    "controller": "backend/src/features/payments/payments.controller.ts#validateBodyrefundPaymentSchema",
     "route": "backend/src/features/payments/payment.routes.ts",
     "validation": {
       "body": "backend/src/features/payments/*.validation.ts#refundPaymentSchema"
@@ -14,24 +14,17 @@
   },
   "request": {
     "headers": {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      "Authorization": "Bearer <jwt>"
     },
     "params": {},
     "query": {},
-    "body": {
-      "paymentId": "uuid",
-      "reason": "string",
-      "amount": 0
-    }
+    "body": {}
   },
   "responses": {
     "200": {
       "description": "TODO success shape",
-      "body": {
-        "success": true,
-        "data": {},
-        "message": "string"
-      }
+      "body": {}
     },
     "400": {
       "description": "Validation failed",
@@ -41,48 +34,15 @@
       }
     },
     "401": {
-      "description": "Unauthorized",
+      "description": "Missing/invalid token",
       "body": {
-        "success": false,
-        "error": "Human-readable error",
-        "code": "MISSING_FIELDS",
-        "details": [
-          {
-            "path": "string",
-            "message": "string",
-            "code": "string"
-          }
-        ]
+        "error": "unauthorized"
       }
     },
     "403": {
       "description": "Forbidden",
       "body": {
-        "success": false,
-        "error": "Human-readable error",
-        "code": "MISSING_FIELDS",
-        "details": [
-          {
-            "path": "string",
-            "message": "string",
-            "code": "string"
-          }
-        ]
-      }
-    },
-    "404": {
-      "description": "Not found",
-      "body": {
-        "success": false,
-        "error": "Human-readable error",
-        "code": "MISSING_FIELDS",
-        "details": [
-          {
-            "path": "string",
-            "message": "string",
-            "code": "string"
-          }
-        ]
+        "error": "forbidden"
       }
     },
     "429": {
@@ -108,7 +68,6 @@
   "generator": {
     "auto": true,
     "version": 1,
-    "generatedAt": "2026-06-19",
-    "enrichedAt": "2026-06-20"
+    "generatedAt": "2026-07-07"
   }
 }

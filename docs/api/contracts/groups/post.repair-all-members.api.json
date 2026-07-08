@@ -2,37 +2,45 @@
   "endpoint": "/api/v1/groups/repair-all-members",
   "method": "POST",
   "feature": "groups",
-  "description": "Create groups repair-all-members",
-  "auth": "public",
+  "description": "TODO: describe POST /api/v1/groups/repair-all-members",
+  "auth": "bearer",
   "rateLimit": "default",
   "implementation": {
-    "controller": "backend/src/features/groups/groups.controller.ts#s",
+    "controller": "backend/src/features/groups/groups.controller.ts#GroupControllerrepairAllGroupMembers",
     "route": "backend/src/features/groups/group.routes.ts",
-    "validation": "inline or none -- verify"
+    "validation": "inline or none ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â verify"
   },
   "request": {
     "headers": {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      "Authorization": "Bearer <jwt>"
     },
     "params": {},
     "query": {},
-    "body": {},
-    "noBody": true
+    "body": {}
   },
   "responses": {
     "200": {
       "description": "TODO success shape",
-      "body": {
-        "success": true,
-        "message": "No groups to repair",
-        "repaired": 0
-      }
+      "body": {}
     },
     "400": {
       "description": "Validation failed",
       "body": {
         "error": "validation_error",
         "issues": []
+      }
+    },
+    "401": {
+      "description": "Missing/invalid token",
+      "body": {
+        "error": "unauthorized"
+      }
+    },
+    "403": {
+      "description": "Forbidden",
+      "body": {
+        "error": "forbidden"
       }
     },
     "429": {
@@ -58,9 +66,6 @@
   "generator": {
     "auto": true,
     "version": 1,
-    "generatedAt": "2026-06-19",
-    "enrichedAt": "2026-06-20",
-    "expectedBackfilledAt": "2026-06-20",
-    "zodEnrichedAt": "2026-06-20"
+    "generatedAt": "2026-07-07"
   }
 }

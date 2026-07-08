@@ -2,46 +2,47 @@
   "endpoint": "/api/v1/goals/:id/members",
   "method": "POST",
   "feature": "goals",
-  "description": "Create goals members",
-  "auth": "public",
+  "description": "TODO: describe POST /api/v1/goals/:id/members",
+  "auth": "bearer+stepUp",
   "rateLimit": "default",
   "implementation": {
-    "controller": "backend/src/features/goals/goals.controller.ts#a",
+    "controller": "backend/src/features/goals/goals.controller.ts#groupGoals",
     "route": "backend/src/features/goals/goal.routes.ts",
-    "validation": {
-      "params": "backend/src/features/goals/*.validation.ts#goalIdParamSchema"
-    }
+    "validation": "inline or none ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â verify"
   },
   "request": {
     "headers": {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      "Authorization": "Bearer <jwt>"
     },
     "params": {
       "id": "string (required)"
     },
     "query": {},
-    "body": {
-      "email": "user@example.com",
-      "name": "string"
-    }
+    "body": {}
   },
   "responses": {
     "200": {
       "description": "TODO success shape",
-      "body": {
-        "success": true,
-        "data": {
-          "id": "00000000-0000-0000-0000-000000000000",
-          "email": "user@example.com",
-          "name": "string"
-        }
-      }
+      "body": {}
     },
     "400": {
       "description": "Validation failed",
       "body": {
         "error": "validation_error",
         "issues": []
+      }
+    },
+    "401": {
+      "description": "Missing/invalid token",
+      "body": {
+        "error": "unauthorized"
+      }
+    },
+    "403": {
+      "description": "Forbidden",
+      "body": {
+        "error": "forbidden"
       }
     },
     "429": {
@@ -67,10 +68,6 @@
   "generator": {
     "auto": true,
     "version": 1,
-    "generatedAt": "2026-06-19",
-    "enrichedAt": "2026-06-20",
-    "zodEnrichedAt": "2026-06-20",
-    "responseSource": "documented-default",
-    "finalizedAt": "2026-06-20"
+    "generatedAt": "2026-07-07"
   }
 }

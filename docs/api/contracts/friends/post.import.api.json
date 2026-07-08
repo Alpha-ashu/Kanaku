@@ -2,38 +2,45 @@
   "endpoint": "/api/v1/friends/import",
   "method": "POST",
   "feature": "friends",
-  "description": "Create friends import",
-  "auth": "public",
+  "description": "TODO: describe POST /api/v1/friends/import",
+  "auth": "bearer",
   "rateLimit": "default",
   "implementation": {
-    "controller": "backend/src/features/friends/friends.controller.ts#",
+    "controller": "backend/src/features/friends/friends.controller.ts#uploadsinglefile",
     "route": "backend/src/features/friends/friend.routes.ts",
-    "validation": "inline or none -- verify"
+    "validation": "inline or none ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â verify"
   },
   "request": {
     "headers": {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      "Authorization": "Bearer <jwt>"
     },
     "params": {},
     "query": {},
-    "body": {},
-    "noBody": true
+    "body": {}
   },
   "responses": {
     "200": {
       "description": "TODO success shape",
-      "body": {
-        "success": true,
-        "data": {
-          "id": "00000000-0000-0000-0000-000000000000"
-        }
-      }
+      "body": {}
     },
     "400": {
       "description": "Validation failed",
       "body": {
         "error": "validation_error",
         "issues": []
+      }
+    },
+    "401": {
+      "description": "Missing/invalid token",
+      "body": {
+        "error": "unauthorized"
+      }
+    },
+    "403": {
+      "description": "Forbidden",
+      "body": {
+        "error": "forbidden"
       }
     },
     "429": {
@@ -59,10 +66,6 @@
   "generator": {
     "auto": true,
     "version": 1,
-    "generatedAt": "2026-06-19",
-    "enrichedAt": "2026-06-20",
-    "zodEnrichedAt": "2026-06-20",
-    "responseSource": "documented-default",
-    "finalizedAt": "2026-06-20"
+    "generatedAt": "2026-07-07"
   }
 }

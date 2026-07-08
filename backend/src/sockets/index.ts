@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import { Server, Socket } from 'socket.io';
 import { prisma } from '../db/prisma';
 import { isAllowedOrigin } from '../config/cors';
+import { isAccountLocked } from '../utils/accountStatus';
 import { getPurposeClient } from '../config/redis-connections';
 
 const SOCKET_AUTH_CACHE_TTL = 60; // seconds — cache verified identity to avoid DB on every connect
@@ -138,7 +139,7 @@ export class SocketManager {
       select: { id: true, role: true, status: true },
     });
 
-    if (dbUser?.status === 'suspended') return null;
+    if (isAccountLocked(dbUser?.status)) return null;
 
     const identity: SocketUserIdentity = {
       id: userId,

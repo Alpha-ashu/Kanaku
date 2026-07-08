@@ -2,39 +2,29 @@
   "endpoint": "/api/v1/receipts/status/:jobId",
   "method": "GET",
   "feature": "receipts",
-  "description": "Get receipt scan status",
-  "auth": "public",
+  "description": "TODO: describe GET /api/v1/receipts/status/:jobId",
+  "auth": "bearer",
   "rateLimit": "default",
   "implementation": {
-    "controller": "backend/src/features/receipts/receipts.controller.ts#",
+    "controller": "backend/src/features/receipts/receipts.controller.ts#?",
     "route": "backend/src/features/receipts/receipt.routes.ts",
-    "validation": "inline or none -- verify"
+    "validation": "inline or none ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â verify"
   },
   "request": {
     "headers": {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      "Authorization": "Bearer <jwt>"
     },
     "params": {
       "jobId": "string (required)"
     },
-    "query": {}
+    "query": {},
+    "body": null
   },
   "responses": {
     "200": {
       "description": "TODO success shape",
-      "body": {
-        "success": true,
-        "data": {
-          "jobId": "job_abc123",
-          "status": "completed",
-          "result": {
-            "merchant": "Swiggy",
-            "total": 450,
-            "date": "2026-06-09",
-            "category": "Food & Dining"
-          }
-        }
-      }
+      "body": {}
     },
     "400": {
       "description": "Validation failed",
@@ -44,48 +34,15 @@
       }
     },
     "401": {
-      "description": "Unauthorized",
+      "description": "Missing/invalid token",
       "body": {
-        "success": false,
-        "error": "Human-readable error",
-        "code": "MISSING_FIELDS",
-        "details": [
-          {
-            "path": "string",
-            "message": "string",
-            "code": "string"
-          }
-        ]
+        "error": "unauthorized"
       }
     },
     "403": {
       "description": "Forbidden",
       "body": {
-        "success": false,
-        "error": "Human-readable error",
-        "code": "MISSING_FIELDS",
-        "details": [
-          {
-            "path": "string",
-            "message": "string",
-            "code": "string"
-          }
-        ]
-      }
-    },
-    "404": {
-      "description": "Not found",
-      "body": {
-        "success": false,
-        "error": "Human-readable error",
-        "code": "MISSING_FIELDS",
-        "details": [
-          {
-            "path": "string",
-            "message": "string",
-            "code": "string"
-          }
-        ]
+        "error": "forbidden"
       }
     },
     "429": {
@@ -111,7 +68,6 @@
   "generator": {
     "auto": true,
     "version": 1,
-    "generatedAt": "2026-06-19",
-    "enrichedAt": "2026-06-20"
+    "generatedAt": "2026-07-07"
   }
 }

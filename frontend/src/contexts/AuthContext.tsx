@@ -218,47 +218,23 @@ const decodeJwt = (token: string): any => {
   }
 };
 
+// UI-only lockout fallback for the canonical role accounts. EXACT matches only:
+// substring/prefix heuristics would hand the privileged UI shell to any email
+// merely containing "admin"/"manager"/"advisor" (e.g. myadmin.k@gmail.com).
+// The backend role from the DB remains the only real authorization.
+const EMAIL_ROLE_MAP: Record<string, UserRole> = {
+  'admin@kanaku.com': 'admin',
+  'superadmin@kanaku.com': 'admin',
+  'admin@example.com': 'admin',
+  'manager@kanaku.com': 'manager',
+  'advisor@kanaku.com': 'advisor',
+  'advisore@kanaku.com': 'advisor',
+  'user@kanaku.com': 'user',
+};
+
 const getRoleFromEmail = (email?: string | null): UserRole | null => {
   if (!email) return null;
-  const cleanEmail = email.trim().toLowerCase();
-  
-  if (
-    cleanEmail === 'admin@KANAKU.com' ||
-    cleanEmail === 'superadmin@KANAKU.com' ||
-    cleanEmail === 'admin@example.com' ||
-    cleanEmail.startsWith('admin@') ||
-    cleanEmail.startsWith('superadmin@') ||
-    cleanEmail.includes('admin')
-  ) {
-    return 'admin';
-  }
-  
-  if (
-    cleanEmail === 'manager@KANAKU.com' ||
-    cleanEmail.startsWith('manager@') ||
-    cleanEmail.includes('manager')
-  ) {
-    return 'manager';
-  }
-  
-  if (
-    cleanEmail === 'advisor@KANAKU.com' ||
-    cleanEmail === 'advisore@KANAKU.com' ||
-    cleanEmail.startsWith('advisor@') ||
-    cleanEmail.includes('advisor')
-  ) {
-    return 'advisor';
-  }
-  
-  if (
-    cleanEmail === 'user@KANAKU.com' ||
-    cleanEmail.startsWith('user@') ||
-    cleanEmail.includes('user')
-  ) {
-    return 'user';
-  }
-  
-  return null;
+  return EMAIL_ROLE_MAP[email.trim().toLowerCase()] ?? null;
 };
 
 /**

@@ -2,7 +2,7 @@
   "endpoint": "/api/v1/otp/verify",
   "method": "POST",
   "feature": "otp",
-  "description": "Create otp verify",
+  "description": "TODO: describe POST /api/v1/otp/verify",
   "auth": "bearer",
   "rateLimit": "default",
   "implementation": {
@@ -19,24 +19,12 @@
     },
     "params": {},
     "query": {},
-    "body": {
-      "destination": "string",
-      "purpose": "signup",
-      "otp": "string"
-    }
+    "body": {}
   },
   "responses": {
     "200": {
       "description": "TODO success shape",
-      "body": {
-        "success": true,
-        "data": {
-          "id": "00000000-0000-0000-0000-000000000000",
-          "destination": "string",
-          "purpose": "signup",
-          "otp": "string"
-        }
-      }
+      "body": {}
     },
     "400": {
       "description": "Validation failed",
@@ -80,10 +68,6 @@
   "generator": {
     "auto": true,
     "version": 1,
-    "generatedAt": "2026-06-19",
-    "enrichedAt": "2026-06-20",
-    "zodEnrichedAt": "2026-06-20",
-    "responseSource": "documented-default",
-    "finalizedAt": "2026-06-20"
+    "generatedAt": "2026-07-07"
   }
 }

@@ -2,11 +2,11 @@
   "endpoint": "/api/v1/recurring/:id/toggle",
   "method": "PATCH",
   "feature": "recurring",
-  "description": "Update recurring toggle",
-  "auth": "public",
+  "description": "TODO: describe PATCH /api/v1/recurring/:id/toggle",
+  "auth": "bearer+stepUp",
   "rateLimit": "default",
   "implementation": {
-    "controller": "backend/src/features/recurring/recurring.controller.ts#a",
+    "controller": "backend/src/features/recurring/recurring.controller.ts#validateParamsrecurringIdParamSchema",
     "route": "backend/src/features/recurring/recurring.routes.ts",
     "validation": {
       "params": "backend/src/features/recurring/*.validation.ts#recurringIdParamSchema"
@@ -14,30 +14,37 @@
   },
   "request": {
     "headers": {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      "Authorization": "Bearer <jwt>"
     },
     "params": {
       "id": "string (required)"
     },
     "query": {},
-    "body": {},
-    "noBody": true
+    "body": {}
   },
   "responses": {
     "200": {
       "description": "TODO success shape",
-      "body": {
-        "success": true,
-        "data": {
-          "id": "00000000-0000-0000-0000-000000000000"
-        }
-      }
+      "body": {}
     },
     "400": {
       "description": "Validation failed",
       "body": {
         "error": "validation_error",
         "issues": []
+      }
+    },
+    "401": {
+      "description": "Missing/invalid token",
+      "body": {
+        "error": "unauthorized"
+      }
+    },
+    "403": {
+      "description": "Forbidden",
+      "body": {
+        "error": "forbidden"
       }
     },
     "429": {
@@ -63,10 +70,6 @@
   "generator": {
     "auto": true,
     "version": 1,
-    "generatedAt": "2026-06-19",
-    "enrichedAt": "2026-06-20",
-    "zodEnrichedAt": "2026-06-20",
-    "responseSource": "documented-default",
-    "finalizedAt": "2026-06-20"
+    "generatedAt": "2026-07-07"
   }
 }

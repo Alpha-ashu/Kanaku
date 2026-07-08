@@ -36,7 +36,10 @@ describe('PROFILE PERSISTENCE & MERGING MODULE', () => {
   let email: string;
   let token: string;
   const name = 'John Doe';
-  const phone = '+1234567890';
+  // Unique per run: phone numbers are stored uniquely, and the persistent test
+  // DB retains rows across runs, so a fixed number 409s ("phone already in use")
+  // on the second run onward. Keep it E.164-valid and digits-only after the '+'.
+  const phone = `+1${Date.now().toString().slice(-9)}${Math.floor(Math.random() * 10)}`;
 
   beforeAll(async () => {
     email = uniqueEmail();

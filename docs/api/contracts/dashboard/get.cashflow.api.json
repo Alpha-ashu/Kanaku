@@ -2,13 +2,15 @@
   "endpoint": "/api/v1/dashboard/cashflow",
   "method": "GET",
   "feature": "dashboard",
-  "description": "Monthly cashflow breakdown",
-  "auth": "bearer",
+  "description": "TODO: describe GET /api/v1/dashboard/cashflow",
+  "auth": "bearer+stepUp",
   "rateLimit": "default",
   "implementation": {
-    "controller": "backend/src/features/dashboard/dashboard.controller.ts#getCashflow",
+    "controller": "backend/src/features/dashboard/dashboard.controller.ts#validateQuerycashflowQuerySchema",
     "route": "backend/src/features/dashboard/dashboard.routes.ts",
-    "validation": "inline or none -- verify"
+    "validation": {
+      "query": "backend/src/features/dashboard/*.validation.ts#cashflowQuerySchema"
+    }
   },
   "request": {
     "headers": {
@@ -16,26 +18,13 @@
       "Authorization": "Bearer <jwt>"
     },
     "params": {},
-    "query": {
-      "months": 6
-    }
+    "query": {},
+    "body": null
   },
   "responses": {
     "200": {
       "description": "TODO success shape",
-      "body": {
-        "success": true,
-        "data": {
-          "months": [
-            {
-              "month": "Jun 2026",
-              "income": 80000,
-              "expenses": 45000,
-              "savings": 35000
-            }
-          ]
-        }
-      }
+      "body": {}
     },
     "400": {
       "description": "Validation failed",
@@ -54,21 +43,6 @@
       "description": "Forbidden",
       "body": {
         "error": "forbidden"
-      }
-    },
-    "404": {
-      "description": "Not found",
-      "body": {
-        "success": false,
-        "error": "Human-readable error",
-        "code": "MISSING_FIELDS",
-        "details": [
-          {
-            "path": "string",
-            "message": "string",
-            "code": "string"
-          }
-        ]
       }
     },
     "429": {
@@ -94,7 +68,6 @@
   "generator": {
     "auto": true,
     "version": 1,
-    "generatedAt": "2026-06-19",
-    "enrichedAt": "2026-06-20"
+    "generatedAt": "2026-07-07"
   }
 }
