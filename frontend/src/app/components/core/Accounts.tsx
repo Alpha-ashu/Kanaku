@@ -32,7 +32,7 @@ import { formatLocalDate } from "@/lib/dateUtils";
 import { formatCurrencyAmount } from "@/lib/currencyUtils";
 import { CardNetworkLogo, getBankCardLogo } from "@/app/components/ui/AccountLogos";
 import { CenteredLayout } from "@/app/components/shared/CenteredLayout";
-import { queueRecordUpsertSync } from "@/lib/auth-sync-integration";
+import { queueRecordUpsertSync, updateAccountWithBackendSync } from "@/lib/auth-sync-integration";
 import { setAccountTargetBalance, setAccountOpeningBalance, getAccountBalanceSnapshot, getAccountLedgerDelta, type AccountBalanceSnapshot } from "@/lib/transactionAggregation";
 
 type AssetType = "all" | "bank" | "card" | "wallet" | "cash";
@@ -148,23 +148,22 @@ export const Accounts: React.FC = () => {
         if (!editingAccount) return;
         setIsSavingEdit(true);
         try {
-            await db.accounts.update(editingAccount.id, {
+            await updateAccountWithBackendSync(editingAccount.id, {
                 name: editingAccount.name,
                 type: editingAccount.type as any,
                 isActive: editingAccount.isActive,
                 subType: editingAccount.subType,
                 colorId: editingAccount.colorId,
                 customColor: editingAccount.customColor,
+                balance: editingAccount.balance,
+                openingBalance: editingAccount.openingBalance,
             });
-            // Balance is derived (openingBalance + ledger). If the user edited the
-            // Opening Balance, persist it directly and recompute current; otherwise
-            // honor the entered Current Balance by anchoring the opening balance.
+
             if (editingAccount.openingBalance != null) {
                 await setAccountOpeningBalance(editingAccount.id, Number(editingAccount.openingBalance));
             } else {
                 await setAccountTargetBalance(editingAccount.id, editingAccount.balance);
             }
-            queueRecordUpsertSync('accounts', editingAccount.id);
             toast.success('Account updated!');
             setEditModalOpen(false);
             setEditingAccount(null);

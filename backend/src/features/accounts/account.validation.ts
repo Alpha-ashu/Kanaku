@@ -16,6 +16,8 @@ export const accountCreateSchema = z.object({
   provider: safeLabel(120).optional(),
   country: safeLabel(60).optional(),
   balance: z.coerce.number().finite().optional(),
+  openingBalance: z.coerce.number().finite().optional(),
+  isActive: z.boolean().optional(),
   currency: z.string().trim().length(3, 'Currency must be a 3-letter ISO code').optional(),
   clientRequestId: z.string().trim().optional(),
 });

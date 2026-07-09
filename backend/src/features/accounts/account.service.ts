@@ -96,7 +96,7 @@ export class AccountService {
     }
 
     // Whitelist only permitted fields to prevent mass assignment
-    const allowedFields = ['name', 'type', 'provider', 'country', 'balance', 'openingBalance', 'currency', 'color', 'icon', 'syncStatus'] as const;
+    const allowedFields = ['name', 'type', 'provider', 'country', 'balance', 'openingBalance', 'currency', 'color', 'icon', 'syncStatus', 'isActive'] as const;
     const updates: Record<string, any> = {};
     for (const field of allowedFields) {
       if (data[field] !== undefined) {
