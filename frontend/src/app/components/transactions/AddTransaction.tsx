@@ -658,7 +658,7 @@ export function AddTransaction() {
 
  if (result?.id) {
  const linkedDocId = scanDocumentId ?? attachmentDocumentId;
- if (linkedDocId) {
+if (linkedDocId) {
  await new DocumentManagementService().linkTransaction(linkedDocId, result.id);
  }
  }
@@ -667,8 +667,8 @@ export function AddTransaction() {
  clearQuickStorage();
  refreshData();
  setCurrentPage(returnPage);
- } catch (err) {
- toast.error('Failed to save');
+ } catch (err: any) {
+ toast.error(err?.message || 'Failed to save');
  } finally {
  setIsSubmitting(false);
  }
