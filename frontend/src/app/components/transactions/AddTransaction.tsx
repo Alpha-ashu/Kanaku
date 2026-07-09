@@ -602,20 +602,33 @@ export function AddTransaction() {
  // Push to backend immediately so invitations fire and data persists in the DB.
  // The local Dexie record (syncStatus='pending') is the fallback if this fails.
  try {
+   // Resolve local Dexie IDs → backend cloudIds before sending to the API.
+   // The backend schema uses UUID foreign keys (Account.id, Friend.id).
+   const selectedAccount = accounts.find((a) => a.id === formData.accountId);
+   const paidByCloudId = selectedAccount?.cloudId ?? null;
+
+   const backendMembers = [
+     { name: 'You', share: perHead, paid: true, isCurrentUser: true },
+     ...enrichedParticipants.map((p) => {
+       const friend = friends.find((f) => f.id === p.friendId);
+       return {
+         ...p,
+         friendId: friend?.cloudId ?? undefined, // backend UUID, not local integer
+       };
+     }),
+   ];
+
    const backendResp = await backendService.api.post('/groups', {
      name: groupExpenseName,
      totalAmount: formData.amount,
-     paidBy: formData.accountId,
+     paidBy: paidByCloudId,       // backend Account UUID (or null)
      date: transactionDate.toISOString(),
      category: formData.category,
      description: formData.notes || undefined,
      splitType: 'equal',
      yourShare: perHead,
      status: 'pending',
-     members: [
-       { name: 'You', share: perHead, paid: true, isCurrentUser: true },
-       ...enrichedParticipants,
-     ],
+     members: backendMembers,
    });
    if (backendResp.data?.id || backendResp.data?.data?.id) {
      const cloudId = String(backendResp.data?.id ?? backendResp.data?.data?.id);
