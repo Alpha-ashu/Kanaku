@@ -6,6 +6,67 @@ import { logger } from '../../config/logger';
 import { AppError } from '../../utils/AppError';
 import { isDatabaseUnavailableError } from '../../utils/databaseAvailability';
 import { getSocketManager } from '../../sockets';
+import { inviteParticipants } from '../collaboration/invitation.service';
+
+async function findUserByEmailOrPhone(email?: string | null, phone?: string | null): Promise<any> {
+  if (email) {
+    const user = await prisma.user.findFirst({ where: { email } });
+    if (user) return user;
+  }
+  if (phone) {
+    const profile = await prisma.profiles.findFirst({ where: { phone } });
+    if (profile) return prisma.user.findUnique({ where: { id: profile.id } });
+  }
+  return null;
+}
+
+async function linkStaleGroupMembersForFriend(friend: any, userId: string) {
+  try {
+    const matchedStaleMembers = await prisma.groupExpenseMember.findMany({
+      where: {
+        friendId: null,
+        name: { equals: friend.name, mode: 'insensitive' },
+        groupExpense: { userId, deletedAt: null },
+        deletedAt: null,
+      },
+      include: { groupExpense: true },
+    });
+
+    if (matchedStaleMembers.length > 0) {
+      const targetUser = await findUserByEmailOrPhone(friend.email, friend.phone);
+      for (const m of matchedStaleMembers) {
+        await prisma.groupExpenseMember.update({
+          where: { id: m.id },
+          data: {
+            friendId: friend.id,
+            email: friend.email || null,
+            phone: friend.phone || null,
+            userId: targetUser?.id || null,
+          },
+        });
+
+        // Trigger invitation email if email is now present
+        if (friend.email) {
+          try {
+            const detail = `Total: ₹${Number(m.groupExpense.totalAmount).toFixed(0)}, Your share: ₹${Number(m.shareAmount).toFixed(0)}.`;
+            await inviteParticipants({
+              moduleType: 'group_expense',
+              moduleId: m.groupExpenseId,
+              moduleName: m.groupExpense.name,
+              creatorId: userId,
+              participants: [{ email: friend.email, name: m.name, detail }],
+            });
+          } catch (err) {
+            logger.warn('Failed to send invite after auto-linking stale member', err);
+          }
+        }
+      }
+    }
+  } catch (err) {
+    logger.error('Error auto-linking stale group members for friend', { friendId: friend.id, error: err });
+  }
+}
+
 
 async function getRegisteredUserMap(emails: string[], phones: string[]): Promise<Map<string, { id: string; name: string }>> {
   const map = new Map<string, { id: string; name: string }>();
@@ -257,6 +318,9 @@ export const createFriend = async (req: AuthRequest, res: Response, next: NextFu
       },
     });
 
+    // Auto-link any existing GroupExpenseMember rows that were created local-only (without friendId/email)
+    await linkStaleGroupMembersForFriend(friend, userId);
+
     if (targetUser) {
       if (isMutual) {
         // Send notification to B (target user) that B's request was accepted
@@ -387,6 +451,34 @@ export const updateFriend = async (req: AuthRequest, res: Response, next: NextFu
       });
     }
 
+    // Auto-link any existing GroupExpenseMember rows that were created local-only under the updated name
+    await linkStaleGroupMembersForFriend(updated, userId);
+
+    // If email is now set and it changed (or was newly added), send invitations/notifications
+    if (email !== undefined && email && email.toLowerCase() !== (existing.email || '').toLowerCase()) {
+      const membersToInvite = await prisma.groupExpenseMember.findMany({
+        where: { friendId: id, deletedAt: null },
+        include: { groupExpense: true },
+      });
+
+      for (const m of membersToInvite) {
+        if (m.groupExpense) {
+          try {
+            const detail = `Total: ₹${Number(m.groupExpense.totalAmount).toFixed(0)}, Your share: ₹${Number(m.shareAmount).toFixed(0)}.`;
+            await inviteParticipants({
+              moduleType: 'group_expense',
+              moduleId: m.groupExpenseId,
+              moduleName: m.groupExpense.name,
+              creatorId: userId,
+              participants: [{ email: email.trim().toLowerCase(), name: updated.name, detail }],
+            });
+          } catch (err) {
+            logger.warn('Failed to send invite on friend email update', err);
+          }
+        }
+      }
+    }
+
     res.json({ success: true, data: updated });
   } catch (error) {
     next(error);
@@ -439,6 +531,7 @@ export const bulkCreateFriends = async (req: AuthRequest, res: Response, next: N
       const friend = await prisma.friend.create({
         data: { userId, name: sanitize(name), email: cleanEmail, phone: cleanPhone, syncStatus: 'synced' },
       });
+      await linkStaleGroupMembersForFriend(friend, userId);
       created.push(friend);
       existingNameKeys.add(name.toLowerCase());
       if (cleanEmail) existingContactKeys.add(cleanEmail);
