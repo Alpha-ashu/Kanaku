@@ -5350,9 +5350,9 @@ This walkthrough details the changes implemented to address the backend profile 
 
 | Service | URL | Platform |
 |---|---|---|
-| **Frontend** | https://expensev67.vercel.app | Vercel (CDN, Singapore + IAD) |
-| **Backend API** | https://kanaku.fly.dev | Fly.io (Singapore, `sin` region) |
-| **Health Check** | https://kanaku.fly.dev/health | Returns `{status:"ok", redis, database}` |
+| **Frontend** | https://kanaku-fawn.vercel.app | Vercel (CDN, Singapore + IAD) |
+| **Backend API** | https://kanaku-api.onrender.com | Render (Web Service, Oregon/Singapore) |
+| **Health Check** | https://kanaku-api.onrender.com/health | Returns `{status:"ok", database}` |
 
 ### Infrastructure Stack
 
@@ -5462,11 +5462,11 @@ return base.$extends({
 
 #### 4. CORS — Frontend Requests Blocked
 
-**Problem**: All API calls from `https://expensev67.vercel.app` failed with `Failed to fetch`. The `FRONTEND_URL` Fly secret was set to `http://localhost:9002` (stale dev value).
+**Problem**: All API calls from `https://kanaku-fawn.vercel.app` failed with `Failed to fetch`. The `FRONTEND_URL` environment variable was set to `http://localhost:9002` (stale dev value).
 
-**Fix**: Updated the Fly.io secret:
+**Fix**: Updated the Render environment secret:
 ```
-flyctl secrets set "FRONTEND_URL=https://expensev67.vercel.app"
+FRONTEND_URL=https://kanaku-fawn.vercel.app
 ```
 Backend `buildAllowedOrigins()` in `backend/src/config/cors.ts` reads `CORS_ORIGIN` or `FRONTEND_URL` to build the allowlist.
 
@@ -5560,8 +5560,8 @@ graph TB
     end
 
     subgraph Deploy["Deployment"]
-        Vercel["Vercel — CDN\nexpensev67.vercel.app\nReact + Vite static bundle"]
-        Fly["Fly.io — Singapore\nkanaku.fly.dev\nExpress + TypeScript + Prisma\n1 GB RAM — always-on"]
+        Vercel["Vercel — CDN\nkanaku-fawn.vercel.app\nReact + Vite static bundle"]
+        Render["Render — Oregon/Singapore\nkanaku-api.onrender.com\nExpress + TypeScript + Prisma"]
     end
 
     subgraph Data["Data Layer"]
