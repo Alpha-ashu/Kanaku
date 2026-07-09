@@ -4,20 +4,20 @@
  * Creates / refreshes the four canonical role accounts in the production database.
  * Credentials are read from environment variables — never hardcoded here.
  *
- * Usage (Fly.io):
- *   fly ssh console --app kanaku
- *   > node scripts/seed-production-roles.cjs
+ * Usage (Render / Local):
+ *   Run locally with production DATABASE_URL or execute via Render shell.
+ *   > node backend/scripts/seed-production-roles.cjs
  *
  * Required secrets — NEVER hardcode or commit the real values. Provide them at
  * run time via the environment (local: gitignored `backend/.env`; prod:
- * `fly secrets set KEY=value`):
+ * Render Environment Variables):
  *   SEED_ADMIN_EMAIL       SEED_ADMIN_PASSWORD
  *   SEED_MANAGER_EMAIL     SEED_MANAGER_PASSWORD
  *   SEED_ADVISOR_EMAIL     SEED_ADVISOR_PASSWORD
  *   SEED_USER_EMAIL        SEED_USER_PASSWORD
  * (Passwords must satisfy the strength rules in validatePassword below.)
  *
- * DATABASE_URL must already be set (it is in production via fly secrets).
+ * DATABASE_URL must already be set (it is in production via Render environment).
  */
 
 'use strict';
