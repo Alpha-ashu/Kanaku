@@ -93,25 +93,19 @@ export const Groups: React.FC = () => {
  };
 
  const openFriendProfile = async (friend: { id?: number; cloudId?: string; name?: string }) => {
- if (!friend.cloudId) {
- // This friend was created while the backend call failed, so it never got
- // synced (no cloudId). Retry pushing it now instead of just giving up —
- // most of the time this fixes itself transparently on the first click.
- if (!friend.id) {
- toast.error('This friend could not be found locally.');
- return;
- }
- try {
- const { cloudId } = await backendService.retrySyncFriend(friend.id);
- localStorage.setItem('viewingFriendId', cloudId);
- setCurrentPage('friend-profile');
- } catch (err: any) {
- toast.error(err?.response?.data?.error || err?.message || `Couldn't sync ${friend.name || 'this friend'}. Check their email/phone and try again.`);
- }
- return;
- }
- localStorage.setItem('viewingFriendId', friend.cloudId);
- setCurrentPage('friend-profile');
+  if (!friend.cloudId) {
+    if (!friend.id) {
+      toast.error('This friend could not be found locally.');
+      return;
+    }
+    // Local-only friend (no cloudId) — send user to Manage Friends so they can
+    // tap the amber row and add an email/phone to trigger sync.
+    toast.info(`Tap "${friend.name || 'the friend'}" in the list below to add contact info and sync.`);
+    setCurrentPage('friends');
+    return;
+  }
+  localStorage.setItem('viewingFriendId', friend.cloudId);
+  setCurrentPage('friend-profile');
  };
 
  const handleDeleteGroup = (groupId: number, groupName: string) => {
