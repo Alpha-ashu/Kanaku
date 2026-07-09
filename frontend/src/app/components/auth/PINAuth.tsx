@@ -9,6 +9,7 @@ import { Capacitor } from '@capacitor/core';
 import { useAuth } from '@/contexts/AuthContext';
 import { isGuestMode } from '@/lib/guestMode';
 import supabase from '@/utils/supabase/client';
+import { apiClient } from '@/lib/api';
 
 interface PINAuthProps {
  onAuthenticated: (encryptionKey: string) => void;
@@ -319,36 +320,36 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  setShowResetModal(true);
  };
 
- const handleSendOtp = async () => {
- setIsResettingPin(true);
- setResetError('');
- try {
- const { error } = await supabase.auth.signInWithOtp({ email: user!.email });
- if (error) throw error;
- setResetOtpSent(true);
- toast.success('Verification code sent to your email.');
- } catch (err: any) {
- setResetError(err.message || 'Failed to send verification code.');
- } finally {
- setIsResettingPin(false);
- }
- };
+  const handleSendOtp = async () => {
+    setIsResettingPin(true);
+    setResetError('');
+    try {
+      await apiClient.post('/otp/send', {
+        destination: user!.email,
+        channel: 'email',
+        purpose: 'sensitive_action',
+      });
+      setResetOtpSent(true);
+      toast.success('Verification code sent to your email.');
+    } catch (err: any) {
+      setResetError(err.message || 'Failed to send verification code.');
+    } finally {
+      setIsResettingPin(false);
+    }
+  };
 
   const handleVerifyOtpAndReset = async () => {
     setIsResettingPin(true);
     setResetError('');
     try {
-      const { data: otpData, error } = await supabase.auth.verifyOtp({
-        email: user!.email,
-        token: resetOtp,
-        type: 'email'
+      await apiClient.post('/otp/verify', {
+        destination: user!.email,
+        purpose: 'sensitive_action',
+        otp: resetOtp,
       });
-      if (error) throw error;
 
-      // Forgot-PIN path: the user has no PIN to verify, so prove the step-up
-      // with the freshly-issued Supabase session token from the OTP check.
-      const freshAuthToken = otpData?.session?.access_token;
-      const secResult = await pinService.verifySecurity({ freshAuthToken });
+      // Obtain security token (the backend accepts recent OTP verification)
+      const secResult = await pinService.verifySecurity();
       if (!secResult.success || !secResult.securityToken) {
         setResetError(secResult.message || 'Security verification failed');
         return;
@@ -360,21 +361,21 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
         return;
       }
 
- clearSecurityData();
- pinService.clearPinData();
+      clearSecurityData();
+      pinService.clearPinData();
 
- setShowResetModal(false);
- setPin('');
- setFirstPin('');
- setIsCreating(true);
- setCreateStage('enter');
- toast.success('PIN reset successfully. Please create a new PIN.');
- } catch (err: any) {
- setResetError(err.message || 'Invalid verification code.');
- } finally {
- setIsResettingPin(false);
- }
- };
+      setShowResetModal(false);
+      setPin('');
+      setFirstPin('');
+      setIsCreating(true);
+      setCreateStage('enter');
+      toast.success('PIN reset successfully. Please create a new PIN.');
+    } catch (err: any) {
+      setResetError(err.message || 'Invalid verification code.');
+    } finally {
+      setIsResettingPin(false);
+    }
+  };
 
  // Derived display 
  const currentStepLabel = isCreating

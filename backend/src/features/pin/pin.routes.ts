@@ -4,6 +4,7 @@ import { pinService } from './pin.service';
 import { authMiddleware, AuthRequest } from '../../middleware/auth';
 import { securityGate, generateSecurityToken } from '../../middleware/securityGate';
 import { establishPinUnlock } from '../../security/pinUnlock';
+import { otpService } from '../otp/otp.service';
 import { validateBody } from '../../middleware/validate';
 import { AppError } from '../../utils/AppError';
 import { logger } from '../../config/logger';
@@ -143,6 +144,12 @@ router.post('/verify-security', validateBody(verifySecuritySchema), async (req: 
       // verification (the normal UI flow verifies/creates the PIN just before
       // calling this endpoint).
       verified = await pinService.hasRecentVerification(userId, RECENT_VERIFICATION_WINDOW_MS);
+      if (!verified) {
+        const dest = req.user?.email || req.user?.phone;
+        if (dest) {
+          verified = await otpService.hasRecentVerification(dest, 'sensitive_action', RECENT_VERIFICATION_WINDOW_MS / 1000);
+        }
+      }
     }
 
     if (!verified) {
