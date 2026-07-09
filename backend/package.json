@@ -120,7 +120,6 @@
             "minimatch": "^10.2.4"
         },
         "flatted": "^3.4.2",
-        "path-to-regexp": "^0.1.13",
         "picomatch": "^2.3.2 || ^4.0.4",
         "defu": "^6.1.5",
         "effect": "^3.20.0",

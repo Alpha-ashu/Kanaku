@@ -8,7 +8,7 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 COPY frontend/package.json ./frontend/
 COPY backend/package.json ./backend/
-RUN npm ci --ignore-scripts
+RUN npm install --ignore-scripts
 
 # Copy source, generate prisma client, build backend workspace
 COPY . .

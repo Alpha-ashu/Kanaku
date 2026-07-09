@@ -1,0 +1,46 @@
+# Render Blueprint — KANAKU backend on the FREE tier (no card required).
+#
+# One combined service: with RUN_WORKERS_IN_API unset, server.js runs the
+# background jobs (outbox / AI / cleanup) in-process (backend/src/server.ts) —
+# the app's designed single-machine mode. Render free web services sleep after
+# 15 min idle (~50s cold start); an external 5-min uptime ping (see
+# docs/runbooks/render-migration.md) keeps it awake and doubles as monitoring.
+#
+# Deploy: Render dashboard → New → Blueprint → select this repo.
+# Secrets (sync: false) are entered once in the dashboard — values live in
+# backend/.env (gitignored); never commit them here.
+services:
+  - type: web
+    name: kanaku-api
+    runtime: docker
+    plan: free
+    region: singapore            # matches Fly 'sin' + Supabase region
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: .             # workspace root (root lockfile), same as fly.toml
+    healthCheckPath: /health
+    autoDeploy: true             # every push to main deploys (Render builds, not Actions)
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "3000"            # tells Render where the container listens
+      # RUN_WORKERS_IN_API deliberately UNSET → combined API+worker mode.
+      - key: DATABASE_URL
+        sync: false
+      - key: DIRECT_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: SUPABASE_JWT_SECRET
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+      - key: SENDGRID_API_KEY
+        sync: false
+      - key: SENDGRID_FROM_EMAIL
+        sync: false
+      - key: SENDGRID_FROM_NAME
+        sync: false
+      # Copy any remaining prod values from backend/.env (SECURITY_ALERT_EMAIL,
+      # AA_ENCRYPTION_ROOT_KEY, FIREBASE_*, OPENAI/GOOGLE keys, …) in the
+      # dashboard — the env.ts validator will fail fast on anything missing.
