@@ -117,9 +117,10 @@ class OtpService {
     ipAddress?: string,
     userAgent?: string,
   ): Promise<OtpResponse> {
+    const cleanDestination = channel === 'email' ? destination.toLowerCase().trim() : destination.trim();
     try {
       // Rate limit check
-      const rateCheck = await this.checkRateLimit(destination, purpose);
+      const rateCheck = await this.checkRateLimit(cleanDestination, purpose);
       if (!rateCheck.allowed) {
         return {
           success: false,
@@ -131,7 +132,7 @@ class OtpService {
       // Invalidate any existing active OTPs for this destination+purpose
       await prisma.otpRequest.updateMany({
         where: {
-          destination,
+          destination: cleanDestination,
           purpose,
           status: 'ACTIVE',
         },
@@ -148,7 +149,7 @@ class OtpService {
         data: {
           id: randomUUID(),
           userId: userId || null,
-          destination,
+          destination: cleanDestination,
           channel,
           purpose,
           otpHash,
@@ -162,9 +163,9 @@ class OtpService {
       });
 
       // Deliver OTP (via existing notification/email infrastructure)
-      await this.deliverOtp(destination, otp, channel, purpose);
+      await this.deliverOtp(cleanDestination, otp, channel, purpose);
 
-      logger.info(`[OTP] Sent ${channel} OTP to ${destination.substring(0, 3)}*** for ${purpose}`);
+      logger.info(`[OTP] Sent ${channel} OTP to ${cleanDestination.substring(0, 3)}*** for ${purpose}`);
 
       return {
         success: true,
@@ -186,11 +187,12 @@ class OtpService {
     purpose: OtpPurpose,
     inputOtp: string,
   ): Promise<OtpVerifyResponse> {
+    const cleanDestination = destination.includes('@') ? destination.toLowerCase().trim() : destination.trim();
     try {
       // Find active OTP for destination+purpose
       const otpRecord = await prisma.otpRequest.findFirst({
         where: {
-          destination,
+          destination: cleanDestination,
           purpose,
           status: 'ACTIVE',
         },
@@ -312,10 +314,11 @@ class OtpService {
    * Check if a valid verification exists (for gating sensitive operations)
    */
   async hasRecentVerification(destination: string, purpose: OtpPurpose, withinSeconds = 300): Promise<boolean> {
+    const cleanDestination = destination.includes('@') ? destination.toLowerCase().trim() : destination.trim();
     const threshold = new Date(Date.now() - withinSeconds * 1000);
     const verified = await prisma.otpRequest.findFirst({
       where: {
-        destination,
+        destination: cleanDestination,
         purpose,
         status: 'VERIFIED',
         verifiedAt: { gte: threshold },

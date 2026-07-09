@@ -145,7 +145,7 @@ router.post('/verify-security', validateBody(verifySecuritySchema), async (req: 
       // calling this endpoint).
       verified = await pinService.hasRecentVerification(userId, RECENT_VERIFICATION_WINDOW_MS);
       if (!verified) {
-        const dest = req.user?.email || req.user?.phone;
+        const dest = req.user?.email || (req.user as any)?.phone;
         if (dest) {
           verified = await otpService.hasRecentVerification(dest, 'sensitive_action', RECENT_VERIFICATION_WINDOW_MS / 1000);
         }
