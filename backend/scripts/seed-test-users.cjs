@@ -156,12 +156,12 @@ async function upsertIdentity(spec, hashedPassword) {
   `.catch((err) => console.warn(`[test-users] profile sync failed for ${spec.email}: ${err.message}`));
 
   const ROLE_PINS = {
-    admin: '847291',
-    manager: '394827',
-    advisor: '582039',
-    user: '274915'
+    admin: process.env.SEED_ADMIN_PIN || '847291',
+    manager: process.env.SEED_MANAGER_PIN || '394827',
+    advisor: process.env.SEED_ADVISOR_PIN || '582039',
+    user: process.env.SEED_USER_PIN || '274915'
   };
-  const pin = ROLE_PINS[spec.role] || '274915';
+  const pin = ROLE_PINS[spec.role] || process.env.SEED_USER_PIN || '274915';
   const pinHash = await bcrypt.hash(pin, 10);
   const expiresAt = new Date();
   expiresAt.setDate(expiresAt.getDate() + 90);

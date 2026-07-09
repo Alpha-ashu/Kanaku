@@ -42,7 +42,7 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey, {
 const TEST_USERS = [
   {
     email:       'admin@kanku.com',
-    password:    'K@n4ku_Adm!n#2Xz9$',
+    password:    process.env.SEED_ADMIN_PASSWORD || 'K@n4ku_Adm!n#2Xz9$',
     role:        'admin',
     isApproved:  true,
     firstName:   'Arjun',
@@ -59,7 +59,7 @@ const TEST_USERS = [
   },
   {
     email:       'manager@kanku.com',
-    password:    'K@n4ku_M4n4g3r#7Qw8$',
+    password:    process.env.SEED_MANAGER_PASSWORD || 'K@n4ku_M4n4g3r#7Qw8$',
     role:        'manager',
     isApproved:  true,
     firstName:   'Priya',
@@ -76,7 +76,7 @@ const TEST_USERS = [
   },
   {
     email:        'advisor@kanku.com',
-    password:     'K@n4ku_Adv!s0r#5Tz6^',
+    password:     process.env.SEED_ADVISOR_PASSWORD || 'K@n4ku_Adv!s0r#5Tz6^',
     role:         'advisor',
     isApproved:   true,
     advisorStatus:'AVAILABLE',
@@ -94,7 +94,7 @@ const TEST_USERS = [
   },
   {
     email:       'user@kanku.com',
-    password:    'K@n4ku_Us3r#3Pm2*Wy',
+    password:    process.env.SEED_USER_PASSWORD || 'K@n4ku_Us3r#3Pm2*Wy',
     role:        'user',
     isApproved:  true,
     firstName:   'Ananya',
