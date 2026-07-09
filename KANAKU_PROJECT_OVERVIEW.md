@@ -1412,12 +1412,12 @@ All **30 integration test suites / 561 tests pass** against the production-confi
 Exactly four canonical role accounts exist, on the **`@kanaku.com`** domain. They are
 **not** created automatically on first deploy — run the seed scripts once (below).
 
-| Role | Email | Default password / Environment Variable | Created by |
-|------|-------|----------------------------------------|------------|
-| Admin   | `admin@kanaku.com`   | `SEED_ADMIN_PASSWORD` (default: `K@n4ku_Adm!n#...`)   | `seed-production-roles.cjs` |
-| Manager | `manager@kanaku.com` | `SEED_MANAGER_PASSWORD` (default: `K@n4ku_M4n4g3r#...`) | `seed-production-roles.cjs` |
-| Advisor | `advisor@kanaku.com` | `SEED_ADVISOR_PASSWORD` (default: `K@n4ku_Adv!s0r#...`) | `seed-production-roles.cjs` |
-| User    | `user@kanaku.com`    | `SEED_USER_PASSWORD` (default: `K@n4ku_Us3r#...`)       | `seed-production-roles.cjs` |
+| Role | Email | Required Environment Variable | Created by |
+|------|-------|-------------------------------|------------|
+| Admin   | `admin@kanaku.com`   | `SEED_ADMIN_PASSWORD`   | `seed-production-roles.cjs` |
+| Manager | `manager@kanaku.com` | `SEED_MANAGER_PASSWORD` | `seed-production-roles.cjs` |
+| Advisor | `advisor@kanaku.com` | `SEED_ADVISOR_PASSWORD` | `seed-production-roles.cjs` |
+| User    | `user@kanaku.com`    | `SEED_USER_PASSWORD`    | `seed-production-roles.cjs` |
 
 Each canonical account is populated with **comprehensive mock data** by
 `seed-mock-data.cjs`: 4 accounts, 30+ transactions across every category, goals (+

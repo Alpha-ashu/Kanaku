@@ -29,6 +29,13 @@ if (!supabaseUrl || !supabaseServiceKey) {
   process.exit(1);
 }
 
+const required = ['SEED_ADMIN_PASSWORD','SEED_MANAGER_PASSWORD','SEED_ADVISOR_PASSWORD','SEED_USER_PASSWORD'];
+const missing = required.filter(k => !process.env[k]);
+if (missing.length) {
+  console.error(`Error: Missing seed credentials in environment. Set: ${missing.join(', ')} (see backend/.env)`);
+  process.exit(1);
+}
+
 console.log('Connecting to:', supabaseUrl);
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey, {
@@ -42,7 +49,7 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey, {
 const TEST_USERS = [
   {
     email:       'admin@kanku.com',
-    password:    process.env.SEED_ADMIN_PASSWORD || 'K@n4ku_Adm!n#2Xz9$',
+    password:    process.env.SEED_ADMIN_PASSWORD,
     role:        'admin',
     isApproved:  true,
     firstName:   'Arjun',
@@ -59,7 +66,7 @@ const TEST_USERS = [
   },
   {
     email:       'manager@kanku.com',
-    password:    process.env.SEED_MANAGER_PASSWORD || 'K@n4ku_M4n4g3r#7Qw8$',
+    password:    process.env.SEED_MANAGER_PASSWORD,
     role:        'manager',
     isApproved:  true,
     firstName:   'Priya',
@@ -76,7 +83,7 @@ const TEST_USERS = [
   },
   {
     email:        'advisor@kanku.com',
-    password:     process.env.SEED_ADVISOR_PASSWORD || 'K@n4ku_Adv!s0r#5Tz6^',
+    password:     process.env.SEED_ADVISOR_PASSWORD,
     role:         'advisor',
     isApproved:   true,
     advisorStatus:'AVAILABLE',
@@ -94,7 +101,7 @@ const TEST_USERS = [
   },
   {
     email:       'user@kanku.com',
-    password:    process.env.SEED_USER_PASSWORD || 'K@n4ku_Us3r#3Pm2*Wy',
+    password:    process.env.SEED_USER_PASSWORD,
     role:        'user',
     isApproved:  true,
     firstName:   'Ananya',
