@@ -22,7 +22,15 @@ export const transactionCreateSchema = z.object({
   date: DateSchema,
   tags: z.array(z.string().trim().max(40)).optional(),
   transferToAccountId: z.string().trim().min(1).optional(),
-  transferType: z.enum(['self-transfer', 'other-transfer']).optional(),
+  transferType: z.enum([
+    'self-transfer',
+    'other-transfer',
+    'external-payment',
+    'withdrawal',
+    'cash-transfer',
+    'bank-transfer',
+    'manual',
+  ]).optional(),
   // Expense sub-feature fields
   expenseMode: z.enum(['individual', 'group', 'loan']).optional(),
   groupExpenseId: z.string().trim().min(1).optional(),
