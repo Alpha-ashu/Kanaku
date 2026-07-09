@@ -22,6 +22,11 @@
 
 'use strict';
 
+// Load the gitignored backend/.env so SEED_* + DATABASE_URL resolve when the
+// script is run directly (`node backend/scripts/seed-production-roles.cjs`).
+// Without this it reads an empty process.env and SILENTLY SKIPS every role.
+require('dotenv').config({ path: require('path').resolve(__dirname, '..', '.env') });
+
 const { PrismaClient } = require('../generated/prisma');
 const bcrypt = require('bcryptjs');
 
