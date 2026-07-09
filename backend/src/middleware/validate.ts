@@ -35,7 +35,20 @@ const validate = (schema: ZodTypeAny, source: 'body' | 'query' | 'params') =>
       });
     }
 
-    req[source] = result.data;
+    // Express 5 makes `req.query` a read-only getter, so a direct assignment
+    // throws (→ 500 on every validateQuery route). Fast-path the still-writable
+    // `body`/`params`; fall back to defineProperty so downstream handlers still
+    // read the coerced/validated value from `req[source]`.
+    try {
+      req[source] = result.data;
+    } catch {
+      Object.defineProperty(req, source, {
+        value: result.data,
+        writable: true,
+        configurable: true,
+        enumerable: true,
+      });
+    }
     return next();
   };
 
