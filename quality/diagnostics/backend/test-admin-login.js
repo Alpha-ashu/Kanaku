@@ -6,8 +6,8 @@ const db = new sqlite3.Database('./dev.db');
 
 console.log(' Testing admin login directly...');
 
-const adminEmail = 'shaik.job.details@gmail.com';
-const adminPassword = '123456789';
+const adminEmail = process.env.SEED_ADMIN_EMAIL || 'admin@kanaku.com';
+const adminPassword = process.env.SEED_ADMIN_PASSWORD || 'example-Admin-password-123!';
 
 // Test login
 db.get("SELECT * FROM User WHERE email = ?", [adminEmail], async (err, user) => {

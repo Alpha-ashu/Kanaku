@@ -15,9 +15,11 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey, {
 
 const prisma = new PrismaClient();
 
+const testPassword = process.env.SEED_TEST_PASSWORD || 'example-Test-password-123!';
+
 const TARGET_USERS = [
-  { email: 'arjun.test@kanaku.app', password: 'TestKanaku@2026', firstName: 'Arjun', lastName: 'Sharma', mobile: '+91 9000000001', role: 'user' },
-  { email: 'priya.test@kanaku.app', password: 'TestKanaku@2026', firstName: 'Priya', lastName: 'Mehta', mobile: '+91 9000000002', role: 'user' }
+  { email: 'arjun.test@kanaku.app', password: testPassword, firstName: 'Arjun', lastName: 'Sharma', mobile: '+91 9000000001', role: 'user' },
+  { email: 'priya.test@kanaku.app', password: testPassword, firstName: 'Priya', lastName: 'Mehta', mobile: '+91 9000000002', role: 'user' }
 ];
 
 async function main() {

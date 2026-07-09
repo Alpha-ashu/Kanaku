@@ -20,14 +20,16 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey, {
 
 const prisma = new PrismaClient();
 
+const testPassword = process.env.SEED_TEST_PASSWORD || 'example-Test-password-123!';
+
 const USERS = [
-  { firstName: 'Arjun', lastName: 'Sharma', email: 'arjun.test@kanaku.app', mobile: '+91 9000000001', password: 'TestKanaku@2026', persona: 'Debt Manager', role: 'user' },
-  { firstName: 'Priya', lastName: 'Mehta', email: 'priya.test@kanaku.app', mobile: '+91 9000000002', password: 'TestKanaku@2026', persona: 'Group Splitter', role: 'user' },
-  { firstName: 'Rohan', lastName: 'Verma', email: 'rohan.test@kanaku.app', mobile: '+91 9000000003', password: 'TestKanaku@2026', persona: 'Investor', role: 'user' },
-  { firstName: 'Sneha', lastName: 'Kapoor', email: 'sneha.test@kanaku.app', mobile: '+91 9000000004', password: 'TestKanaku@2026', persona: 'Goal Setter', role: 'user' },
-  { firstName: 'Dev', lastName: 'Nair', email: 'dev.test@kanaku.app', mobile: '+91 9000000005', password: 'TestKanaku@2026', persona: 'Portfolio Builder', role: 'user' },
-  { firstName: 'Isha', lastName: 'Patel', email: 'isha.test@kanaku.app', mobile: '+91 9000000006', password: 'TestKanaku@2026', persona: 'Planner', role: 'user' },
-  { firstName: 'Power', lastName: 'User', email: 'admin.test@kanaku.app', mobile: '+91 9000000007', password: 'TestKanaku@2026', persona: 'Power User', role: 'admin' },
+  { firstName: 'Arjun', lastName: 'Sharma', email: 'arjun.test@kanaku.app', mobile: '+91 9000000001', password: testPassword, persona: 'Debt Manager', role: 'user' },
+  { firstName: 'Priya', lastName: 'Mehta', email: 'priya.test@kanaku.app', mobile: '+91 9000000002', password: testPassword, persona: 'Group Splitter', role: 'user' },
+  { firstName: 'Rohan', lastName: 'Verma', email: 'rohan.test@kanaku.app', mobile: '+91 9000000003', password: testPassword, persona: 'Investor', role: 'user' },
+  { firstName: 'Sneha', lastName: 'Kapoor', email: 'sneha.test@kanaku.app', mobile: '+91 9000000004', password: testPassword, persona: 'Goal Setter', role: 'user' },
+  { firstName: 'Dev', lastName: 'Nair', email: 'dev.test@kanaku.app', mobile: '+91 9000000005', password: testPassword, persona: 'Portfolio Builder', role: 'user' },
+  { firstName: 'Isha', lastName: 'Patel', email: 'isha.test@kanaku.app', mobile: '+91 9000000006', password: testPassword, persona: 'Planner', role: 'user' },
+  { firstName: 'Power', lastName: 'User', email: 'admin.test@kanaku.app', mobile: '+91 9000000007', password: testPassword, persona: 'Power User', role: 'admin' },
 ];
 
 async function seed() {

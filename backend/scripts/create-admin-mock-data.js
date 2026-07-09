@@ -7,8 +7,8 @@ const db = new sqlite3.Database('./dev.db');
 console.log(' Creating comprehensive mock data for admin role only...');
 
 // Admin user details
-const adminEmail = 'shaik.job.details@gmail.com';
-const adminPassword = '123456789';
+const adminEmail = process.env.SEED_ADMIN_EMAIL || 'admin@kanaku.com';
+const adminPassword = process.env.SEED_ADMIN_PASSWORD || 'example-Admin-password-123!';
 const adminName = 'Admin User';
 
 async function createAdminMockData() {

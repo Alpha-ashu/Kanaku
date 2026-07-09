@@ -72,8 +72,8 @@ db.serialize(() => {
 function addCompleteTestData() {
   console.log(' Adding complete test data...');
   
-  // Get admin user
-  db.get("SELECT id FROM User WHERE email = 'shaik.job.details@gmail.com'", (err, user) => {
+  const adminEmail = process.env.SEED_ADMIN_EMAIL || 'admin@kanaku.com';
+  db.get("SELECT id FROM User WHERE email = ?", [adminEmail], (err, user) => {
     if (err || !user) {
       console.error(' Error getting admin user:', err);
       return;

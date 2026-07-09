@@ -11,6 +11,8 @@ if (!supabaseUrl || !supabaseServiceKey) {
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+const adminEmail = process.env.SEED_ADMIN_EMAIL || 'admin@kanaku.com';
+
 async function updateUserToAdmin() {
   try {
     console.log(' Checking user in Supabase...');
@@ -24,7 +26,7 @@ async function updateUserToAdmin() {
       const { data: result, error: err } = await supabase
         .from(tname)
         .select('id, email, name, role, isApproved')
-        .eq('email', 'Shaik.job.details@gmail.com')
+        .eq('email', adminEmail)
         .limit(1);
       
       if (!err) {
@@ -38,39 +40,22 @@ async function updateUserToAdmin() {
     if (error && (!users || users.length === 0)) {
       console.error(' Error fetching user:', error.message);
       console.log('\n Trying to list all tables...');
-      
-      // Try to get any data to see what tables exist
-      const { error: listError } = await supabase
-        .from('User')
-        .select('*')
-        .limit(1);
-      
-      if (listError) {
-        console.log(`\n Table names might be lowercase. Trying 'users'...`);
+      const { data: tables, error: tableError } = await supabase
+        .rpc('get_tables'); // custom RPC if exists
+      if (!tableError && tables) {
+        console.log('Available tables:', tables);
       }
-      
       process.exit(1);
     }
 
     if (!users || users.length === 0) {
-      console.log(' User not found with that email');
-      console.log('\n Listing all users:');
-      const { data: allUsers } = await supabase
-        .from(tableName)
-        .select('email, role, isApproved');
-      
-      if (allUsers && allUsers.length > 0) {
-        allUsers.forEach(u => {
-          console.log(`  - ${u.email} (role: ${u.role}, approved: ${u.isApproved})`);
-        });
-      } else {
-        console.log('  No users found');
-      }
-      process.exit(0);
+      console.log(`\n User ${adminEmail} not found in Table '${tableName}'`);
+      process.exit(1);
     }
 
     const user = users[0];
-    console.log(' User found:');
+    console.log('\n User details found:');
+    console.log(`  ID: ${user.id}`);
     console.log(`  Email: ${user.email}`);
     console.log(`  Name: ${user.name}`);
     console.log(`  Current Role: ${user.role}`);
@@ -86,7 +71,7 @@ async function updateUserToAdmin() {
     const { data: updatedUser, error: updateError } = await supabase
       .from(tableName)
       .update({ role: 'admin', isApproved: true })
-      .eq('email', 'Shaik.job.details@gmail.com')
+      .eq('email', adminEmail)
       .select('email, role, isApproved');
 
     if (updateError) {

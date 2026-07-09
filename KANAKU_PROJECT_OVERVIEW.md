@@ -1429,12 +1429,12 @@ upcoming booking/session linked to the `user` account.
 ### 7.2 Testing cohort — 5 test users + 5 test advisors
 
 For load/role testing, `seed-test-users.cjs` creates ten extra accounts, all sharing
-one password (`SEED_TEST_PASSWORD`, default **`Test@Kanaku#2026`**):
+one password (configured via `SEED_TEST_PASSWORD` environment variable):
 
 | Role | Emails | Password |
 |------|--------|----------|
-| User (×5)    | `testuser1@kanaku.com` … `testuser5@kanaku.com`       | `Test@Kanaku#2026` |
-| Advisor (×5) | `testadvisor1@kanaku.com` … `testadvisor5@kanaku.com` | `Test@Kanaku#2026` |
+| User (×5)    | `testuser1@kanaku.com` … `testuser5@kanaku.com`       | `SEED_TEST_PASSWORD` |
+| Advisor (×5) | `testadvisor1@kanaku.com` … `testadvisor5@kanaku.com` | `SEED_TEST_PASSWORD` |
 
 Each test account gets its own mock data (4 accounts, ~14 transactions, 3 goals, 2 loans,
 3–4 investments, 4 budgets, 3 recurring txns, 3 friends, notifications; advisors also get

@@ -1,13 +1,20 @@
-$ErrorActionPreference = 'Stop'
+$email = $env:SEED_ADMIN_EMAIL
+$password = $env:SEED_ADMIN_PASSWORD
+$pin = $env:SEED_ADMIN_PIN
+
+if (-not $email -or -not $password -or -not $pin) {
+    Write-Error "SEED_ADMIN_EMAIL, SEED_ADMIN_PASSWORD, and SEED_ADMIN_PIN must be set in environment variables."
+    Exit 1
+}
 
 $base = 'http://localhost:3000/api/v1'
-$loginBody = @{ email = 'shaik.job.details@gmail.com'; password = '123456789' } | ConvertTo-Json
+$loginBody = @{ email = $email; password = $password } | ConvertTo-Json
 $login = Invoke-RestMethod -Uri ($base + '/auth/login') -Method Post -ContentType 'application/json' -Body $loginBody
 $token = $login.data.accessToken
 $headers = @{ Authorization = ('Bearer ' + $token) }
 
 $authUserData = Invoke-RestMethod -Uri ($base + '/auth/profile') -Method Get -Headers $headers
-$pinVerify = Invoke-RestMethod -Uri ($base + '/pin/verify') -Method Post -Headers $headers -ContentType 'application/json' -Body (@{ pin = '847291'; deviceId = 'qa-matrix-device' } | ConvertTo-Json)
+$pinVerify = Invoke-RestMethod -Uri ($base + '/pin/verify') -Method Post -Headers $headers -ContentType 'application/json' -Body (@{ pin = $pin; deviceId = 'qa-matrix-device' } | ConvertTo-Json)
 
 $accounts = Invoke-RestMethod -Uri ($base + '/accounts') -Method Get -Headers $headers
 $transactions = Invoke-RestMethod -Uri ($base + '/transactions') -Method Get -Headers $headers

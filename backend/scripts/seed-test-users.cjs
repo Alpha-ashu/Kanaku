@@ -14,7 +14,7 @@
  *   testuser1@kanaku.com    … testuser5@kanaku.com     (role: user)
  *   testadvisor1@kanaku.com … testadvisor5@kanaku.com  (role: advisor)
  *
- * Shared password: SEED_TEST_PASSWORD  (default: Test@Kanaku#2026)
+ * Shared password: SEED_TEST_PASSWORD (must be set via environment variable)
  *
  * Idempotent — re-running upserts the identity and rebuilds that user's mock
  * data from scratch (cleanup → reseed), so counts never balloon.
@@ -33,7 +33,11 @@ const bcrypt = require('bcryptjs');
 
 const prisma = new PrismaClient();
 
-const TEST_PASSWORD = process.env.SEED_TEST_PASSWORD || 'Test@Kanaku#2026';
+const TEST_PASSWORD = process.env.SEED_TEST_PASSWORD;
+if (!TEST_PASSWORD) {
+  console.error('Error: SEED_TEST_PASSWORD must be set in environment (see backend/.env)');
+  process.exit(1);
+}
 const COHORT_SIZE = 5;
 
 // ── Helpers ────────────────────────────────────────────────────────────────

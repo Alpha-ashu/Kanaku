@@ -585,7 +585,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
     // Security: alert the configured owner address whenever a protected role
     // account (admin/manager/advisor/user) signs in. Best-effort, never blocks login.
     if (userRecord?.email && isProtectedAccount(userRecord.email)) {
-      const alertTo = process.env.SECURITY_ALERT_EMAIL || 'shaik.job.details@gmail.com';
+      const alertTo = process.env.SECURITY_ALERT_EMAIL || 'security@kanaku.com';
       const fwd = req.headers['x-forwarded-for'];
       const ip = (Array.isArray(fwd) ? fwd[0] : fwd)?.split(',')[0]?.trim() || req.ip || 'unknown';
       void sendLoginAlertEmail({

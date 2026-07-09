@@ -9,10 +9,12 @@ const prisma = new PrismaClient({
   }
 });
 
+const adminEmail = process.env.SEED_ADMIN_EMAIL || 'admin@kanaku.com';
+
 async function checkAndUpdateUser() {
   try {
     const user = await prisma.user.findUnique({
-      where: { email: 'Shaik.job.details@gmail.com' }
+      where: { email: adminEmail }
     });
     
     if (!user) {
@@ -38,7 +40,7 @@ async function checkAndUpdateUser() {
       if (user.role !== 'admin' || !user.isApproved) {
         console.log('\n  Updating role to admin and approving...');
         const updated = await prisma.user.update({
-          where: { email: 'Shaik.job.details@gmail.com' },
+          where: { email: adminEmail },
           data: { 
             role: 'admin',
             isApproved: true

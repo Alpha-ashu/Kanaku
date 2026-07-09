@@ -10,7 +10,7 @@ export async function isElementVisible(locator: Locator, timeout = 5000): Promis
 export const BASE = 'http://localhost:9002';
 export const API = 'http://localhost:3000';
 
-const testPassword = process.env.SEED_TEST_PASSWORD || 'TestKanaku@2026';
+const testPassword = process.env.SEED_TEST_PASSWORD || 'example-Test-password-123!';
 
 export const USERS = {
   U1: { firstName: 'Arjun', lastName: 'Sharma', email: 'arjun.test@kanaku.app', mobile: '9000000001', password: testPassword, persona: 'Debt Manager' },

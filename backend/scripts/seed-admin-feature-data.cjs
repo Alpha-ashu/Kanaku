@@ -3,9 +3,9 @@ const bcrypt = require('bcrypt');
 
 const prisma = new PrismaClient();
 
-const ADMIN_EMAIL = 'shaik.job.details@gmail.com';
-const ADMIN_PASSWORD = '123456789';
-const ADMIN_PIN = '847291';
+const ADMIN_EMAIL = process.env.SEED_ADMIN_EMAIL || 'admin@kanaku.com';
+const ADMIN_PASSWORD = process.env.SEED_ADMIN_PASSWORD || 'example-Admin-password-123!';
+const ADMIN_PIN = process.env.SEED_ADMIN_PIN || '123456';
 
 function daysFromNow(days) {
   const date = new Date();
