@@ -10,14 +10,16 @@ export async function isElementVisible(locator: Locator, timeout = 5000): Promis
 export const BASE = 'http://localhost:9002';
 export const API = 'http://localhost:3000';
 
+const testPassword = process.env.SEED_TEST_PASSWORD || 'TestKanaku@2026';
+
 export const USERS = {
-  U1: { firstName: 'Arjun', lastName: 'Sharma', email: 'arjun.test@kanaku.app', mobile: '9000000001', password: 'TestKanaku@2026', persona: 'Debt Manager' },
-  U2: { firstName: 'Priya', lastName: 'Mehta', email: 'priya.test@kanaku.app', mobile: '9000000002', password: 'TestKanaku@2026', persona: 'Group Splitter' },
-  U3: { firstName: 'Rohan', lastName: 'Verma', email: 'rohan.test@kanaku.app', mobile: '9000000003', password: 'TestKanaku@2026', persona: 'Investor' },
-  U4: { firstName: 'Sneha', lastName: 'Kapoor', email: 'sneha.test@kanaku.app', mobile: '9000000004', password: 'TestKanaku@2026', persona: 'Goal Setter' },
-  U5: { firstName: 'Dev', lastName: 'Nair', email: 'dev.test@kanaku.app', mobile: '9000000005', password: 'TestKanaku@2026', persona: 'Portfolio Builder' },
-  U6: { firstName: 'Isha', lastName: 'Patel', email: 'isha.test@kanaku.app', mobile: '9000000006', password: 'TestKanaku@2026', persona: 'Planner' },
-  U7: { firstName: 'Power', lastName: 'User', email: 'admin.test@kanaku.app', mobile: '9000000007', password: 'TestKanaku@2026', persona: 'Power User' },
+  U1: { firstName: 'Arjun', lastName: 'Sharma', email: 'arjun.test@kanaku.app', mobile: '9000000001', password: testPassword, persona: 'Debt Manager' },
+  U2: { firstName: 'Priya', lastName: 'Mehta', email: 'priya.test@kanaku.app', mobile: '9000000002', password: testPassword, persona: 'Group Splitter' },
+  U3: { firstName: 'Rohan', lastName: 'Verma', email: 'rohan.test@kanaku.app', mobile: '9000000003', password: testPassword, persona: 'Investor' },
+  U4: { firstName: 'Sneha', lastName: 'Kapoor', email: 'sneha.test@kanaku.app', mobile: '9000000004', password: testPassword, persona: 'Goal Setter' },
+  U5: { firstName: 'Dev', lastName: 'Nair', email: 'dev.test@kanaku.app', mobile: '9000000005', password: testPassword, persona: 'Portfolio Builder' },
+  U6: { firstName: 'Isha', lastName: 'Patel', email: 'isha.test@kanaku.app', mobile: '9000000006', password: testPassword, persona: 'Planner' },
+  U7: { firstName: 'Power', lastName: 'User', email: 'admin.test@kanaku.app', mobile: '9000000007', password: testPassword, persona: 'Power User' },
 };
 
 export async function screenshot(page: Page, name: string) {
