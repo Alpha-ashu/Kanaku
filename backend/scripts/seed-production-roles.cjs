@@ -123,6 +123,10 @@ async function upsertRoleUser({ email, password, role }) {
   const profile = ROLE_PROFILES[role] || {};
   const hashedPassword = await bcrypt.hash(password, 12);
 
+  // Only include columns that exist on the User table.
+  // Profile fields (firstName, lastName, gender, dateOfBirth, jobType, salary,
+  // country, state, city, avatarId) live in public.profiles and are written by
+  // syncProfileRow() below — passing them here causes Prisma to throw.
   const data = {
     email,
     name:          profile.name || role,
@@ -130,17 +134,6 @@ async function upsertRoleUser({ email, password, role }) {
     role,
     isApproved:    profile.isApproved ?? false,
     advisorStatus: profile.advisorStatus ?? 'NOT_AVAILABLE',
-    firstName:     profile.firstName ?? null,
-    lastName:      profile.lastName  ?? null,
-    gender:        profile.gender    ?? null,
-    dateOfBirth:   profile.dateOfBirth ?? null,
-    jobType:       profile.jobType   ?? null,
-    salary:        profile.salary    ?? null,
-    country:       profile.country   ?? null,
-    state:         profile.state     ?? null,
-    city:          profile.city      ?? null,
-    avatarId:      profile.avatarId  ?? null,
-    status:        'active',
     updatedAt:     new Date(),
   };
 
