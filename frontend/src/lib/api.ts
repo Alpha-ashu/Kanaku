@@ -845,6 +845,9 @@ export const api = {
     checkEmail: (email: string): Promise<{ data?: { available: boolean; code?: string }; success: boolean }> =>
       apiClient.post('/auth/check-email', { email }) as any,
 
+    checkPhone: (phone: string): Promise<{ data?: { available: boolean; code?: string }; success: boolean }> =>
+      apiClient.post('/auth/check-phone', { phone }) as any,
+
     register: (data: { name: string; email: string; password: string; firstName?: string; lastName?: string; mobile?: string }) =>
       apiClient.post('/auth/register', data, {
         showSuccessToast: true,

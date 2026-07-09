@@ -21,6 +21,7 @@ import { sendWelcomeEmail, sendLoginAlertEmail } from '../../emails';
 import { auditFromRequest } from '../../utils/auditLogger';
 import { isProtectedAccount } from '../../utils/protectedAccounts';
 import { isAccountLocked } from '../../utils/accountStatus';
+import { normalizePhone } from './registration.defaults';
 
 const authService = new AuthService();
 const challengeMemoryCache = new Map<string, { payload: any; expiresAt: number }>();
@@ -245,6 +246,26 @@ export const checkEmailAvailability = async (req: Request, res: Response, next: 
       prisma.profiles.findFirst({ where: { email: normalized }, select: { id: true } }),
     ]);
     return res.status(200).json({ available: !existingUser && !existingProfile });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const checkPhoneAvailability = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { phone } = req.body;
+    if (!phone || typeof phone !== 'string') {
+      return res.status(200).json({ available: false, code: 'INVALID_PHONE' });
+    }
+    const normalized = normalizePhone(phone);
+    if (!normalized) {
+      return res.status(200).json({ available: false, code: 'INVALID_PHONE' });
+    }
+    const existingPhoneProfile = await prisma.profiles.findFirst({
+      where: { phone: normalized },
+      select: { id: true }
+    });
+    return res.status(200).json({ available: !existingPhoneProfile });
   } catch (error) {
     return next(error);
   }

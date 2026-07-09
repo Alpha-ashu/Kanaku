@@ -30,6 +30,8 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
   const [countryCode, setCountryCode] = useState('+91');
   const [emailTaken, setEmailTaken] = useState<boolean | null>(null);
   const [isCheckingEmail, setIsCheckingEmail] = useState(false);
+  const [mobileTaken, setMobileTaken] = useState<boolean | null>(null);
+  const [isCheckingMobile, setIsCheckingMobile] = useState(false);
 
   const countryCodes = [
     { code: '+91', label: '🇮🇳 +91' },
@@ -66,7 +68,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
   let fieldsRemaining = 5;
   if (isFirstNameValid && isLastNameValid) fieldsRemaining -= 1;
   if (isEmailValid) fieldsRemaining -= 1;
-  if (isMobileValid) fieldsRemaining -= 1;
+  if (isMobileValid && mobileTaken !== true) fieldsRemaining -= 1;
   if (isPasswordValid) fieldsRemaining -= 1;
   if (isConfirmPasswordValid) fieldsRemaining -= 1;
 
@@ -99,6 +101,18 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
           .then(res => setEmailTaken(res.data?.available === false))
           .catch(() => setEmailTaken(null))
           .finally(() => setIsCheckingEmail(false));
+      }
+    }
+    if (name === 'mobile') {
+      const mobile = e.target.value.trim();
+      const fullMobile = `${countryCode} ${mobile}`;
+      if (isMobileValid) {
+        setIsCheckingMobile(true);
+        setMobileTaken(null);
+        api.auth.checkPhone(fullMobile)
+          .then(res => setMobileTaken(res.data?.available === false))
+          .catch(() => setMobileTaken(null))
+          .finally(() => setIsCheckingMobile(false));
       }
     }
   };
@@ -141,6 +155,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
 
     setFormData(prev => ({ ...prev, mobile: val }));
     setTouched(prev => ({ ...prev, mobile: true }));
+    setMobileTaken(null);
     if (errors.mobile) setErrors(prev => ({ ...prev, mobile: '' }));
   };
 
@@ -150,6 +165,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
     setTouched(prev => ({ ...prev, [name]: true }));
     if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }));
     if (name === 'email') setEmailTaken(null);
+    if (name === 'mobile') setMobileTaken(null);
   };
 
   const generateStrongPassword = () => {
@@ -244,6 +260,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
     if (!isEmailFormatValid) newErrors.email = 'Invalid email address';
     else if (emailTaken === true) newErrors.email = 'This email can’t be used for a new account';
     if (!isMobileValid) newErrors.mobile = 'Invalid mobile number';
+    else if (mobileTaken === true) newErrors.mobile = 'This phone number is already registered to another account. Please use a different phone number.';
     if (!isPasswordValid) newErrors.password = 'Password does not meet requirements';
     if (!isConfirmPasswordValid) newErrors.confirmPassword = 'Passwords do not match';
 
@@ -486,6 +503,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
               onChange={(e) => {
                 setCountryCode(e.target.value);
                 setFormData(prev => ({ ...prev, mobile: '' }));
+                setMobileTaken(null);
               }}
               disabled={isLoading}
               data-testid="auth-signup-country-code-select"
@@ -516,7 +534,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
           disabled={isLoading}
           placeholder=" "
           data-testid="auth-signup-mobile-input"
-          className={`${inputBase(touched.mobile && !isMobileValid)} peer !pl-[6.2rem] pr-10`}
+          className={`${inputBase(touched.mobile && (!isMobileValid || mobileTaken === true))} peer !pl-[6.2rem] pr-10`}
           autoComplete="tel"
         />
         <label htmlFor="mobile" className={`${labelBase} !left-[6.2rem]`}>
@@ -526,14 +544,19 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
         {/* Real-time Status Icon */}
         {touched.mobile && (
           <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
-            {isMobileValid ? (
+            {isCheckingMobile ? (
+              <Loader2 className="text-gray-400 animate-spin" size={16} />
+            ) : isMobileValid && mobileTaken !== true ? (
               <Check className="text-emerald-500" size={16} />
             ) : (
               <AlertCircle className="text-red-500" size={16} />
             )}
           </div>
         )}
-        {touched.mobile && !isMobileValid && <p className="mt-1 text-xs text-red-500 pl-1">Please enter a valid mobile number</p>}
+        {touched.mobile && mobileTaken === true && (
+          <p className="mt-1 text-xs text-red-500 pl-1">This phone number is already registered to another account. Please use a different phone number.</p>
+        )}
+        {touched.mobile && !isMobileValid && mobileTaken !== true && <p className="mt-1 text-xs text-red-500 pl-1">Please enter a valid mobile number</p>}
       </div>
 
       {/* Password */}

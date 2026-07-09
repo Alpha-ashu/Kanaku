@@ -14,6 +14,7 @@ import {
   revokeDevice,
   deleteAccount,
   checkEmailAvailability,
+  checkPhoneAvailability,
   forgotPassword,
   resetPassword,
   verifyResetCode,
@@ -86,6 +87,7 @@ const registerLimiter = rateLimit({
 });
 
 router.post('/check-email', authLimiter, checkEmailAvailability);
+router.post('/check-phone', authLimiter, checkPhoneAvailability);
 // NOTE: register/login/challenge keep their hardened in-controller validation
 // (EMAIL_REGEX, password length, MISSING_FIELDS codes) which the test suite
 // asserts on — do not front them with a generic validateBody layer.
