@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { LogOut, KeyRound, AlertCircle, ChevronLeft, ShieldCheck, Eye, EyeOff, Lock } from 'lucide-react';
+import { LogOut, KeyRound, AlertCircle, ChevronLeft, ShieldCheck, Eye, EyeOff, Lock, Loader2 } from 'lucide-react';
 import { KANAKULogo } from '@/app/components/ui/KANAKULogo';
 import { clearSecurityData, isPINSet, verifyPIN, storeMasterKey, backupPINKeys, restorePINKeys } from '@/lib/encryption';
 import { isPinMissing, isPinServiceUnavailable, isSessionExpired, pinService } from '@/services/pinService';
@@ -34,7 +34,48 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  const [isLoggingOut, setIsLoggingOut] = useState(false);
  const [resetError, setResetError] = useState('');
  const [resetOtpSent, setResetOtpSent] = useState(false);
- const [resetOtp, setResetOtp] = useState('');
+ const [resetOtpInputs, setResetOtpInputs] = useState<string[]>(Array(6).fill(''));
+ const resetOtpRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+ const handleResetOtpChange = (index: number, val: string) => {
+   const sanitized = val.replace(/\D/g, '').slice(-1);
+   const newOtp = [...resetOtpInputs];
+   newOtp[index] = sanitized;
+   setResetOtpInputs(newOtp);
+
+   if (sanitized && index < 5) {
+     resetOtpRefs.current[index + 1]?.focus();
+   }
+ };
+
+ const handleResetOtpKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+   if (e.key === 'Backspace') {
+     if (!resetOtpInputs[index] && index > 0) {
+       const newOtp = [...resetOtpInputs];
+       newOtp[index - 1] = '';
+       setResetOtpInputs(newOtp);
+       resetOtpRefs.current[index - 1]?.focus();
+     } else {
+       const newOtp = [...resetOtpInputs];
+       newOtp[index] = '';
+       setResetOtpInputs(newOtp);
+     }
+   }
+ };
+
+ const handleResetOtpPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+   e.preventDefault();
+   const text = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+   if (text.length > 0) {
+     const newOtp = [...resetOtpInputs];
+     for (let i = 0; i < 6; i++) {
+       newOtp[i] = text[i] || '';
+     }
+     setResetOtpInputs(newOtp);
+     const focusIndex = Math.min(text.length, 5);
+     resetOtpRefs.current[focusIndex]?.focus();
+   }
+ };
  // True when this lock screen was reached via the inactivity auto-lock, so we
  // can explain why the user is being asked for their PIN again.
  const [lockedForInactivity, setLockedForInactivity] = useState(false);
@@ -316,7 +357,7 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  }
  setResetError('');
  setResetOtpSent(false);
- setResetOtp('');
+ setResetOtpInputs(Array(6).fill(''));
  setShowResetModal(true);
  };
 
@@ -339,13 +380,24 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
   };
 
   const handleVerifyOtpAndReset = async () => {
+    const code = resetOtpInputs.join('');
+    if (code.length < 6) {
+      setResetError('Please enter all 6 digits of the verification code.');
+      return;
+    }
+    // Prevent client-side SQL injection / bypass by ensuring the code is strictly a 6-digit number
+    if (!/^\d{6}$/.test(code)) {
+      setResetError('Invalid verification code format. Only numeric digits are allowed.');
+      return;
+    }
+
     setIsResettingPin(true);
     setResetError('');
     try {
       await apiClient.post('/otp/verify', {
         destination: user!.email,
         purpose: 'sensitive_action',
-        otp: resetOtp,
+        otp: code,
       });
 
       // Obtain security token (the backend accepts recent OTP verification)
@@ -624,73 +676,94 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  </div>
 
  {/* Forgot PIN modal */}
- {showResetModal && (
- <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm">
- <div className="bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl">
- <div className="w-12 h-12 rounded-2xl bg-amber-100 flex items-center justify-center mb-4">
- <KeyRound className="text-amber-600" size={22} />
- </div>
- <h3 className="text-lg font-bold text-gray-900 mb-1">Reset your PIN?</h3>
- <p className="text-sm text-gray-500 mb-5 leading-relaxed">
- {resetOtpSent ? 'Enter the 6-digit code sent to your email to reset your PIN.' : 'We will send a confirmation code to your email. You can create a new PIN after verification.'}
- </p>
+  {showResetModal && (
+    <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md transition-all duration-300">
+      <div 
+        className="bg-white/95 border border-slate-100 rounded-[32px] w-full max-w-sm p-6 md:p-8 shadow-2xl flex flex-col gap-6 animate-in fade-in-50 zoom-in-95 duration-200 select-none"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex flex-col items-center text-center gap-2">
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-400 flex items-center justify-center shadow-lg shadow-amber-500/20 mb-2">
+            <KeyRound className="text-white" size={24} />
+          </div>
+          <h3 className="text-xl font-black text-slate-900 tracking-tight">Reset your PIN?</h3>
+          <p className="text-sm font-semibold text-slate-500 leading-relaxed max-w-[260px]">
+            {resetOtpSent 
+              ? 'Enter the 6-digit code sent to your email to verify and reset your PIN.' 
+              : 'We will send a secure confirmation code to your email. You can create a new PIN after verification.'}
+          </p>
+        </div>
 
- {resetError && (
- <div className="flex items-start gap-2 bg-red-50 border border-red-200 rounded-xl px-4 py-3 mb-4 text-sm text-red-700">
- <AlertCircle size={15} className="mt-0.5 flex-shrink-0" />
- {resetError}
- </div>
- )}
+        {resetError && (
+          <div className="flex items-start gap-2.5 bg-rose-50 border border-rose-100 rounded-2xl p-4 text-xs font-semibold text-rose-700 animate-shake">
+            <AlertCircle size={16} className="mt-0.5 flex-shrink-0 text-rose-500" />
+            <p className="leading-snug">{resetError}</p>
+          </div>
+        )}
 
- {resetOtpSent && (
- <div className="mb-5">
- <input
- type="text"
- maxLength={6}
- value={resetOtp}
- onChange={(e) => setResetOtp(e.target.value.replace(/\D/g, ''))}
- placeholder="Enter 6-digit code"
- data-testid="pin-reset-otp-input"
- className="w-full px-4 py-3 border border-gray-200 rounded-xl text-center tracking-widest text-lg font-bold focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white"
- autoFocus
- />
- </div>
- )}
+        {resetOtpSent && (
+          <div className="flex flex-col gap-2">
+            <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">
+              Verification Code
+            </label>
+            <div className="flex justify-between gap-1.5 max-w-[280px] mx-auto w-full">
+              {Array(6).fill(0).map((_, i) => (
+                <input
+                  key={i}
+                  ref={(el) => { resetOtpRefs.current[i] = el; }}
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  maxLength={1}
+                  value={resetOtpInputs[i]}
+                  onChange={(e) => handleResetOtpChange(i, e.target.value)}
+                  onKeyDown={(e) => handleResetOtpKeyDown(i, e)}
+                  onPaste={handleResetOtpPaste}
+                  data-testid={`reset-otp-input-${i}`}
+                  className="w-10 h-10 sm:w-11 sm:h-11 text-center text-lg font-black text-slate-900 bg-slate-50 border-2 border-slate-100 rounded-xl focus:outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all duration-200"
+                  autoFocus={i === 0}
+                />
+              ))}
+            </div>
+          </div>
+        )}
 
- <div className="flex gap-3">
- <button
- type="button"
- onClick={() => setShowResetModal(false)}
- data-testid="pin-reset-cancel-button"
- className="flex-1 py-3 rounded-xl bg-gray-100 text-gray-700 font-semibold hover:bg-gray-200 transition-colors"
- >
- Cancel
- </button>
- {resetOtpSent ? (
- <button
- type="button"
- onClick={handleVerifyOtpAndReset}
- disabled={isResettingPin || resetOtp.length < 6}
- data-testid="pin-reset-verify-button"
- className="flex-1 py-3 rounded-xl bg-amber-500 text-white font-semibold hover:bg-amber-600 transition-colors disabled:opacity-60"
- >
- {isResettingPin ? 'Verifying...' : 'Verify & Reset'}
- </button>
- ) : (
- <button
- type="button"
- onClick={handleSendOtp}
- disabled={isResettingPin}
- data-testid="pin-reset-send-button"
- className="flex-1 py-3 rounded-xl bg-amber-500 text-white font-semibold hover:bg-amber-600 transition-colors disabled:opacity-60"
- >
- {isResettingPin ? 'Sending...' : 'Send Code'}
- </button>
- )}
- </div>
- </div>
- </div>
- )}
+        <div className="flex gap-3">
+          <button
+            type="button"
+            onClick={() => { setShowResetModal(false); setResetOtpInputs(Array(6).fill('')); setResetError(''); }}
+            data-testid="pin-reset-cancel-button"
+            className="flex-1 py-3.5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm transition-all duration-200"
+          >
+            Cancel
+          </button>
+          {resetOtpSent ? (
+            <button
+              type="button"
+              onClick={handleVerifyOtpAndReset}
+              disabled={isResettingPin || resetOtpInputs.join('').length < 6}
+              data-testid="pin-reset-verify-button"
+              className="flex-1 py-3.5 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold text-sm shadow-lg shadow-amber-500/10 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
+            >
+              {isResettingPin ? <Loader2 size={16} className="animate-spin" /> : null}
+              <span>Verify</span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={handleSendOtp}
+              disabled={isResettingPin}
+              data-testid="pin-reset-send-button"
+              className="flex-1 py-3.5 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold text-sm shadow-lg shadow-amber-500/10 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
+            >
+              {isResettingPin ? <Loader2 size={16} className="animate-spin" /> : null}
+              <span>Send Code</span>
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  )}
 
  {/* Keyframe styles */}
  <style>{`
