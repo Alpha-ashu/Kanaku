@@ -96,7 +96,36 @@ class PinService {
       // Fall back to locally stored tokens.
     }
 
-    return TokenManager.getAccessToken();
+    const token = TokenManager.getAccessToken();
+    if (!token) {
+      return null;
+    }
+
+    const isTokenExpired = (t: string | null): boolean => {
+      if (!t) return true;
+      try {
+        const parts = t.split('.');
+        if (parts.length !== 3) {
+          // Treat mock/non-JWT strings in tests as non-expired
+          return false;
+        }
+        const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+        const exp = payload.exp;
+        if (typeof exp === 'number') {
+          return Date.now() / 1000 >= exp - 10;
+        }
+        return false;
+      } catch {
+        return true;
+      }
+    };
+
+    if (!isTokenExpired(token)) {
+      return token;
+    }
+
+    const refreshed = await refreshAccessToken();
+    return refreshed || token;
   }
 
   private async getAuthHeaders(securityToken?: string): Promise<Record<string, string>> {

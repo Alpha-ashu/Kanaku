@@ -1,7 +1,7 @@
 import type { RealtimeChannel } from '@supabase/supabase-js';
 import supabase from '@/utils/supabase/client';
 import { db } from '@/lib/database';
-import { apiClient, TokenManager } from '@/lib/api';
+import { apiClient, TokenManager, refreshAccessToken } from '@/lib/api';
 import { markOptionalBackendUnavailable, shouldSkipOptionalBackendRequests } from '@/lib/apiBase';
 import {
   applyTransactionAccountImpact,
@@ -1424,6 +1424,40 @@ const mergeBackendTable = async (table: SyncedTableName, backendRows: any[], nex
   }
 };
 
+/**
+ * Waits for a valid access token to become available in TokenManager before
+ * the sync makes its API calls. On a fresh login after a restart the backend
+ * JWT may not yet have been acquired from the HttpOnly refresh cookie, so
+ * firing API calls immediately produces 401s and a ~20 s delay while each
+ * request individually triggers a token refresh. Polling here front-loads
+ * that refresh once and lets all subsequent calls go out with a valid token.
+ *
+ * Strategy:
+ *  1. Return immediately if a token is already present.
+ *  2. Poll every 250 ms for up to 8 s.
+ *  3. If still absent after the polls, proactively call refreshAccessToken()
+ *     (single shared in-flight promise in api.ts) and wait for it.
+ */
+async function waitForAuthToken(timeoutMs = 8_000): Promise<string | null> {
+  // Fast path — token is already available.
+  const immediate = TokenManager.getAccessToken();
+  if (immediate) return immediate;
+
+  const interval = 250;
+  const steps = Math.ceil(timeoutMs / interval);
+
+  for (let i = 0; i < steps; i++) {
+    await new Promise<void>((resolve) => setTimeout(resolve, interval));
+    const token = TokenManager.getAccessToken();
+    if (token) return token;
+  }
+
+  // Token still not present — proactively try a refresh so the subsequent
+  // API calls don't each trigger their own individual refresh.
+  const refreshed = await refreshAccessToken().catch(() => null);
+  return refreshed;
+}
+
 async function fetchBackendRows(path: string) {
   if (shouldSkipOptionalBackendRequests()) {
     return [];
@@ -1469,6 +1503,20 @@ async function syncUserDataFromBackend(
 
   const tablesToSync = requestedTables === undefined ? CORE_SYNC_TABLES : requestedTables;
 
+  // ── Token readiness check ──────────────────────────────────────────────────
+  // On a fresh login after a browser restart the backend JWT may not yet have
+  // been acquired from the HttpOnly refresh cookie when this function runs.
+  // Firing API calls without a token causes a burst of 401 errors and an
+  // unnecessary ~20 s delay while each request individually triggers a refresh.
+  // We front-load a single token acquisition here so all subsequent calls go
+  // out with valid credentials immediately.
+  const token = await waitForAuthToken();
+  if (!token) {
+    console.warn('[Sync] No auth token available after waiting — skipping backend sync.');
+    return;
+  }
+  // ──────────────────────────────────────────────────────────────────────────
+
   // Clean up any local duplicates before merging backend data
   await deduplicateLocalData();
 
@@ -1478,7 +1526,9 @@ async function syncUserDataFromBackend(
     return;
   }
 
-  // Filter out tables that were synced recently during non-forced syncs
+  // Filter out tables that were synced recently during non-forced syncs.
+  // When force=true (fresh login / manual refresh) bypass per-table cooldowns
+  // so the server's latest data is always loaded.
   const targetTables = tablesToSync;
   let finalTablesToSync = targetTables;
   if (!force) {

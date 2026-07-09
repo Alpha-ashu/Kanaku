@@ -261,11 +261,43 @@ const clearLegacyRefreshTokens = (): void => {
 };
 clearLegacyRefreshTokens();
 
+const isTokenExpired = (token: string | null): boolean => {
+  if (!token) return true;
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) {
+      // Treat mock/non-JWT strings in tests as non-expired
+      return false;
+    }
+    const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+    const exp = payload.exp;
+    if (typeof exp === 'number') {
+      // 10-second buffer
+      return Date.now() / 1000 >= exp - 10;
+    }
+    return false;
+  } catch {
+    return true;
+  }
+};
+
 const resolveAuthToken = async (): Promise<string | null> => {
   // Backend-managed auth (BFF): the only API credential is our own backend JWT,
   // captured by TokenManager from the login/refresh response headers. The client
   // no longer reads Supabase session tokens — Supabase is never the API identity.
-  return TokenManager.getAccessToken();
+  const token = TokenManager.getAccessToken();
+  if (!token) {
+    return null;
+  }
+
+  if (!isTokenExpired(token)) {
+    return token;
+  }
+
+  // If token is present but expired, try to refresh it proactively
+  // to avoid hitting 401s in the browser console.
+  const refreshed = await refreshAccessToken();
+  return refreshed || token;
 };
 
 // ==================== Error Handler ====================
