@@ -2,6 +2,7 @@ import { db, type Transaction } from '@/lib/database';
 
 type TransactionLike = Pick<
   Transaction,
+  | 'id'
   | 'type'
   | 'amount'
   | 'accountId'
@@ -12,6 +13,7 @@ type TransactionLike = Pick<
   | 'expenseMode'
   | 'loanType'
   | 'subcategory'
+  | 'createdAt'
 >;
 
 export interface TransactionAggregation {
@@ -99,15 +101,31 @@ export function getAccountBalanceSnapshot(
   const base: AccountBalanceSnapshot = { previous: current, current, lastDelta: 0, hasActivity: false };
   if (!account.id) return base;
 
-  let latest: TransactionLike | null = null;
+  let latest: (TransactionLike & { id?: number; createdAt?: Date | string }) | null = null;
   let latestTime = -Infinity;
   for (const transaction of transactions) {
     if (transaction.deletedAt) continue;
     if (transaction.accountId !== account.id && transaction.transferToAccountId !== account.id) continue;
     const time = new Date(transaction.date as any).getTime();
-    if (Number.isNaN(time) || time < latestTime) continue;
-    latestTime = time;
-    latest = transaction;
+    if (Number.isNaN(time)) continue;
+
+    if (time > latestTime) {
+      latestTime = time;
+      latest = transaction;
+    } else if (time === latestTime && latest) {
+      // Break tie with createdAt or id
+      const currentCreated = transaction.createdAt ? new Date(transaction.createdAt).getTime() : 0;
+      const latestCreated = latest.createdAt ? new Date(latest.createdAt).getTime() : 0;
+      if (currentCreated > latestCreated) {
+        latest = transaction;
+      } else if (currentCreated === latestCreated) {
+        const currentId = (transaction as any).id || 0;
+        const latestId = (latest as any).id || 0;
+        if (currentId > latestId) {
+          latest = transaction;
+        }
+      }
+    }
   }
 
   if (!latest) return base;

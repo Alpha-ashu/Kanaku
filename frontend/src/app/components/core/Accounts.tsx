@@ -33,7 +33,7 @@ import { formatCurrencyAmount } from "@/lib/currencyUtils";
 import { CardNetworkLogo, getBankCardLogo } from "@/app/components/ui/AccountLogos";
 import { CenteredLayout } from "@/app/components/shared/CenteredLayout";
 import { queueRecordUpsertSync } from "@/lib/auth-sync-integration";
-import { setAccountTargetBalance, setAccountOpeningBalance, getAccountBalanceSnapshot, type AccountBalanceSnapshot } from "@/lib/transactionAggregation";
+import { setAccountTargetBalance, setAccountOpeningBalance, getAccountBalanceSnapshot, getAccountLedgerDelta, type AccountBalanceSnapshot } from "@/lib/transactionAggregation";
 
 type AssetType = "all" | "bank" | "card" | "wallet" | "cash";
 
@@ -110,6 +110,7 @@ export const Accounts: React.FC = () => {
         customColor?: string;
     } | null>(null);
     const [isSavingEdit, setIsSavingEdit] = useState(false);
+    const [editingAccountDelta, setEditingAccountDelta] = useState<number>(0);
     const [isDesktop, setIsDesktop] = useState(false);
 
     React.useEffect(() => {
@@ -125,14 +126,16 @@ export const Accounts: React.FC = () => {
         }
     }, []);
 
-    const handleEditAccount = (account: typeof accounts[0], e: React.MouseEvent) => {
+    const handleEditAccount = async (account: typeof accounts[0], e: React.MouseEvent) => {
         e.stopPropagation();
+        const delta = await getAccountLedgerDelta(account.id!);
+        setEditingAccountDelta(delta);
         setEditingAccount({
             id: account.id!,
             name: account.name,
             type: account.type,
             balance: account.balance,
-            openingBalance: account.openingBalance,
+            openingBalance: account.openingBalance ?? Math.round((account.balance - delta) * 100) / 100,
             isActive: account.isActive ?? true,
             subType: account.subType,
             colorId: account.colorId,
@@ -156,10 +159,7 @@ export const Accounts: React.FC = () => {
             // Balance is derived (openingBalance + ledger). If the user edited the
             // Opening Balance, persist it directly and recompute current; otherwise
             // honor the entered Current Balance by anchoring the opening balance.
-            const original = accounts.find((a) => a.id === editingAccount.id);
-            const openingChanged = editingAccount.openingBalance != null
-                && Number(editingAccount.openingBalance) !== Number(original?.openingBalance ?? NaN);
-            if (openingChanged) {
+            if (editingAccount.openingBalance != null) {
                 await setAccountOpeningBalance(editingAccount.id, Number(editingAccount.openingBalance));
             } else {
                 await setAccountTargetBalance(editingAccount.id, editingAccount.balance);
@@ -355,7 +355,14 @@ export const Accounts: React.FC = () => {
         // Strict filtering by account ID (both source and target for transfers)
         return transactions
             .filter((t) => t.accountId === selectedAccountId || t.transferToAccountId === selectedAccountId)
-            .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+            .sort((a, b) => {
+                const diff = new Date(b.date).getTime() - new Date(a.date).getTime();
+                if (diff !== 0) return diff;
+                const aCreated = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+                const bCreated = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+                if (bCreated !== aCreated) return bCreated - aCreated;
+                return (b.id || 0) - (a.id || 0);
+            });
     }, [transactions, selectedAccountId]);
 
     return (
@@ -1169,7 +1176,14 @@ export const Accounts: React.FC = () => {
                                         <input data-testid="accounts-0-00"
                                             type="number"
                                             value={editingAccount.openingBalance || ''}
-                                            onChange={(e) => setEditingAccount(prev => prev ? { ...prev, openingBalance: parseFloat(e.target.value) || 0 } : null)}
+                                            onChange={(e) => {
+                                                const val = parseFloat(e.target.value) || 0;
+                                                setEditingAccount(prev => prev ? {
+                                                    ...prev,
+                                                    openingBalance: val,
+                                                    balance: Math.round((val + editingAccountDelta) * 100) / 100
+                                                } : null);
+                                            }}
                                             className="w-full px-5 py-3.5 rounded-2xl bg-slate-50 border border-slate-200 focus:border-slate-900 focus:ring-4 focus:ring-slate-900/5 outline-none text-sm font-bold text-slate-900 transition-all"
                                             placeholder="0.00"
                                             step="0.01"
@@ -1182,7 +1196,14 @@ export const Accounts: React.FC = () => {
                                         <input data-testid="accounts-0-00-2"
                                             type="number"
                                             value={editingAccount.balance}
-                                            onChange={(e) => setEditingAccount(prev => prev ? { ...prev, balance: parseFloat(e.target.value) || 0 } : null)}
+                                            onChange={(e) => {
+                                                const val = parseFloat(e.target.value) || 0;
+                                                setEditingAccount(prev => prev ? {
+                                                    ...prev,
+                                                    balance: val,
+                                                    openingBalance: Math.round((val - editingAccountDelta) * 100) / 100
+                                                } : null);
+                                            }}
                                             className="w-full px-5 py-3.5 rounded-2xl bg-slate-50 border border-slate-200 focus:border-slate-900 focus:ring-4 focus:ring-slate-900/5 outline-none text-sm font-bold text-slate-900 transition-all"
                                             placeholder="0.00"
                                             step="0.01"
