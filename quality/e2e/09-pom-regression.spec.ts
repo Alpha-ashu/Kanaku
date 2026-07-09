@@ -15,7 +15,7 @@ const uniqueUser = {
   lastName: 'Tester',
   email: `e2e.tester.${Date.now()}.${Math.floor(Math.random() * 1000)}@Kanaku.app`,
   mobile: `9${Math.floor(100000000 + Math.random() * 900000000)}`,
-  password: 'TestKanaku@2026',
+  password: process.env.SEED_TEST_PASSWORD || 'example-Test-password-123!',
   persona: 'Power User'
 };
 
