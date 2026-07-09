@@ -2717,17 +2717,30 @@ export async function saveTransactionWithBackendSync(transaction: any) {
           const savedId = await db.transactions.add(dbTransaction);
           return { ...dbTransaction, id: savedId };
         } catch (backendError: any) {
-          const isUnavailable =
+          // Fall back to local save for: unavailability (503/network) AND business-logic
+          // rejections (400/409) that are likely caused by temporary sync lag.
+          // e.g. INSUFFICIENT_BALANCE fires when pending deposits haven't synced yet.
+          // The FIFO sync queue will retry the expense after the deposits land.
+          const isFallback =
             backendError?.status === 503 ||
             backendError?.status === 0 ||
+            backendError?.status === 400 ||
+            backendError?.status === 409 ||
             backendError?.code === 'DATABASE_UNAVAILABLE' ||
             backendError?.code === 'NETWORK_ERROR' ||
-            backendError?.code === 'TIMEOUT_ERROR';
+            backendError?.code === 'TIMEOUT_ERROR' ||
+            backendError?.code === 'INSUFFICIENT_BALANCE' ||
+            backendError?.code === 'ACCOUNT_UNAVAILABLE';
 
-          if (!isUnavailable) throw backendError;
+          if (!isFallback) throw backendError;
 
-          console.warn('[saveTransactionWithBackendSync] Backend unavailable, saving locally and queuing for sync.', backendError?.code);
-          markOptionalBackendUnavailable();
+          console.warn(
+            '[saveTransactionWithBackendSync] Backend error – falling back to local save and queuing for sync.',
+            backendError?.code ?? backendError?.message,
+          );
+          if (backendError?.status === 503 || backendError?.code === 'DATABASE_UNAVAILABLE') {
+            markOptionalBackendUnavailable();
+          }
           // Fall through to local save below
         }
       }
@@ -2795,17 +2808,26 @@ export async function updateTransactionWithBackendSync(localId: number, updates:
         });
         return;
       } catch (backendError: any) {
-        const isUnavailable =
+        const isFallback =
           backendError?.status === 503 ||
           backendError?.status === 0 ||
+          backendError?.status === 400 ||
+          backendError?.status === 409 ||
           backendError?.code === 'DATABASE_UNAVAILABLE' ||
           backendError?.code === 'NETWORK_ERROR' ||
-          backendError?.code === 'TIMEOUT_ERROR';
+          backendError?.code === 'TIMEOUT_ERROR' ||
+          backendError?.code === 'INSUFFICIENT_BALANCE' ||
+          backendError?.code === 'ACCOUNT_UNAVAILABLE';
 
-        if (!isUnavailable) throw backendError;
+        if (!isFallback) throw backendError;
 
-        console.warn('[updateTransactionWithBackendSync] Backend unavailable, updating locally and queuing for sync.');
-        markOptionalBackendUnavailable();
+        console.warn(
+          '[updateTransactionWithBackendSync] Backend error – updating locally and queuing for sync.',
+          backendError?.code ?? backendError?.message,
+        );
+        if (backendError?.status === 503 || backendError?.code === 'DATABASE_UNAVAILABLE') {
+          markOptionalBackendUnavailable();
+        }
         await db.transactions.update(localId, {
           ...updates,
           syncStatus: 'pending' as const,
@@ -2927,23 +2949,30 @@ export async function saveAccountWithBackendSync(account: any) {
       const savedId = await db.accounts.add(dbAccount);
       return { ...dbAccount, id: savedId };
     } catch (backendError: any) {
-      // If the backend is unavailable (503, network error, timeout), fall back
-      // to local-only storage and queue the record for sync when it recovers.
-      const isUnavailable =
+      // Fall back to local save for unavailability (503/network) AND business-logic
+      // rejections (400/409) that may result from temporary sync lag.
+      const isFallback =
         backendError?.status === 503 ||
         backendError?.status === 0 ||
+        backendError?.status === 400 ||
+        backendError?.status === 409 ||
         backendError?.code === 'DATABASE_UNAVAILABLE' ||
         backendError?.code === 'NETWORK_ERROR' ||
         backendError?.code === 'TIMEOUT_ERROR' ||
         backendError?.name === 'AbortError';
 
-      if (!isUnavailable) {
-        // Surface real client errors (400, 401, 403, etc.) to the caller
+      if (!isFallback) {
+        // Surface real auth errors (401, 403, etc.) to the caller
         throw backendError;
       }
 
-      console.warn('[saveAccountWithBackendSync] Backend unavailable, saving locally and queuing for sync.', backendError?.code);
-      markOptionalBackendUnavailable();
+      console.warn(
+        '[saveAccountWithBackendSync] Backend error – saving locally and queuing for sync.',
+        backendError?.code ?? backendError?.message,
+      );
+      if (backendError?.status === 503 || backendError?.code === 'DATABASE_UNAVAILABLE') {
+        markOptionalBackendUnavailable();
+      }
 
       const now = new Date();
       const dbAccount = {
@@ -3022,17 +3051,24 @@ export async function updateAccountWithBackendSync(accountId: number, updates: a
           deletedAt: toDate(remote?.deletedAt) ?? existing.deletedAt,
         };
       } catch (backendError: any) {
-        const isUnavailable =
+        const isFallback =
           backendError?.status === 503 ||
           backendError?.status === 0 ||
+          backendError?.status === 400 ||
+          backendError?.status === 409 ||
           backendError?.code === 'DATABASE_UNAVAILABLE' ||
           backendError?.code === 'NETWORK_ERROR' ||
           backendError?.code === 'TIMEOUT_ERROR';
 
-        if (!isUnavailable) throw backendError;
+        if (!isFallback) throw backendError;
 
-        console.warn('[updateAccountWithBackendSync] Backend unavailable, updating locally and queuing for sync.');
-        markOptionalBackendUnavailable();
+        console.warn(
+          '[updateAccountWithBackendSync] Backend error – updating locally and queuing for sync.',
+          backendError?.code ?? backendError?.message,
+        );
+        if (backendError?.status === 503 || backendError?.code === 'DATABASE_UNAVAILABLE') {
+          markOptionalBackendUnavailable();
+        }
         nextUpdates = { ...nextUpdates, syncStatus: 'pending' as const };
         queueRecordUpsertSync('accounts', accountId, toNumber(existing?.remoteId));
       }
@@ -3063,31 +3099,42 @@ export async function saveGoalWithBackendSync(goal: any) {
   const activeClientRequestId = goal.clientRequestId || crypto.randomUUID();
 
   if (isBackendFirstSyncMode()) {
-    const response = await apiClient.post('/goals', {
-      name: goal.name,
-      targetAmount: Number(goal.targetAmount ?? 0),
-      targetDate: toIsoString(goal.targetDate) ?? new Date().toISOString(),
-      category: goal.category,
-      isGroupGoal: goal.isGroupGoal ?? false,
-      clientRequestId: activeClientRequestId,
-    }, {
-      showErrorToast: false,
-    });
+    try {
+      const response = await apiClient.post('/goals', {
+        name: goal.name,
+        targetAmount: Number(goal.targetAmount ?? 0),
+        targetDate: toIsoString(goal.targetDate) ?? new Date().toISOString(),
+        category: goal.category,
+        isGroupGoal: goal.isGroupGoal ?? false,
+        clientRequestId: activeClientRequestId,
+      }, {
+        showErrorToast: false,
+      });
 
-    const remote = response.data as any;
-    const dbGoal = {
-      ...goal,
-      cloudId: remote?.id,
-      clientRequestId: activeClientRequestId,
-      currentAmount: Number(remote?.currentAmount ?? goal.currentAmount ?? 0),
-      createdAt: toDate(remote?.createdAt) ?? goal.createdAt ?? new Date(),
-      updatedAt: toDate(remote?.updatedAt) ?? new Date(),
-      deletedAt: toDate(remote?.deletedAt),
-      syncStatus: 'synced' as const,
-    };
+      const remote = response.data as any;
+      const dbGoal = {
+        ...goal,
+        cloudId: remote?.id,
+        clientRequestId: activeClientRequestId,
+        currentAmount: Number(remote?.currentAmount ?? goal.currentAmount ?? 0),
+        createdAt: toDate(remote?.createdAt) ?? goal.createdAt ?? new Date(),
+        updatedAt: toDate(remote?.updatedAt) ?? new Date(),
+        deletedAt: toDate(remote?.deletedAt),
+        syncStatus: 'synced' as const,
+      };
 
-    const savedId = await db.goals.add(dbGoal);
-    return { ...dbGoal, id: savedId };
+      const savedId = await db.goals.add(dbGoal);
+      return { ...dbGoal, id: savedId };
+    } catch (backendError: any) {
+      console.warn(
+        '[saveGoalWithBackendSync] Backend error or unavailable – falling back to local save and queuing for sync.',
+        backendError?.code ?? backendError?.message,
+      );
+      if (backendError?.status === 503 || backendError?.code === 'DATABASE_UNAVAILABLE') {
+        markOptionalBackendUnavailable();
+      }
+      // Fall through to local save below
+    }
   }
 
   const now = new Date();
