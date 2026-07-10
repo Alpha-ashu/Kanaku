@@ -1579,7 +1579,7 @@ async function syncUserDataFromBackend(
   ] = await Promise.all([
     shouldFetch('accounts') ? fetchBackendRows('/accounts') : Promise.resolve([]),
     shouldFetch('friends') ? fetchBackendRows('/friends') : Promise.resolve([]),
-    shouldFetch('transactions') ? fetchBackendRows('/transactions?limit=200') : Promise.resolve([]),
+    shouldFetch('transactions') ? fetchBackendRows('/transactions?limit=1000&sync=true') : Promise.resolve([]),
     shouldFetch('loans') ? fetchBackendRows('/loans') : Promise.resolve([]),
     shouldFetch('goals') ? fetchBackendRows('/goals') : Promise.resolve([]),
     shouldFetch('investments') ? fetchBackendRows('/investments') : Promise.resolve([]),

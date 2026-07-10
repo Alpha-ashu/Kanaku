@@ -52,7 +52,8 @@ export class TransactionService {
 
     const { limit, page } = query;
     // Always paginate — never return unbounded result sets
-    const parsedLimit = Math.min(100, Math.max(1, parseInt(limit as string) || 20));
+    const maxLimit = query.sync === 'true' || query.limit === 'all' ? 5000 : 100;
+    const parsedLimit = Math.min(maxLimit, Math.max(1, parseInt(limit as string) || 20));
     const parsedPage  = Math.max(1, parseInt(page as string) || 1);
     const skip        = (parsedPage - 1) * parsedLimit;
 

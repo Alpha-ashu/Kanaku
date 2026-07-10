@@ -169,7 +169,9 @@ async function upsertIdentity(spec, hashedPassword) {
   if (!pin) {
     throw new Error(`[test-users] Missing PIN for role ${spec.role} in environment (set SEED_${spec.role.toUpperCase()}_PIN)`);
   }
-  const pinHash = await bcrypt.hash(pin, 10);
+  const crypto = require('crypto');
+  const sha256Pin = crypto.createHash('sha256').update(pin).digest('hex');
+  const pinHash = await bcrypt.hash(sha256Pin, 10);
   const expiresAt = new Date();
   expiresAt.setDate(expiresAt.getDate() + 90);
   await prisma.userPin.upsert({

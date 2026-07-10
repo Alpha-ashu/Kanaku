@@ -405,7 +405,9 @@ async function main() {
   await cleanupDatabase();
 
   const passwordHash = await bcrypt.hash(DEMO_PASSWORD, 10);
-  const pinHash = await bcrypt.hash(DEMO_PIN, 10);
+  const crypto = require('crypto');
+  const sha256Pin = crypto.createHash('sha256').update(DEMO_PIN).digest('hex');
+  const pinHash = await bcrypt.hash(sha256Pin, 10);
 
   console.log('Seeding demo users and mock data...');
   for (const demoUser of authUsers) {

@@ -649,13 +649,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // the same event to re-lock the PIN. We only ever reach here for a GENUINE
   // expiry — transient/network 401s no longer trigger it.
   useEffect(() => {
-    const onSessionExpired = (e: Event) => {
+    const onSessionExpired = async (e: Event) => {
       const reason = (e as CustomEvent)?.detail?.reason || 'unknown';
       console.log(`[KANAKU Redirect] → Login | Reason = Session Expired (${reason})`);
       TokenManager.clearTokens();
       backendService.clearToken();
       socketClient.disconnect();
       permissionService.clearPermissions();
+      
+      // Clear local database and sync timestamps on session expiry
+      await clearLocalUserData();
+      clearLocalAuthPresentationState(true); // Preserve PIN keys
+      
       setSession(null);
       setUser(null);
       setRole('user');

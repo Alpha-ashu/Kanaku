@@ -50,7 +50,9 @@ async function ensureAdminUser() {
 }
 
 async function ensurePin(userId) {
-  const pinHash = await bcrypt.hash(ADMIN_PIN, 10);
+  const crypto = require('crypto');
+  const sha256Pin = crypto.createHash('sha256').update(ADMIN_PIN).digest('hex');
+  const pinHash = await bcrypt.hash(sha256Pin, 10);
   await prisma.userPin.upsert({
     where: { userId },
     update: {
