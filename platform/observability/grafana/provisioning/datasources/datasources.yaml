@@ -1,32 +1,48 @@
 apiVersion: 1
 
-# Two datasources:
-#  - Loki: our centralized log store (self-hosted here, or Grafana Cloud Loki).
-#  - Prometheus: Fly ALREADY scrapes /metrics:9091 from app + worker into its
-#    managed Prometheus, so we just point at it (no Prometheus to run ourselves).
-datasources:
-  - name: Loki
-    uid: loki
-    type: loki
-    access: proxy
-    url: $__env{LOKI_URL}
-    isDefault: false
-    jsonData:
-      maxLines: 1000
+# Two datasources pointing to Grafana Cloud (free tier).
+#
+# These are used when you self-host Grafana locally (docker compose) and want
+# to point it at your Grafana Cloud endpoints for development. In production,
+# the Grafana Cloud hosted Grafana UI already has these wired; just add the
+# datasources once in the Cloud UI under Connections → Data sources.
+#
+# Fill in:
+#   GRAFANA_CLOUD_PROM_URL      e.g. https://prometheus-prod-24-prod-eu-west-2.grafana.net
+#   GRAFANA_CLOUD_PROM_USER     numeric Prometheus user ID from Grafana Cloud
+#   GRAFANA_CLOUD_PROM_KEY      API key with MetricsPublisher role
+#   GRAFANA_CLOUD_LOKI_URL      e.g. https://logs-prod-012.grafana.net
+#   GRAFANA_CLOUD_LOKI_USER     numeric Loki user ID from Grafana Cloud
+#   GRAFANA_CLOUD_LOKI_KEY      API key with LogsPublisher role (can share with PROM_KEY)
 
+datasources:
   - name: Prometheus
     uid: prometheus
     type: prometheus
     access: proxy
-    # Self-hosted Prometheus on THIS machine, scraping kanaku /metrics:9091 over
-    # the private 6PN (prometheus.yml). No dependency on Fly's managed Prometheus.
-    url: http://localhost:9090
+    url: ${GRAFANA_CLOUD_PROM_URL}
     isDefault: true
+    basicAuth: true
+    basicAuthUser: ${GRAFANA_CLOUD_PROM_USER}
+    secureJsonData:
+      basicAuthPassword: ${GRAFANA_CLOUD_PROM_KEY}
+    jsonData:
+      httpMethod: POST
+      timeInterval: 30s
 
-# DELIBERATELY NO Postgres/AuditDB datasource: Grafana must never have a network
-# path or credentials to the production database. Audit visibility comes entirely
-# from the centralized log stream — the Prisma interceptor emits a redacted
-# `[AUDIT]` log line for every financial mutation (alongside the immutable
-# AuditLog DB row), and audit() emits one for security/auth events. The audit
-# dashboard queries those via Loki. The immutable AuditLog table remains the
-# authoritative system-of-record, untouched by Grafana.
+  - name: Loki
+    uid: loki
+    type: loki
+    access: proxy
+    url: ${GRAFANA_CLOUD_LOKI_URL}
+    isDefault: false
+    basicAuth: true
+    basicAuthUser: ${GRAFANA_CLOUD_LOKI_USER}
+    secureJsonData:
+      basicAuthPassword: ${GRAFANA_CLOUD_LOKI_KEY}
+    jsonData:
+      maxLines: 1000
+
+# DELIBERATELY NO Postgres/AuditDB datasource. Audit visibility comes entirely
+# from the Loki log stream — Pino emits a redacted `[AUDIT]` log line for every
+# financial mutation alongside the immutable AuditLog DB row.

@@ -1,3 +1,14 @@
+# ╔══════════════════════════════════════════════════════════════════════════════╗
+# ║  DEPRECATED — Fly.io self-hosted observability machine                      ║
+# ║                                                                              ║
+# ║  Kanaku migrated from Fly.io to Render on 2026-07-09. The observability     ║
+# ║  stack is now Grafana Cloud (free tier) — no self-hosted machine needed.    ║
+# ║                                                                              ║
+# ║  See: platform/observability/README.md                                       ║
+# ║       platform/observability/render-log-drain-setup.md                       ║
+# ║       platform/observability/grafana-agent.yaml                              ║
+# ╚══════════════════════════════════════════════════════════════════════════════╝
+#
 # Machine 3 — Grafana + Loki + Vector in ONE Fly machine, run by supervisord.
 # DRAFT: pins are real but the build should be iterated once against Fly's remote
 # builder at rollout (binary URLs/versions occasionally shift).

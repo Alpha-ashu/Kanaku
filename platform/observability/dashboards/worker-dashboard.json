@@ -1,11 +1,12 @@
 {
-  "title": "KANAKU — Worker",
+  "title": "KANAKU — Worker & Jobs",
   "uid": "kanaku-worker",
   "tags": ["kanaku", "worker"],
   "schemaVersion": 39,
-  "version": 1,
+  "version": 2,
   "refresh": "30s",
   "time": { "from": "now-6h", "to": "now" },
+  "description": "Background jobs: notification outbox drainer, AI tasks, cleanup worker, recurring transactions. On Render free tier these run inside the combined API process (RUN_WORKERS_IN_API unset).",
   "templating": {
     "list": [
       { "name": "datasource", "type": "datasource", "query": "prometheus", "label": "Datasource", "current": {} }
@@ -13,39 +14,61 @@
   },
   "panels": [
     {
-      "id": 1, "type": "timeseries", "title": "Outbox drain rate (ticks/s) & failures",
+      "id": 1, "type": "timeseries", "title": "Outbox drain rate (ticks/s)",
+      "description": "The outbox drainer should tick every ~15s. A flat line for > 5m means the drainer is stuck — triggers alert #4.",
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
       "targets": [
-        { "expr": "rate(kanaku_outbox_drains_total{service=\"worker\"}[5m])", "legendFormat": "drains/s" },
-        { "expr": "rate(kanaku_worker_job_failures_total{service=\"worker\"}[5m])", "legendFormat": "failures/s {{job}}" }
+        { "expr": "rate(kanaku_outbox_drains_total{job=\"kanaku-render\"}[5m])", "legendFormat": "drains/s" },
+        { "expr": "rate(kanaku_worker_job_failures_total{job=\"kanaku-render\"}[5m])", "legendFormat": "failures/s ({{job}})" }
       ]
     },
     {
       "id": 2, "type": "timeseries", "title": "Outbox queue depth",
+      "description": "Pending + retrying notifications. > 100 sustained for 10m triggers a warning alert.",
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
       "targets": [
-        { "expr": "kanaku_outbox_queue_depth{service=\"worker\"}", "legendFormat": "pending+retrying" }
+        { "expr": "kanaku_outbox_queue_depth{job=\"kanaku-render\"}", "legendFormat": "pending+retrying" }
       ]
     },
     {
       "id": 3, "type": "timeseries", "title": "Drain latency p50 / p95 (s)",
+      "description": "Time to complete one drain tick. If p95 rises, check DB connection pool or Supabase load.",
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
       "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] },
       "targets": [
-        { "expr": "histogram_quantile(0.50, sum(rate(kanaku_outbox_drain_duration_seconds_bucket{service=\"worker\"}[5m])) by (le))", "legendFormat": "p50" },
-        { "expr": "histogram_quantile(0.95, sum(rate(kanaku_outbox_drain_duration_seconds_bucket{service=\"worker\"}[5m])) by (le))", "legendFormat": "p95" }
+        { "expr": "histogram_quantile(0.50, sum(rate(kanaku_outbox_drain_duration_seconds_bucket{job=\"kanaku-render\"}[5m])) by (le))", "legendFormat": "p50" },
+        { "expr": "histogram_quantile(0.95, sum(rate(kanaku_outbox_drain_duration_seconds_bucket{job=\"kanaku-render\"}[5m])) by (le))", "legendFormat": "p95" }
       ]
     },
     {
-      "id": 4, "type": "stat", "title": "Worker uptime",
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "id": 4, "type": "stat", "title": "Process uptime (combined API+worker)",
+      "description": "On Render free tier both API and worker run in one process. Cold start = this resets.",
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 8 },
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
       "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] },
       "targets": [
-        { "expr": "time() - process_start_time_seconds{service=\"worker\"}", "legendFormat": "uptime" }
+        { "expr": "time() - process_start_time_seconds{job=\"kanaku-render\"}", "legendFormat": "uptime" }
+      ]
+    },
+    {
+      "id": 5, "type": "stat", "title": "Outbox total drained (range)",
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
+      "targets": [
+        { "expr": "sum(increase(kanaku_outbox_drains_total{job=\"kanaku-render\"}[$__range]))", "instant": true, "legendFormat": "drains" }
+      ]
+    },
+    {
+      "id": 6, "type": "timeseries", "title": "Worker job failures by job",
+      "description": "Failures by job name (outbox, cleanup, recurring, ai). A spike on a specific job indicates which background task is broken.",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 16 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(kanaku_worker_job_failures_total{job=\"kanaku-render\"}[5m])) by (job) * 60", "legendFormat": "{{job}} failures/min" }
       ]
     }
   ]

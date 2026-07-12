@@ -18,7 +18,8 @@ import { adminPlatformGate } from './middleware/adminPlatformGate';
 import { metricsMiddleware, getMetricsSnapshot } from './middleware/metrics';
 import { getCacheMetricsSnapshot } from './cache/redis';
 import { isCryptoConfigured } from './security/crypto';
-
+import { renderMetrics, metricsContentType } from './config/metrics';
+import { renderDrainHandler } from './middleware/renderDrain';
 import { isAllowedOrigin } from './config/cors';
 
 const app = express();
@@ -202,6 +203,40 @@ app.use('/api/v1/sync', authenticatedRateLimit({
   scope: 'api-sync',
   message: 'Too many sync requests. Please try again later.',
 }));
+
+// ── Prometheus metrics endpoint ──────────────────────────────────────────────
+//
+// Grafana Cloud (or Grafana Agent) scrapes this on a schedule. Protected by
+// a `METRICS_TOKEN` bearer secret so scrape data stays private even though the
+// endpoint is on the public port. On Render there is no private network, so
+// bearer-token auth is the correct guard. If METRICS_TOKEN is not set (local
+// dev / staging) the endpoint is open — set it in production.
+app.get('/metrics', async (req, res): Promise<void> => {
+  const token = process.env.METRICS_TOKEN;
+  if (token) {
+    const authHeader = req.headers.authorization ?? '';
+    const provided = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : '';
+    if (provided !== token) {
+      res.status(401).json({ success: false, error: 'Unauthorized' });
+      return;
+    }
+  }
+  try {
+    const text = await renderMetrics();
+    res.writeHead(200, { 'content-type': metricsContentType });
+    res.end(text);
+  } catch {
+    res.writeHead(500);
+    res.end();
+  }
+});
+
+// ── Render log-drain webhook ───────────────────────────────────────────────
+//
+// Render posts ALL stdout/stderr to this URL (configure in Render dashboard:
+// Service → Logs → Log Drains → Add → HTTP). The handler validates the bearer
+// token and forwards batches to Grafana Cloud Loki. See middleware/renderDrain.ts.
+app.post('/internal/logs/drain', renderDrainHandler);
 
 // Public liveness probe — minimal information disclosure.
 // Detailed diagnostics (DB error messages, Redis status, circuit breaker

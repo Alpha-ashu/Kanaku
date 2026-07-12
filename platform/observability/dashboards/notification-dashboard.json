@@ -3,7 +3,7 @@
   "uid": "kanaku-notifications",
   "tags": ["kanaku", "notifications"],
   "schemaVersion": 39,
-  "version": 1,
+  "version": 2,
   "refresh": "30s",
   "time": { "from": "now-6h", "to": "now" },
   "templating": {
@@ -14,35 +14,49 @@
   "panels": [
     {
       "id": 1, "type": "timeseries", "title": "Deliveries by channel & status (per s)",
+      "description": "email/push × sent/failed. A rising failed line = provider outage (SendGrid / Firebase).",
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
       "targets": [
-        { "expr": "sum(rate(kanaku_notification_deliveries_total[5m])) by (channel, status)", "legendFormat": "{{channel}} {{status}}" }
+        { "expr": "sum(rate(kanaku_notification_deliveries_total{job=\"kanaku-render\"}[5m])) by (channel, status)", "legendFormat": "{{channel}} {{status}}" }
       ]
     },
     {
       "id": 2, "type": "timeseries", "title": "Delivery success rate (%) by channel",
+      "description": "Should stay close to 100%. Drops below 80% for > 10m trigger a warning alert.",
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
-      "fieldConfig": { "defaults": { "unit": "percent" }, "overrides": [] },
+      "fieldConfig": { "defaults": { "unit": "percent", "min": 0, "max": 100, "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "yellow", "value": 80 }, { "color": "green", "value": 95 }] } }, "overrides": [] },
       "targets": [
-        { "expr": "100 * sum(rate(kanaku_notification_deliveries_total{status=\"sent\"}[5m])) by (channel) / clamp_min(sum(rate(kanaku_notification_deliveries_total[5m])) by (channel), 1)", "legendFormat": "{{channel}} success %" }
+        { "expr": "100 * sum(rate(kanaku_notification_deliveries_total{job=\"kanaku-render\",status=\"sent\"}[5m])) by (channel) / clamp_min(sum(rate(kanaku_notification_deliveries_total{job=\"kanaku-render\"}[5m])) by (channel), 1)", "legendFormat": "{{channel}} success %" }
       ]
     },
     {
       "id": 3, "type": "timeseries", "title": "Notification outcomes (sent / failed / retried per s)",
+      "description": "Terminal outcomes. Retrying means the outbox is backing off — check drain logs for provider errors.",
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
       "targets": [
-        { "expr": "sum(rate(kanaku_notification_outcomes_total[5m])) by (outcome)", "legendFormat": "{{outcome}}" }
+        { "expr": "sum(rate(kanaku_notification_outcomes_total{job=\"kanaku-render\"}[5m])) by (outcome)", "legendFormat": "{{outcome}}" }
       ]
     },
     {
-      "id": 4, "type": "stat", "title": "Pending (queue depth)",
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "id": 4, "type": "stat", "title": "Current queue depth",
+      "description": "Notifications pending or retrying right now. > 100 triggers a warning alert.",
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 8 },
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "unit": "short", "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 50 }, { "color": "red", "value": 100 }] } }, "overrides": [] },
       "targets": [
-        { "expr": "max(kanaku_outbox_queue_depth)", "legendFormat": "pending" }
+        { "expr": "max(kanaku_outbox_queue_depth{job=\"kanaku-render\"})", "legendFormat": "pending" }
+      ]
+    },
+    {
+      "id": 5, "type": "stat", "title": "Total sent (range)",
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
+      "targets": [
+        { "expr": "sum(increase(kanaku_notification_deliveries_total{job=\"kanaku-render\",status=\"sent\"}[$__range]))", "instant": true, "legendFormat": "sent" }
       ]
     }
   ]

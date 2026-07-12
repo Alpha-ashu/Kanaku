@@ -1,0 +1,72 @@
+# Grafana Agent config — KANAKU on Render
+#
+# Grafana Agent runs anywhere (locally, a small VPS, a GitHub Actions scheduled
+# job, etc.) and:
+#   1. Scrapes GET https://<RENDER_URL>/metrics (bearer-token auth)
+#   2. Remote-writes to Grafana Cloud Prometheus
+#
+# ── Setup ──────────────────────────────────────────────────────────────────────
+#
+# 1. Install Grafana Agent (one-time):
+#    Linux/macOS: https://grafana.com/docs/agent/latest/static/set-up/install/
+#    Docker:      docker run -v $(pwd)/grafana-agent.yaml:/etc/agent/agent.yaml \
+#                   grafana/agent:latest --config.file /etc/agent/agent.yaml
+#
+# 2. Fill in the three REPLACE_ME values below (or use env vars):
+#      RENDER_METRICS_URL  → https://kanaku-api.onrender.com/metrics
+#      METRICS_TOKEN       → same value as METRICS_TOKEN on Render
+#      PROM_REMOTE_WRITE   → from Grafana Cloud: Home → Connections →
+#                            Prometheus → Remote Write Endpoint
+#      PROM_USER           → Grafana Cloud Prometheus username
+#      PROM_API_KEY        → Grafana Cloud API key with MetricsPublisher role
+#
+# 3. Run: grafana-agent --config.file grafana-agent.yaml
+#
+# ── Alternative: Grafana Cloud HTTP scraper (no self-hosted agent needed) ──────
+#
+# If you use Grafana Cloud's built-in "Synthetic Monitoring" or the
+# "Private data source connect" feature, you can configure Grafana Cloud to
+# directly scrape https://kanaku-api.onrender.com/metrics with a bearer token
+# — no local agent binary required. See README.md for instructions.
+
+metrics:
+  global:
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    external_labels:
+      env: production
+      platform: render
+
+  configs:
+    - name: kanaku-render
+      scrape_configs:
+        - job_name: kanaku-render
+          scheme: https
+          metrics_path: /metrics
+          authorization:
+            credentials: ${METRICS_TOKEN}
+          static_configs:
+            - targets:
+                - kanaku-api.onrender.com   # REPLACE with your actual Render URL if different
+              labels:
+                app: kanaku
+                platform: render
+
+      remote_write:
+        - url: ${PROM_REMOTE_WRITE_URL}          # e.g. https://prometheus-prod-24-prod-eu-west-2.grafana.net/api/prom/push
+          basic_auth:
+            username: ${PROM_REMOTE_WRITE_USER}  # Grafana Cloud Prometheus user ID (numeric)
+            password: ${PROM_REMOTE_WRITE_KEY}   # Grafana Cloud API key (MetricsPublisher)
+          send_exemplars: false
+
+logs:
+  global:
+    positions_directory: /tmp/grafana-agent-positions
+
+  configs:
+    - name: kanaku-logs
+      # NOTE: logs from Render are pushed via the /internal/logs/drain endpoint
+      # directly to Loki — no agent log scraping needed on Render.
+      # This block is a placeholder for local dev log tailing if wanted.
+      clients: []
+      scrape_configs: []

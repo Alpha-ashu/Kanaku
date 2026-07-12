@@ -4,10 +4,8 @@ import 'dotenv/config';
 // binds. `validateConfig('api')` below is the explicit, logged startup gate.
 import { validateConfig } from './config/env';
 import { initTracing } from './config/tracing';
-import http from 'http';
 import app from './app';
 import { logger } from './config/logger';
-import { renderMetrics, metricsContentType } from './config/metrics';
 import { initializeSocket } from './sockets/index';
 import { closeRedis, initRedis } from './cache/redis';
 import { closePurposeClients } from './config/redis-connections';
@@ -32,24 +30,9 @@ const server = app.listen(PORT, () => {
 // Initialize WebSocket
 initializeSocket(server);
 
-// Prometheus metrics on the Fly [[metrics]] port (9091), separate from the public
-// API port. Private 6PN network only (not declared as a public service) so Fly
-// can scrape it without exposing it.
-const METRICS_PORT = Number(process.env.METRICS_PORT || 9091);
-const metricsServer = http.createServer((req, res) => {
-  if (req.method === 'GET' && req.url === '/metrics') {
-    renderMetrics()
-      .then((text) => { res.writeHead(200, { 'content-type': metricsContentType }); res.end(text); })
-      .catch(() => { res.writeHead(500); res.end(); });
-    return;
-  }
-  res.writeHead(404, { 'content-type': 'application/json' });
-  res.end(JSON.stringify({ error: 'not_found' }));
-});
-metricsServer.on('error', (err) => logger.error('Metrics server error', err));
-metricsServer.listen(METRICS_PORT, () => {
-  logger.info(`Metrics server listening on :${METRICS_PORT}`);
-});
+// NOTE: /metrics is served on port ${PORT} via app.ts (GET /metrics), guarded
+// by METRICS_TOKEN. Grafana Agent or Grafana Cloud scrapes it over HTTPS.
+// The old separate metrics server on :9091 (Fly-specific) has been removed.
 
 void initRedis();
 
@@ -78,7 +61,6 @@ if (runWorkersInApiProcess()) {
 
 const shutdown = async (signal: string) => {
   logger.info(`Received ${signal}. Shutting down server...`);
-  metricsServer.close();
   server.close(async () => {
     if (runWorkersInApiProcess()) {
       stopAIBackgroundJobs();

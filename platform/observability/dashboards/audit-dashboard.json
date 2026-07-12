@@ -3,9 +3,10 @@
   "uid": "kanaku-audit",
   "tags": ["kanaku", "audit"],
   "schemaVersion": 39,
-  "version": 2,
+  "version": 3,
   "refresh": "1m",
   "time": { "from": "now-24h", "to": "now" },
+  "description": "Financial audit trail sourced from Pino structured logs via Grafana Cloud Loki. Logs are pushed via the Render log-drain webhook → /internal/logs/drain → Loki. The app=kanaku label is set by the log-drain handler.",
   "templating": {
     "list": [
       { "name": "ds", "type": "datasource", "query": "loki", "label": "Loki", "current": {} },
@@ -16,6 +17,7 @@
   "panels": [
     {
       "id": 1, "type": "timeseries", "title": "Audit events over time (by action)",
+      "description": "Count of [AUDIT] log lines per event type. Spikes indicate unusual financial activity.",
       "gridPos": { "h": 7, "w": 16, "x": 0, "y": 0 },
       "datasource": { "type": "loki", "uid": "${ds}" },
       "targets": [
@@ -24,6 +26,7 @@
     },
     {
       "id": 2, "type": "stat", "title": "Failure events (range)",
+      "description": "Count of [AUDIT] entries with status=failure — failed financial operations. Any non-zero value needs investigation.",
       "gridPos": { "h": 7, "w": 8, "x": 16, "y": 0 },
       "datasource": { "type": "loki", "uid": "${ds}" },
       "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "steps": [ { "color": "green", "value": null }, { "color": "red", "value": 1 } ] } }, "overrides": [] },
@@ -33,6 +36,7 @@
     },
     {
       "id": 3, "type": "table", "title": "Top actions",
+      "description": "Most frequent audit event types in the time range.",
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 7 },
       "datasource": { "type": "loki", "uid": "${ds}" },
       "targets": [
@@ -41,6 +45,7 @@
     },
     {
       "id": 4, "type": "table", "title": "Top actors (userId)",
+      "description": "Users with the most financial mutations. Unusual high counts may indicate abuse.",
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 7 },
       "datasource": { "type": "loki", "uid": "${ds}" },
       "targets": [
@@ -49,11 +54,22 @@
     },
     {
       "id": 5, "type": "logs", "title": "Audit records — search by actor / request ID (filters above)",
+      "description": "Full audit log stream. Filter by userId or requestId using the variables at the top. Each line is a redacted Pino JSON log with [AUDIT] prefix.",
       "gridPos": { "h": 11, "w": 24, "x": 0, "y": 15 },
       "datasource": { "type": "loki", "uid": "${ds}" },
       "options": { "showTime": true, "wrapLogMessage": true, "dedupStrategy": "none" },
       "targets": [
         { "expr": "{app=\"kanaku\"} |= \"[AUDIT]\" | json | userId =~ `${actor:value}.*` | requestId =~ `${reqid:value}.*`" }
+      ]
+    },
+    {
+      "id": 6, "type": "logs", "title": "All errors (level=error) — last 24h",
+      "description": "All logger.error() calls from the API and worker. Each has requestId for correlation with the user report.",
+      "gridPos": { "h": 11, "w": 24, "x": 0, "y": 26 },
+      "datasource": { "type": "loki", "uid": "${ds}" },
+      "options": { "showTime": true, "wrapLogMessage": true, "dedupStrategy": "none" },
+      "targets": [
+        { "expr": "{app=\"kanaku\"} | json | level = `error`" }
       ]
     }
   ]

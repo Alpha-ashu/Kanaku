@@ -41,6 +41,20 @@ services:
         sync: false
       - key: SENDGRID_FROM_NAME
         sync: false
+      # ── Observability (Grafana Cloud) ────────────────────────────────────────────
+      # Generate tokens locally: openssl rand -hex 32
+      # Then add them as secrets in this dashboard (sync: false = enter value here).
+      - key: METRICS_TOKEN
+        sync: false     # Bearer token guarding GET /metrics — share with Grafana Agent
+      - key: RENDER_DRAIN_TOKEN
+        sync: false     # Bearer token for POST /internal/logs/drain (Render log drain)
+      # Grafana Cloud Loki credentials (from grafana.com → Connections → Loki → Sending data)
+      - key: LOKI_PUSH_URL
+        sync: false     # e.g. https://logs-prod-012.grafana.net
+      - key: LOKI_USERNAME
+        sync: false     # Numeric Loki user ID
+      - key: LOKI_API_KEY
+        sync: false     # Grafana Cloud API key (MetricsPublisher / logs:write role)
       # Copy any remaining prod values from backend/.env (SECURITY_ALERT_EMAIL,
       # AA_ENCRYPTION_ROOT_KEY, FIREBASE_*, OPENAI/GOOGLE keys, …) in the
       # dashboard — the env.ts validator will fail fast on anything missing.

@@ -3,7 +3,7 @@
   "uid": "kanaku-api",
   "tags": ["kanaku", "api"],
   "schemaVersion": 39,
-  "version": 1,
+  "version": 2,
   "refresh": "30s",
   "time": { "from": "now-6h", "to": "now" },
   "templating": {
@@ -14,39 +14,91 @@
   "panels": [
     {
       "id": 1, "type": "timeseries", "title": "Request volume (req/s by route)",
+      "description": "HTTP request rate per route. Spikes or drops indicate traffic anomalies.",
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
       "targets": [
-        { "expr": "sum(rate(kanaku_http_requests_total{service=\"api\"}[5m])) by (route)", "legendFormat": "{{route}}" }
+        { "expr": "sum(rate(kanaku_http_requests_total{job=\"kanaku-render\"}[5m])) by (route)", "legendFormat": "{{route}}" }
       ]
     },
     {
       "id": 2, "type": "timeseries", "title": "Error rate (5xx %)",
+      "description": "Percentage of requests returning 5xx. Alert fires at > 5% for 5m.",
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
-      "fieldConfig": { "defaults": { "unit": "percent" }, "overrides": [] },
+      "fieldConfig": { "defaults": { "unit": "percent", "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 1 }, { "color": "red", "value": 5 }] } }, "overrides": [] },
       "targets": [
-        { "expr": "100 * sum(rate(kanaku_http_requests_total{service=\"api\",status_class=\"5xx\"}[5m])) / clamp_min(sum(rate(kanaku_http_requests_total{service=\"api\"}[5m])), 1)", "legendFormat": "5xx %" }
+        { "expr": "100 * sum(rate(kanaku_http_requests_total{job=\"kanaku-render\",status_class=\"5xx\"}[5m])) / clamp_min(sum(rate(kanaku_http_requests_total{job=\"kanaku-render\"}[5m])), 1)", "legendFormat": "5xx %" }
       ]
     },
     {
       "id": 3, "type": "timeseries", "title": "Latency p50 / p95 / p99 (s)",
+      "description": "Request latency percentiles. p95 > 2s indicates DB or upstream slowness.",
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
       "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] },
       "targets": [
-        { "expr": "histogram_quantile(0.50, sum(rate(kanaku_http_request_duration_seconds_bucket{service=\"api\"}[5m])) by (le))", "legendFormat": "p50" },
-        { "expr": "histogram_quantile(0.95, sum(rate(kanaku_http_request_duration_seconds_bucket{service=\"api\"}[5m])) by (le))", "legendFormat": "p95" },
-        { "expr": "histogram_quantile(0.99, sum(rate(kanaku_http_request_duration_seconds_bucket{service=\"api\"}[5m])) by (le))", "legendFormat": "p99" }
+        { "expr": "histogram_quantile(0.50, sum(rate(kanaku_http_request_duration_seconds_bucket{job=\"kanaku-render\"}[5m])) by (le))", "legendFormat": "p50" },
+        { "expr": "histogram_quantile(0.95, sum(rate(kanaku_http_request_duration_seconds_bucket{job=\"kanaku-render\"}[5m])) by (le))", "legendFormat": "p95" },
+        { "expr": "histogram_quantile(0.99, sum(rate(kanaku_http_request_duration_seconds_bucket{job=\"kanaku-render\"}[5m])) by (le))", "legendFormat": "p99" }
       ]
     },
     {
-      "id": 4, "type": "stat", "title": "API health (uptime)",
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "id": 4, "type": "stat", "title": "Process uptime",
+      "description": "Time since the current Render container started. Resets on cold start or restart.",
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 8 },
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
       "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] },
       "targets": [
-        { "expr": "time() - process_start_time_seconds{service=\"api\"}", "legendFormat": "uptime" }
+        { "expr": "time() - process_start_time_seconds{job=\"kanaku-render\"}", "legendFormat": "uptime" }
+      ]
+    },
+    {
+      "id": 9, "type": "stat", "title": "Cold starts (last 24h)",
+      "description": "Each rise in kanaku_cold_start_timestamp_seconds = 1 cold start / restart.",
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "unit": "short", "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 3 }, { "color": "red", "value": 10 }] } }, "overrides": [] },
+      "targets": [
+        { "expr": "changes(kanaku_cold_start_timestamp_seconds{job=\"kanaku-render\"}[24h])", "legendFormat": "restarts" }
+      ]
+    },
+    {
+      "id": 5, "type": "timeseries", "title": "Errors by code (per min)",
+      "description": "Error breakdown by code. Spike in a specific code pinpoints the root cause (e.g. NOT_FOUND, DATABASE_UNAVAILABLE, VALIDATION_ERROR).",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(kanaku_errors_total{job=\"kanaku-render\"}[5m])) by (code, status_class) * 60", "legendFormat": "{{status_class}} {{code}}" }
+      ]
+    },
+    {
+      "id": 6, "type": "timeseries", "title": "DB query latency p50 / p95 (s)",
+      "description": "Database query latency. Sustained p95 > 2s triggers an alert.",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum(rate(kanaku_db_query_duration_seconds_bucket{job=\"kanaku-render\"}[5m])) by (le, operation))", "legendFormat": "p50 {{operation}}" },
+        { "expr": "histogram_quantile(0.95, sum(rate(kanaku_db_query_duration_seconds_bucket{job=\"kanaku-render\"}[5m])) by (le, operation))", "legendFormat": "p95 {{operation}}" }
+      ]
+    },
+    {
+      "id": 7, "type": "stat", "title": "Total requests (range)",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 24 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
+      "targets": [
+        { "expr": "sum(increase(kanaku_http_requests_total{job=\"kanaku-render\"}[$__range]))", "instant": true, "legendFormat": "requests" }
+      ]
+    },
+    {
+      "id": 8, "type": "stat", "title": "Total errors (range)",
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 24 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "unit": "short", "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 10 }, { "color": "red", "value": 50 }] } }, "overrides": [] },
+      "targets": [
+        { "expr": "sum(increase(kanaku_errors_total{job=\"kanaku-render\"}[$__range]))", "instant": true, "legendFormat": "errors" }
       ]
     }
   ]

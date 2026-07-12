@@ -1,25 +1,34 @@
 apiVersion: 1
 
-# Grafana unified-alerting rules (Grafana 10+). Each rule: A = metric/log query,
-# B = reduce(last), C = threshold condition. Targets the Fly Prometheus + Loki
-# datasources provisioned alongside.
+# Grafana unified-alerting rules — KANAKU on Render (Grafana Cloud).
+#
+# Each rule: A = metric/log query, B = reduce(last), C = threshold condition.
+# Targets the Grafana Cloud Prometheus + Loki datasources.
 #
 # ── CONVENTION — read before adding/editing ANY rule ──────────────────────────
 # EVERY rule MUST set BOTH `noDataState` and `execErrState`. If you omit them,
 # Grafana defaults to NoData/Error and fires generic `DatasourceNoData` /
 # `DatasourceError` alerts — this was the #1 cause of alert spam. Choose per rule:
 #
-#   • App-metric rule (worker / api / outbox / notifications):
+#   • App-metric rule (worker / api / outbox / errors):
 #         noDataState: OK
 #         execErrState: OK
-#     → goes quiet when there is simply nothing to measure (e.g. app scaled
-#       down). "App is gone" is caught by the target-down rule, so these don't
-#       need to double-report it.
+#     → goes quiet when there is nothing to measure (app scaled down / no traffic).
+#       "App is gone" is caught by the target-down rule.
 #
-#   • target-down / up==0 rule:
+#   • target-down / scrape-absent rule:
 #         noDataState: Alerting
-#     → here the ABSENCE of data IS the alert, so surface it as this rule
-#       (its own summary) instead of a confusing generic DatasourceNoData.
+#     → here the ABSENCE of data IS the alert — surface it as this rule's
+#       summary instead of a confusing generic DatasourceNoData.
+#
+# ── Render notes ───────────────────────────────────────────────────────────────
+# • The app runs as a single combined process (API + workers) on Render free tier.
+# • Metrics are scraped by Grafana Agent from https://<render-url>/metrics every 30s.
+# • job label = "kanaku-render" (set in grafana-agent.yaml external_labels + job_name).
+# • No fly_instance_info metric — Render has no equivalent. Use absent() for
+#   target-down detection.
+# • Render free services sleep after 15min idle (cold start ~50s). The target-down
+#   rule has a generous `for: 5m` to avoid alerting on normal sleep/cold-start cycles.
 #
 # Routing + cadence → notification-policy.yaml.  Channels → contactpoints.yaml.
 # Operator runbook (states, silencing, diagnostics) → README.md in this folder.
@@ -29,73 +38,51 @@ groups:
     folder: KANAKU
     interval: 1m
     rules:
-      # 1) Worker stopped — no outbox drains in 5m (the drainer ticks every ~15s).
-      - uid: kanaku-worker-stopped
-        title: Worker stopped (no outbox drains)
+
+      # 1) Target down — scrape absent for 5m.
+      #    `absent()` returns a value (1) when the metric series does NOT exist,
+      #    so noDataState:OK is correct here — the query itself always returns
+      #    data (either 1 = absent, or nothing when the target IS up).
+      #    The threshold fires when absent() = 1 for 5 minutes.
+      #
+      #    5min grace handles Render free-tier cold starts (~50s) and short
+      #    sleeps. Increase to 10m if you get false positives during off-hours.
+      - uid: kanaku-target-down
+        title: Health check / target down
         condition: C
         for: 5m
-        noDataState: OK
+        noDataState: Alerting
         execErrState: OK
-        labels: { severity: critical, service: worker }
+        labels: { severity: critical }
         annotations:
-          summary: "Worker has not drained the outbox in 5 minutes — process down or stuck."
+          summary: "Kanaku is not being scraped — app may be down or cold-starting on Render."
+          description: |
+            The Prometheus scrape of GET /metrics on the Render URL returned no data for 5 minutes.
+            Possible causes:
+              1. The Render service is crashed or stopped — check Render dashboard.
+              2. Grafana Agent lost connectivity or stopped — check the agent host.
+              3. METRICS_TOKEN mismatch — the scrape is returning 401.
+            Diagnose: curl -H "Authorization: Bearer <METRICS_TOKEN>" https://kanaku-api.onrender.com/metrics
         data:
           - refId: A
             datasourceUid: prometheus
             relativeTimeRange: { from: 600, to: 0 }
-            model: { expr: "sum(increase(kanaku_outbox_drains_total{service=\"worker\"}[5m]))", instant: true, refId: A }
+            model:
+              expr: "absent(up{job=\"kanaku-render\"})"
+              instant: true
+              refId: A
           - refId: B
             datasourceUid: __expr__
             model: { type: reduce, reducer: last, expression: A, refId: B }
           - refId: C
             datasourceUid: __expr__
-            model: { type: threshold, expression: B, refId: C, conditions: [ { evaluator: { type: lt, params: [1] } } ] }
+            model:
+              type: threshold
+              expression: B
+              refId: C
+              conditions: [{ evaluator: { type: gt, params: [0] } }]
 
-      # 2) Outbox backlog growing — pending/retrying depth high for 10m.
-      - uid: kanaku-outbox-backlog
-        title: Outbox backlog growing
-        condition: C
-        for: 10m
-        noDataState: OK
-        execErrState: OK
-        labels: { severity: warning, service: worker }
-        annotations:
-          summary: "Outbox queue depth > 100 for 10m — deliveries falling behind."
-        data:
-          - refId: A
-            datasourceUid: prometheus
-            relativeTimeRange: { from: 600, to: 0 }
-            model: { expr: "max(kanaku_outbox_queue_depth)", instant: true, refId: A }
-          - refId: B
-            datasourceUid: __expr__
-            model: { type: reduce, reducer: last, expression: A, refId: B }
-          - refId: C
-            datasourceUid: __expr__
-            model: { type: threshold, expression: B, refId: C, conditions: [ { evaluator: { type: gt, params: [100] } } ] }
-
-      # 3) Notification failures — any sustained failed deliveries.
-      - uid: kanaku-notification-failures
-        title: Notification delivery failures
-        condition: C
-        for: 10m
-        noDataState: OK
-        execErrState: OK
-        labels: { severity: warning, service: worker }
-        annotations:
-          summary: "Notifications failing to deliver (>0.1/s over 10m)."
-        data:
-          - refId: A
-            datasourceUid: prometheus
-            relativeTimeRange: { from: 600, to: 0 }
-            model: { expr: "sum(rate(kanaku_notification_deliveries_total{status=\"failed\"}[10m]))", instant: true, refId: A }
-          - refId: B
-            datasourceUid: __expr__
-            model: { type: reduce, reducer: last, expression: A, refId: B }
-          - refId: C
-            datasourceUid: __expr__
-            model: { type: threshold, expression: B, refId: C, conditions: [ { evaluator: { type: gt, params: [0.1] } } ] }
-
-      # 4) High API error rate — 5xx share > 5% over 5m.
+      # 2) High API error rate — 5xx share > 5% over 5m.
       - uid: kanaku-api-error-rate
         title: High API error rate (5xx)
         condition: C
@@ -104,39 +91,198 @@ groups:
         execErrState: OK
         labels: { severity: critical, service: api }
         annotations:
-          summary: "API 5xx error rate > 5% for 5m."
+          summary: "API 5xx error rate > 5% for 5 minutes."
+          description: |
+            More than 5% of API requests are returning 5xx errors.
+            Check Render logs and the Grafana error-codes dashboard panel to identify the failing route/error code.
+            Diagnose: Grafana → KANAKU API dashboard → Error rate panel.
         data:
           - refId: A
             datasourceUid: prometheus
             relativeTimeRange: { from: 300, to: 0 }
-            model: { expr: "100 * sum(rate(kanaku_http_requests_total{service=\"api\",status_class=\"5xx\"}[5m])) / clamp_min(sum(rate(kanaku_http_requests_total{service=\"api\"}[5m])), 1)", instant: true, refId: A }
+            model:
+              expr: "100 * sum(rate(kanaku_http_requests_total{job=\"kanaku-render\",status_class=\"5xx\"}[5m])) / clamp_min(sum(rate(kanaku_http_requests_total{job=\"kanaku-render\"}[5m])), 1)"
+              instant: true
+              refId: A
           - refId: B
             datasourceUid: __expr__
             model: { type: reduce, reducer: last, expression: A, refId: B }
           - refId: C
             datasourceUid: __expr__
-            model: { type: threshold, expression: B, refId: C, conditions: [ { evaluator: { type: gt, params: [5] } } ] }
+            model:
+              type: threshold
+              expression: B
+              refId: C
+              conditions: [{ evaluator: { type: gt, params: [5] } }]
 
-      # 5) Health-check failure — a Fly metrics target is down (scrape failing).
-      - uid: kanaku-target-down
-        title: Health check / target down
+      # 3) Error spike — absolute error count > 20/min for 5m (catches low-traffic
+      #    scenarios where % thresholds are unreliable).
+      - uid: kanaku-error-spike
+        title: Error spike (> 20 errors/min)
         condition: C
-        for: 3m
-        # No data here means zero scrape targets == the app is down, which IS the
-        # alert — so surface it as this rule (not a generic DatasourceNoData).
-        noDataState: Alerting
+        for: 5m
+        noDataState: OK
         execErrState: OK
-        labels: { severity: critical }
+        labels: { severity: warning, service: api }
         annotations:
-          summary: "A kanaku process is not being scraped (up == 0) — likely unhealthy/down."
+          summary: "More than 20 errors per minute for 5 minutes."
+          description: |
+            kanaku_errors_total is rising fast. Check the error code breakdown in Grafana:
+              KANAKU API dashboard → Error codes panel → filter by code to identify root cause.
+            Common causes: upstream DB timeout, SendGrid outage, bad deploy.
         data:
           - refId: A
             datasourceUid: prometheus
             relativeTimeRange: { from: 300, to: 0 }
-            model: { expr: "sum(up{app=\"kanaku\"} * on(instance, region) group_left(process_group) (fly_instance_info{app=\"kanaku\"})) by (process_group)", instant: true, refId: A }
+            model:
+              expr: "sum(rate(kanaku_errors_total{job=\"kanaku-render\"}[5m])) * 60"
+              instant: true
+              refId: A
           - refId: B
             datasourceUid: __expr__
             model: { type: reduce, reducer: last, expression: A, refId: B }
           - refId: C
             datasourceUid: __expr__
-            model: { type: threshold, expression: B, refId: C, conditions: [ { evaluator: { type: lt, params: [1] } } ] }
+            model:
+              type: threshold
+              expression: B
+              refId: C
+              conditions: [{ evaluator: { type: gt, params: [20] } }]
+
+      # 4) Worker / outbox stopped — no drains in 5m.
+      #    noDataState:OK — if the app is sleeping (Render free cold start) we don't
+      #    want a double-alert; target-down covers the "app is gone" case.
+      - uid: kanaku-worker-stopped
+        title: Worker stopped (no outbox drains)
+        condition: C
+        for: 5m
+        noDataState: OK
+        execErrState: OK
+        labels: { severity: critical, service: worker }
+        annotations:
+          summary: "Worker has not drained the outbox in 5 minutes — process stuck or outbox jobs disabled."
+          description: |
+            The notification outbox drainer should tick every ~15s. If it has not fired in 5m:
+              1. Check Render logs for crash/panic in the outbox drainer.
+              2. Verify RUN_WORKERS_IN_API is unset (combined mode) or that worker.js is running.
+              3. Check DB connectivity — the drainer reads from PostgreSQL.
+        data:
+          - refId: A
+            datasourceUid: prometheus
+            relativeTimeRange: { from: 600, to: 0 }
+            model:
+              expr: "sum(increase(kanaku_outbox_drains_total{job=\"kanaku-render\"}[5m]))"
+              instant: true
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model: { type: reduce, reducer: last, expression: A, refId: B }
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: B
+              refId: C
+              conditions: [{ evaluator: { type: lt, params: [1] } }]
+
+      # 5) Outbox backlog growing — pending/retrying depth high for 10m.
+      - uid: kanaku-outbox-backlog
+        title: Outbox backlog growing
+        condition: C
+        for: 10m
+        noDataState: OK
+        execErrState: OK
+        labels: { severity: warning, service: worker }
+        annotations:
+          summary: "Outbox queue depth > 100 for 10m — notification deliveries falling behind."
+          description: |
+            kanaku_outbox_queue_depth is sustained above 100. This means notifications are
+            not being delivered fast enough. Possible causes:
+              1. SendGrid API rate limit or outage.
+              2. Firebase push credential expired.
+              3. High DB load slowing drain ticks.
+            Check the Notifications dashboard for delivery failure breakdown.
+        data:
+          - refId: A
+            datasourceUid: prometheus
+            relativeTimeRange: { from: 600, to: 0 }
+            model:
+              expr: "max(kanaku_outbox_queue_depth{job=\"kanaku-render\"})"
+              instant: true
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model: { type: reduce, reducer: last, expression: A, refId: B }
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: B
+              refId: C
+              conditions: [{ evaluator: { type: gt, params: [100] } }]
+
+      # 6) Notification delivery failures — sustained failure rate > 0.1/s.
+      - uid: kanaku-notification-failures
+        title: Notification delivery failures
+        condition: C
+        for: 10m
+        noDataState: OK
+        execErrState: OK
+        labels: { severity: warning, service: worker }
+        annotations:
+          summary: "Notifications failing to deliver (> 0.1 failures/s over 10m)."
+          description: |
+            kanaku_notification_deliveries_total{status="failed"} is above threshold.
+            Check Grafana → Notifications dashboard → Delivery success rate by channel.
+            Most likely: SendGrid key expired or Firebase token invalid.
+        data:
+          - refId: A
+            datasourceUid: prometheus
+            relativeTimeRange: { from: 600, to: 0 }
+            model:
+              expr: "sum(rate(kanaku_notification_deliveries_total{job=\"kanaku-render\",status=\"failed\"}[10m]))"
+              instant: true
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model: { type: reduce, reducer: last, expression: A, refId: B }
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: B
+              refId: C
+              conditions: [{ evaluator: { type: gt, params: [0.1] } }]
+
+      # 7) High DB query latency — p95 > 2s for 5m.
+      - uid: kanaku-db-slow
+        title: Slow database queries (p95 > 2s)
+        condition: C
+        for: 5m
+        noDataState: OK
+        execErrState: OK
+        labels: { severity: warning, service: api }
+        annotations:
+          summary: "Database p95 latency > 2 seconds for 5 minutes."
+          description: |
+            kanaku_db_query_duration_seconds p95 is sustained above 2s.
+            This typically indicates connection pool exhaustion, a slow query, or
+            Supabase/PostgreSQL under load. Check slow query logs in Supabase.
+        data:
+          - refId: A
+            datasourceUid: prometheus
+            relativeTimeRange: { from: 300, to: 0 }
+            model:
+              expr: "histogram_quantile(0.95, sum(rate(kanaku_db_query_duration_seconds_bucket{job=\"kanaku-render\"}[5m])) by (le))"
+              instant: true
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model: { type: reduce, reducer: last, expression: A, refId: B }
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: B
+              refId: C
+              conditions: [{ evaluator: { type: gt, params: [2] } }]

@@ -1,3 +1,13 @@
+# ╔══════════════════════════════════════════════════════════════════════════════╗
+# ║  DEPRECATED — Fly.io kanaku-observability app                               ║
+# ║                                                                              ║
+# ║  Kanaku migrated from Fly.io to Render on 2026-07-09. The observability     ║
+# ║  stack is now Grafana Cloud — delete the kanaku-observability Fly app to    ║
+# ║  stop the stale DatasourceNoData alert emails.                               ║
+# ║                                                                              ║
+# ║  See: platform/observability/render-log-drain-setup.md                       ║
+# ╚══════════════════════════════════════════════════════════════════════════════╝
+#
 # Machine 3 — kanaku-observability (Grafana + Loki + Vector). Deploy:
 #   fly apps create kanaku-observability
 #   fly volumes create loki_data    --size 20 -a kanaku-observability -r sin

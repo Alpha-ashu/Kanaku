@@ -1,6 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import { logger } from '../config/logger';
 import { AppError, fromPrismaError, isDatabaseConnectivityError } from '../utils/AppError';
+import { errorsTotal } from '../config/metrics';
+import { serviceName } from '../config/serviceRole';
 
 // Re-export AppError so existing imports from this path still work
 export { AppError };
@@ -47,7 +49,11 @@ export const errorHandler = (
     );
   }
 
-  //  2. Logging 
+  //  2. Logging + metric 
+
+  // Increment error counter for Grafana — enables per-code error-rate alerting.
+  const statusClass = appError.statusCode >= 500 ? '5xx' : '4xx';
+  errorsTotal.labels({ status_class: statusClass, code: appError.code, service: serviceName() }).inc();
 
   const logPayload = {
     statusCode: appError.statusCode,

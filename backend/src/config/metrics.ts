@@ -1,10 +1,14 @@
 /**
- * Prometheus metrics (Phase 3 — observability).
+ * Prometheus metrics — scraped at `GET /metrics` on the main public port (3000)
+ * guarded by a `METRICS_TOKEN` bearer secret. Grafana Agent polls this endpoint
+ * and remote-writes to Grafana Cloud Prometheus.
  *
- * A single registry, scraped at `GET /metrics` (port 9091, the Fly `[[metrics]]`
- * port) on BOTH the API and worker machines. `service` label distinguishes them.
+ * `service` label ("api" | "worker") distinguishes process types.
  * Default Node/process metrics (cpu, memory, event-loop lag, uptime via
- * `process_start_time_seconds`) are included for the health dashboards.
+ * `process_start_time_seconds`) are included automatically.
+ *
+ * On Render the API and worker run in ONE combined process (server.ts), so all
+ * metrics originate from the same process and share the same registry.
  */
 import client from 'prom-client';
 import { serviceName } from './serviceRole';
@@ -69,6 +73,41 @@ export const workerJobFailuresTotal = new client.Counter({
   labelNames: ['job'] as const,
   registers: [registry],
 });
+
+// ── Error telemetry ──────────────────────────────────────────────────────────
+/** Incremented in errorHandler for every 4xx/5xx — enables error-rate alerts. */
+export const errorsTotal = new client.Counter({
+  name: 'kanaku_errors_total',
+  help: 'HTTP errors by status class and error code',
+  labelNames: ['status_class', 'code', 'service'] as const,
+  registers: [registry],
+});
+
+// ── Database telemetry ────────────────────────────────────────────────────────
+/** Histogram of Prisma query latency. Opt-in: call `observeDbQuery(ms)` from
+ *  a Prisma middleware or individual repo call sites. */
+export const dbQueryDuration = new client.Histogram({
+  name: 'kanaku_db_query_duration_seconds',
+  help: 'Database query latency in seconds',
+  labelNames: ['operation'] as const,
+  buckets: [0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2, 5],
+  registers: [registry],
+});
+
+export const observeDbQuery = (operation: string, durationMs: number): void => {
+  dbQueryDuration.observe({ operation }, durationMs / 1000);
+};
+
+// ── Process lifecycle ─────────────────────────────────────────────────────────
+/** Unix timestamp of process start. Lets Grafana compute uptime and detect
+ *  cold starts: a rising edge on this metric = the container restarted. */
+export const coldStartTimestamp = new client.Gauge({
+  name: 'kanaku_cold_start_timestamp_seconds',
+  help: 'Unix timestamp (seconds) when this process started — a rising edge signals a cold start / restart',
+  registers: [registry],
+});
+// Set once at module load — before any server binds.
+coldStartTimestamp.set(Date.now() / 1000);
 
 export const metricsContentType = registry.contentType;
 export const renderMetrics = (): Promise<string> => registry.metrics();

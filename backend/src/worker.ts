@@ -39,12 +39,12 @@ initTracing();
 
 logger.info('Worker starting');
 
-// ── Internal health + metrics server ─────────────────────────────────────────
-// Liveness/health AND Prometheus metrics for the worker. Bound to the Fly private
-// network only (port 9091 = the fly.toml `[[metrics]]` port) — NOT declared under
-// any [http_service]/[[services]], so it is not publicly routable (the worker
-// stays free of public endpoints). Fly's machine check (`[checks]`) probes
-// /health (→ 200 ok|starting / 503 stale) and Fly scrapes /metrics.
+// ── Internal health server ────────────────────────────────────────────────────
+// Liveness/health server for the worker process. Bound to WORKER_HEALTH_PORT
+// (default 9091). Reports /health (→ 200 ok|starting / 503 stale) and
+// /metrics for local diagnostic use. On Render the worker runs inside the
+// combined API process (server.ts handles it); this server is used when the
+// worker.js entrypoint is invoked standalone (e.g. local dev, future split).
 const HEALTH_PORT = Number(process.env.WORKER_HEALTH_PORT || 9091);
 const healthServer = http.createServer((req, res) => {
   if (req.method === 'GET' && (req.url === '/health' || req.url === '/health/worker')) {

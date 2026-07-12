@@ -64,10 +64,20 @@ const envSchema = z.object({
   FIREBASE_PRIVATE_KEY: z.string().optional(),
   FIREBASE_CLIENT_EMAIL: z.string().email().optional(),
 
-  // Metrics/health ports (Prometheus scrape target on the private 6PN). Default
-  // 9091 on both API and worker — see server.ts / worker.ts.
+  // Metrics/health ports (kept for local dev and worker health server).
   METRICS_PORT: z.coerce.number().int().positive().optional(),
   WORKER_HEALTH_PORT: z.coerce.number().int().positive().optional(),
+
+  // ── Observability (Grafana Cloud / Render) ──────────────────────────────────────
+  // Bearer token guarding GET /metrics on the public port (3000).
+  // Required in production — set in Render dashboard as a secret.
+  METRICS_TOKEN: z.string().min(16).optional(),
+  // Grafana Cloud Loki push endpoint (used by the Render log-drain handler).
+  LOKI_PUSH_URL: z.string().url().optional(),
+  LOKI_USERNAME: z.string().optional(),
+  LOKI_API_KEY: z.string().optional(),
+  // Secret that Render sends in Authorization header when POSTing to /internal/logs/drain.
+  RENDER_DRAIN_TOKEN: z.string().min(16).optional(),
 }).transform((values, ctx) => {
   // In production, JWT_SECRET MUST be explicitly configured — we no longer
   // allow silent fallback to SUPABASE_JWT_SECRET because:
@@ -243,6 +253,24 @@ const CONFIG_MANIFEST: readonly ConfigItem[] = [
     services: ['api'],
     // Recommended: the AA module is phase-gated; non-AA deploys must still boot.
     tier: () => 'recommended',
+  },
+
+  // ── Observability (Grafana Cloud / Render) ────────────────────────────────────
+  {
+    key: 'METRICS_TOKEN',
+    group: 'Observability',
+    purpose: 'Bearer token guarding GET /metrics — prevents public metric exposure',
+    services: ALL,
+    // Required in production: /metrics without auth leaks internal counters.
+    tier: prodRequired,
+  },
+  {
+    key: 'LOKI_PUSH_URL',
+    group: 'Observability',
+    purpose: 'Grafana Cloud Loki endpoint for Render log-drain forwarding (degrades to disabled when absent)',
+    services: ['api'],
+    tier: () => 'recommended',
+    present: () => has('LOKI_PUSH_URL') && has('LOKI_USERNAME') && has('LOKI_API_KEY'),
   },
 ];
 

@@ -1,5 +1,12 @@
 app = 'kanaku'
 primary_region = 'sin'
+# ╔══════════════════════════════════════════════════════════════════════════════╗
+# ║  DEPRECATED — Fly.io kanaku app                                              ║
+# ║                                                                              ║
+# ║  Kanaku migrated from Fly.io to Render on 2026-07-09.                       ║
+# ║  Render is now the canonical backend platform.                               ║
+# ║  This file is kept for historical reference only.                            ║
+# ╚══════════════════════════════════════════════════════════════════════════════╝
 # auto-deploy enabled via GitHub Actions
 # deploy: ship main after the Actions-minutes outage (openingBalance column confirmed applied to prod DB)
 
