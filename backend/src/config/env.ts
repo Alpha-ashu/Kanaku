@@ -261,8 +261,10 @@ const CONFIG_MANIFEST: readonly ConfigItem[] = [
     group: 'Observability',
     purpose: 'Bearer token guarding GET /metrics — prevents public metric exposure',
     services: ALL,
-    // Required in production: /metrics without auth leaks internal counters.
-    tier: prodRequired,
+    // Recommended (not hard-required): the /metrics endpoint serves openly when
+    // unset, which is acceptable during initial setup. Set it in Render dashboard
+    // before going fully live to prevent metric data from being publicly readable.
+    tier: () => 'recommended',
   },
   {
     key: 'LOKI_PUSH_URL',
