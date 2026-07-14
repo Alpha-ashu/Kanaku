@@ -21,8 +21,14 @@ export class TransactionPage extends BasePage {
   }
 
   async clickAddTransaction() {
-    // If the floating action button (FAB) or normal add transaction button is visible
+    await this.page.waitForTimeout(500);
     const floatBtn = this.page.locator('[class*="fab"], [class*="float"]').first();
+    
+    await Promise.race([
+      this.addTransactionBtn.first().waitFor({ state: 'visible', timeout: 5000 }),
+      floatBtn.waitFor({ state: 'visible', timeout: 5000 })
+    ]).catch(() => null);
+
     if (await this.addTransactionBtn.first().isVisible()) {
       await this.addTransactionBtn.first().click();
     } else if (await floatBtn.isVisible()) {

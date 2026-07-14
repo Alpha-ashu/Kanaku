@@ -369,7 +369,7 @@ export const AddLoan: React.FC = () => {
    onSave={handleSubmit}
    onDiscard={() => setCurrentPage('loans')}
    isSaving={isSubmitting}
-   disabled={!formData.principalAmount}
+   disabled={isSubmitting}
    saveLabel="Create Loan"
    accentClass="from-sky-500 to-sky-600"
    saveTestId="loan-create-save-button"

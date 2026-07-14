@@ -32,6 +32,7 @@ const quickActions = [
  { id: 'add-account', label: 'Account', icon: 'account', gradient: 'from-indigo-500 to-purple-600', description: 'New account', openForm: 'account' },
  { id: 'transfer', label: 'Transfer', icon: 'transfer', gradient: 'from-blue-500 to-indigo-600', description: 'Transfer money', openForm: 'transfer' },
  { id: 'split-bill', label: 'Split', icon: 'Family & Kids', gradient: 'from-violet-500 to-purple-600', description: 'Group expense', openForm: 'group' },
+ { id: 'add-loan', label: 'Add Loan', icon: 'loan', gradient: 'from-red-500 to-orange-600', description: 'Add new loan', openForm: 'loan' },
  { id: 'add-goal', label: 'New Goal', icon: 'goal', gradient: 'from-amber-400 to-orange-500', description: 'Savings goal', openForm: 'goal' },
  { id: 'todo-lists', label: 'Todo', icon: 'todo', gradient: 'from-green-500 to-emerald-600', description: 'Task list', openForm: 'todos' },
  { id: 'calendar', label: 'Calendar', icon: 'calendar', gradient: 'from-cyan-400 to-blue-500', description: 'Transaction calendar', openForm: 'calendar' },

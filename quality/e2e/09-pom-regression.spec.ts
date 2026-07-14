@@ -343,7 +343,7 @@ test.describe('Kanaku/Finora - Comprehensive Playwright POM & Regression Test Su
     await page.screenshot('reg_13_quickaction_redirection');
 
     // Close and navigate back
-    await page.locator('header button').first().click();
+    await page.locator('[data-testid="loan-create-back-button"]').first().click();
     await page.waitForTimeout(500);
 
     // Restore desktop viewport size so the sidebar navigation links are visible

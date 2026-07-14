@@ -254,21 +254,69 @@ export async function registerUser(page: Page, user: typeof USERS.U1) {
 async function enterPin(page: Page, pin = '111111') {
   await page.getByText(/create your pin|confirm your pin|enter your pin/i).first()
     .waitFor({ state: 'visible', timeout: 20000 }).catch(() => null);
-  await page.waitForTimeout(800);
+  await page.waitForTimeout(1500);
 
-  // Focus the hidden input by clicking the page container
-  const container = page.locator('div.fixed.inset-0.z-50, body').first();
-  await container.click({ force: true }).catch(() => null);
-  await page.waitForTimeout(400);
+  // Attempt 1: Click the visible numpad buttons (highly reliable and updates React state naturally)
+  let prefix = 'pin-setup';
+  let digitZero = page.locator('[data-testid="pin-setup-digit-0"]').first();
+  const hasSetupDigits = await digitZero.isVisible().catch(() => false);
+  if (!hasSetupDigits) {
+    prefix = 'pin-auth';
+    digitZero = page.locator('[data-testid="pin-auth-digit-0"]').first();
+  }
 
-  // Type the digits directly on the keyboard to send them to the active focused input
-  await page.keyboard.type(pin);
+  if (await digitZero.isVisible().catch(() => false)) {
+    try {
+      for (const char of pin) {
+        await page.locator(`[data-testid="${prefix}-digit-${char}"]`).first().click({ force: true });
+        await page.waitForTimeout(150);
+      }
+      await page.waitForTimeout(5000);
+      return;
+    } catch (err) {
+      // ignore and fallback
+    }
+  }
+
+  // Attempt 2: Focus and type via keyboard
+  try {
+    const el = page.locator('[data-testid="pin-setup-hidden-input"], [data-testid="pin-auth-hidden-input"]').first();
+    await el.focus({ timeout: 2000 });
+    await page.keyboard.type(pin);
+    await page.waitForTimeout(5000);
+    return;
+  } catch (err) {
+    // ignore and fallback
+  }
+
+  // Attempt 3: Fallback direct property setter via evaluate (with React value tracker bypass)
+  await page.evaluate(({ pinVal }) => {
+    const el = document.querySelector('[data-testid="pin-auth-hidden-input"], [data-testid="pin-setup-hidden-input"]') as HTMLInputElement | null;
+    if (el) {
+      const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set;
+      if (nativeInputValueSetter) {
+        nativeInputValueSetter.call(el, pinVal);
+        // Clear React's internal value tracker to ensure onChange is fired
+        const tracker = (el as any)._valueTracker;
+        if (tracker) {
+          tracker.setValue('');
+        }
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    }
+  }, { pinVal: pin });
+
   await page.waitForTimeout(5000);
 }
 
 
 /** Complete PIN setup and any onboarding screens */
 export async function skipOnboardingIfPresent(page: Page) {
+  // Wait for onboarding or dashboard page to load and stabilize before evaluating onboarding steps
+  await page.waitForURL(/.*onboarding|.*dashboard.*/, { timeout: 15000 }).catch(() => null);
+  await page.waitForTimeout(1500);
+
   const isDashboardVisible = await page.locator('[data-nav-id], [aria-label="Dashboard"], [aria-label="Home"]').first()
     .isVisible().catch(() => false);
   if (isDashboardVisible) return;

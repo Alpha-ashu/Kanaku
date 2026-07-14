@@ -58,8 +58,11 @@ async function redisIncrement(
 
 export const rateLimit = ({ windowMs, max, scope = 'global', keyGenerator, message }: RateLimitOptions) =>
   async (req: Request, res: Response, next: NextFunction) => {
-    // Skip rate limiting in test/development environments
-    if (process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development' || !process.env.NODE_ENV) {
+    // FORCE_RATE_LIMIT=true allows QA/security-audit scripts to test rate limiting
+    // on localhost or staging without requiring NODE_ENV=production.
+    const forceRateLimit = process.env.FORCE_RATE_LIMIT === 'true';
+    // Skip rate limiting in test/development environments (unless forced)
+    if (!forceRateLimit && (process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development' || !process.env.NODE_ENV)) {
       return next();
     }
 

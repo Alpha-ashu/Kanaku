@@ -26,6 +26,8 @@
     "docs:endpoints": "node scripts/gen-endpoint-docs.mjs",
     "test": "npm run test:unit --workspace frontend",
     "test:backend": "npm run test --workspace backend",
+    "e2e:seed": "node scripts/seed_e2e_users.cjs && node quality/e2e/seed-test-users.cjs",
+    "pretest:e2e": "npm run e2e:seed",
     "test:e2e": "playwright test",
     "test:api": "playwright test -c quality/api/e2e/playwright.api.config.ts",
     "db:migrate": "cd backend && npx prisma migrate dev",
