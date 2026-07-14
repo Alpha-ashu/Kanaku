@@ -1,0 +1,98 @@
+[
+  {
+    "name": "login",
+    "path": "/auth/login",
+    "successCount": 5,
+    "failureCount": 0,
+    "stats": {
+      "min": 1617,
+      "max": 2607,
+      "mean": 2016.8,
+      "median": 1747,
+      "p95": 2607,
+      "p99": 2607
+    },
+    "sla": 2000,
+    "passed": false
+  },
+  {
+    "name": "dashboard",
+    "path": "/dashboard/summary",
+    "successCount": 10,
+    "failureCount": 0,
+    "stats": {
+      "min": 918,
+      "max": 1918,
+      "mean": 1020.4,
+      "median": 921,
+      "p95": 1918,
+      "p99": 1918
+    },
+    "sla": 1000,
+    "passed": false
+  },
+  {
+    "name": "cashflow",
+    "path": "/dashboard/cashflow",
+    "successCount": 10,
+    "failureCount": 0,
+    "stats": {
+      "min": 662,
+      "max": 813,
+      "mean": 679,
+      "median": 665,
+      "p95": 813,
+      "p99": 813
+    },
+    "sla": 1000,
+    "passed": true
+  },
+  {
+    "name": "accounts",
+    "path": "/accounts",
+    "successCount": 10,
+    "failureCount": 0,
+    "stats": {
+      "min": 2,
+      "max": 4,
+      "mean": 2.5,
+      "median": 2,
+      "p95": 4,
+      "p99": 4
+    },
+    "sla": 500,
+    "passed": true
+  },
+  {
+    "name": "transactions",
+    "path": "/transactions",
+    "successCount": 10,
+    "failureCount": 0,
+    "stats": {
+      "min": 2,
+      "max": 673,
+      "mean": 70.8,
+      "median": 5,
+      "p95": 673,
+      "p99": 673
+    },
+    "sla": 500,
+    "passed": false
+  },
+  {
+    "name": "todos",
+    "path": "/todos",
+    "successCount": 10,
+    "failureCount": 0,
+    "stats": {
+      "min": 664,
+      "max": 797,
+      "mean": 678.9,
+      "median": 666,
+      "p95": 797,
+      "p99": 797
+    },
+    "sla": 500,
+    "passed": false
+  }
+]

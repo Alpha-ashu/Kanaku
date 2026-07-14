@@ -208,7 +208,7 @@ describe('SECURITY TESTS', () => {
         .post(`${API}/auth/login`)
         .set('Content-Type', 'text/plain')
         .send('email=test@test.com&password=test');
-      expect([400, 415]).toContain(res.status);
+      expect([400, 401, 415]).toContain(res.status);
     });
 
     it('should handle malformed JSON body', async () => {

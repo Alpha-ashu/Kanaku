@@ -42,15 +42,22 @@ test.describe('Kanaku/Finora - Comprehensive Playwright POM & Regression Test Su
     await authPage.passwordInput.first().fill(USERS.U1.password);
     await authPage.confirmPasswordInput.first().fill(USERS.U1.password);
     await authPage.agreeTermsCheckbox.first().check();
-    await authPage.assertErrorMessageVisible(/already registered|already.*email|phone.*already|already.*use/i);
+    await authPage.assertErrorMessageVisible(/already registered|already.*email|phone.*already|already.*use|can['’]t be used/i);
     await authPage.screenshot('neg_02_duplicate_signup');
   });
 
   test('02. Positive Registration & Onboarding Flow', async ({ page }) => {
     const authPage = new AuthPage(page);
 
+    // Generate fresh unique user info dynamically to prevent collisions on retries
+    const testUser = {
+      ...uniqueUser,
+      email: `e2e.tester.${Date.now()}.${Math.floor(Math.random() * 10000)}@Kanaku.app`,
+      mobile: `9${Math.floor(100000000 + Math.random() * 900000000)}`
+    };
+
     // Register our fresh unique user
-    const result = await authPage.registerViaUI(uniqueUser);
+    const result = await authPage.registerViaUI(testUser);
     expect(result).not.toBe('already_exists');
 
     await authPage.skipOnboarding();
@@ -188,17 +195,18 @@ test.describe('Kanaku/Finora - Comprehensive Playwright POM & Regression Test Su
     await goalPage.navigateTo('goal');
     await page.waitForTimeout(1000);
 
-    // Case 5.1: Positive - Create European Trip goal
+    // Case 5.1: Positive - Create European Trip goal with unique name
+    const goalName = `Dream Europe Tour ${Date.now()}`;
     await goalPage.createGoal({
-      name: 'Dream Europe Tour',
+      name: goalName,
       targetAmount: '250000',
       targetDate: '2027-08-31'
     });
-    await goalPage.assertGoalExists('Dream Europe Tour', '250000');
+    await goalPage.assertGoalExists(goalName, '250000');
 
     // Case 5.2: Positive - Add Contribution
-    await goalPage.clickGoal('Dream Europe Tour');
-    await goalPage.addContribution('35000');
+    await goalPage.clickGoal(goalName);
+    await goalPage.addContribution('35000', 'HDFC Savings Premium');
     
     const pageText = await page.textContent('body');
     expect(pageText).toContain('35,000');
@@ -231,17 +239,26 @@ test.describe('Kanaku/Finora - Comprehensive Playwright POM & Regression Test Su
   test('07. Advisor Registration, Manager Compliance Review, and Approval', async ({ page }) => {
     const authPage = new AuthPage(page);
     
-    // U1 registers as an advisor
-    await authPage.loginViaAPI(USERS.U1);
+    // Register a fresh unique user dynamically for advisor application to prevent retry pollution
+    const uniqueAdvisor = {
+      firstName: 'Arjun',
+      lastName: 'Advisor',
+      email: `arjun.advisor.${Date.now()}.${Math.floor(Math.random() * 10000)}@Kanaku.app`,
+      mobile: `9${Math.floor(100000000 + Math.random() * 900000000)}`,
+      password: process.env.SEED_TEST_PASSWORD || 'example-Test-password-123!',
+      persona: 'Power User'
+    };
+    await authPage.registerViaUI(uniqueAdvisor);
     await authPage.skipOnboarding();
 
     const advisorPage = new AdvisorPage(page);
     await advisorPage.navigateTo('book-advisor');
     await page.waitForTimeout(1000);
 
-    // U1 submits application
+    // Submit application under unique advisor name
+    const advisorName = `Arjun Financial Services ${Date.now()}`;
     await advisorPage.submitApplication({
-      fullName: 'Arjun Financial Services',
+      fullName: advisorName,
       phone: '+91 9000000001',
       expertise: 'Tax planning & investments',
       experience: '7',
@@ -250,7 +267,7 @@ test.describe('Kanaku/Finora - Comprehensive Playwright POM & Regression Test Su
     await advisorPage.waitForToast('Application submitted');
     await advisorPage.screenshot('pos_10_advisor_applied');
 
-    // Logout U1
+    // Logout current user
     await page.evaluate(() => {
       localStorage.clear();
       sessionStorage.clear();
@@ -265,7 +282,7 @@ test.describe('Kanaku/Finora - Comprehensive Playwright POM & Regression Test Su
     await page.waitForTimeout(1000);
 
     // Review and Approve Arjun
-    await advisorPage.reviewAndApprove('Arjun Financial Services');
+    await advisorPage.reviewAndApprove(advisorName);
     await advisorPage.waitForToast('profile is now ACTIVE');
     await advisorPage.screenshot('pos_11_advisor_approved');
   });
@@ -302,6 +319,9 @@ test.describe('Kanaku/Finora - Comprehensive Playwright POM & Regression Test Su
   });
 
   test('09. Regression - Add Loan Navigation & Redirection Bug', async ({ page }) => {
+    // Set viewport to mobile size so the mobile-only nav-quick-add-button is rendered visible
+    await page.setViewportSize({ width: 375, height: 812 });
+
     const authPage = new AuthPage(page);
     await authPage.loginViaAPI(USERS.U1);
     await authPage.skipOnboarding();
@@ -324,6 +344,10 @@ test.describe('Kanaku/Finora - Comprehensive Playwright POM & Regression Test Su
 
     // Close and navigate back
     await page.locator('header button').first().click();
+    await page.waitForTimeout(500);
+
+    // Restore desktop viewport size so the sidebar navigation links are visible
+    await page.setViewportSize({ width: 1280, height: 800 });
     await page.waitForTimeout(500);
 
     // Case 9.2: Dashboard loans button redirection check

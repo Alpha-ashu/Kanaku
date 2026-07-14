@@ -200,7 +200,7 @@ export async function registerUser(page: Page, user: typeof USERS.U1) {
   }
 
   // Check if email taken warning is already visible (e.g. from async email check)
-  const inlineDuplicateText = page.getByText(/already registered|already.*email|phone.*already/i).first();
+  const inlineDuplicateText = page.getByText(/already registered|already.*email|phone.*already|can['’]t be used/i).first();
   if (await isElementVisible(inlineDuplicateText, 1500)) {
     return 'already_exists';
   }
@@ -214,7 +214,7 @@ export async function registerUser(page: Page, user: typeof USERS.U1) {
   // — otherwise try a different email or phone number") and re-throws so the form
   // halts. As of the duplicate-email fix the success screen is NEVER shown for a
   // duplicate. The toast text contains "already have an account" / "different email".
-  const earlyDuplicateText = page.getByText(/already registered|already have an account|different email|already.*email|phone.*already|already.*use/i).first();
+  const earlyDuplicateText = page.getByText(/already registered|if you already have an account|different email|already.*email|phone.*already|already.*use|can['’]t be used/i).first();
   if (await isElementVisible(earlyDuplicateText, 5000)) {
     return 'already_exists';
   }
@@ -254,28 +254,18 @@ export async function registerUser(page: Page, user: typeof USERS.U1) {
 async function enterPin(page: Page, pin = '111111') {
   await page.getByText(/create your pin|confirm your pin|enter your pin/i).first()
     .waitFor({ state: 'visible', timeout: 20000 }).catch(() => null);
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(800);
 
-  for (const digit of pin) {
-    // Primary: Playwright getByRole — most robust, works regardless of CSS class names
-    const btn = page.getByRole('button', { name: new RegExp(`^${digit}$`) }).first();
-    const clicked = await btn.click({ force: true, timeout: 2000 })
-      .then(() => true)
-      .catch(() => false);
+  // Focus the hidden input by clicking the page container
+  const container = page.locator('div.fixed.inset-0.z-50, body').first();
+  await container.click({ force: true }).catch(() => null);
+  await page.waitForTimeout(400);
 
-    if (!clicked) {
-      // Fallback: evaluate-based dispatchEvent
-      await page.evaluate((d) => {
-        const b = Array.from(document.querySelectorAll('button'))
-          .find(el => (el.textContent ?? '').trim() === d);
-        if (b) b.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
-      }, digit);
-    }
-    await page.waitForTimeout(200);
-  }
-
+  // Type the digits directly on the keyboard to send them to the active focused input
+  await page.keyboard.type(pin);
   await page.waitForTimeout(5000);
 }
+
 
 /** Complete PIN setup and any onboarding screens */
 export async function skipOnboardingIfPresent(page: Page) {

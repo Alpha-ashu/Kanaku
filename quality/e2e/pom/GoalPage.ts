@@ -37,14 +37,21 @@ export class GoalPage extends BasePage {
   }
 
   async clickGoal(name: string) {
-    const goalEl = this.page.getByText(name, { exact: false }).first();
-    await goalEl.click();
-    await this.wait(800);
+    const card = this.page.locator('div, [data-testid*="card"]').filter({ hasText: name }).first();
+    const viewDetailsBtn = card.getByRole('button', { name: /view details/i }).first();
+    await viewDetailsBtn.click();
+    await this.wait(1000);
   }
 
-  async addContribution(amount: string) {
+  async addContribution(amount: string, accountName?: string) {
     const amtInput = this.page.locator('[data-testid="goals-detail-amount-input"]').first();
     await amtInput.fill(amount);
+
+    if (accountName) {
+      const select = this.page.locator('[data-testid="goals-detail-account-select"]').first();
+      await select.selectOption({ label: accountName });
+      await this.wait(400);
+    }
 
     const saveBtn = this.page.locator('[data-testid="goals-detail-submit-button"]').first();
     await saveBtn.click();

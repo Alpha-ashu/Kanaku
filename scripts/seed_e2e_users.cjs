@@ -35,10 +35,15 @@ const USERS = [
 async function seed() {
   console.log('Starting E2E users seeding...');
 
-  const { data: authList, error: listErr } = await supabase.auth.admin.listUsers();
-  if (listErr) {
-    console.error('Cannot list auth users:', listErr.message);
-    process.exit(1);
+  // Supabase listUsers is paginated (default 50). Fetch all pages.
+  const allUsers = [];
+  let page = 1;
+  while (true) {
+    const { data: authList, error: listErr } = await supabase.auth.admin.listUsers({ page, perPage: 1000 });
+    if (listErr) { console.error('Cannot list auth users:', listErr.message); process.exit(1); }
+    allUsers.push(...authList.users);
+    if (authList.users.length < 1000) break;
+    page++;
   }
 
   const farFuture = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000 * 10);
@@ -48,7 +53,7 @@ async function seed() {
 
     try {
       // 1. Supabase Auth
-      let authUser = authList.users.find(a => a.email?.toLowerCase() === u.email.toLowerCase());
+      let authUser = allUsers.find(a => a.email?.toLowerCase() === u.email.toLowerCase());
       const metadata = {
         role: u.role,
         full_name: `${u.firstName} ${u.lastName}`,
@@ -88,12 +93,7 @@ async function seed() {
           role: u.role,
           status: 'verified',
           isApproved: true,
-          firstName: u.firstName,
-          lastName: u.lastName,
           gender: 'male',
-          dateOfBirth: new Date('1990-01-01'),
-          jobType: 'Full-time Employment',
-          salary: 80000,
           country: 'India',
           state: 'Maharashtra',
           city: 'Mumbai',
@@ -108,12 +108,7 @@ async function seed() {
           role: u.role,
           status: 'verified',
           isApproved: true,
-          firstName: u.firstName,
-          lastName: u.lastName,
           gender: 'male',
-          dateOfBirth: new Date('1990-01-01'),
-          jobType: 'Full-time Employment',
-          salary: 80000,
           country: 'India',
           state: 'Maharashtra',
           city: 'Mumbai',

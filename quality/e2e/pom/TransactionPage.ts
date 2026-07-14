@@ -53,20 +53,20 @@ export class TransactionPage extends BasePage {
   }
 
   async selectAccount(accountName: string) {
-    // Click SearchableDropdown for Account
-    // Account dropdown is the first searchable dropdown or has placeholder "Account"
-    const dropdown = this.page.locator('div[role="combobox"]').first();
+    // Click SearchableDropdown for Account using explicit test ID or fallback
+    const dropdown = this.page.locator('[data-testid="add-transaction-account"], [data-testid="add-transaction-select-account"], div[role="combobox"]').first();
     await dropdown.click();
-    await this.wait(300);
+    await this.wait(400);
 
-    // Search and select
+    // Search input target scoped inside the dropdown portal root to prevent global search collision
     const search = this.page.locator('#dropdown-portal-root input[type="text"]').first();
     await search.fill(accountName);
-    await this.wait(300);
+    await this.wait(400);
 
+    // Select the filtered option scoped inside the dropdown portal
     const option = this.page.locator('#dropdown-portal-root button[role="option"]').filter({ hasText: new RegExp(accountName, 'i') }).first();
-    await option.click();
-    await this.wait(500);
+    await option.evaluate(el => (el as HTMLElement).click());
+    await this.wait(600);
   }
 
   async selectCategory(categoryName: string) {
@@ -103,7 +103,14 @@ export class TransactionPage extends BasePage {
   }
 
   async fillNotes(notes: string) {
-    await this.notesTextarea.fill(notes);
+    const descInput = this.page.locator('[data-testid="transaction-description-input"]').first();
+    if (await descInput.isVisible()) {
+      await descInput.fill(notes);
+    }
+    const notesInput = this.page.locator('[data-testid="transaction-notes-textarea"]').first();
+    if (await notesInput.isVisible()) {
+      await notesInput.fill(notes);
+    }
   }
 
   async save() {

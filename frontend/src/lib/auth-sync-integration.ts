@@ -155,6 +155,8 @@ const syncState = {
   hooksInstalled: false,
   processingQueue: false,
   syncingFromCloud: false,
+  /** Mutex: prevents concurrent backend-first sync runs from colliding (race-condition fix). */
+  syncingFromBackend: false,
   suppressionDepth: 0,
   queueTimer: null as ReturnType<typeof setTimeout> | null,
   pullTimer: null as ReturnType<typeof setTimeout> | null,
@@ -961,14 +963,257 @@ async function deleteRemoteRecord(userId: string, item: SyncQueueItem) {
   return true;
 }
 
-export async function processPendingSyncQueue() {
-  if (!DIRECT_CLOUD_SYNC_ENABLED) return;
+async function syncLocalRecordToBackendAPI(table: SyncedTableName, localId: number): Promise<boolean> {
+  const localTable: any = getLocalTable(table);
+  const record = await localTable.get(localId);
+  if (!record) return true; // already deleted locally
 
+  const pathMap: Record<SyncedTableName, string> = {
+    accounts: '/accounts',
+    friends: '/friends',
+    transactions: '/transactions',
+    loans: '/loans',
+    goals: '/goals',
+    investments: '/investments',
+    to_do_lists: '/todos/lists',
+    to_do_items: '/todos/items',
+    to_do_list_shares: '/todos/shares',
+    group_expenses: '/groups',
+  };
+
+  const path = pathMap[table];
+  if (!path) return true;
+
+  // Clone local record and prepare payload matching camelCase backend validators
+  const payload = { ...record };
+  delete payload.id;
+  delete payload.syncStatus;
+  delete payload.remoteId;
+
+  // Resolve local ID references to their backend/cloud UUID equivalents
+  try {
+    if (table === 'transactions') {
+      if (record.accountId) {
+        const acc = await db.accounts.get(Number(record.accountId));
+        if (!acc?.cloudId) return false; // wait for account to sync
+        payload.accountId = acc.cloudId;
+      }
+      if (record.transferToAccountId) {
+        const acc = await db.accounts.get(Number(record.transferToAccountId));
+        if (!acc?.cloudId) return false;
+        payload.transferToAccountId = acc.cloudId;
+      }
+      if (record.groupExpenseId) {
+        const ge = await db.groupExpenses.get(Number(record.groupExpenseId));
+        if (!ge?.cloudId) return false;
+        payload.groupExpenseId = ge.cloudId;
+      }
+    } else if (table === 'loans') {
+      if (record.friendId) {
+        const f = await db.friends.get(Number(record.friendId));
+        if (!f?.cloudId) return false;
+        payload.friendId = f.cloudId;
+      }
+      if (record.accountId) {
+        const acc = await db.accounts.get(Number(record.accountId));
+        if (!acc?.cloudId) return false;
+        payload.accountId = acc.cloudId;
+      }
+    } else if (table === 'investments') {
+      if (record.fundingAccountId) {
+        const acc = await db.accounts.get(Number(record.fundingAccountId));
+        if (!acc?.cloudId) return false;
+        payload.fundingAccountId = acc.cloudId;
+      }
+      if (record.settlementAccountId) {
+        const acc = await db.accounts.get(Number(record.settlementAccountId));
+        if (!acc?.cloudId) return false;
+        payload.settlementAccountId = acc.cloudId;
+      }
+    } else if (table === 'group_expenses') {
+      if (record.paidBy) {
+        const acc = await db.accounts.get(Number(record.paidBy));
+        if (!acc?.cloudId) return false;
+        payload.paidBy = acc.cloudId;
+      }
+      if (record.members) {
+        const mappedMembers = [];
+        for (const m of record.members) {
+          if (m.friendId) {
+            const f = await db.friends.get(Number(m.friendId));
+            if (!f?.cloudId) return false;
+            mappedMembers.push({ ...m, friendId: f.cloudId });
+          } else {
+            mappedMembers.push(m);
+          }
+        }
+        payload.members = mappedMembers;
+      }
+    } else if (table === 'to_do_items' || table === 'to_do_list_shares') {
+      if (record.listId) {
+        const list = await db.toDoLists.get(Number(record.listId));
+        if (!list?.cloudId) return false;
+        payload.listId = list.cloudId;
+      }
+    }
+  } catch (err) {
+    console.warn(`[Sync] Failed resolving relationships for ${table}:${localId}`, err);
+    return false;
+  }
+
+  // Format dates to ISO strings for JSON transfer
+  const dateFields: Record<string, string[]> = {
+    transactions: ['date'],
+    loans: ['dueDate', 'loanDate'],
+    goals: ['targetDate'],
+    investments: ['purchaseDate', 'lastUpdated', 'closedAt'],
+    group_expenses: ['date'],
+    to_do_items: ['dueDate'],
+  };
+
+  const fields = dateFields[table] || [];
+  for (const f of fields) {
+    if (payload[f]) {
+      payload[f] = toIsoString(payload[f]);
+    }
+  }
+
+  let response;
+  if (record.cloudId) {
+    response = await apiClient.put(`${path}/${record.cloudId}`, payload, { showErrorToast: false });
+  } else {
+    if (table === 'to_do_list_shares') {
+      response = await apiClient.post(`/todos/lists/${payload.listId}/share`, {
+        sharedWithEmail: payload.sharedWithUserId,
+        permission: payload.permission,
+      }, { showErrorToast: false });
+    } else {
+      response = await apiClient.post(path, payload, { showErrorToast: false });
+    }
+  }
+
+  const remote = response.data?.data || response.data;
+  const cloudId = String(remote?.id || record.cloudId);
+
+  await runWithCloudSyncSuppressed(async () => {
+    await localTable.update(localId, {
+      cloudId,
+      syncStatus: 'synced' as const,
+      updatedAt: toDate(remote?.updatedAt) ?? new Date(),
+    });
+  });
+
+  return true;
+}
+
+async function deleteLocalRecordFromBackend(table: SyncedTableName, cloudId: string): Promise<boolean> {
+  const pathMap: Record<SyncedTableName, string> = {
+    accounts: '/accounts',
+    friends: '/friends',
+    transactions: '/transactions',
+    loans: '/loans',
+    goals: '/goals',
+    investments: '/investments',
+    to_do_lists: '/todos/lists',
+    to_do_items: '/todos/items',
+    to_do_list_shares: '/todos/shares',
+    group_expenses: '/groups',
+  };
+
+  const path = pathMap[table];
+  if (!path || !cloudId) return true;
+
+  try {
+    await apiClient.delete(`${path}/${cloudId}`, { showErrorToast: false });
+  } catch (err: any) {
+    if (err?.status === 404) return true;
+    throw err;
+  }
+  return true;
+}
+
+async function processPendingSyncQueueBackend(userId: string, pendingItems: SyncQueueItem[]): Promise<void> {
+  const queue = [...pendingItems].sort((left, right) => {
+    const byPriority = TABLE_PRIORITY[left.table] - TABLE_PRIORITY[right.table];
+    if (byPriority !== 0) return byPriority;
+    return left.queuedAt.localeCompare(right.queuedAt);
+  });
+
+  const completedKeys: string[] = [];
+  const deferredItems: SyncQueueItem[] = [];
+
+  for (let index = 0; index < queue.length; index += 1) {
+    const item = queue[index];
+    const retryCount = item.retryCount ?? 0;
+
+    if (retryCount >= MAX_SYNC_RETRIES) {
+      console.warn(`[Sync] Dropping pending ${item.table}:${item.localId} after ${retryCount} failures.`);
+      completedKeys.push(item.key);
+      continue;
+    }
+
+    try {
+      let synced = false;
+      if (item.operation === 'delete') {
+        const cloudId = item.remoteId ? String(item.remoteId) : undefined;
+        if (cloudId) {
+          synced = await deleteLocalRecordFromBackend(item.table, cloudId);
+        } else {
+          synced = true;
+        }
+      } else {
+        synced = await syncLocalRecordToBackendAPI(item.table, item.localId);
+      }
+
+      if (synced) {
+        completedKeys.push(item.key);
+      } else {
+        deferredItems.push({ ...item, retryCount: retryCount + 1 });
+      }
+    } catch (error) {
+      if (isConnectivityError(error)) {
+        deferredItems.push(...queue.slice(index));
+        break;
+      }
+      console.warn(`[Sync] Queue sync failed for ${item.table}:${item.localId}`, error);
+      deferredItems.push({ ...item, retryCount: retryCount + 1 });
+    }
+  }
+
+  if (completedKeys.length > 0) {
+    removeSyncQueueKeys(completedKeys);
+  }
+
+  if (deferredItems.length > 0) {
+    const currentQueue = readSyncQueue().filter((item) => !completedKeys.includes(item.key));
+    writeSyncQueue(
+      [...currentQueue, ...deferredItems].reduce<SyncQueueItem[]>((items, item) => {
+        const existingIndex = items.findIndex((entry) => entry.key === item.key);
+        if (existingIndex >= 0) {
+          items[existingIndex] = {
+            ...items[existingIndex],
+            ...item,
+            remoteId: item.remoteId ?? items[existingIndex].remoteId,
+          };
+        } else {
+          items.push(item);
+        }
+        return items;
+      }, [])
+    );
+
+    const maxRetry = Math.max(...deferredItems.map((i) => i.retryCount ?? 0), 1);
+    const backoff = Math.min(500 * 2 ** (maxRetry - 1), 30_000);
+    scheduleQueueProcessing(backoff);
+  }
+}
+
+export async function processPendingSyncQueue() {
   initializeBackendSync();
 
   if (syncState.processingQueue || isCloudSyncSuppressed()) return;
   if (typeof navigator !== 'undefined' && !navigator.onLine) return;
-  if (shouldSkipDirectSupabaseRequests()) return;
+  if (DIRECT_CLOUD_SYNC_ENABLED && shouldSkipDirectSupabaseRequests()) return;
 
   const pendingItems = readSyncQueue();
   if (pendingItems.length === 0) return;
@@ -994,6 +1239,11 @@ export async function processPendingSyncQueue() {
   syncState.processingQueue = true;
 
   try {
+    if (isBackendFirstSyncMode()) {
+      await processPendingSyncQueueBackend(user.id, pendingItems);
+      return;
+    }
+
     const queue = [...pendingItems].sort((left, right) => {
       const byPriority = TABLE_PRIORITY[left.table] - TABLE_PRIORITY[right.table];
       if (byPriority !== 0) return byPriority;
@@ -1438,12 +1688,14 @@ const mergeBackendTable = async (table: SyncedTableName, backendRows: any[], nex
  *  3. If still absent after the polls, proactively call refreshAccessToken()
  *     (single shared in-flight promise in api.ts) and wait for it.
  */
-async function waitForAuthToken(timeoutMs = 8_000): Promise<string | null> {
+async function waitForAuthToken(timeoutMs = 4_000): Promise<string | null> {
   // Fast path — token is already available.
   const immediate = TokenManager.getAccessToken();
   if (immediate) return immediate;
 
-  const interval = 250;
+  // Reduced from 8s to 4s: if the token hasn't arrived in 4s, the refresh
+  // cookie is likely unavailable and further waiting just delays the UI.
+  const interval = 200;
   const steps = Math.ceil(timeoutMs / interval);
 
   for (let i = 0; i < steps; i++) {
@@ -1473,7 +1725,9 @@ async function fetchBackendRows(path: string) {
 }
 
 const LAST_FULL_SYNC_KEY = 'KANAKU_last_full_sync_at';
-const FULL_SYNC_COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes
+// Reduced from 5 minutes to 90 seconds for faster data freshness while
+// still preventing redundant syncs on rapid page navigation.
+const FULL_SYNC_COOLDOWN_MS = 90 * 1000; // 90 seconds
 
 async function shouldSkipFullSync(requestedTables: SyncedTableName[]): Promise<boolean> {
   const isFullSync = requestedTables.length >= CORE_SYNC_TABLES.length;
@@ -1499,8 +1753,28 @@ async function syncUserDataFromBackend(
   requestedTables?: SyncedTableName[],
   force = false
 ) {
-  initializeBackendSync();
+  // ── Mutex: prevent concurrent sync runs colliding (race-condition fix) ─────
+  if (syncState.syncingFromBackend) {
+    if (import.meta.env.DEV) {
+      console.info('[Sync] Backend sync already in progress — skipping concurrent invocation.');
+    }
+    return;
+  }
 
+  initializeBackendSync();
+  syncState.syncingFromBackend = true;
+
+  try {
+    return await _syncUserDataFromBackendInner(requestedTables, force);
+  } finally {
+    syncState.syncingFromBackend = false;
+  }
+}
+
+async function _syncUserDataFromBackendInner(
+  requestedTables?: SyncedTableName[],
+  force = false
+) {
   const tablesToSync = requestedTables === undefined ? CORE_SYNC_TABLES : requestedTables;
 
   // ── Token readiness check ──────────────────────────────────────────────────
@@ -1517,12 +1791,14 @@ async function syncUserDataFromBackend(
   }
   // ──────────────────────────────────────────────────────────────────────────
 
-  // Clean up any local duplicates before merging backend data
-  await deduplicateLocalData();
+  // NOTE: deduplicateLocalData() is intentionally NOT called here before the
+  // fetch. Running it before the merge caused a blocking Dexie full-table scan
+  // on every login, adding ~2-4 seconds of delay. It now runs asynchronously
+  // in the background after all merge operations complete.
 
   const skipFull = !force && await shouldSkipFullSync(tablesToSync);
   if (skipFull) {
-    console.info('[Sync] Skipping full backend pull; last sync was <5m ago and local data exists.');
+    console.info('[Sync] Skipping full backend pull; last sync was <90s ago and local data exists.');
     return;
   }
 
@@ -1532,7 +1808,8 @@ async function syncUserDataFromBackend(
   const targetTables = tablesToSync;
   let finalTablesToSync = targetTables;
   if (!force) {
-    const cooldownMs = 5 * 60 * 1000; // 5 minutes
+    // Reduced from 5 minutes to 90 seconds for faster data freshness.
+    const cooldownMs = 90 * 1000; // 90 seconds
     finalTablesToSync = targetTables.filter(table => {
       const lastSyncStr = localStorage.getItem(`KANAKU_last_sync_at_${table}`);
       if (!lastSyncStr) return true;
@@ -2069,9 +2346,8 @@ async function syncUserDataFromBackend(
     }
   });
 
-  // CRITICAL: Deduplicate AFTER all merges to catch any stragglers from race conditions
-  await deduplicateLocalData();
-
+  // Write cooldown timestamps immediately (before dedup) so subsequent sync
+  // calls within the cooldown window are skipped correctly.
   const now = Date.now().toString();
   finalTablesToSync.forEach(table => {
     localStorage.setItem(`KANAKU_last_sync_at_${table}`, now);
@@ -2080,6 +2356,14 @@ async function syncUserDataFromBackend(
   if (tablesToSync.length >= CORE_SYNC_TABLES.length) {
     localStorage.setItem(LAST_FULL_SYNC_KEY, now);
   }
+
+  // Run deduplication in the background after all merges complete.
+  // This avoids a blocking ~2-4s Dexie full-table scan on the critical path.
+  // Any race-condition duplicates caught here are cosmetic; the idempotent
+  // mergeBackendTable() logic prevents structural duplicates during the merge.
+  void deduplicateLocalData().catch((err) =>
+    console.warn('[Sync] Background dedup failed (non-fatal):', err)
+  );
 }
 
 export async function syncUserDataFromCloud(
@@ -2114,7 +2398,8 @@ export async function syncUserDataFromCloud(
   const targetTables = filterAvailableSupabaseTables(tablesToSync) as SyncedTableName[];
   let finalTablesToSync = targetTables;
   if (!force) {
-    const cooldownMs = 5 * 60 * 1000; // 5 minutes
+    // Reduced from 5 minutes to 90 seconds for faster data freshness.
+    const cooldownMs = 90 * 1000; // 90 seconds
     finalTablesToSync = targetTables.filter(table => {
       const lastSyncStr = localStorage.getItem(`KANAKU_last_sync_at_${table}`);
       if (!lastSyncStr) return true;
@@ -2888,28 +3173,26 @@ export async function saveTransactionAndUpdateAccountWithBackendSync(
 ) {
   initializeBackendSync();
 
-  const now = new Date();
-  const dbTransaction: any = {
+  // CRITICAL FIX (Data Loss): Delegate to saveTransactionWithBackendSync which uses
+  // the API-first pattern (POST /transactions → backend → PostgreSQL). The previous
+  // implementation wrote only to local Dexie and queued a sync item that was never
+  // processed because DIRECT_CLOUD_SYNC_ENABLED=false. Transactions saved that way
+  // were silently lost on logout because clearLocalUserData() wiped Dexie and the
+  // backend had never received the data.
+  const saved = await saveTransactionWithBackendSync({
     ...transaction,
-    createdAt: transaction.createdAt ?? now,
-    updatedAt: now,
-  };
-
-  const savedId = await db.transaction('rw', [db.transactions, db.accounts], async () => {
-    const transactionId = await db.transactions.add(dbTransaction);
-    await applyTransactionAccountImpact(dbTransaction, now);
-    return transactionId;
+    createdAt: transaction.createdAt ?? new Date(),
   });
 
-  queueRecordUpsertSync('transactions', savedId, toNumber(transaction?.remoteId));
-  for (const impactedAccountId of getTransactionAccountDeltas(dbTransaction).keys()) {
-    queueRecordUpsertSync('accounts', impactedAccountId);
-  }
-  if (!getTransactionAccountDeltas(dbTransaction).has(accountId)) {
-    queueRecordUpsertSync('accounts', accountId);
-  }
+  // Apply the optimistic local account balance impact (the UI derives balances from
+  // Dexie and shows the update immediately; the server recomputes authoritative
+  // balances on next sync so there is no double-count risk).
+  const now = new Date();
+  await db.transaction('rw', db.accounts, async () => {
+    await applyTransactionAccountImpact({ ...transaction, id: saved.id }, now);
+  });
 
-  return { ...dbTransaction, id: savedId };
+  return saved;
 }
 
 export async function saveAccountWithBackendSync(account: any) {

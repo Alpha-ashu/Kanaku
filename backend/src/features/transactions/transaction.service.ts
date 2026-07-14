@@ -349,6 +349,17 @@ export class TransactionService {
    * will replay the original response instead of double-inserting.
    */
   async createTransactionsBulk(userId: string, items: any[]) {
+    // SECURITY/PERFORMANCE: Enforce a strict max bulk size limit of 500 items.
+    // Extremely large bulk payloads can exhaust the server heap during sequential
+    // database transactions, or trigger connection pool timeouts.
+    const MAX_BULK_LIMIT = 500;
+    if (items.length > MAX_BULK_LIMIT) {
+      throw AppError.badRequest(
+        `Bulk import exceeds maximum allowed limit of ${MAX_BULK_LIMIT} transactions per request. Please partition your payload and try again.`,
+        'BULK_LIMIT_EXCEEDED'
+      );
+    }
+
     const created: any[] = [];
     const failed: { index: number; error: string; code?: string }[] = [];
 

@@ -14,9 +14,9 @@ export class TodoPage extends BasePage {
   constructor(page: Page) {
     super(page);
     this.createListBtn = page.getByRole('button', { name: /create list|new list|\+ list|add list/i });
-    this.listNameInput = page.locator('input[name="name"], input[name="title"], input[placeholder*="list" i], input[placeholder*="name" i]');
+    this.listNameInput = page.locator('[data-testid="todo-create-name-input"]');
     this.shareMemberInput = page.locator('input[placeholder*="share" i], input[placeholder*="member" i], input[placeholder*="invite" i], input[placeholder*="email" i]');
-    this.saveListBtn = page.locator('div.fixed button').filter({ hasText: /create list/i });
+    this.saveListBtn = page.locator('[data-testid="todo-create-submit-button"]');
     this.addTaskBtn = page.getByRole('button', { name: /Add Task|Add First Task/i });
     this.taskTitleInput = page.locator('[data-testid="tododetail-new-title-input"], input[placeholder*="done" i], input[placeholder*="task" i]');
     this.taskSubmitBtn = page.locator('[data-testid="tododetail-add-task-submit-button"], button:has-text("Add Task")');

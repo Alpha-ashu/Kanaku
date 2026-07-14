@@ -47,8 +47,8 @@ export class TodoRepository {
     return prisma.$queryRaw<any[]>`
       SELECT id::INT, user_id AS "userId", name, description, archived, created_at AS "createdAt", updated_at AS "updatedAt"
       FROM public.todo_lists
-      WHERE user_id = ${userId} OR id IN (
-        SELECT list_id FROM public.todo_list_shares WHERE shared_with_user_id = ${userId}
+      WHERE user_id = ${userId}::uuid OR id IN (
+        SELECT list_id FROM public.todo_list_shares WHERE shared_with_user_id = ${userId}::uuid
       )
       ORDER BY created_at DESC
     `;
@@ -57,7 +57,7 @@ export class TodoRepository {
   async createList(userId: string, name: string, description?: string) {
     return prisma.$queryRaw<any[]>`
       INSERT INTO public.todo_lists (user_id, name, description, archived, created_at, updated_at)
-      VALUES (${userId}, ${name}, ${description || null}, false, NOW(), NOW())
+      VALUES (${userId}::uuid, ${name}, ${description || null}, false, NOW(), NOW())
       RETURNING id::INT, user_id AS "userId", name, description, archived, created_at AS "createdAt", updated_at AS "updatedAt"
     `;
   }
@@ -69,8 +69,8 @@ export class TodoRepository {
           description = COALESCE(${description !== undefined ? description : null}, description),
           archived = COALESCE(${archived !== undefined ? archived : null}, archived),
           updated_at = NOW()
-      WHERE id = ${id}::bigint AND (user_id = ${userId} OR id IN (
-        SELECT list_id FROM public.todo_list_shares WHERE shared_with_user_id = ${userId} AND permission = 'edit'
+      WHERE id = ${id}::bigint AND (user_id = ${userId}::uuid OR id IN (
+        SELECT list_id FROM public.todo_list_shares WHERE shared_with_user_id = ${userId}::uuid AND permission = 'edit'
       ))
       RETURNING id::INT, user_id AS "userId", name, description, archived, created_at AS "createdAt", updated_at AS "updatedAt"
     `;
@@ -78,7 +78,7 @@ export class TodoRepository {
 
   async findListByIdAndUser(id: number, userId: string) {
     return prisma.$queryRaw<any[]>`
-      SELECT id FROM public.todo_lists WHERE id = ${id}::bigint AND user_id = ${userId}
+      SELECT id FROM public.todo_lists WHERE id = ${id}::bigint AND user_id = ${userId}::uuid
     `;
   }
 
@@ -98,7 +98,7 @@ export class TodoRepository {
     // Scope the delete to the owning user so this is safe even if the
     // service-layer ownership check is ever bypassed (defense-in-depth).
     return prisma.$executeRaw`
-      DELETE FROM public.todo_lists WHERE id = ${id}::bigint AND user_id = ${userId}
+      DELETE FROM public.todo_lists WHERE id = ${id}::bigint AND user_id = ${userId}::uuid
     `;
   }
 
@@ -116,8 +116,8 @@ export class TodoRepository {
       SELECT id::INT, list_id::INT AS "listId", user_id AS "userId", title, description, completed, priority, due_date AS "dueDate", created_by AS "createdBy", created_at AS "createdAt", updated_at AS "updatedAt", completed_at AS "completedAt"
       FROM public.todo_items
       WHERE list_id IN (
-        SELECT id FROM public.todo_lists WHERE user_id = ${userId} OR id IN (
-          SELECT list_id FROM public.todo_list_shares WHERE shared_with_user_id = ${userId}
+        SELECT id FROM public.todo_lists WHERE user_id = ${userId}::uuid OR id IN (
+          SELECT list_id FROM public.todo_list_shares WHERE shared_with_user_id = ${userId}::uuid
         )
       )
       ORDER BY created_at ASC
@@ -127,7 +127,7 @@ export class TodoRepository {
   async createItem(listId: number, userId: string, title: string, description?: string, priority?: string, dueDate?: string) {
     return prisma.$queryRaw<any[]>`
       INSERT INTO public.todo_items (list_id, user_id, title, description, completed, priority, due_date, created_by, created_at, updated_at)
-      VALUES (${listId}::bigint, ${userId}, ${title}, ${description || null}, false, ${priority || 'medium'}, ${dueDate ? new Date(dueDate) : null}, ${userId}, NOW(), NOW())
+      VALUES (${listId}::bigint, ${userId}::uuid, ${title}, ${description || null}, false, ${priority || 'medium'}, ${dueDate ? new Date(dueDate) : null}, ${userId}::uuid, NOW(), NOW())
       RETURNING id::INT, list_id::INT AS "listId", user_id AS "userId", title, description, completed, priority, due_date AS "dueDate", created_by AS "createdBy", created_at AS "createdAt", updated_at AS "updatedAt"
     `;
   }
@@ -163,8 +163,8 @@ export class TodoRepository {
     return prisma.$queryRaw<any[]>`
       SELECT id::INT, list_id::INT AS "listId", shared_with_user_id AS "sharedWithUserId", shared_by AS "sharedBy", permission, shared_at AS "sharedAt"
       FROM public.todo_list_shares
-      WHERE shared_with_user_id = ${userId} OR list_id IN (
-        SELECT id FROM public.todo_lists WHERE user_id = ${userId}
+      WHERE shared_with_user_id = ${userId}::uuid OR list_id IN (
+        SELECT id FROM public.todo_lists WHERE user_id = ${userId}::uuid
       )
     `;
   }
@@ -178,14 +178,14 @@ export class TodoRepository {
   async findEditShares(listId: number, userId: string) {
     return prisma.$queryRaw<any[]>`
       SELECT id FROM public.todo_list_shares 
-      WHERE list_id = ${listId}::bigint AND shared_with_user_id = ${userId} AND permission = 'edit'
+      WHERE list_id = ${listId}::bigint AND shared_with_user_id = ${userId}::uuid AND permission = 'edit'
     `;
   }
 
   async createShare(listId: number, targetUserId: string, sharedBy: string, permission: string) {
     return prisma.$queryRaw<any[]>`
       INSERT INTO public.todo_list_shares (list_id, shared_with_user_id, shared_by, permission, shared_at)
-      VALUES (${listId}::bigint, ${targetUserId}, ${sharedBy}, ${permission}, NOW())
+      VALUES (${listId}::bigint, ${targetUserId}::uuid, ${sharedBy}::uuid, ${permission}, NOW())
       ON CONFLICT (list_id, shared_with_user_id) 
       DO UPDATE SET permission = EXCLUDED.permission
       RETURNING id::INT, list_id::INT AS "listId", shared_with_user_id AS "sharedWithUserId", shared_by AS "sharedBy", permission, shared_at AS "sharedAt"

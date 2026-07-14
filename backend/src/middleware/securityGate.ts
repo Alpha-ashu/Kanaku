@@ -15,8 +15,11 @@ const getSecuritySecret = (): string => {
     return envSecret;
   }
   
-  // Fall back to a random key generated at startup rather than throwing a fatal error
-  // which crashes the entire serverless application on Vercel.
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('CRITICAL CONFIGURATION ERROR: SECURITY_JWT_SECRET must be explicitly set in production environments. Startup aborted to prevent security token invalidation under container cycling.');
+  }
+  
+  // Fall back to a random key generated at startup rather than throwing a fatal error in non-production
   logger.warn('WARNING: No JWT or Supabase secrets configured in environment for SecurityGate. Generating a dynamic runtime secure key.');
   return crypto.randomBytes(32).toString('hex');
 };

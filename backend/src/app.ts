@@ -51,7 +51,37 @@ app.use(requestTimeout(Number(process.env.REQUEST_TIMEOUT_MS) || undefined));
 app.use(metricsMiddleware);
 
 app.use((req, res, next) => {
-  logger.info(`[REQ] ${req.method} ${req.path}`, { requestId: (req as any).id });
+  const startTime = Date.now();
+  const requestId = (req as any).id;
+  const ip = req.ip || req.socket.remoteAddress;
+  const userAgent = req.headers['user-agent'] || '';
+
+  res.on('finish', () => {
+    const duration = Date.now() - startTime;
+    const statusCode = res.statusCode;
+    
+    const meta = {
+      requestId,
+      method: req.method,
+      path: req.path,
+      statusCode,
+      durationMs: duration,
+      ip,
+      userAgent,
+      userId: (req as any).userId || (req as any).user?.id,
+    };
+
+    const message = `[HTTP] ${req.method} ${req.path} ${statusCode} - ${duration}ms`;
+
+    if (statusCode >= 500) {
+      logger.error(message, meta);
+    } else if (statusCode >= 400) {
+      logger.warn(message, meta);
+    } else {
+      logger.info(message, meta);
+    }
+  });
+
   next();
 });
 

@@ -1,0 +1,158 @@
+{
+  "timestamp": "2026-07-14T05:22:41.901Z",
+  "pass": 23,
+  "fail": 0,
+  "warn": 2,
+  "results": [
+    {
+      "category": "SQL_INJECTION",
+      "test": "Payload: ' OR '1'='1",
+      "status": "PASS",
+      "detail": "HTTP 200 — safely handled"
+    },
+    {
+      "category": "SQL_INJECTION",
+      "test": "Payload: '; DROP TABLE accounts; --",
+      "status": "PASS",
+      "detail": "HTTP 200 — safely handled"
+    },
+    {
+      "category": "SQL_INJECTION",
+      "test": "Payload: 1 UNION SELECT username, passw",
+      "status": "PASS",
+      "detail": "HTTP 200 — safely handled"
+    },
+    {
+      "category": "SQL_INJECTION",
+      "test": "Payload: ' OR 1=1 --",
+      "status": "PASS",
+      "detail": "HTTP 200 — safely handled"
+    },
+    {
+      "category": "SQL_INJECTION",
+      "test": "Payload: admin'--",
+      "status": "PASS",
+      "detail": "HTTP 200 — safely handled"
+    },
+    {
+      "category": "XSS",
+      "test": "POST with XSS payload",
+      "status": "PASS",
+      "detail": "HTTP 400 — rejected"
+    },
+    {
+      "category": "XSS",
+      "test": "POST with XSS payload",
+      "status": "PASS",
+      "detail": "HTTP 400 — rejected"
+    },
+    {
+      "category": "XSS",
+      "test": "POST with XSS payload",
+      "status": "PASS",
+      "detail": "HTTP 400 — rejected"
+    },
+    {
+      "category": "XSS",
+      "test": "POST with XSS payload",
+      "status": "PASS",
+      "detail": "HTTP 400 — rejected"
+    },
+    {
+      "category": "XSS",
+      "test": "POST with XSS payload",
+      "status": "PASS",
+      "detail": "HTTP 400 — rejected"
+    },
+    {
+      "category": "AUTH",
+      "test": "No token → /accounts",
+      "status": "PASS",
+      "detail": "HTTP 401 Unauthorized"
+    },
+    {
+      "category": "AUTH",
+      "test": "Malformed JWT",
+      "status": "PASS",
+      "detail": "HTTP 401"
+    },
+    {
+      "category": "AUTH",
+      "test": "Fake/expired JWT",
+      "status": "PASS",
+      "detail": "HTTP 401"
+    },
+    {
+      "category": "AUTH",
+      "test": "Empty Bearer token",
+      "status": "PASS",
+      "detail": "HTTP 401"
+    },
+    {
+      "category": "IDOR",
+      "test": "user2 cannot access user1 account (fe43fee7...)",
+      "status": "PASS",
+      "detail": "HTTP 404"
+    },
+    {
+      "category": "IDOR",
+      "test": "user2 cannot DELETE user1 account",
+      "status": "PASS",
+      "detail": "HTTP 404"
+    },
+    {
+      "category": "IDOR",
+      "test": "user2 cannot access user1 transaction",
+      "status": "PASS",
+      "detail": "HTTP 404"
+    },
+    {
+      "category": "EXPOSURE",
+      "test": "Password not in login response",
+      "status": "PASS",
+      "detail": "password field absent"
+    },
+    {
+      "category": "EXPOSURE",
+      "test": "JWT secret not in response",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "category": "EXPOSURE",
+      "test": "Profile endpoint — no password hash",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "category": "HEADERS",
+      "test": "Content-Security-Policy",
+      "status": "PASS",
+      "detail": "default-src 'self';style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;script-src 'self' 'unsafe-inline' 'unsafe-eval';font-src 'self' data: https://fonts.gstatic.com;img-src 'self' data: blob: https://*.supabase.co;connect-src 'self' https://*.supabase.co wss: https:;object-src 'none';frame-ancestors 'none';base-uri 'self';form-action 'self';script-src-attr 'none';upgrade-insecure-requests"
+    },
+    {
+      "category": "HEADERS",
+      "test": "X-Content-Type-Options",
+      "status": "PASS",
+      "detail": "nosniff"
+    },
+    {
+      "category": "HEADERS",
+      "test": "X-Frame-Options",
+      "status": "PASS",
+      "detail": "SAMEORIGIN"
+    },
+    {
+      "category": "HEADERS",
+      "test": "Strict-Transport-Security",
+      "status": "WARN",
+      "detail": "not set (expected on prod)"
+    },
+    {
+      "category": "RATE_LIMIT",
+      "test": "Login brute force protection",
+      "status": "WARN",
+      "detail": "20 rapid login attempts — no 429 returned (check config)"
+    }
+  ]
+}

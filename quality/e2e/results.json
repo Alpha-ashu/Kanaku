@@ -4,7 +4,7 @@
       "C:\\Program Files\\nodejs\\node.exe",
       "K:\\Project\\Kanaku\\node_modules\\@playwright\\test\\cli.js",
       "test",
-      "quality/e2e/10-inactivity-autolock.spec.ts"
+      "quality/e2e/09-pom-regression.spec.ts"
     ],
     "configFile": "K:\\Project\\Kanaku\\playwright.config.ts",
     "rootDir": "K:/Project/Kanaku/quality/e2e",
@@ -67,31 +67,31 @@
     "tags": [],
     "updateSnapshots": "missing",
     "updateSourceMethod": "patch",
-    "version": "1.61.0",
+    "version": "1.61.1",
     "workers": 1,
     "webServer": null
   },
   "suites": [
     {
-      "title": "10-inactivity-autolock.spec.ts",
-      "file": "10-inactivity-autolock.spec.ts",
+      "title": "09-pom-regression.spec.ts",
+      "file": "09-pom-regression.spec.ts",
       "column": 0,
       "line": 0,
       "specs": [],
       "suites": [
         {
-          "title": "Inactivity auto-lock",
-          "file": "10-inactivity-autolock.spec.ts",
-          "line": 21,
+          "title": "Kanaku/Finora - Comprehensive Playwright POM & Regression Test Suite",
+          "file": "09-pom-regression.spec.ts",
+          "line": 22,
           "column": 6,
           "specs": [
             {
-              "title": "locks the app and shows the inactivity notice after inactivity",
-              "ok": true,
+              "title": "01. Negative Validations - Sign In & Sign Up Errors",
+              "ok": false,
               "tags": [],
               "tests": [
                 {
-                  "timeout": 180000,
+                  "timeout": 240000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
@@ -100,19 +100,1252 @@
                     {
                       "workerIndex": 0,
                       "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 49082,
-                      "errors": [],
+                      "status": "failed",
+                      "duration": 23075,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/already registered|already.*email|phone.*already|already.*use/i).first()\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/already registered|already.*email|phone.*already|already.*use/i).first()\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/already registered|already.*email|phone.*already|already.*use/i).first()\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/already registered|already.*email|phone.*already|already.*use/i).first()\u001b[22m\n\n    at AuthPage.assertErrorMessageVisible (K:\\Project\\Kanaku\\quality\\e2e\\pom\\AuthPage.ts:92:27)\n    at K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts:45:20",
+                        "location": {
+                          "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\AuthPage.ts",
+                          "column": 27,
+                          "line": 92
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mpom\\AuthPage.ts:92\n\n\u001b[0m \u001b[90m 90 |\u001b[39m   \u001b[36masync\u001b[39m assertErrorMessageVisible(messageRegex\u001b[33m:\u001b[39m \u001b[33mRegExp\u001b[39m) {\n \u001b[90m 91 |\u001b[39m     \u001b[36mconst\u001b[39m errorEl \u001b[33m=\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mpage\u001b[33m.\u001b[39mgetByText(messageRegex)\u001b[33m.\u001b[39mfirst()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 92 |\u001b[39m     \u001b[36mawait\u001b[39m expect(errorEl)\u001b[33m.\u001b[39mtoBeVisible({ timeout\u001b[33m:\u001b[39m \u001b[35m5000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                           \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 93 |\u001b[39m   }\n \u001b[90m 94 |\u001b[39m }\n \u001b[90m 95 |\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\AuthPage.ts",
+                            "column": 27,
+                            "line": 92
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/already registered|already.*email|phone.*already|already.*use/i).first()\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/already registered|already.*email|phone.*already|already.*use/i).first()\u001b[22m\n\n\n   at pom\\AuthPage.ts:92\n\n  90 |   async assertErrorMessageVisible(messageRegex: RegExp) {\n  91 |     const errorEl = this.page.getByText(messageRegex).first();\n> 92 |     await expect(errorEl).toBeVisible({ timeout: 5000 });\n     |                           ^\n  93 |   }\n  94 | }\n  95 |\n    at AuthPage.assertErrorMessageVisible (K:\\Project\\Kanaku\\quality\\e2e\\pom\\AuthPage.ts:92:27)\n    at K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts:45:20"
+                        }
+                      ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-29T18:54:42.980Z",
+                      "startTime": "2026-07-14T06:21:59.863Z",
                       "annotations": [],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\10-inactivity-autolock-Ina-b9498-ity-notice-after-inactivity-chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-438f5-ns---Sign-In-Sign-Up-Errors-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-438f5-ns---Sign-In-Sign-Up-Errors-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-438f5-ns---Sign-In-Sign-Up-Errors-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-438f5-ns---Sign-In-Sign-Up-Errors-chromium\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\AuthPage.ts",
+                        "column": 27,
+                        "line": 92
+                      }
+                    },
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 22419,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/already registered|already.*email|phone.*already|already.*use/i).first()\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/already registered|already.*email|phone.*already|already.*use/i).first()\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/already registered|already.*email|phone.*already|already.*use/i).first()\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/already registered|already.*email|phone.*already|already.*use/i).first()\u001b[22m\n\n    at AuthPage.assertErrorMessageVisible (K:\\Project\\Kanaku\\quality\\e2e\\pom\\AuthPage.ts:92:27)\n    at K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts:45:20",
+                        "location": {
+                          "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\AuthPage.ts",
+                          "column": 27,
+                          "line": 92
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mpom\\AuthPage.ts:92\n\n\u001b[0m \u001b[90m 90 |\u001b[39m   \u001b[36masync\u001b[39m assertErrorMessageVisible(messageRegex\u001b[33m:\u001b[39m \u001b[33mRegExp\u001b[39m) {\n \u001b[90m 91 |\u001b[39m     \u001b[36mconst\u001b[39m errorEl \u001b[33m=\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mpage\u001b[33m.\u001b[39mgetByText(messageRegex)\u001b[33m.\u001b[39mfirst()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 92 |\u001b[39m     \u001b[36mawait\u001b[39m expect(errorEl)\u001b[33m.\u001b[39mtoBeVisible({ timeout\u001b[33m:\u001b[39m \u001b[35m5000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                           \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 93 |\u001b[39m   }\n \u001b[90m 94 |\u001b[39m }\n \u001b[90m 95 |\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\AuthPage.ts",
+                            "column": 27,
+                            "line": 92
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/already registered|already.*email|phone.*already|already.*use/i).first()\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/already registered|already.*email|phone.*already|already.*use/i).first()\u001b[22m\n\n\n   at pom\\AuthPage.ts:92\n\n  90 |   async assertErrorMessageVisible(messageRegex: RegExp) {\n  91 |     const errorEl = this.page.getByText(messageRegex).first();\n> 92 |     await expect(errorEl).toBeVisible({ timeout: 5000 });\n     |                           ^\n  93 |   }\n  94 | }\n  95 |\n    at AuthPage.assertErrorMessageVisible (K:\\Project\\Kanaku\\quality\\e2e\\pom\\AuthPage.ts:92:27)\n    at K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts:45:20"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2026-07-14T06:22:26.660Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-438f5-ns---Sign-In-Sign-Up-Errors-chromium-retry1\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-438f5-ns---Sign-In-Sign-Up-Errors-chromium-retry1\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-438f5-ns---Sign-In-Sign-Up-Errors-chromium-retry1\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-438f5-ns---Sign-In-Sign-Up-Errors-chromium-retry1\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\AuthPage.ts",
+                        "column": 27,
+                        "line": 92
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "ae96145aa1befaaf3af9-5f400e1cc7bfa6e1a66c",
+              "file": "09-pom-regression.spec.ts",
+              "line": 25,
+              "column": 3
+            },
+            {
+              "title": "02. Positive Registration & Onboarding Flow",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 240000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 12820,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mnot\u001b[2m.\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: not \u001b[32m\"already_exists\"\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mnot\u001b[2m.\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: not \u001b[32m\"already_exists\"\u001b[39m\n    at K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts:54:24",
+                        "location": {
+                          "file": "K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts",
+                          "column": 24,
+                          "line": 54
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 52 |\u001b[39m     \u001b[90m// Register our fresh unique user\u001b[39m\n \u001b[90m 53 |\u001b[39m     \u001b[36mconst\u001b[39m result \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m authPage\u001b[33m.\u001b[39mregisterViaUI(uniqueUser)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 54 |\u001b[39m     expect(result)\u001b[33m.\u001b[39mnot\u001b[33m.\u001b[39mtoBe(\u001b[32m'already_exists'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 55 |\u001b[39m\n \u001b[90m 56 |\u001b[39m     \u001b[36mawait\u001b[39m authPage\u001b[33m.\u001b[39mskipOnboarding()\u001b[33m;\u001b[39m\n \u001b[90m 57 |\u001b[39m     \u001b[36mawait\u001b[39m authPage\u001b[33m.\u001b[39massertAuthenticated()\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts",
+                            "column": 24,
+                            "line": 54
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mnot\u001b[2m.\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: not \u001b[32m\"already_exists\"\u001b[39m\n\n  52 |     // Register our fresh unique user\n  53 |     const result = await authPage.registerViaUI(uniqueUser);\n> 54 |     expect(result).not.toBe('already_exists');\n     |                        ^\n  55 |\n  56 |     await authPage.skipOnboarding();\n  57 |     await authPage.assertAuthenticated();\n    at K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts:54:24"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-14T06:22:52.369Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-281b9-egistration-Onboarding-Flow-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-281b9-egistration-Onboarding-Flow-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-281b9-egistration-Onboarding-Flow-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-281b9-egistration-Onboarding-Flow-chromium\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts",
+                        "column": 24,
+                        "line": 54
+                      }
+                    },
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 12448,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mnot\u001b[2m.\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: not \u001b[32m\"already_exists\"\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mnot\u001b[2m.\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: not \u001b[32m\"already_exists\"\u001b[39m\n    at K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts:54:24",
+                        "location": {
+                          "file": "K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts",
+                          "column": 24,
+                          "line": 54
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 52 |\u001b[39m     \u001b[90m// Register our fresh unique user\u001b[39m\n \u001b[90m 53 |\u001b[39m     \u001b[36mconst\u001b[39m result \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m authPage\u001b[33m.\u001b[39mregisterViaUI(uniqueUser)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 54 |\u001b[39m     expect(result)\u001b[33m.\u001b[39mnot\u001b[33m.\u001b[39mtoBe(\u001b[32m'already_exists'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 55 |\u001b[39m\n \u001b[90m 56 |\u001b[39m     \u001b[36mawait\u001b[39m authPage\u001b[33m.\u001b[39mskipOnboarding()\u001b[33m;\u001b[39m\n \u001b[90m 57 |\u001b[39m     \u001b[36mawait\u001b[39m authPage\u001b[33m.\u001b[39massertAuthenticated()\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts",
+                            "column": 24,
+                            "line": 54
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mnot\u001b[2m.\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: not \u001b[32m\"already_exists\"\u001b[39m\n\n  52 |     // Register our fresh unique user\n  53 |     const result = await authPage.registerViaUI(uniqueUser);\n> 54 |     expect(result).not.toBe('already_exists');\n     |                        ^\n  55 |\n  56 |     await authPage.skipOnboarding();\n  57 |     await authPage.assertAuthenticated();\n    at K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts:54:24"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2026-07-14T06:23:08.112Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-281b9-egistration-Onboarding-Flow-chromium-retry1\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-281b9-egistration-Onboarding-Flow-chromium-retry1\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-281b9-egistration-Onboarding-Flow-chromium-retry1\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-281b9-egistration-Onboarding-Flow-chromium-retry1\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts",
+                        "column": 24,
+                        "line": 54
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "ae96145aa1befaaf3af9-9fc993c85f6ac516cc77",
+              "file": "09-pom-regression.spec.ts",
+              "line": 49,
+              "column": 3
+            },
+            {
+              "title": "03. Account Creation & Invalid Numeric Validation",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 240000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 74130,
+                      "error": {
+                        "message": "TimeoutError: locator.fill: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"account-create-name-input\"]')\u001b[22m\n",
+                        "stack": "TimeoutError: locator.fill: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"account-create-name-input\"]')\u001b[22m\n\n    at AccountPage.createAccount (K:\\Project\\Kanaku\\quality\\e2e\\pom\\AccountPage.ts:113:34)\n    at K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts:97:5",
+                        "location": {
+                          "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\AccountPage.ts",
+                          "column": 34,
+                          "line": 113
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mpom\\AccountPage.ts:113\n\n\u001b[0m \u001b[90m 111 |\u001b[39m\n \u001b[90m 112 |\u001b[39m     \u001b[36mif\u001b[39m (options\u001b[33m.\u001b[39mname) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 113 |\u001b[39m       \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mcustomNameInput\u001b[33m.\u001b[39mfill(options\u001b[33m.\u001b[39mname)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                                  \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 114 |\u001b[39m     }\n \u001b[90m 115 |\u001b[39m\n \u001b[90m 116 |\u001b[39m     \u001b[36mif\u001b[39m (options\u001b[33m.\u001b[39mcolor) {\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\AccountPage.ts",
+                            "column": 34,
+                            "line": 113
+                          },
+                          "message": "TimeoutError: locator.fill: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"account-create-name-input\"]')\u001b[22m\n\n\n   at pom\\AccountPage.ts:113\n\n  111 |\n  112 |     if (options.name) {\n> 113 |       await this.customNameInput.fill(options.name);\n      |                                  ^\n  114 |     }\n  115 |\n  116 |     if (options.color) {\n    at AccountPage.createAccount (K:\\Project\\Kanaku\\quality\\e2e\\pom\\AccountPage.ts:113:34)\n    at K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts:97:5"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-14T06:23:23.339Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-e9c67--Invalid-Numeric-Validation-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-e9c67--Invalid-Numeric-Validation-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-e9c67--Invalid-Numeric-Validation-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-e9c67--Invalid-Numeric-Validation-chromium\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\AccountPage.ts",
+                        "column": 34,
+                        "line": 113
+                      }
+                    },
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 78183,
+                      "error": {
+                        "message": "TimeoutError: locator.fill: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"account-create-name-input\"]')\u001b[22m\n",
+                        "stack": "TimeoutError: locator.fill: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"account-create-name-input\"]')\u001b[22m\n\n    at AccountPage.createAccount (K:\\Project\\Kanaku\\quality\\e2e\\pom\\AccountPage.ts:113:34)\n    at K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts:97:5",
+                        "location": {
+                          "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\AccountPage.ts",
+                          "column": 34,
+                          "line": 113
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mpom\\AccountPage.ts:113\n\n\u001b[0m \u001b[90m 111 |\u001b[39m\n \u001b[90m 112 |\u001b[39m     \u001b[36mif\u001b[39m (options\u001b[33m.\u001b[39mname) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 113 |\u001b[39m       \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mcustomNameInput\u001b[33m.\u001b[39mfill(options\u001b[33m.\u001b[39mname)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                                  \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 114 |\u001b[39m     }\n \u001b[90m 115 |\u001b[39m\n \u001b[90m 116 |\u001b[39m     \u001b[36mif\u001b[39m (options\u001b[33m.\u001b[39mcolor) {\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\AccountPage.ts",
+                            "column": 34,
+                            "line": 113
+                          },
+                          "message": "TimeoutError: locator.fill: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"account-create-name-input\"]')\u001b[22m\n\n\n   at pom\\AccountPage.ts:113\n\n  111 |\n  112 |     if (options.name) {\n> 113 |       await this.customNameInput.fill(options.name);\n      |                                  ^\n  114 |     }\n  115 |\n  116 |     if (options.color) {\n    at AccountPage.createAccount (K:\\Project\\Kanaku\\quality\\e2e\\pom\\AccountPage.ts:113:34)\n    at K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts:97:5"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2026-07-14T06:24:41.166Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-e9c67--Invalid-Numeric-Validation-chromium-retry1\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-e9c67--Invalid-Numeric-Validation-chromium-retry1\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-e9c67--Invalid-Numeric-Validation-chromium-retry1\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-e9c67--Invalid-Numeric-Validation-chromium-retry1\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\AccountPage.ts",
+                        "column": 34,
+                        "line": 113
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "ae96145aa1befaaf3af9-b5d0adfd5b48e55c7487",
+              "file": "09-pom-regression.spec.ts",
+              "line": 61,
+              "column": 3
+            },
+            {
+              "title": "04. Transactions, Double-Submit Prevention, and Direct DB Check",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 240000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 63196,
+                      "error": {
+                        "message": "TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: /save transaction/i }).first()\u001b[22m\n\u001b[2m    - locator resolved to <button disabled data-testid=\"floating-save-bar-save-button\" class=\"flex-1 flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-[12px] text-xs font-bold text-white active:scale-95 transition-all disabled:opacity-60 shadow-[0_4px_12px_rgba(79,70,229,0.3)] bg-gradient-to-br from-blue-500 to-indigo-600\">…</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not enabled\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not enabled\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    27 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is not enabled\u001b[22m\n\u001b[2m     - retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n",
+                        "stack": "TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: /save transaction/i }).first()\u001b[22m\n\u001b[2m    - locator resolved to <button disabled data-testid=\"floating-save-bar-save-button\" class=\"flex-1 flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-[12px] text-xs font-bold text-white active:scale-95 transition-all disabled:opacity-60 shadow-[0_4px_12px_rgba(79,70,229,0.3)] bg-gradient-to-br from-blue-500 to-indigo-600\">…</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not enabled\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not enabled\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    27 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is not enabled\u001b[22m\n\u001b[2m     - retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n\n    at K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts:131:46",
+                        "location": {
+                          "file": "K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts",
+                          "column": 46,
+                          "line": 131
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 129 |\u001b[39m     \u001b[36mawait\u001b[39m txnPage\u001b[33m.\u001b[39mselectType(\u001b[32m'expense'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 130 |\u001b[39m     \u001b[36mawait\u001b[39m txnPage\u001b[33m.\u001b[39mamountInput\u001b[33m.\u001b[39mfill(\u001b[32m'0'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 131 |\u001b[39m     \u001b[36mawait\u001b[39m txnPage\u001b[33m.\u001b[39msaveTransactionBtn\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                                              \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 132 |\u001b[39m     \u001b[36mawait\u001b[39m txnPage\u001b[33m.\u001b[39mwaitForToast(\u001b[32m'Enter amount'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 133 |\u001b[39m     \u001b[36mawait\u001b[39m txnPage\u001b[33m.\u001b[39mscreenshot(\u001b[32m'neg_06_zero_amount'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 134 |\u001b[39m     \u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts",
+                            "column": 46,
+                            "line": 131
+                          },
+                          "message": "TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: /save transaction/i }).first()\u001b[22m\n\u001b[2m    - locator resolved to <button disabled data-testid=\"floating-save-bar-save-button\" class=\"flex-1 flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-[12px] text-xs font-bold text-white active:scale-95 transition-all disabled:opacity-60 shadow-[0_4px_12px_rgba(79,70,229,0.3)] bg-gradient-to-br from-blue-500 to-indigo-600\">…</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not enabled\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not enabled\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    27 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is not enabled\u001b[22m\n\u001b[2m     - retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n\n\n  129 |     await txnPage.selectType('expense');\n  130 |     await txnPage.amountInput.fill('0');\n> 131 |     await txnPage.saveTransactionBtn.first().click();\n      |                                              ^\n  132 |     await txnPage.waitForToast('Enter amount');\n  133 |     await txnPage.screenshot('neg_06_zero_amount');\n  134 |     \n    at K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts:131:46"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-14T06:26:02.661Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-3ee8d-vention-and-Direct-DB-Check-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-3ee8d-vention-and-Direct-DB-Check-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-3ee8d-vention-and-Direct-DB-Check-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-3ee8d-vention-and-Direct-DB-Check-chromium\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts",
+                        "column": 46,
+                        "line": 131
+                      }
+                    },
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 61701,
+                      "error": {
+                        "message": "TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: /save transaction/i }).first()\u001b[22m\n\u001b[2m    - locator resolved to <button disabled data-testid=\"floating-save-bar-save-button\" class=\"flex-1 flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-[12px] text-xs font-bold text-white active:scale-95 transition-all disabled:opacity-60 shadow-[0_4px_12px_rgba(79,70,229,0.3)] bg-gradient-to-br from-blue-500 to-indigo-600\">…</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not enabled\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not enabled\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    28 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is not enabled\u001b[22m\n\u001b[2m     - retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n",
+                        "stack": "TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: /save transaction/i }).first()\u001b[22m\n\u001b[2m    - locator resolved to <button disabled data-testid=\"floating-save-bar-save-button\" class=\"flex-1 flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-[12px] text-xs font-bold text-white active:scale-95 transition-all disabled:opacity-60 shadow-[0_4px_12px_rgba(79,70,229,0.3)] bg-gradient-to-br from-blue-500 to-indigo-600\">…</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not enabled\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not enabled\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    28 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is not enabled\u001b[22m\n\u001b[2m     - retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n\n    at K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts:131:46",
+                        "location": {
+                          "file": "K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts",
+                          "column": 46,
+                          "line": 131
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 129 |\u001b[39m     \u001b[36mawait\u001b[39m txnPage\u001b[33m.\u001b[39mselectType(\u001b[32m'expense'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 130 |\u001b[39m     \u001b[36mawait\u001b[39m txnPage\u001b[33m.\u001b[39mamountInput\u001b[33m.\u001b[39mfill(\u001b[32m'0'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 131 |\u001b[39m     \u001b[36mawait\u001b[39m txnPage\u001b[33m.\u001b[39msaveTransactionBtn\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                                              \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 132 |\u001b[39m     \u001b[36mawait\u001b[39m txnPage\u001b[33m.\u001b[39mwaitForToast(\u001b[32m'Enter amount'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 133 |\u001b[39m     \u001b[36mawait\u001b[39m txnPage\u001b[33m.\u001b[39mscreenshot(\u001b[32m'neg_06_zero_amount'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 134 |\u001b[39m     \u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts",
+                            "column": 46,
+                            "line": 131
+                          },
+                          "message": "TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: /save transaction/i }).first()\u001b[22m\n\u001b[2m    - locator resolved to <button disabled data-testid=\"floating-save-bar-save-button\" class=\"flex-1 flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-[12px] text-xs font-bold text-white active:scale-95 transition-all disabled:opacity-60 shadow-[0_4px_12px_rgba(79,70,229,0.3)] bg-gradient-to-br from-blue-500 to-indigo-600\">…</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not enabled\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not enabled\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    28 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is not enabled\u001b[22m\n\u001b[2m     - retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n\n\n  129 |     await txnPage.selectType('expense');\n  130 |     await txnPage.amountInput.fill('0');\n> 131 |     await txnPage.saveTransactionBtn.first().click();\n      |                                              ^\n  132 |     await txnPage.waitForToast('Enter amount');\n  133 |     await txnPage.screenshot('neg_06_zero_amount');\n  134 |     \n    at K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts:131:46"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2026-07-14T06:27:09.764Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-3ee8d-vention-and-Direct-DB-Check-chromium-retry1\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-3ee8d-vention-and-Direct-DB-Check-chromium-retry1\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-3ee8d-vention-and-Direct-DB-Check-chromium-retry1\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-3ee8d-vention-and-Direct-DB-Check-chromium-retry1\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts",
+                        "column": 46,
+                        "line": 131
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "ae96145aa1befaaf3af9-ae118259937a605fb7b0",
+              "file": "09-pom-regression.spec.ts",
+              "line": 118,
+              "column": 3
+            },
+            {
+              "title": "05. Goals & Contribution Tracking",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 240000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 62903,
+                      "error": {
+                        "message": "TimeoutError: locator.fill: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"goals-detail-amount-input\"]').first()\u001b[22m\n",
+                        "stack": "TimeoutError: locator.fill: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"goals-detail-amount-input\"]').first()\u001b[22m\n\n    at GoalPage.addContribution (K:\\Project\\Kanaku\\quality\\e2e\\pom\\GoalPage.ts:47:20)\n    at K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts:201:20",
+                        "location": {
+                          "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\GoalPage.ts",
+                          "column": 20,
+                          "line": 47
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mpom\\GoalPage.ts:47\n\n\u001b[0m \u001b[90m 45 |\u001b[39m   \u001b[36masync\u001b[39m addContribution(amount\u001b[33m:\u001b[39m string) {\n \u001b[90m 46 |\u001b[39m     \u001b[36mconst\u001b[39m amtInput \u001b[33m=\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mpage\u001b[33m.\u001b[39mlocator(\u001b[32m'[data-testid=\"goals-detail-amount-input\"]'\u001b[39m)\u001b[33m.\u001b[39mfirst()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 47 |\u001b[39m     \u001b[36mawait\u001b[39m amtInput\u001b[33m.\u001b[39mfill(amount)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                    \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 48 |\u001b[39m\n \u001b[90m 49 |\u001b[39m     \u001b[36mconst\u001b[39m saveBtn \u001b[33m=\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mpage\u001b[33m.\u001b[39mlocator(\u001b[32m'[data-testid=\"goals-detail-submit-button\"]'\u001b[39m)\u001b[33m.\u001b[39mfirst()\u001b[33m;\u001b[39m\n \u001b[90m 50 |\u001b[39m     \u001b[36mawait\u001b[39m saveBtn\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\GoalPage.ts",
+                            "column": 20,
+                            "line": 47
+                          },
+                          "message": "TimeoutError: locator.fill: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"goals-detail-amount-input\"]').first()\u001b[22m\n\n\n   at pom\\GoalPage.ts:47\n\n  45 |   async addContribution(amount: string) {\n  46 |     const amtInput = this.page.locator('[data-testid=\"goals-detail-amount-input\"]').first();\n> 47 |     await amtInput.fill(amount);\n     |                    ^\n  48 |\n  49 |     const saveBtn = this.page.locator('[data-testid=\"goals-detail-submit-button\"]').first();\n  50 |     await saveBtn.click();\n    at GoalPage.addContribution (K:\\Project\\Kanaku\\quality\\e2e\\pom\\GoalPage.ts:47:20)\n    at K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts:201:20"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-14T06:28:15.227Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-e263b-Goals-Contribution-Tracking-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-e263b-Goals-Contribution-Tracking-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-e263b-Goals-Contribution-Tracking-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-e263b-Goals-Contribution-Tracking-chromium\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\GoalPage.ts",
+                        "column": 20,
+                        "line": 47
+                      }
+                    },
+                    {
+                      "workerIndex": 9,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 66795,
+                      "error": {
+                        "message": "TimeoutError: locator.fill: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"goals-detail-amount-input\"]').first()\u001b[22m\n",
+                        "stack": "TimeoutError: locator.fill: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"goals-detail-amount-input\"]').first()\u001b[22m\n\n    at GoalPage.addContribution (K:\\Project\\Kanaku\\quality\\e2e\\pom\\GoalPage.ts:47:20)\n    at K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts:201:20",
+                        "location": {
+                          "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\GoalPage.ts",
+                          "column": 20,
+                          "line": 47
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mpom\\GoalPage.ts:47\n\n\u001b[0m \u001b[90m 45 |\u001b[39m   \u001b[36masync\u001b[39m addContribution(amount\u001b[33m:\u001b[39m string) {\n \u001b[90m 46 |\u001b[39m     \u001b[36mconst\u001b[39m amtInput \u001b[33m=\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mpage\u001b[33m.\u001b[39mlocator(\u001b[32m'[data-testid=\"goals-detail-amount-input\"]'\u001b[39m)\u001b[33m.\u001b[39mfirst()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 47 |\u001b[39m     \u001b[36mawait\u001b[39m amtInput\u001b[33m.\u001b[39mfill(amount)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                    \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 48 |\u001b[39m\n \u001b[90m 49 |\u001b[39m     \u001b[36mconst\u001b[39m saveBtn \u001b[33m=\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mpage\u001b[33m.\u001b[39mlocator(\u001b[32m'[data-testid=\"goals-detail-submit-button\"]'\u001b[39m)\u001b[33m.\u001b[39mfirst()\u001b[33m;\u001b[39m\n \u001b[90m 50 |\u001b[39m     \u001b[36mawait\u001b[39m saveBtn\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\GoalPage.ts",
+                            "column": 20,
+                            "line": 47
+                          },
+                          "message": "TimeoutError: locator.fill: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"goals-detail-amount-input\"]').first()\u001b[22m\n\n\n   at pom\\GoalPage.ts:47\n\n  45 |   async addContribution(amount: string) {\n  46 |     const amtInput = this.page.locator('[data-testid=\"goals-detail-amount-input\"]').first();\n> 47 |     await amtInput.fill(amount);\n     |                    ^\n  48 |\n  49 |     const saveBtn = this.page.locator('[data-testid=\"goals-detail-submit-button\"]').first();\n  50 |     await saveBtn.click();\n    at GoalPage.addContribution (K:\\Project\\Kanaku\\quality\\e2e\\pom\\GoalPage.ts:47:20)\n    at K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts:201:20"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2026-07-14T06:29:21.493Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-e263b-Goals-Contribution-Tracking-chromium-retry1\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-e263b-Goals-Contribution-Tracking-chromium-retry1\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-e263b-Goals-Contribution-Tracking-chromium-retry1\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-e263b-Goals-Contribution-Tracking-chromium-retry1\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\GoalPage.ts",
+                        "column": 20,
+                        "line": 47
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "ae96145aa1befaaf3af9-085d5d52e185cdd2aea6",
+              "file": "09-pom-regression.spec.ts",
+              "line": 182,
+              "column": 3
+            },
+            {
+              "title": "06. Todo List Planning & Team Split Share",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 240000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 10,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 58103,
+                      "error": {
+                        "message": "TimeoutError: locator.fill: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[name=\"name\"], input[name=\"title\"], input[placeholder*=\"list\" i], input[placeholder*=\"name\" i]').first()\u001b[22m\n",
+                        "stack": "TimeoutError: locator.fill: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[name=\"name\"], input[name=\"title\"], input[placeholder*=\"list\" i], input[placeholder*=\"name\" i]').first()\u001b[22m\n\n    at TodoPage.createPersonalList (K:\\Project\\Kanaku\\quality\\e2e\\pom\\TodoPage.ts:32:38)\n    at K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts:218:5",
+                        "location": {
+                          "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\TodoPage.ts",
+                          "column": 38,
+                          "line": 32
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mpom\\TodoPage.ts:32\n\n\u001b[0m \u001b[90m 30 |\u001b[39m   \u001b[36masync\u001b[39m createPersonalList(name\u001b[33m:\u001b[39m string) {\n \u001b[90m 31 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mclickCreateList()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 32 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mlistNameInput\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39mfill(name)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                      \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 33 |\u001b[39m     \n \u001b[90m 34 |\u001b[39m     \u001b[36mconst\u001b[39m submitBtn \u001b[33m=\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39msaveListBtn\u001b[33m.\u001b[39mfirst()\u001b[33m;\u001b[39m\n \u001b[90m 35 |\u001b[39m     \u001b[36mif\u001b[39m (\u001b[36mawait\u001b[39m submitBtn\u001b[33m.\u001b[39misVisible()) {\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\TodoPage.ts",
+                            "column": 38,
+                            "line": 32
+                          },
+                          "message": "TimeoutError: locator.fill: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[name=\"name\"], input[name=\"title\"], input[placeholder*=\"list\" i], input[placeholder*=\"name\" i]').first()\u001b[22m\n\n\n   at pom\\TodoPage.ts:32\n\n  30 |   async createPersonalList(name: string) {\n  31 |     await this.clickCreateList();\n> 32 |     await this.listNameInput.first().fill(name);\n     |                                      ^\n  33 |     \n  34 |     const submitBtn = this.saveListBtn.first();\n  35 |     if (await submitBtn.isVisible()) {\n    at TodoPage.createPersonalList (K:\\Project\\Kanaku\\quality\\e2e\\pom\\TodoPage.ts:32:38)\n    at K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts:218:5"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-14T06:30:32.429Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-9c334-t-Planning-Team-Split-Share-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-9c334-t-Planning-Team-Split-Share-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-9c334-t-Planning-Team-Split-Share-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-9c334-t-Planning-Team-Split-Share-chromium\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\TodoPage.ts",
+                        "column": 38,
+                        "line": 32
+                      }
+                    },
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 58124,
+                      "error": {
+                        "message": "TimeoutError: locator.fill: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[name=\"name\"], input[name=\"title\"], input[placeholder*=\"list\" i], input[placeholder*=\"name\" i]').first()\u001b[22m\n",
+                        "stack": "TimeoutError: locator.fill: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[name=\"name\"], input[name=\"title\"], input[placeholder*=\"list\" i], input[placeholder*=\"name\" i]').first()\u001b[22m\n\n    at TodoPage.createPersonalList (K:\\Project\\Kanaku\\quality\\e2e\\pom\\TodoPage.ts:32:38)\n    at K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts:218:5",
+                        "location": {
+                          "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\TodoPage.ts",
+                          "column": 38,
+                          "line": 32
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mpom\\TodoPage.ts:32\n\n\u001b[0m \u001b[90m 30 |\u001b[39m   \u001b[36masync\u001b[39m createPersonalList(name\u001b[33m:\u001b[39m string) {\n \u001b[90m 31 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mclickCreateList()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 32 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mlistNameInput\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39mfill(name)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                      \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 33 |\u001b[39m     \n \u001b[90m 34 |\u001b[39m     \u001b[36mconst\u001b[39m submitBtn \u001b[33m=\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39msaveListBtn\u001b[33m.\u001b[39mfirst()\u001b[33m;\u001b[39m\n \u001b[90m 35 |\u001b[39m     \u001b[36mif\u001b[39m (\u001b[36mawait\u001b[39m submitBtn\u001b[33m.\u001b[39misVisible()) {\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\TodoPage.ts",
+                            "column": 38,
+                            "line": 32
+                          },
+                          "message": "TimeoutError: locator.fill: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[name=\"name\"], input[name=\"title\"], input[placeholder*=\"list\" i], input[placeholder*=\"name\" i]').first()\u001b[22m\n\n\n   at pom\\TodoPage.ts:32\n\n  30 |   async createPersonalList(name: string) {\n  31 |     await this.clickCreateList();\n> 32 |     await this.listNameInput.first().fill(name);\n     |                                      ^\n  33 |     \n  34 |     const submitBtn = this.saveListBtn.first();\n  35 |     if (await submitBtn.isVisible()) {\n    at TodoPage.createPersonalList (K:\\Project\\Kanaku\\quality\\e2e\\pom\\TodoPage.ts:32:38)\n    at K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts:218:5"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2026-07-14T06:31:32.479Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-9c334-t-Planning-Team-Split-Share-chromium-retry1\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-9c334-t-Planning-Team-Split-Share-chromium-retry1\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-9c334-t-Planning-Team-Split-Share-chromium-retry1\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-9c334-t-Planning-Team-Split-Share-chromium-retry1\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\TodoPage.ts",
+                        "column": 38,
+                        "line": 32
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "ae96145aa1befaaf3af9-9fc9358708a6b9c49748",
+              "file": "09-pom-regression.spec.ts",
+              "line": 208,
+              "column": 3
+            },
+            {
+              "title": "07. Advisor Registration, Manager Compliance Review, and Approval",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 240000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 12,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 58515,
+                      "error": {
+                        "message": "TimeoutError: locator.fill: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[placeholder*=\"Experience\" i]')\u001b[22m\n",
+                        "stack": "TimeoutError: locator.fill: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[placeholder*=\"Experience\" i]')\u001b[22m\n\n    at AdvisorPage.submitApplication (K:\\Project\\Kanaku\\quality\\e2e\\pom\\AdvisorPage.ts:45:32)\n    at K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts:243:5",
+                        "location": {
+                          "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\AdvisorPage.ts",
+                          "column": 32,
+                          "line": 45
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mpom\\AdvisorPage.ts:45\n\n\u001b[0m \u001b[90m 43 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mphoneInput\u001b[33m.\u001b[39mfill(options\u001b[33m.\u001b[39mphone)\u001b[33m;\u001b[39m\n \u001b[90m 44 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mexpertiseInput\u001b[33m.\u001b[39mfill(options\u001b[33m.\u001b[39mexpertise)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 45 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mexperienceInput\u001b[33m.\u001b[39mfill(options\u001b[33m.\u001b[39mexperience)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 46 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mbioInput\u001b[33m.\u001b[39mfill(options\u001b[33m.\u001b[39mbio)\u001b[33m;\u001b[39m\n \u001b[90m 47 |\u001b[39m\n \u001b[90m 48 |\u001b[39m     \u001b[90m// Mock document uploads using hidden file inputs (nth(0) for PAN, nth(1) for Aadhaar)\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\AdvisorPage.ts",
+                            "column": 32,
+                            "line": 45
+                          },
+                          "message": "TimeoutError: locator.fill: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[placeholder*=\"Experience\" i]')\u001b[22m\n\n\n   at pom\\AdvisorPage.ts:45\n\n  43 |     await this.phoneInput.fill(options.phone);\n  44 |     await this.expertiseInput.fill(options.expertise);\n> 45 |     await this.experienceInput.fill(options.experience);\n     |                                ^\n  46 |     await this.bioInput.fill(options.bio);\n  47 |\n  48 |     // Mock document uploads using hidden file inputs (nth(0) for PAN, nth(1) for Aadhaar)\n    at AdvisorPage.submitApplication (K:\\Project\\Kanaku\\quality\\e2e\\pom\\AdvisorPage.ts:45:32)\n    at K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts:243:5"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-14T06:32:32.419Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-3119d-pliance-Review-and-Approval-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-3119d-pliance-Review-and-Approval-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-3119d-pliance-Review-and-Approval-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-3119d-pliance-Review-and-Approval-chromium\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\AdvisorPage.ts",
+                        "column": 32,
+                        "line": 45
+                      }
+                    },
+                    {
+                      "workerIndex": 13,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 57570,
+                      "error": {
+                        "message": "TimeoutError: locator.fill: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[placeholder*=\"Experience\" i]')\u001b[22m\n",
+                        "stack": "TimeoutError: locator.fill: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[placeholder*=\"Experience\" i]')\u001b[22m\n\n    at AdvisorPage.submitApplication (K:\\Project\\Kanaku\\quality\\e2e\\pom\\AdvisorPage.ts:45:32)\n    at K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts:243:5",
+                        "location": {
+                          "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\AdvisorPage.ts",
+                          "column": 32,
+                          "line": 45
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mpom\\AdvisorPage.ts:45\n\n\u001b[0m \u001b[90m 43 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mphoneInput\u001b[33m.\u001b[39mfill(options\u001b[33m.\u001b[39mphone)\u001b[33m;\u001b[39m\n \u001b[90m 44 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mexpertiseInput\u001b[33m.\u001b[39mfill(options\u001b[33m.\u001b[39mexpertise)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 45 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mexperienceInput\u001b[33m.\u001b[39mfill(options\u001b[33m.\u001b[39mexperience)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 46 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mbioInput\u001b[33m.\u001b[39mfill(options\u001b[33m.\u001b[39mbio)\u001b[33m;\u001b[39m\n \u001b[90m 47 |\u001b[39m\n \u001b[90m 48 |\u001b[39m     \u001b[90m// Mock document uploads using hidden file inputs (nth(0) for PAN, nth(1) for Aadhaar)\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\AdvisorPage.ts",
+                            "column": 32,
+                            "line": 45
+                          },
+                          "message": "TimeoutError: locator.fill: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[placeholder*=\"Experience\" i]')\u001b[22m\n\n\n   at pom\\AdvisorPage.ts:45\n\n  43 |     await this.phoneInput.fill(options.phone);\n  44 |     await this.expertiseInput.fill(options.expertise);\n> 45 |     await this.experienceInput.fill(options.experience);\n     |                                ^\n  46 |     await this.bioInput.fill(options.bio);\n  47 |\n  48 |     // Mock document uploads using hidden file inputs (nth(0) for PAN, nth(1) for Aadhaar)\n    at AdvisorPage.submitApplication (K:\\Project\\Kanaku\\quality\\e2e\\pom\\AdvisorPage.ts:45:32)\n    at K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts:243:5"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2026-07-14T06:33:33.057Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-3119d-pliance-Review-and-Approval-chromium-retry1\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-3119d-pliance-Review-and-Approval-chromium-retry1\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-3119d-pliance-Review-and-Approval-chromium-retry1\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-3119d-pliance-Review-and-Approval-chromium-retry1\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\AdvisorPage.ts",
+                        "column": 32,
+                        "line": 45
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "ae96145aa1befaaf3af9-753434220028872dd055",
+              "file": "09-pom-regression.spec.ts",
+              "line": 231,
+              "column": 3
+            },
+            {
+              "title": "08. Recurring Liability Schedule Management",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 240000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 14,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 46645,
+                      "error": {
+                        "message": "Error: Recurring schedule \"Office Space Rent\" should exist\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoContain\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // indexOf\u001b[22m\n\nExpected substring: \u001b[32m\"Office Space Rent\"\u001b[39m\nReceived string:    \u001b[31m\"\u001b[39m\n\u001b[31m  KANAKU⌘KURecurring TransactionsCreate Recurring Auto-Pay Liquidity Protection₹32,000.00/moAggregate monthly projection of active recurring liabilities. Ensure your linked accounts retain sufficient balance before the due date.Active schedules1 ProfilesRent & Housingexpenseutilitiesmonthly Next: 1 Jul 2026Liability₹32,000.00Pause\\\"Rent & Housing\\\" created··········\u001b[39m\n\u001b[31m    .loading-spinner {\u001b[39m\n\u001b[31m      width: 40px;\u001b[39m\n\u001b[31m      height: 40px;\u001b[39m\n\u001b[31m      border: 4px solid #f3f3f3;\u001b[39m\n\u001b[31m      border-top: 4px solid #2563eb;\u001b[39m\n\u001b[31m      border-radius: 50%;\u001b[39m\n\u001b[31m      animation: spin 1s linear infinite;\u001b[39m\n\u001b[31m    }·\u001b[39m\n\u001b[31m    @keyframes spin {\u001b[39m\n\u001b[31m      0% {\u001b[39m\n\u001b[31m        transform: rotate(0deg);\u001b[39m\n\u001b[31m      }·\u001b[39m\n\u001b[31m      100% {\u001b[39m\n\u001b[31m        transform: rotate(360deg);\u001b[39m\n\u001b[31m      }\u001b[39m\n\u001b[31m    }······\u001b[39m\n\u001b[31m\"\u001b[39m",
+                        "stack": "Error: Recurring schedule \"Office Space Rent\" should exist\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoContain\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // indexOf\u001b[22m\n\nExpected substring: \u001b[32m\"Office Space Rent\"\u001b[39m\nReceived string:    \u001b[31m\"\u001b[39m\n\u001b[31m  KANAKU⌘KURecurring TransactionsCreate Recurring Auto-Pay Liquidity Protection₹32,000.00/moAggregate monthly projection of active recurring liabilities. Ensure your linked accounts retain sufficient balance before the due date.Active schedules1 ProfilesRent & Housingexpenseutilitiesmonthly Next: 1 Jul 2026Liability₹32,000.00Pause\\\"Rent & Housing\\\" created··········\u001b[39m\n\u001b[31m    .loading-spinner {\u001b[39m\n\u001b[31m      width: 40px;\u001b[39m\n\u001b[31m      height: 40px;\u001b[39m\n\u001b[31m      border: 4px solid #f3f3f3;\u001b[39m\n\u001b[31m      border-top: 4px solid #2563eb;\u001b[39m\n\u001b[31m      border-radius: 50%;\u001b[39m\n\u001b[31m      animation: spin 1s linear infinite;\u001b[39m\n\u001b[31m    }·\u001b[39m\n\u001b[31m    @keyframes spin {\u001b[39m\n\u001b[31m      0% {\u001b[39m\n\u001b[31m        transform: rotate(0deg);\u001b[39m\n\u001b[31m      }·\u001b[39m\n\u001b[31m      100% {\u001b[39m\n\u001b[31m        transform: rotate(360deg);\u001b[39m\n\u001b[31m      }\u001b[39m\n\u001b[31m    }······\u001b[39m\n\u001b[31m\"\u001b[39m\n    at RecurringPage.assertScheduleExists (K:\\Project\\Kanaku\\quality\\e2e\\pom\\RecurringPage.ts:68:67)\n    at K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts:293:5",
+                        "location": {
+                          "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\RecurringPage.ts",
+                          "column": 67,
+                          "line": 68
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mpom\\RecurringPage.ts:68\n\n\u001b[0m \u001b[90m 66 |\u001b[39m   \u001b[36masync\u001b[39m assertScheduleExists(name\u001b[33m:\u001b[39m string\u001b[33m,\u001b[39m amount\u001b[33m?\u001b[39m\u001b[33m:\u001b[39m string) {\n \u001b[90m 67 |\u001b[39m     \u001b[36mconst\u001b[39m pageText \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mpage\u001b[33m.\u001b[39mtextContent(\u001b[32m'body'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 68 |\u001b[39m     expect(pageText\u001b[33m,\u001b[39m \u001b[32m`Recurring schedule \"${name}\" should exist`\u001b[39m)\u001b[33m.\u001b[39mtoContain(name)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                                   \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 69 |\u001b[39m     \u001b[36mif\u001b[39m (amount) {\n \u001b[90m 70 |\u001b[39m       \u001b[36mconst\u001b[39m formatted \u001b[33m=\u001b[39m \u001b[33mNumber\u001b[39m(amount)\u001b[33m.\u001b[39mtoLocaleString()\u001b[33m;\u001b[39m\n \u001b[90m 71 |\u001b[39m       expect(pageText\u001b[33m,\u001b[39m \u001b[32m`Recurring schedule amount should show ${formatted}`\u001b[39m)\u001b[33m.\u001b[39mtoContain(formatted)\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\RecurringPage.ts",
+                            "column": 67,
+                            "line": 68
+                          },
+                          "message": "Error: Recurring schedule \"Office Space Rent\" should exist\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoContain\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // indexOf\u001b[22m\n\nExpected substring: \u001b[32m\"Office Space Rent\"\u001b[39m\nReceived string:    \u001b[31m\"\u001b[39m\n\u001b[31m  KANAKU⌘KURecurring TransactionsCreate Recurring Auto-Pay Liquidity Protection₹32,000.00/moAggregate monthly projection of active recurring liabilities. Ensure your linked accounts retain sufficient balance before the due date.Active schedules1 ProfilesRent & Housingexpenseutilitiesmonthly Next: 1 Jul 2026Liability₹32,000.00Pause\\\"Rent & Housing\\\" created··········\u001b[39m\n\u001b[31m    .loading-spinner {\u001b[39m\n\u001b[31m      width: 40px;\u001b[39m\n\u001b[31m      height: 40px;\u001b[39m\n\u001b[31m      border: 4px solid #f3f3f3;\u001b[39m\n\u001b[31m      border-top: 4px solid #2563eb;\u001b[39m\n\u001b[31m      border-radius: 50%;\u001b[39m\n\u001b[31m      animation: spin 1s linear infinite;\u001b[39m\n\u001b[31m    }·\u001b[39m\n\u001b[31m    @keyframes spin {\u001b[39m\n\u001b[31m      0% {\u001b[39m\n\u001b[31m        transform: rotate(0deg);\u001b[39m\n\u001b[31m      }·\u001b[39m\n\u001b[31m      100% {\u001b[39m\n\u001b[31m        transform: rotate(360deg);\u001b[39m\n\u001b[31m      }\u001b[39m\n\u001b[31m    }······\u001b[39m\n\u001b[31m\"\u001b[39m\n\n   at pom\\RecurringPage.ts:68\n\n  66 |   async assertScheduleExists(name: string, amount?: string) {\n  67 |     const pageText = await this.page.textContent('body');\n> 68 |     expect(pageText, `Recurring schedule \"${name}\" should exist`).toContain(name);\n     |                                                                   ^\n  69 |     if (amount) {\n  70 |       const formatted = Number(amount).toLocaleString();\n  71 |       expect(pageText, `Recurring schedule amount should show ${formatted}`).toContain(formatted);\n    at RecurringPage.assertScheduleExists (K:\\Project\\Kanaku\\quality\\e2e\\pom\\RecurringPage.ts:68:67)\n    at K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts:293:5"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-14T06:34:33.562Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-90bfe-ability-Schedule-Management-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-90bfe-ability-Schedule-Management-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-90bfe-ability-Schedule-Management-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-90bfe-ability-Schedule-Management-chromium\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\RecurringPage.ts",
+                        "column": 67,
+                        "line": 68
+                      }
+                    },
+                    {
+                      "workerIndex": 15,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 46215,
+                      "error": {
+                        "message": "Error: Recurring schedule \"Office Space Rent\" should exist\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoContain\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // indexOf\u001b[22m\n\nExpected substring: \u001b[32m\"Office Space Rent\"\u001b[39m\nReceived string:    \u001b[31m\"\u001b[39m\n\u001b[31m  KANAKU⌘KURecurring TransactionsCreate Recurring Auto-Pay Liquidity Protection₹32,000.00/moAggregate monthly projection of active recurring liabilities. Ensure your linked accounts retain sufficient balance before the due date.Active schedules1 ProfilesRent & Housingexpenseutilitiesmonthly Next: 1 Jul 2026Liability₹32,000.00Pause\\\"Rent & Housing\\\" created··········\u001b[39m\n\u001b[31m    .loading-spinner {\u001b[39m\n\u001b[31m      width: 40px;\u001b[39m\n\u001b[31m      height: 40px;\u001b[39m\n\u001b[31m      border: 4px solid #f3f3f3;\u001b[39m\n\u001b[31m      border-top: 4px solid #2563eb;\u001b[39m\n\u001b[31m      border-radius: 50%;\u001b[39m\n\u001b[31m      animation: spin 1s linear infinite;\u001b[39m\n\u001b[31m    }·\u001b[39m\n\u001b[31m    @keyframes spin {\u001b[39m\n\u001b[31m      0% {\u001b[39m\n\u001b[31m        transform: rotate(0deg);\u001b[39m\n\u001b[31m      }·\u001b[39m\n\u001b[31m      100% {\u001b[39m\n\u001b[31m        transform: rotate(360deg);\u001b[39m\n\u001b[31m      }\u001b[39m\n\u001b[31m    }······\u001b[39m\n\u001b[31m\"\u001b[39m",
+                        "stack": "Error: Recurring schedule \"Office Space Rent\" should exist\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoContain\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // indexOf\u001b[22m\n\nExpected substring: \u001b[32m\"Office Space Rent\"\u001b[39m\nReceived string:    \u001b[31m\"\u001b[39m\n\u001b[31m  KANAKU⌘KURecurring TransactionsCreate Recurring Auto-Pay Liquidity Protection₹32,000.00/moAggregate monthly projection of active recurring liabilities. Ensure your linked accounts retain sufficient balance before the due date.Active schedules1 ProfilesRent & Housingexpenseutilitiesmonthly Next: 1 Jul 2026Liability₹32,000.00Pause\\\"Rent & Housing\\\" created··········\u001b[39m\n\u001b[31m    .loading-spinner {\u001b[39m\n\u001b[31m      width: 40px;\u001b[39m\n\u001b[31m      height: 40px;\u001b[39m\n\u001b[31m      border: 4px solid #f3f3f3;\u001b[39m\n\u001b[31m      border-top: 4px solid #2563eb;\u001b[39m\n\u001b[31m      border-radius: 50%;\u001b[39m\n\u001b[31m      animation: spin 1s linear infinite;\u001b[39m\n\u001b[31m    }·\u001b[39m\n\u001b[31m    @keyframes spin {\u001b[39m\n\u001b[31m      0% {\u001b[39m\n\u001b[31m        transform: rotate(0deg);\u001b[39m\n\u001b[31m      }·\u001b[39m\n\u001b[31m      100% {\u001b[39m\n\u001b[31m        transform: rotate(360deg);\u001b[39m\n\u001b[31m      }\u001b[39m\n\u001b[31m    }······\u001b[39m\n\u001b[31m\"\u001b[39m\n    at RecurringPage.assertScheduleExists (K:\\Project\\Kanaku\\quality\\e2e\\pom\\RecurringPage.ts:68:67)\n    at K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts:293:5",
+                        "location": {
+                          "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\RecurringPage.ts",
+                          "column": 67,
+                          "line": 68
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mpom\\RecurringPage.ts:68\n\n\u001b[0m \u001b[90m 66 |\u001b[39m   \u001b[36masync\u001b[39m assertScheduleExists(name\u001b[33m:\u001b[39m string\u001b[33m,\u001b[39m amount\u001b[33m?\u001b[39m\u001b[33m:\u001b[39m string) {\n \u001b[90m 67 |\u001b[39m     \u001b[36mconst\u001b[39m pageText \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mpage\u001b[33m.\u001b[39mtextContent(\u001b[32m'body'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 68 |\u001b[39m     expect(pageText\u001b[33m,\u001b[39m \u001b[32m`Recurring schedule \"${name}\" should exist`\u001b[39m)\u001b[33m.\u001b[39mtoContain(name)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                                   \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 69 |\u001b[39m     \u001b[36mif\u001b[39m (amount) {\n \u001b[90m 70 |\u001b[39m       \u001b[36mconst\u001b[39m formatted \u001b[33m=\u001b[39m \u001b[33mNumber\u001b[39m(amount)\u001b[33m.\u001b[39mtoLocaleString()\u001b[33m;\u001b[39m\n \u001b[90m 71 |\u001b[39m       expect(pageText\u001b[33m,\u001b[39m \u001b[32m`Recurring schedule amount should show ${formatted}`\u001b[39m)\u001b[33m.\u001b[39mtoContain(formatted)\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\RecurringPage.ts",
+                            "column": 67,
+                            "line": 68
+                          },
+                          "message": "Error: Recurring schedule \"Office Space Rent\" should exist\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoContain\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // indexOf\u001b[22m\n\nExpected substring: \u001b[32m\"Office Space Rent\"\u001b[39m\nReceived string:    \u001b[31m\"\u001b[39m\n\u001b[31m  KANAKU⌘KURecurring TransactionsCreate Recurring Auto-Pay Liquidity Protection₹32,000.00/moAggregate monthly projection of active recurring liabilities. Ensure your linked accounts retain sufficient balance before the due date.Active schedules1 ProfilesRent & Housingexpenseutilitiesmonthly Next: 1 Jul 2026Liability₹32,000.00Pause\\\"Rent & Housing\\\" created··········\u001b[39m\n\u001b[31m    .loading-spinner {\u001b[39m\n\u001b[31m      width: 40px;\u001b[39m\n\u001b[31m      height: 40px;\u001b[39m\n\u001b[31m      border: 4px solid #f3f3f3;\u001b[39m\n\u001b[31m      border-top: 4px solid #2563eb;\u001b[39m\n\u001b[31m      border-radius: 50%;\u001b[39m\n\u001b[31m      animation: spin 1s linear infinite;\u001b[39m\n\u001b[31m    }·\u001b[39m\n\u001b[31m    @keyframes spin {\u001b[39m\n\u001b[31m      0% {\u001b[39m\n\u001b[31m        transform: rotate(0deg);\u001b[39m\n\u001b[31m      }·\u001b[39m\n\u001b[31m      100% {\u001b[39m\n\u001b[31m        transform: rotate(360deg);\u001b[39m\n\u001b[31m      }\u001b[39m\n\u001b[31m    }······\u001b[39m\n\u001b[31m\"\u001b[39m\n\n   at pom\\RecurringPage.ts:68\n\n  66 |   async assertScheduleExists(name: string, amount?: string) {\n  67 |     const pageText = await this.page.textContent('body');\n> 68 |     expect(pageText, `Recurring schedule \"${name}\" should exist`).toContain(name);\n     |                                                                   ^\n  69 |     if (amount) {\n  70 |       const formatted = Number(amount).toLocaleString();\n  71 |       expect(pageText, `Recurring schedule amount should show ${formatted}`).toContain(formatted);\n    at RecurringPage.assertScheduleExists (K:\\Project\\Kanaku\\quality\\e2e\\pom\\RecurringPage.ts:68:67)\n    at K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts:293:5"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2026-07-14T06:35:23.965Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-90bfe-ability-Schedule-Management-chromium-retry1\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-90bfe-ability-Schedule-Management-chromium-retry1\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-90bfe-ability-Schedule-Management-chromium-retry1\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-90bfe-ability-Schedule-Management-chromium-retry1\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\RecurringPage.ts",
+                        "column": 67,
+                        "line": 68
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "ae96145aa1befaaf3af9-602dec3c5eb42215dc22",
+              "file": "09-pom-regression.spec.ts",
+              "line": 273,
+              "column": 3
+            },
+            {
+              "title": "09. Regression - Add Loan Navigation & Redirection Bug",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 240000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 16,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 45033,
+                      "error": {
+                        "message": "TimeoutError: locator.waitFor: Timeout 5000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"nav-quick-add-button\"]').first() to be visible\u001b[22m\n\u001b[2m    14 × locator resolved to hidden <button tabindex=\"0\" title=\"Quick Add\" data-testid=\"nav-quick-add-button\" class=\"flex items-center justify-center w-12 h-12 bg-black text-white rounded-full shadow-xl hover:shadow-2xl transition-all flex-shrink-0 mx-0 z-20\">…</button>\u001b[22m\n",
+                        "stack": "TimeoutError: locator.waitFor: Timeout 5000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"nav-quick-add-button\"]').first() to be visible\u001b[22m\n\u001b[2m    14 × locator resolved to hidden <button tabindex=\"0\" title=\"Quick Add\" data-testid=\"nav-quick-add-button\" class=\"flex items-center justify-center w-12 h-12 bg-black text-white rounded-full shadow-xl hover:shadow-2xl transition-all flex-shrink-0 mx-0 z-20\">…</button>\u001b[22m\n\n    at K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts:311:26",
+                        "location": {
+                          "file": "K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts",
+                          "column": 26,
+                          "line": 311
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 309 |\u001b[39m     \u001b[90m// Case 9.1: Quick Actions redirection regression test\u001b[39m\n \u001b[90m 310 |\u001b[39m     \u001b[36mconst\u001b[39m quickAddButton \u001b[33m=\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'[data-testid=\"nav-quick-add-button\"]'\u001b[39m)\u001b[33m.\u001b[39mfirst()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 311 |\u001b[39m     \u001b[36mawait\u001b[39m quickAddButton\u001b[33m.\u001b[39mwaitFor({ state\u001b[33m:\u001b[39m \u001b[32m'visible'\u001b[39m\u001b[33m,\u001b[39m timeout\u001b[33m:\u001b[39m \u001b[35m5000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                          \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 312 |\u001b[39m     \u001b[36mawait\u001b[39m quickAddButton\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m 313 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForTimeout(\u001b[35m800\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 314 |\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts",
+                            "column": 26,
+                            "line": 311
+                          },
+                          "message": "TimeoutError: locator.waitFor: Timeout 5000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"nav-quick-add-button\"]').first() to be visible\u001b[22m\n\u001b[2m    14 × locator resolved to hidden <button tabindex=\"0\" title=\"Quick Add\" data-testid=\"nav-quick-add-button\" class=\"flex items-center justify-center w-12 h-12 bg-black text-white rounded-full shadow-xl hover:shadow-2xl transition-all flex-shrink-0 mx-0 z-20\">…</button>\u001b[22m\n\n\n  309 |     // Case 9.1: Quick Actions redirection regression test\n  310 |     const quickAddButton = page.locator('[data-testid=\"nav-quick-add-button\"]').first();\n> 311 |     await quickAddButton.waitFor({ state: 'visible', timeout: 5000 });\n      |                          ^\n  312 |     await quickAddButton.click();\n  313 |     await page.waitForTimeout(800);\n  314 |\n    at K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts:311:26"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-14T06:36:13.377Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-c3543--Navigation-Redirection-Bug-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-c3543--Navigation-Redirection-Bug-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-c3543--Navigation-Redirection-Bug-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-c3543--Navigation-Redirection-Bug-chromium\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts",
+                        "column": 26,
+                        "line": 311
+                      }
+                    },
+                    {
+                      "workerIndex": 17,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 45370,
+                      "error": {
+                        "message": "TimeoutError: locator.waitFor: Timeout 5000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"nav-quick-add-button\"]').first() to be visible\u001b[22m\n\u001b[2m    14 × locator resolved to hidden <button tabindex=\"0\" title=\"Quick Add\" data-testid=\"nav-quick-add-button\" class=\"flex items-center justify-center w-12 h-12 bg-black text-white rounded-full shadow-xl hover:shadow-2xl transition-all flex-shrink-0 mx-0 z-20\">…</button>\u001b[22m\n",
+                        "stack": "TimeoutError: locator.waitFor: Timeout 5000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"nav-quick-add-button\"]').first() to be visible\u001b[22m\n\u001b[2m    14 × locator resolved to hidden <button tabindex=\"0\" title=\"Quick Add\" data-testid=\"nav-quick-add-button\" class=\"flex items-center justify-center w-12 h-12 bg-black text-white rounded-full shadow-xl hover:shadow-2xl transition-all flex-shrink-0 mx-0 z-20\">…</button>\u001b[22m\n\n    at K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts:311:26",
+                        "location": {
+                          "file": "K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts",
+                          "column": 26,
+                          "line": 311
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 309 |\u001b[39m     \u001b[90m// Case 9.1: Quick Actions redirection regression test\u001b[39m\n \u001b[90m 310 |\u001b[39m     \u001b[36mconst\u001b[39m quickAddButton \u001b[33m=\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'[data-testid=\"nav-quick-add-button\"]'\u001b[39m)\u001b[33m.\u001b[39mfirst()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 311 |\u001b[39m     \u001b[36mawait\u001b[39m quickAddButton\u001b[33m.\u001b[39mwaitFor({ state\u001b[33m:\u001b[39m \u001b[32m'visible'\u001b[39m\u001b[33m,\u001b[39m timeout\u001b[33m:\u001b[39m \u001b[35m5000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                          \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 312 |\u001b[39m     \u001b[36mawait\u001b[39m quickAddButton\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m 313 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForTimeout(\u001b[35m800\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 314 |\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts",
+                            "column": 26,
+                            "line": 311
+                          },
+                          "message": "TimeoutError: locator.waitFor: Timeout 5000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"nav-quick-add-button\"]').first() to be visible\u001b[22m\n\u001b[2m    14 × locator resolved to hidden <button tabindex=\"0\" title=\"Quick Add\" data-testid=\"nav-quick-add-button\" class=\"flex items-center justify-center w-12 h-12 bg-black text-white rounded-full shadow-xl hover:shadow-2xl transition-all flex-shrink-0 mx-0 z-20\">…</button>\u001b[22m\n\n\n  309 |     // Case 9.1: Quick Actions redirection regression test\n  310 |     const quickAddButton = page.locator('[data-testid=\"nav-quick-add-button\"]').first();\n> 311 |     await quickAddButton.waitFor({ state: 'visible', timeout: 5000 });\n      |                          ^\n  312 |     await quickAddButton.click();\n  313 |     await page.waitForTimeout(800);\n  314 |\n    at K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts:311:26"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2026-07-14T06:37:01.046Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-c3543--Navigation-Redirection-Bug-chromium-retry1\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-c3543--Navigation-Redirection-Bug-chromium-retry1\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-c3543--Navigation-Redirection-Bug-chromium-retry1\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-c3543--Navigation-Redirection-Bug-chromium-retry1\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts",
+                        "column": 26,
+                        "line": 311
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "ae96145aa1befaaf3af9-b8ba28baa8a9b4b21b8a",
+              "file": "09-pom-regression.spec.ts",
+              "line": 304,
+              "column": 3
+            },
+            {
+              "title": "10. Logout/Login Session Retention & State Check",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 240000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 18,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 86949,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-14T06:37:49.220Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-67413-ssion-Retention-State-Check-chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -120,9 +1353,9 @@
                   "status": "expected"
                 }
               ],
-              "id": "13076032c028c3c376a3-afb95da2509683deb547",
-              "file": "10-inactivity-autolock.spec.ts",
-              "line": 25,
+              "id": "ae96145aa1befaaf3af9-a96f418603f1baca6ea9",
+              "file": "09-pom-regression.spec.ts",
+              "line": 365,
               "column": 3
             }
           ]
@@ -132,11 +1365,11 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-06-29T18:54:42.453Z",
-    "duration": 50325.845,
+    "startTime": "2026-07-14T06:21:58.634Z",
+    "duration": 1038875.7069999999,
     "expected": 1,
     "skipped": 0,
-    "unexpected": 0,
+    "unexpected": 9,
     "flaky": 0
   }
 }

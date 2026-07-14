@@ -15,13 +15,13 @@ export class AdvisorPage extends BasePage {
 
   constructor(page: Page) {
     super(page);
-    this.becomeAdvisorBtn = page.getByRole('button', { name: /Become an Advisor/i });
-    this.fullNameInput = page.locator('input[placeholder*="legal name" i]');
-    this.phoneInput = page.locator('input[placeholder*="+91" i]');
-    this.expertiseInput = page.locator('input[placeholder*="Expertise" i]');
-    this.experienceInput = page.locator('input[placeholder*="Experience" i]');
-    this.bioInput = page.locator('textarea[placeholder*="background" i]');
-    this.submitAppBtn = page.getByRole('button', { name: /Submit Application/i });
+    this.becomeAdvisorBtn = page.locator('[data-testid="advisor-role-section-apply-now"], button:has-text("Become an Advisor"), button:has-text("Apply Now")');
+    this.fullNameInput = page.locator('[data-testid="advisor-apply-name-input"]');
+    this.phoneInput = page.locator('[data-testid="advisor-apply-phone-input"]');
+    this.expertiseInput = page.locator('[data-testid="advisor-apply-expertise-input"]');
+    this.experienceInput = page.locator('[data-testid="advisor-apply-experience-input"]');
+    this.bioInput = page.locator('[data-testid="advisor-apply-bio-textarea"]');
+    this.submitAppBtn = page.locator('[data-testid="advisor-apply-submit-button"]');
     this.reviewDocsBtn = page.getByRole('button', { name: /Review Documents/i });
     this.approveBtn = page.getByRole('button', { name: /Approve Advisor/i });
   }

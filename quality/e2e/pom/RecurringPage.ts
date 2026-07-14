@@ -16,14 +16,14 @@ export class RecurringPage extends BasePage {
   constructor(page: Page) {
     super(page);
     this.toggleFormBtn = page.getByRole('button', { name: /Create Recurring|Close/i });
-    this.nameInput = page.locator('input[placeholder*="Spotify" i]');
-    this.amountInput = page.locator('input[placeholder="0.00"]');
-    this.typeSelect = page.locator('select').nth(0);
-    this.categoryInput = page.locator('input[placeholder*="Rent" i]');
-    this.frequencySelect = page.locator('select').nth(1);
-    this.nextDueDateInput = page.locator('input[type="date"]');
-    this.accountSelect = page.locator('select').nth(2);
-    this.submitBtn = page.getByRole('button', { name: /Create Schedule/i });
+    this.nameInput = page.locator('[data-testid="recurring-form-name-input"]');
+    this.amountInput = page.locator('[data-testid="recurring-form-amount-input"]');
+    this.typeSelect = page.locator('[data-testid="recurring-form-type-select"]');
+    this.categoryInput = page.locator('[data-testid="recurring-form-category-input"]');
+    this.frequencySelect = page.locator('[data-testid="recurring-form-frequency-select"]');
+    this.nextDueDateInput = page.locator('[data-testid="recurring-form-date-input"]');
+    this.accountSelect = page.locator('[data-testid="recurring-form-account-select"]');
+    this.submitBtn = page.locator('[data-testid="recurring-form-submit-button"]');
   }
 
   async clickToggleForm() {

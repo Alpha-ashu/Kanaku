@@ -1,0 +1,50 @@
+{
+  "timestamp": "2026-07-14T04:50:26.669Z",
+  "pass": 7,
+  "fail": 0,
+  "warn": 0,
+  "tests": [
+    {
+      "category": "CONCURRENCY",
+      "test": "10 concurrent reads",
+      "status": "PASS",
+      "detail": "All 10 returned 200"
+    },
+    {
+      "category": "ACID",
+      "test": "Concurrent write balance consistency",
+      "status": "PASS",
+      "detail": "Δ=50.00, expected 50 (5 txns)"
+    },
+    {
+      "category": "CONSISTENCY",
+      "test": "5 parallel account reads return same count",
+      "status": "PASS",
+      "detail": "count=4"
+    },
+    {
+      "category": "VALIDATION",
+      "test": "Negative amount transaction rejected",
+      "status": "PASS",
+      "detail": "HTTP 400"
+    },
+    {
+      "category": "VALIDATION",
+      "test": "Zero amount transaction rejected",
+      "status": "PASS",
+      "detail": "HTTP 400"
+    },
+    {
+      "category": "STRESS",
+      "test": "50 concurrent reads",
+      "status": "PASS",
+      "detail": "50/50 OK, error rate: 0.0%, elapsed: 91ms"
+    },
+    {
+      "category": "PAGINATION",
+      "test": "No overlap between page 1 and page 2",
+      "status": "PASS",
+      "detail": "P1: 5 items, P2: 5 items"
+    }
+  ]
+}

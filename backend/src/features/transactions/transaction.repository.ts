@@ -118,6 +118,9 @@ export class TransactionRepository {
       await this.applyBalanceDeltas(tx, deltas, enforceBalance);
 
       return this.normalizeTransaction(created);
+    }, {
+      maxWait: 20000,
+      timeout: 30000,
     });
   }
 
@@ -131,6 +134,9 @@ export class TransactionRepository {
       await this.applyBalanceDeltas(tx, deltas);
 
       return this.normalizeTransaction(updated);
+    }, {
+      maxWait: 20000,
+      timeout: 30000,
     });
   }
 
@@ -149,6 +155,9 @@ export class TransactionRepository {
       }
 
       return deleted;
+    }, {
+      maxWait: 20000,
+      timeout: 30000,
     });
   }
 }

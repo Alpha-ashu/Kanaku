@@ -1692,7 +1692,6 @@ if (linkedDocId) {
    onSave={handleSubmit}
    onDiscard={() => { clearQuickStorage(); setCurrentPage(returnPage); }}
    isSaving={isSubmitting}
-   disabled={!formData.amount}
    saveLabel="Save Transaction"
  />
  </div>

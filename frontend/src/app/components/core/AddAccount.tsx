@@ -229,12 +229,21 @@ export const AddAccount: React.FC = () => {
  </div>
  </div>
 
+ <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full">
+    <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest shrink-0">2. Custom Label (Optional)</label>
+    <div className="relative w-full md:max-w-md">
+      <Wallet className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300" size={12} />
+      <input id="account-custom-label" name="accountName" aria-label="Custom account label" type="text" value={formData.name} onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))} data-testid="account-create-name-input" className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-300 text-xs" placeholder="e.g. My Savings" />
+    </div>
+  </div>
+
  {formData.type !== 'cash' && (
  <div className="space-y-4 pt-2">
+
  {formData.type !== 'wallet' && (
  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full">
  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest shrink-0">
-  2. Institution / Provider
+  3. Institution / Provider
  </label>
 
  <div className="w-full md:max-w-md">
@@ -282,14 +291,6 @@ export const AddAccount: React.FC = () => {
  </div>
  </div>
  )}
-
- <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full">
- <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest shrink-0">3. Custom Label (Optional)</label>
- <div className="relative w-full md:max-w-md">
- <Wallet className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300" size={12} />
- <input id="account-custom-label" name="accountName" aria-label="Custom account label" type="text" value={formData.name} onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))} data-testid="account-create-name-input" className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-300 text-xs" placeholder="e.g. My Savings" />
- </div>
- </div>
 
  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full pt-2">
  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest shrink-0">
