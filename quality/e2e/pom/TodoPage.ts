@@ -23,8 +23,18 @@ export class TodoPage extends BasePage {
   }
 
   async clickCreateList() {
-    await this.createListBtn.first().click();
-    await this.wait(800);
+    const btn = this.createListBtn.first();
+    await btn.waitFor({ state: 'visible', timeout: 15000 });
+    await btn.click();
+
+    try {
+      await this.listNameInput.first().waitFor({ state: 'visible', timeout: 2000 });
+    } catch (e) {
+      console.log('Todo modal did not open. Retrying click...');
+      await this.createListBtn.first().click();
+      await this.listNameInput.first().waitFor({ state: 'visible', timeout: 5000 });
+    }
+    await this.wait(500);
   }
 
   async createPersonalList(name: string) {

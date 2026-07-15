@@ -21,14 +21,16 @@ export class GoalPage extends BasePage {
   async clickAddGoal() {
     const btn = this.addGoalBtn.first();
     await btn.waitFor({ state: 'visible', timeout: 15000 });
+    await btn.click();
+    
     try {
-      await btn.click();
+      await this.nameInput.first().waitFor({ state: 'visible', timeout: 2000 });
     } catch (e) {
-      // Retry in case element was detached due to React re-render
-      await this.page.waitForTimeout(1000);
+      console.log('Goal modal did not open. Retrying click...');
       await this.addGoalBtn.first().click();
+      await this.nameInput.first().waitFor({ state: 'visible', timeout: 5000 });
     }
-    await this.wait(800);
+    await this.wait(500);
   }
 
   async createGoal(options: {
