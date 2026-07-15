@@ -1,2 +1,0 @@
-{"type":"receive","time":1784119251801.485,"opcode":1,"data":"{\"type\":\"connected\"}"}
-{"type":"send","time":1784119256146.25,"opcode":1,"data":"{\"type\":\"custom\",\"event\":\"vite:forward-console\",\"data\":{\"type\":\"log\",\"data\":{\"level\":\"error\",\"message\":\"[KANAKU/handleSignIn] Incorrect email or password. Please try again.\"}}}"}

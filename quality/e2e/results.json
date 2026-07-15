@@ -101,12 +101,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 96335,
+                      "duration": 96650,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-15T12:16:03.405Z",
+                      "startTime": "2026-07-15T13:05:55.387Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -127,7 +127,7 @@
             },
             {
               "title": "US-03 to US-10: Complete User Financial Lifecycle Flow",
-              "ok": false,
+              "ok": true,
               "tags": [],
               "tests": [
                 {
@@ -140,121 +140,24 @@
                     {
                       "workerIndex": 0,
                       "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 153474,
-                      "error": {
-                        "message": "TimeoutError: locator.fill: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"todo-create-name-input\"]').first()\u001b[22m\n",
-                        "stack": "TimeoutError: locator.fill: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"todo-create-name-input\"]').first()\u001b[22m\n\n    at TodoPage.createPersonalList (K:\\Project\\Kanaku\\quality\\e2e\\pom\\TodoPage.ts:32:38)\n    at K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts:199:5",
-                        "location": {
-                          "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\TodoPage.ts",
-                          "column": 38,
-                          "line": 32
-                        },
-                        "snippet": "\u001b[90m   at \u001b[39mpom\\TodoPage.ts:32\n\n\u001b[0m \u001b[90m 30 |\u001b[39m   \u001b[36masync\u001b[39m createPersonalList(name\u001b[33m:\u001b[39m string) {\n \u001b[90m 31 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mclickCreateList()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 32 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mlistNameInput\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39mfill(name)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                      \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 33 |\u001b[39m     \n \u001b[90m 34 |\u001b[39m     \u001b[36mconst\u001b[39m submitBtn \u001b[33m=\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39msaveListBtn\u001b[33m.\u001b[39mfirst()\u001b[33m;\u001b[39m\n \u001b[90m 35 |\u001b[39m     \u001b[36mif\u001b[39m (\u001b[36mawait\u001b[39m submitBtn\u001b[33m.\u001b[39misVisible()) {\u001b[0m"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\TodoPage.ts",
-                            "column": 38,
-                            "line": 32
-                          },
-                          "message": "TimeoutError: locator.fill: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"todo-create-name-input\"]').first()\u001b[22m\n\n\n   at pom\\TodoPage.ts:32\n\n  30 |   async createPersonalList(name: string) {\n  31 |     await this.clickCreateList();\n> 32 |     await this.listNameInput.first().fill(name);\n     |                                      ^\n  33 |     \n  34 |     const submitBtn = this.saveListBtn.first();\n  35 |     if (await submitBtn.isVisible()) {\n    at TodoPage.createPersonalList (K:\\Project\\Kanaku\\quality\\e2e\\pom\\TodoPage.ts:32:38)\n    at K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts:199:5"
-                        }
-                      ],
+                      "status": "passed",
+                      "duration": 150237,
+                      "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-15T12:17:40.161Z",
+                      "startTime": "2026-07-15T13:07:32.416Z",
                       "annotations": [],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--01d46-er-Financial-Lifecycle-Flow-chromium\\test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--01d46-er-Financial-Lifecycle-Flow-chromium\\video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--01d46-er-Financial-Lifecycle-Flow-chromium\\error-context.md"
-                        },
-                        {
-                          "name": "trace",
-                          "contentType": "application/zip",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--01d46-er-Financial-Lifecycle-Flow-chromium\\trace.zip"
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--01d46-er-Financial-Lifecycle-Flow-chromium\\test-finished-1.png"
                         }
-                      ],
-                      "errorLocation": {
-                        "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\TodoPage.ts",
-                        "column": 38,
-                        "line": 32
-                      }
-                    },
-                    {
-                      "workerIndex": 1,
-                      "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 127062,
-                      "error": {
-                        "message": "TimeoutError: locator.fill: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"goals-create-name-input\"]').first()\u001b[22m\n",
-                        "stack": "TimeoutError: locator.fill: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"goals-create-name-input\"]').first()\u001b[22m\n\n    at GoalPage.createGoal (K:\\Project\\Kanaku\\quality\\e2e\\pom\\GoalPage.ts:40:34)\n    at K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts:164:5",
-                        "location": {
-                          "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\GoalPage.ts",
-                          "column": 34,
-                          "line": 40
-                        },
-                        "snippet": "\u001b[90m   at \u001b[39mpom\\GoalPage.ts:40\n\n\u001b[0m \u001b[90m 38 |\u001b[39m   }) {\n \u001b[90m 39 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mclickAddGoal()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 40 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mnameInput\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39mfill(options\u001b[33m.\u001b[39mname)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                  \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 41 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mtargetAmountInput\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39mfill(options\u001b[33m.\u001b[39mtargetAmount)\u001b[33m;\u001b[39m\n \u001b[90m 42 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mtargetDateInput\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39mfill(options\u001b[33m.\u001b[39mtargetDate)\u001b[33m;\u001b[39m\n \u001b[90m 43 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39msaveGoalBtn\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\u001b[0m"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\GoalPage.ts",
-                            "column": 34,
-                            "line": 40
-                          },
-                          "message": "TimeoutError: locator.fill: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"goals-create-name-input\"]').first()\u001b[22m\n\n\n   at pom\\GoalPage.ts:40\n\n  38 |   }) {\n  39 |     await this.clickAddGoal();\n> 40 |     await this.nameInput.first().fill(options.name);\n     |                                  ^\n  41 |     await this.targetAmountInput.first().fill(options.targetAmount);\n  42 |     await this.targetDateInput.first().fill(options.targetDate);\n  43 |     await this.saveGoalBtn.first().click();\n    at GoalPage.createGoal (K:\\Project\\Kanaku\\quality\\e2e\\pom\\GoalPage.ts:40:34)\n    at K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts:164:5"
-                        }
-                      ],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 1,
-                      "startTime": "2026-07-15T12:20:18.654Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--01d46-er-Financial-Lifecycle-Flow-chromium-retry1\\test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--01d46-er-Financial-Lifecycle-Flow-chromium-retry1\\video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--01d46-er-Financial-Lifecycle-Flow-chromium-retry1\\error-context.md"
-                        },
-                        {
-                          "name": "trace",
-                          "contentType": "application/zip",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--01d46-er-Financial-Lifecycle-Flow-chromium-retry1\\trace.zip"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\GoalPage.ts",
-                        "column": 34,
-                        "line": 40
-                      }
+                      ]
                     }
                   ],
-                  "status": "unexpected"
+                  "status": "expected"
                 }
               ],
               "id": "e70723a47e036255403b-dbe0b6de5210545f811a",
@@ -283,15 +186,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
+                      "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 142757,
+                      "duration": 143941,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-15T12:22:29.489Z",
+                      "startTime": "2026-07-15T13:10:02.693Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -323,15 +226,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
+                      "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 60849,
+                      "duration": 61775,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-15T12:24:52.569Z",
+                      "startTime": "2026-07-15T13:12:26.666Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -363,15 +266,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
+                      "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 55969,
+                      "duration": 56295,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-15T12:25:53.453Z",
+                      "startTime": "2026-07-15T13:13:28.476Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -397,11 +300,11 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-07-15T12:16:02.206Z",
-    "duration": 648130.463,
-    "expected": 4,
+    "startTime": "2026-07-15T13:05:54.711Z",
+    "duration": 511441.41699999996,
+    "expected": 5,
     "skipped": 0,
-    "unexpected": 1,
+    "unexpected": 0,
     "flaky": 0
   }
 }
