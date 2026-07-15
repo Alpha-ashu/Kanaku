@@ -42,9 +42,10 @@ async function post(path, body, token) {
 async function checkEmail(email) {
   try {
     const r = await post('/auth/check-email', { email });
-    // { exists: true/false } or { data: { exists } }
-    const exists = r.body?.data?.exists ?? r.body?.exists;
-    return exists === true;
+    // API returns { available: false } when email is taken
+    const available = r.body?.data?.available ?? r.body?.available;
+    // available = false means email exists
+    return available === false;
   } catch {
     return false;
   }

@@ -2,14 +2,25 @@
  * KANAKKU SECURITY AUDIT SCRIPT
  * Tests: SQL Injection, XSS, Rate Limiting, JWT Integrity,
  *        IDOR (Broken Access Control), Sensitive Data Exposure
- * Target: http://localhost:3000/api/v1 (staging environment ONLY)
+ *
+ * Environment variables:
+ *   TARGET_URL   — Base API URL (default: http://localhost:3000/api/v1)
+ *   TARGET_TOKEN — Pre-authenticated Bearer token (optional, skips login step)
+ *
+ * Rate limit testing:
+ *   Rate limiting is DISABLED in development (NODE_ENV !== 'production').
+ *   To test rate limiting locally, start the backend with FORCE_RATE_LIMIT=true:
+ *     FORCE_RATE_LIMIT=true npm run dev:backend
+ *   OR run this audit against the live Fly.io URL:
+ *     TARGET_URL=https://kanaku.fly.dev/api/v1 node quality/security/security-audit.cjs
  */
 
-const BASE_URL = 'http://localhost:3000/api/v1';
+const BASE_URL = process.env.TARGET_URL || 'http://localhost:3000/api/v1';
+const PRE_TOKEN = process.env.TARGET_TOKEN || null;
 
 const USERS = {
-  user1: { email: 'user@kanaku.com', password: 'K@n4ku_Us3r#3Pm2*Wy' },
-  user2: { email: 'manager@kanaku.com', password: 'K@n4ku_M4n4g3r#7Qw8$' }
+  user1: { email: process.env.AUDIT_USER1_EMAIL || 'user@kanaku.com', password: process.env.AUDIT_USER1_PASS || 'K@n4ku_Us3r#3Pm2*Wy' },
+  user2: { email: process.env.AUDIT_USER2_EMAIL || 'manager@kanaku.com', password: process.env.AUDIT_USER2_PASS || 'K@n4ku_M4n4g3r#7Qw8$' }
 };
 
 const results = [];
@@ -318,24 +329,36 @@ async function runAudit() {
   // 6. RATE LIMITING
   // ══════════════════════════════════════════════════════════
   console.log('\n── 6. RATE LIMITING ──');
+  console.log('   NOTE: Rate limiting is disabled in NODE_ENV=development.');
+  console.log('   For accurate results, run against the live Fly URL or with FORCE_RATE_LIMIT=true.');
 
+  // Test using the auth challenge endpoint (5/min limit) — sequential to match the
+  // login challenge rate-limiter scope rather than the global API limit.
   let rateLimited = false;
   try {
-    const promises = [];
-    for (let i = 0; i < 20; i++) {
-      promises.push(fetch(`${BASE_URL}/auth/login`, {
+    const statuses = [];
+    for (let i = 0; i < 25; i++) {
+      const res = await fetch(`${BASE_URL}/auth/login/challenge`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: 'attacker@test.com', password: 'wrongpassword' })
-      }));
+        body: JSON.stringify({ email: 'brute.force.attacker@test.invalid', password: 'wrongpassword123' })
+      });
+      statuses.push(res.status);
+      // Small delay between requests to avoid network-level drops
+      await sleep(50);
     }
-    const responses = await Promise.all(promises);
-    const rateLimitedResponses = responses.filter(r => r.status === 429);
-    if (rateLimitedResponses.length > 0) {
-      log('RATE_LIMIT', 'Login brute force protection', 'PASS', `${rateLimitedResponses.length}/20 requests returned 429`);
+    const got429 = statuses.filter(s => s === 429);
+    const isLocalDev = BASE_URL.includes('localhost') || BASE_URL.includes('127.0.0.1');
+    if (got429.length > 0) {
+      log('RATE_LIMIT', 'Login brute force protection', 'PASS', `${got429.length}/25 challenge requests returned 429`);
       rateLimited = true;
+    } else if (isLocalDev) {
+      log('RATE_LIMIT', 'Login brute force protection', 'WARN',
+        'No 429 on localhost — rate limiting disabled in dev. ' +
+        'Run with FORCE_RATE_LIMIT=true or against Fly URL to verify production behavior.');
     } else {
-      log('RATE_LIMIT', 'Login brute force protection', 'WARN', '20 rapid login attempts — no 429 returned (check config)');
+      log('RATE_LIMIT', 'Login brute force protection', 'FAIL',
+        '25 rapid challenge attempts — no 429 returned on non-localhost target');
     }
   } catch (e) {
     log('RATE_LIMIT', 'Login brute force test', 'WARN', e.message);

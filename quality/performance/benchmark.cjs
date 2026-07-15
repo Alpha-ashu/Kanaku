@@ -107,6 +107,14 @@ async function runBenchmark() {
     let successCount = 0;
     let failureCount = 0;
 
+    // Warm-up pass to populate database and Redis cache
+    try {
+      await fetch(`${BASE_URL}${path}`, { headers: authHeaders });
+      await new Promise(r => setTimeout(r, 200));
+    } catch (e) {
+      // Ignore warm-up failure
+    }
+
     for (let i = 0; i < iterations; i++) {
       const start = Date.now();
       try {

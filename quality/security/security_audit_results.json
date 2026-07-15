@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-07-14T05:22:41.901Z",
+  "timestamp": "2026-07-15T04:58:05.724Z",
   "pass": 23,
   "fail": 0,
   "warn": 2,
@@ -90,7 +90,7 @@
     },
     {
       "category": "IDOR",
-      "test": "user2 cannot access user1 account (fe43fee7...)",
+      "test": "user2 cannot access user1 account (48395123...)",
       "status": "PASS",
       "detail": "HTTP 404"
     },
@@ -152,7 +152,7 @@
       "category": "RATE_LIMIT",
       "test": "Login brute force protection",
       "status": "WARN",
-      "detail": "20 rapid login attempts — no 429 returned (check config)"
+      "detail": "No 429 on localhost — rate limiting disabled in dev. Run with FORCE_RATE_LIMIT=true or against Fly URL to verify production behavior."
     }
   ]
 }
