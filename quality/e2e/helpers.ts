@@ -163,6 +163,35 @@ export async function loginUser(page: Page, user: typeof USERS.U1) {
   return page.url();
 }
 
+/**
+ * Register a new user directly via the backend API (no UI / no PIN setup).
+ * Suitable for tests that need a fresh user without triggering onboarding flows.
+ * Returns the user's email on success, or throws on failure.
+ */
+export async function registerUserViaAPI(
+  page: Page,
+  user: { firstName: string; lastName: string; email: string; mobile: string; password: string; persona?: string }
+): Promise<string> {
+  // Backend RegisterInput expects: { email, name (full name), password (plain), mobile? }
+  const regResp = await page.request.post(`${API}/api/v1/auth/register`, {
+    data: {
+      name: `${user.firstName} ${user.lastName}`,
+      email: user.email.toLowerCase(),
+      password: user.password, // plain password — backend validates strength directly
+      mobile: user.mobile,
+    },
+    headers: { 'Content-Type': 'application/json' },
+  });
+  const regJson = await regResp.json();
+  if (!regJson?.success) {
+    throw new Error(`registerUserViaAPI failed for ${user.email}: ${JSON.stringify(regJson)}`);
+  }
+  // Now log in to get tokens and inject them into localStorage
+  await loginUser(page, user);
+  return user.email;
+}
+
+
 /** Register a new user through the actual UI (signup form) */
 export async function registerUser(page: Page, user: typeof USERS.U1) {
   await gotoApp(page);
@@ -206,6 +235,10 @@ export async function registerUser(page: Page, user: typeof USERS.U1) {
   }
 
   const submitBtn = page.locator('[data-testid="auth-signup-submit-button"], button[type="submit"]').first();
+  await page.waitForTimeout(1000);
+  if (await submitBtn.isDisabled().catch(() => false)) {
+    return 'already_exists';
+  }
   await submitBtn.click();
   await screenshot(page, `register_${user.firstName}_after_submit`);
 

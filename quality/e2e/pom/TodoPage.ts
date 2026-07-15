@@ -13,7 +13,7 @@ export class TodoPage extends BasePage {
 
   constructor(page: Page) {
     super(page);
-    this.createListBtn = page.getByRole('button', { name: /create list|new list|\+ list|add list/i });
+    this.createListBtn = page.locator('[data-testid="todo-new-list-button"]');
     this.listNameInput = page.locator('[data-testid="todo-create-name-input"]');
     this.shareMemberInput = page.locator('input[placeholder*="share" i], input[placeholder*="member" i], input[placeholder*="invite" i], input[placeholder*="email" i]');
     this.saveListBtn = page.locator('[data-testid="todo-create-submit-button"]');

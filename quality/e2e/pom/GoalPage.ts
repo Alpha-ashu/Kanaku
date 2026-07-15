@@ -19,7 +19,15 @@ export class GoalPage extends BasePage {
   }
 
   async clickAddGoal() {
-    await this.addGoalBtn.first().click();
+    const btn = this.addGoalBtn.first();
+    await btn.waitFor({ state: 'visible', timeout: 15000 });
+    try {
+      await btn.click();
+    } catch (e) {
+      // Retry in case element was detached due to React re-render
+      await this.page.waitForTimeout(1000);
+      await this.addGoalBtn.first().click();
+    }
     await this.wait(800);
   }
 

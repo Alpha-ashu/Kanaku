@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import path from 'path';
 import helmet from 'helmet';
 import { randomUUID } from 'crypto';
 import { errorHandler } from './middleware/error';
@@ -330,6 +331,9 @@ app.get('/api/v1/health/metrics', adminPlatformGate, authMiddleware, requireRole
 
 // Public API documentation
 app.use('/api-docs', docsRoutes);
+
+// Static uploads serving
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 // API v1
 app.use('/api/v1', apiRoutes);
