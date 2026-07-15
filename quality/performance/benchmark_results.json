@@ -5,15 +5,15 @@
     "successCount": 5,
     "failureCount": 0,
     "stats": {
-      "min": 2767,
-      "max": 3188,
-      "mean": 2943,
-      "median": 2934,
-      "p95": 3188,
-      "p99": 3188
+      "min": 1589,
+      "max": 1701,
+      "mean": 1632,
+      "median": 1598,
+      "p95": 1701,
+      "p99": 1701
     },
     "sla": 2000,
-    "passed": false
+    "passed": true
   },
   {
     "name": "dashboard",
@@ -21,12 +21,12 @@
     "successCount": 10,
     "failureCount": 0,
     "stats": {
-      "min": 1771,
-      "max": 2071,
-      "mean": 1845.5,
-      "median": 1790,
-      "p95": 2071,
-      "p99": 2071
+      "min": 899,
+      "max": 1707,
+      "mean": 1000.6,
+      "median": 911,
+      "p95": 1707,
+      "p99": 1707
     },
     "sla": 1000,
     "passed": false
@@ -37,15 +37,15 @@
     "successCount": 10,
     "failureCount": 0,
     "stats": {
-      "min": 1214,
-      "max": 1845,
-      "mean": 1322.2,
-      "median": 1245,
-      "p95": 1845,
-      "p99": 1845
+      "min": 661,
+      "max": 664,
+      "mean": 662.8,
+      "median": 663,
+      "p95": 664,
+      "p99": 664
     },
     "sla": 1000,
-    "passed": false
+    "passed": true
   },
   {
     "name": "accounts",
@@ -55,8 +55,8 @@
     "stats": {
       "min": 1,
       "max": 4,
-      "mean": 2.5,
-      "median": 3,
+      "mean": 2.3,
+      "median": 2,
       "p95": 4,
       "p99": 4
     },
@@ -70,11 +70,11 @@
     "failureCount": 0,
     "stats": {
       "min": 2,
-      "max": 4,
-      "mean": 3.2,
-      "median": 4,
-      "p95": 4,
-      "p99": 4
+      "max": 3,
+      "mean": 2.4,
+      "median": 2,
+      "p95": 3,
+      "p99": 3
     },
     "sla": 500,
     "passed": true
@@ -85,12 +85,12 @@
     "successCount": 10,
     "failureCount": 0,
     "stats": {
-      "min": 1217,
-      "max": 2488,
-      "mean": 1389.5,
-      "median": 1252,
-      "p95": 2488,
-      "p99": 2488
+      "min": 654,
+      "max": 657,
+      "mean": 655.9,
+      "median": 656,
+      "p95": 657,
+      "p99": 657
     },
     "sla": 500,
     "passed": false
