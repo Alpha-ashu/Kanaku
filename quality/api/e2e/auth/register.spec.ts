@@ -22,7 +22,7 @@ test.describe('POST /auth/register', () => {
     expect(body.data.user.email).toBe(user.email.toLowerCase());
     // Bearer token is also returned in the Authorization response header.
     expect(resp.headers()['authorization']).toMatch(/^Bearer .+/);
-    expect(resp.headers()['x-refresh-token']).toBeTruthy();
+    expect(body.data.refreshToken).toBeTruthy();
   });
 
   test('rejects duplicate email (409 EMAIL_EXISTS)', async ({ request }) => {

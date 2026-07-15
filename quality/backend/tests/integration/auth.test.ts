@@ -236,7 +236,15 @@ describe('AUTH MODULE', () => {
     });
 
     it('should return auth snapshot fallback data for a valid JWT even without a Prisma user row', async () => {
-      const token = getSignedAuthToken();
+      const email = uniqueEmail();
+      const userId = `fallback_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+      const token = getSignedAuthToken({
+        userId,
+        id: userId,
+        email,
+        role: 'user',
+        isApproved: false,
+      });
 
       const res = await request(app)
         .get(`${API}/auth/profile?includePrivate=true`)
@@ -249,8 +257,8 @@ describe('AUTH MODULE', () => {
       // claims — see authMiddleware). This previously "passed" only because a
       // leftover seeded row existed; against a clean DB the secure default holds.
       expect(res.body.data).toMatchObject({
-        id: 'profile-fallback-user',
-        email: 'profile-fallback@example.com',
+        id: userId,
+        email: email,
         role: 'user',
         isApproved: false,
         firstName: 'Profile',

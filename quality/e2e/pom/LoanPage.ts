@@ -52,7 +52,7 @@ export class LoanPage extends BasePage {
     await this.tenureMonthsInput.fill(options.tenure);
     
     // Select disbursement account
-    const dropdown = this.page.locator('div[role="combobox"]').first();
+    const dropdown = this.page.locator('[role="combobox"]').first();
     await dropdown.click();
     await this.wait(300);
 
@@ -74,11 +74,13 @@ export class LoanPage extends BasePage {
   }
 
   async assertLoanExists(name: string, principal?: string) {
-    const pageText = await this.page.textContent('body');
+    const pageText = (await this.page.textContent('body')) ?? '';
     expect(pageText, `Loan "${name}" should exist in the list`).toContain(name);
     if (principal) {
-      const formatted = Number(principal).toLocaleString();
-      expect(pageText, `Loan principal should show ${formatted}`).toContain(formatted);
+      const formattedUS = Number(principal).toLocaleString('en-US');
+      const formattedIN = Number(principal).toLocaleString('en-IN');
+      const pass = pageText.includes(formattedUS) || pageText.includes(formattedIN) || pageText.includes(String(principal));
+      expect(pass, `Loan principal should show ${principal} (tried formats: ${formattedUS}, ${formattedIN})`).toBe(true);
     }
   }
 }

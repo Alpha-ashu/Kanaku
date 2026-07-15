@@ -60,7 +60,7 @@ export class TransactionPage extends BasePage {
 
   async selectAccount(accountName: string) {
     // Click SearchableDropdown for Account using explicit test ID or fallback
-    const dropdown = this.page.locator('[data-testid="add-transaction-account"], [data-testid="add-transaction-select-account"], div[role="combobox"]').first();
+    const dropdown = this.page.locator('[data-testid="add-transaction-account"], [data-testid="add-transaction-select-account"], [role="combobox"]').first();
     await dropdown.click();
     await this.wait(400);
 

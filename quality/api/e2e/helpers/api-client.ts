@@ -27,15 +27,21 @@ export class ApiClient {
   register(user: Partial<TestUser>): Promise<APIResponse> {
     return this.request.post(apiUrl('/auth/register'), {
       data: user,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'x-client-platform': 'native'
+      },
     });
   }
 
-  /** Step 1 of login. `password` MUST be the SHA-256 hex of the plain password. */
-  loginChallenge(email: string, sha256Password: string): Promise<APIResponse> {
+  /** Step 1 of login. */
+  loginChallenge(email: string, password: string): Promise<APIResponse> {
     return this.request.post(apiUrl('/auth/login/challenge'), {
-      data: { email, password: sha256Password },
-      headers: { 'Content-Type': 'application/json', 'x-pw-encoding': 'sha256' },
+      data: { email, password },
+      headers: { 
+        'Content-Type': 'application/json',
+        'x-client-platform': 'native'
+      },
     });
   }
 
@@ -43,20 +49,29 @@ export class ApiClient {
   loginWithCode(email: string, challengeCode: string): Promise<APIResponse> {
     return this.request.post(apiUrl('/auth/login'), {
       data: { email, challengeCode },
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'x-client-platform': 'native'
+      },
     });
   }
 
   refresh(refreshToken: string): Promise<APIResponse> {
     return this.request.post(apiUrl('/auth/refresh'), {
       data: { refreshToken },
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'x-client-platform': 'native'
+      },
     });
   }
 
   getProfile(accessToken: string): Promise<APIResponse> {
     return this.request.get(apiUrl('/auth/profile'), {
-      headers: { Authorization: `Bearer ${accessToken}` },
+      headers: { 
+        Authorization: `Bearer ${accessToken}`,
+        'x-client-platform': 'native'
+      },
     });
   }
 
@@ -71,6 +86,7 @@ export class ApiClient {
       headers: {
         Authorization: `Bearer ${accessToken}`,
         'Content-Type': 'application/json',
+        'x-client-platform': 'native'
       },
       ...(body !== undefined ? { data: body } : {}),
     });
@@ -80,7 +96,7 @@ export class ApiClient {
 
   /** Full happy-path login: returns the BEARER TOKEN + refresh token + user. */
   async login(email: string, plainPassword: string): Promise<Tokens> {
-    const challengeResp = await this.loginChallenge(email, sha256Hex(plainPassword));
+    const challengeResp = await this.loginChallenge(email, plainPassword);
     if (!challengeResp.ok()) {
       throw new Error(`login/challenge failed (${challengeResp.status()}): ${await challengeResp.text()}`);
     }

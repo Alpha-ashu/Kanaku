@@ -4,7 +4,7 @@
       "C:\\Program Files\\nodejs\\node.exe",
       "K:\\Project\\Kanaku\\node_modules\\@playwright\\test\\cli.js",
       "test",
-      "quality/e2e/09-pom-regression.spec.ts"
+      "quality/e2e/11-user-advisor-scenarios.spec.ts"
     ],
     "configFile": "K:\\Project\\Kanaku\\playwright.config.ts",
     "rootDir": "K:/Project/Kanaku/quality/e2e",
@@ -73,25 +73,25 @@
   },
   "suites": [
     {
-      "title": "09-pom-regression.spec.ts",
-      "file": "09-pom-regression.spec.ts",
+      "title": "11-user-advisor-scenarios.spec.ts",
+      "file": "11-user-advisor-scenarios.spec.ts",
       "column": 0,
       "line": 0,
       "specs": [],
       "suites": [
         {
-          "title": "Kanaku/Finora - Comprehensive Playwright POM & Regression Test Suite",
-          "file": "09-pom-regression.spec.ts",
-          "line": 22,
+          "title": "Kanaku User Role Scenario-Level Testing Suite",
+          "file": "11-user-advisor-scenarios.spec.ts",
+          "line": 36,
           "column": 6,
           "specs": [
             {
-              "title": "01. Negative Validations - Sign In & Sign Up Errors",
+              "title": "US-01 & US-02: User Registration, Validation & Login Challenge Flow",
               "ok": true,
               "tags": [],
               "tests": [
                 {
-                  "timeout": 240000,
+                  "timeout": 180000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
@@ -101,18 +101,18 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 25393,
+                      "duration": 96335,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-14T13:22:58.736Z",
+                      "startTime": "2026-07-15T12:16:03.405Z",
                       "annotations": [],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-438f5-ns---Sign-In-Sign-Up-Errors-chromium\\test-finished-1.png"
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--8c4ec-dation-Login-Challenge-Flow-chromium\\test-finished-1.png"
                         }
                       ]
                     }
@@ -120,182 +120,18 @@
                   "status": "expected"
                 }
               ],
-              "id": "ae96145aa1befaaf3af9-5f400e1cc7bfa6e1a66c",
-              "file": "09-pom-regression.spec.ts",
-              "line": 25,
+              "id": "e70723a47e036255403b-1a763026450a84e45f55",
+              "file": "11-user-advisor-scenarios.spec.ts",
+              "line": 39,
               "column": 3
             },
             {
-              "title": "02. Positive Registration & Onboarding Flow",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 240000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 91320,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-14T13:23:25.298Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-281b9-egistration-Onboarding-Flow-chromium\\test-finished-1.png"
-                        }
-                      ]
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "ae96145aa1befaaf3af9-9fc993c85f6ac516cc77",
-              "file": "09-pom-regression.spec.ts",
-              "line": 49,
-              "column": 3
-            },
-            {
-              "title": "03. Account Creation & Invalid Numeric Validation",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 240000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 117455,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-14T13:24:56.709Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-e9c67--Invalid-Numeric-Validation-chromium\\test-finished-1.png"
-                        }
-                      ]
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "ae96145aa1befaaf3af9-b5d0adfd5b48e55c7487",
-              "file": "09-pom-regression.spec.ts",
-              "line": 68,
-              "column": 3
-            },
-            {
-              "title": "04. Transactions, Double-Submit Prevention, and Direct DB Check",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 240000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 117550,
-                      "errors": [],
-                      "stdout": [
-                        {
-                          "text": "Verified DB state directly: found 5 accounts in Dexie.\n"
-                        }
-                      ],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-14T13:26:54.228Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-3ee8d-vention-and-Direct-DB-Check-chromium\\test-finished-1.png"
-                        }
-                      ]
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "ae96145aa1befaaf3af9-ae118259937a605fb7b0",
-              "file": "09-pom-regression.spec.ts",
-              "line": 125,
-              "column": 3
-            },
-            {
-              "title": "05. Goals & Contribution Tracking",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 240000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 78768,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-14T13:28:51.845Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-e263b-Goals-Contribution-Tracking-chromium\\test-finished-1.png"
-                        }
-                      ]
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "ae96145aa1befaaf3af9-085d5d52e185cdd2aea6",
-              "file": "09-pom-regression.spec.ts",
-              "line": 189,
-              "column": 3
-            },
-            {
-              "title": "06. Todo List Planning & Team Split Share",
+              "title": "US-03 to US-10: Complete User Financial Lifecycle Flow",
               "ok": false,
               "tags": [],
               "tests": [
                 {
-                  "timeout": 240000,
+                  "timeout": 180000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
@@ -305,130 +141,138 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "failed",
-                      "duration": 106534,
+                      "duration": 153474,
                       "error": {
-                        "message": "Error: Failed to navigate to page: todo-lists",
-                        "stack": "Error: Failed to navigate to page: todo-lists\n    at TodoPage.navigateTo (K:\\Project\\Kanaku\\quality\\e2e\\pom\\BasePage.ts:16:13)\n    at K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts:222:5",
+                        "message": "TimeoutError: locator.fill: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"todo-create-name-input\"]').first()\u001b[22m\n",
+                        "stack": "TimeoutError: locator.fill: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"todo-create-name-input\"]').first()\u001b[22m\n\n    at TodoPage.createPersonalList (K:\\Project\\Kanaku\\quality\\e2e\\pom\\TodoPage.ts:32:38)\n    at K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts:199:5",
                         "location": {
-                          "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\BasePage.ts",
-                          "column": 13,
-                          "line": 16
+                          "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\TodoPage.ts",
+                          "column": 38,
+                          "line": 32
                         },
-                        "snippet": "\u001b[90m   at \u001b[39mpom\\BasePage.ts:16\n\n\u001b[0m \u001b[90m 14 |\u001b[39m     \u001b[36mconst\u001b[39m success \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m clickNav(\u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mpage\u001b[33m,\u001b[39m label)\u001b[33m;\u001b[39m\n \u001b[90m 15 |\u001b[39m     \u001b[36mif\u001b[39m (\u001b[33m!\u001b[39msuccess) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 16 |\u001b[39m       \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\u001b[32m`Failed to navigate to page: ${label}`\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m             \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 17 |\u001b[39m     }\n \u001b[90m 18 |\u001b[39m   }\n \u001b[90m 19 |\u001b[39m\u001b[0m"
+                        "snippet": "\u001b[90m   at \u001b[39mpom\\TodoPage.ts:32\n\n\u001b[0m \u001b[90m 30 |\u001b[39m   \u001b[36masync\u001b[39m createPersonalList(name\u001b[33m:\u001b[39m string) {\n \u001b[90m 31 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mclickCreateList()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 32 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mlistNameInput\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39mfill(name)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                      \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 33 |\u001b[39m     \n \u001b[90m 34 |\u001b[39m     \u001b[36mconst\u001b[39m submitBtn \u001b[33m=\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39msaveListBtn\u001b[33m.\u001b[39mfirst()\u001b[33m;\u001b[39m\n \u001b[90m 35 |\u001b[39m     \u001b[36mif\u001b[39m (\u001b[36mawait\u001b[39m submitBtn\u001b[33m.\u001b[39misVisible()) {\u001b[0m"
                       },
                       "errors": [
                         {
                           "location": {
-                            "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\BasePage.ts",
-                            "column": 13,
-                            "line": 16
+                            "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\TodoPage.ts",
+                            "column": 38,
+                            "line": 32
                           },
-                          "message": "Error: Failed to navigate to page: todo-lists\n\n   at pom\\BasePage.ts:16\n\n  14 |     const success = await clickNav(this.page, label);\n  15 |     if (!success) {\n> 16 |       throw new Error(`Failed to navigate to page: ${label}`);\n     |             ^\n  17 |     }\n  18 |   }\n  19 |\n    at TodoPage.navigateTo (K:\\Project\\Kanaku\\quality\\e2e\\pom\\BasePage.ts:16:13)\n    at K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts:222:5"
+                          "message": "TimeoutError: locator.fill: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"todo-create-name-input\"]').first()\u001b[22m\n\n\n   at pom\\TodoPage.ts:32\n\n  30 |   async createPersonalList(name: string) {\n  31 |     await this.clickCreateList();\n> 32 |     await this.listNameInput.first().fill(name);\n     |                                      ^\n  33 |     \n  34 |     const submitBtn = this.saveListBtn.first();\n  35 |     if (await submitBtn.isVisible()) {\n    at TodoPage.createPersonalList (K:\\Project\\Kanaku\\quality\\e2e\\pom\\TodoPage.ts:32:38)\n    at K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts:199:5"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-14T13:30:10.695Z",
+                      "startTime": "2026-07-15T12:17:40.161Z",
                       "annotations": [],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-9c334-t-Planning-Team-Split-Share-chromium\\test-failed-1.png"
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--01d46-er-Financial-Lifecycle-Flow-chromium\\test-failed-1.png"
                         },
                         {
                           "name": "video",
                           "contentType": "video/webm",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-9c334-t-Planning-Team-Split-Share-chromium\\video.webm"
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--01d46-er-Financial-Lifecycle-Flow-chromium\\video.webm"
                         },
                         {
                           "name": "error-context",
                           "contentType": "text/markdown",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-9c334-t-Planning-Team-Split-Share-chromium\\error-context.md"
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--01d46-er-Financial-Lifecycle-Flow-chromium\\error-context.md"
                         },
                         {
                           "name": "trace",
                           "contentType": "application/zip",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-9c334-t-Planning-Team-Split-Share-chromium\\trace.zip"
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--01d46-er-Financial-Lifecycle-Flow-chromium\\trace.zip"
                         }
                       ],
                       "errorLocation": {
-                        "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\BasePage.ts",
-                        "column": 13,
-                        "line": 16
+                        "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\TodoPage.ts",
+                        "column": 38,
+                        "line": 32
                       }
                     },
                     {
                       "workerIndex": 1,
                       "parallelIndex": 0,
                       "status": "failed",
-                      "duration": 21319,
+                      "duration": 127062,
                       "error": {
-                        "message": "Error: Login challenge failed for arjun.test@kanaku.app: {\"success\":false,\"error\":\"Our servers are temporarily unavailable. Please try again in a moment.\",\"code\":\"DATABASE_UNAVAILABLE\",\"requestId\":\"dac6735d-81f1-4e3c-9066-f0ad8239e8ec\"}",
-                        "stack": "Error: Login challenge failed for arjun.test@kanaku.app: {\"success\":false,\"error\":\"Our servers are temporarily unavailable. Please try again in a moment.\",\"code\":\"DATABASE_UNAVAILABLE\",\"requestId\":\"dac6735d-81f1-4e3c-9066-f0ad8239e8ec\"}\n    at loginUser (K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts:72:11)\n    at K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts:218:5",
+                        "message": "TimeoutError: locator.fill: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"goals-create-name-input\"]').first()\u001b[22m\n",
+                        "stack": "TimeoutError: locator.fill: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"goals-create-name-input\"]').first()\u001b[22m\n\n    at GoalPage.createGoal (K:\\Project\\Kanaku\\quality\\e2e\\pom\\GoalPage.ts:40:34)\n    at K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts:164:5",
                         "location": {
-                          "file": "K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts",
-                          "column": 11,
-                          "line": 72
+                          "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\GoalPage.ts",
+                          "column": 34,
+                          "line": 40
                         },
-                        "snippet": "\u001b[90m   at \u001b[39mhelpers.ts:72\n\n\u001b[0m \u001b[90m 70 |\u001b[39m\n \u001b[90m 71 |\u001b[39m   \u001b[36mif\u001b[39m (\u001b[33m!\u001b[39mchallengeJson\u001b[33m?\u001b[39m\u001b[33m.\u001b[39msuccess \u001b[33m||\u001b[39m \u001b[33m!\u001b[39mchallengeJson\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mdata\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mcode) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 72 |\u001b[39m     \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\n \u001b[90m    |\u001b[39m           \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 73 |\u001b[39m       \u001b[32m`Login challenge failed for ${user.email}: ${JSON.stringify(challengeJson)}`\u001b[39m\n \u001b[90m 74 |\u001b[39m     )\u001b[33m;\u001b[39m\n \u001b[90m 75 |\u001b[39m   }\u001b[0m"
+                        "snippet": "\u001b[90m   at \u001b[39mpom\\GoalPage.ts:40\n\n\u001b[0m \u001b[90m 38 |\u001b[39m   }) {\n \u001b[90m 39 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mclickAddGoal()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 40 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mnameInput\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39mfill(options\u001b[33m.\u001b[39mname)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                  \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 41 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mtargetAmountInput\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39mfill(options\u001b[33m.\u001b[39mtargetAmount)\u001b[33m;\u001b[39m\n \u001b[90m 42 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mtargetDateInput\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39mfill(options\u001b[33m.\u001b[39mtargetDate)\u001b[33m;\u001b[39m\n \u001b[90m 43 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mthis\u001b[39m\u001b[33m.\u001b[39msaveGoalBtn\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\u001b[0m"
                       },
                       "errors": [
                         {
                           "location": {
-                            "file": "K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts",
-                            "column": 11,
-                            "line": 72
+                            "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\GoalPage.ts",
+                            "column": 34,
+                            "line": 40
                           },
-                          "message": "Error: Login challenge failed for arjun.test@kanaku.app: {\"success\":false,\"error\":\"Our servers are temporarily unavailable. Please try again in a moment.\",\"code\":\"DATABASE_UNAVAILABLE\",\"requestId\":\"dac6735d-81f1-4e3c-9066-f0ad8239e8ec\"}\n\n   at helpers.ts:72\n\n  70 |\n  71 |   if (!challengeJson?.success || !challengeJson?.data?.code) {\n> 72 |     throw new Error(\n     |           ^\n  73 |       `Login challenge failed for ${user.email}: ${JSON.stringify(challengeJson)}`\n  74 |     );\n  75 |   }\n    at loginUser (K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts:72:11)\n    at K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts:218:5"
+                          "message": "TimeoutError: locator.fill: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"goals-create-name-input\"]').first()\u001b[22m\n\n\n   at pom\\GoalPage.ts:40\n\n  38 |   }) {\n  39 |     await this.clickAddGoal();\n> 40 |     await this.nameInput.first().fill(options.name);\n     |                                  ^\n  41 |     await this.targetAmountInput.first().fill(options.targetAmount);\n  42 |     await this.targetDateInput.first().fill(options.targetDate);\n  43 |     await this.saveGoalBtn.first().click();\n    at GoalPage.createGoal (K:\\Project\\Kanaku\\quality\\e2e\\pom\\GoalPage.ts:40:34)\n    at K:\\Project\\Kanaku\\quality\\e2e\\11-user-advisor-scenarios.spec.ts:164:5"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 1,
-                      "startTime": "2026-07-14T13:32:06.848Z",
+                      "startTime": "2026-07-15T12:20:18.654Z",
                       "annotations": [],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-9c334-t-Planning-Team-Split-Share-chromium-retry1\\test-failed-1.png"
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--01d46-er-Financial-Lifecycle-Flow-chromium-retry1\\test-failed-1.png"
                         },
                         {
                           "name": "video",
                           "contentType": "video/webm",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-9c334-t-Planning-Team-Split-Share-chromium-retry1\\video.webm"
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--01d46-er-Financial-Lifecycle-Flow-chromium-retry1\\video.webm"
                         },
                         {
                           "name": "error-context",
                           "contentType": "text/markdown",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-9c334-t-Planning-Team-Split-Share-chromium-retry1\\error-context.md"
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--01d46-er-Financial-Lifecycle-Flow-chromium-retry1\\error-context.md"
                         },
                         {
                           "name": "trace",
                           "contentType": "application/zip",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-9c334-t-Planning-Team-Split-Share-chromium-retry1\\trace.zip"
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--01d46-er-Financial-Lifecycle-Flow-chromium-retry1\\trace.zip"
                         }
                       ],
                       "errorLocation": {
-                        "file": "K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts",
-                        "column": 11,
-                        "line": 72
+                        "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\GoalPage.ts",
+                        "column": 34,
+                        "line": 40
                       }
                     }
                   ],
                   "status": "unexpected"
                 }
               ],
-              "id": "ae96145aa1befaaf3af9-9fc9358708a6b9c49748",
-              "file": "09-pom-regression.spec.ts",
-              "line": 216,
+              "id": "e70723a47e036255403b-dbe0b6de5210545f811a",
+              "file": "11-user-advisor-scenarios.spec.ts",
+              "line": 80,
               "column": 3
-            },
+            }
+          ]
+        },
+        {
+          "title": "Kanaku Advisor Role Scenario-Level Testing Suite",
+          "file": "11-user-advisor-scenarios.spec.ts",
+          "line": 241,
+          "column": 6,
+          "specs": [
             {
-              "title": "07. Advisor Registration, Manager Compliance Review, and Approval",
-              "ok": false,
+              "title": "AD-01 & AD-03: Advisor Application & Compliance Approval Flow",
+              "ok": true,
               "tags": [],
               "tests": [
                 {
@@ -441,131 +285,34 @@
                     {
                       "workerIndex": 2,
                       "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 103308,
-                      "error": {
-                        "message": "Error: Failed to navigate to page: book-advisor",
-                        "stack": "Error: Failed to navigate to page: book-advisor\n    at AdvisorPage.navigateTo (K:\\Project\\Kanaku\\quality\\e2e\\pom\\BasePage.ts:16:13)\n    at K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts:255:5",
-                        "location": {
-                          "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\BasePage.ts",
-                          "column": 13,
-                          "line": 16
-                        },
-                        "snippet": "\u001b[90m   at \u001b[39mpom\\BasePage.ts:16\n\n\u001b[0m \u001b[90m 14 |\u001b[39m     \u001b[36mconst\u001b[39m success \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m clickNav(\u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mpage\u001b[33m,\u001b[39m label)\u001b[33m;\u001b[39m\n \u001b[90m 15 |\u001b[39m     \u001b[36mif\u001b[39m (\u001b[33m!\u001b[39msuccess) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 16 |\u001b[39m       \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\u001b[32m`Failed to navigate to page: ${label}`\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m             \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 17 |\u001b[39m     }\n \u001b[90m 18 |\u001b[39m   }\n \u001b[90m 19 |\u001b[39m\u001b[0m"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\BasePage.ts",
-                            "column": 13,
-                            "line": 16
-                          },
-                          "message": "Error: Failed to navigate to page: book-advisor\n\n   at pom\\BasePage.ts:16\n\n  14 |     const success = await clickNav(this.page, label);\n  15 |     if (!success) {\n> 16 |       throw new Error(`Failed to navigate to page: ${label}`);\n     |             ^\n  17 |     }\n  18 |   }\n  19 |\n    at AdvisorPage.navigateTo (K:\\Project\\Kanaku\\quality\\e2e\\pom\\BasePage.ts:16:13)\n    at K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts:255:5"
-                        }
-                      ],
+                      "status": "passed",
+                      "duration": 142757,
+                      "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-14T13:32:30.653Z",
+                      "startTime": "2026-07-15T12:22:29.489Z",
                       "annotations": [],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-3119d-pliance-Review-and-Approval-chromium\\test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-3119d-pliance-Review-and-Approval-chromium\\video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-3119d-pliance-Review-and-Approval-chromium\\error-context.md"
-                        },
-                        {
-                          "name": "trace",
-                          "contentType": "application/zip",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-3119d-pliance-Review-and-Approval-chromium\\trace.zip"
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--fc356-on-Compliance-Approval-Flow-chromium\\test-finished-1.png"
                         }
-                      ],
-                      "errorLocation": {
-                        "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\BasePage.ts",
-                        "column": 13,
-                        "line": 16
-                      }
-                    },
-                    {
-                      "workerIndex": 3,
-                      "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 109308,
-                      "error": {
-                        "message": "Error: Failed to navigate to page: book-advisor",
-                        "stack": "Error: Failed to navigate to page: book-advisor\n    at AdvisorPage.navigateTo (K:\\Project\\Kanaku\\quality\\e2e\\pom\\BasePage.ts:16:13)\n    at K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts:255:5",
-                        "location": {
-                          "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\BasePage.ts",
-                          "column": 13,
-                          "line": 16
-                        },
-                        "snippet": "\u001b[90m   at \u001b[39mpom\\BasePage.ts:16\n\n\u001b[0m \u001b[90m 14 |\u001b[39m     \u001b[36mconst\u001b[39m success \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m clickNav(\u001b[36mthis\u001b[39m\u001b[33m.\u001b[39mpage\u001b[33m,\u001b[39m label)\u001b[33m;\u001b[39m\n \u001b[90m 15 |\u001b[39m     \u001b[36mif\u001b[39m (\u001b[33m!\u001b[39msuccess) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 16 |\u001b[39m       \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\u001b[32m`Failed to navigate to page: ${label}`\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m             \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 17 |\u001b[39m     }\n \u001b[90m 18 |\u001b[39m   }\n \u001b[90m 19 |\u001b[39m\u001b[0m"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\BasePage.ts",
-                            "column": 13,
-                            "line": 16
-                          },
-                          "message": "Error: Failed to navigate to page: book-advisor\n\n   at pom\\BasePage.ts:16\n\n  14 |     const success = await clickNav(this.page, label);\n  15 |     if (!success) {\n> 16 |       throw new Error(`Failed to navigate to page: ${label}`);\n     |             ^\n  17 |     }\n  18 |   }\n  19 |\n    at AdvisorPage.navigateTo (K:\\Project\\Kanaku\\quality\\e2e\\pom\\BasePage.ts:16:13)\n    at K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts:255:5"
-                        }
-                      ],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 1,
-                      "startTime": "2026-07-14T13:34:19.896Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-3119d-pliance-Review-and-Approval-chromium-retry1\\test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-3119d-pliance-Review-and-Approval-chromium-retry1\\video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-3119d-pliance-Review-and-Approval-chromium-retry1\\error-context.md"
-                        },
-                        {
-                          "name": "trace",
-                          "contentType": "application/zip",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-3119d-pliance-Review-and-Approval-chromium-retry1\\trace.zip"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "K:\\Project\\Kanaku\\quality\\e2e\\pom\\BasePage.ts",
-                        "column": 13,
-                        "line": 16
-                      }
+                      ]
                     }
                   ],
-                  "status": "unexpected"
+                  "status": "expected"
                 }
               ],
-              "id": "ae96145aa1befaaf3af9-753434220028872dd055",
-              "file": "09-pom-regression.spec.ts",
-              "line": 239,
+              "id": "e70723a47e036255403b-94f500c2127eca4616ee",
+              "file": "11-user-advisor-scenarios.spec.ts",
+              "line": 247,
               "column": 3
             },
             {
-              "title": "08. Recurring Liability Schedule Management",
-              "ok": false,
+              "title": "AD-04 to AD-09: Advisor Workspace Operations & Profile Customizations",
+              "ok": true,
               "tags": [],
               "tests": [
                 {
@@ -576,133 +323,36 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 4,
+                      "workerIndex": 2,
                       "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 2227,
-                      "error": {
-                        "message": "Error: Login challenge failed for arjun.test@kanaku.app: {\"success\":false,\"error\":\"Our servers are temporarily unavailable. Please try again in a moment.\",\"code\":\"DATABASE_UNAVAILABLE\",\"requestId\":\"01fd33cd-6b6e-4873-93c6-9657e7a56917\"}",
-                        "stack": "Error: Login challenge failed for arjun.test@kanaku.app: {\"success\":false,\"error\":\"Our servers are temporarily unavailable. Please try again in a moment.\",\"code\":\"DATABASE_UNAVAILABLE\",\"requestId\":\"01fd33cd-6b6e-4873-93c6-9657e7a56917\"}\n    at loginUser (K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts:72:11)\n    at K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts:292:5",
-                        "location": {
-                          "file": "K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts",
-                          "column": 11,
-                          "line": 72
-                        },
-                        "snippet": "\u001b[90m   at \u001b[39mhelpers.ts:72\n\n\u001b[0m \u001b[90m 70 |\u001b[39m\n \u001b[90m 71 |\u001b[39m   \u001b[36mif\u001b[39m (\u001b[33m!\u001b[39mchallengeJson\u001b[33m?\u001b[39m\u001b[33m.\u001b[39msuccess \u001b[33m||\u001b[39m \u001b[33m!\u001b[39mchallengeJson\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mdata\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mcode) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 72 |\u001b[39m     \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\n \u001b[90m    |\u001b[39m           \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 73 |\u001b[39m       \u001b[32m`Login challenge failed for ${user.email}: ${JSON.stringify(challengeJson)}`\u001b[39m\n \u001b[90m 74 |\u001b[39m     )\u001b[33m;\u001b[39m\n \u001b[90m 75 |\u001b[39m   }\u001b[0m"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts",
-                            "column": 11,
-                            "line": 72
-                          },
-                          "message": "Error: Login challenge failed for arjun.test@kanaku.app: {\"success\":false,\"error\":\"Our servers are temporarily unavailable. Please try again in a moment.\",\"code\":\"DATABASE_UNAVAILABLE\",\"requestId\":\"01fd33cd-6b6e-4873-93c6-9657e7a56917\"}\n\n   at helpers.ts:72\n\n  70 |\n  71 |   if (!challengeJson?.success || !challengeJson?.data?.code) {\n> 72 |     throw new Error(\n     |           ^\n  73 |       `Login challenge failed for ${user.email}: ${JSON.stringify(challengeJson)}`\n  74 |     );\n  75 |   }\n    at loginUser (K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts:72:11)\n    at K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts:292:5"
-                        }
-                      ],
+                      "status": "passed",
+                      "duration": 60849,
+                      "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-14T13:36:15.685Z",
+                      "startTime": "2026-07-15T12:24:52.569Z",
                       "annotations": [],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-90bfe-ability-Schedule-Management-chromium\\test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-90bfe-ability-Schedule-Management-chromium\\video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-90bfe-ability-Schedule-Management-chromium\\error-context.md"
-                        },
-                        {
-                          "name": "trace",
-                          "contentType": "application/zip",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-90bfe-ability-Schedule-Management-chromium\\trace.zip"
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--bea8d-ions-Profile-Customizations-chromium\\test-finished-1.png"
                         }
-                      ],
-                      "errorLocation": {
-                        "file": "K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts",
-                        "column": 11,
-                        "line": 72
-                      }
-                    },
-                    {
-                      "workerIndex": 5,
-                      "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 2050,
-                      "error": {
-                        "message": "Error: Login challenge failed for arjun.test@kanaku.app: {\"success\":false,\"error\":\"Our servers are temporarily unavailable. Please try again in a moment.\",\"code\":\"DATABASE_UNAVAILABLE\",\"requestId\":\"0e1bbccb-224c-49b8-9362-f025b50bc957\"}",
-                        "stack": "Error: Login challenge failed for arjun.test@kanaku.app: {\"success\":false,\"error\":\"Our servers are temporarily unavailable. Please try again in a moment.\",\"code\":\"DATABASE_UNAVAILABLE\",\"requestId\":\"0e1bbccb-224c-49b8-9362-f025b50bc957\"}\n    at loginUser (K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts:72:11)\n    at K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts:292:5",
-                        "location": {
-                          "file": "K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts",
-                          "column": 11,
-                          "line": 72
-                        },
-                        "snippet": "\u001b[90m   at \u001b[39mhelpers.ts:72\n\n\u001b[0m \u001b[90m 70 |\u001b[39m\n \u001b[90m 71 |\u001b[39m   \u001b[36mif\u001b[39m (\u001b[33m!\u001b[39mchallengeJson\u001b[33m?\u001b[39m\u001b[33m.\u001b[39msuccess \u001b[33m||\u001b[39m \u001b[33m!\u001b[39mchallengeJson\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mdata\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mcode) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 72 |\u001b[39m     \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\n \u001b[90m    |\u001b[39m           \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 73 |\u001b[39m       \u001b[32m`Login challenge failed for ${user.email}: ${JSON.stringify(challengeJson)}`\u001b[39m\n \u001b[90m 74 |\u001b[39m     )\u001b[33m;\u001b[39m\n \u001b[90m 75 |\u001b[39m   }\u001b[0m"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts",
-                            "column": 11,
-                            "line": 72
-                          },
-                          "message": "Error: Login challenge failed for arjun.test@kanaku.app: {\"success\":false,\"error\":\"Our servers are temporarily unavailable. Please try again in a moment.\",\"code\":\"DATABASE_UNAVAILABLE\",\"requestId\":\"0e1bbccb-224c-49b8-9362-f025b50bc957\"}\n\n   at helpers.ts:72\n\n  70 |\n  71 |   if (!challengeJson?.success || !challengeJson?.data?.code) {\n> 72 |     throw new Error(\n     |           ^\n  73 |       `Login challenge failed for ${user.email}: ${JSON.stringify(challengeJson)}`\n  74 |     );\n  75 |   }\n    at loginUser (K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts:72:11)\n    at K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts:292:5"
-                        }
-                      ],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 1,
-                      "startTime": "2026-07-14T13:36:20.802Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-90bfe-ability-Schedule-Management-chromium-retry1\\test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-90bfe-ability-Schedule-Management-chromium-retry1\\video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-90bfe-ability-Schedule-Management-chromium-retry1\\error-context.md"
-                        },
-                        {
-                          "name": "trace",
-                          "contentType": "application/zip",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-90bfe-ability-Schedule-Management-chromium-retry1\\trace.zip"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts",
-                        "column": 11,
-                        "line": 72
-                      }
+                      ]
                     }
                   ],
-                  "status": "unexpected"
+                  "status": "expected"
                 }
               ],
-              "id": "ae96145aa1befaaf3af9-602dec3c5eb42215dc22",
-              "file": "09-pom-regression.spec.ts",
-              "line": 290,
+              "id": "e70723a47e036255403b-ffccf52b425c3cd25019",
+              "file": "11-user-advisor-scenarios.spec.ts",
+              "line": 302,
               "column": 3
             },
             {
-              "title": "09. Regression - Add Loan Navigation & Redirection Bug",
-              "ok": false,
+              "title": "AD-10: Security Isolation & Access Blocks (Data Isolation)",
+              "ok": true,
               "tags": [],
               "tests": [
                 {
@@ -713,265 +363,31 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 6,
+                      "workerIndex": 2,
                       "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 1660,
-                      "error": {
-                        "message": "Error: Login challenge failed for arjun.test@kanaku.app: {\"success\":false,\"error\":\"Our servers are temporarily unavailable. Please try again in a moment.\",\"code\":\"DATABASE_UNAVAILABLE\",\"requestId\":\"a37a23e5-efb8-4dae-ad7f-eecb8f71b0fd\"}",
-                        "stack": "Error: Login challenge failed for arjun.test@kanaku.app: {\"success\":false,\"error\":\"Our servers are temporarily unavailable. Please try again in a moment.\",\"code\":\"DATABASE_UNAVAILABLE\",\"requestId\":\"a37a23e5-efb8-4dae-ad7f-eecb8f71b0fd\"}\n    at loginUser (K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts:72:11)\n    at K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts:326:5",
-                        "location": {
-                          "file": "K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts",
-                          "column": 11,
-                          "line": 72
-                        },
-                        "snippet": "\u001b[90m   at \u001b[39mhelpers.ts:72\n\n\u001b[0m \u001b[90m 70 |\u001b[39m\n \u001b[90m 71 |\u001b[39m   \u001b[36mif\u001b[39m (\u001b[33m!\u001b[39mchallengeJson\u001b[33m?\u001b[39m\u001b[33m.\u001b[39msuccess \u001b[33m||\u001b[39m \u001b[33m!\u001b[39mchallengeJson\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mdata\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mcode) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 72 |\u001b[39m     \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\n \u001b[90m    |\u001b[39m           \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 73 |\u001b[39m       \u001b[32m`Login challenge failed for ${user.email}: ${JSON.stringify(challengeJson)}`\u001b[39m\n \u001b[90m 74 |\u001b[39m     )\u001b[33m;\u001b[39m\n \u001b[90m 75 |\u001b[39m   }\u001b[0m"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts",
-                            "column": 11,
-                            "line": 72
-                          },
-                          "message": "Error: Login challenge failed for arjun.test@kanaku.app: {\"success\":false,\"error\":\"Our servers are temporarily unavailable. Please try again in a moment.\",\"code\":\"DATABASE_UNAVAILABLE\",\"requestId\":\"a37a23e5-efb8-4dae-ad7f-eecb8f71b0fd\"}\n\n   at helpers.ts:72\n\n  70 |\n  71 |   if (!challengeJson?.success || !challengeJson?.data?.code) {\n> 72 |     throw new Error(\n     |           ^\n  73 |       `Login challenge failed for ${user.email}: ${JSON.stringify(challengeJson)}`\n  74 |     );\n  75 |   }\n    at loginUser (K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts:72:11)\n    at K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts:326:5"
-                        }
-                      ],
+                      "status": "passed",
+                      "duration": 55969,
+                      "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-14T13:36:25.723Z",
+                      "startTime": "2026-07-15T12:25:53.453Z",
                       "annotations": [],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-c3543--Navigation-Redirection-Bug-chromium\\test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-c3543--Navigation-Redirection-Bug-chromium\\video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-c3543--Navigation-Redirection-Bug-chromium\\error-context.md"
-                        },
-                        {
-                          "name": "trace",
-                          "contentType": "application/zip",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-c3543--Navigation-Redirection-Bug-chromium\\trace.zip"
+                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\11-user-advisor-scenarios--cf1b3-cess-Blocks-Data-Isolation--chromium\\test-finished-1.png"
                         }
-                      ],
-                      "errorLocation": {
-                        "file": "K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts",
-                        "column": 11,
-                        "line": 72
-                      }
-                    },
-                    {
-                      "workerIndex": 7,
-                      "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 1634,
-                      "error": {
-                        "message": "Error: Login challenge failed for arjun.test@kanaku.app: {\"success\":false,\"error\":\"Our servers are temporarily unavailable. Please try again in a moment.\",\"code\":\"DATABASE_UNAVAILABLE\",\"requestId\":\"55d5f17d-8efc-455b-968c-f189232b54dd\"}",
-                        "stack": "Error: Login challenge failed for arjun.test@kanaku.app: {\"success\":false,\"error\":\"Our servers are temporarily unavailable. Please try again in a moment.\",\"code\":\"DATABASE_UNAVAILABLE\",\"requestId\":\"55d5f17d-8efc-455b-968c-f189232b54dd\"}\n    at loginUser (K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts:72:11)\n    at K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts:326:5",
-                        "location": {
-                          "file": "K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts",
-                          "column": 11,
-                          "line": 72
-                        },
-                        "snippet": "\u001b[90m   at \u001b[39mhelpers.ts:72\n\n\u001b[0m \u001b[90m 70 |\u001b[39m\n \u001b[90m 71 |\u001b[39m   \u001b[36mif\u001b[39m (\u001b[33m!\u001b[39mchallengeJson\u001b[33m?\u001b[39m\u001b[33m.\u001b[39msuccess \u001b[33m||\u001b[39m \u001b[33m!\u001b[39mchallengeJson\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mdata\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mcode) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 72 |\u001b[39m     \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\n \u001b[90m    |\u001b[39m           \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 73 |\u001b[39m       \u001b[32m`Login challenge failed for ${user.email}: ${JSON.stringify(challengeJson)}`\u001b[39m\n \u001b[90m 74 |\u001b[39m     )\u001b[33m;\u001b[39m\n \u001b[90m 75 |\u001b[39m   }\u001b[0m"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts",
-                            "column": 11,
-                            "line": 72
-                          },
-                          "message": "Error: Login challenge failed for arjun.test@kanaku.app: {\"success\":false,\"error\":\"Our servers are temporarily unavailable. Please try again in a moment.\",\"code\":\"DATABASE_UNAVAILABLE\",\"requestId\":\"55d5f17d-8efc-455b-968c-f189232b54dd\"}\n\n   at helpers.ts:72\n\n  70 |\n  71 |   if (!challengeJson?.success || !challengeJson?.data?.code) {\n> 72 |     throw new Error(\n     |           ^\n  73 |       `Login challenge failed for ${user.email}: ${JSON.stringify(challengeJson)}`\n  74 |     );\n  75 |   }\n    at loginUser (K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts:72:11)\n    at K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts:326:5"
-                        }
-                      ],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 1,
-                      "startTime": "2026-07-14T13:36:30.191Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-c3543--Navigation-Redirection-Bug-chromium-retry1\\test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-c3543--Navigation-Redirection-Bug-chromium-retry1\\video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-c3543--Navigation-Redirection-Bug-chromium-retry1\\error-context.md"
-                        },
-                        {
-                          "name": "trace",
-                          "contentType": "application/zip",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-c3543--Navigation-Redirection-Bug-chromium-retry1\\trace.zip"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts",
-                        "column": 11,
-                        "line": 72
-                      }
+                      ]
                     }
                   ],
-                  "status": "unexpected"
+                  "status": "expected"
                 }
               ],
-              "id": "ae96145aa1befaaf3af9-b8ba28baa8a9b4b21b8a",
-              "file": "09-pom-regression.spec.ts",
-              "line": 321,
-              "column": 3
-            },
-            {
-              "title": "10. Logout/Login Session Retention & State Check",
-              "ok": false,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 240000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 8,
-                      "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 1728,
-                      "error": {
-                        "message": "Error: Login challenge failed for arjun.test@kanaku.app: {\"success\":false,\"error\":\"Our servers are temporarily unavailable. Please try again in a moment.\",\"code\":\"DATABASE_UNAVAILABLE\",\"requestId\":\"a0637498-6152-40d6-9c8b-7c693e762108\"}",
-                        "stack": "Error: Login challenge failed for arjun.test@kanaku.app: {\"success\":false,\"error\":\"Our servers are temporarily unavailable. Please try again in a moment.\",\"code\":\"DATABASE_UNAVAILABLE\",\"requestId\":\"a0637498-6152-40d6-9c8b-7c693e762108\"}\n    at loginUser (K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts:72:11)\n    at K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts:391:5",
-                        "location": {
-                          "file": "K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts",
-                          "column": 11,
-                          "line": 72
-                        },
-                        "snippet": "\u001b[90m   at \u001b[39mhelpers.ts:72\n\n\u001b[0m \u001b[90m 70 |\u001b[39m\n \u001b[90m 71 |\u001b[39m   \u001b[36mif\u001b[39m (\u001b[33m!\u001b[39mchallengeJson\u001b[33m?\u001b[39m\u001b[33m.\u001b[39msuccess \u001b[33m||\u001b[39m \u001b[33m!\u001b[39mchallengeJson\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mdata\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mcode) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 72 |\u001b[39m     \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\n \u001b[90m    |\u001b[39m           \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 73 |\u001b[39m       \u001b[32m`Login challenge failed for ${user.email}: ${JSON.stringify(challengeJson)}`\u001b[39m\n \u001b[90m 74 |\u001b[39m     )\u001b[33m;\u001b[39m\n \u001b[90m 75 |\u001b[39m   }\u001b[0m"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts",
-                            "column": 11,
-                            "line": 72
-                          },
-                          "message": "Error: Login challenge failed for arjun.test@kanaku.app: {\"success\":false,\"error\":\"Our servers are temporarily unavailable. Please try again in a moment.\",\"code\":\"DATABASE_UNAVAILABLE\",\"requestId\":\"a0637498-6152-40d6-9c8b-7c693e762108\"}\n\n   at helpers.ts:72\n\n  70 |\n  71 |   if (!challengeJson?.success || !challengeJson?.data?.code) {\n> 72 |     throw new Error(\n     |           ^\n  73 |       `Login challenge failed for ${user.email}: ${JSON.stringify(challengeJson)}`\n  74 |     );\n  75 |   }\n    at loginUser (K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts:72:11)\n    at K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts:391:5"
-                        }
-                      ],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-14T13:36:34.531Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-67413-ssion-Retention-State-Check-chromium\\test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-67413-ssion-Retention-State-Check-chromium\\video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-67413-ssion-Retention-State-Check-chromium\\error-context.md"
-                        },
-                        {
-                          "name": "trace",
-                          "contentType": "application/zip",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-67413-ssion-Retention-State-Check-chromium\\trace.zip"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts",
-                        "column": 11,
-                        "line": 72
-                      }
-                    },
-                    {
-                      "workerIndex": 9,
-                      "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 1776,
-                      "error": {
-                        "message": "Error: Login challenge failed for arjun.test@kanaku.app: {\"success\":false,\"error\":\"Our servers are temporarily unavailable. Please try again in a moment.\",\"code\":\"DATABASE_UNAVAILABLE\",\"requestId\":\"ed1d8a7c-d993-4e4a-9e1f-30ab48919608\"}",
-                        "stack": "Error: Login challenge failed for arjun.test@kanaku.app: {\"success\":false,\"error\":\"Our servers are temporarily unavailable. Please try again in a moment.\",\"code\":\"DATABASE_UNAVAILABLE\",\"requestId\":\"ed1d8a7c-d993-4e4a-9e1f-30ab48919608\"}\n    at loginUser (K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts:72:11)\n    at K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts:391:5",
-                        "location": {
-                          "file": "K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts",
-                          "column": 11,
-                          "line": 72
-                        },
-                        "snippet": "\u001b[90m   at \u001b[39mhelpers.ts:72\n\n\u001b[0m \u001b[90m 70 |\u001b[39m\n \u001b[90m 71 |\u001b[39m   \u001b[36mif\u001b[39m (\u001b[33m!\u001b[39mchallengeJson\u001b[33m?\u001b[39m\u001b[33m.\u001b[39msuccess \u001b[33m||\u001b[39m \u001b[33m!\u001b[39mchallengeJson\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mdata\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mcode) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 72 |\u001b[39m     \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\n \u001b[90m    |\u001b[39m           \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 73 |\u001b[39m       \u001b[32m`Login challenge failed for ${user.email}: ${JSON.stringify(challengeJson)}`\u001b[39m\n \u001b[90m 74 |\u001b[39m     )\u001b[33m;\u001b[39m\n \u001b[90m 75 |\u001b[39m   }\u001b[0m"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts",
-                            "column": 11,
-                            "line": 72
-                          },
-                          "message": "Error: Login challenge failed for arjun.test@kanaku.app: {\"success\":false,\"error\":\"Our servers are temporarily unavailable. Please try again in a moment.\",\"code\":\"DATABASE_UNAVAILABLE\",\"requestId\":\"ed1d8a7c-d993-4e4a-9e1f-30ab48919608\"}\n\n   at helpers.ts:72\n\n  70 |\n  71 |   if (!challengeJson?.success || !challengeJson?.data?.code) {\n> 72 |     throw new Error(\n     |           ^\n  73 |       `Login challenge failed for ${user.email}: ${JSON.stringify(challengeJson)}`\n  74 |     );\n  75 |   }\n    at loginUser (K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts:72:11)\n    at K:\\Project\\Kanaku\\quality\\e2e\\09-pom-regression.spec.ts:391:5"
-                        }
-                      ],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 1,
-                      "startTime": "2026-07-14T13:36:38.839Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-67413-ssion-Retention-State-Check-chromium-retry1\\test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-67413-ssion-Retention-State-Check-chromium-retry1\\video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-67413-ssion-Retention-State-Check-chromium-retry1\\error-context.md"
-                        },
-                        {
-                          "name": "trace",
-                          "contentType": "application/zip",
-                          "path": "K:\\Project\\Kanaku\\quality\\e2e\\screenshots\\09-pom-regression-Kanaku-F-67413-ssion-Retention-State-Check-chromium-retry1\\trace.zip"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "K:\\Project\\Kanaku\\quality\\e2e\\helpers.ts",
-                        "column": 11,
-                        "line": 72
-                      }
-                    }
-                  ],
-                  "status": "unexpected"
-                }
-              ],
-              "id": "ae96145aa1befaaf3af9-a96f418603f1baca6ea9",
-              "file": "09-pom-regression.spec.ts",
-              "line": 389,
+              "id": "e70723a47e036255403b-f73ff0c22384e479558d",
+              "file": "11-user-advisor-scenarios.spec.ts",
+              "line": 351,
               "column": 3
             }
           ]
@@ -981,11 +397,11 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-07-14T13:22:56.241Z",
-    "duration": 825717.564,
-    "expected": 5,
+    "startTime": "2026-07-15T12:16:02.206Z",
+    "duration": 648130.463,
+    "expected": 4,
     "skipped": 0,
-    "unexpected": 5,
+    "unexpected": 1,
     "flaky": 0
   }
 }

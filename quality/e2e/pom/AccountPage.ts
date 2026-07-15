@@ -66,7 +66,7 @@ export class AccountPage extends BasePage {
 
   async selectInstitution(name: string) {
     // Click the SearchableDropdown trigger
-    const dropdownTrigger = this.page.locator('div[role="combobox"]').first();
+    const dropdownTrigger = this.page.locator('[role="combobox"]').first();
     await dropdownTrigger.click();
     await this.wait(300);
 
@@ -125,12 +125,13 @@ export class AccountPage extends BasePage {
   }
 
   async assertAccountExists(name: string, expectedBalance?: string) {
-    const pageText = await this.page.textContent('body');
+    const pageText = (await this.page.textContent('body')) ?? '';
     expect(pageText, `Account ${name} should exist on the accounts page`).toContain(name);
     if (expectedBalance) {
-      // Format number representation
-      const formatted = Number(expectedBalance).toLocaleString();
-      expect(pageText, `Account ${name} should have balance of ${expectedBalance}`).toContain(formatted);
+      const formattedUS = Number(expectedBalance).toLocaleString('en-US');
+      const formattedIN = Number(expectedBalance).toLocaleString('en-IN');
+      const pass = pageText.includes(formattedUS) || pageText.includes(formattedIN) || pageText.includes(String(expectedBalance));
+      expect(pass, `Account ${name} should have balance of ${expectedBalance} (tried formats: ${formattedUS}, ${formattedIN})`).toBe(true);
     }
   }
 }

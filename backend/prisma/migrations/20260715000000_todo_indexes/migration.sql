@@ -1,21 +1,30 @@
 -- Migration: 20260715000000_todo_indexes
--- Purpose: Add indexes on public.todo_lists, todo_items, and todo_list_shares to bring
---          GET /todos endpoint under the 500ms SLA (currently ~679ms mean, 797ms P95).
---          The todo tables are managed as raw SQL (not Prisma models) so indexes must be
---          added manually. All three use CREATE INDEX IF NOT EXISTS for idempotency.
+-- Purpose: Add performance indexes on the raw-SQL todo tables to bring GET /todos under SLA.
+-- Note: todo_lists, todo_items, todo_list_shares are NOT Prisma-managed models.
+--       They exist in the public schema but are not in schema.prisma.
+--       This migration creates indexes only if the tables exist.
 
--- Index: todo_lists filtered by user (primary query pattern in TodoRepository.findLists)
-CREATE INDEX IF NOT EXISTS idx_todo_lists_user_id
-  ON public.todo_lists (user_id);
+DO $$
+BEGIN
+  -- Index on todo_lists.user_id (primary filter in TodoRepository.findLists)
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'todo_lists') THEN
+    CREATE INDEX IF NOT EXISTS idx_todo_lists_user_id ON public.todo_lists (user_id);
+    RAISE NOTICE 'Created/verified index idx_todo_lists_user_id';
+  ELSE
+    RAISE NOTICE 'Skipping todo_lists indexes: table does not exist in this environment';
+  END IF;
 
--- Index: todo_items filtered by list (primary join in TodoRepository.findItems)
-CREATE INDEX IF NOT EXISTS idx_todo_items_list_id
-  ON public.todo_items (list_id);
+  -- Index on todo_items.list_id (primary join path)
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'todo_items') THEN
+    CREATE INDEX IF NOT EXISTS idx_todo_items_list_id ON public.todo_items (list_id);
+    RAISE NOTICE 'Created/verified index idx_todo_items_list_id';
+  END IF;
 
--- Index: todo_list_shares filtered by shared_with_user_id (used in findLists sub-select)
-CREATE INDEX IF NOT EXISTS idx_todo_list_shares_shared_with
-  ON public.todo_list_shares (shared_with_user_id);
+  -- Indexes on todo_list_shares (sub-select in findLists)
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'todo_list_shares') THEN
+    CREATE INDEX IF NOT EXISTS idx_todo_list_shares_shared_with ON public.todo_list_shares (shared_with_user_id);
+    CREATE INDEX IF NOT EXISTS idx_todo_list_shares_list_id ON public.todo_list_shares (list_id);
+    RAISE NOTICE 'Created/verified indexes on todo_list_shares';
+  END IF;
+END$$;
 
--- Index: todo_list_shares filtered by list_id (secondary join path)
-CREATE INDEX IF NOT EXISTS idx_todo_list_shares_list_id
-  ON public.todo_list_shares (list_id);
