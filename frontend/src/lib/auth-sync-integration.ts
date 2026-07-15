@@ -1037,7 +1037,7 @@ async function syncLocalRecordToBackendAPI(table: SyncedTableName, localId: numb
         payload.paidBy = acc.cloudId;
       }
       if (record.members) {
-        const mappedMembers = [];
+        const mappedMembers: any[] = [];
         for (const m of record.members) {
           if (m.friendId) {
             const f = await db.friends.get(Number(m.friendId));
