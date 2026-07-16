@@ -520,7 +520,20 @@ exports.Prisma.TransactionScalarFieldEnum = {
   syncStatus: 'syncStatus',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
-  deletedAt: 'deletedAt'
+  deletedAt: 'deletedAt',
+  referenceType: 'referenceType',
+  referenceId: 'referenceId',
+  sourceModule: 'sourceModule',
+  direction: 'direction',
+  eventType: 'eventType',
+  idempotencyKey: 'idempotencyKey',
+  ledgerVersion: 'ledgerVersion',
+  journalEntryId: 'journalEntryId',
+  status: 'status',
+  currency: 'currency',
+  exchangeRate: 'exchangeRate',
+  sequenceNumber: 'sequenceNumber',
+  metadata: 'metadata'
 };
 
 exports.Prisma.UserScalarFieldEnum = {
@@ -886,6 +899,24 @@ exports.Prisma.GoldAssetScalarFieldEnum = {
   deletedAt: 'deletedAt'
 };
 
+exports.Prisma.JournalEntryScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  sourceModule: 'sourceModule',
+  referenceType: 'referenceType',
+  referenceId: 'referenceId',
+  status: 'status',
+  description: 'description',
+  eventVersion: 'eventVersion',
+  createdBy: 'createdBy',
+  createdFrom: 'createdFrom',
+  deviceId: 'deviceId',
+  ipAddress: 'ipAddress',
+  requestId: 'requestId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -915,7 +946,54 @@ exports.Prisma.JsonNullValueFilter = {
   JsonNull: Prisma.JsonNull,
   AnyNull: Prisma.AnyNull
 };
+exports.LedgerReferenceType = exports.$Enums.LedgerReferenceType = {
+  MANUAL: 'MANUAL',
+  GROUP_EXPENSE: 'GROUP_EXPENSE',
+  GROUP_SETTLEMENT: 'GROUP_SETTLEMENT',
+  GOAL: 'GOAL',
+  GROUP_GOAL: 'GROUP_GOAL',
+  INVESTMENT: 'INVESTMENT',
+  GROUP_INVESTMENT: 'GROUP_INVESTMENT',
+  LOAN: 'LOAN',
+  LOAN_PAYMENT: 'LOAN_PAYMENT',
+  EMI: 'EMI',
+  SAVINGS: 'SAVINGS',
+  TRANSFER: 'TRANSFER',
+  SYSTEM: 'SYSTEM'
+};
 
+exports.SourceModule = exports.$Enums.SourceModule = {
+  TRANSACTIONS: 'TRANSACTIONS',
+  GROUPS: 'GROUPS',
+  GOALS: 'GOALS',
+  INVESTMENTS: 'INVESTMENTS',
+  LOANS: 'LOANS',
+  SAVINGS: 'SAVINGS',
+  OFFLINE_SYNC: 'OFFLINE_SYNC'
+};
+
+exports.LedgerDirection = exports.$Enums.LedgerDirection = {
+  INFLOW: 'INFLOW',
+  OUTFLOW: 'OUTFLOW'
+};
+
+exports.FinancialEventType = exports.$Enums.FinancialEventType = {
+  CREATE: 'CREATE',
+  UPDATE: 'UPDATE',
+  REVERSAL: 'REVERSAL',
+  SETTLEMENT: 'SETTLEMENT',
+  REFUND: 'REFUND',
+  TRANSFER: 'TRANSFER',
+  WITHDRAWAL: 'WITHDRAWAL',
+  CONTRIBUTION: 'CONTRIBUTION'
+};
+
+exports.LedgerStatus = exports.$Enums.LedgerStatus = {
+  PENDING: 'PENDING',
+  POSTED: 'POSTED',
+  REVERSED: 'REVERSED',
+  FAILED: 'FAILED'
+};
 
 exports.Prisma.ModelName = {
   Account: 'Account',
@@ -964,7 +1042,8 @@ exports.Prisma.ModelName = {
   AaTransaction: 'AaTransaction',
   RecurringTransaction: 'RecurringTransaction',
   Budget: 'Budget',
-  GoldAsset: 'GoldAsset'
+  GoldAsset: 'GoldAsset',
+  JournalEntry: 'JournalEntry'
 };
 
 /**

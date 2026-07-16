@@ -3,6 +3,7 @@ import { authMiddleware } from '../../middleware/auth';
 import { adminPlatformGate } from '../../middleware/adminPlatformGate';
 import { requireRole } from '../../middleware/rbac';
 import * as AdminController from './admin.controller';
+import { reconcileLedger } from './reconcile.controller';
 import { adminCacheMetricsQuerySchema } from './admin.validation';
 import {
 	getAdminAIAccuracy,
@@ -50,6 +51,7 @@ router.get('/users/:userId/storage', AdminController.getUserStorageStats);
 // Statistics
 router.get('/stats', AdminController.getPlatformStats);
 router.get('/cache/metrics', validateQuery(adminCacheMetricsQuerySchema), AdminController.getCacheMetrics);
+router.get('/ledger/reconcile', reconcileLedger);
 
 // Feature flags toggle (admin only)
 router.post('/features/toggle', AdminController.toggleFeatureFlag);

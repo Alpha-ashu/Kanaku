@@ -248,6 +248,100 @@ export type Budget = $Result.DefaultSelection<Prisma.$BudgetPayload>
  * 
  */
 export type GoldAsset = $Result.DefaultSelection<Prisma.$GoldAssetPayload>
+/**
+ * Model JournalEntry
+ * 
+ */
+export type JournalEntry = $Result.DefaultSelection<Prisma.$JournalEntryPayload>
+
+/**
+ * Enums
+ */
+export namespace $Enums {
+  export const LedgerReferenceType: {
+  MANUAL: 'MANUAL',
+  GROUP_EXPENSE: 'GROUP_EXPENSE',
+  GROUP_SETTLEMENT: 'GROUP_SETTLEMENT',
+  GOAL: 'GOAL',
+  GROUP_GOAL: 'GROUP_GOAL',
+  INVESTMENT: 'INVESTMENT',
+  GROUP_INVESTMENT: 'GROUP_INVESTMENT',
+  LOAN: 'LOAN',
+  LOAN_PAYMENT: 'LOAN_PAYMENT',
+  EMI: 'EMI',
+  SAVINGS: 'SAVINGS',
+  TRANSFER: 'TRANSFER',
+  SYSTEM: 'SYSTEM'
+};
+
+export type LedgerReferenceType = (typeof LedgerReferenceType)[keyof typeof LedgerReferenceType]
+
+
+export const SourceModule: {
+  TRANSACTIONS: 'TRANSACTIONS',
+  GROUPS: 'GROUPS',
+  GOALS: 'GOALS',
+  INVESTMENTS: 'INVESTMENTS',
+  LOANS: 'LOANS',
+  SAVINGS: 'SAVINGS',
+  OFFLINE_SYNC: 'OFFLINE_SYNC'
+};
+
+export type SourceModule = (typeof SourceModule)[keyof typeof SourceModule]
+
+
+export const LedgerDirection: {
+  INFLOW: 'INFLOW',
+  OUTFLOW: 'OUTFLOW'
+};
+
+export type LedgerDirection = (typeof LedgerDirection)[keyof typeof LedgerDirection]
+
+
+export const FinancialEventType: {
+  CREATE: 'CREATE',
+  UPDATE: 'UPDATE',
+  REVERSAL: 'REVERSAL',
+  SETTLEMENT: 'SETTLEMENT',
+  REFUND: 'REFUND',
+  TRANSFER: 'TRANSFER',
+  WITHDRAWAL: 'WITHDRAWAL',
+  CONTRIBUTION: 'CONTRIBUTION'
+};
+
+export type FinancialEventType = (typeof FinancialEventType)[keyof typeof FinancialEventType]
+
+
+export const LedgerStatus: {
+  PENDING: 'PENDING',
+  POSTED: 'POSTED',
+  REVERSED: 'REVERSED',
+  FAILED: 'FAILED'
+};
+
+export type LedgerStatus = (typeof LedgerStatus)[keyof typeof LedgerStatus]
+
+}
+
+export type LedgerReferenceType = $Enums.LedgerReferenceType
+
+export const LedgerReferenceType: typeof $Enums.LedgerReferenceType
+
+export type SourceModule = $Enums.SourceModule
+
+export const SourceModule: typeof $Enums.SourceModule
+
+export type LedgerDirection = $Enums.LedgerDirection
+
+export const LedgerDirection: typeof $Enums.LedgerDirection
+
+export type FinancialEventType = $Enums.FinancialEventType
+
+export const FinancialEventType: typeof $Enums.FinancialEventType
+
+export type LedgerStatus = $Enums.LedgerStatus
+
+export const LedgerStatus: typeof $Enums.LedgerStatus
 
 /**
  * ##  Prisma Client ʲˢ
@@ -836,6 +930,16 @@ export class PrismaClient<
     * ```
     */
   get goldAsset(): Prisma.GoldAssetDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.journalEntry`: Exposes CRUD operations for the **JournalEntry** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more JournalEntries
+    * const journalEntries = await prisma.journalEntry.findMany()
+    * ```
+    */
+  get journalEntry(): Prisma.JournalEntryDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -1323,7 +1427,8 @@ export namespace Prisma {
     AaTransaction: 'AaTransaction',
     RecurringTransaction: 'RecurringTransaction',
     Budget: 'Budget',
-    GoldAsset: 'GoldAsset'
+    GoldAsset: 'GoldAsset',
+    JournalEntry: 'JournalEntry'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1342,7 +1447,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "account" | "advisorApplication" | "advisorAvailability" | "advisorSession" | "bookingRequest" | "category" | "chatMessage" | "device" | "expenseBill" | "friend" | "goal" | "goalContribution" | "importLog" | "investment" | "loan" | "loanPayment" | "notification" | "payment" | "refreshToken" | "syncQueue" | "todo" | "transaction" | "user" | "userPin" | "userSettings" | "platformSettings" | "otpCode" | "aiScan" | "ai_events" | "ai_insights" | "ai_model_runs" | "auditLog" | "groupExpense" | "groupExpenseMember" | "collaborationParticipant" | "goalMember" | "user_features" | "profiles" | "otpRequest" | "aaConsent" | "aaConsentArtifact" | "aaDataSession" | "aaFinancialData" | "aaTransaction" | "recurringTransaction" | "budget" | "goldAsset"
+      modelProps: "account" | "advisorApplication" | "advisorAvailability" | "advisorSession" | "bookingRequest" | "category" | "chatMessage" | "device" | "expenseBill" | "friend" | "goal" | "goalContribution" | "importLog" | "investment" | "loan" | "loanPayment" | "notification" | "payment" | "refreshToken" | "syncQueue" | "todo" | "transaction" | "user" | "userPin" | "userSettings" | "platformSettings" | "otpCode" | "aiScan" | "ai_events" | "ai_insights" | "ai_model_runs" | "auditLog" | "groupExpense" | "groupExpenseMember" | "collaborationParticipant" | "goalMember" | "user_features" | "profiles" | "otpRequest" | "aaConsent" | "aaConsentArtifact" | "aaDataSession" | "aaFinancialData" | "aaTransaction" | "recurringTransaction" | "budget" | "goldAsset" | "journalEntry"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -4824,6 +4929,80 @@ export namespace Prisma {
           }
         }
       }
+      JournalEntry: {
+        payload: Prisma.$JournalEntryPayload<ExtArgs>
+        fields: Prisma.JournalEntryFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.JournalEntryFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$JournalEntryPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.JournalEntryFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$JournalEntryPayload>
+          }
+          findFirst: {
+            args: Prisma.JournalEntryFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$JournalEntryPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.JournalEntryFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$JournalEntryPayload>
+          }
+          findMany: {
+            args: Prisma.JournalEntryFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$JournalEntryPayload>[]
+          }
+          create: {
+            args: Prisma.JournalEntryCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$JournalEntryPayload>
+          }
+          createMany: {
+            args: Prisma.JournalEntryCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.JournalEntryCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$JournalEntryPayload>[]
+          }
+          delete: {
+            args: Prisma.JournalEntryDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$JournalEntryPayload>
+          }
+          update: {
+            args: Prisma.JournalEntryUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$JournalEntryPayload>
+          }
+          deleteMany: {
+            args: Prisma.JournalEntryDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.JournalEntryUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.JournalEntryUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$JournalEntryPayload>[]
+          }
+          upsert: {
+            args: Prisma.JournalEntryUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$JournalEntryPayload>
+          }
+          aggregate: {
+            args: Prisma.JournalEntryAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateJournalEntry>
+          }
+          groupBy: {
+            args: Prisma.JournalEntryGroupByArgs<ExtArgs>
+            result: $Utils.Optional<JournalEntryGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.JournalEntryCountArgs<ExtArgs>
+            result: $Utils.Optional<JournalEntryCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -4967,6 +5146,7 @@ export namespace Prisma {
     recurringTransaction?: RecurringTransactionOmit
     budget?: BudgetOmit
     goldAsset?: GoldAssetOmit
+    journalEntry?: JournalEntryOmit
   }
 
   /* Types for Logging */
@@ -5252,6 +5432,7 @@ export namespace Prisma {
     refreshTokens: number
     todos: number
     transactions: number
+    journalEntries: number
     otpCodes: number
     aiScans: number
     groupExpenses: number
@@ -5286,6 +5467,7 @@ export namespace Prisma {
     refreshTokens?: boolean | UserCountOutputTypeCountRefreshTokensArgs
     todos?: boolean | UserCountOutputTypeCountTodosArgs
     transactions?: boolean | UserCountOutputTypeCountTransactionsArgs
+    journalEntries?: boolean | UserCountOutputTypeCountJournalEntriesArgs
     otpCodes?: boolean | UserCountOutputTypeCountOtpCodesArgs
     aiScans?: boolean | UserCountOutputTypeCountAiScansArgs
     groupExpenses?: boolean | UserCountOutputTypeCountGroupExpensesArgs
@@ -5471,6 +5653,13 @@ export namespace Prisma {
   /**
    * UserCountOutputType without action
    */
+  export type UserCountOutputTypeCountJournalEntriesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: JournalEntryWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
   export type UserCountOutputTypeCountOtpCodesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: OtpCodeWhereInput
   }
@@ -5562,6 +5751,37 @@ export namespace Prisma {
    */
   export type GroupExpenseCountOutputTypeCountGroupMembersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: GroupExpenseMemberWhereInput
+  }
+
+
+  /**
+   * Count Type JournalEntryCountOutputType
+   */
+
+  export type JournalEntryCountOutputType = {
+    transactions: number
+  }
+
+  export type JournalEntryCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    transactions?: boolean | JournalEntryCountOutputTypeCountTransactionsArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * JournalEntryCountOutputType without action
+   */
+  export type JournalEntryCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the JournalEntryCountOutputType
+     */
+    select?: JournalEntryCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * JournalEntryCountOutputType without action
+   */
+  export type JournalEntryCountOutputTypeCountTransactionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TransactionWhereInput
   }
 
 
@@ -31313,11 +31533,15 @@ export namespace Prisma {
   export type TransactionAvgAggregateOutputType = {
     amount: Decimal | null
     version: number | null
+    ledgerVersion: number | null
+    exchangeRate: Decimal | null
   }
 
   export type TransactionSumAggregateOutputType = {
     amount: Decimal | null
     version: number | null
+    ledgerVersion: number | null
+    exchangeRate: Decimal | null
   }
 
   export type TransactionMinAggregateOutputType = {
@@ -31350,6 +31574,18 @@ export namespace Prisma {
     createdAt: Date | null
     updatedAt: Date | null
     deletedAt: Date | null
+    referenceType: $Enums.LedgerReferenceType | null
+    referenceId: string | null
+    sourceModule: $Enums.SourceModule | null
+    direction: $Enums.LedgerDirection | null
+    eventType: $Enums.FinancialEventType | null
+    idempotencyKey: string | null
+    ledgerVersion: number | null
+    journalEntryId: string | null
+    status: $Enums.LedgerStatus | null
+    currency: string | null
+    exchangeRate: Decimal | null
+    sequenceNumber: string | null
   }
 
   export type TransactionMaxAggregateOutputType = {
@@ -31382,6 +31618,18 @@ export namespace Prisma {
     createdAt: Date | null
     updatedAt: Date | null
     deletedAt: Date | null
+    referenceType: $Enums.LedgerReferenceType | null
+    referenceId: string | null
+    sourceModule: $Enums.SourceModule | null
+    direction: $Enums.LedgerDirection | null
+    eventType: $Enums.FinancialEventType | null
+    idempotencyKey: string | null
+    ledgerVersion: number | null
+    journalEntryId: string | null
+    status: $Enums.LedgerStatus | null
+    currency: string | null
+    exchangeRate: Decimal | null
+    sequenceNumber: string | null
   }
 
   export type TransactionCountAggregateOutputType = {
@@ -31415,6 +31663,19 @@ export namespace Prisma {
     createdAt: number
     updatedAt: number
     deletedAt: number
+    referenceType: number
+    referenceId: number
+    sourceModule: number
+    direction: number
+    eventType: number
+    idempotencyKey: number
+    ledgerVersion: number
+    journalEntryId: number
+    status: number
+    currency: number
+    exchangeRate: number
+    sequenceNumber: number
+    metadata: number
     _all: number
   }
 
@@ -31422,11 +31683,15 @@ export namespace Prisma {
   export type TransactionAvgAggregateInputType = {
     amount?: true
     version?: true
+    ledgerVersion?: true
+    exchangeRate?: true
   }
 
   export type TransactionSumAggregateInputType = {
     amount?: true
     version?: true
+    ledgerVersion?: true
+    exchangeRate?: true
   }
 
   export type TransactionMinAggregateInputType = {
@@ -31459,6 +31724,18 @@ export namespace Prisma {
     createdAt?: true
     updatedAt?: true
     deletedAt?: true
+    referenceType?: true
+    referenceId?: true
+    sourceModule?: true
+    direction?: true
+    eventType?: true
+    idempotencyKey?: true
+    ledgerVersion?: true
+    journalEntryId?: true
+    status?: true
+    currency?: true
+    exchangeRate?: true
+    sequenceNumber?: true
   }
 
   export type TransactionMaxAggregateInputType = {
@@ -31491,6 +31768,18 @@ export namespace Prisma {
     createdAt?: true
     updatedAt?: true
     deletedAt?: true
+    referenceType?: true
+    referenceId?: true
+    sourceModule?: true
+    direction?: true
+    eventType?: true
+    idempotencyKey?: true
+    ledgerVersion?: true
+    journalEntryId?: true
+    status?: true
+    currency?: true
+    exchangeRate?: true
+    sequenceNumber?: true
   }
 
   export type TransactionCountAggregateInputType = {
@@ -31524,6 +31813,19 @@ export namespace Prisma {
     createdAt?: true
     updatedAt?: true
     deletedAt?: true
+    referenceType?: true
+    referenceId?: true
+    sourceModule?: true
+    direction?: true
+    eventType?: true
+    idempotencyKey?: true
+    ledgerVersion?: true
+    journalEntryId?: true
+    status?: true
+    currency?: true
+    exchangeRate?: true
+    sequenceNumber?: true
+    metadata?: true
     _all?: true
   }
 
@@ -31644,6 +31946,19 @@ export namespace Prisma {
     createdAt: Date
     updatedAt: Date
     deletedAt: Date | null
+    referenceType: $Enums.LedgerReferenceType
+    referenceId: string | null
+    sourceModule: $Enums.SourceModule
+    direction: $Enums.LedgerDirection
+    eventType: $Enums.FinancialEventType
+    idempotencyKey: string | null
+    ledgerVersion: number
+    journalEntryId: string | null
+    status: $Enums.LedgerStatus
+    currency: string | null
+    exchangeRate: Decimal | null
+    sequenceNumber: string | null
+    metadata: JsonValue | null
     _count: TransactionCountAggregateOutputType | null
     _avg: TransactionAvgAggregateOutputType | null
     _sum: TransactionSumAggregateOutputType | null
@@ -31696,6 +32011,20 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     deletedAt?: boolean
+    referenceType?: boolean
+    referenceId?: boolean
+    sourceModule?: boolean
+    direction?: boolean
+    eventType?: boolean
+    idempotencyKey?: boolean
+    ledgerVersion?: boolean
+    journalEntryId?: boolean
+    status?: boolean
+    currency?: boolean
+    exchangeRate?: boolean
+    sequenceNumber?: boolean
+    metadata?: boolean
+    journalEntry?: boolean | Transaction$journalEntryArgs<ExtArgs>
     account?: boolean | AccountDefaultArgs<ExtArgs>
     groupExpense?: boolean | Transaction$groupExpenseArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -31732,6 +32061,20 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     deletedAt?: boolean
+    referenceType?: boolean
+    referenceId?: boolean
+    sourceModule?: boolean
+    direction?: boolean
+    eventType?: boolean
+    idempotencyKey?: boolean
+    ledgerVersion?: boolean
+    journalEntryId?: boolean
+    status?: boolean
+    currency?: boolean
+    exchangeRate?: boolean
+    sequenceNumber?: boolean
+    metadata?: boolean
+    journalEntry?: boolean | Transaction$journalEntryArgs<ExtArgs>
     account?: boolean | AccountDefaultArgs<ExtArgs>
     groupExpense?: boolean | Transaction$groupExpenseArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -31768,6 +32111,20 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     deletedAt?: boolean
+    referenceType?: boolean
+    referenceId?: boolean
+    sourceModule?: boolean
+    direction?: boolean
+    eventType?: boolean
+    idempotencyKey?: boolean
+    ledgerVersion?: boolean
+    journalEntryId?: boolean
+    status?: boolean
+    currency?: boolean
+    exchangeRate?: boolean
+    sequenceNumber?: boolean
+    metadata?: boolean
+    journalEntry?: boolean | Transaction$journalEntryArgs<ExtArgs>
     account?: boolean | AccountDefaultArgs<ExtArgs>
     groupExpense?: boolean | Transaction$groupExpenseArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -31804,20 +32161,36 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     deletedAt?: boolean
+    referenceType?: boolean
+    referenceId?: boolean
+    sourceModule?: boolean
+    direction?: boolean
+    eventType?: boolean
+    idempotencyKey?: boolean
+    ledgerVersion?: boolean
+    journalEntryId?: boolean
+    status?: boolean
+    currency?: boolean
+    exchangeRate?: boolean
+    sequenceNumber?: boolean
+    metadata?: boolean
   }
 
-  export type TransactionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "deviceId" | "accountId" | "type" | "amount" | "category" | "subcategory" | "description" | "merchant" | "date" | "tags" | "attachment" | "transferToAccountId" | "transferType" | "expenseMode" | "groupExpenseId" | "groupName" | "splitType" | "importSource" | "importMetadata" | "originalCategory" | "importedAt" | "dedupHash" | "version" | "synced" | "syncStatus" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["transaction"]>
+  export type TransactionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "deviceId" | "accountId" | "type" | "amount" | "category" | "subcategory" | "description" | "merchant" | "date" | "tags" | "attachment" | "transferToAccountId" | "transferType" | "expenseMode" | "groupExpenseId" | "groupName" | "splitType" | "importSource" | "importMetadata" | "originalCategory" | "importedAt" | "dedupHash" | "version" | "synced" | "syncStatus" | "createdAt" | "updatedAt" | "deletedAt" | "referenceType" | "referenceId" | "sourceModule" | "direction" | "eventType" | "idempotencyKey" | "ledgerVersion" | "journalEntryId" | "status" | "currency" | "exchangeRate" | "sequenceNumber" | "metadata", ExtArgs["result"]["transaction"]>
   export type TransactionInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    journalEntry?: boolean | Transaction$journalEntryArgs<ExtArgs>
     account?: boolean | AccountDefaultArgs<ExtArgs>
     groupExpense?: boolean | Transaction$groupExpenseArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
   }
   export type TransactionIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    journalEntry?: boolean | Transaction$journalEntryArgs<ExtArgs>
     account?: boolean | AccountDefaultArgs<ExtArgs>
     groupExpense?: boolean | Transaction$groupExpenseArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
   }
   export type TransactionIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    journalEntry?: boolean | Transaction$journalEntryArgs<ExtArgs>
     account?: boolean | AccountDefaultArgs<ExtArgs>
     groupExpense?: boolean | Transaction$groupExpenseArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -31826,6 +32199,7 @@ export namespace Prisma {
   export type $TransactionPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Transaction"
     objects: {
+      journalEntry: Prisma.$JournalEntryPayload<ExtArgs> | null
       account: Prisma.$AccountPayload<ExtArgs>
       groupExpense: Prisma.$GroupExpensePayload<ExtArgs> | null
       user: Prisma.$UserPayload<ExtArgs>
@@ -31861,6 +32235,19 @@ export namespace Prisma {
       createdAt: Date
       updatedAt: Date
       deletedAt: Date | null
+      referenceType: $Enums.LedgerReferenceType
+      referenceId: string | null
+      sourceModule: $Enums.SourceModule
+      direction: $Enums.LedgerDirection
+      eventType: $Enums.FinancialEventType
+      idempotencyKey: string | null
+      ledgerVersion: number
+      journalEntryId: string | null
+      status: $Enums.LedgerStatus
+      currency: string | null
+      exchangeRate: Prisma.Decimal | null
+      sequenceNumber: string | null
+      metadata: Prisma.JsonValue | null
     }, ExtArgs["result"]["transaction"]>
     composites: {}
   }
@@ -32255,6 +32642,7 @@ export namespace Prisma {
    */
   export interface Prisma__TransactionClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
+    journalEntry<T extends Transaction$journalEntryArgs<ExtArgs> = {}>(args?: Subset<T, Transaction$journalEntryArgs<ExtArgs>>): Prisma__JournalEntryClient<$Result.GetResult<Prisma.$JournalEntryPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     account<T extends AccountDefaultArgs<ExtArgs> = {}>(args?: Subset<T, AccountDefaultArgs<ExtArgs>>): Prisma__AccountClient<$Result.GetResult<Prisma.$AccountPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     groupExpense<T extends Transaction$groupExpenseArgs<ExtArgs> = {}>(args?: Subset<T, Transaction$groupExpenseArgs<ExtArgs>>): Prisma__GroupExpenseClient<$Result.GetResult<Prisma.$GroupExpensePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
@@ -32317,6 +32705,19 @@ export namespace Prisma {
     readonly createdAt: FieldRef<"Transaction", 'DateTime'>
     readonly updatedAt: FieldRef<"Transaction", 'DateTime'>
     readonly deletedAt: FieldRef<"Transaction", 'DateTime'>
+    readonly referenceType: FieldRef<"Transaction", 'LedgerReferenceType'>
+    readonly referenceId: FieldRef<"Transaction", 'String'>
+    readonly sourceModule: FieldRef<"Transaction", 'SourceModule'>
+    readonly direction: FieldRef<"Transaction", 'LedgerDirection'>
+    readonly eventType: FieldRef<"Transaction", 'FinancialEventType'>
+    readonly idempotencyKey: FieldRef<"Transaction", 'String'>
+    readonly ledgerVersion: FieldRef<"Transaction", 'Int'>
+    readonly journalEntryId: FieldRef<"Transaction", 'String'>
+    readonly status: FieldRef<"Transaction", 'LedgerStatus'>
+    readonly currency: FieldRef<"Transaction", 'String'>
+    readonly exchangeRate: FieldRef<"Transaction", 'Decimal'>
+    readonly sequenceNumber: FieldRef<"Transaction", 'String'>
+    readonly metadata: FieldRef<"Transaction", 'Json'>
   }
     
 
@@ -32713,6 +33114,25 @@ export namespace Prisma {
   }
 
   /**
+   * Transaction.journalEntry
+   */
+  export type Transaction$journalEntryArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the JournalEntry
+     */
+    select?: JournalEntrySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the JournalEntry
+     */
+    omit?: JournalEntryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: JournalEntryInclude<ExtArgs> | null
+    where?: JournalEntryWhereInput
+  }
+
+  /**
    * Transaction.groupExpense
    */
   export type Transaction$groupExpenseArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -33042,6 +33462,7 @@ export namespace Prisma {
     refreshTokens?: boolean | User$refreshTokensArgs<ExtArgs>
     todos?: boolean | User$todosArgs<ExtArgs>
     transactions?: boolean | User$transactionsArgs<ExtArgs>
+    journalEntries?: boolean | User$journalEntriesArgs<ExtArgs>
     userPin?: boolean | User$userPinArgs<ExtArgs>
     userSettings?: boolean | User$userSettingsArgs<ExtArgs>
     otpCodes?: boolean | User$otpCodesArgs<ExtArgs>
@@ -33144,6 +33565,7 @@ export namespace Prisma {
     refreshTokens?: boolean | User$refreshTokensArgs<ExtArgs>
     todos?: boolean | User$todosArgs<ExtArgs>
     transactions?: boolean | User$transactionsArgs<ExtArgs>
+    journalEntries?: boolean | User$journalEntriesArgs<ExtArgs>
     userPin?: boolean | User$userPinArgs<ExtArgs>
     userSettings?: boolean | User$userSettingsArgs<ExtArgs>
     otpCodes?: boolean | User$otpCodesArgs<ExtArgs>
@@ -33186,6 +33608,7 @@ export namespace Prisma {
       refreshTokens: Prisma.$RefreshTokenPayload<ExtArgs>[]
       todos: Prisma.$TodoPayload<ExtArgs>[]
       transactions: Prisma.$TransactionPayload<ExtArgs>[]
+      journalEntries: Prisma.$JournalEntryPayload<ExtArgs>[]
       userPin: Prisma.$UserPinPayload<ExtArgs> | null
       userSettings: Prisma.$UserSettingsPayload<ExtArgs> | null
       otpCodes: Prisma.$OtpCodePayload<ExtArgs>[]
@@ -33634,6 +34057,7 @@ export namespace Prisma {
     refreshTokens<T extends User$refreshTokensArgs<ExtArgs> = {}>(args?: Subset<T, User$refreshTokensArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RefreshTokenPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     todos<T extends User$todosArgs<ExtArgs> = {}>(args?: Subset<T, User$todosArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TodoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     transactions<T extends User$transactionsArgs<ExtArgs> = {}>(args?: Subset<T, User$transactionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TransactionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    journalEntries<T extends User$journalEntriesArgs<ExtArgs> = {}>(args?: Subset<T, User$journalEntriesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$JournalEntryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     userPin<T extends User$userPinArgs<ExtArgs> = {}>(args?: Subset<T, User$userPinArgs<ExtArgs>>): Prisma__UserPinClient<$Result.GetResult<Prisma.$UserPinPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     userSettings<T extends User$userSettingsArgs<ExtArgs> = {}>(args?: Subset<T, User$userSettingsArgs<ExtArgs>>): Prisma__UserSettingsClient<$Result.GetResult<Prisma.$UserSettingsPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     otpCodes<T extends User$otpCodesArgs<ExtArgs> = {}>(args?: Subset<T, User$otpCodesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OtpCodePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -34647,6 +35071,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: TransactionScalarFieldEnum | TransactionScalarFieldEnum[]
+  }
+
+  /**
+   * User.journalEntries
+   */
+  export type User$journalEntriesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the JournalEntry
+     */
+    select?: JournalEntrySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the JournalEntry
+     */
+    omit?: JournalEntryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: JournalEntryInclude<ExtArgs> | null
+    where?: JournalEntryWhereInput
+    orderBy?: JournalEntryOrderByWithRelationInput | JournalEntryOrderByWithRelationInput[]
+    cursor?: JournalEntryWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: JournalEntryScalarFieldEnum | JournalEntryScalarFieldEnum[]
   }
 
   /**
@@ -62057,6 +62505,1258 @@ export namespace Prisma {
 
 
   /**
+   * Model JournalEntry
+   */
+
+  export type AggregateJournalEntry = {
+    _count: JournalEntryCountAggregateOutputType | null
+    _avg: JournalEntryAvgAggregateOutputType | null
+    _sum: JournalEntrySumAggregateOutputType | null
+    _min: JournalEntryMinAggregateOutputType | null
+    _max: JournalEntryMaxAggregateOutputType | null
+  }
+
+  export type JournalEntryAvgAggregateOutputType = {
+    eventVersion: number | null
+  }
+
+  export type JournalEntrySumAggregateOutputType = {
+    eventVersion: number | null
+  }
+
+  export type JournalEntryMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    sourceModule: $Enums.SourceModule | null
+    referenceType: $Enums.LedgerReferenceType | null
+    referenceId: string | null
+    status: $Enums.LedgerStatus | null
+    description: string | null
+    eventVersion: number | null
+    createdBy: string | null
+    createdFrom: string | null
+    deviceId: string | null
+    ipAddress: string | null
+    requestId: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type JournalEntryMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    sourceModule: $Enums.SourceModule | null
+    referenceType: $Enums.LedgerReferenceType | null
+    referenceId: string | null
+    status: $Enums.LedgerStatus | null
+    description: string | null
+    eventVersion: number | null
+    createdBy: string | null
+    createdFrom: string | null
+    deviceId: string | null
+    ipAddress: string | null
+    requestId: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type JournalEntryCountAggregateOutputType = {
+    id: number
+    userId: number
+    sourceModule: number
+    referenceType: number
+    referenceId: number
+    status: number
+    description: number
+    eventVersion: number
+    createdBy: number
+    createdFrom: number
+    deviceId: number
+    ipAddress: number
+    requestId: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type JournalEntryAvgAggregateInputType = {
+    eventVersion?: true
+  }
+
+  export type JournalEntrySumAggregateInputType = {
+    eventVersion?: true
+  }
+
+  export type JournalEntryMinAggregateInputType = {
+    id?: true
+    userId?: true
+    sourceModule?: true
+    referenceType?: true
+    referenceId?: true
+    status?: true
+    description?: true
+    eventVersion?: true
+    createdBy?: true
+    createdFrom?: true
+    deviceId?: true
+    ipAddress?: true
+    requestId?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type JournalEntryMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    sourceModule?: true
+    referenceType?: true
+    referenceId?: true
+    status?: true
+    description?: true
+    eventVersion?: true
+    createdBy?: true
+    createdFrom?: true
+    deviceId?: true
+    ipAddress?: true
+    requestId?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type JournalEntryCountAggregateInputType = {
+    id?: true
+    userId?: true
+    sourceModule?: true
+    referenceType?: true
+    referenceId?: true
+    status?: true
+    description?: true
+    eventVersion?: true
+    createdBy?: true
+    createdFrom?: true
+    deviceId?: true
+    ipAddress?: true
+    requestId?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type JournalEntryAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which JournalEntry to aggregate.
+     */
+    where?: JournalEntryWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of JournalEntries to fetch.
+     */
+    orderBy?: JournalEntryOrderByWithRelationInput | JournalEntryOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: JournalEntryWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` JournalEntries from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` JournalEntries.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned JournalEntries
+    **/
+    _count?: true | JournalEntryCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: JournalEntryAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: JournalEntrySumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: JournalEntryMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: JournalEntryMaxAggregateInputType
+  }
+
+  export type GetJournalEntryAggregateType<T extends JournalEntryAggregateArgs> = {
+        [P in keyof T & keyof AggregateJournalEntry]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateJournalEntry[P]>
+      : GetScalarType<T[P], AggregateJournalEntry[P]>
+  }
+
+
+
+
+  export type JournalEntryGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: JournalEntryWhereInput
+    orderBy?: JournalEntryOrderByWithAggregationInput | JournalEntryOrderByWithAggregationInput[]
+    by: JournalEntryScalarFieldEnum[] | JournalEntryScalarFieldEnum
+    having?: JournalEntryScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: JournalEntryCountAggregateInputType | true
+    _avg?: JournalEntryAvgAggregateInputType
+    _sum?: JournalEntrySumAggregateInputType
+    _min?: JournalEntryMinAggregateInputType
+    _max?: JournalEntryMaxAggregateInputType
+  }
+
+  export type JournalEntryGroupByOutputType = {
+    id: string
+    userId: string
+    sourceModule: $Enums.SourceModule
+    referenceType: $Enums.LedgerReferenceType
+    referenceId: string | null
+    status: $Enums.LedgerStatus
+    description: string | null
+    eventVersion: number
+    createdBy: string | null
+    createdFrom: string | null
+    deviceId: string | null
+    ipAddress: string | null
+    requestId: string | null
+    createdAt: Date
+    updatedAt: Date
+    _count: JournalEntryCountAggregateOutputType | null
+    _avg: JournalEntryAvgAggregateOutputType | null
+    _sum: JournalEntrySumAggregateOutputType | null
+    _min: JournalEntryMinAggregateOutputType | null
+    _max: JournalEntryMaxAggregateOutputType | null
+  }
+
+  type GetJournalEntryGroupByPayload<T extends JournalEntryGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<JournalEntryGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof JournalEntryGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], JournalEntryGroupByOutputType[P]>
+            : GetScalarType<T[P], JournalEntryGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type JournalEntrySelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    sourceModule?: boolean
+    referenceType?: boolean
+    referenceId?: boolean
+    status?: boolean
+    description?: boolean
+    eventVersion?: boolean
+    createdBy?: boolean
+    createdFrom?: boolean
+    deviceId?: boolean
+    ipAddress?: boolean
+    requestId?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    transactions?: boolean | JournalEntry$transactionsArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    _count?: boolean | JournalEntryCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["journalEntry"]>
+
+  export type JournalEntrySelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    sourceModule?: boolean
+    referenceType?: boolean
+    referenceId?: boolean
+    status?: boolean
+    description?: boolean
+    eventVersion?: boolean
+    createdBy?: boolean
+    createdFrom?: boolean
+    deviceId?: boolean
+    ipAddress?: boolean
+    requestId?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["journalEntry"]>
+
+  export type JournalEntrySelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    sourceModule?: boolean
+    referenceType?: boolean
+    referenceId?: boolean
+    status?: boolean
+    description?: boolean
+    eventVersion?: boolean
+    createdBy?: boolean
+    createdFrom?: boolean
+    deviceId?: boolean
+    ipAddress?: boolean
+    requestId?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["journalEntry"]>
+
+  export type JournalEntrySelectScalar = {
+    id?: boolean
+    userId?: boolean
+    sourceModule?: boolean
+    referenceType?: boolean
+    referenceId?: boolean
+    status?: boolean
+    description?: boolean
+    eventVersion?: boolean
+    createdBy?: boolean
+    createdFrom?: boolean
+    deviceId?: boolean
+    ipAddress?: boolean
+    requestId?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type JournalEntryOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "sourceModule" | "referenceType" | "referenceId" | "status" | "description" | "eventVersion" | "createdBy" | "createdFrom" | "deviceId" | "ipAddress" | "requestId" | "createdAt" | "updatedAt", ExtArgs["result"]["journalEntry"]>
+  export type JournalEntryInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    transactions?: boolean | JournalEntry$transactionsArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    _count?: boolean | JournalEntryCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type JournalEntryIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type JournalEntryIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $JournalEntryPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "JournalEntry"
+    objects: {
+      transactions: Prisma.$TransactionPayload<ExtArgs>[]
+      user: Prisma.$UserPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userId: string
+      sourceModule: $Enums.SourceModule
+      referenceType: $Enums.LedgerReferenceType
+      referenceId: string | null
+      status: $Enums.LedgerStatus
+      description: string | null
+      eventVersion: number
+      createdBy: string | null
+      createdFrom: string | null
+      deviceId: string | null
+      ipAddress: string | null
+      requestId: string | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["journalEntry"]>
+    composites: {}
+  }
+
+  type JournalEntryGetPayload<S extends boolean | null | undefined | JournalEntryDefaultArgs> = $Result.GetResult<Prisma.$JournalEntryPayload, S>
+
+  type JournalEntryCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<JournalEntryFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: JournalEntryCountAggregateInputType | true
+    }
+
+  export interface JournalEntryDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['JournalEntry'], meta: { name: 'JournalEntry' } }
+    /**
+     * Find zero or one JournalEntry that matches the filter.
+     * @param {JournalEntryFindUniqueArgs} args - Arguments to find a JournalEntry
+     * @example
+     * // Get one JournalEntry
+     * const journalEntry = await prisma.journalEntry.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends JournalEntryFindUniqueArgs>(args: SelectSubset<T, JournalEntryFindUniqueArgs<ExtArgs>>): Prisma__JournalEntryClient<$Result.GetResult<Prisma.$JournalEntryPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one JournalEntry that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {JournalEntryFindUniqueOrThrowArgs} args - Arguments to find a JournalEntry
+     * @example
+     * // Get one JournalEntry
+     * const journalEntry = await prisma.journalEntry.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends JournalEntryFindUniqueOrThrowArgs>(args: SelectSubset<T, JournalEntryFindUniqueOrThrowArgs<ExtArgs>>): Prisma__JournalEntryClient<$Result.GetResult<Prisma.$JournalEntryPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first JournalEntry that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {JournalEntryFindFirstArgs} args - Arguments to find a JournalEntry
+     * @example
+     * // Get one JournalEntry
+     * const journalEntry = await prisma.journalEntry.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends JournalEntryFindFirstArgs>(args?: SelectSubset<T, JournalEntryFindFirstArgs<ExtArgs>>): Prisma__JournalEntryClient<$Result.GetResult<Prisma.$JournalEntryPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first JournalEntry that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {JournalEntryFindFirstOrThrowArgs} args - Arguments to find a JournalEntry
+     * @example
+     * // Get one JournalEntry
+     * const journalEntry = await prisma.journalEntry.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends JournalEntryFindFirstOrThrowArgs>(args?: SelectSubset<T, JournalEntryFindFirstOrThrowArgs<ExtArgs>>): Prisma__JournalEntryClient<$Result.GetResult<Prisma.$JournalEntryPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more JournalEntries that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {JournalEntryFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all JournalEntries
+     * const journalEntries = await prisma.journalEntry.findMany()
+     * 
+     * // Get first 10 JournalEntries
+     * const journalEntries = await prisma.journalEntry.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const journalEntryWithIdOnly = await prisma.journalEntry.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends JournalEntryFindManyArgs>(args?: SelectSubset<T, JournalEntryFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$JournalEntryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a JournalEntry.
+     * @param {JournalEntryCreateArgs} args - Arguments to create a JournalEntry.
+     * @example
+     * // Create one JournalEntry
+     * const JournalEntry = await prisma.journalEntry.create({
+     *   data: {
+     *     // ... data to create a JournalEntry
+     *   }
+     * })
+     * 
+     */
+    create<T extends JournalEntryCreateArgs>(args: SelectSubset<T, JournalEntryCreateArgs<ExtArgs>>): Prisma__JournalEntryClient<$Result.GetResult<Prisma.$JournalEntryPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many JournalEntries.
+     * @param {JournalEntryCreateManyArgs} args - Arguments to create many JournalEntries.
+     * @example
+     * // Create many JournalEntries
+     * const journalEntry = await prisma.journalEntry.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends JournalEntryCreateManyArgs>(args?: SelectSubset<T, JournalEntryCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many JournalEntries and returns the data saved in the database.
+     * @param {JournalEntryCreateManyAndReturnArgs} args - Arguments to create many JournalEntries.
+     * @example
+     * // Create many JournalEntries
+     * const journalEntry = await prisma.journalEntry.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many JournalEntries and only return the `id`
+     * const journalEntryWithIdOnly = await prisma.journalEntry.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends JournalEntryCreateManyAndReturnArgs>(args?: SelectSubset<T, JournalEntryCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$JournalEntryPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a JournalEntry.
+     * @param {JournalEntryDeleteArgs} args - Arguments to delete one JournalEntry.
+     * @example
+     * // Delete one JournalEntry
+     * const JournalEntry = await prisma.journalEntry.delete({
+     *   where: {
+     *     // ... filter to delete one JournalEntry
+     *   }
+     * })
+     * 
+     */
+    delete<T extends JournalEntryDeleteArgs>(args: SelectSubset<T, JournalEntryDeleteArgs<ExtArgs>>): Prisma__JournalEntryClient<$Result.GetResult<Prisma.$JournalEntryPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one JournalEntry.
+     * @param {JournalEntryUpdateArgs} args - Arguments to update one JournalEntry.
+     * @example
+     * // Update one JournalEntry
+     * const journalEntry = await prisma.journalEntry.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends JournalEntryUpdateArgs>(args: SelectSubset<T, JournalEntryUpdateArgs<ExtArgs>>): Prisma__JournalEntryClient<$Result.GetResult<Prisma.$JournalEntryPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more JournalEntries.
+     * @param {JournalEntryDeleteManyArgs} args - Arguments to filter JournalEntries to delete.
+     * @example
+     * // Delete a few JournalEntries
+     * const { count } = await prisma.journalEntry.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends JournalEntryDeleteManyArgs>(args?: SelectSubset<T, JournalEntryDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more JournalEntries.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {JournalEntryUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many JournalEntries
+     * const journalEntry = await prisma.journalEntry.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends JournalEntryUpdateManyArgs>(args: SelectSubset<T, JournalEntryUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more JournalEntries and returns the data updated in the database.
+     * @param {JournalEntryUpdateManyAndReturnArgs} args - Arguments to update many JournalEntries.
+     * @example
+     * // Update many JournalEntries
+     * const journalEntry = await prisma.journalEntry.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more JournalEntries and only return the `id`
+     * const journalEntryWithIdOnly = await prisma.journalEntry.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends JournalEntryUpdateManyAndReturnArgs>(args: SelectSubset<T, JournalEntryUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$JournalEntryPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one JournalEntry.
+     * @param {JournalEntryUpsertArgs} args - Arguments to update or create a JournalEntry.
+     * @example
+     * // Update or create a JournalEntry
+     * const journalEntry = await prisma.journalEntry.upsert({
+     *   create: {
+     *     // ... data to create a JournalEntry
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the JournalEntry we want to update
+     *   }
+     * })
+     */
+    upsert<T extends JournalEntryUpsertArgs>(args: SelectSubset<T, JournalEntryUpsertArgs<ExtArgs>>): Prisma__JournalEntryClient<$Result.GetResult<Prisma.$JournalEntryPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of JournalEntries.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {JournalEntryCountArgs} args - Arguments to filter JournalEntries to count.
+     * @example
+     * // Count the number of JournalEntries
+     * const count = await prisma.journalEntry.count({
+     *   where: {
+     *     // ... the filter for the JournalEntries we want to count
+     *   }
+     * })
+    **/
+    count<T extends JournalEntryCountArgs>(
+      args?: Subset<T, JournalEntryCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], JournalEntryCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a JournalEntry.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {JournalEntryAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends JournalEntryAggregateArgs>(args: Subset<T, JournalEntryAggregateArgs>): Prisma.PrismaPromise<GetJournalEntryAggregateType<T>>
+
+    /**
+     * Group by JournalEntry.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {JournalEntryGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends JournalEntryGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: JournalEntryGroupByArgs['orderBy'] }
+        : { orderBy?: JournalEntryGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, JournalEntryGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetJournalEntryGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the JournalEntry model
+   */
+  readonly fields: JournalEntryFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for JournalEntry.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__JournalEntryClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    transactions<T extends JournalEntry$transactionsArgs<ExtArgs> = {}>(args?: Subset<T, JournalEntry$transactionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TransactionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the JournalEntry model
+   */
+  interface JournalEntryFieldRefs {
+    readonly id: FieldRef<"JournalEntry", 'String'>
+    readonly userId: FieldRef<"JournalEntry", 'String'>
+    readonly sourceModule: FieldRef<"JournalEntry", 'SourceModule'>
+    readonly referenceType: FieldRef<"JournalEntry", 'LedgerReferenceType'>
+    readonly referenceId: FieldRef<"JournalEntry", 'String'>
+    readonly status: FieldRef<"JournalEntry", 'LedgerStatus'>
+    readonly description: FieldRef<"JournalEntry", 'String'>
+    readonly eventVersion: FieldRef<"JournalEntry", 'Int'>
+    readonly createdBy: FieldRef<"JournalEntry", 'String'>
+    readonly createdFrom: FieldRef<"JournalEntry", 'String'>
+    readonly deviceId: FieldRef<"JournalEntry", 'String'>
+    readonly ipAddress: FieldRef<"JournalEntry", 'String'>
+    readonly requestId: FieldRef<"JournalEntry", 'String'>
+    readonly createdAt: FieldRef<"JournalEntry", 'DateTime'>
+    readonly updatedAt: FieldRef<"JournalEntry", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * JournalEntry findUnique
+   */
+  export type JournalEntryFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the JournalEntry
+     */
+    select?: JournalEntrySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the JournalEntry
+     */
+    omit?: JournalEntryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: JournalEntryInclude<ExtArgs> | null
+    /**
+     * Filter, which JournalEntry to fetch.
+     */
+    where: JournalEntryWhereUniqueInput
+  }
+
+  /**
+   * JournalEntry findUniqueOrThrow
+   */
+  export type JournalEntryFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the JournalEntry
+     */
+    select?: JournalEntrySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the JournalEntry
+     */
+    omit?: JournalEntryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: JournalEntryInclude<ExtArgs> | null
+    /**
+     * Filter, which JournalEntry to fetch.
+     */
+    where: JournalEntryWhereUniqueInput
+  }
+
+  /**
+   * JournalEntry findFirst
+   */
+  export type JournalEntryFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the JournalEntry
+     */
+    select?: JournalEntrySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the JournalEntry
+     */
+    omit?: JournalEntryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: JournalEntryInclude<ExtArgs> | null
+    /**
+     * Filter, which JournalEntry to fetch.
+     */
+    where?: JournalEntryWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of JournalEntries to fetch.
+     */
+    orderBy?: JournalEntryOrderByWithRelationInput | JournalEntryOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for JournalEntries.
+     */
+    cursor?: JournalEntryWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` JournalEntries from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` JournalEntries.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of JournalEntries.
+     */
+    distinct?: JournalEntryScalarFieldEnum | JournalEntryScalarFieldEnum[]
+  }
+
+  /**
+   * JournalEntry findFirstOrThrow
+   */
+  export type JournalEntryFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the JournalEntry
+     */
+    select?: JournalEntrySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the JournalEntry
+     */
+    omit?: JournalEntryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: JournalEntryInclude<ExtArgs> | null
+    /**
+     * Filter, which JournalEntry to fetch.
+     */
+    where?: JournalEntryWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of JournalEntries to fetch.
+     */
+    orderBy?: JournalEntryOrderByWithRelationInput | JournalEntryOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for JournalEntries.
+     */
+    cursor?: JournalEntryWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` JournalEntries from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` JournalEntries.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of JournalEntries.
+     */
+    distinct?: JournalEntryScalarFieldEnum | JournalEntryScalarFieldEnum[]
+  }
+
+  /**
+   * JournalEntry findMany
+   */
+  export type JournalEntryFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the JournalEntry
+     */
+    select?: JournalEntrySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the JournalEntry
+     */
+    omit?: JournalEntryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: JournalEntryInclude<ExtArgs> | null
+    /**
+     * Filter, which JournalEntries to fetch.
+     */
+    where?: JournalEntryWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of JournalEntries to fetch.
+     */
+    orderBy?: JournalEntryOrderByWithRelationInput | JournalEntryOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing JournalEntries.
+     */
+    cursor?: JournalEntryWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` JournalEntries from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` JournalEntries.
+     */
+    skip?: number
+    distinct?: JournalEntryScalarFieldEnum | JournalEntryScalarFieldEnum[]
+  }
+
+  /**
+   * JournalEntry create
+   */
+  export type JournalEntryCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the JournalEntry
+     */
+    select?: JournalEntrySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the JournalEntry
+     */
+    omit?: JournalEntryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: JournalEntryInclude<ExtArgs> | null
+    /**
+     * The data needed to create a JournalEntry.
+     */
+    data: XOR<JournalEntryCreateInput, JournalEntryUncheckedCreateInput>
+  }
+
+  /**
+   * JournalEntry createMany
+   */
+  export type JournalEntryCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many JournalEntries.
+     */
+    data: JournalEntryCreateManyInput | JournalEntryCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * JournalEntry createManyAndReturn
+   */
+  export type JournalEntryCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the JournalEntry
+     */
+    select?: JournalEntrySelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the JournalEntry
+     */
+    omit?: JournalEntryOmit<ExtArgs> | null
+    /**
+     * The data used to create many JournalEntries.
+     */
+    data: JournalEntryCreateManyInput | JournalEntryCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: JournalEntryIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * JournalEntry update
+   */
+  export type JournalEntryUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the JournalEntry
+     */
+    select?: JournalEntrySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the JournalEntry
+     */
+    omit?: JournalEntryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: JournalEntryInclude<ExtArgs> | null
+    /**
+     * The data needed to update a JournalEntry.
+     */
+    data: XOR<JournalEntryUpdateInput, JournalEntryUncheckedUpdateInput>
+    /**
+     * Choose, which JournalEntry to update.
+     */
+    where: JournalEntryWhereUniqueInput
+  }
+
+  /**
+   * JournalEntry updateMany
+   */
+  export type JournalEntryUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update JournalEntries.
+     */
+    data: XOR<JournalEntryUpdateManyMutationInput, JournalEntryUncheckedUpdateManyInput>
+    /**
+     * Filter which JournalEntries to update
+     */
+    where?: JournalEntryWhereInput
+    /**
+     * Limit how many JournalEntries to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * JournalEntry updateManyAndReturn
+   */
+  export type JournalEntryUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the JournalEntry
+     */
+    select?: JournalEntrySelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the JournalEntry
+     */
+    omit?: JournalEntryOmit<ExtArgs> | null
+    /**
+     * The data used to update JournalEntries.
+     */
+    data: XOR<JournalEntryUpdateManyMutationInput, JournalEntryUncheckedUpdateManyInput>
+    /**
+     * Filter which JournalEntries to update
+     */
+    where?: JournalEntryWhereInput
+    /**
+     * Limit how many JournalEntries to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: JournalEntryIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * JournalEntry upsert
+   */
+  export type JournalEntryUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the JournalEntry
+     */
+    select?: JournalEntrySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the JournalEntry
+     */
+    omit?: JournalEntryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: JournalEntryInclude<ExtArgs> | null
+    /**
+     * The filter to search for the JournalEntry to update in case it exists.
+     */
+    where: JournalEntryWhereUniqueInput
+    /**
+     * In case the JournalEntry found by the `where` argument doesn't exist, create a new JournalEntry with this data.
+     */
+    create: XOR<JournalEntryCreateInput, JournalEntryUncheckedCreateInput>
+    /**
+     * In case the JournalEntry was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<JournalEntryUpdateInput, JournalEntryUncheckedUpdateInput>
+  }
+
+  /**
+   * JournalEntry delete
+   */
+  export type JournalEntryDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the JournalEntry
+     */
+    select?: JournalEntrySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the JournalEntry
+     */
+    omit?: JournalEntryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: JournalEntryInclude<ExtArgs> | null
+    /**
+     * Filter which JournalEntry to delete.
+     */
+    where: JournalEntryWhereUniqueInput
+  }
+
+  /**
+   * JournalEntry deleteMany
+   */
+  export type JournalEntryDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which JournalEntries to delete
+     */
+    where?: JournalEntryWhereInput
+    /**
+     * Limit how many JournalEntries to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * JournalEntry.transactions
+   */
+  export type JournalEntry$transactionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Transaction
+     */
+    select?: TransactionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Transaction
+     */
+    omit?: TransactionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TransactionInclude<ExtArgs> | null
+    where?: TransactionWhereInput
+    orderBy?: TransactionOrderByWithRelationInput | TransactionOrderByWithRelationInput[]
+    cursor?: TransactionWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: TransactionScalarFieldEnum | TransactionScalarFieldEnum[]
+  }
+
+  /**
+   * JournalEntry without action
+   */
+  export type JournalEntryDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the JournalEntry
+     */
+    select?: JournalEntrySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the JournalEntry
+     */
+    omit?: JournalEntryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: JournalEntryInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -62532,7 +64232,20 @@ export namespace Prisma {
     syncStatus: 'syncStatus',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
-    deletedAt: 'deletedAt'
+    deletedAt: 'deletedAt',
+    referenceType: 'referenceType',
+    referenceId: 'referenceId',
+    sourceModule: 'sourceModule',
+    direction: 'direction',
+    eventType: 'eventType',
+    idempotencyKey: 'idempotencyKey',
+    ledgerVersion: 'ledgerVersion',
+    journalEntryId: 'journalEntryId',
+    status: 'status',
+    currency: 'currency',
+    exchangeRate: 'exchangeRate',
+    sequenceNumber: 'sequenceNumber',
+    metadata: 'metadata'
   };
 
   export type TransactionScalarFieldEnum = (typeof TransactionScalarFieldEnum)[keyof typeof TransactionScalarFieldEnum]
@@ -62976,6 +64689,27 @@ export namespace Prisma {
   export type GoldAssetScalarFieldEnum = (typeof GoldAssetScalarFieldEnum)[keyof typeof GoldAssetScalarFieldEnum]
 
 
+  export const JournalEntryScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    sourceModule: 'sourceModule',
+    referenceType: 'referenceType',
+    referenceId: 'referenceId',
+    status: 'status',
+    description: 'description',
+    eventVersion: 'eventVersion',
+    createdBy: 'createdBy',
+    createdFrom: 'createdFrom',
+    deviceId: 'deviceId',
+    ipAddress: 'ipAddress',
+    requestId: 'requestId',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type JournalEntryScalarFieldEnum = (typeof JournalEntryScalarFieldEnum)[keyof typeof JournalEntryScalarFieldEnum]
+
+
   export const SortOrder: {
     asc: 'asc',
     desc: 'desc'
@@ -63117,6 +64851,76 @@ export namespace Prisma {
    * Reference to a field of type 'QueryMode'
    */
   export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
+    
+
+
+  /**
+   * Reference to a field of type 'LedgerReferenceType'
+   */
+  export type EnumLedgerReferenceTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'LedgerReferenceType'>
+    
+
+
+  /**
+   * Reference to a field of type 'LedgerReferenceType[]'
+   */
+  export type ListEnumLedgerReferenceTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'LedgerReferenceType[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'SourceModule'
+   */
+  export type EnumSourceModuleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SourceModule'>
+    
+
+
+  /**
+   * Reference to a field of type 'SourceModule[]'
+   */
+  export type ListEnumSourceModuleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SourceModule[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'LedgerDirection'
+   */
+  export type EnumLedgerDirectionFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'LedgerDirection'>
+    
+
+
+  /**
+   * Reference to a field of type 'LedgerDirection[]'
+   */
+  export type ListEnumLedgerDirectionFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'LedgerDirection[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'FinancialEventType'
+   */
+  export type EnumFinancialEventTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'FinancialEventType'>
+    
+
+
+  /**
+   * Reference to a field of type 'FinancialEventType[]'
+   */
+  export type ListEnumFinancialEventTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'FinancialEventType[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'LedgerStatus'
+   */
+  export type EnumLedgerStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'LedgerStatus'>
+    
+
+
+  /**
+   * Reference to a field of type 'LedgerStatus[]'
+   */
+  export type ListEnumLedgerStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'LedgerStatus[]'>
     
   /**
    * Deep Input Types
@@ -65403,6 +67207,20 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Transaction"> | Date | string
     updatedAt?: DateTimeFilter<"Transaction"> | Date | string
     deletedAt?: DateTimeNullableFilter<"Transaction"> | Date | string | null
+    referenceType?: EnumLedgerReferenceTypeFilter<"Transaction"> | $Enums.LedgerReferenceType
+    referenceId?: StringNullableFilter<"Transaction"> | string | null
+    sourceModule?: EnumSourceModuleFilter<"Transaction"> | $Enums.SourceModule
+    direction?: EnumLedgerDirectionFilter<"Transaction"> | $Enums.LedgerDirection
+    eventType?: EnumFinancialEventTypeFilter<"Transaction"> | $Enums.FinancialEventType
+    idempotencyKey?: StringNullableFilter<"Transaction"> | string | null
+    ledgerVersion?: IntFilter<"Transaction"> | number
+    journalEntryId?: StringNullableFilter<"Transaction"> | string | null
+    status?: EnumLedgerStatusFilter<"Transaction"> | $Enums.LedgerStatus
+    currency?: StringNullableFilter<"Transaction"> | string | null
+    exchangeRate?: DecimalNullableFilter<"Transaction"> | Decimal | DecimalJsLike | number | string | null
+    sequenceNumber?: StringNullableFilter<"Transaction"> | string | null
+    metadata?: JsonNullableFilter<"Transaction">
+    journalEntry?: XOR<JournalEntryNullableScalarRelationFilter, JournalEntryWhereInput> | null
     account?: XOR<AccountScalarRelationFilter, AccountWhereInput>
     groupExpense?: XOR<GroupExpenseNullableScalarRelationFilter, GroupExpenseWhereInput> | null
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -65439,6 +67257,20 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     deletedAt?: SortOrderInput | SortOrder
+    referenceType?: SortOrder
+    referenceId?: SortOrderInput | SortOrder
+    sourceModule?: SortOrder
+    direction?: SortOrder
+    eventType?: SortOrder
+    idempotencyKey?: SortOrderInput | SortOrder
+    ledgerVersion?: SortOrder
+    journalEntryId?: SortOrderInput | SortOrder
+    status?: SortOrder
+    currency?: SortOrderInput | SortOrder
+    exchangeRate?: SortOrderInput | SortOrder
+    sequenceNumber?: SortOrderInput | SortOrder
+    metadata?: SortOrderInput | SortOrder
+    journalEntry?: JournalEntryOrderByWithRelationInput
     account?: AccountOrderByWithRelationInput
     groupExpense?: GroupExpenseOrderByWithRelationInput
     user?: UserOrderByWithRelationInput
@@ -65447,6 +67279,8 @@ export namespace Prisma {
   export type TransactionWhereUniqueInput = Prisma.AtLeast<{
     id?: string
     dedupHash?: string
+    sequenceNumber?: string
+    userId_sourceModule_idempotencyKey?: TransactionUserIdSourceModuleIdempotencyKeyCompoundUniqueInput
     AND?: TransactionWhereInput | TransactionWhereInput[]
     OR?: TransactionWhereInput[]
     NOT?: TransactionWhereInput | TransactionWhereInput[]
@@ -65478,10 +67312,23 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Transaction"> | Date | string
     updatedAt?: DateTimeFilter<"Transaction"> | Date | string
     deletedAt?: DateTimeNullableFilter<"Transaction"> | Date | string | null
+    referenceType?: EnumLedgerReferenceTypeFilter<"Transaction"> | $Enums.LedgerReferenceType
+    referenceId?: StringNullableFilter<"Transaction"> | string | null
+    sourceModule?: EnumSourceModuleFilter<"Transaction"> | $Enums.SourceModule
+    direction?: EnumLedgerDirectionFilter<"Transaction"> | $Enums.LedgerDirection
+    eventType?: EnumFinancialEventTypeFilter<"Transaction"> | $Enums.FinancialEventType
+    idempotencyKey?: StringNullableFilter<"Transaction"> | string | null
+    ledgerVersion?: IntFilter<"Transaction"> | number
+    journalEntryId?: StringNullableFilter<"Transaction"> | string | null
+    status?: EnumLedgerStatusFilter<"Transaction"> | $Enums.LedgerStatus
+    currency?: StringNullableFilter<"Transaction"> | string | null
+    exchangeRate?: DecimalNullableFilter<"Transaction"> | Decimal | DecimalJsLike | number | string | null
+    metadata?: JsonNullableFilter<"Transaction">
+    journalEntry?: XOR<JournalEntryNullableScalarRelationFilter, JournalEntryWhereInput> | null
     account?: XOR<AccountScalarRelationFilter, AccountWhereInput>
     groupExpense?: XOR<GroupExpenseNullableScalarRelationFilter, GroupExpenseWhereInput> | null
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
-  }, "id" | "dedupHash">
+  }, "id" | "dedupHash" | "sequenceNumber" | "userId_sourceModule_idempotencyKey">
 
   export type TransactionOrderByWithAggregationInput = {
     id?: SortOrder
@@ -65514,6 +67361,19 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     deletedAt?: SortOrderInput | SortOrder
+    referenceType?: SortOrder
+    referenceId?: SortOrderInput | SortOrder
+    sourceModule?: SortOrder
+    direction?: SortOrder
+    eventType?: SortOrder
+    idempotencyKey?: SortOrderInput | SortOrder
+    ledgerVersion?: SortOrder
+    journalEntryId?: SortOrderInput | SortOrder
+    status?: SortOrder
+    currency?: SortOrderInput | SortOrder
+    exchangeRate?: SortOrderInput | SortOrder
+    sequenceNumber?: SortOrderInput | SortOrder
+    metadata?: SortOrderInput | SortOrder
     _count?: TransactionCountOrderByAggregateInput
     _avg?: TransactionAvgOrderByAggregateInput
     _max?: TransactionMaxOrderByAggregateInput
@@ -65555,6 +67415,19 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<"Transaction"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Transaction"> | Date | string
     deletedAt?: DateTimeNullableWithAggregatesFilter<"Transaction"> | Date | string | null
+    referenceType?: EnumLedgerReferenceTypeWithAggregatesFilter<"Transaction"> | $Enums.LedgerReferenceType
+    referenceId?: StringNullableWithAggregatesFilter<"Transaction"> | string | null
+    sourceModule?: EnumSourceModuleWithAggregatesFilter<"Transaction"> | $Enums.SourceModule
+    direction?: EnumLedgerDirectionWithAggregatesFilter<"Transaction"> | $Enums.LedgerDirection
+    eventType?: EnumFinancialEventTypeWithAggregatesFilter<"Transaction"> | $Enums.FinancialEventType
+    idempotencyKey?: StringNullableWithAggregatesFilter<"Transaction"> | string | null
+    ledgerVersion?: IntWithAggregatesFilter<"Transaction"> | number
+    journalEntryId?: StringNullableWithAggregatesFilter<"Transaction"> | string | null
+    status?: EnumLedgerStatusWithAggregatesFilter<"Transaction"> | $Enums.LedgerStatus
+    currency?: StringNullableWithAggregatesFilter<"Transaction"> | string | null
+    exchangeRate?: DecimalNullableWithAggregatesFilter<"Transaction"> | Decimal | DecimalJsLike | number | string | null
+    sequenceNumber?: StringNullableWithAggregatesFilter<"Transaction"> | string | null
+    metadata?: JsonNullableWithAggregatesFilter<"Transaction">
   }
 
   export type UserWhereInput = {
@@ -65603,6 +67476,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenListRelationFilter
     todos?: TodoListRelationFilter
     transactions?: TransactionListRelationFilter
+    journalEntries?: JournalEntryListRelationFilter
     userPin?: XOR<UserPinNullableScalarRelationFilter, UserPinWhereInput> | null
     userSettings?: XOR<UserSettingsNullableScalarRelationFilter, UserSettingsWhereInput> | null
     otpCodes?: OtpCodeListRelationFilter
@@ -65658,6 +67532,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenOrderByRelationAggregateInput
     todos?: TodoOrderByRelationAggregateInput
     transactions?: TransactionOrderByRelationAggregateInput
+    journalEntries?: JournalEntryOrderByRelationAggregateInput
     userPin?: UserPinOrderByWithRelationInput
     userSettings?: UserSettingsOrderByWithRelationInput
     otpCodes?: OtpCodeOrderByRelationAggregateInput
@@ -65716,6 +67591,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenListRelationFilter
     todos?: TodoListRelationFilter
     transactions?: TransactionListRelationFilter
+    journalEntries?: JournalEntryListRelationFilter
     userPin?: XOR<UserPinNullableScalarRelationFilter, UserPinWhereInput> | null
     userSettings?: XOR<UserSettingsNullableScalarRelationFilter, UserSettingsWhereInput> | null
     otpCodes?: OtpCodeListRelationFilter
@@ -67850,6 +69726,116 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<"GoldAsset"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"GoldAsset"> | Date | string
     deletedAt?: DateTimeNullableWithAggregatesFilter<"GoldAsset"> | Date | string | null
+  }
+
+  export type JournalEntryWhereInput = {
+    AND?: JournalEntryWhereInput | JournalEntryWhereInput[]
+    OR?: JournalEntryWhereInput[]
+    NOT?: JournalEntryWhereInput | JournalEntryWhereInput[]
+    id?: StringFilter<"JournalEntry"> | string
+    userId?: StringFilter<"JournalEntry"> | string
+    sourceModule?: EnumSourceModuleFilter<"JournalEntry"> | $Enums.SourceModule
+    referenceType?: EnumLedgerReferenceTypeFilter<"JournalEntry"> | $Enums.LedgerReferenceType
+    referenceId?: StringNullableFilter<"JournalEntry"> | string | null
+    status?: EnumLedgerStatusFilter<"JournalEntry"> | $Enums.LedgerStatus
+    description?: StringNullableFilter<"JournalEntry"> | string | null
+    eventVersion?: IntFilter<"JournalEntry"> | number
+    createdBy?: StringNullableFilter<"JournalEntry"> | string | null
+    createdFrom?: StringNullableFilter<"JournalEntry"> | string | null
+    deviceId?: StringNullableFilter<"JournalEntry"> | string | null
+    ipAddress?: StringNullableFilter<"JournalEntry"> | string | null
+    requestId?: StringNullableFilter<"JournalEntry"> | string | null
+    createdAt?: DateTimeFilter<"JournalEntry"> | Date | string
+    updatedAt?: DateTimeFilter<"JournalEntry"> | Date | string
+    transactions?: TransactionListRelationFilter
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }
+
+  export type JournalEntryOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    sourceModule?: SortOrder
+    referenceType?: SortOrder
+    referenceId?: SortOrderInput | SortOrder
+    status?: SortOrder
+    description?: SortOrderInput | SortOrder
+    eventVersion?: SortOrder
+    createdBy?: SortOrderInput | SortOrder
+    createdFrom?: SortOrderInput | SortOrder
+    deviceId?: SortOrderInput | SortOrder
+    ipAddress?: SortOrderInput | SortOrder
+    requestId?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    transactions?: TransactionOrderByRelationAggregateInput
+    user?: UserOrderByWithRelationInput
+  }
+
+  export type JournalEntryWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: JournalEntryWhereInput | JournalEntryWhereInput[]
+    OR?: JournalEntryWhereInput[]
+    NOT?: JournalEntryWhereInput | JournalEntryWhereInput[]
+    userId?: StringFilter<"JournalEntry"> | string
+    sourceModule?: EnumSourceModuleFilter<"JournalEntry"> | $Enums.SourceModule
+    referenceType?: EnumLedgerReferenceTypeFilter<"JournalEntry"> | $Enums.LedgerReferenceType
+    referenceId?: StringNullableFilter<"JournalEntry"> | string | null
+    status?: EnumLedgerStatusFilter<"JournalEntry"> | $Enums.LedgerStatus
+    description?: StringNullableFilter<"JournalEntry"> | string | null
+    eventVersion?: IntFilter<"JournalEntry"> | number
+    createdBy?: StringNullableFilter<"JournalEntry"> | string | null
+    createdFrom?: StringNullableFilter<"JournalEntry"> | string | null
+    deviceId?: StringNullableFilter<"JournalEntry"> | string | null
+    ipAddress?: StringNullableFilter<"JournalEntry"> | string | null
+    requestId?: StringNullableFilter<"JournalEntry"> | string | null
+    createdAt?: DateTimeFilter<"JournalEntry"> | Date | string
+    updatedAt?: DateTimeFilter<"JournalEntry"> | Date | string
+    transactions?: TransactionListRelationFilter
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }, "id">
+
+  export type JournalEntryOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    sourceModule?: SortOrder
+    referenceType?: SortOrder
+    referenceId?: SortOrderInput | SortOrder
+    status?: SortOrder
+    description?: SortOrderInput | SortOrder
+    eventVersion?: SortOrder
+    createdBy?: SortOrderInput | SortOrder
+    createdFrom?: SortOrderInput | SortOrder
+    deviceId?: SortOrderInput | SortOrder
+    ipAddress?: SortOrderInput | SortOrder
+    requestId?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: JournalEntryCountOrderByAggregateInput
+    _avg?: JournalEntryAvgOrderByAggregateInput
+    _max?: JournalEntryMaxOrderByAggregateInput
+    _min?: JournalEntryMinOrderByAggregateInput
+    _sum?: JournalEntrySumOrderByAggregateInput
+  }
+
+  export type JournalEntryScalarWhereWithAggregatesInput = {
+    AND?: JournalEntryScalarWhereWithAggregatesInput | JournalEntryScalarWhereWithAggregatesInput[]
+    OR?: JournalEntryScalarWhereWithAggregatesInput[]
+    NOT?: JournalEntryScalarWhereWithAggregatesInput | JournalEntryScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"JournalEntry"> | string
+    userId?: StringWithAggregatesFilter<"JournalEntry"> | string
+    sourceModule?: EnumSourceModuleWithAggregatesFilter<"JournalEntry"> | $Enums.SourceModule
+    referenceType?: EnumLedgerReferenceTypeWithAggregatesFilter<"JournalEntry"> | $Enums.LedgerReferenceType
+    referenceId?: StringNullableWithAggregatesFilter<"JournalEntry"> | string | null
+    status?: EnumLedgerStatusWithAggregatesFilter<"JournalEntry"> | $Enums.LedgerStatus
+    description?: StringNullableWithAggregatesFilter<"JournalEntry"> | string | null
+    eventVersion?: IntWithAggregatesFilter<"JournalEntry"> | number
+    createdBy?: StringNullableWithAggregatesFilter<"JournalEntry"> | string | null
+    createdFrom?: StringNullableWithAggregatesFilter<"JournalEntry"> | string | null
+    deviceId?: StringNullableWithAggregatesFilter<"JournalEntry"> | string | null
+    ipAddress?: StringNullableWithAggregatesFilter<"JournalEntry"> | string | null
+    requestId?: StringNullableWithAggregatesFilter<"JournalEntry"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"JournalEntry"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"JournalEntry"> | Date | string
   }
 
   export type AccountCreateInput = {
@@ -70474,6 +72460,19 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
+    referenceType?: $Enums.LedgerReferenceType
+    referenceId?: string | null
+    sourceModule?: $Enums.SourceModule
+    direction?: $Enums.LedgerDirection
+    eventType?: $Enums.FinancialEventType
+    idempotencyKey?: string | null
+    ledgerVersion?: number
+    status?: $Enums.LedgerStatus
+    currency?: string | null
+    exchangeRate?: Decimal | DecimalJsLike | number | string | null
+    sequenceNumber?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    journalEntry?: JournalEntryCreateNestedOneWithoutTransactionsInput
     account: AccountCreateNestedOneWithoutTransactionsInput
     groupExpense?: GroupExpenseCreateNestedOneWithoutTransactionsInput
     user: UserCreateNestedOneWithoutTransactionsInput
@@ -70510,6 +72509,19 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
+    referenceType?: $Enums.LedgerReferenceType
+    referenceId?: string | null
+    sourceModule?: $Enums.SourceModule
+    direction?: $Enums.LedgerDirection
+    eventType?: $Enums.FinancialEventType
+    idempotencyKey?: string | null
+    ledgerVersion?: number
+    journalEntryId?: string | null
+    status?: $Enums.LedgerStatus
+    currency?: string | null
+    exchangeRate?: Decimal | DecimalJsLike | number | string | null
+    sequenceNumber?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
   }
 
   export type TransactionUpdateInput = {
@@ -70540,6 +72552,19 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    referenceType?: EnumLedgerReferenceTypeFieldUpdateOperationsInput | $Enums.LedgerReferenceType
+    referenceId?: NullableStringFieldUpdateOperationsInput | string | null
+    sourceModule?: EnumSourceModuleFieldUpdateOperationsInput | $Enums.SourceModule
+    direction?: EnumLedgerDirectionFieldUpdateOperationsInput | $Enums.LedgerDirection
+    eventType?: EnumFinancialEventTypeFieldUpdateOperationsInput | $Enums.FinancialEventType
+    idempotencyKey?: NullableStringFieldUpdateOperationsInput | string | null
+    ledgerVersion?: IntFieldUpdateOperationsInput | number
+    status?: EnumLedgerStatusFieldUpdateOperationsInput | $Enums.LedgerStatus
+    currency?: NullableStringFieldUpdateOperationsInput | string | null
+    exchangeRate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    sequenceNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    journalEntry?: JournalEntryUpdateOneWithoutTransactionsNestedInput
     account?: AccountUpdateOneRequiredWithoutTransactionsNestedInput
     groupExpense?: GroupExpenseUpdateOneWithoutTransactionsNestedInput
     user?: UserUpdateOneRequiredWithoutTransactionsNestedInput
@@ -70576,6 +72601,19 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    referenceType?: EnumLedgerReferenceTypeFieldUpdateOperationsInput | $Enums.LedgerReferenceType
+    referenceId?: NullableStringFieldUpdateOperationsInput | string | null
+    sourceModule?: EnumSourceModuleFieldUpdateOperationsInput | $Enums.SourceModule
+    direction?: EnumLedgerDirectionFieldUpdateOperationsInput | $Enums.LedgerDirection
+    eventType?: EnumFinancialEventTypeFieldUpdateOperationsInput | $Enums.FinancialEventType
+    idempotencyKey?: NullableStringFieldUpdateOperationsInput | string | null
+    ledgerVersion?: IntFieldUpdateOperationsInput | number
+    journalEntryId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumLedgerStatusFieldUpdateOperationsInput | $Enums.LedgerStatus
+    currency?: NullableStringFieldUpdateOperationsInput | string | null
+    exchangeRate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    sequenceNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
   }
 
   export type TransactionCreateManyInput = {
@@ -70609,6 +72647,19 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
+    referenceType?: $Enums.LedgerReferenceType
+    referenceId?: string | null
+    sourceModule?: $Enums.SourceModule
+    direction?: $Enums.LedgerDirection
+    eventType?: $Enums.FinancialEventType
+    idempotencyKey?: string | null
+    ledgerVersion?: number
+    journalEntryId?: string | null
+    status?: $Enums.LedgerStatus
+    currency?: string | null
+    exchangeRate?: Decimal | DecimalJsLike | number | string | null
+    sequenceNumber?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
   }
 
   export type TransactionUpdateManyMutationInput = {
@@ -70639,6 +72690,18 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    referenceType?: EnumLedgerReferenceTypeFieldUpdateOperationsInput | $Enums.LedgerReferenceType
+    referenceId?: NullableStringFieldUpdateOperationsInput | string | null
+    sourceModule?: EnumSourceModuleFieldUpdateOperationsInput | $Enums.SourceModule
+    direction?: EnumLedgerDirectionFieldUpdateOperationsInput | $Enums.LedgerDirection
+    eventType?: EnumFinancialEventTypeFieldUpdateOperationsInput | $Enums.FinancialEventType
+    idempotencyKey?: NullableStringFieldUpdateOperationsInput | string | null
+    ledgerVersion?: IntFieldUpdateOperationsInput | number
+    status?: EnumLedgerStatusFieldUpdateOperationsInput | $Enums.LedgerStatus
+    currency?: NullableStringFieldUpdateOperationsInput | string | null
+    exchangeRate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    sequenceNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
   }
 
   export type TransactionUncheckedUpdateManyInput = {
@@ -70672,6 +72735,19 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    referenceType?: EnumLedgerReferenceTypeFieldUpdateOperationsInput | $Enums.LedgerReferenceType
+    referenceId?: NullableStringFieldUpdateOperationsInput | string | null
+    sourceModule?: EnumSourceModuleFieldUpdateOperationsInput | $Enums.SourceModule
+    direction?: EnumLedgerDirectionFieldUpdateOperationsInput | $Enums.LedgerDirection
+    eventType?: EnumFinancialEventTypeFieldUpdateOperationsInput | $Enums.FinancialEventType
+    idempotencyKey?: NullableStringFieldUpdateOperationsInput | string | null
+    ledgerVersion?: IntFieldUpdateOperationsInput | number
+    journalEntryId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumLedgerStatusFieldUpdateOperationsInput | $Enums.LedgerStatus
+    currency?: NullableStringFieldUpdateOperationsInput | string | null
+    exchangeRate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    sequenceNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
   }
 
   export type UserCreateInput = {
@@ -70717,6 +72793,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     todos?: TodoCreateNestedManyWithoutUserInput
     transactions?: TransactionCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
@@ -70772,6 +72849,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     todos?: TodoUncheckedCreateNestedManyWithoutUserInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
@@ -70827,6 +72905,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     todos?: TodoUpdateManyWithoutUserNestedInput
     transactions?: TransactionUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
@@ -70882,6 +72961,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     todos?: TodoUncheckedUpdateManyWithoutUserNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
@@ -73345,6 +75425,135 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
+  export type JournalEntryCreateInput = {
+    id?: string
+    sourceModule: $Enums.SourceModule
+    referenceType: $Enums.LedgerReferenceType
+    referenceId?: string | null
+    status?: $Enums.LedgerStatus
+    description?: string | null
+    eventVersion?: number
+    createdBy?: string | null
+    createdFrom?: string | null
+    deviceId?: string | null
+    ipAddress?: string | null
+    requestId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    transactions?: TransactionCreateNestedManyWithoutJournalEntryInput
+    user: UserCreateNestedOneWithoutJournalEntriesInput
+  }
+
+  export type JournalEntryUncheckedCreateInput = {
+    id?: string
+    userId: string
+    sourceModule: $Enums.SourceModule
+    referenceType: $Enums.LedgerReferenceType
+    referenceId?: string | null
+    status?: $Enums.LedgerStatus
+    description?: string | null
+    eventVersion?: number
+    createdBy?: string | null
+    createdFrom?: string | null
+    deviceId?: string | null
+    ipAddress?: string | null
+    requestId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    transactions?: TransactionUncheckedCreateNestedManyWithoutJournalEntryInput
+  }
+
+  export type JournalEntryUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    sourceModule?: EnumSourceModuleFieldUpdateOperationsInput | $Enums.SourceModule
+    referenceType?: EnumLedgerReferenceTypeFieldUpdateOperationsInput | $Enums.LedgerReferenceType
+    referenceId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumLedgerStatusFieldUpdateOperationsInput | $Enums.LedgerStatus
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    eventVersion?: IntFieldUpdateOperationsInput | number
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
+    createdFrom?: NullableStringFieldUpdateOperationsInput | string | null
+    deviceId?: NullableStringFieldUpdateOperationsInput | string | null
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    requestId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    transactions?: TransactionUpdateManyWithoutJournalEntryNestedInput
+    user?: UserUpdateOneRequiredWithoutJournalEntriesNestedInput
+  }
+
+  export type JournalEntryUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    sourceModule?: EnumSourceModuleFieldUpdateOperationsInput | $Enums.SourceModule
+    referenceType?: EnumLedgerReferenceTypeFieldUpdateOperationsInput | $Enums.LedgerReferenceType
+    referenceId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumLedgerStatusFieldUpdateOperationsInput | $Enums.LedgerStatus
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    eventVersion?: IntFieldUpdateOperationsInput | number
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
+    createdFrom?: NullableStringFieldUpdateOperationsInput | string | null
+    deviceId?: NullableStringFieldUpdateOperationsInput | string | null
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    requestId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    transactions?: TransactionUncheckedUpdateManyWithoutJournalEntryNestedInput
+  }
+
+  export type JournalEntryCreateManyInput = {
+    id?: string
+    userId: string
+    sourceModule: $Enums.SourceModule
+    referenceType: $Enums.LedgerReferenceType
+    referenceId?: string | null
+    status?: $Enums.LedgerStatus
+    description?: string | null
+    eventVersion?: number
+    createdBy?: string | null
+    createdFrom?: string | null
+    deviceId?: string | null
+    ipAddress?: string | null
+    requestId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type JournalEntryUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    sourceModule?: EnumSourceModuleFieldUpdateOperationsInput | $Enums.SourceModule
+    referenceType?: EnumLedgerReferenceTypeFieldUpdateOperationsInput | $Enums.LedgerReferenceType
+    referenceId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumLedgerStatusFieldUpdateOperationsInput | $Enums.LedgerStatus
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    eventVersion?: IntFieldUpdateOperationsInput | number
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
+    createdFrom?: NullableStringFieldUpdateOperationsInput | string | null
+    deviceId?: NullableStringFieldUpdateOperationsInput | string | null
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    requestId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type JournalEntryUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    sourceModule?: EnumSourceModuleFieldUpdateOperationsInput | $Enums.SourceModule
+    referenceType?: EnumLedgerReferenceTypeFieldUpdateOperationsInput | $Enums.LedgerReferenceType
+    referenceId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumLedgerStatusFieldUpdateOperationsInput | $Enums.LedgerStatus
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    eventVersion?: IntFieldUpdateOperationsInput | number
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
+    createdFrom?: NullableStringFieldUpdateOperationsInput | string | null
+    deviceId?: NullableStringFieldUpdateOperationsInput | string | null
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    requestId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -75105,9 +77314,55 @@ export namespace Prisma {
     updatedAt?: SortOrder
   }
 
+  export type EnumLedgerReferenceTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.LedgerReferenceType | EnumLedgerReferenceTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.LedgerReferenceType[] | ListEnumLedgerReferenceTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.LedgerReferenceType[] | ListEnumLedgerReferenceTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumLedgerReferenceTypeFilter<$PrismaModel> | $Enums.LedgerReferenceType
+  }
+
+  export type EnumSourceModuleFilter<$PrismaModel = never> = {
+    equals?: $Enums.SourceModule | EnumSourceModuleFieldRefInput<$PrismaModel>
+    in?: $Enums.SourceModule[] | ListEnumSourceModuleFieldRefInput<$PrismaModel>
+    notIn?: $Enums.SourceModule[] | ListEnumSourceModuleFieldRefInput<$PrismaModel>
+    not?: NestedEnumSourceModuleFilter<$PrismaModel> | $Enums.SourceModule
+  }
+
+  export type EnumLedgerDirectionFilter<$PrismaModel = never> = {
+    equals?: $Enums.LedgerDirection | EnumLedgerDirectionFieldRefInput<$PrismaModel>
+    in?: $Enums.LedgerDirection[] | ListEnumLedgerDirectionFieldRefInput<$PrismaModel>
+    notIn?: $Enums.LedgerDirection[] | ListEnumLedgerDirectionFieldRefInput<$PrismaModel>
+    not?: NestedEnumLedgerDirectionFilter<$PrismaModel> | $Enums.LedgerDirection
+  }
+
+  export type EnumFinancialEventTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.FinancialEventType | EnumFinancialEventTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.FinancialEventType[] | ListEnumFinancialEventTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.FinancialEventType[] | ListEnumFinancialEventTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumFinancialEventTypeFilter<$PrismaModel> | $Enums.FinancialEventType
+  }
+
+  export type EnumLedgerStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.LedgerStatus | EnumLedgerStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.LedgerStatus[] | ListEnumLedgerStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.LedgerStatus[] | ListEnumLedgerStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumLedgerStatusFilter<$PrismaModel> | $Enums.LedgerStatus
+  }
+
+  export type JournalEntryNullableScalarRelationFilter = {
+    is?: JournalEntryWhereInput | null
+    isNot?: JournalEntryWhereInput | null
+  }
+
   export type GroupExpenseNullableScalarRelationFilter = {
     is?: GroupExpenseWhereInput | null
     isNot?: GroupExpenseWhereInput | null
+  }
+
+  export type TransactionUserIdSourceModuleIdempotencyKeyCompoundUniqueInput = {
+    userId: string
+    sourceModule: $Enums.SourceModule
+    idempotencyKey: string
   }
 
   export type TransactionCountOrderByAggregateInput = {
@@ -75141,11 +77396,26 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     deletedAt?: SortOrder
+    referenceType?: SortOrder
+    referenceId?: SortOrder
+    sourceModule?: SortOrder
+    direction?: SortOrder
+    eventType?: SortOrder
+    idempotencyKey?: SortOrder
+    ledgerVersion?: SortOrder
+    journalEntryId?: SortOrder
+    status?: SortOrder
+    currency?: SortOrder
+    exchangeRate?: SortOrder
+    sequenceNumber?: SortOrder
+    metadata?: SortOrder
   }
 
   export type TransactionAvgOrderByAggregateInput = {
     amount?: SortOrder
     version?: SortOrder
+    ledgerVersion?: SortOrder
+    exchangeRate?: SortOrder
   }
 
   export type TransactionMaxOrderByAggregateInput = {
@@ -75178,6 +77448,18 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     deletedAt?: SortOrder
+    referenceType?: SortOrder
+    referenceId?: SortOrder
+    sourceModule?: SortOrder
+    direction?: SortOrder
+    eventType?: SortOrder
+    idempotencyKey?: SortOrder
+    ledgerVersion?: SortOrder
+    journalEntryId?: SortOrder
+    status?: SortOrder
+    currency?: SortOrder
+    exchangeRate?: SortOrder
+    sequenceNumber?: SortOrder
   }
 
   export type TransactionMinOrderByAggregateInput = {
@@ -75210,11 +77492,75 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     deletedAt?: SortOrder
+    referenceType?: SortOrder
+    referenceId?: SortOrder
+    sourceModule?: SortOrder
+    direction?: SortOrder
+    eventType?: SortOrder
+    idempotencyKey?: SortOrder
+    ledgerVersion?: SortOrder
+    journalEntryId?: SortOrder
+    status?: SortOrder
+    currency?: SortOrder
+    exchangeRate?: SortOrder
+    sequenceNumber?: SortOrder
   }
 
   export type TransactionSumOrderByAggregateInput = {
     amount?: SortOrder
     version?: SortOrder
+    ledgerVersion?: SortOrder
+    exchangeRate?: SortOrder
+  }
+
+  export type EnumLedgerReferenceTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.LedgerReferenceType | EnumLedgerReferenceTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.LedgerReferenceType[] | ListEnumLedgerReferenceTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.LedgerReferenceType[] | ListEnumLedgerReferenceTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumLedgerReferenceTypeWithAggregatesFilter<$PrismaModel> | $Enums.LedgerReferenceType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumLedgerReferenceTypeFilter<$PrismaModel>
+    _max?: NestedEnumLedgerReferenceTypeFilter<$PrismaModel>
+  }
+
+  export type EnumSourceModuleWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.SourceModule | EnumSourceModuleFieldRefInput<$PrismaModel>
+    in?: $Enums.SourceModule[] | ListEnumSourceModuleFieldRefInput<$PrismaModel>
+    notIn?: $Enums.SourceModule[] | ListEnumSourceModuleFieldRefInput<$PrismaModel>
+    not?: NestedEnumSourceModuleWithAggregatesFilter<$PrismaModel> | $Enums.SourceModule
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumSourceModuleFilter<$PrismaModel>
+    _max?: NestedEnumSourceModuleFilter<$PrismaModel>
+  }
+
+  export type EnumLedgerDirectionWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.LedgerDirection | EnumLedgerDirectionFieldRefInput<$PrismaModel>
+    in?: $Enums.LedgerDirection[] | ListEnumLedgerDirectionFieldRefInput<$PrismaModel>
+    notIn?: $Enums.LedgerDirection[] | ListEnumLedgerDirectionFieldRefInput<$PrismaModel>
+    not?: NestedEnumLedgerDirectionWithAggregatesFilter<$PrismaModel> | $Enums.LedgerDirection
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumLedgerDirectionFilter<$PrismaModel>
+    _max?: NestedEnumLedgerDirectionFilter<$PrismaModel>
+  }
+
+  export type EnumFinancialEventTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.FinancialEventType | EnumFinancialEventTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.FinancialEventType[] | ListEnumFinancialEventTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.FinancialEventType[] | ListEnumFinancialEventTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumFinancialEventTypeWithAggregatesFilter<$PrismaModel> | $Enums.FinancialEventType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumFinancialEventTypeFilter<$PrismaModel>
+    _max?: NestedEnumFinancialEventTypeFilter<$PrismaModel>
+  }
+
+  export type EnumLedgerStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.LedgerStatus | EnumLedgerStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.LedgerStatus[] | ListEnumLedgerStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.LedgerStatus[] | ListEnumLedgerStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumLedgerStatusWithAggregatesFilter<$PrismaModel> | $Enums.LedgerStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumLedgerStatusFilter<$PrismaModel>
+    _max?: NestedEnumLedgerStatusFilter<$PrismaModel>
   }
 
   export type AccountListRelationFilter = {
@@ -75322,6 +77668,12 @@ export namespace Prisma {
     every?: TodoWhereInput
     some?: TodoWhereInput
     none?: TodoWhereInput
+  }
+
+  export type JournalEntryListRelationFilter = {
+    every?: JournalEntryWhereInput
+    some?: JournalEntryWhereInput
+    none?: JournalEntryWhereInput
   }
 
   export type UserPinNullableScalarRelationFilter = {
@@ -75435,6 +77787,10 @@ export namespace Prisma {
   }
 
   export type TodoOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type JournalEntryOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -76754,6 +79110,68 @@ export namespace Prisma {
     purityPercentage?: SortOrder
   }
 
+  export type JournalEntryCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    sourceModule?: SortOrder
+    referenceType?: SortOrder
+    referenceId?: SortOrder
+    status?: SortOrder
+    description?: SortOrder
+    eventVersion?: SortOrder
+    createdBy?: SortOrder
+    createdFrom?: SortOrder
+    deviceId?: SortOrder
+    ipAddress?: SortOrder
+    requestId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type JournalEntryAvgOrderByAggregateInput = {
+    eventVersion?: SortOrder
+  }
+
+  export type JournalEntryMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    sourceModule?: SortOrder
+    referenceType?: SortOrder
+    referenceId?: SortOrder
+    status?: SortOrder
+    description?: SortOrder
+    eventVersion?: SortOrder
+    createdBy?: SortOrder
+    createdFrom?: SortOrder
+    deviceId?: SortOrder
+    ipAddress?: SortOrder
+    requestId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type JournalEntryMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    sourceModule?: SortOrder
+    referenceType?: SortOrder
+    referenceId?: SortOrder
+    status?: SortOrder
+    description?: SortOrder
+    eventVersion?: SortOrder
+    createdBy?: SortOrder
+    createdFrom?: SortOrder
+    deviceId?: SortOrder
+    ipAddress?: SortOrder
+    requestId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type JournalEntrySumOrderByAggregateInput = {
+    eventVersion?: SortOrder
+  }
+
   export type UserCreateNestedOneWithoutAccountsInput = {
     create?: XOR<UserCreateWithoutAccountsInput, UserUncheckedCreateWithoutAccountsInput>
     connectOrCreate?: UserCreateOrConnectWithoutAccountsInput
@@ -77622,6 +80040,12 @@ export namespace Prisma {
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutTodosInput, UserUpdateWithoutTodosInput>, UserUncheckedUpdateWithoutTodosInput>
   }
 
+  export type JournalEntryCreateNestedOneWithoutTransactionsInput = {
+    create?: XOR<JournalEntryCreateWithoutTransactionsInput, JournalEntryUncheckedCreateWithoutTransactionsInput>
+    connectOrCreate?: JournalEntryCreateOrConnectWithoutTransactionsInput
+    connect?: JournalEntryWhereUniqueInput
+  }
+
   export type AccountCreateNestedOneWithoutTransactionsInput = {
     create?: XOR<AccountCreateWithoutTransactionsInput, AccountUncheckedCreateWithoutTransactionsInput>
     connectOrCreate?: AccountCreateOrConnectWithoutTransactionsInput
@@ -77638,6 +80062,36 @@ export namespace Prisma {
     create?: XOR<UserCreateWithoutTransactionsInput, UserUncheckedCreateWithoutTransactionsInput>
     connectOrCreate?: UserCreateOrConnectWithoutTransactionsInput
     connect?: UserWhereUniqueInput
+  }
+
+  export type EnumLedgerReferenceTypeFieldUpdateOperationsInput = {
+    set?: $Enums.LedgerReferenceType
+  }
+
+  export type EnumSourceModuleFieldUpdateOperationsInput = {
+    set?: $Enums.SourceModule
+  }
+
+  export type EnumLedgerDirectionFieldUpdateOperationsInput = {
+    set?: $Enums.LedgerDirection
+  }
+
+  export type EnumFinancialEventTypeFieldUpdateOperationsInput = {
+    set?: $Enums.FinancialEventType
+  }
+
+  export type EnumLedgerStatusFieldUpdateOperationsInput = {
+    set?: $Enums.LedgerStatus
+  }
+
+  export type JournalEntryUpdateOneWithoutTransactionsNestedInput = {
+    create?: XOR<JournalEntryCreateWithoutTransactionsInput, JournalEntryUncheckedCreateWithoutTransactionsInput>
+    connectOrCreate?: JournalEntryCreateOrConnectWithoutTransactionsInput
+    upsert?: JournalEntryUpsertWithoutTransactionsInput
+    disconnect?: JournalEntryWhereInput | boolean
+    delete?: JournalEntryWhereInput | boolean
+    connect?: JournalEntryWhereUniqueInput
+    update?: XOR<XOR<JournalEntryUpdateToOneWithWhereWithoutTransactionsInput, JournalEntryUpdateWithoutTransactionsInput>, JournalEntryUncheckedUpdateWithoutTransactionsInput>
   }
 
   export type AccountUpdateOneRequiredWithoutTransactionsNestedInput = {
@@ -77831,6 +80285,13 @@ export namespace Prisma {
     connectOrCreate?: TransactionCreateOrConnectWithoutUserInput | TransactionCreateOrConnectWithoutUserInput[]
     createMany?: TransactionCreateManyUserInputEnvelope
     connect?: TransactionWhereUniqueInput | TransactionWhereUniqueInput[]
+  }
+
+  export type JournalEntryCreateNestedManyWithoutUserInput = {
+    create?: XOR<JournalEntryCreateWithoutUserInput, JournalEntryUncheckedCreateWithoutUserInput> | JournalEntryCreateWithoutUserInput[] | JournalEntryUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: JournalEntryCreateOrConnectWithoutUserInput | JournalEntryCreateOrConnectWithoutUserInput[]
+    createMany?: JournalEntryCreateManyUserInputEnvelope
+    connect?: JournalEntryWhereUniqueInput | JournalEntryWhereUniqueInput[]
   }
 
   export type UserPinCreateNestedOneWithoutUserInput = {
@@ -78066,6 +80527,13 @@ export namespace Prisma {
     connectOrCreate?: TransactionCreateOrConnectWithoutUserInput | TransactionCreateOrConnectWithoutUserInput[]
     createMany?: TransactionCreateManyUserInputEnvelope
     connect?: TransactionWhereUniqueInput | TransactionWhereUniqueInput[]
+  }
+
+  export type JournalEntryUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<JournalEntryCreateWithoutUserInput, JournalEntryUncheckedCreateWithoutUserInput> | JournalEntryCreateWithoutUserInput[] | JournalEntryUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: JournalEntryCreateOrConnectWithoutUserInput | JournalEntryCreateOrConnectWithoutUserInput[]
+    createMany?: JournalEntryCreateManyUserInputEnvelope
+    connect?: JournalEntryWhereUniqueInput | JournalEntryWhereUniqueInput[]
   }
 
   export type UserPinUncheckedCreateNestedOneWithoutUserInput = {
@@ -78466,6 +80934,20 @@ export namespace Prisma {
     update?: TransactionUpdateWithWhereUniqueWithoutUserInput | TransactionUpdateWithWhereUniqueWithoutUserInput[]
     updateMany?: TransactionUpdateManyWithWhereWithoutUserInput | TransactionUpdateManyWithWhereWithoutUserInput[]
     deleteMany?: TransactionScalarWhereInput | TransactionScalarWhereInput[]
+  }
+
+  export type JournalEntryUpdateManyWithoutUserNestedInput = {
+    create?: XOR<JournalEntryCreateWithoutUserInput, JournalEntryUncheckedCreateWithoutUserInput> | JournalEntryCreateWithoutUserInput[] | JournalEntryUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: JournalEntryCreateOrConnectWithoutUserInput | JournalEntryCreateOrConnectWithoutUserInput[]
+    upsert?: JournalEntryUpsertWithWhereUniqueWithoutUserInput | JournalEntryUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: JournalEntryCreateManyUserInputEnvelope
+    set?: JournalEntryWhereUniqueInput | JournalEntryWhereUniqueInput[]
+    disconnect?: JournalEntryWhereUniqueInput | JournalEntryWhereUniqueInput[]
+    delete?: JournalEntryWhereUniqueInput | JournalEntryWhereUniqueInput[]
+    connect?: JournalEntryWhereUniqueInput | JournalEntryWhereUniqueInput[]
+    update?: JournalEntryUpdateWithWhereUniqueWithoutUserInput | JournalEntryUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: JournalEntryUpdateManyWithWhereWithoutUserInput | JournalEntryUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: JournalEntryScalarWhereInput | JournalEntryScalarWhereInput[]
   }
 
   export type UserPinUpdateOneWithoutUserNestedInput = {
@@ -78932,6 +81414,20 @@ export namespace Prisma {
     deleteMany?: TransactionScalarWhereInput | TransactionScalarWhereInput[]
   }
 
+  export type JournalEntryUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<JournalEntryCreateWithoutUserInput, JournalEntryUncheckedCreateWithoutUserInput> | JournalEntryCreateWithoutUserInput[] | JournalEntryUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: JournalEntryCreateOrConnectWithoutUserInput | JournalEntryCreateOrConnectWithoutUserInput[]
+    upsert?: JournalEntryUpsertWithWhereUniqueWithoutUserInput | JournalEntryUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: JournalEntryCreateManyUserInputEnvelope
+    set?: JournalEntryWhereUniqueInput | JournalEntryWhereUniqueInput[]
+    disconnect?: JournalEntryWhereUniqueInput | JournalEntryWhereUniqueInput[]
+    delete?: JournalEntryWhereUniqueInput | JournalEntryWhereUniqueInput[]
+    connect?: JournalEntryWhereUniqueInput | JournalEntryWhereUniqueInput[]
+    update?: JournalEntryUpdateWithWhereUniqueWithoutUserInput | JournalEntryUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: JournalEntryUpdateManyWithWhereWithoutUserInput | JournalEntryUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: JournalEntryScalarWhereInput | JournalEntryScalarWhereInput[]
+  }
+
   export type UserPinUncheckedUpdateOneWithoutUserNestedInput = {
     create?: XOR<UserPinCreateWithoutUserInput, UserPinUncheckedCreateWithoutUserInput>
     connectOrCreate?: UserPinCreateOrConnectWithoutUserInput
@@ -79358,6 +81854,62 @@ export namespace Prisma {
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutGoldAssetsInput, UserUpdateWithoutGoldAssetsInput>, UserUncheckedUpdateWithoutGoldAssetsInput>
   }
 
+  export type TransactionCreateNestedManyWithoutJournalEntryInput = {
+    create?: XOR<TransactionCreateWithoutJournalEntryInput, TransactionUncheckedCreateWithoutJournalEntryInput> | TransactionCreateWithoutJournalEntryInput[] | TransactionUncheckedCreateWithoutJournalEntryInput[]
+    connectOrCreate?: TransactionCreateOrConnectWithoutJournalEntryInput | TransactionCreateOrConnectWithoutJournalEntryInput[]
+    createMany?: TransactionCreateManyJournalEntryInputEnvelope
+    connect?: TransactionWhereUniqueInput | TransactionWhereUniqueInput[]
+  }
+
+  export type UserCreateNestedOneWithoutJournalEntriesInput = {
+    create?: XOR<UserCreateWithoutJournalEntriesInput, UserUncheckedCreateWithoutJournalEntriesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutJournalEntriesInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type TransactionUncheckedCreateNestedManyWithoutJournalEntryInput = {
+    create?: XOR<TransactionCreateWithoutJournalEntryInput, TransactionUncheckedCreateWithoutJournalEntryInput> | TransactionCreateWithoutJournalEntryInput[] | TransactionUncheckedCreateWithoutJournalEntryInput[]
+    connectOrCreate?: TransactionCreateOrConnectWithoutJournalEntryInput | TransactionCreateOrConnectWithoutJournalEntryInput[]
+    createMany?: TransactionCreateManyJournalEntryInputEnvelope
+    connect?: TransactionWhereUniqueInput | TransactionWhereUniqueInput[]
+  }
+
+  export type TransactionUpdateManyWithoutJournalEntryNestedInput = {
+    create?: XOR<TransactionCreateWithoutJournalEntryInput, TransactionUncheckedCreateWithoutJournalEntryInput> | TransactionCreateWithoutJournalEntryInput[] | TransactionUncheckedCreateWithoutJournalEntryInput[]
+    connectOrCreate?: TransactionCreateOrConnectWithoutJournalEntryInput | TransactionCreateOrConnectWithoutJournalEntryInput[]
+    upsert?: TransactionUpsertWithWhereUniqueWithoutJournalEntryInput | TransactionUpsertWithWhereUniqueWithoutJournalEntryInput[]
+    createMany?: TransactionCreateManyJournalEntryInputEnvelope
+    set?: TransactionWhereUniqueInput | TransactionWhereUniqueInput[]
+    disconnect?: TransactionWhereUniqueInput | TransactionWhereUniqueInput[]
+    delete?: TransactionWhereUniqueInput | TransactionWhereUniqueInput[]
+    connect?: TransactionWhereUniqueInput | TransactionWhereUniqueInput[]
+    update?: TransactionUpdateWithWhereUniqueWithoutJournalEntryInput | TransactionUpdateWithWhereUniqueWithoutJournalEntryInput[]
+    updateMany?: TransactionUpdateManyWithWhereWithoutJournalEntryInput | TransactionUpdateManyWithWhereWithoutJournalEntryInput[]
+    deleteMany?: TransactionScalarWhereInput | TransactionScalarWhereInput[]
+  }
+
+  export type UserUpdateOneRequiredWithoutJournalEntriesNestedInput = {
+    create?: XOR<UserCreateWithoutJournalEntriesInput, UserUncheckedCreateWithoutJournalEntriesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutJournalEntriesInput
+    upsert?: UserUpsertWithoutJournalEntriesInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutJournalEntriesInput, UserUpdateWithoutJournalEntriesInput>, UserUncheckedUpdateWithoutJournalEntriesInput>
+  }
+
+  export type TransactionUncheckedUpdateManyWithoutJournalEntryNestedInput = {
+    create?: XOR<TransactionCreateWithoutJournalEntryInput, TransactionUncheckedCreateWithoutJournalEntryInput> | TransactionCreateWithoutJournalEntryInput[] | TransactionUncheckedCreateWithoutJournalEntryInput[]
+    connectOrCreate?: TransactionCreateOrConnectWithoutJournalEntryInput | TransactionCreateOrConnectWithoutJournalEntryInput[]
+    upsert?: TransactionUpsertWithWhereUniqueWithoutJournalEntryInput | TransactionUpsertWithWhereUniqueWithoutJournalEntryInput[]
+    createMany?: TransactionCreateManyJournalEntryInputEnvelope
+    set?: TransactionWhereUniqueInput | TransactionWhereUniqueInput[]
+    disconnect?: TransactionWhereUniqueInput | TransactionWhereUniqueInput[]
+    delete?: TransactionWhereUniqueInput | TransactionWhereUniqueInput[]
+    connect?: TransactionWhereUniqueInput | TransactionWhereUniqueInput[]
+    update?: TransactionUpdateWithWhereUniqueWithoutJournalEntryInput | TransactionUpdateWithWhereUniqueWithoutJournalEntryInput[]
+    updateMany?: TransactionUpdateManyWithWhereWithoutJournalEntryInput | TransactionUpdateManyWithWhereWithoutJournalEntryInput[]
+    deleteMany?: TransactionScalarWhereInput | TransactionScalarWhereInput[]
+  }
+
   export type NestedStringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -79675,6 +82227,91 @@ export namespace Prisma {
     _max?: NestedIntNullableFilter<$PrismaModel>
   }
 
+  export type NestedEnumLedgerReferenceTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.LedgerReferenceType | EnumLedgerReferenceTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.LedgerReferenceType[] | ListEnumLedgerReferenceTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.LedgerReferenceType[] | ListEnumLedgerReferenceTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumLedgerReferenceTypeFilter<$PrismaModel> | $Enums.LedgerReferenceType
+  }
+
+  export type NestedEnumSourceModuleFilter<$PrismaModel = never> = {
+    equals?: $Enums.SourceModule | EnumSourceModuleFieldRefInput<$PrismaModel>
+    in?: $Enums.SourceModule[] | ListEnumSourceModuleFieldRefInput<$PrismaModel>
+    notIn?: $Enums.SourceModule[] | ListEnumSourceModuleFieldRefInput<$PrismaModel>
+    not?: NestedEnumSourceModuleFilter<$PrismaModel> | $Enums.SourceModule
+  }
+
+  export type NestedEnumLedgerDirectionFilter<$PrismaModel = never> = {
+    equals?: $Enums.LedgerDirection | EnumLedgerDirectionFieldRefInput<$PrismaModel>
+    in?: $Enums.LedgerDirection[] | ListEnumLedgerDirectionFieldRefInput<$PrismaModel>
+    notIn?: $Enums.LedgerDirection[] | ListEnumLedgerDirectionFieldRefInput<$PrismaModel>
+    not?: NestedEnumLedgerDirectionFilter<$PrismaModel> | $Enums.LedgerDirection
+  }
+
+  export type NestedEnumFinancialEventTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.FinancialEventType | EnumFinancialEventTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.FinancialEventType[] | ListEnumFinancialEventTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.FinancialEventType[] | ListEnumFinancialEventTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumFinancialEventTypeFilter<$PrismaModel> | $Enums.FinancialEventType
+  }
+
+  export type NestedEnumLedgerStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.LedgerStatus | EnumLedgerStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.LedgerStatus[] | ListEnumLedgerStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.LedgerStatus[] | ListEnumLedgerStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumLedgerStatusFilter<$PrismaModel> | $Enums.LedgerStatus
+  }
+
+  export type NestedEnumLedgerReferenceTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.LedgerReferenceType | EnumLedgerReferenceTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.LedgerReferenceType[] | ListEnumLedgerReferenceTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.LedgerReferenceType[] | ListEnumLedgerReferenceTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumLedgerReferenceTypeWithAggregatesFilter<$PrismaModel> | $Enums.LedgerReferenceType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumLedgerReferenceTypeFilter<$PrismaModel>
+    _max?: NestedEnumLedgerReferenceTypeFilter<$PrismaModel>
+  }
+
+  export type NestedEnumSourceModuleWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.SourceModule | EnumSourceModuleFieldRefInput<$PrismaModel>
+    in?: $Enums.SourceModule[] | ListEnumSourceModuleFieldRefInput<$PrismaModel>
+    notIn?: $Enums.SourceModule[] | ListEnumSourceModuleFieldRefInput<$PrismaModel>
+    not?: NestedEnumSourceModuleWithAggregatesFilter<$PrismaModel> | $Enums.SourceModule
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumSourceModuleFilter<$PrismaModel>
+    _max?: NestedEnumSourceModuleFilter<$PrismaModel>
+  }
+
+  export type NestedEnumLedgerDirectionWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.LedgerDirection | EnumLedgerDirectionFieldRefInput<$PrismaModel>
+    in?: $Enums.LedgerDirection[] | ListEnumLedgerDirectionFieldRefInput<$PrismaModel>
+    notIn?: $Enums.LedgerDirection[] | ListEnumLedgerDirectionFieldRefInput<$PrismaModel>
+    not?: NestedEnumLedgerDirectionWithAggregatesFilter<$PrismaModel> | $Enums.LedgerDirection
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumLedgerDirectionFilter<$PrismaModel>
+    _max?: NestedEnumLedgerDirectionFilter<$PrismaModel>
+  }
+
+  export type NestedEnumFinancialEventTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.FinancialEventType | EnumFinancialEventTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.FinancialEventType[] | ListEnumFinancialEventTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.FinancialEventType[] | ListEnumFinancialEventTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumFinancialEventTypeWithAggregatesFilter<$PrismaModel> | $Enums.FinancialEventType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumFinancialEventTypeFilter<$PrismaModel>
+    _max?: NestedEnumFinancialEventTypeFilter<$PrismaModel>
+  }
+
+  export type NestedEnumLedgerStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.LedgerStatus | EnumLedgerStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.LedgerStatus[] | ListEnumLedgerStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.LedgerStatus[] | ListEnumLedgerStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumLedgerStatusWithAggregatesFilter<$PrismaModel> | $Enums.LedgerStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumLedgerStatusFilter<$PrismaModel>
+    _max?: NestedEnumLedgerStatusFilter<$PrismaModel>
+  }
+
   export type NestedFloatWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | FloatFieldRefInput<$PrismaModel>
     in?: number[] | ListFloatFieldRefInput<$PrismaModel>
@@ -79758,6 +82395,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     todos?: TodoCreateNestedManyWithoutUserInput
     transactions?: TransactionCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
@@ -79812,6 +82450,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     todos?: TodoUncheckedCreateNestedManyWithoutUserInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
@@ -79893,6 +82532,19 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
+    referenceType?: $Enums.LedgerReferenceType
+    referenceId?: string | null
+    sourceModule?: $Enums.SourceModule
+    direction?: $Enums.LedgerDirection
+    eventType?: $Enums.FinancialEventType
+    idempotencyKey?: string | null
+    ledgerVersion?: number
+    status?: $Enums.LedgerStatus
+    currency?: string | null
+    exchangeRate?: Decimal | DecimalJsLike | number | string | null
+    sequenceNumber?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    journalEntry?: JournalEntryCreateNestedOneWithoutTransactionsInput
     groupExpense?: GroupExpenseCreateNestedOneWithoutTransactionsInput
     user: UserCreateNestedOneWithoutTransactionsInput
   }
@@ -79927,6 +82579,19 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
+    referenceType?: $Enums.LedgerReferenceType
+    referenceId?: string | null
+    sourceModule?: $Enums.SourceModule
+    direction?: $Enums.LedgerDirection
+    eventType?: $Enums.FinancialEventType
+    idempotencyKey?: string | null
+    ledgerVersion?: number
+    journalEntryId?: string | null
+    status?: $Enums.LedgerStatus
+    currency?: string | null
+    exchangeRate?: Decimal | DecimalJsLike | number | string | null
+    sequenceNumber?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
   }
 
   export type TransactionCreateOrConnectWithoutAccountInput = {
@@ -80056,6 +82721,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     todos?: TodoUpdateManyWithoutUserNestedInput
     transactions?: TransactionUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
@@ -80110,6 +82776,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     todos?: TodoUncheckedUpdateManyWithoutUserNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
@@ -80205,6 +82872,19 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Transaction"> | Date | string
     updatedAt?: DateTimeFilter<"Transaction"> | Date | string
     deletedAt?: DateTimeNullableFilter<"Transaction"> | Date | string | null
+    referenceType?: EnumLedgerReferenceTypeFilter<"Transaction"> | $Enums.LedgerReferenceType
+    referenceId?: StringNullableFilter<"Transaction"> | string | null
+    sourceModule?: EnumSourceModuleFilter<"Transaction"> | $Enums.SourceModule
+    direction?: EnumLedgerDirectionFilter<"Transaction"> | $Enums.LedgerDirection
+    eventType?: EnumFinancialEventTypeFilter<"Transaction"> | $Enums.FinancialEventType
+    idempotencyKey?: StringNullableFilter<"Transaction"> | string | null
+    ledgerVersion?: IntFilter<"Transaction"> | number
+    journalEntryId?: StringNullableFilter<"Transaction"> | string | null
+    status?: EnumLedgerStatusFilter<"Transaction"> | $Enums.LedgerStatus
+    currency?: StringNullableFilter<"Transaction"> | string | null
+    exchangeRate?: DecimalNullableFilter<"Transaction"> | Decimal | DecimalJsLike | number | string | null
+    sequenceNumber?: StringNullableFilter<"Transaction"> | string | null
+    metadata?: JsonNullableFilter<"Transaction">
   }
 
   export type GroupExpenseUpsertWithWhereUniqueWithoutPaidByAccountInput = {
@@ -80294,6 +82974,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     todos?: TodoCreateNestedManyWithoutUserInput
     transactions?: TransactionCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
@@ -80348,6 +83029,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     todos?: TodoUncheckedCreateNestedManyWithoutUserInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
@@ -80407,6 +83089,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     todos?: TodoCreateNestedManyWithoutUserInput
     transactions?: TransactionCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
@@ -80461,6 +83144,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     todos?: TodoUncheckedCreateNestedManyWithoutUserInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
@@ -80531,6 +83215,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     todos?: TodoUpdateManyWithoutUserNestedInput
     transactions?: TransactionUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
@@ -80585,6 +83270,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     todos?: TodoUncheckedUpdateManyWithoutUserNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
@@ -80650,6 +83336,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     todos?: TodoUpdateManyWithoutUserNestedInput
     transactions?: TransactionUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
@@ -80704,6 +83391,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     todos?: TodoUncheckedUpdateManyWithoutUserNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
@@ -80758,6 +83446,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     todos?: TodoCreateNestedManyWithoutUserInput
     transactions?: TransactionCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
@@ -80812,6 +83501,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     todos?: TodoUncheckedCreateNestedManyWithoutUserInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
@@ -80882,6 +83572,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     todos?: TodoUpdateManyWithoutUserNestedInput
     transactions?: TransactionUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
@@ -80936,6 +83627,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     todos?: TodoUncheckedUpdateManyWithoutUserNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
@@ -80990,6 +83682,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     todos?: TodoCreateNestedManyWithoutUserInput
     transactions?: TransactionCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
@@ -81044,6 +83737,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     todos?: TodoUncheckedCreateNestedManyWithoutUserInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
@@ -81140,6 +83834,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     todos?: TodoCreateNestedManyWithoutUserInput
     transactions?: TransactionCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
@@ -81194,6 +83889,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     todos?: TodoUncheckedCreateNestedManyWithoutUserInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
@@ -81321,6 +84017,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     todos?: TodoUpdateManyWithoutUserNestedInput
     transactions?: TransactionUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
@@ -81375,6 +84072,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     todos?: TodoUncheckedUpdateManyWithoutUserNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
@@ -81483,6 +84181,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     todos?: TodoUpdateManyWithoutUserNestedInput
     transactions?: TransactionUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
@@ -81537,6 +84236,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     todos?: TodoUncheckedUpdateManyWithoutUserNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
@@ -81696,6 +84396,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     todos?: TodoCreateNestedManyWithoutUserInput
     transactions?: TransactionCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
@@ -81750,6 +84451,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     todos?: TodoUncheckedCreateNestedManyWithoutUserInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
@@ -81809,6 +84511,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     todos?: TodoCreateNestedManyWithoutUserInput
     transactions?: TransactionCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
@@ -81863,6 +84566,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     todos?: TodoUncheckedCreateNestedManyWithoutUserInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
@@ -81978,6 +84682,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     todos?: TodoUpdateManyWithoutUserNestedInput
     transactions?: TransactionUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
@@ -82032,6 +84737,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     todos?: TodoUncheckedUpdateManyWithoutUserNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
@@ -82097,6 +84803,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     todos?: TodoUpdateManyWithoutUserNestedInput
     transactions?: TransactionUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
@@ -82151,6 +84858,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     todos?: TodoUncheckedUpdateManyWithoutUserNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
@@ -82205,6 +84913,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     todos?: TodoCreateNestedManyWithoutUserInput
     transactions?: TransactionCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
@@ -82259,6 +84968,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     todos?: TodoUncheckedCreateNestedManyWithoutUserInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
@@ -82329,6 +85039,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     todos?: TodoUpdateManyWithoutUserNestedInput
     transactions?: TransactionUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
@@ -82383,6 +85094,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     todos?: TodoUncheckedUpdateManyWithoutUserNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
@@ -82437,6 +85149,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     todos?: TodoCreateNestedManyWithoutUserInput
     transactions?: TransactionCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
@@ -82491,6 +85204,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     todos?: TodoUncheckedCreateNestedManyWithoutUserInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
@@ -82600,6 +85314,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     todos?: TodoUpdateManyWithoutUserNestedInput
     transactions?: TransactionUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
@@ -82654,6 +85369,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     todos?: TodoUncheckedUpdateManyWithoutUserNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
@@ -82753,6 +85469,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     todos?: TodoCreateNestedManyWithoutUserInput
     transactions?: TransactionCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
@@ -82807,6 +85524,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     todos?: TodoUncheckedCreateNestedManyWithoutUserInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
@@ -82877,6 +85595,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     todos?: TodoUpdateManyWithoutUserNestedInput
     transactions?: TransactionUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
@@ -82931,6 +85650,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     todos?: TodoUncheckedUpdateManyWithoutUserNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
@@ -82985,6 +85705,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     todos?: TodoCreateNestedManyWithoutUserInput
     transactions?: TransactionCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
@@ -83039,6 +85760,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     todos?: TodoUncheckedCreateNestedManyWithoutUserInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
@@ -83109,6 +85831,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     todos?: TodoUpdateManyWithoutUserNestedInput
     transactions?: TransactionUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
@@ -83163,6 +85886,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     todos?: TodoUncheckedUpdateManyWithoutUserNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
@@ -83217,6 +85941,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     todos?: TodoCreateNestedManyWithoutUserInput
     transactions?: TransactionCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
@@ -83271,6 +85996,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     todos?: TodoUncheckedCreateNestedManyWithoutUserInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
@@ -83381,6 +86107,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     todos?: TodoUpdateManyWithoutUserNestedInput
     transactions?: TransactionUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
@@ -83435,6 +86162,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     todos?: TodoUncheckedUpdateManyWithoutUserNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
@@ -83524,6 +86252,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     todos?: TodoCreateNestedManyWithoutUserInput
     transactions?: TransactionCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
@@ -83578,6 +86307,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     todos?: TodoUncheckedCreateNestedManyWithoutUserInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
@@ -83716,6 +86446,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     todos?: TodoUpdateManyWithoutUserNestedInput
     transactions?: TransactionUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
@@ -83770,6 +86501,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     todos?: TodoUncheckedUpdateManyWithoutUserNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
@@ -83961,6 +86693,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     todos?: TodoCreateNestedManyWithoutUserInput
     transactions?: TransactionCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
@@ -84015,6 +86748,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     todos?: TodoUncheckedCreateNestedManyWithoutUserInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
@@ -84187,6 +86921,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     todos?: TodoUpdateManyWithoutUserNestedInput
     transactions?: TransactionUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
@@ -84241,6 +86976,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     todos?: TodoUncheckedUpdateManyWithoutUserNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
@@ -84295,6 +87031,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     todos?: TodoCreateNestedManyWithoutUserInput
     transactions?: TransactionCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
@@ -84349,6 +87086,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     todos?: TodoUncheckedCreateNestedManyWithoutUserInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
@@ -84419,6 +87157,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     todos?: TodoUpdateManyWithoutUserNestedInput
     transactions?: TransactionUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
@@ -84473,6 +87212,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     todos?: TodoUncheckedUpdateManyWithoutUserNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
@@ -84527,6 +87267,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     todos?: TodoCreateNestedManyWithoutUserInput
     transactions?: TransactionCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
@@ -84581,6 +87322,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     todos?: TodoUncheckedCreateNestedManyWithoutUserInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
@@ -84651,6 +87393,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     todos?: TodoUpdateManyWithoutUserNestedInput
     transactions?: TransactionUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
@@ -84705,6 +87448,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     todos?: TodoUncheckedUpdateManyWithoutUserNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
@@ -84759,6 +87503,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     todos?: TodoCreateNestedManyWithoutUserInput
     transactions?: TransactionCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
@@ -84813,6 +87558,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     todos?: TodoUncheckedCreateNestedManyWithoutUserInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
@@ -84913,6 +87659,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     todos?: TodoUpdateManyWithoutUserNestedInput
     transactions?: TransactionUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
@@ -84967,6 +87714,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     todos?: TodoUncheckedUpdateManyWithoutUserNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
@@ -85187,6 +87935,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     todos?: TodoCreateNestedManyWithoutUserInput
     transactions?: TransactionCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
@@ -85241,6 +87990,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     todos?: TodoUncheckedCreateNestedManyWithoutUserInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
@@ -85311,6 +88061,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     todos?: TodoUpdateManyWithoutUserNestedInput
     transactions?: TransactionUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
@@ -85365,6 +88116,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     todos?: TodoUncheckedUpdateManyWithoutUserNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
@@ -85419,6 +88171,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     todos?: TodoCreateNestedManyWithoutUserInput
     transactions?: TransactionCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
@@ -85473,6 +88226,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     todos?: TodoUncheckedCreateNestedManyWithoutUserInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
@@ -85532,6 +88286,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     todos?: TodoCreateNestedManyWithoutUserInput
     transactions?: TransactionCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
@@ -85586,6 +88341,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     todos?: TodoUncheckedCreateNestedManyWithoutUserInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
@@ -85695,6 +88451,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     todos?: TodoUpdateManyWithoutUserNestedInput
     transactions?: TransactionUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
@@ -85749,6 +88506,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     todos?: TodoUncheckedUpdateManyWithoutUserNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
@@ -85814,6 +88572,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     todos?: TodoUpdateManyWithoutUserNestedInput
     transactions?: TransactionUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
@@ -85868,6 +88627,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     todos?: TodoUncheckedUpdateManyWithoutUserNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
@@ -85967,6 +88727,7 @@ export namespace Prisma {
     paymentsAsClient?: PaymentCreateNestedManyWithoutClientInput
     todos?: TodoCreateNestedManyWithoutUserInput
     transactions?: TransactionCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
@@ -86021,6 +88782,7 @@ export namespace Prisma {
     paymentsAsClient?: PaymentUncheckedCreateNestedManyWithoutClientInput
     todos?: TodoUncheckedCreateNestedManyWithoutUserInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
@@ -86091,6 +88853,7 @@ export namespace Prisma {
     paymentsAsClient?: PaymentUpdateManyWithoutClientNestedInput
     todos?: TodoUpdateManyWithoutUserNestedInput
     transactions?: TransactionUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
@@ -86145,6 +88908,7 @@ export namespace Prisma {
     paymentsAsClient?: PaymentUncheckedUpdateManyWithoutClientNestedInput
     todos?: TodoUncheckedUpdateManyWithoutUserNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
@@ -86199,6 +88963,7 @@ export namespace Prisma {
     paymentsAsClient?: PaymentCreateNestedManyWithoutClientInput
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     transactions?: TransactionCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
@@ -86253,6 +89018,7 @@ export namespace Prisma {
     paymentsAsClient?: PaymentUncheckedCreateNestedManyWithoutClientInput
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
@@ -86323,6 +89089,7 @@ export namespace Prisma {
     paymentsAsClient?: PaymentUpdateManyWithoutClientNestedInput
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     transactions?: TransactionUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
@@ -86377,6 +89144,7 @@ export namespace Prisma {
     paymentsAsClient?: PaymentUncheckedUpdateManyWithoutClientNestedInput
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
@@ -86387,6 +89155,47 @@ export namespace Prisma {
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
+  }
+
+  export type JournalEntryCreateWithoutTransactionsInput = {
+    id?: string
+    sourceModule: $Enums.SourceModule
+    referenceType: $Enums.LedgerReferenceType
+    referenceId?: string | null
+    status?: $Enums.LedgerStatus
+    description?: string | null
+    eventVersion?: number
+    createdBy?: string | null
+    createdFrom?: string | null
+    deviceId?: string | null
+    ipAddress?: string | null
+    requestId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutJournalEntriesInput
+  }
+
+  export type JournalEntryUncheckedCreateWithoutTransactionsInput = {
+    id?: string
+    userId: string
+    sourceModule: $Enums.SourceModule
+    referenceType: $Enums.LedgerReferenceType
+    referenceId?: string | null
+    status?: $Enums.LedgerStatus
+    description?: string | null
+    eventVersion?: number
+    createdBy?: string | null
+    createdFrom?: string | null
+    deviceId?: string | null
+    ipAddress?: string | null
+    requestId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type JournalEntryCreateOrConnectWithoutTransactionsInput = {
+    where: JournalEntryWhereUniqueInput
+    create: XOR<JournalEntryCreateWithoutTransactionsInput, JournalEntryUncheckedCreateWithoutTransactionsInput>
   }
 
   export type AccountCreateWithoutTransactionsInput = {
@@ -86537,6 +89346,7 @@ export namespace Prisma {
     paymentsAsClient?: PaymentCreateNestedManyWithoutClientInput
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     todos?: TodoCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
@@ -86591,6 +89401,7 @@ export namespace Prisma {
     paymentsAsClient?: PaymentUncheckedCreateNestedManyWithoutClientInput
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     todos?: TodoUncheckedCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
@@ -86606,6 +89417,53 @@ export namespace Prisma {
   export type UserCreateOrConnectWithoutTransactionsInput = {
     where: UserWhereUniqueInput
     create: XOR<UserCreateWithoutTransactionsInput, UserUncheckedCreateWithoutTransactionsInput>
+  }
+
+  export type JournalEntryUpsertWithoutTransactionsInput = {
+    update: XOR<JournalEntryUpdateWithoutTransactionsInput, JournalEntryUncheckedUpdateWithoutTransactionsInput>
+    create: XOR<JournalEntryCreateWithoutTransactionsInput, JournalEntryUncheckedCreateWithoutTransactionsInput>
+    where?: JournalEntryWhereInput
+  }
+
+  export type JournalEntryUpdateToOneWithWhereWithoutTransactionsInput = {
+    where?: JournalEntryWhereInput
+    data: XOR<JournalEntryUpdateWithoutTransactionsInput, JournalEntryUncheckedUpdateWithoutTransactionsInput>
+  }
+
+  export type JournalEntryUpdateWithoutTransactionsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    sourceModule?: EnumSourceModuleFieldUpdateOperationsInput | $Enums.SourceModule
+    referenceType?: EnumLedgerReferenceTypeFieldUpdateOperationsInput | $Enums.LedgerReferenceType
+    referenceId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumLedgerStatusFieldUpdateOperationsInput | $Enums.LedgerStatus
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    eventVersion?: IntFieldUpdateOperationsInput | number
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
+    createdFrom?: NullableStringFieldUpdateOperationsInput | string | null
+    deviceId?: NullableStringFieldUpdateOperationsInput | string | null
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    requestId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutJournalEntriesNestedInput
+  }
+
+  export type JournalEntryUncheckedUpdateWithoutTransactionsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    sourceModule?: EnumSourceModuleFieldUpdateOperationsInput | $Enums.SourceModule
+    referenceType?: EnumLedgerReferenceTypeFieldUpdateOperationsInput | $Enums.LedgerReferenceType
+    referenceId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumLedgerStatusFieldUpdateOperationsInput | $Enums.LedgerStatus
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    eventVersion?: IntFieldUpdateOperationsInput | number
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
+    createdFrom?: NullableStringFieldUpdateOperationsInput | string | null
+    deviceId?: NullableStringFieldUpdateOperationsInput | string | null
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    requestId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type AccountUpsertWithoutTransactionsInput = {
@@ -86779,6 +89637,7 @@ export namespace Prisma {
     paymentsAsClient?: PaymentUpdateManyWithoutClientNestedInput
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     todos?: TodoUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
@@ -86833,6 +89692,7 @@ export namespace Prisma {
     paymentsAsClient?: PaymentUncheckedUpdateManyWithoutClientNestedInput
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     todos?: TodoUncheckedUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
@@ -87892,6 +90752,19 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
+    referenceType?: $Enums.LedgerReferenceType
+    referenceId?: string | null
+    sourceModule?: $Enums.SourceModule
+    direction?: $Enums.LedgerDirection
+    eventType?: $Enums.FinancialEventType
+    idempotencyKey?: string | null
+    ledgerVersion?: number
+    status?: $Enums.LedgerStatus
+    currency?: string | null
+    exchangeRate?: Decimal | DecimalJsLike | number | string | null
+    sequenceNumber?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    journalEntry?: JournalEntryCreateNestedOneWithoutTransactionsInput
     account: AccountCreateNestedOneWithoutTransactionsInput
     groupExpense?: GroupExpenseCreateNestedOneWithoutTransactionsInput
   }
@@ -87926,6 +90799,19 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
+    referenceType?: $Enums.LedgerReferenceType
+    referenceId?: string | null
+    sourceModule?: $Enums.SourceModule
+    direction?: $Enums.LedgerDirection
+    eventType?: $Enums.FinancialEventType
+    idempotencyKey?: string | null
+    ledgerVersion?: number
+    journalEntryId?: string | null
+    status?: $Enums.LedgerStatus
+    currency?: string | null
+    exchangeRate?: Decimal | DecimalJsLike | number | string | null
+    sequenceNumber?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
   }
 
   export type TransactionCreateOrConnectWithoutUserInput = {
@@ -87935,6 +90821,52 @@ export namespace Prisma {
 
   export type TransactionCreateManyUserInputEnvelope = {
     data: TransactionCreateManyUserInput | TransactionCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type JournalEntryCreateWithoutUserInput = {
+    id?: string
+    sourceModule: $Enums.SourceModule
+    referenceType: $Enums.LedgerReferenceType
+    referenceId?: string | null
+    status?: $Enums.LedgerStatus
+    description?: string | null
+    eventVersion?: number
+    createdBy?: string | null
+    createdFrom?: string | null
+    deviceId?: string | null
+    ipAddress?: string | null
+    requestId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    transactions?: TransactionCreateNestedManyWithoutJournalEntryInput
+  }
+
+  export type JournalEntryUncheckedCreateWithoutUserInput = {
+    id?: string
+    sourceModule: $Enums.SourceModule
+    referenceType: $Enums.LedgerReferenceType
+    referenceId?: string | null
+    status?: $Enums.LedgerStatus
+    description?: string | null
+    eventVersion?: number
+    createdBy?: string | null
+    createdFrom?: string | null
+    deviceId?: string | null
+    ipAddress?: string | null
+    requestId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    transactions?: TransactionUncheckedCreateNestedManyWithoutJournalEntryInput
+  }
+
+  export type JournalEntryCreateOrConnectWithoutUserInput = {
+    where: JournalEntryWhereUniqueInput
+    create: XOR<JournalEntryCreateWithoutUserInput, JournalEntryUncheckedCreateWithoutUserInput>
+  }
+
+  export type JournalEntryCreateManyUserInputEnvelope = {
+    data: JournalEntryCreateManyUserInput | JournalEntryCreateManyUserInput[]
     skipDuplicates?: boolean
   }
 
@@ -89146,6 +92078,43 @@ export namespace Prisma {
     data: XOR<TransactionUpdateManyMutationInput, TransactionUncheckedUpdateManyWithoutUserInput>
   }
 
+  export type JournalEntryUpsertWithWhereUniqueWithoutUserInput = {
+    where: JournalEntryWhereUniqueInput
+    update: XOR<JournalEntryUpdateWithoutUserInput, JournalEntryUncheckedUpdateWithoutUserInput>
+    create: XOR<JournalEntryCreateWithoutUserInput, JournalEntryUncheckedCreateWithoutUserInput>
+  }
+
+  export type JournalEntryUpdateWithWhereUniqueWithoutUserInput = {
+    where: JournalEntryWhereUniqueInput
+    data: XOR<JournalEntryUpdateWithoutUserInput, JournalEntryUncheckedUpdateWithoutUserInput>
+  }
+
+  export type JournalEntryUpdateManyWithWhereWithoutUserInput = {
+    where: JournalEntryScalarWhereInput
+    data: XOR<JournalEntryUpdateManyMutationInput, JournalEntryUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type JournalEntryScalarWhereInput = {
+    AND?: JournalEntryScalarWhereInput | JournalEntryScalarWhereInput[]
+    OR?: JournalEntryScalarWhereInput[]
+    NOT?: JournalEntryScalarWhereInput | JournalEntryScalarWhereInput[]
+    id?: StringFilter<"JournalEntry"> | string
+    userId?: StringFilter<"JournalEntry"> | string
+    sourceModule?: EnumSourceModuleFilter<"JournalEntry"> | $Enums.SourceModule
+    referenceType?: EnumLedgerReferenceTypeFilter<"JournalEntry"> | $Enums.LedgerReferenceType
+    referenceId?: StringNullableFilter<"JournalEntry"> | string | null
+    status?: EnumLedgerStatusFilter<"JournalEntry"> | $Enums.LedgerStatus
+    description?: StringNullableFilter<"JournalEntry"> | string | null
+    eventVersion?: IntFilter<"JournalEntry"> | number
+    createdBy?: StringNullableFilter<"JournalEntry"> | string | null
+    createdFrom?: StringNullableFilter<"JournalEntry"> | string | null
+    deviceId?: StringNullableFilter<"JournalEntry"> | string | null
+    ipAddress?: StringNullableFilter<"JournalEntry"> | string | null
+    requestId?: StringNullableFilter<"JournalEntry"> | string | null
+    createdAt?: DateTimeFilter<"JournalEntry"> | Date | string
+    updatedAt?: DateTimeFilter<"JournalEntry"> | Date | string
+  }
+
   export type UserPinUpsertWithoutUserInput = {
     update: XOR<UserPinUpdateWithoutUserInput, UserPinUncheckedUpdateWithoutUserInput>
     create: XOR<UserPinCreateWithoutUserInput, UserPinUncheckedCreateWithoutUserInput>
@@ -89511,6 +92480,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     todos?: TodoCreateNestedManyWithoutUserInput
     transactions?: TransactionCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryCreateNestedManyWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
     aiScans?: AiScanCreateNestedManyWithoutUserInput
@@ -89565,6 +92535,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     todos?: TodoUncheckedCreateNestedManyWithoutUserInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryUncheckedCreateNestedManyWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
@@ -89635,6 +92606,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     todos?: TodoUpdateManyWithoutUserNestedInput
     transactions?: TransactionUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUpdateManyWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
@@ -89689,6 +92661,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     todos?: TodoUncheckedUpdateManyWithoutUserNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUncheckedUpdateManyWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
@@ -89743,6 +92716,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     todos?: TodoCreateNestedManyWithoutUserInput
     transactions?: TransactionCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
     aiScans?: AiScanCreateNestedManyWithoutUserInput
@@ -89797,6 +92771,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     todos?: TodoUncheckedCreateNestedManyWithoutUserInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
@@ -89867,6 +92842,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     todos?: TodoUpdateManyWithoutUserNestedInput
     transactions?: TransactionUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
@@ -89921,6 +92897,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     todos?: TodoUncheckedUpdateManyWithoutUserNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
@@ -89975,6 +92952,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     todos?: TodoCreateNestedManyWithoutUserInput
     transactions?: TransactionCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
     aiScans?: AiScanCreateNestedManyWithoutUserInput
@@ -90029,6 +93007,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     todos?: TodoUncheckedCreateNestedManyWithoutUserInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
     aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
@@ -90099,6 +93078,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     todos?: TodoUpdateManyWithoutUserNestedInput
     transactions?: TransactionUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
     aiScans?: AiScanUpdateManyWithoutUserNestedInput
@@ -90153,6 +93133,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     todos?: TodoUncheckedUpdateManyWithoutUserNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
     aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
@@ -90207,6 +93188,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     todos?: TodoCreateNestedManyWithoutUserInput
     transactions?: TransactionCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
@@ -90261,6 +93243,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     todos?: TodoUncheckedCreateNestedManyWithoutUserInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
@@ -90331,6 +93314,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     todos?: TodoUpdateManyWithoutUserNestedInput
     transactions?: TransactionUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
@@ -90385,6 +93369,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     todos?: TodoUncheckedUpdateManyWithoutUserNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
@@ -90424,6 +93409,19 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
+    referenceType?: $Enums.LedgerReferenceType
+    referenceId?: string | null
+    sourceModule?: $Enums.SourceModule
+    direction?: $Enums.LedgerDirection
+    eventType?: $Enums.FinancialEventType
+    idempotencyKey?: string | null
+    ledgerVersion?: number
+    status?: $Enums.LedgerStatus
+    currency?: string | null
+    exchangeRate?: Decimal | DecimalJsLike | number | string | null
+    sequenceNumber?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    journalEntry?: JournalEntryCreateNestedOneWithoutTransactionsInput
     account: AccountCreateNestedOneWithoutTransactionsInput
     user: UserCreateNestedOneWithoutTransactionsInput
   }
@@ -90458,6 +93456,19 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
+    referenceType?: $Enums.LedgerReferenceType
+    referenceId?: string | null
+    sourceModule?: $Enums.SourceModule
+    direction?: $Enums.LedgerDirection
+    eventType?: $Enums.FinancialEventType
+    idempotencyKey?: string | null
+    ledgerVersion?: number
+    journalEntryId?: string | null
+    status?: $Enums.LedgerStatus
+    currency?: string | null
+    exchangeRate?: Decimal | DecimalJsLike | number | string | null
+    sequenceNumber?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
   }
 
   export type TransactionCreateOrConnectWithoutGroupExpenseInput = {
@@ -90560,6 +93571,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     todos?: TodoCreateNestedManyWithoutUserInput
     transactions?: TransactionCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
@@ -90614,6 +93626,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     todos?: TodoUncheckedCreateNestedManyWithoutUserInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
@@ -90793,6 +93806,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     todos?: TodoUpdateManyWithoutUserNestedInput
     transactions?: TransactionUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
@@ -90847,6 +93861,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     todos?: TodoUncheckedUpdateManyWithoutUserNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
@@ -91117,6 +94132,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     todos?: TodoCreateNestedManyWithoutUserInput
     transactions?: TransactionCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
@@ -91171,6 +94187,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     todos?: TodoUncheckedCreateNestedManyWithoutUserInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
@@ -91230,6 +94247,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     todos?: TodoCreateNestedManyWithoutUserInput
     transactions?: TransactionCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
@@ -91284,6 +94302,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     todos?: TodoUncheckedCreateNestedManyWithoutUserInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
@@ -91354,6 +94373,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     todos?: TodoUpdateManyWithoutUserNestedInput
     transactions?: TransactionUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
@@ -91408,6 +94428,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     todos?: TodoUncheckedUpdateManyWithoutUserNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
@@ -91473,6 +94494,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     todos?: TodoUpdateManyWithoutUserNestedInput
     transactions?: TransactionUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
@@ -91527,6 +94549,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     todos?: TodoUncheckedUpdateManyWithoutUserNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
@@ -91673,6 +94696,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     todos?: TodoCreateNestedManyWithoutUserInput
     transactions?: TransactionCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
@@ -91727,6 +94751,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     todos?: TodoUncheckedCreateNestedManyWithoutUserInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
@@ -91797,6 +94822,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     todos?: TodoUpdateManyWithoutUserNestedInput
     transactions?: TransactionUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
@@ -91851,6 +94877,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     todos?: TodoUncheckedUpdateManyWithoutUserNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
@@ -91905,6 +94932,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     todos?: TodoCreateNestedManyWithoutUserInput
     transactions?: TransactionCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
@@ -91959,6 +94987,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     todos?: TodoUncheckedCreateNestedManyWithoutUserInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
@@ -92029,6 +95058,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     todos?: TodoUpdateManyWithoutUserNestedInput
     transactions?: TransactionUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
@@ -92083,6 +95113,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     todos?: TodoUncheckedUpdateManyWithoutUserNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
@@ -92137,6 +95168,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     todos?: TodoCreateNestedManyWithoutUserInput
     transactions?: TransactionCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryCreateNestedManyWithoutUserInput
     userPin?: UserPinCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
@@ -92191,6 +95223,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     todos?: TodoUncheckedCreateNestedManyWithoutUserInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
+    journalEntries?: JournalEntryUncheckedCreateNestedManyWithoutUserInput
     userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
     userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
     otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
@@ -92261,6 +95294,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     todos?: TodoUpdateManyWithoutUserNestedInput
     transactions?: TransactionUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUpdateManyWithoutUserNestedInput
     userPin?: UserPinUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
@@ -92315,6 +95349,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     todos?: TodoUncheckedUpdateManyWithoutUserNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
+    journalEntries?: JournalEntryUncheckedUpdateManyWithoutUserNestedInput
     userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
     userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
     otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
@@ -92322,6 +95357,358 @@ export namespace Prisma {
     groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
     recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
+  }
+
+  export type TransactionCreateWithoutJournalEntryInput = {
+    id?: string
+    deviceId?: string | null
+    type: string
+    amount: Decimal | DecimalJsLike | number | string
+    category: string
+    subcategory?: string | null
+    description?: string | null
+    merchant?: string | null
+    date: Date | string
+    tags?: NullableJsonNullValueInput | InputJsonValue
+    attachment?: string | null
+    transferToAccountId?: string | null
+    transferType?: string | null
+    expenseMode?: string | null
+    groupName?: string | null
+    splitType?: string | null
+    importSource?: string | null
+    importMetadata?: string | null
+    originalCategory?: string | null
+    importedAt?: Date | string | null
+    dedupHash?: string | null
+    version?: number
+    synced?: boolean
+    syncStatus?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    referenceType?: $Enums.LedgerReferenceType
+    referenceId?: string | null
+    sourceModule?: $Enums.SourceModule
+    direction?: $Enums.LedgerDirection
+    eventType?: $Enums.FinancialEventType
+    idempotencyKey?: string | null
+    ledgerVersion?: number
+    status?: $Enums.LedgerStatus
+    currency?: string | null
+    exchangeRate?: Decimal | DecimalJsLike | number | string | null
+    sequenceNumber?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    account: AccountCreateNestedOneWithoutTransactionsInput
+    groupExpense?: GroupExpenseCreateNestedOneWithoutTransactionsInput
+    user: UserCreateNestedOneWithoutTransactionsInput
+  }
+
+  export type TransactionUncheckedCreateWithoutJournalEntryInput = {
+    id?: string
+    userId: string
+    deviceId?: string | null
+    accountId: string
+    type: string
+    amount: Decimal | DecimalJsLike | number | string
+    category: string
+    subcategory?: string | null
+    description?: string | null
+    merchant?: string | null
+    date: Date | string
+    tags?: NullableJsonNullValueInput | InputJsonValue
+    attachment?: string | null
+    transferToAccountId?: string | null
+    transferType?: string | null
+    expenseMode?: string | null
+    groupExpenseId?: string | null
+    groupName?: string | null
+    splitType?: string | null
+    importSource?: string | null
+    importMetadata?: string | null
+    originalCategory?: string | null
+    importedAt?: Date | string | null
+    dedupHash?: string | null
+    version?: number
+    synced?: boolean
+    syncStatus?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    referenceType?: $Enums.LedgerReferenceType
+    referenceId?: string | null
+    sourceModule?: $Enums.SourceModule
+    direction?: $Enums.LedgerDirection
+    eventType?: $Enums.FinancialEventType
+    idempotencyKey?: string | null
+    ledgerVersion?: number
+    status?: $Enums.LedgerStatus
+    currency?: string | null
+    exchangeRate?: Decimal | DecimalJsLike | number | string | null
+    sequenceNumber?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+  }
+
+  export type TransactionCreateOrConnectWithoutJournalEntryInput = {
+    where: TransactionWhereUniqueInput
+    create: XOR<TransactionCreateWithoutJournalEntryInput, TransactionUncheckedCreateWithoutJournalEntryInput>
+  }
+
+  export type TransactionCreateManyJournalEntryInputEnvelope = {
+    data: TransactionCreateManyJournalEntryInput | TransactionCreateManyJournalEntryInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type UserCreateWithoutJournalEntriesInput = {
+    id?: string
+    email: string
+    name: string
+    password: string
+    role?: string
+    roleMode?: string
+    advisorStatus?: string
+    status?: string
+    isApproved?: boolean
+    lastSynced?: Date | string | null
+    syncToken?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    avatarId?: string | null
+    city?: string | null
+    country?: string | null
+    gender?: string | null
+    state?: string | null
+    accounts?: AccountCreateNestedManyWithoutUserInput
+    advisorAvailability?: AdvisorAvailabilityCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationCreateNestedManyWithoutReviewerInput
+    sessionsAsAdvisor?: AdvisorSessionCreateNestedManyWithoutAdvisorInput
+    sessionsAsClient?: AdvisorSessionCreateNestedManyWithoutClientInput
+    bookingsAsAdvisor?: BookingRequestCreateNestedManyWithoutAdvisorInput
+    bookingsAsClient?: BookingRequestCreateNestedManyWithoutClientInput
+    categories?: CategoryCreateNestedManyWithoutUserInput
+    chatMessages?: ChatMessageCreateNestedManyWithoutSenderInput
+    devices?: DeviceCreateNestedManyWithoutUserInput
+    expenseBills?: ExpenseBillCreateNestedManyWithoutUserInput
+    friends?: FriendCreateNestedManyWithoutUserInput
+    goals?: GoalCreateNestedManyWithoutUserInput
+    goalContributions?: GoalContributionCreateNestedManyWithoutUserInput
+    importLogs?: ImportLogCreateNestedManyWithoutUserInput
+    investments?: InvestmentCreateNestedManyWithoutUserInput
+    loans?: LoanCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    paymentsAsAdvisor?: PaymentCreateNestedManyWithoutAdvisorInput
+    paymentsAsClient?: PaymentCreateNestedManyWithoutClientInput
+    refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
+    todos?: TodoCreateNestedManyWithoutUserInput
+    transactions?: TransactionCreateNestedManyWithoutUserInput
+    userPin?: UserPinCreateNestedOneWithoutUserInput
+    userSettings?: UserSettingsCreateNestedOneWithoutUserInput
+    otpCodes?: OtpCodeCreateNestedManyWithoutUserInput
+    aiScans?: AiScanCreateNestedManyWithoutUserInput
+    groupExpenses?: GroupExpenseCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionCreateNestedManyWithoutUserInput
+    budgets?: BudgetCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantCreateNestedManyWithoutInvitedByUserInput
+  }
+
+  export type UserUncheckedCreateWithoutJournalEntriesInput = {
+    id?: string
+    email: string
+    name: string
+    password: string
+    role?: string
+    roleMode?: string
+    advisorStatus?: string
+    status?: string
+    isApproved?: boolean
+    lastSynced?: Date | string | null
+    syncToken?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    avatarId?: string | null
+    city?: string | null
+    country?: string | null
+    gender?: string | null
+    state?: string | null
+    accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
+    advisorAvailability?: AdvisorAvailabilityUncheckedCreateNestedManyWithoutAdvisorInput
+    advisorApplication?: AdvisorApplicationUncheckedCreateNestedOneWithoutUserInput
+    reviewedApplications?: AdvisorApplicationUncheckedCreateNestedManyWithoutReviewerInput
+    sessionsAsAdvisor?: AdvisorSessionUncheckedCreateNestedManyWithoutAdvisorInput
+    sessionsAsClient?: AdvisorSessionUncheckedCreateNestedManyWithoutClientInput
+    bookingsAsAdvisor?: BookingRequestUncheckedCreateNestedManyWithoutAdvisorInput
+    bookingsAsClient?: BookingRequestUncheckedCreateNestedManyWithoutClientInput
+    categories?: CategoryUncheckedCreateNestedManyWithoutUserInput
+    chatMessages?: ChatMessageUncheckedCreateNestedManyWithoutSenderInput
+    devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
+    expenseBills?: ExpenseBillUncheckedCreateNestedManyWithoutUserInput
+    friends?: FriendUncheckedCreateNestedManyWithoutUserInput
+    goals?: GoalUncheckedCreateNestedManyWithoutUserInput
+    goalContributions?: GoalContributionUncheckedCreateNestedManyWithoutUserInput
+    importLogs?: ImportLogUncheckedCreateNestedManyWithoutUserInput
+    investments?: InvestmentUncheckedCreateNestedManyWithoutUserInput
+    loans?: LoanUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    paymentsAsAdvisor?: PaymentUncheckedCreateNestedManyWithoutAdvisorInput
+    paymentsAsClient?: PaymentUncheckedCreateNestedManyWithoutClientInput
+    refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
+    todos?: TodoUncheckedCreateNestedManyWithoutUserInput
+    transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
+    userPin?: UserPinUncheckedCreateNestedOneWithoutUserInput
+    userSettings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
+    otpCodes?: OtpCodeUncheckedCreateNestedManyWithoutUserInput
+    aiScans?: AiScanUncheckedCreateNestedManyWithoutUserInput
+    groupExpenses?: GroupExpenseUncheckedCreateNestedManyWithoutUserInput
+    recurringTransactions?: RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
+    budgets?: BudgetUncheckedCreateNestedManyWithoutUserInput
+    goldAssets?: GoldAssetUncheckedCreateNestedManyWithoutUserInput
+    collaborationParticipations?: CollaborationParticipantUncheckedCreateNestedManyWithoutUserInput
+    collaborationInvitesSent?: CollaborationParticipantUncheckedCreateNestedManyWithoutInvitedByUserInput
+  }
+
+  export type UserCreateOrConnectWithoutJournalEntriesInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutJournalEntriesInput, UserUncheckedCreateWithoutJournalEntriesInput>
+  }
+
+  export type TransactionUpsertWithWhereUniqueWithoutJournalEntryInput = {
+    where: TransactionWhereUniqueInput
+    update: XOR<TransactionUpdateWithoutJournalEntryInput, TransactionUncheckedUpdateWithoutJournalEntryInput>
+    create: XOR<TransactionCreateWithoutJournalEntryInput, TransactionUncheckedCreateWithoutJournalEntryInput>
+  }
+
+  export type TransactionUpdateWithWhereUniqueWithoutJournalEntryInput = {
+    where: TransactionWhereUniqueInput
+    data: XOR<TransactionUpdateWithoutJournalEntryInput, TransactionUncheckedUpdateWithoutJournalEntryInput>
+  }
+
+  export type TransactionUpdateManyWithWhereWithoutJournalEntryInput = {
+    where: TransactionScalarWhereInput
+    data: XOR<TransactionUpdateManyMutationInput, TransactionUncheckedUpdateManyWithoutJournalEntryInput>
+  }
+
+  export type UserUpsertWithoutJournalEntriesInput = {
+    update: XOR<UserUpdateWithoutJournalEntriesInput, UserUncheckedUpdateWithoutJournalEntriesInput>
+    create: XOR<UserCreateWithoutJournalEntriesInput, UserUncheckedCreateWithoutJournalEntriesInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutJournalEntriesInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutJournalEntriesInput, UserUncheckedUpdateWithoutJournalEntriesInput>
+  }
+
+  export type UserUpdateWithoutJournalEntriesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    isApproved?: BoolFieldUpdateOperationsInput | boolean
+    lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    syncToken?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    avatarId?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableStringFieldUpdateOperationsInput | string | null
+    state?: NullableStringFieldUpdateOperationsInput | string | null
+    accounts?: AccountUpdateManyWithoutUserNestedInput
+    advisorAvailability?: AdvisorAvailabilityUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUpdateManyWithoutReviewerNestedInput
+    sessionsAsAdvisor?: AdvisorSessionUpdateManyWithoutAdvisorNestedInput
+    sessionsAsClient?: AdvisorSessionUpdateManyWithoutClientNestedInput
+    bookingsAsAdvisor?: BookingRequestUpdateManyWithoutAdvisorNestedInput
+    bookingsAsClient?: BookingRequestUpdateManyWithoutClientNestedInput
+    categories?: CategoryUpdateManyWithoutUserNestedInput
+    chatMessages?: ChatMessageUpdateManyWithoutSenderNestedInput
+    devices?: DeviceUpdateManyWithoutUserNestedInput
+    expenseBills?: ExpenseBillUpdateManyWithoutUserNestedInput
+    friends?: FriendUpdateManyWithoutUserNestedInput
+    goals?: GoalUpdateManyWithoutUserNestedInput
+    goalContributions?: GoalContributionUpdateManyWithoutUserNestedInput
+    importLogs?: ImportLogUpdateManyWithoutUserNestedInput
+    investments?: InvestmentUpdateManyWithoutUserNestedInput
+    loans?: LoanUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    paymentsAsAdvisor?: PaymentUpdateManyWithoutAdvisorNestedInput
+    paymentsAsClient?: PaymentUpdateManyWithoutClientNestedInput
+    refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
+    todos?: TodoUpdateManyWithoutUserNestedInput
+    transactions?: TransactionUpdateManyWithoutUserNestedInput
+    userPin?: UserPinUpdateOneWithoutUserNestedInput
+    userSettings?: UserSettingsUpdateOneWithoutUserNestedInput
+    otpCodes?: OtpCodeUpdateManyWithoutUserNestedInput
+    aiScans?: AiScanUpdateManyWithoutUserNestedInput
+    groupExpenses?: GroupExpenseUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUpdateManyWithoutUserNestedInput
+    collaborationParticipations?: CollaborationParticipantUpdateManyWithoutUserNestedInput
+    collaborationInvitesSent?: CollaborationParticipantUpdateManyWithoutInvitedByUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutJournalEntriesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    roleMode?: StringFieldUpdateOperationsInput | string
+    advisorStatus?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    isApproved?: BoolFieldUpdateOperationsInput | boolean
+    lastSynced?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    syncToken?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    avatarId?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableStringFieldUpdateOperationsInput | string | null
+    state?: NullableStringFieldUpdateOperationsInput | string | null
+    accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
+    advisorAvailability?: AdvisorAvailabilityUncheckedUpdateManyWithoutAdvisorNestedInput
+    advisorApplication?: AdvisorApplicationUncheckedUpdateOneWithoutUserNestedInput
+    reviewedApplications?: AdvisorApplicationUncheckedUpdateManyWithoutReviewerNestedInput
+    sessionsAsAdvisor?: AdvisorSessionUncheckedUpdateManyWithoutAdvisorNestedInput
+    sessionsAsClient?: AdvisorSessionUncheckedUpdateManyWithoutClientNestedInput
+    bookingsAsAdvisor?: BookingRequestUncheckedUpdateManyWithoutAdvisorNestedInput
+    bookingsAsClient?: BookingRequestUncheckedUpdateManyWithoutClientNestedInput
+    categories?: CategoryUncheckedUpdateManyWithoutUserNestedInput
+    chatMessages?: ChatMessageUncheckedUpdateManyWithoutSenderNestedInput
+    devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
+    expenseBills?: ExpenseBillUncheckedUpdateManyWithoutUserNestedInput
+    friends?: FriendUncheckedUpdateManyWithoutUserNestedInput
+    goals?: GoalUncheckedUpdateManyWithoutUserNestedInput
+    goalContributions?: GoalContributionUncheckedUpdateManyWithoutUserNestedInput
+    importLogs?: ImportLogUncheckedUpdateManyWithoutUserNestedInput
+    investments?: InvestmentUncheckedUpdateManyWithoutUserNestedInput
+    loans?: LoanUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    paymentsAsAdvisor?: PaymentUncheckedUpdateManyWithoutAdvisorNestedInput
+    paymentsAsClient?: PaymentUncheckedUpdateManyWithoutClientNestedInput
+    refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
+    todos?: TodoUncheckedUpdateManyWithoutUserNestedInput
+    transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
+    userPin?: UserPinUncheckedUpdateOneWithoutUserNestedInput
+    userSettings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+    otpCodes?: OtpCodeUncheckedUpdateManyWithoutUserNestedInput
+    aiScans?: AiScanUncheckedUpdateManyWithoutUserNestedInput
+    groupExpenses?: GroupExpenseUncheckedUpdateManyWithoutUserNestedInput
+    recurringTransactions?: RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
+    budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
+    goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
   }
@@ -92369,6 +95756,19 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
+    referenceType?: $Enums.LedgerReferenceType
+    referenceId?: string | null
+    sourceModule?: $Enums.SourceModule
+    direction?: $Enums.LedgerDirection
+    eventType?: $Enums.FinancialEventType
+    idempotencyKey?: string | null
+    ledgerVersion?: number
+    journalEntryId?: string | null
+    status?: $Enums.LedgerStatus
+    currency?: string | null
+    exchangeRate?: Decimal | DecimalJsLike | number | string | null
+    sequenceNumber?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
   }
 
   export type GroupExpenseCreateManyPaidByAccountInput = {
@@ -92463,6 +95863,19 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    referenceType?: EnumLedgerReferenceTypeFieldUpdateOperationsInput | $Enums.LedgerReferenceType
+    referenceId?: NullableStringFieldUpdateOperationsInput | string | null
+    sourceModule?: EnumSourceModuleFieldUpdateOperationsInput | $Enums.SourceModule
+    direction?: EnumLedgerDirectionFieldUpdateOperationsInput | $Enums.LedgerDirection
+    eventType?: EnumFinancialEventTypeFieldUpdateOperationsInput | $Enums.FinancialEventType
+    idempotencyKey?: NullableStringFieldUpdateOperationsInput | string | null
+    ledgerVersion?: IntFieldUpdateOperationsInput | number
+    status?: EnumLedgerStatusFieldUpdateOperationsInput | $Enums.LedgerStatus
+    currency?: NullableStringFieldUpdateOperationsInput | string | null
+    exchangeRate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    sequenceNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    journalEntry?: JournalEntryUpdateOneWithoutTransactionsNestedInput
     groupExpense?: GroupExpenseUpdateOneWithoutTransactionsNestedInput
     user?: UserUpdateOneRequiredWithoutTransactionsNestedInput
   }
@@ -92497,6 +95910,19 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    referenceType?: EnumLedgerReferenceTypeFieldUpdateOperationsInput | $Enums.LedgerReferenceType
+    referenceId?: NullableStringFieldUpdateOperationsInput | string | null
+    sourceModule?: EnumSourceModuleFieldUpdateOperationsInput | $Enums.SourceModule
+    direction?: EnumLedgerDirectionFieldUpdateOperationsInput | $Enums.LedgerDirection
+    eventType?: EnumFinancialEventTypeFieldUpdateOperationsInput | $Enums.FinancialEventType
+    idempotencyKey?: NullableStringFieldUpdateOperationsInput | string | null
+    ledgerVersion?: IntFieldUpdateOperationsInput | number
+    journalEntryId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumLedgerStatusFieldUpdateOperationsInput | $Enums.LedgerStatus
+    currency?: NullableStringFieldUpdateOperationsInput | string | null
+    exchangeRate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    sequenceNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
   }
 
   export type TransactionUncheckedUpdateManyWithoutAccountInput = {
@@ -92529,6 +95955,19 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    referenceType?: EnumLedgerReferenceTypeFieldUpdateOperationsInput | $Enums.LedgerReferenceType
+    referenceId?: NullableStringFieldUpdateOperationsInput | string | null
+    sourceModule?: EnumSourceModuleFieldUpdateOperationsInput | $Enums.SourceModule
+    direction?: EnumLedgerDirectionFieldUpdateOperationsInput | $Enums.LedgerDirection
+    eventType?: EnumFinancialEventTypeFieldUpdateOperationsInput | $Enums.FinancialEventType
+    idempotencyKey?: NullableStringFieldUpdateOperationsInput | string | null
+    ledgerVersion?: IntFieldUpdateOperationsInput | number
+    journalEntryId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumLedgerStatusFieldUpdateOperationsInput | $Enums.LedgerStatus
+    currency?: NullableStringFieldUpdateOperationsInput | string | null
+    exchangeRate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    sequenceNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
   }
 
   export type GroupExpenseUpdateWithoutPaidByAccountInput = {
@@ -93227,6 +96666,36 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
+    referenceType?: $Enums.LedgerReferenceType
+    referenceId?: string | null
+    sourceModule?: $Enums.SourceModule
+    direction?: $Enums.LedgerDirection
+    eventType?: $Enums.FinancialEventType
+    idempotencyKey?: string | null
+    ledgerVersion?: number
+    journalEntryId?: string | null
+    status?: $Enums.LedgerStatus
+    currency?: string | null
+    exchangeRate?: Decimal | DecimalJsLike | number | string | null
+    sequenceNumber?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+  }
+
+  export type JournalEntryCreateManyUserInput = {
+    id?: string
+    sourceModule: $Enums.SourceModule
+    referenceType: $Enums.LedgerReferenceType
+    referenceId?: string | null
+    status?: $Enums.LedgerStatus
+    description?: string | null
+    eventVersion?: number
+    createdBy?: string | null
+    createdFrom?: string | null
+    deviceId?: string | null
+    ipAddress?: string | null
+    requestId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type OtpCodeCreateManyUserInput = {
@@ -94511,6 +97980,19 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    referenceType?: EnumLedgerReferenceTypeFieldUpdateOperationsInput | $Enums.LedgerReferenceType
+    referenceId?: NullableStringFieldUpdateOperationsInput | string | null
+    sourceModule?: EnumSourceModuleFieldUpdateOperationsInput | $Enums.SourceModule
+    direction?: EnumLedgerDirectionFieldUpdateOperationsInput | $Enums.LedgerDirection
+    eventType?: EnumFinancialEventTypeFieldUpdateOperationsInput | $Enums.FinancialEventType
+    idempotencyKey?: NullableStringFieldUpdateOperationsInput | string | null
+    ledgerVersion?: IntFieldUpdateOperationsInput | number
+    status?: EnumLedgerStatusFieldUpdateOperationsInput | $Enums.LedgerStatus
+    currency?: NullableStringFieldUpdateOperationsInput | string | null
+    exchangeRate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    sequenceNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    journalEntry?: JournalEntryUpdateOneWithoutTransactionsNestedInput
     account?: AccountUpdateOneRequiredWithoutTransactionsNestedInput
     groupExpense?: GroupExpenseUpdateOneWithoutTransactionsNestedInput
   }
@@ -94545,6 +98027,19 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    referenceType?: EnumLedgerReferenceTypeFieldUpdateOperationsInput | $Enums.LedgerReferenceType
+    referenceId?: NullableStringFieldUpdateOperationsInput | string | null
+    sourceModule?: EnumSourceModuleFieldUpdateOperationsInput | $Enums.SourceModule
+    direction?: EnumLedgerDirectionFieldUpdateOperationsInput | $Enums.LedgerDirection
+    eventType?: EnumFinancialEventTypeFieldUpdateOperationsInput | $Enums.FinancialEventType
+    idempotencyKey?: NullableStringFieldUpdateOperationsInput | string | null
+    ledgerVersion?: IntFieldUpdateOperationsInput | number
+    journalEntryId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumLedgerStatusFieldUpdateOperationsInput | $Enums.LedgerStatus
+    currency?: NullableStringFieldUpdateOperationsInput | string | null
+    exchangeRate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    sequenceNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
   }
 
   export type TransactionUncheckedUpdateManyWithoutUserInput = {
@@ -94577,6 +98072,72 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    referenceType?: EnumLedgerReferenceTypeFieldUpdateOperationsInput | $Enums.LedgerReferenceType
+    referenceId?: NullableStringFieldUpdateOperationsInput | string | null
+    sourceModule?: EnumSourceModuleFieldUpdateOperationsInput | $Enums.SourceModule
+    direction?: EnumLedgerDirectionFieldUpdateOperationsInput | $Enums.LedgerDirection
+    eventType?: EnumFinancialEventTypeFieldUpdateOperationsInput | $Enums.FinancialEventType
+    idempotencyKey?: NullableStringFieldUpdateOperationsInput | string | null
+    ledgerVersion?: IntFieldUpdateOperationsInput | number
+    journalEntryId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumLedgerStatusFieldUpdateOperationsInput | $Enums.LedgerStatus
+    currency?: NullableStringFieldUpdateOperationsInput | string | null
+    exchangeRate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    sequenceNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+  }
+
+  export type JournalEntryUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    sourceModule?: EnumSourceModuleFieldUpdateOperationsInput | $Enums.SourceModule
+    referenceType?: EnumLedgerReferenceTypeFieldUpdateOperationsInput | $Enums.LedgerReferenceType
+    referenceId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumLedgerStatusFieldUpdateOperationsInput | $Enums.LedgerStatus
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    eventVersion?: IntFieldUpdateOperationsInput | number
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
+    createdFrom?: NullableStringFieldUpdateOperationsInput | string | null
+    deviceId?: NullableStringFieldUpdateOperationsInput | string | null
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    requestId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    transactions?: TransactionUpdateManyWithoutJournalEntryNestedInput
+  }
+
+  export type JournalEntryUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    sourceModule?: EnumSourceModuleFieldUpdateOperationsInput | $Enums.SourceModule
+    referenceType?: EnumLedgerReferenceTypeFieldUpdateOperationsInput | $Enums.LedgerReferenceType
+    referenceId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumLedgerStatusFieldUpdateOperationsInput | $Enums.LedgerStatus
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    eventVersion?: IntFieldUpdateOperationsInput | number
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
+    createdFrom?: NullableStringFieldUpdateOperationsInput | string | null
+    deviceId?: NullableStringFieldUpdateOperationsInput | string | null
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    requestId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    transactions?: TransactionUncheckedUpdateManyWithoutJournalEntryNestedInput
+  }
+
+  export type JournalEntryUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    sourceModule?: EnumSourceModuleFieldUpdateOperationsInput | $Enums.SourceModule
+    referenceType?: EnumLedgerReferenceTypeFieldUpdateOperationsInput | $Enums.LedgerReferenceType
+    referenceId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumLedgerStatusFieldUpdateOperationsInput | $Enums.LedgerStatus
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    eventVersion?: IntFieldUpdateOperationsInput | number
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
+    createdFrom?: NullableStringFieldUpdateOperationsInput | string | null
+    deviceId?: NullableStringFieldUpdateOperationsInput | string | null
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    requestId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type OtpCodeUpdateWithoutUserInput = {
@@ -95030,6 +98591,19 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
+    referenceType?: $Enums.LedgerReferenceType
+    referenceId?: string | null
+    sourceModule?: $Enums.SourceModule
+    direction?: $Enums.LedgerDirection
+    eventType?: $Enums.FinancialEventType
+    idempotencyKey?: string | null
+    ledgerVersion?: number
+    journalEntryId?: string | null
+    status?: $Enums.LedgerStatus
+    currency?: string | null
+    exchangeRate?: Decimal | DecimalJsLike | number | string | null
+    sequenceNumber?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
   }
 
   export type GroupExpenseMemberCreateManyGroupExpenseInput = {
@@ -95075,6 +98649,19 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    referenceType?: EnumLedgerReferenceTypeFieldUpdateOperationsInput | $Enums.LedgerReferenceType
+    referenceId?: NullableStringFieldUpdateOperationsInput | string | null
+    sourceModule?: EnumSourceModuleFieldUpdateOperationsInput | $Enums.SourceModule
+    direction?: EnumLedgerDirectionFieldUpdateOperationsInput | $Enums.LedgerDirection
+    eventType?: EnumFinancialEventTypeFieldUpdateOperationsInput | $Enums.FinancialEventType
+    idempotencyKey?: NullableStringFieldUpdateOperationsInput | string | null
+    ledgerVersion?: IntFieldUpdateOperationsInput | number
+    status?: EnumLedgerStatusFieldUpdateOperationsInput | $Enums.LedgerStatus
+    currency?: NullableStringFieldUpdateOperationsInput | string | null
+    exchangeRate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    sequenceNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    journalEntry?: JournalEntryUpdateOneWithoutTransactionsNestedInput
     account?: AccountUpdateOneRequiredWithoutTransactionsNestedInput
     user?: UserUpdateOneRequiredWithoutTransactionsNestedInput
   }
@@ -95109,6 +98696,19 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    referenceType?: EnumLedgerReferenceTypeFieldUpdateOperationsInput | $Enums.LedgerReferenceType
+    referenceId?: NullableStringFieldUpdateOperationsInput | string | null
+    sourceModule?: EnumSourceModuleFieldUpdateOperationsInput | $Enums.SourceModule
+    direction?: EnumLedgerDirectionFieldUpdateOperationsInput | $Enums.LedgerDirection
+    eventType?: EnumFinancialEventTypeFieldUpdateOperationsInput | $Enums.FinancialEventType
+    idempotencyKey?: NullableStringFieldUpdateOperationsInput | string | null
+    ledgerVersion?: IntFieldUpdateOperationsInput | number
+    journalEntryId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumLedgerStatusFieldUpdateOperationsInput | $Enums.LedgerStatus
+    currency?: NullableStringFieldUpdateOperationsInput | string | null
+    exchangeRate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    sequenceNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
   }
 
   export type TransactionUncheckedUpdateManyWithoutGroupExpenseInput = {
@@ -95141,6 +98741,19 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    referenceType?: EnumLedgerReferenceTypeFieldUpdateOperationsInput | $Enums.LedgerReferenceType
+    referenceId?: NullableStringFieldUpdateOperationsInput | string | null
+    sourceModule?: EnumSourceModuleFieldUpdateOperationsInput | $Enums.SourceModule
+    direction?: EnumLedgerDirectionFieldUpdateOperationsInput | $Enums.LedgerDirection
+    eventType?: EnumFinancialEventTypeFieldUpdateOperationsInput | $Enums.FinancialEventType
+    idempotencyKey?: NullableStringFieldUpdateOperationsInput | string | null
+    ledgerVersion?: IntFieldUpdateOperationsInput | number
+    journalEntryId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumLedgerStatusFieldUpdateOperationsInput | $Enums.LedgerStatus
+    currency?: NullableStringFieldUpdateOperationsInput | string | null
+    exchangeRate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    sequenceNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
   }
 
   export type GroupExpenseMemberUpdateWithoutGroupExpenseInput = {
@@ -95186,6 +98799,186 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type TransactionCreateManyJournalEntryInput = {
+    id?: string
+    userId: string
+    deviceId?: string | null
+    accountId: string
+    type: string
+    amount: Decimal | DecimalJsLike | number | string
+    category: string
+    subcategory?: string | null
+    description?: string | null
+    merchant?: string | null
+    date: Date | string
+    tags?: NullableJsonNullValueInput | InputJsonValue
+    attachment?: string | null
+    transferToAccountId?: string | null
+    transferType?: string | null
+    expenseMode?: string | null
+    groupExpenseId?: string | null
+    groupName?: string | null
+    splitType?: string | null
+    importSource?: string | null
+    importMetadata?: string | null
+    originalCategory?: string | null
+    importedAt?: Date | string | null
+    dedupHash?: string | null
+    version?: number
+    synced?: boolean
+    syncStatus?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    referenceType?: $Enums.LedgerReferenceType
+    referenceId?: string | null
+    sourceModule?: $Enums.SourceModule
+    direction?: $Enums.LedgerDirection
+    eventType?: $Enums.FinancialEventType
+    idempotencyKey?: string | null
+    ledgerVersion?: number
+    status?: $Enums.LedgerStatus
+    currency?: string | null
+    exchangeRate?: Decimal | DecimalJsLike | number | string | null
+    sequenceNumber?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+  }
+
+  export type TransactionUpdateWithoutJournalEntryInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    deviceId?: NullableStringFieldUpdateOperationsInput | string | null
+    type?: StringFieldUpdateOperationsInput | string
+    amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    category?: StringFieldUpdateOperationsInput | string
+    subcategory?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    merchant?: NullableStringFieldUpdateOperationsInput | string | null
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    tags?: NullableJsonNullValueInput | InputJsonValue
+    attachment?: NullableStringFieldUpdateOperationsInput | string | null
+    transferToAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    transferType?: NullableStringFieldUpdateOperationsInput | string | null
+    expenseMode?: NullableStringFieldUpdateOperationsInput | string | null
+    groupName?: NullableStringFieldUpdateOperationsInput | string | null
+    splitType?: NullableStringFieldUpdateOperationsInput | string | null
+    importSource?: NullableStringFieldUpdateOperationsInput | string | null
+    importMetadata?: NullableStringFieldUpdateOperationsInput | string | null
+    originalCategory?: NullableStringFieldUpdateOperationsInput | string | null
+    importedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dedupHash?: NullableStringFieldUpdateOperationsInput | string | null
+    version?: IntFieldUpdateOperationsInput | number
+    synced?: BoolFieldUpdateOperationsInput | boolean
+    syncStatus?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    referenceType?: EnumLedgerReferenceTypeFieldUpdateOperationsInput | $Enums.LedgerReferenceType
+    referenceId?: NullableStringFieldUpdateOperationsInput | string | null
+    sourceModule?: EnumSourceModuleFieldUpdateOperationsInput | $Enums.SourceModule
+    direction?: EnumLedgerDirectionFieldUpdateOperationsInput | $Enums.LedgerDirection
+    eventType?: EnumFinancialEventTypeFieldUpdateOperationsInput | $Enums.FinancialEventType
+    idempotencyKey?: NullableStringFieldUpdateOperationsInput | string | null
+    ledgerVersion?: IntFieldUpdateOperationsInput | number
+    status?: EnumLedgerStatusFieldUpdateOperationsInput | $Enums.LedgerStatus
+    currency?: NullableStringFieldUpdateOperationsInput | string | null
+    exchangeRate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    sequenceNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    account?: AccountUpdateOneRequiredWithoutTransactionsNestedInput
+    groupExpense?: GroupExpenseUpdateOneWithoutTransactionsNestedInput
+    user?: UserUpdateOneRequiredWithoutTransactionsNestedInput
+  }
+
+  export type TransactionUncheckedUpdateWithoutJournalEntryInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    deviceId?: NullableStringFieldUpdateOperationsInput | string | null
+    accountId?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    category?: StringFieldUpdateOperationsInput | string
+    subcategory?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    merchant?: NullableStringFieldUpdateOperationsInput | string | null
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    tags?: NullableJsonNullValueInput | InputJsonValue
+    attachment?: NullableStringFieldUpdateOperationsInput | string | null
+    transferToAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    transferType?: NullableStringFieldUpdateOperationsInput | string | null
+    expenseMode?: NullableStringFieldUpdateOperationsInput | string | null
+    groupExpenseId?: NullableStringFieldUpdateOperationsInput | string | null
+    groupName?: NullableStringFieldUpdateOperationsInput | string | null
+    splitType?: NullableStringFieldUpdateOperationsInput | string | null
+    importSource?: NullableStringFieldUpdateOperationsInput | string | null
+    importMetadata?: NullableStringFieldUpdateOperationsInput | string | null
+    originalCategory?: NullableStringFieldUpdateOperationsInput | string | null
+    importedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dedupHash?: NullableStringFieldUpdateOperationsInput | string | null
+    version?: IntFieldUpdateOperationsInput | number
+    synced?: BoolFieldUpdateOperationsInput | boolean
+    syncStatus?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    referenceType?: EnumLedgerReferenceTypeFieldUpdateOperationsInput | $Enums.LedgerReferenceType
+    referenceId?: NullableStringFieldUpdateOperationsInput | string | null
+    sourceModule?: EnumSourceModuleFieldUpdateOperationsInput | $Enums.SourceModule
+    direction?: EnumLedgerDirectionFieldUpdateOperationsInput | $Enums.LedgerDirection
+    eventType?: EnumFinancialEventTypeFieldUpdateOperationsInput | $Enums.FinancialEventType
+    idempotencyKey?: NullableStringFieldUpdateOperationsInput | string | null
+    ledgerVersion?: IntFieldUpdateOperationsInput | number
+    status?: EnumLedgerStatusFieldUpdateOperationsInput | $Enums.LedgerStatus
+    currency?: NullableStringFieldUpdateOperationsInput | string | null
+    exchangeRate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    sequenceNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+  }
+
+  export type TransactionUncheckedUpdateManyWithoutJournalEntryInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    deviceId?: NullableStringFieldUpdateOperationsInput | string | null
+    accountId?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    category?: StringFieldUpdateOperationsInput | string
+    subcategory?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    merchant?: NullableStringFieldUpdateOperationsInput | string | null
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    tags?: NullableJsonNullValueInput | InputJsonValue
+    attachment?: NullableStringFieldUpdateOperationsInput | string | null
+    transferToAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    transferType?: NullableStringFieldUpdateOperationsInput | string | null
+    expenseMode?: NullableStringFieldUpdateOperationsInput | string | null
+    groupExpenseId?: NullableStringFieldUpdateOperationsInput | string | null
+    groupName?: NullableStringFieldUpdateOperationsInput | string | null
+    splitType?: NullableStringFieldUpdateOperationsInput | string | null
+    importSource?: NullableStringFieldUpdateOperationsInput | string | null
+    importMetadata?: NullableStringFieldUpdateOperationsInput | string | null
+    originalCategory?: NullableStringFieldUpdateOperationsInput | string | null
+    importedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dedupHash?: NullableStringFieldUpdateOperationsInput | string | null
+    version?: IntFieldUpdateOperationsInput | number
+    synced?: BoolFieldUpdateOperationsInput | boolean
+    syncStatus?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    referenceType?: EnumLedgerReferenceTypeFieldUpdateOperationsInput | $Enums.LedgerReferenceType
+    referenceId?: NullableStringFieldUpdateOperationsInput | string | null
+    sourceModule?: EnumSourceModuleFieldUpdateOperationsInput | $Enums.SourceModule
+    direction?: EnumLedgerDirectionFieldUpdateOperationsInput | $Enums.LedgerDirection
+    eventType?: EnumFinancialEventTypeFieldUpdateOperationsInput | $Enums.FinancialEventType
+    idempotencyKey?: NullableStringFieldUpdateOperationsInput | string | null
+    ledgerVersion?: IntFieldUpdateOperationsInput | number
+    status?: EnumLedgerStatusFieldUpdateOperationsInput | $Enums.LedgerStatus
+    currency?: NullableStringFieldUpdateOperationsInput | string | null
+    exchangeRate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    sequenceNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
   }
 
 

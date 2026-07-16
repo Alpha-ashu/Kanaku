@@ -14,12 +14,14 @@ import { startNotificationOutbox, stopNotificationOutbox } from './workers/index
 import { startCleanupWorker, stopCleanupWorker } from './workers/cleanup.worker';
 import { runWorkersInApiProcess } from './config/serviceRole';
 import './features/budgets/budget.listener';
+import { initializeLedgerSubscriptions } from './features/transactions/ledger.subscriber';
 
 // Explicit startup gate (config/env already validated on import above) +
 // distributed-tracing hook (a no-op until OpenTelemetry is adopted — see
 // docs/04_App_Flow/OPENTELEMETRY_READINESS.md).
 validateConfig('api');
 initTracing();
+initializeLedgerSubscriptions();
 
 const PORT = process.env.PORT || 3000;
 

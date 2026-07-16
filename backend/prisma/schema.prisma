@@ -579,10 +579,25 @@ model Transaction {
   createdAt           DateTime      @default(now())
   updatedAt           DateTime      @updatedAt
   deletedAt           DateTime?
+  referenceType       LedgerReferenceType @default(MANUAL)
+  referenceId         String?
+  sourceModule        SourceModule        @default(TRANSACTIONS)
+  direction           LedgerDirection     @default(OUTFLOW)
+  eventType           FinancialEventType  @default(CREATE)
+  idempotencyKey      String?
+  ledgerVersion       Int                 @default(1)
+  journalEntryId      String?
+  status              LedgerStatus        @default(POSTED)
+  currency            String?
+  exchangeRate        Decimal?            @db.Decimal(18, 8)
+  sequenceNumber      String?             @unique
+  metadata            Json?
+  journalEntry        JournalEntry?       @relation(fields: [journalEntryId], references: [id], onDelete: SetNull)
   account             Account       @relation(fields: [accountId], references: [id], onDelete: Cascade)
   groupExpense        GroupExpense? @relation(fields: [groupExpenseId], references: [id])
   user                User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@unique([userId, sourceModule, idempotencyKey])
   @@index([accountId])
   @@index([category])
   @@index([date])
@@ -595,6 +610,8 @@ model Transaction {
   @@index([userId, accountId, date]) // account-level transaction queries
   @@index([userId, deletedAt, date]) // soft-delete filtered date queries
   @@index([deletedAt])
+  @@index([referenceId])
+  @@index([journalEntryId])
   @@schema("public")
 }
 
@@ -645,6 +662,7 @@ model User {
   refreshTokens               RefreshToken[]
   todos                       Todo[]
   transactions                Transaction[]
+  journalEntries              JournalEntry[]
   userPin                     UserPin?
   userSettings                UserSettings?
   otpCodes                    OtpCode[]
@@ -1173,3 +1191,88 @@ model GoldAsset {
   @@map("gold_assets")
   @@schema("public")
 }
+
+model JournalEntry {
+  id            String              @id @default(uuid())
+  userId        String
+  sourceModule  SourceModule
+  referenceType LedgerReferenceType
+  referenceId   String?
+  status        LedgerStatus        @default(POSTED)
+  description   String?
+  eventVersion  Int                 @default(1)
+  createdBy     String?
+  createdFrom   String?
+  deviceId      String?
+  ipAddress     String?
+  requestId     String?
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  transactions  Transaction[]
+  user          User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([referenceId])
+  @@schema("public")
+}
+
+enum LedgerReferenceType {
+  MANUAL
+  GROUP_EXPENSE
+  GROUP_SETTLEMENT
+  GOAL
+  GROUP_GOAL
+  INVESTMENT
+  GROUP_INVESTMENT
+  LOAN
+  LOAN_PAYMENT
+  EMI
+  SAVINGS
+  TRANSFER
+  SYSTEM
+
+  @@schema("public")
+}
+
+enum SourceModule {
+  TRANSACTIONS
+  GROUPS
+  GOALS
+  INVESTMENTS
+  LOANS
+  SAVINGS
+  OFFLINE_SYNC
+
+  @@schema("public")
+}
+
+enum LedgerDirection {
+  INFLOW
+  OUTFLOW
+
+  @@schema("public")
+}
+
+enum FinancialEventType {
+  CREATE
+  UPDATE
+  REVERSAL
+  SETTLEMENT
+  REFUND
+  TRANSFER
+  WITHDRAWAL
+  CONTRIBUTION
+
+  @@schema("public")
+}
+
+enum LedgerStatus {
+  PENDING
+  POSTED
+  REVERSED
+  FAILED
+
+  @@schema("public")
+}
+
+
