@@ -1,13 +1,13 @@
 import { Response, NextFunction } from 'express';
 import { AuthRequest, getUserId } from '../../middleware/auth';
 import { todoService } from './todo.service';
+import { cacheGetJson, cacheSetJson } from '../../cache/redis';
 
 // Legacy single todo controllers
 export const getTodos = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const userId = getUserId(req);
     const cacheKey = `todos:${userId}:list`;
-    const { cacheGetJson, cacheSetJson } = require('../../cache/redis');
     const cached = process.env.NODE_ENV !== 'test' ? await cacheGetJson(cacheKey) : null;
     if (cached) {
       return res.json({ success: true, data: cached });
@@ -60,7 +60,6 @@ export const getTodoLists = async (req: AuthRequest, res: Response, next: NextFu
   try {
     const userId = getUserId(req);
     const cacheKey = `todos:${userId}:lists`;
-    const { cacheGetJson, cacheSetJson } = require('../../cache/redis');
     const cached = process.env.NODE_ENV !== 'test' ? await cacheGetJson(cacheKey) : null;
     if (cached) {
       return res.json({ success: true, data: cached });
@@ -113,7 +112,6 @@ export const getTodoItems = async (req: AuthRequest, res: Response, next: NextFu
     const userId = getUserId(req);
     const { listId } = req.params;
     const cacheKey = `todos:${userId}:list:${listId}:items`;
-    const { cacheGetJson, cacheSetJson } = require('../../cache/redis');
     const cached = process.env.NODE_ENV !== 'test' ? await cacheGetJson(cacheKey) : null;
     if (cached) {
       return res.json({ success: true, data: cached });
@@ -133,7 +131,6 @@ export const getAllTodoItems = async (req: AuthRequest, res: Response, next: Nex
   try {
     const userId = getUserId(req);
     const cacheKey = `todos:${userId}:items`;
-    const { cacheGetJson, cacheSetJson } = require('../../cache/redis');
     const cached = process.env.NODE_ENV !== 'test' ? await cacheGetJson(cacheKey) : null;
     if (cached) {
       return res.json({ success: true, data: cached });

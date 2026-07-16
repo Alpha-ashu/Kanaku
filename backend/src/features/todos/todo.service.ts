@@ -2,14 +2,13 @@ import { todoRepository } from './todo.repository';
 import { prisma } from '../../db/prisma';
 import { getSocketManager } from '../../sockets';
 import { AppError } from '../../utils/AppError';
-import { logger } from '../../config/logger';
 import { inviteParticipants } from '../collaboration/invitation.service';
+import { cacheDeleteByPrefix } from '../../cache/redis';
 
 export class TodoService {
   private invalidateTodoCache(userIds: string[] | Set<string> | Iterable<string>) {
     if (process.env.NODE_ENV === 'test') return;
     try {
-      const { cacheDeleteByPrefix } = require('../../cache/redis');
       for (const uid of userIds) {
         if (uid) {
           cacheDeleteByPrefix(`todos:${uid}:`).catch(() => {});
@@ -35,7 +34,7 @@ export class TodoService {
     notifyUserIds.forEach((targetId) => {
       try {
         socketManager.notifyUser(targetId, 'todo_updated', { listId });
-      } catch (err) {
+      } catch {
         // Ignore socket delivery errors
       }
     });
@@ -125,7 +124,7 @@ export class TodoService {
     shares.forEach((s) => {
       try {
         socketManager.notifyUser(s.sharedWithUserId, 'todo_updated', { listId: id });
-      } catch (err) {
+      } catch {
         // Ignore
       }
     });
@@ -285,7 +284,7 @@ export class TodoService {
     try {
       const socketManager = getSocketManager();
       socketManager.notifyUser(targetUser.id, 'todo_updated', { listId });
-    } catch (err) {
+    } catch {
       // Ignore
     }
 
@@ -321,7 +320,7 @@ export class TodoService {
     try {
       const socketManager = getSocketManager();
       socketManager.notifyUser(share.sharedWithUserId, 'todo_updated', { listId: share.listId });
-    } catch (err) {
+    } catch {
       // Ignore
     }
   }
@@ -356,7 +355,7 @@ export class TodoService {
     try {
       const socketManager = getSocketManager();
       socketManager.notifyUser(share.sharedWithUserId, 'todo_updated', { listId: share.listId });
-    } catch (err) {
+    } catch {
       // Ignore
     }
 

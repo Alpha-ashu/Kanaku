@@ -1,10 +1,21 @@
 import type { Request, Response, NextFunction } from 'express';
 
-export function performanceTracker(req: any, res: any, next: NextFunction): void {
+declare global {
+  namespace Express {
+    interface Request {
+      startTime?: bigint;
+      prismaDuration?: number;
+      authDuration?: number;
+      controllerStart?: bigint;
+    }
+  }
+}
+
+export function performanceTracker(req: Request, res: Response, next: NextFunction): void {
   req.startTime = process.hrtime.bigint();
   req.prismaDuration = 0;
   req.authDuration = 0;
-  req.controllerStart = 0;
+  req.controllerStart = 0n;
 
   const originalJson = res.json;
   res.json = function (body: any) {
@@ -16,7 +27,7 @@ export function performanceTracker(req: any, res: any, next: NextFunction): void
 
     // 2. Compute other milestones
     const now = process.hrtime.bigint();
-    const totalMs = Number(now - req.startTime) / 1_000_000;
+    const totalMs = Number(now - (req.startTime || 0n)) / 1_000_000;
 
     const authMs = req.authDuration || 0;
     const prismaMs = req.prismaDuration || 0;

@@ -53,12 +53,20 @@ Kanaku/
 
 ---
 
-## A1. Recent Hardening & Fixes (last 7 days — 2026-07-08 → 2026-07-15)
+## A1. Recent Hardening & Fixes (last 7 days — 2026-07-09 → 2026-07-16)
 
-> Rolling 1-week changelog. Entries older than 2026-07-08 have been pruned (see
+> Rolling 1-week changelog. Entries older than 2026-07-09 have been pruned (see
 > git history); the architecture/governance sections below are unaffected. Treat
 > as authoritative — these changes alter auth/session, RBAC, monetary
 > persistence, security headers, and accessibility.
+
+### Enterprise Production Optimization & Performance Tracing (2026-07-16)
+- **Request Performance Tracing Middleware:** Integrated `performanceTracker.ts` middleware to compute durations for distinct request milestones (Request Received, Authentication, Controller/Service, Prisma/SQL execution, Serialization) and return them via the `Server-Timing` and `X-Response-Time-Ms` headers.
+- **Type-Safe Global Request Extension:** Statically extended the global `Express.Request` interface in TypeScript to cleanly type tracing variables (`startTime`, `prismaDuration`, `authDuration`, `controllerStart`), resolving Express middleware type-compatibility errors.
+- **Event-Driven Cache Invalidation:** Implemented high-performance caching for Dashboard and To-Do endpoints. Added Prisma middleware and service hooks to trigger targeted invalidation of affected user namespaces (`todos:${userId}:*` and `dashboard:${userId}:*`) on any mutation/write.
+- **Security Caching Isolation:** Enforced that raw authentication validation queries remain completely uncached to ensure security settings and password changes take effect instantly.
+- **Lint & Build Verification Clean:** Cleared all compiler type mismatches and ESLint errors in modified backend files, achieving 100% build success and clean lint verification.
+- **Readiness Reports:** Compiled the full package of 19 enterprise release readiness reports.
 
 ### Advisor Compliance Verification & Application Approval (2026-07-15)
 - **Compliance Dashboard Mapping Fix:** Fixed a critical mismatch in the `Compliance Dashboard` (`ManagerAdvisorVerification.tsx`) where the advisor approval/rejection buttons targeted the `applicationId` instead of the `userId`, failing with a `404 User not found` error on the backend. Staged mapping now correctly sets `app.id` to `app.userId`.

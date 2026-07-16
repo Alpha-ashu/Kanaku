@@ -46,7 +46,6 @@ function buildClient(datasourceUrl?: string, opts?: { audit?: boolean }): Prisma
   (base as any).$on('error', (e: any) => logger.error('[Prisma]', e));
 
   // Query timeout + slow-query logging via $extends (Prisma v5+)
-  const WRITE_OPS = new Set(['create', 'update', 'delete', 'upsert', 'createMany', 'updateMany', 'deleteMany']);
   const timed = base.$extends({
     query: {
       async $queryRaw({ query, args }) {
@@ -96,23 +95,18 @@ function buildClient(datasourceUrl?: string, opts?: { audit?: boolean }): Prisma
             const actor = getRequestActor();
             const userId = actor?.userId || args?.data?.userId || args?.where?.userId || args?.data?.id || args?.where?.id;
             if (userId && typeof userId === 'string') {
-              try {
-                const { cacheDeleteByPrefix } = require('../cache/redis');
-                const { invalidateUserSnapshotCache } = require('../middleware/auth');
-                cacheDeleteByPrefix(`dashboard:${userId}:`);
-                cacheDeleteByPrefix(`todos:${userId}:`);
+              import('../cache/redis').then(({ cacheDeleteByPrefix }) => {
+                cacheDeleteByPrefix(`dashboard:${userId}:`).catch(() => {});
+                cacheDeleteByPrefix(`todos:${userId}:`).catch(() => {});
+              }).catch(() => {});
+              import('../middleware/auth').then(({ invalidateUserSnapshotCache }) => {
                 invalidateUserSnapshotCache(userId);
-              } catch (cacheErr) {
-                // Ignore cache invalidation errors
-              }
+              }).catch(() => {});
             }
             if (model === 'User') {
-              try {
-                const { cacheDeleteByPrefix } = require('../cache/redis');
-                cacheDeleteByPrefix('user:');
-              } catch (cacheErr) {
-                // Ignore cache invalidation errors
-              }
+              import('../cache/redis').then(({ cacheDeleteByPrefix }) => {
+                cacheDeleteByPrefix('user:').catch(() => {});
+              }).catch(() => {});
             }
           }
 

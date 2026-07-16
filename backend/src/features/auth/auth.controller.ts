@@ -1022,7 +1022,7 @@ export const logout = async (req: AuthRequest, res: Response, next: NextFunction
     clearRefreshCookie(res);
     auditFromRequest(req, 'auth.logout');
     res.json({ success: true, message: 'Logged out successfully' });
-  } catch (error) {
+  } catch {
     // Even on error, clear the cookie and report success.
     clearRefreshCookie(res);
     res.json({ success: true, message: 'Logged out' });

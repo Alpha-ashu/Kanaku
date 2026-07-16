@@ -306,7 +306,7 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
 
         stampAuthTime(req, authStart);
         return next();
-      } catch (err) {
+      } catch {
         // Fall back to Supabase
       }
     }
@@ -347,7 +347,7 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
           stampAuthTime(req, authStart);
           return next();
         }
-      } catch (err) {
+      } catch {
         // Fall through to Supabase API check
       }
     }
