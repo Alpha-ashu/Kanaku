@@ -71,7 +71,7 @@ export function initializeLedgerSubscriptions() {
     });
 
     let participantsShareSum = new Decimal(0);
-    const legs = [];
+    const legs: import('./ledger.service').LedgerLeg[] = [];
 
     // Outflow leg (totalAmount, POSTED)
     legs.push({
@@ -126,7 +126,7 @@ export function initializeLedgerSubscriptions() {
         sourceModule: SourceModule.GROUPS,
         referenceType: LedgerReferenceType.GROUP_EXPENSE,
         referenceId: event.groupExpenseId,
-        description: `${event.name} (Group Expense)`,
+        description: `${event.name} (Group Expense Creation)`,
         ...event.metadata
       },
       legs
@@ -145,7 +145,7 @@ export function initializeLedgerSubscriptions() {
     });
 
     if (originalLeg) {
-      let pendingTx = null;
+      let pendingTx: any = null;
       if (originalLeg.status === LedgerStatus.PENDING) {
         pendingTx = originalLeg;
       } else {

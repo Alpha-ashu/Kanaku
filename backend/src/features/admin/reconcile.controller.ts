@@ -2,6 +2,7 @@ import { Response, NextFunction } from 'express';
 import { AuthRequest } from '../../middleware/auth';
 import { prisma } from '../../db/prisma';
 import { Decimal } from '@prisma/client/runtime/library';
+import { getBudgetPeriodBounds } from '../budgets/budget.listener';
 
 export interface ReconciliationReport {
   timestamp: Date;
@@ -13,6 +14,9 @@ export interface ReconciliationReport {
     duplicateIdempotencyErrors: number;
     doubleEntryImbalances: number;
     crossUserIsolationViolations: number;
+    transferImbalances: number;
+    budgetDrifts: number;
+    failedRecurringExecutions: number;
   };
   drifts: Array<{
     accountId: string;
@@ -38,7 +42,10 @@ export const reconcileLedger = async (req: AuthRequest, res: Response, next: Nex
         duplicateSequenceErrors: 0,
         duplicateIdempotencyErrors: 0,
         doubleEntryImbalances: 0,
-        crossUserIsolationViolations: 0
+        crossUserIsolationViolations: 0,
+        transferImbalances: 0,
+        budgetDrifts: 0,
+        failedRecurringExecutions: 0
       },
       drifts: [],
       errors: []
@@ -168,6 +175,62 @@ export const reconcileLedger = async (req: AuthRequest, res: Response, next: Nex
     report.summary.crossUserIsolationViolations = isolationViolations.length;
     for (const violation of isolationViolations) {
       report.errors.push(`Cross-user isolation violation: Transaction ${violation.transactionId} (User ${violation.txUser}) linked to Journal ${violation.journalId} (User ${violation.jUser})`);
+    }
+
+    // 6. Transfer Audit (TRANSFER_OUT count == TRANSFER_IN count)
+    const transferOutCount = await prisma.transaction.count({
+      where: { type: 'TRANSFER_OUT', status: 'POSTED', deletedAt: null }
+    });
+    const transferInCount = await prisma.transaction.count({
+      where: { type: 'TRANSFER_IN', status: 'POSTED', deletedAt: null }
+    });
+    if (transferOutCount !== transferInCount) {
+      report.summary.transferImbalances = Math.abs(transferOutCount - transferInCount);
+      report.errors.push(`Transfer imbalance: TRANSFER_OUT count (${transferOutCount}) does not match TRANSFER_IN count (${transferInCount})`);
+    }
+
+    // 7. Budget Audit (Budget spent snapshot == Ledger Aggregation)
+    const budgets = await prisma.budget.findMany({
+      where: { deletedAt: null }
+    });
+    let budgetDriftsCount = 0;
+    for (const budget of budgets) {
+      const bounds = getBudgetPeriodBounds(new Date(), budget.period);
+      const aggregateResult = await prisma.transaction.aggregate({
+        where: {
+          userId: budget.userId,
+          category: { equals: budget.category, mode: 'insensitive' },
+          type: 'expense',
+          status: 'POSTED',
+          date: { gte: bounds.startDate, lte: bounds.endDate },
+          deletedAt: null
+        },
+        _sum: { amount: true }
+      });
+      const ledgerSpent = aggregateResult._sum.amount ? new Decimal(aggregateResult._sum.amount) : new Decimal(0);
+      const snapshotSpent = new Decimal(budget.spent);
+      if (!ledgerSpent.equals(snapshotSpent)) {
+        budgetDriftsCount++;
+        report.errors.push(`Budget spent drift: User ${budget.userId}, Category ${budget.category} has snapshot spent ${snapshotSpent.toFixed(2)} !== ledger spent ${ledgerSpent.toFixed(2)}`);
+        
+        // Auto repair the budget snapshot
+        await prisma.budget.update({
+          where: { id: budget.id },
+          data: { spent: ledgerSpent }
+        });
+      }
+    }
+    report.summary.budgetDrifts = budgetDriftsCount;
+
+    // 8. Recurring Execution Audit (Failed and retrying executions)
+    const failedExecutionsCount = await prisma.recurringExecution.count({
+      where: {
+        status: { in: ['FAILED', 'RETRYING'] }
+      }
+    });
+    report.summary.failedRecurringExecutions = failedExecutionsCount;
+    if (failedExecutionsCount > 0) {
+      report.errors.push(`Failed or retrying recurring executions: ${failedExecutionsCount} items found in recurring_executions`);
     }
 
     if (report.errors.length > 0) {

@@ -114,6 +114,76 @@ export class GroupSettlementCompletedEvent extends BaseFinancialEvent {
   }
 }
 
+export class LedgerPostedEvent extends BaseFinancialEvent {
+  readonly eventType = 'LEDGER_POSTED';
+  readonly sourceModule = 'TRANSACTIONS';
+  constructor(
+    userId: string,
+    readonly journalEntryId: string,
+    readonly referenceId: string | null,
+    readonly referenceType: string,
+    readonly legs: {
+      id: string;
+      accountId: string;
+      type: string;
+      amount: number;
+      category: string;
+      description: string | null;
+      status: string;
+      idempotencyKey: string;
+    }[],
+    metadata?: BaseFinancialEvent['metadata']
+  ) {
+    super(userId, metadata);
+  }
+}
+
+export class LedgerSettledEvent extends BaseFinancialEvent {
+  readonly eventType = 'LEDGER_SETTLED';
+  readonly sourceModule = 'TRANSACTIONS';
+  constructor(
+    userId: string,
+    readonly transactionId: string,
+    readonly journalEntryId: string,
+    readonly referenceId: string | null,
+    readonly referenceType: string,
+    readonly settledAmount: number,
+    readonly remainingAmount: number,
+    metadata?: BaseFinancialEvent['metadata']
+  ) {
+    super(userId, metadata);
+  }
+}
+
+export class LedgerReversedEvent extends BaseFinancialEvent {
+  readonly eventType = 'LEDGER_REVERSED';
+  readonly sourceModule = 'TRANSACTIONS';
+  constructor(
+    userId: string,
+    readonly transactionId: string,
+    readonly journalEntryId: string,
+    readonly reason?: string,
+    metadata?: BaseFinancialEvent['metadata']
+  ) {
+    super(userId, metadata);
+  }
+}
+
+export class LedgerTransferCompletedEvent extends BaseFinancialEvent {
+  readonly eventType = 'LEDGER_TRANSFER_COMPLETED';
+  readonly sourceModule = 'TRANSACTIONS';
+  constructor(
+    userId: string,
+    readonly sourceAccountId: string,
+    readonly destinationAccountId: string,
+    readonly amount: number,
+    readonly title: string,
+    readonly idempotencyKey: string,
+    metadata?: BaseFinancialEvent['metadata']
+  ) {
+    super(userId, metadata);
+  }
+}
 
 export class InvestmentPurchasedEvent extends BaseFinancialEvent {
   readonly eventType = 'INVESTMENT_PURCHASED';
@@ -188,6 +258,7 @@ type Listener<T extends BaseFinancialEvent = any> = (tx: PrismaTx, event: T) => 
 
 class EventDispatcher {
   private listeners: Map<string, Listener[]> = new Map();
+  private deferredEvents: any[] = [];
 
   subscribe<T extends BaseFinancialEvent>(eventType: string, listener: Listener<T>) {
     const list = this.listeners.get(eventType) ?? [];
@@ -200,6 +271,30 @@ class EventDispatcher {
     if (!list || list.length === 0) return;
     for (const listener of list) {
       await listener(tx, event);
+    }
+  }
+
+  defer(event: any) {
+    this.deferredEvents.push(event);
+  }
+
+  async flushDeferred(): Promise<void> {
+    const events = [...this.deferredEvents];
+    this.deferredEvents = [];
+    if (events.length === 0) return;
+    
+    // We defer the loading of prisma client to avoid circular imports.
+    const { prisma } = require('../../db/prisma');
+    for (const event of events) {
+      const list = this.listeners.get(event.eventType);
+      if (!list || list.length === 0) continue;
+      for (const listener of list) {
+        try {
+          await listener(prisma, event);
+        } catch (error) {
+          console.error(`[EventDispatcher] Failed to execute listener for event ${event.eventType}:`, error);
+        }
+      }
     }
   }
 }

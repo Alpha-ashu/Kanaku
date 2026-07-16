@@ -1121,6 +1121,7 @@ model RecurringTransaction {
   updatedAt       DateTime  @updatedAt
   deletedAt       DateTime?
   user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  executions      RecurringExecution[]
 
   @@index([userId])
   @@index([status])
@@ -1189,6 +1190,39 @@ model GoldAsset {
   @@index([syncStatus])
   @@index([deletedAt])
   @@map("gold_assets")
+  @@schema("public")
+}
+
+enum RecurringExecutionStatus {
+  PENDING
+  RUNNING
+  SUCCESS
+  FAILED
+  RETRYING
+  SKIPPED
+
+  @@schema("public")
+}
+
+model RecurringExecution {
+  id            String                   @id @default(uuid())
+  ruleId        String
+  scheduledDate DateTime
+  executedDate  DateTime?
+  journalId     String?
+  status        RecurringExecutionStatus @default(PENDING)
+  failureReason String?
+  retryCount    Int                      @default(0)
+  nextRetryAt   DateTime?
+  createdAt     DateTime                 @default(now())
+  updatedAt     DateTime                 @updatedAt
+  rule          RecurringTransaction     @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+
+  @@unique([ruleId, scheduledDate])
+  @@index([ruleId])
+  @@index([status])
+  @@index([scheduledDate])
+  @@map("recurring_executions")
   @@schema("public")
 }
 

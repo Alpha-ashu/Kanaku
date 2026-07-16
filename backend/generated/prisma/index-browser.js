@@ -899,6 +899,20 @@ exports.Prisma.GoldAssetScalarFieldEnum = {
   deletedAt: 'deletedAt'
 };
 
+exports.Prisma.RecurringExecutionScalarFieldEnum = {
+  id: 'id',
+  ruleId: 'ruleId',
+  scheduledDate: 'scheduledDate',
+  executedDate: 'executedDate',
+  journalId: 'journalId',
+  status: 'status',
+  failureReason: 'failureReason',
+  retryCount: 'retryCount',
+  nextRetryAt: 'nextRetryAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.JournalEntryScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
@@ -995,6 +1009,15 @@ exports.LedgerStatus = exports.$Enums.LedgerStatus = {
   FAILED: 'FAILED'
 };
 
+exports.RecurringExecutionStatus = exports.$Enums.RecurringExecutionStatus = {
+  PENDING: 'PENDING',
+  RUNNING: 'RUNNING',
+  SUCCESS: 'SUCCESS',
+  FAILED: 'FAILED',
+  RETRYING: 'RETRYING',
+  SKIPPED: 'SKIPPED'
+};
+
 exports.Prisma.ModelName = {
   Account: 'Account',
   AdvisorApplication: 'AdvisorApplication',
@@ -1043,6 +1066,7 @@ exports.Prisma.ModelName = {
   RecurringTransaction: 'RecurringTransaction',
   Budget: 'Budget',
   GoldAsset: 'GoldAsset',
+  RecurringExecution: 'RecurringExecution',
   JournalEntry: 'JournalEntry'
 };
 

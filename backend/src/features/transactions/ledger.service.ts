@@ -1,12 +1,12 @@
 import { Decimal } from '@prisma/client/runtime/library';
-import { PrismaTx } from './dispatcher';
+import { PrismaTx, FinancialEventDispatcher, LedgerPostedEvent, LedgerSettledEvent, LedgerReversedEvent, LedgerTransferCompletedEvent } from './dispatcher';
 import { AppError } from '../../utils/AppError';
 import { LedgerStatus, LedgerReferenceType, SourceModule, LedgerDirection, FinancialEventType } from '../../db/prisma-client';
 import { randomUUID } from 'crypto';
 
 export interface LedgerLeg {
   accountId: string;
-  type: 'income' | 'expense';
+  type: 'income' | 'expense' | 'transfer_in' | 'transfer_out' | 'TRANSFER_IN' | 'TRANSFER_OUT';
   amount: number;
   category: string;
   description: string;
@@ -28,6 +28,7 @@ export interface JournalParams {
   ipAddress?: string;
   requestId?: string;
   journalEntryId?: string;
+  metadata?: any;
 }
 
 export class LedgerError extends Error {
@@ -94,6 +95,26 @@ export class FinancialLedgerService {
     let debitSum = new Decimal(0);
     let creditSum = new Decimal(0);
 
+    // Validate transfers
+    const isTransfer = journal.referenceType === LedgerReferenceType.TRANSFER;
+    if (isTransfer) {
+      if (legs.length !== 2) {
+        throw new LedgerError('LEDGER_INVALID_TRANSFER', 'A transfer must have exactly two transaction legs.');
+      }
+      const leg1 = legs[0];
+      const leg2 = legs[1];
+      const type1 = leg1.type.toUpperCase();
+      const type2 = leg2.type.toUpperCase();
+
+      if (!((type1 === 'TRANSFER_OUT' && type2 === 'TRANSFER_IN') || (type1 === 'TRANSFER_IN' && type2 === 'TRANSFER_OUT'))) {
+        throw new LedgerError('LEDGER_INVALID_TRANSFER', 'A transfer must consist of exactly one TRANSFER_OUT leg and one TRANSFER_IN leg.');
+      }
+
+      if (leg1.accountId === leg2.accountId) {
+        throw new LedgerError('LEDGER_INVALID_TRANSFER', 'Source and destination accounts for a transfer must be different.');
+      }
+    }
+
     for (const leg of legs) {
       const amountDec = new Decimal(leg.amount);
       if (amountDec.lessThanOrEqualTo(0)) {
@@ -108,7 +129,8 @@ export class FinancialLedgerService {
         throw new LedgerError('LEDGER_ACCOUNT_NOT_FOUND', `Account ${leg.accountId} not found or unauthorized.`);
       }
 
-      if (leg.type === 'income') {
+      const legTypeLower = leg.type.toLowerCase();
+      if (legTypeLower === 'income' || legTypeLower === 'transfer_in') {
         debitSum = debitSum.add(amountDec);
       } else {
         creditSum = creditSum.add(amountDec);
@@ -165,14 +187,17 @@ export class FinancialLedgerService {
       });
     }
 
+    const createdTransactions: any[] = [];
+
     // 4. Create each Transaction leg and update Account balances
     for (const leg of legs) {
       const seqNum = await this.generateSequenceNumber(tx);
       const amountDec = new Decimal(leg.amount);
       const legStatus = leg.status || LedgerStatus.POSTED;
+      const legTypeLower = leg.type.toLowerCase();
 
       // Save Transaction row
-      await tx.transaction.create({
+      const createdTx = await tx.transaction.create({
         data: {
           userId: journal.userId,
           accountId: leg.accountId,
@@ -186,7 +211,7 @@ export class FinancialLedgerService {
           referenceType: journal.referenceType,
           referenceId: journal.referenceId || null,
           sourceModule: journal.sourceModule,
-          direction: leg.type === 'income' ? LedgerDirection.INFLOW : LedgerDirection.OUTFLOW,
+          direction: (legTypeLower === 'income' || legTypeLower === 'transfer_in') ? LedgerDirection.INFLOW : LedgerDirection.OUTFLOW,
           eventType: FinancialEventType.CREATE,
           idempotencyKey: leg.idempotencyKey || null,
           journalEntryId: journalEntry.id,
@@ -195,6 +220,8 @@ export class FinancialLedgerService {
           metadata: leg.metadata ? JSON.parse(JSON.stringify(leg.metadata)) : undefined
         }
       });
+
+      createdTransactions.push(createdTx);
 
       // Update Account balance atomically (skip if status is PENDING or skipBalanceUpdate = true)
       const shouldUpdateBalance = legStatus === LedgerStatus.POSTED && !leg.skipBalanceUpdate;
@@ -205,7 +232,7 @@ export class FinancialLedgerService {
         }
 
         const balanceDec = new Decimal(currentAccount.balance);
-        const nextBalance = leg.type === 'income'
+        const nextBalance = (legTypeLower === 'income' || legTypeLower === 'transfer_in')
           ? balanceDec.plus(amountDec)
           : balanceDec.minus(amountDec);
 
@@ -215,6 +242,44 @@ export class FinancialLedgerService {
         });
       }
     }
+
+    // Increment Metrics & Defer post-commit events
+    FinancialMetrics.increment('ledger_posted_total');
+
+    if (isTransfer) {
+      FinancialMetrics.increment('transfer_completed_total');
+      const outLeg = createdTransactions.find(t => t.type.toUpperCase() === 'TRANSFER_OUT');
+      const inLeg = createdTransactions.find(t => t.type.toUpperCase() === 'TRANSFER_IN');
+      if (outLeg && inLeg) {
+        FinancialEventDispatcher.defer(new LedgerTransferCompletedEvent(
+          journal.userId,
+          outLeg.accountId,
+          inLeg.accountId,
+          Number(outLeg.amount),
+          journal.description || 'Account Transfer',
+          journal.referenceId || randomUUID(),
+          journal.metadata
+        ));
+      }
+    }
+
+    FinancialEventDispatcher.defer(new LedgerPostedEvent(
+      journal.userId,
+      journalEntry.id,
+      journal.referenceId || null,
+      journal.referenceType,
+      createdTransactions.map(t => ({
+        id: t.id,
+        accountId: t.accountId,
+        type: t.type,
+        amount: Number(t.amount),
+        category: t.category,
+        description: t.description,
+        status: t.status,
+        idempotencyKey: t.idempotencyKey || ''
+      })),
+      journal.metadata
+    ));
 
     return journalEntry;
   }
@@ -259,6 +324,14 @@ export class FinancialLedgerService {
       }
     });
 
+    FinancialMetrics.increment('ledger_reversed_total');
+    FinancialEventDispatcher.defer(new LedgerReversedEvent(
+      pendingTx.userId,
+      pendingTx.id,
+      pendingTx.journalEntryId || '',
+      'Leg settled'
+    ));
+
     // 2. Append the new actual cash inflow (POSTED)
     const seqNumInflow = await this.generateSequenceNumber(tx);
     const settlementTx = await tx.transaction.create({
@@ -270,7 +343,7 @@ export class FinancialLedgerService {
         amount: settledAmount,
         category: pendingTx.category,
         subcategory: pendingTx.subcategory,
-        description: pendingTx.description.replace('Receivable from', 'Settlement Received -').replace('for', 'from'),
+        description: (pendingTx.description || '').replace('Receivable from', 'Settlement Received -').replace('for', 'from'),
         date: new Date(),
         referenceType: LedgerReferenceType.GROUP_SETTLEMENT,
         referenceId: pendingTx.referenceId,
@@ -285,6 +358,8 @@ export class FinancialLedgerService {
       }
     });
 
+    FinancialMetrics.increment('ledger_settled_total');
+
     // 3. Increment Cash Account balance by settledAmount
     const currentAccount = await tx.account.findUnique({ where: { id: accountId } });
     if (!currentAccount) {
@@ -297,8 +372,8 @@ export class FinancialLedgerService {
     });
 
     // 4. If partially settled, append a new pending receivable for the remainder!
+    const remainder = pendingAmount.minus(settledAmount);
     if (settledAmount.lessThan(pendingAmount)) {
-      const remainder = pendingAmount.minus(settledAmount);
       const seqNumRemainder = await this.generateSequenceNumber(tx);
       await tx.transaction.create({
         data: {
@@ -325,6 +400,34 @@ export class FinancialLedgerService {
       });
     }
 
+    FinancialEventDispatcher.defer(new LedgerSettledEvent(
+      pendingTx.userId,
+      settlementTx.id,
+      pendingTx.journalEntryId || '',
+      pendingTx.referenceId || '',
+      pendingTx.referenceType || '',
+      Number(settledAmount),
+      Number(remainder)
+    ));
+
     return settlementTx;
   }
 }
+
+export const FinancialMetrics = {
+  counters: {
+    ledger_posted_total: 0,
+    ledger_reversed_total: 0,
+    ledger_settled_total: 0,
+    recurring_success_total: 0,
+    recurring_failed_total: 0,
+    transfer_completed_total: 0,
+    budget_alert_total: 0
+  },
+  increment(metricName: keyof typeof FinancialMetrics.counters) {
+    if (FinancialMetrics.counters[metricName] !== undefined) {
+      FinancialMetrics.counters[metricName]++;
+      console.log(`[Metrics] ${String(metricName)} incremented to ${FinancialMetrics.counters[metricName]}`);
+    }
+  }
+};

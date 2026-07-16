@@ -249,6 +249,11 @@ export type Budget = $Result.DefaultSelection<Prisma.$BudgetPayload>
  */
 export type GoldAsset = $Result.DefaultSelection<Prisma.$GoldAssetPayload>
 /**
+ * Model RecurringExecution
+ * 
+ */
+export type RecurringExecution = $Result.DefaultSelection<Prisma.$RecurringExecutionPayload>
+/**
  * Model JournalEntry
  * 
  */
@@ -258,7 +263,19 @@ export type JournalEntry = $Result.DefaultSelection<Prisma.$JournalEntryPayload>
  * Enums
  */
 export namespace $Enums {
-  export const LedgerReferenceType: {
+  export const RecurringExecutionStatus: {
+  PENDING: 'PENDING',
+  RUNNING: 'RUNNING',
+  SUCCESS: 'SUCCESS',
+  FAILED: 'FAILED',
+  RETRYING: 'RETRYING',
+  SKIPPED: 'SKIPPED'
+};
+
+export type RecurringExecutionStatus = (typeof RecurringExecutionStatus)[keyof typeof RecurringExecutionStatus]
+
+
+export const LedgerReferenceType: {
   MANUAL: 'MANUAL',
   GROUP_EXPENSE: 'GROUP_EXPENSE',
   GROUP_SETTLEMENT: 'GROUP_SETTLEMENT',
@@ -322,6 +339,10 @@ export const LedgerStatus: {
 export type LedgerStatus = (typeof LedgerStatus)[keyof typeof LedgerStatus]
 
 }
+
+export type RecurringExecutionStatus = $Enums.RecurringExecutionStatus
+
+export const RecurringExecutionStatus: typeof $Enums.RecurringExecutionStatus
 
 export type LedgerReferenceType = $Enums.LedgerReferenceType
 
@@ -932,6 +953,16 @@ export class PrismaClient<
   get goldAsset(): Prisma.GoldAssetDelegate<ExtArgs, ClientOptions>;
 
   /**
+   * `prisma.recurringExecution`: Exposes CRUD operations for the **RecurringExecution** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more RecurringExecutions
+    * const recurringExecutions = await prisma.recurringExecution.findMany()
+    * ```
+    */
+  get recurringExecution(): Prisma.RecurringExecutionDelegate<ExtArgs, ClientOptions>;
+
+  /**
    * `prisma.journalEntry`: Exposes CRUD operations for the **JournalEntry** model.
     * Example usage:
     * ```ts
@@ -1428,6 +1459,7 @@ export namespace Prisma {
     RecurringTransaction: 'RecurringTransaction',
     Budget: 'Budget',
     GoldAsset: 'GoldAsset',
+    RecurringExecution: 'RecurringExecution',
     JournalEntry: 'JournalEntry'
   };
 
@@ -1447,7 +1479,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "account" | "advisorApplication" | "advisorAvailability" | "advisorSession" | "bookingRequest" | "category" | "chatMessage" | "device" | "expenseBill" | "friend" | "goal" | "goalContribution" | "importLog" | "investment" | "loan" | "loanPayment" | "notification" | "payment" | "refreshToken" | "syncQueue" | "todo" | "transaction" | "user" | "userPin" | "userSettings" | "platformSettings" | "otpCode" | "aiScan" | "ai_events" | "ai_insights" | "ai_model_runs" | "auditLog" | "groupExpense" | "groupExpenseMember" | "collaborationParticipant" | "goalMember" | "user_features" | "profiles" | "otpRequest" | "aaConsent" | "aaConsentArtifact" | "aaDataSession" | "aaFinancialData" | "aaTransaction" | "recurringTransaction" | "budget" | "goldAsset" | "journalEntry"
+      modelProps: "account" | "advisorApplication" | "advisorAvailability" | "advisorSession" | "bookingRequest" | "category" | "chatMessage" | "device" | "expenseBill" | "friend" | "goal" | "goalContribution" | "importLog" | "investment" | "loan" | "loanPayment" | "notification" | "payment" | "refreshToken" | "syncQueue" | "todo" | "transaction" | "user" | "userPin" | "userSettings" | "platformSettings" | "otpCode" | "aiScan" | "ai_events" | "ai_insights" | "ai_model_runs" | "auditLog" | "groupExpense" | "groupExpenseMember" | "collaborationParticipant" | "goalMember" | "user_features" | "profiles" | "otpRequest" | "aaConsent" | "aaConsentArtifact" | "aaDataSession" | "aaFinancialData" | "aaTransaction" | "recurringTransaction" | "budget" | "goldAsset" | "recurringExecution" | "journalEntry"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -4929,6 +4961,80 @@ export namespace Prisma {
           }
         }
       }
+      RecurringExecution: {
+        payload: Prisma.$RecurringExecutionPayload<ExtArgs>
+        fields: Prisma.RecurringExecutionFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.RecurringExecutionFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RecurringExecutionPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.RecurringExecutionFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RecurringExecutionPayload>
+          }
+          findFirst: {
+            args: Prisma.RecurringExecutionFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RecurringExecutionPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.RecurringExecutionFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RecurringExecutionPayload>
+          }
+          findMany: {
+            args: Prisma.RecurringExecutionFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RecurringExecutionPayload>[]
+          }
+          create: {
+            args: Prisma.RecurringExecutionCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RecurringExecutionPayload>
+          }
+          createMany: {
+            args: Prisma.RecurringExecutionCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.RecurringExecutionCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RecurringExecutionPayload>[]
+          }
+          delete: {
+            args: Prisma.RecurringExecutionDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RecurringExecutionPayload>
+          }
+          update: {
+            args: Prisma.RecurringExecutionUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RecurringExecutionPayload>
+          }
+          deleteMany: {
+            args: Prisma.RecurringExecutionDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.RecurringExecutionUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.RecurringExecutionUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RecurringExecutionPayload>[]
+          }
+          upsert: {
+            args: Prisma.RecurringExecutionUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RecurringExecutionPayload>
+          }
+          aggregate: {
+            args: Prisma.RecurringExecutionAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateRecurringExecution>
+          }
+          groupBy: {
+            args: Prisma.RecurringExecutionGroupByArgs<ExtArgs>
+            result: $Utils.Optional<RecurringExecutionGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.RecurringExecutionCountArgs<ExtArgs>
+            result: $Utils.Optional<RecurringExecutionCountAggregateOutputType> | number
+          }
+        }
+      }
       JournalEntry: {
         payload: Prisma.$JournalEntryPayload<ExtArgs>
         fields: Prisma.JournalEntryFieldRefs
@@ -5146,6 +5252,7 @@ export namespace Prisma {
     recurringTransaction?: RecurringTransactionOmit
     budget?: BudgetOmit
     goldAsset?: GoldAssetOmit
+    recurringExecution?: RecurringExecutionOmit
     journalEntry?: JournalEntryOmit
   }
 
@@ -5751,6 +5858,37 @@ export namespace Prisma {
    */
   export type GroupExpenseCountOutputTypeCountGroupMembersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: GroupExpenseMemberWhereInput
+  }
+
+
+  /**
+   * Count Type RecurringTransactionCountOutputType
+   */
+
+  export type RecurringTransactionCountOutputType = {
+    executions: number
+  }
+
+  export type RecurringTransactionCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    executions?: boolean | RecurringTransactionCountOutputTypeCountExecutionsArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * RecurringTransactionCountOutputType without action
+   */
+  export type RecurringTransactionCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RecurringTransactionCountOutputType
+     */
+    select?: RecurringTransactionCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * RecurringTransactionCountOutputType without action
+   */
+  export type RecurringTransactionCountOutputTypeCountExecutionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: RecurringExecutionWhereInput
   }
 
 
@@ -59012,6 +59150,8 @@ export namespace Prisma {
     updatedAt?: boolean
     deletedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
+    executions?: boolean | RecurringTransaction$executionsArgs<ExtArgs>
+    _count?: boolean | RecurringTransactionCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["recurringTransaction"]>
 
   export type RecurringTransactionSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -59103,6 +59243,8 @@ export namespace Prisma {
   export type RecurringTransactionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "title" | "amount" | "category" | "subcategory" | "interval" | "nextDueDate" | "autoProcess" | "status" | "accountId" | "description" | "merchant" | "lastProcessedAt" | "clientRequestId" | "syncStatus" | "type" | "startDate" | "endDate" | "reminderDaysBefore" | "notes" | "transferToAccountId" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["recurringTransaction"]>
   export type RecurringTransactionInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
+    executions?: boolean | RecurringTransaction$executionsArgs<ExtArgs>
+    _count?: boolean | RecurringTransactionCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type RecurringTransactionIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -59115,6 +59257,7 @@ export namespace Prisma {
     name: "RecurringTransaction"
     objects: {
       user: Prisma.$UserPayload<ExtArgs>
+      executions: Prisma.$RecurringExecutionPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -59537,6 +59680,7 @@ export namespace Prisma {
   export interface Prisma__RecurringTransactionClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    executions<T extends RecurringTransaction$executionsArgs<ExtArgs> = {}>(args?: Subset<T, RecurringTransaction$executionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RecurringExecutionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -59984,6 +60128,30 @@ export namespace Prisma {
      * Limit how many RecurringTransactions to delete.
      */
     limit?: number
+  }
+
+  /**
+   * RecurringTransaction.executions
+   */
+  export type RecurringTransaction$executionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RecurringExecution
+     */
+    select?: RecurringExecutionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RecurringExecution
+     */
+    omit?: RecurringExecutionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RecurringExecutionInclude<ExtArgs> | null
+    where?: RecurringExecutionWhereInput
+    orderBy?: RecurringExecutionOrderByWithRelationInput | RecurringExecutionOrderByWithRelationInput[]
+    cursor?: RecurringExecutionWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: RecurringExecutionScalarFieldEnum | RecurringExecutionScalarFieldEnum[]
   }
 
   /**
@@ -62505,6 +62673,1176 @@ export namespace Prisma {
 
 
   /**
+   * Model RecurringExecution
+   */
+
+  export type AggregateRecurringExecution = {
+    _count: RecurringExecutionCountAggregateOutputType | null
+    _avg: RecurringExecutionAvgAggregateOutputType | null
+    _sum: RecurringExecutionSumAggregateOutputType | null
+    _min: RecurringExecutionMinAggregateOutputType | null
+    _max: RecurringExecutionMaxAggregateOutputType | null
+  }
+
+  export type RecurringExecutionAvgAggregateOutputType = {
+    retryCount: number | null
+  }
+
+  export type RecurringExecutionSumAggregateOutputType = {
+    retryCount: number | null
+  }
+
+  export type RecurringExecutionMinAggregateOutputType = {
+    id: string | null
+    ruleId: string | null
+    scheduledDate: Date | null
+    executedDate: Date | null
+    journalId: string | null
+    status: $Enums.RecurringExecutionStatus | null
+    failureReason: string | null
+    retryCount: number | null
+    nextRetryAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type RecurringExecutionMaxAggregateOutputType = {
+    id: string | null
+    ruleId: string | null
+    scheduledDate: Date | null
+    executedDate: Date | null
+    journalId: string | null
+    status: $Enums.RecurringExecutionStatus | null
+    failureReason: string | null
+    retryCount: number | null
+    nextRetryAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type RecurringExecutionCountAggregateOutputType = {
+    id: number
+    ruleId: number
+    scheduledDate: number
+    executedDate: number
+    journalId: number
+    status: number
+    failureReason: number
+    retryCount: number
+    nextRetryAt: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type RecurringExecutionAvgAggregateInputType = {
+    retryCount?: true
+  }
+
+  export type RecurringExecutionSumAggregateInputType = {
+    retryCount?: true
+  }
+
+  export type RecurringExecutionMinAggregateInputType = {
+    id?: true
+    ruleId?: true
+    scheduledDate?: true
+    executedDate?: true
+    journalId?: true
+    status?: true
+    failureReason?: true
+    retryCount?: true
+    nextRetryAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type RecurringExecutionMaxAggregateInputType = {
+    id?: true
+    ruleId?: true
+    scheduledDate?: true
+    executedDate?: true
+    journalId?: true
+    status?: true
+    failureReason?: true
+    retryCount?: true
+    nextRetryAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type RecurringExecutionCountAggregateInputType = {
+    id?: true
+    ruleId?: true
+    scheduledDate?: true
+    executedDate?: true
+    journalId?: true
+    status?: true
+    failureReason?: true
+    retryCount?: true
+    nextRetryAt?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type RecurringExecutionAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which RecurringExecution to aggregate.
+     */
+    where?: RecurringExecutionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of RecurringExecutions to fetch.
+     */
+    orderBy?: RecurringExecutionOrderByWithRelationInput | RecurringExecutionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: RecurringExecutionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` RecurringExecutions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` RecurringExecutions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned RecurringExecutions
+    **/
+    _count?: true | RecurringExecutionCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: RecurringExecutionAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: RecurringExecutionSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: RecurringExecutionMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: RecurringExecutionMaxAggregateInputType
+  }
+
+  export type GetRecurringExecutionAggregateType<T extends RecurringExecutionAggregateArgs> = {
+        [P in keyof T & keyof AggregateRecurringExecution]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateRecurringExecution[P]>
+      : GetScalarType<T[P], AggregateRecurringExecution[P]>
+  }
+
+
+
+
+  export type RecurringExecutionGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: RecurringExecutionWhereInput
+    orderBy?: RecurringExecutionOrderByWithAggregationInput | RecurringExecutionOrderByWithAggregationInput[]
+    by: RecurringExecutionScalarFieldEnum[] | RecurringExecutionScalarFieldEnum
+    having?: RecurringExecutionScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: RecurringExecutionCountAggregateInputType | true
+    _avg?: RecurringExecutionAvgAggregateInputType
+    _sum?: RecurringExecutionSumAggregateInputType
+    _min?: RecurringExecutionMinAggregateInputType
+    _max?: RecurringExecutionMaxAggregateInputType
+  }
+
+  export type RecurringExecutionGroupByOutputType = {
+    id: string
+    ruleId: string
+    scheduledDate: Date
+    executedDate: Date | null
+    journalId: string | null
+    status: $Enums.RecurringExecutionStatus
+    failureReason: string | null
+    retryCount: number
+    nextRetryAt: Date | null
+    createdAt: Date
+    updatedAt: Date
+    _count: RecurringExecutionCountAggregateOutputType | null
+    _avg: RecurringExecutionAvgAggregateOutputType | null
+    _sum: RecurringExecutionSumAggregateOutputType | null
+    _min: RecurringExecutionMinAggregateOutputType | null
+    _max: RecurringExecutionMaxAggregateOutputType | null
+  }
+
+  type GetRecurringExecutionGroupByPayload<T extends RecurringExecutionGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<RecurringExecutionGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof RecurringExecutionGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], RecurringExecutionGroupByOutputType[P]>
+            : GetScalarType<T[P], RecurringExecutionGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type RecurringExecutionSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    ruleId?: boolean
+    scheduledDate?: boolean
+    executedDate?: boolean
+    journalId?: boolean
+    status?: boolean
+    failureReason?: boolean
+    retryCount?: boolean
+    nextRetryAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    rule?: boolean | RecurringTransactionDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["recurringExecution"]>
+
+  export type RecurringExecutionSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    ruleId?: boolean
+    scheduledDate?: boolean
+    executedDate?: boolean
+    journalId?: boolean
+    status?: boolean
+    failureReason?: boolean
+    retryCount?: boolean
+    nextRetryAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    rule?: boolean | RecurringTransactionDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["recurringExecution"]>
+
+  export type RecurringExecutionSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    ruleId?: boolean
+    scheduledDate?: boolean
+    executedDate?: boolean
+    journalId?: boolean
+    status?: boolean
+    failureReason?: boolean
+    retryCount?: boolean
+    nextRetryAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    rule?: boolean | RecurringTransactionDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["recurringExecution"]>
+
+  export type RecurringExecutionSelectScalar = {
+    id?: boolean
+    ruleId?: boolean
+    scheduledDate?: boolean
+    executedDate?: boolean
+    journalId?: boolean
+    status?: boolean
+    failureReason?: boolean
+    retryCount?: boolean
+    nextRetryAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type RecurringExecutionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "ruleId" | "scheduledDate" | "executedDate" | "journalId" | "status" | "failureReason" | "retryCount" | "nextRetryAt" | "createdAt" | "updatedAt", ExtArgs["result"]["recurringExecution"]>
+  export type RecurringExecutionInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    rule?: boolean | RecurringTransactionDefaultArgs<ExtArgs>
+  }
+  export type RecurringExecutionIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    rule?: boolean | RecurringTransactionDefaultArgs<ExtArgs>
+  }
+  export type RecurringExecutionIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    rule?: boolean | RecurringTransactionDefaultArgs<ExtArgs>
+  }
+
+  export type $RecurringExecutionPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "RecurringExecution"
+    objects: {
+      rule: Prisma.$RecurringTransactionPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      ruleId: string
+      scheduledDate: Date
+      executedDate: Date | null
+      journalId: string | null
+      status: $Enums.RecurringExecutionStatus
+      failureReason: string | null
+      retryCount: number
+      nextRetryAt: Date | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["recurringExecution"]>
+    composites: {}
+  }
+
+  type RecurringExecutionGetPayload<S extends boolean | null | undefined | RecurringExecutionDefaultArgs> = $Result.GetResult<Prisma.$RecurringExecutionPayload, S>
+
+  type RecurringExecutionCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<RecurringExecutionFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: RecurringExecutionCountAggregateInputType | true
+    }
+
+  export interface RecurringExecutionDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['RecurringExecution'], meta: { name: 'RecurringExecution' } }
+    /**
+     * Find zero or one RecurringExecution that matches the filter.
+     * @param {RecurringExecutionFindUniqueArgs} args - Arguments to find a RecurringExecution
+     * @example
+     * // Get one RecurringExecution
+     * const recurringExecution = await prisma.recurringExecution.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends RecurringExecutionFindUniqueArgs>(args: SelectSubset<T, RecurringExecutionFindUniqueArgs<ExtArgs>>): Prisma__RecurringExecutionClient<$Result.GetResult<Prisma.$RecurringExecutionPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one RecurringExecution that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {RecurringExecutionFindUniqueOrThrowArgs} args - Arguments to find a RecurringExecution
+     * @example
+     * // Get one RecurringExecution
+     * const recurringExecution = await prisma.recurringExecution.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends RecurringExecutionFindUniqueOrThrowArgs>(args: SelectSubset<T, RecurringExecutionFindUniqueOrThrowArgs<ExtArgs>>): Prisma__RecurringExecutionClient<$Result.GetResult<Prisma.$RecurringExecutionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first RecurringExecution that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RecurringExecutionFindFirstArgs} args - Arguments to find a RecurringExecution
+     * @example
+     * // Get one RecurringExecution
+     * const recurringExecution = await prisma.recurringExecution.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends RecurringExecutionFindFirstArgs>(args?: SelectSubset<T, RecurringExecutionFindFirstArgs<ExtArgs>>): Prisma__RecurringExecutionClient<$Result.GetResult<Prisma.$RecurringExecutionPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first RecurringExecution that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RecurringExecutionFindFirstOrThrowArgs} args - Arguments to find a RecurringExecution
+     * @example
+     * // Get one RecurringExecution
+     * const recurringExecution = await prisma.recurringExecution.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends RecurringExecutionFindFirstOrThrowArgs>(args?: SelectSubset<T, RecurringExecutionFindFirstOrThrowArgs<ExtArgs>>): Prisma__RecurringExecutionClient<$Result.GetResult<Prisma.$RecurringExecutionPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more RecurringExecutions that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RecurringExecutionFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all RecurringExecutions
+     * const recurringExecutions = await prisma.recurringExecution.findMany()
+     * 
+     * // Get first 10 RecurringExecutions
+     * const recurringExecutions = await prisma.recurringExecution.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const recurringExecutionWithIdOnly = await prisma.recurringExecution.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends RecurringExecutionFindManyArgs>(args?: SelectSubset<T, RecurringExecutionFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RecurringExecutionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a RecurringExecution.
+     * @param {RecurringExecutionCreateArgs} args - Arguments to create a RecurringExecution.
+     * @example
+     * // Create one RecurringExecution
+     * const RecurringExecution = await prisma.recurringExecution.create({
+     *   data: {
+     *     // ... data to create a RecurringExecution
+     *   }
+     * })
+     * 
+     */
+    create<T extends RecurringExecutionCreateArgs>(args: SelectSubset<T, RecurringExecutionCreateArgs<ExtArgs>>): Prisma__RecurringExecutionClient<$Result.GetResult<Prisma.$RecurringExecutionPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many RecurringExecutions.
+     * @param {RecurringExecutionCreateManyArgs} args - Arguments to create many RecurringExecutions.
+     * @example
+     * // Create many RecurringExecutions
+     * const recurringExecution = await prisma.recurringExecution.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends RecurringExecutionCreateManyArgs>(args?: SelectSubset<T, RecurringExecutionCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many RecurringExecutions and returns the data saved in the database.
+     * @param {RecurringExecutionCreateManyAndReturnArgs} args - Arguments to create many RecurringExecutions.
+     * @example
+     * // Create many RecurringExecutions
+     * const recurringExecution = await prisma.recurringExecution.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many RecurringExecutions and only return the `id`
+     * const recurringExecutionWithIdOnly = await prisma.recurringExecution.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends RecurringExecutionCreateManyAndReturnArgs>(args?: SelectSubset<T, RecurringExecutionCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RecurringExecutionPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a RecurringExecution.
+     * @param {RecurringExecutionDeleteArgs} args - Arguments to delete one RecurringExecution.
+     * @example
+     * // Delete one RecurringExecution
+     * const RecurringExecution = await prisma.recurringExecution.delete({
+     *   where: {
+     *     // ... filter to delete one RecurringExecution
+     *   }
+     * })
+     * 
+     */
+    delete<T extends RecurringExecutionDeleteArgs>(args: SelectSubset<T, RecurringExecutionDeleteArgs<ExtArgs>>): Prisma__RecurringExecutionClient<$Result.GetResult<Prisma.$RecurringExecutionPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one RecurringExecution.
+     * @param {RecurringExecutionUpdateArgs} args - Arguments to update one RecurringExecution.
+     * @example
+     * // Update one RecurringExecution
+     * const recurringExecution = await prisma.recurringExecution.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends RecurringExecutionUpdateArgs>(args: SelectSubset<T, RecurringExecutionUpdateArgs<ExtArgs>>): Prisma__RecurringExecutionClient<$Result.GetResult<Prisma.$RecurringExecutionPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more RecurringExecutions.
+     * @param {RecurringExecutionDeleteManyArgs} args - Arguments to filter RecurringExecutions to delete.
+     * @example
+     * // Delete a few RecurringExecutions
+     * const { count } = await prisma.recurringExecution.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends RecurringExecutionDeleteManyArgs>(args?: SelectSubset<T, RecurringExecutionDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more RecurringExecutions.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RecurringExecutionUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many RecurringExecutions
+     * const recurringExecution = await prisma.recurringExecution.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends RecurringExecutionUpdateManyArgs>(args: SelectSubset<T, RecurringExecutionUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more RecurringExecutions and returns the data updated in the database.
+     * @param {RecurringExecutionUpdateManyAndReturnArgs} args - Arguments to update many RecurringExecutions.
+     * @example
+     * // Update many RecurringExecutions
+     * const recurringExecution = await prisma.recurringExecution.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more RecurringExecutions and only return the `id`
+     * const recurringExecutionWithIdOnly = await prisma.recurringExecution.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends RecurringExecutionUpdateManyAndReturnArgs>(args: SelectSubset<T, RecurringExecutionUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RecurringExecutionPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one RecurringExecution.
+     * @param {RecurringExecutionUpsertArgs} args - Arguments to update or create a RecurringExecution.
+     * @example
+     * // Update or create a RecurringExecution
+     * const recurringExecution = await prisma.recurringExecution.upsert({
+     *   create: {
+     *     // ... data to create a RecurringExecution
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the RecurringExecution we want to update
+     *   }
+     * })
+     */
+    upsert<T extends RecurringExecutionUpsertArgs>(args: SelectSubset<T, RecurringExecutionUpsertArgs<ExtArgs>>): Prisma__RecurringExecutionClient<$Result.GetResult<Prisma.$RecurringExecutionPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of RecurringExecutions.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RecurringExecutionCountArgs} args - Arguments to filter RecurringExecutions to count.
+     * @example
+     * // Count the number of RecurringExecutions
+     * const count = await prisma.recurringExecution.count({
+     *   where: {
+     *     // ... the filter for the RecurringExecutions we want to count
+     *   }
+     * })
+    **/
+    count<T extends RecurringExecutionCountArgs>(
+      args?: Subset<T, RecurringExecutionCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], RecurringExecutionCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a RecurringExecution.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RecurringExecutionAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends RecurringExecutionAggregateArgs>(args: Subset<T, RecurringExecutionAggregateArgs>): Prisma.PrismaPromise<GetRecurringExecutionAggregateType<T>>
+
+    /**
+     * Group by RecurringExecution.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RecurringExecutionGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends RecurringExecutionGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: RecurringExecutionGroupByArgs['orderBy'] }
+        : { orderBy?: RecurringExecutionGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, RecurringExecutionGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetRecurringExecutionGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the RecurringExecution model
+   */
+  readonly fields: RecurringExecutionFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for RecurringExecution.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__RecurringExecutionClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    rule<T extends RecurringTransactionDefaultArgs<ExtArgs> = {}>(args?: Subset<T, RecurringTransactionDefaultArgs<ExtArgs>>): Prisma__RecurringTransactionClient<$Result.GetResult<Prisma.$RecurringTransactionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the RecurringExecution model
+   */
+  interface RecurringExecutionFieldRefs {
+    readonly id: FieldRef<"RecurringExecution", 'String'>
+    readonly ruleId: FieldRef<"RecurringExecution", 'String'>
+    readonly scheduledDate: FieldRef<"RecurringExecution", 'DateTime'>
+    readonly executedDate: FieldRef<"RecurringExecution", 'DateTime'>
+    readonly journalId: FieldRef<"RecurringExecution", 'String'>
+    readonly status: FieldRef<"RecurringExecution", 'RecurringExecutionStatus'>
+    readonly failureReason: FieldRef<"RecurringExecution", 'String'>
+    readonly retryCount: FieldRef<"RecurringExecution", 'Int'>
+    readonly nextRetryAt: FieldRef<"RecurringExecution", 'DateTime'>
+    readonly createdAt: FieldRef<"RecurringExecution", 'DateTime'>
+    readonly updatedAt: FieldRef<"RecurringExecution", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * RecurringExecution findUnique
+   */
+  export type RecurringExecutionFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RecurringExecution
+     */
+    select?: RecurringExecutionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RecurringExecution
+     */
+    omit?: RecurringExecutionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RecurringExecutionInclude<ExtArgs> | null
+    /**
+     * Filter, which RecurringExecution to fetch.
+     */
+    where: RecurringExecutionWhereUniqueInput
+  }
+
+  /**
+   * RecurringExecution findUniqueOrThrow
+   */
+  export type RecurringExecutionFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RecurringExecution
+     */
+    select?: RecurringExecutionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RecurringExecution
+     */
+    omit?: RecurringExecutionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RecurringExecutionInclude<ExtArgs> | null
+    /**
+     * Filter, which RecurringExecution to fetch.
+     */
+    where: RecurringExecutionWhereUniqueInput
+  }
+
+  /**
+   * RecurringExecution findFirst
+   */
+  export type RecurringExecutionFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RecurringExecution
+     */
+    select?: RecurringExecutionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RecurringExecution
+     */
+    omit?: RecurringExecutionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RecurringExecutionInclude<ExtArgs> | null
+    /**
+     * Filter, which RecurringExecution to fetch.
+     */
+    where?: RecurringExecutionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of RecurringExecutions to fetch.
+     */
+    orderBy?: RecurringExecutionOrderByWithRelationInput | RecurringExecutionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for RecurringExecutions.
+     */
+    cursor?: RecurringExecutionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` RecurringExecutions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` RecurringExecutions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of RecurringExecutions.
+     */
+    distinct?: RecurringExecutionScalarFieldEnum | RecurringExecutionScalarFieldEnum[]
+  }
+
+  /**
+   * RecurringExecution findFirstOrThrow
+   */
+  export type RecurringExecutionFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RecurringExecution
+     */
+    select?: RecurringExecutionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RecurringExecution
+     */
+    omit?: RecurringExecutionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RecurringExecutionInclude<ExtArgs> | null
+    /**
+     * Filter, which RecurringExecution to fetch.
+     */
+    where?: RecurringExecutionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of RecurringExecutions to fetch.
+     */
+    orderBy?: RecurringExecutionOrderByWithRelationInput | RecurringExecutionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for RecurringExecutions.
+     */
+    cursor?: RecurringExecutionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` RecurringExecutions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` RecurringExecutions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of RecurringExecutions.
+     */
+    distinct?: RecurringExecutionScalarFieldEnum | RecurringExecutionScalarFieldEnum[]
+  }
+
+  /**
+   * RecurringExecution findMany
+   */
+  export type RecurringExecutionFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RecurringExecution
+     */
+    select?: RecurringExecutionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RecurringExecution
+     */
+    omit?: RecurringExecutionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RecurringExecutionInclude<ExtArgs> | null
+    /**
+     * Filter, which RecurringExecutions to fetch.
+     */
+    where?: RecurringExecutionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of RecurringExecutions to fetch.
+     */
+    orderBy?: RecurringExecutionOrderByWithRelationInput | RecurringExecutionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing RecurringExecutions.
+     */
+    cursor?: RecurringExecutionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` RecurringExecutions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` RecurringExecutions.
+     */
+    skip?: number
+    distinct?: RecurringExecutionScalarFieldEnum | RecurringExecutionScalarFieldEnum[]
+  }
+
+  /**
+   * RecurringExecution create
+   */
+  export type RecurringExecutionCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RecurringExecution
+     */
+    select?: RecurringExecutionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RecurringExecution
+     */
+    omit?: RecurringExecutionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RecurringExecutionInclude<ExtArgs> | null
+    /**
+     * The data needed to create a RecurringExecution.
+     */
+    data: XOR<RecurringExecutionCreateInput, RecurringExecutionUncheckedCreateInput>
+  }
+
+  /**
+   * RecurringExecution createMany
+   */
+  export type RecurringExecutionCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many RecurringExecutions.
+     */
+    data: RecurringExecutionCreateManyInput | RecurringExecutionCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * RecurringExecution createManyAndReturn
+   */
+  export type RecurringExecutionCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RecurringExecution
+     */
+    select?: RecurringExecutionSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the RecurringExecution
+     */
+    omit?: RecurringExecutionOmit<ExtArgs> | null
+    /**
+     * The data used to create many RecurringExecutions.
+     */
+    data: RecurringExecutionCreateManyInput | RecurringExecutionCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RecurringExecutionIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * RecurringExecution update
+   */
+  export type RecurringExecutionUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RecurringExecution
+     */
+    select?: RecurringExecutionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RecurringExecution
+     */
+    omit?: RecurringExecutionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RecurringExecutionInclude<ExtArgs> | null
+    /**
+     * The data needed to update a RecurringExecution.
+     */
+    data: XOR<RecurringExecutionUpdateInput, RecurringExecutionUncheckedUpdateInput>
+    /**
+     * Choose, which RecurringExecution to update.
+     */
+    where: RecurringExecutionWhereUniqueInput
+  }
+
+  /**
+   * RecurringExecution updateMany
+   */
+  export type RecurringExecutionUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update RecurringExecutions.
+     */
+    data: XOR<RecurringExecutionUpdateManyMutationInput, RecurringExecutionUncheckedUpdateManyInput>
+    /**
+     * Filter which RecurringExecutions to update
+     */
+    where?: RecurringExecutionWhereInput
+    /**
+     * Limit how many RecurringExecutions to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * RecurringExecution updateManyAndReturn
+   */
+  export type RecurringExecutionUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RecurringExecution
+     */
+    select?: RecurringExecutionSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the RecurringExecution
+     */
+    omit?: RecurringExecutionOmit<ExtArgs> | null
+    /**
+     * The data used to update RecurringExecutions.
+     */
+    data: XOR<RecurringExecutionUpdateManyMutationInput, RecurringExecutionUncheckedUpdateManyInput>
+    /**
+     * Filter which RecurringExecutions to update
+     */
+    where?: RecurringExecutionWhereInput
+    /**
+     * Limit how many RecurringExecutions to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RecurringExecutionIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * RecurringExecution upsert
+   */
+  export type RecurringExecutionUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RecurringExecution
+     */
+    select?: RecurringExecutionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RecurringExecution
+     */
+    omit?: RecurringExecutionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RecurringExecutionInclude<ExtArgs> | null
+    /**
+     * The filter to search for the RecurringExecution to update in case it exists.
+     */
+    where: RecurringExecutionWhereUniqueInput
+    /**
+     * In case the RecurringExecution found by the `where` argument doesn't exist, create a new RecurringExecution with this data.
+     */
+    create: XOR<RecurringExecutionCreateInput, RecurringExecutionUncheckedCreateInput>
+    /**
+     * In case the RecurringExecution was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<RecurringExecutionUpdateInput, RecurringExecutionUncheckedUpdateInput>
+  }
+
+  /**
+   * RecurringExecution delete
+   */
+  export type RecurringExecutionDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RecurringExecution
+     */
+    select?: RecurringExecutionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RecurringExecution
+     */
+    omit?: RecurringExecutionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RecurringExecutionInclude<ExtArgs> | null
+    /**
+     * Filter which RecurringExecution to delete.
+     */
+    where: RecurringExecutionWhereUniqueInput
+  }
+
+  /**
+   * RecurringExecution deleteMany
+   */
+  export type RecurringExecutionDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which RecurringExecutions to delete
+     */
+    where?: RecurringExecutionWhereInput
+    /**
+     * Limit how many RecurringExecutions to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * RecurringExecution without action
+   */
+  export type RecurringExecutionDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RecurringExecution
+     */
+    select?: RecurringExecutionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RecurringExecution
+     */
+    omit?: RecurringExecutionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RecurringExecutionInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Model JournalEntry
    */
 
@@ -64689,6 +66027,23 @@ export namespace Prisma {
   export type GoldAssetScalarFieldEnum = (typeof GoldAssetScalarFieldEnum)[keyof typeof GoldAssetScalarFieldEnum]
 
 
+  export const RecurringExecutionScalarFieldEnum: {
+    id: 'id',
+    ruleId: 'ruleId',
+    scheduledDate: 'scheduledDate',
+    executedDate: 'executedDate',
+    journalId: 'journalId',
+    status: 'status',
+    failureReason: 'failureReason',
+    retryCount: 'retryCount',
+    nextRetryAt: 'nextRetryAt',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type RecurringExecutionScalarFieldEnum = (typeof RecurringExecutionScalarFieldEnum)[keyof typeof RecurringExecutionScalarFieldEnum]
+
+
   export const JournalEntryScalarFieldEnum: {
     id: 'id',
     userId: 'userId',
@@ -64921,6 +66276,20 @@ export namespace Prisma {
    * Reference to a field of type 'LedgerStatus[]'
    */
   export type ListEnumLedgerStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'LedgerStatus[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'RecurringExecutionStatus'
+   */
+  export type EnumRecurringExecutionStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RecurringExecutionStatus'>
+    
+
+
+  /**
+   * Reference to a field of type 'RecurringExecutionStatus[]'
+   */
+  export type ListEnumRecurringExecutionStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RecurringExecutionStatus[]'>
     
   /**
    * Deep Input Types
@@ -69371,6 +70740,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"RecurringTransaction"> | Date | string
     deletedAt?: DateTimeNullableFilter<"RecurringTransaction"> | Date | string | null
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    executions?: RecurringExecutionListRelationFilter
   }
 
   export type RecurringTransactionOrderByWithRelationInput = {
@@ -69400,6 +70770,7 @@ export namespace Prisma {
     updatedAt?: SortOrder
     deletedAt?: SortOrderInput | SortOrder
     user?: UserOrderByWithRelationInput
+    executions?: RecurringExecutionOrderByRelationAggregateInput
   }
 
   export type RecurringTransactionWhereUniqueInput = Prisma.AtLeast<{
@@ -69432,6 +70803,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"RecurringTransaction"> | Date | string
     deletedAt?: DateTimeNullableFilter<"RecurringTransaction"> | Date | string | null
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    executions?: RecurringExecutionListRelationFilter
   }, "id" | "clientRequestId">
 
   export type RecurringTransactionOrderByWithAggregationInput = {
@@ -69726,6 +71098,94 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<"GoldAsset"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"GoldAsset"> | Date | string
     deletedAt?: DateTimeNullableWithAggregatesFilter<"GoldAsset"> | Date | string | null
+  }
+
+  export type RecurringExecutionWhereInput = {
+    AND?: RecurringExecutionWhereInput | RecurringExecutionWhereInput[]
+    OR?: RecurringExecutionWhereInput[]
+    NOT?: RecurringExecutionWhereInput | RecurringExecutionWhereInput[]
+    id?: StringFilter<"RecurringExecution"> | string
+    ruleId?: StringFilter<"RecurringExecution"> | string
+    scheduledDate?: DateTimeFilter<"RecurringExecution"> | Date | string
+    executedDate?: DateTimeNullableFilter<"RecurringExecution"> | Date | string | null
+    journalId?: StringNullableFilter<"RecurringExecution"> | string | null
+    status?: EnumRecurringExecutionStatusFilter<"RecurringExecution"> | $Enums.RecurringExecutionStatus
+    failureReason?: StringNullableFilter<"RecurringExecution"> | string | null
+    retryCount?: IntFilter<"RecurringExecution"> | number
+    nextRetryAt?: DateTimeNullableFilter<"RecurringExecution"> | Date | string | null
+    createdAt?: DateTimeFilter<"RecurringExecution"> | Date | string
+    updatedAt?: DateTimeFilter<"RecurringExecution"> | Date | string
+    rule?: XOR<RecurringTransactionScalarRelationFilter, RecurringTransactionWhereInput>
+  }
+
+  export type RecurringExecutionOrderByWithRelationInput = {
+    id?: SortOrder
+    ruleId?: SortOrder
+    scheduledDate?: SortOrder
+    executedDate?: SortOrderInput | SortOrder
+    journalId?: SortOrderInput | SortOrder
+    status?: SortOrder
+    failureReason?: SortOrderInput | SortOrder
+    retryCount?: SortOrder
+    nextRetryAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    rule?: RecurringTransactionOrderByWithRelationInput
+  }
+
+  export type RecurringExecutionWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    ruleId_scheduledDate?: RecurringExecutionRuleIdScheduledDateCompoundUniqueInput
+    AND?: RecurringExecutionWhereInput | RecurringExecutionWhereInput[]
+    OR?: RecurringExecutionWhereInput[]
+    NOT?: RecurringExecutionWhereInput | RecurringExecutionWhereInput[]
+    ruleId?: StringFilter<"RecurringExecution"> | string
+    scheduledDate?: DateTimeFilter<"RecurringExecution"> | Date | string
+    executedDate?: DateTimeNullableFilter<"RecurringExecution"> | Date | string | null
+    journalId?: StringNullableFilter<"RecurringExecution"> | string | null
+    status?: EnumRecurringExecutionStatusFilter<"RecurringExecution"> | $Enums.RecurringExecutionStatus
+    failureReason?: StringNullableFilter<"RecurringExecution"> | string | null
+    retryCount?: IntFilter<"RecurringExecution"> | number
+    nextRetryAt?: DateTimeNullableFilter<"RecurringExecution"> | Date | string | null
+    createdAt?: DateTimeFilter<"RecurringExecution"> | Date | string
+    updatedAt?: DateTimeFilter<"RecurringExecution"> | Date | string
+    rule?: XOR<RecurringTransactionScalarRelationFilter, RecurringTransactionWhereInput>
+  }, "id" | "ruleId_scheduledDate">
+
+  export type RecurringExecutionOrderByWithAggregationInput = {
+    id?: SortOrder
+    ruleId?: SortOrder
+    scheduledDate?: SortOrder
+    executedDate?: SortOrderInput | SortOrder
+    journalId?: SortOrderInput | SortOrder
+    status?: SortOrder
+    failureReason?: SortOrderInput | SortOrder
+    retryCount?: SortOrder
+    nextRetryAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: RecurringExecutionCountOrderByAggregateInput
+    _avg?: RecurringExecutionAvgOrderByAggregateInput
+    _max?: RecurringExecutionMaxOrderByAggregateInput
+    _min?: RecurringExecutionMinOrderByAggregateInput
+    _sum?: RecurringExecutionSumOrderByAggregateInput
+  }
+
+  export type RecurringExecutionScalarWhereWithAggregatesInput = {
+    AND?: RecurringExecutionScalarWhereWithAggregatesInput | RecurringExecutionScalarWhereWithAggregatesInput[]
+    OR?: RecurringExecutionScalarWhereWithAggregatesInput[]
+    NOT?: RecurringExecutionScalarWhereWithAggregatesInput | RecurringExecutionScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"RecurringExecution"> | string
+    ruleId?: StringWithAggregatesFilter<"RecurringExecution"> | string
+    scheduledDate?: DateTimeWithAggregatesFilter<"RecurringExecution"> | Date | string
+    executedDate?: DateTimeNullableWithAggregatesFilter<"RecurringExecution"> | Date | string | null
+    journalId?: StringNullableWithAggregatesFilter<"RecurringExecution"> | string | null
+    status?: EnumRecurringExecutionStatusWithAggregatesFilter<"RecurringExecution"> | $Enums.RecurringExecutionStatus
+    failureReason?: StringNullableWithAggregatesFilter<"RecurringExecution"> | string | null
+    retryCount?: IntWithAggregatesFilter<"RecurringExecution"> | number
+    nextRetryAt?: DateTimeNullableWithAggregatesFilter<"RecurringExecution"> | Date | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"RecurringExecution"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"RecurringExecution"> | Date | string
   }
 
   export type JournalEntryWhereInput = {
@@ -74985,6 +76445,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     user: UserCreateNestedOneWithoutRecurringTransactionsInput
+    executions?: RecurringExecutionCreateNestedManyWithoutRuleInput
   }
 
   export type RecurringTransactionUncheckedCreateInput = {
@@ -75013,6 +76474,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
+    executions?: RecurringExecutionUncheckedCreateNestedManyWithoutRuleInput
   }
 
   export type RecurringTransactionUpdateInput = {
@@ -75041,6 +76503,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     user?: UserUpdateOneRequiredWithoutRecurringTransactionsNestedInput
+    executions?: RecurringExecutionUpdateManyWithoutRuleNestedInput
   }
 
   export type RecurringTransactionUncheckedUpdateInput = {
@@ -75069,6 +76532,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    executions?: RecurringExecutionUncheckedUpdateManyWithoutRuleNestedInput
   }
 
   export type RecurringTransactionCreateManyInput = {
@@ -75423,6 +76887,103 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type RecurringExecutionCreateInput = {
+    id?: string
+    scheduledDate: Date | string
+    executedDate?: Date | string | null
+    journalId?: string | null
+    status?: $Enums.RecurringExecutionStatus
+    failureReason?: string | null
+    retryCount?: number
+    nextRetryAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    rule: RecurringTransactionCreateNestedOneWithoutExecutionsInput
+  }
+
+  export type RecurringExecutionUncheckedCreateInput = {
+    id?: string
+    ruleId: string
+    scheduledDate: Date | string
+    executedDate?: Date | string | null
+    journalId?: string | null
+    status?: $Enums.RecurringExecutionStatus
+    failureReason?: string | null
+    retryCount?: number
+    nextRetryAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type RecurringExecutionUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    scheduledDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    executedDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    journalId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumRecurringExecutionStatusFieldUpdateOperationsInput | $Enums.RecurringExecutionStatus
+    failureReason?: NullableStringFieldUpdateOperationsInput | string | null
+    retryCount?: IntFieldUpdateOperationsInput | number
+    nextRetryAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    rule?: RecurringTransactionUpdateOneRequiredWithoutExecutionsNestedInput
+  }
+
+  export type RecurringExecutionUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    ruleId?: StringFieldUpdateOperationsInput | string
+    scheduledDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    executedDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    journalId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumRecurringExecutionStatusFieldUpdateOperationsInput | $Enums.RecurringExecutionStatus
+    failureReason?: NullableStringFieldUpdateOperationsInput | string | null
+    retryCount?: IntFieldUpdateOperationsInput | number
+    nextRetryAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type RecurringExecutionCreateManyInput = {
+    id?: string
+    ruleId: string
+    scheduledDate: Date | string
+    executedDate?: Date | string | null
+    journalId?: string | null
+    status?: $Enums.RecurringExecutionStatus
+    failureReason?: string | null
+    retryCount?: number
+    nextRetryAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type RecurringExecutionUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    scheduledDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    executedDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    journalId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumRecurringExecutionStatusFieldUpdateOperationsInput | $Enums.RecurringExecutionStatus
+    failureReason?: NullableStringFieldUpdateOperationsInput | string | null
+    retryCount?: IntFieldUpdateOperationsInput | number
+    nextRetryAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type RecurringExecutionUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    ruleId?: StringFieldUpdateOperationsInput | string
+    scheduledDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    executedDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    journalId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumRecurringExecutionStatusFieldUpdateOperationsInput | $Enums.RecurringExecutionStatus
+    failureReason?: NullableStringFieldUpdateOperationsInput | string | null
+    retryCount?: IntFieldUpdateOperationsInput | number
+    nextRetryAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type JournalEntryCreateInput = {
@@ -78869,6 +80430,16 @@ export namespace Prisma {
     amount?: SortOrder
   }
 
+  export type RecurringExecutionListRelationFilter = {
+    every?: RecurringExecutionWhereInput
+    some?: RecurringExecutionWhereInput
+    none?: RecurringExecutionWhereInput
+  }
+
+  export type RecurringExecutionOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
   export type RecurringTransactionCountOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
@@ -79108,6 +80679,83 @@ export namespace Prisma {
     purchasePrice?: SortOrder
     currentPrice?: SortOrder
     purityPercentage?: SortOrder
+  }
+
+  export type EnumRecurringExecutionStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.RecurringExecutionStatus | EnumRecurringExecutionStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.RecurringExecutionStatus[] | ListEnumRecurringExecutionStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.RecurringExecutionStatus[] | ListEnumRecurringExecutionStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumRecurringExecutionStatusFilter<$PrismaModel> | $Enums.RecurringExecutionStatus
+  }
+
+  export type RecurringTransactionScalarRelationFilter = {
+    is?: RecurringTransactionWhereInput
+    isNot?: RecurringTransactionWhereInput
+  }
+
+  export type RecurringExecutionRuleIdScheduledDateCompoundUniqueInput = {
+    ruleId: string
+    scheduledDate: Date | string
+  }
+
+  export type RecurringExecutionCountOrderByAggregateInput = {
+    id?: SortOrder
+    ruleId?: SortOrder
+    scheduledDate?: SortOrder
+    executedDate?: SortOrder
+    journalId?: SortOrder
+    status?: SortOrder
+    failureReason?: SortOrder
+    retryCount?: SortOrder
+    nextRetryAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type RecurringExecutionAvgOrderByAggregateInput = {
+    retryCount?: SortOrder
+  }
+
+  export type RecurringExecutionMaxOrderByAggregateInput = {
+    id?: SortOrder
+    ruleId?: SortOrder
+    scheduledDate?: SortOrder
+    executedDate?: SortOrder
+    journalId?: SortOrder
+    status?: SortOrder
+    failureReason?: SortOrder
+    retryCount?: SortOrder
+    nextRetryAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type RecurringExecutionMinOrderByAggregateInput = {
+    id?: SortOrder
+    ruleId?: SortOrder
+    scheduledDate?: SortOrder
+    executedDate?: SortOrder
+    journalId?: SortOrder
+    status?: SortOrder
+    failureReason?: SortOrder
+    retryCount?: SortOrder
+    nextRetryAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type RecurringExecutionSumOrderByAggregateInput = {
+    retryCount?: SortOrder
+  }
+
+  export type EnumRecurringExecutionStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.RecurringExecutionStatus | EnumRecurringExecutionStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.RecurringExecutionStatus[] | ListEnumRecurringExecutionStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.RecurringExecutionStatus[] | ListEnumRecurringExecutionStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumRecurringExecutionStatusWithAggregatesFilter<$PrismaModel> | $Enums.RecurringExecutionStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumRecurringExecutionStatusFilter<$PrismaModel>
+    _max?: NestedEnumRecurringExecutionStatusFilter<$PrismaModel>
   }
 
   export type JournalEntryCountOrderByAggregateInput = {
@@ -81818,12 +83466,54 @@ export namespace Prisma {
     connect?: UserWhereUniqueInput
   }
 
+  export type RecurringExecutionCreateNestedManyWithoutRuleInput = {
+    create?: XOR<RecurringExecutionCreateWithoutRuleInput, RecurringExecutionUncheckedCreateWithoutRuleInput> | RecurringExecutionCreateWithoutRuleInput[] | RecurringExecutionUncheckedCreateWithoutRuleInput[]
+    connectOrCreate?: RecurringExecutionCreateOrConnectWithoutRuleInput | RecurringExecutionCreateOrConnectWithoutRuleInput[]
+    createMany?: RecurringExecutionCreateManyRuleInputEnvelope
+    connect?: RecurringExecutionWhereUniqueInput | RecurringExecutionWhereUniqueInput[]
+  }
+
+  export type RecurringExecutionUncheckedCreateNestedManyWithoutRuleInput = {
+    create?: XOR<RecurringExecutionCreateWithoutRuleInput, RecurringExecutionUncheckedCreateWithoutRuleInput> | RecurringExecutionCreateWithoutRuleInput[] | RecurringExecutionUncheckedCreateWithoutRuleInput[]
+    connectOrCreate?: RecurringExecutionCreateOrConnectWithoutRuleInput | RecurringExecutionCreateOrConnectWithoutRuleInput[]
+    createMany?: RecurringExecutionCreateManyRuleInputEnvelope
+    connect?: RecurringExecutionWhereUniqueInput | RecurringExecutionWhereUniqueInput[]
+  }
+
   export type UserUpdateOneRequiredWithoutRecurringTransactionsNestedInput = {
     create?: XOR<UserCreateWithoutRecurringTransactionsInput, UserUncheckedCreateWithoutRecurringTransactionsInput>
     connectOrCreate?: UserCreateOrConnectWithoutRecurringTransactionsInput
     upsert?: UserUpsertWithoutRecurringTransactionsInput
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutRecurringTransactionsInput, UserUpdateWithoutRecurringTransactionsInput>, UserUncheckedUpdateWithoutRecurringTransactionsInput>
+  }
+
+  export type RecurringExecutionUpdateManyWithoutRuleNestedInput = {
+    create?: XOR<RecurringExecutionCreateWithoutRuleInput, RecurringExecutionUncheckedCreateWithoutRuleInput> | RecurringExecutionCreateWithoutRuleInput[] | RecurringExecutionUncheckedCreateWithoutRuleInput[]
+    connectOrCreate?: RecurringExecutionCreateOrConnectWithoutRuleInput | RecurringExecutionCreateOrConnectWithoutRuleInput[]
+    upsert?: RecurringExecutionUpsertWithWhereUniqueWithoutRuleInput | RecurringExecutionUpsertWithWhereUniqueWithoutRuleInput[]
+    createMany?: RecurringExecutionCreateManyRuleInputEnvelope
+    set?: RecurringExecutionWhereUniqueInput | RecurringExecutionWhereUniqueInput[]
+    disconnect?: RecurringExecutionWhereUniqueInput | RecurringExecutionWhereUniqueInput[]
+    delete?: RecurringExecutionWhereUniqueInput | RecurringExecutionWhereUniqueInput[]
+    connect?: RecurringExecutionWhereUniqueInput | RecurringExecutionWhereUniqueInput[]
+    update?: RecurringExecutionUpdateWithWhereUniqueWithoutRuleInput | RecurringExecutionUpdateWithWhereUniqueWithoutRuleInput[]
+    updateMany?: RecurringExecutionUpdateManyWithWhereWithoutRuleInput | RecurringExecutionUpdateManyWithWhereWithoutRuleInput[]
+    deleteMany?: RecurringExecutionScalarWhereInput | RecurringExecutionScalarWhereInput[]
+  }
+
+  export type RecurringExecutionUncheckedUpdateManyWithoutRuleNestedInput = {
+    create?: XOR<RecurringExecutionCreateWithoutRuleInput, RecurringExecutionUncheckedCreateWithoutRuleInput> | RecurringExecutionCreateWithoutRuleInput[] | RecurringExecutionUncheckedCreateWithoutRuleInput[]
+    connectOrCreate?: RecurringExecutionCreateOrConnectWithoutRuleInput | RecurringExecutionCreateOrConnectWithoutRuleInput[]
+    upsert?: RecurringExecutionUpsertWithWhereUniqueWithoutRuleInput | RecurringExecutionUpsertWithWhereUniqueWithoutRuleInput[]
+    createMany?: RecurringExecutionCreateManyRuleInputEnvelope
+    set?: RecurringExecutionWhereUniqueInput | RecurringExecutionWhereUniqueInput[]
+    disconnect?: RecurringExecutionWhereUniqueInput | RecurringExecutionWhereUniqueInput[]
+    delete?: RecurringExecutionWhereUniqueInput | RecurringExecutionWhereUniqueInput[]
+    connect?: RecurringExecutionWhereUniqueInput | RecurringExecutionWhereUniqueInput[]
+    update?: RecurringExecutionUpdateWithWhereUniqueWithoutRuleInput | RecurringExecutionUpdateWithWhereUniqueWithoutRuleInput[]
+    updateMany?: RecurringExecutionUpdateManyWithWhereWithoutRuleInput | RecurringExecutionUpdateManyWithWhereWithoutRuleInput[]
+    deleteMany?: RecurringExecutionScalarWhereInput | RecurringExecutionScalarWhereInput[]
   }
 
   export type UserCreateNestedOneWithoutBudgetsInput = {
@@ -81852,6 +83542,24 @@ export namespace Prisma {
     upsert?: UserUpsertWithoutGoldAssetsInput
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutGoldAssetsInput, UserUpdateWithoutGoldAssetsInput>, UserUncheckedUpdateWithoutGoldAssetsInput>
+  }
+
+  export type RecurringTransactionCreateNestedOneWithoutExecutionsInput = {
+    create?: XOR<RecurringTransactionCreateWithoutExecutionsInput, RecurringTransactionUncheckedCreateWithoutExecutionsInput>
+    connectOrCreate?: RecurringTransactionCreateOrConnectWithoutExecutionsInput
+    connect?: RecurringTransactionWhereUniqueInput
+  }
+
+  export type EnumRecurringExecutionStatusFieldUpdateOperationsInput = {
+    set?: $Enums.RecurringExecutionStatus
+  }
+
+  export type RecurringTransactionUpdateOneRequiredWithoutExecutionsNestedInput = {
+    create?: XOR<RecurringTransactionCreateWithoutExecutionsInput, RecurringTransactionUncheckedCreateWithoutExecutionsInput>
+    connectOrCreate?: RecurringTransactionCreateOrConnectWithoutExecutionsInput
+    upsert?: RecurringTransactionUpsertWithoutExecutionsInput
+    connect?: RecurringTransactionWhereUniqueInput
+    update?: XOR<XOR<RecurringTransactionUpdateToOneWithWhereWithoutExecutionsInput, RecurringTransactionUpdateWithoutExecutionsInput>, RecurringTransactionUncheckedUpdateWithoutExecutionsInput>
   }
 
   export type TransactionCreateNestedManyWithoutJournalEntryInput = {
@@ -82351,6 +84059,23 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedStringFilter<$PrismaModel>
     _max?: NestedStringFilter<$PrismaModel>
+  }
+
+  export type NestedEnumRecurringExecutionStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.RecurringExecutionStatus | EnumRecurringExecutionStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.RecurringExecutionStatus[] | ListEnumRecurringExecutionStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.RecurringExecutionStatus[] | ListEnumRecurringExecutionStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumRecurringExecutionStatusFilter<$PrismaModel> | $Enums.RecurringExecutionStatus
+  }
+
+  export type NestedEnumRecurringExecutionStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.RecurringExecutionStatus | EnumRecurringExecutionStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.RecurringExecutionStatus[] | ListEnumRecurringExecutionStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.RecurringExecutionStatus[] | ListEnumRecurringExecutionStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumRecurringExecutionStatusWithAggregatesFilter<$PrismaModel> | $Enums.RecurringExecutionStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumRecurringExecutionStatusFilter<$PrismaModel>
+    _max?: NestedEnumRecurringExecutionStatusFilter<$PrismaModel>
   }
 
   export type UserCreateWithoutAccountsInput = {
@@ -91081,6 +92806,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
+    executions?: RecurringExecutionCreateNestedManyWithoutRuleInput
   }
 
   export type RecurringTransactionUncheckedCreateWithoutUserInput = {
@@ -91108,6 +92834,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
+    executions?: RecurringExecutionUncheckedCreateNestedManyWithoutRuleInput
   }
 
   export type RecurringTransactionCreateOrConnectWithoutUserInput = {
@@ -94768,6 +96495,42 @@ export namespace Prisma {
     create: XOR<UserCreateWithoutRecurringTransactionsInput, UserUncheckedCreateWithoutRecurringTransactionsInput>
   }
 
+  export type RecurringExecutionCreateWithoutRuleInput = {
+    id?: string
+    scheduledDate: Date | string
+    executedDate?: Date | string | null
+    journalId?: string | null
+    status?: $Enums.RecurringExecutionStatus
+    failureReason?: string | null
+    retryCount?: number
+    nextRetryAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type RecurringExecutionUncheckedCreateWithoutRuleInput = {
+    id?: string
+    scheduledDate: Date | string
+    executedDate?: Date | string | null
+    journalId?: string | null
+    status?: $Enums.RecurringExecutionStatus
+    failureReason?: string | null
+    retryCount?: number
+    nextRetryAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type RecurringExecutionCreateOrConnectWithoutRuleInput = {
+    where: RecurringExecutionWhereUniqueInput
+    create: XOR<RecurringExecutionCreateWithoutRuleInput, RecurringExecutionUncheckedCreateWithoutRuleInput>
+  }
+
+  export type RecurringExecutionCreateManyRuleInputEnvelope = {
+    data: RecurringExecutionCreateManyRuleInput | RecurringExecutionCreateManyRuleInput[]
+    skipDuplicates?: boolean
+  }
+
   export type UserUpsertWithoutRecurringTransactionsInput = {
     update: XOR<UserUpdateWithoutRecurringTransactionsInput, UserUncheckedUpdateWithoutRecurringTransactionsInput>
     create: XOR<UserCreateWithoutRecurringTransactionsInput, UserUncheckedCreateWithoutRecurringTransactionsInput>
@@ -94887,6 +96650,39 @@ export namespace Prisma {
     goldAssets?: GoldAssetUncheckedUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
+  }
+
+  export type RecurringExecutionUpsertWithWhereUniqueWithoutRuleInput = {
+    where: RecurringExecutionWhereUniqueInput
+    update: XOR<RecurringExecutionUpdateWithoutRuleInput, RecurringExecutionUncheckedUpdateWithoutRuleInput>
+    create: XOR<RecurringExecutionCreateWithoutRuleInput, RecurringExecutionUncheckedCreateWithoutRuleInput>
+  }
+
+  export type RecurringExecutionUpdateWithWhereUniqueWithoutRuleInput = {
+    where: RecurringExecutionWhereUniqueInput
+    data: XOR<RecurringExecutionUpdateWithoutRuleInput, RecurringExecutionUncheckedUpdateWithoutRuleInput>
+  }
+
+  export type RecurringExecutionUpdateManyWithWhereWithoutRuleInput = {
+    where: RecurringExecutionScalarWhereInput
+    data: XOR<RecurringExecutionUpdateManyMutationInput, RecurringExecutionUncheckedUpdateManyWithoutRuleInput>
+  }
+
+  export type RecurringExecutionScalarWhereInput = {
+    AND?: RecurringExecutionScalarWhereInput | RecurringExecutionScalarWhereInput[]
+    OR?: RecurringExecutionScalarWhereInput[]
+    NOT?: RecurringExecutionScalarWhereInput | RecurringExecutionScalarWhereInput[]
+    id?: StringFilter<"RecurringExecution"> | string
+    ruleId?: StringFilter<"RecurringExecution"> | string
+    scheduledDate?: DateTimeFilter<"RecurringExecution"> | Date | string
+    executedDate?: DateTimeNullableFilter<"RecurringExecution"> | Date | string | null
+    journalId?: StringNullableFilter<"RecurringExecution"> | string | null
+    status?: EnumRecurringExecutionStatusFilter<"RecurringExecution"> | $Enums.RecurringExecutionStatus
+    failureReason?: StringNullableFilter<"RecurringExecution"> | string | null
+    retryCount?: IntFilter<"RecurringExecution"> | number
+    nextRetryAt?: DateTimeNullableFilter<"RecurringExecution"> | Date | string | null
+    createdAt?: DateTimeFilter<"RecurringExecution"> | Date | string
+    updatedAt?: DateTimeFilter<"RecurringExecution"> | Date | string
   }
 
   export type UserCreateWithoutBudgetsInput = {
@@ -95359,6 +97155,134 @@ export namespace Prisma {
     budgets?: BudgetUncheckedUpdateManyWithoutUserNestedInput
     collaborationParticipations?: CollaborationParticipantUncheckedUpdateManyWithoutUserNestedInput
     collaborationInvitesSent?: CollaborationParticipantUncheckedUpdateManyWithoutInvitedByUserNestedInput
+  }
+
+  export type RecurringTransactionCreateWithoutExecutionsInput = {
+    id?: string
+    title: string
+    amount: Decimal | DecimalJsLike | number | string
+    category: string
+    subcategory?: string | null
+    interval?: string
+    nextDueDate: Date | string
+    autoProcess?: boolean
+    status?: string
+    accountId?: string | null
+    description?: string | null
+    merchant?: string | null
+    lastProcessedAt?: Date | string | null
+    clientRequestId?: string | null
+    syncStatus?: string
+    type?: string | null
+    startDate?: Date | string | null
+    endDate?: Date | string | null
+    reminderDaysBefore?: number | null
+    notes?: string | null
+    transferToAccountId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    user: UserCreateNestedOneWithoutRecurringTransactionsInput
+  }
+
+  export type RecurringTransactionUncheckedCreateWithoutExecutionsInput = {
+    id?: string
+    userId: string
+    title: string
+    amount: Decimal | DecimalJsLike | number | string
+    category: string
+    subcategory?: string | null
+    interval?: string
+    nextDueDate: Date | string
+    autoProcess?: boolean
+    status?: string
+    accountId?: string | null
+    description?: string | null
+    merchant?: string | null
+    lastProcessedAt?: Date | string | null
+    clientRequestId?: string | null
+    syncStatus?: string
+    type?: string | null
+    startDate?: Date | string | null
+    endDate?: Date | string | null
+    reminderDaysBefore?: number | null
+    notes?: string | null
+    transferToAccountId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type RecurringTransactionCreateOrConnectWithoutExecutionsInput = {
+    where: RecurringTransactionWhereUniqueInput
+    create: XOR<RecurringTransactionCreateWithoutExecutionsInput, RecurringTransactionUncheckedCreateWithoutExecutionsInput>
+  }
+
+  export type RecurringTransactionUpsertWithoutExecutionsInput = {
+    update: XOR<RecurringTransactionUpdateWithoutExecutionsInput, RecurringTransactionUncheckedUpdateWithoutExecutionsInput>
+    create: XOR<RecurringTransactionCreateWithoutExecutionsInput, RecurringTransactionUncheckedCreateWithoutExecutionsInput>
+    where?: RecurringTransactionWhereInput
+  }
+
+  export type RecurringTransactionUpdateToOneWithWhereWithoutExecutionsInput = {
+    where?: RecurringTransactionWhereInput
+    data: XOR<RecurringTransactionUpdateWithoutExecutionsInput, RecurringTransactionUncheckedUpdateWithoutExecutionsInput>
+  }
+
+  export type RecurringTransactionUpdateWithoutExecutionsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    category?: StringFieldUpdateOperationsInput | string
+    subcategory?: NullableStringFieldUpdateOperationsInput | string | null
+    interval?: StringFieldUpdateOperationsInput | string
+    nextDueDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    autoProcess?: BoolFieldUpdateOperationsInput | boolean
+    status?: StringFieldUpdateOperationsInput | string
+    accountId?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    merchant?: NullableStringFieldUpdateOperationsInput | string | null
+    lastProcessedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
+    syncStatus?: StringFieldUpdateOperationsInput | string
+    type?: NullableStringFieldUpdateOperationsInput | string | null
+    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reminderDaysBefore?: NullableIntFieldUpdateOperationsInput | number | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    transferToAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    user?: UserUpdateOneRequiredWithoutRecurringTransactionsNestedInput
+  }
+
+  export type RecurringTransactionUncheckedUpdateWithoutExecutionsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    category?: StringFieldUpdateOperationsInput | string
+    subcategory?: NullableStringFieldUpdateOperationsInput | string | null
+    interval?: StringFieldUpdateOperationsInput | string
+    nextDueDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    autoProcess?: BoolFieldUpdateOperationsInput | boolean
+    status?: StringFieldUpdateOperationsInput | string
+    accountId?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    merchant?: NullableStringFieldUpdateOperationsInput | string | null
+    lastProcessedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    clientRequestId?: NullableStringFieldUpdateOperationsInput | string | null
+    syncStatus?: StringFieldUpdateOperationsInput | string
+    type?: NullableStringFieldUpdateOperationsInput | string | null
+    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reminderDaysBefore?: NullableIntFieldUpdateOperationsInput | number | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    transferToAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type TransactionCreateWithoutJournalEntryInput = {
@@ -98310,6 +100234,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    executions?: RecurringExecutionUpdateManyWithoutRuleNestedInput
   }
 
   export type RecurringTransactionUncheckedUpdateWithoutUserInput = {
@@ -98337,6 +100262,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    executions?: RecurringExecutionUncheckedUpdateManyWithoutRuleNestedInput
   }
 
   export type RecurringTransactionUncheckedUpdateManyWithoutUserInput = {
@@ -98799,6 +100725,58 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type RecurringExecutionCreateManyRuleInput = {
+    id?: string
+    scheduledDate: Date | string
+    executedDate?: Date | string | null
+    journalId?: string | null
+    status?: $Enums.RecurringExecutionStatus
+    failureReason?: string | null
+    retryCount?: number
+    nextRetryAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type RecurringExecutionUpdateWithoutRuleInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    scheduledDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    executedDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    journalId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumRecurringExecutionStatusFieldUpdateOperationsInput | $Enums.RecurringExecutionStatus
+    failureReason?: NullableStringFieldUpdateOperationsInput | string | null
+    retryCount?: IntFieldUpdateOperationsInput | number
+    nextRetryAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type RecurringExecutionUncheckedUpdateWithoutRuleInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    scheduledDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    executedDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    journalId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumRecurringExecutionStatusFieldUpdateOperationsInput | $Enums.RecurringExecutionStatus
+    failureReason?: NullableStringFieldUpdateOperationsInput | string | null
+    retryCount?: IntFieldUpdateOperationsInput | number
+    nextRetryAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type RecurringExecutionUncheckedUpdateManyWithoutRuleInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    scheduledDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    executedDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    journalId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumRecurringExecutionStatusFieldUpdateOperationsInput | $Enums.RecurringExecutionStatus
+    failureReason?: NullableStringFieldUpdateOperationsInput | string | null
+    retryCount?: IntFieldUpdateOperationsInput | number
+    nextRetryAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type TransactionCreateManyJournalEntryInput = {
