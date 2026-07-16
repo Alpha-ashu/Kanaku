@@ -1,6 +1,7 @@
 import { Response } from 'express';
 import { AuthRequest, getUserId } from '../../middleware/auth';
 import { prisma } from '../../db/prisma';
+import { cacheDeleteByUserId } from '../../cache/redis';
 
 /** Server-authoritative cap on the monthly budget stored in the settings blob. */
 const MAX_MONTHLY_BUDGET = Math.floor(1_000_000_000 / 12); // mirrors MAX_MONTHLY_INCOME
@@ -137,5 +138,95 @@ export const updateSettings = async (req: AuthRequest, res: Response) => {
   } catch (error) {
     console.error('Failed to update settings:', error);
     res.status(500).json({ error: 'Failed to update settings' });
+  }
+};
+
+export const clearAllUserData = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = getUserId(req);
+
+    await prisma.$transaction(async (tx) => {
+      // 1. Delete transactions & journal entries
+      await tx.transaction.deleteMany({ where: { userId } });
+      await tx.journalEntry.deleteMany({ where: { userId } });
+
+      // 2. Delete goal contributions, goal members, and goals
+      await tx.goalContribution.deleteMany({ where: { userId } });
+      await tx.goalMember.deleteMany({ where: { goal: { userId } } });
+      await tx.goal.deleteMany({ where: { userId } });
+
+      // 3. Delete group expense members & group expenses
+      await tx.groupExpenseMember.deleteMany({ where: { OR: [{ userId }, { groupExpense: { userId } }] } });
+      await tx.groupExpense.deleteMany({ where: { userId } });
+
+      // 4. Delete loan payments & loans
+      await tx.loanPayment.deleteMany({ where: { loan: { userId } } });
+      await tx.loan.deleteMany({ where: { userId } });
+
+      // 5. Delete other financial categories
+      await tx.investment.deleteMany({ where: { userId } });
+      await tx.goldAsset.deleteMany({ where: { userId } });
+      await tx.budget.deleteMany({ where: { userId } });
+
+      // 6. Delete friends & notification & device
+      await tx.friend.deleteMany({ where: { userId } });
+      await tx.todo.deleteMany({ where: { userId } });
+      await tx.notification.deleteMany({ where: { userId } });
+      await tx.device.deleteMany({ where: { userId } });
+
+      // 7. Delete recurring rules & executions
+      await tx.recurringExecution.deleteMany({ where: { rule: { userId } } });
+      await tx.recurringTransaction.deleteMany({ where: { userId } });
+
+      // 8. Delete imported logs, AI events, and consent forms
+      await tx.importLog.deleteMany({ where: { userId } });
+      await tx.aiScan.deleteMany({ where: { userId } });
+      await tx.otpCode.deleteMany({ where: { userId } });
+      await tx.aaConsent.deleteMany({ where: { userId } });
+      await tx.user_features.deleteMany({ where: { user_id: userId } });
+      await tx.ai_insights.deleteMany({ where: { user_id: userId } });
+      await tx.ai_events.deleteMany({ where: { user_id: userId } });
+      await tx.collaborationParticipant.deleteMany({ where: { invitedBy: userId } });
+      await tx.auditLog.deleteMany({ where: { userId } });
+      await tx.refreshToken.deleteMany({ where: { userId } });
+      await tx.syncQueue.deleteMany({ where: { userId } });
+
+      // 9. Delete booking requests, advisor applications & chat messages
+      await tx.chatMessage.deleteMany({ where: { senderId: userId } });
+      await tx.advisorSession.deleteMany({ where: { clientId: userId } });
+      await tx.bookingRequest.deleteMany({ where: { clientId: userId } });
+      await tx.payment.deleteMany({ where: { clientId: userId } });
+      await tx.advisorAvailability.deleteMany({ where: { advisorId: userId } });
+      await tx.advisorApplication.deleteMany({ where: { userId } });
+
+      // 10. Delete raw SQL tables (todo lists & user learning)
+      await tx.$executeRawUnsafe('DELETE FROM public.todo_list_shares WHERE shared_with_user_id = $1::uuid OR shared_by = $1::uuid OR list_id IN (SELECT id FROM public.todo_lists WHERE user_id = $1::uuid)', userId);
+      await tx.$executeRawUnsafe('DELETE FROM public.todo_items WHERE user_id = $1::uuid OR list_id IN (SELECT id FROM public.todo_lists WHERE user_id = $1::uuid)', userId);
+      await tx.$executeRawUnsafe('DELETE FROM public.todo_lists WHERE user_id = $1::uuid', userId);
+      await tx.$executeRawUnsafe('DELETE FROM public.user_learning WHERE user_id = $1', userId);
+
+      // 11. Delete account balances (depends on accounts being deleted after transactions)
+      await tx.account.deleteMany({ where: { userId } });
+
+      // 12. Reset UserSettings back to defaults
+      await tx.userSettings.updateMany({
+        where: { userId },
+        data: {
+          theme: 'light',
+          language: 'en',
+          currency: 'USD',
+          timezone: 'UTC',
+          settings: {},
+        }
+      });
+    }, { timeout: 30000 });
+
+    // Clear in-memory caches
+    await cacheDeleteByUserId(userId);
+
+    res.json({ success: true, message: 'All user data cleared successfully' });
+  } catch (error: any) {
+    console.error('Failed to clear user data:', error);
+    res.status(500).json({ error: error.message || 'Failed to clear user data' });
   }
 };

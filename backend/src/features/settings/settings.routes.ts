@@ -35,5 +35,9 @@ router.post(
   '/account/cancel-deletion',
   GdprController.cancelAccountDeletion,
 );
+router.post(
+  '/clear-data',
+  SettingsController.clearAllUserData,
+);
 
 export { router as settingsRoutes };

@@ -235,24 +235,11 @@ export const Settings: React.FC = () => {
  if (confirm('This will delete ALL your data. This action cannot be undone. Are you sure?')) {
  if (confirm('Are you ABSOLUTELY sure? This is your last warning!')) {
  try {
- // Clear cloud user-scoped entities first so sync does not restore cleared local records.
- const cloudTables = ['accounts', 'friends_sync', 'transactions', 'loans', 'goals', 'group_expenses_sync', 'investments'] as const;
- const cloudDeleteErrors: string[] = [];
- if (user?.id) {
- const results = await Promise.allSettled(
- cloudTables.map((table) => supabase.from(table).delete().eq('user_id', user.id)),
- );
-
- results.forEach((result, index) => {
- if (result.status === 'rejected') {
- cloudDeleteErrors.push(`${cloudTables[index]}: request failed`);
- return;
- }
- if (result.value.error) {
- cloudDeleteErrors.push(`${cloudTables[index]}: ${result.value.error.message}`);
- }
- });
- }
+        // Clear cloud user-scoped entities first so sync does not restore cleared local records.
+        const res = await api.post<any>('/settings/clear-data');
+        if (!res.success) {
+          throw new Error(res.message || 'Failed to clear cloud data');
+        }
 
  // Prevent stale queued upserts from replaying after reload.
  localStorage.removeItem('KANAKU_sync_queue_v3');
@@ -295,12 +282,7 @@ export const Settings: React.FC = () => {
  ]);
  });
 
- if (cloudDeleteErrors.length > 0) {
- console.warn('Cloud clear partial failures:', cloudDeleteErrors);
- toast.warning('Local data cleared. Some cloud rows could not be deleted right now.');
- } else {
- toast.success('All user data cleared. Profile/account identity has been preserved.');
- }
+        toast.success('All user data cleared. Profile/account identity has been preserved.');
  refreshData();
  window.location.reload();
  } catch (error) {

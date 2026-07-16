@@ -362,6 +362,32 @@ class SyncService {
     }
 
     if (operation === 'create') {
+      if (entityType === 'friends') {
+        const existingFriend = await prisma.friend.findFirst({
+          where: {
+            userId,
+            OR: [
+              { name: { equals: sanitizedData.name, mode: 'insensitive' } },
+              sanitizedData.email ? { email: sanitizedData.email } : null,
+              sanitizedData.phone ? { phone: sanitizedData.phone } : null,
+            ].filter(Boolean) as any,
+          },
+        });
+
+        if (existingFriend) {
+          await prisma.friend.update({
+            where: { id: existingFriend.id },
+            data: {
+              ...sanitizedData,
+              deletedAt: null,
+              updatedAt: localTimestamp,
+              syncStatus: 'synced',
+            },
+          });
+          return;
+        }
+      }
+
       // Idempotent create — a retried create is a silent no-op.
       await delegate.upsert({
         where: { id: entityId },

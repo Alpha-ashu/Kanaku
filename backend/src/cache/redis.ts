@@ -162,3 +162,12 @@ export const cacheDeleteByPrefix = async (prefix: string): Promise<void> => {
     if (key.startsWith(prefix)) store.delete(key);
   }
 };
+
+export const cacheDeleteByUserId = async (userId: string): Promise<void> => {
+  for (const key of store.keys()) {
+    const parts = key.split(':');
+    if (parts[1] === userId || parts[0] === userId) {
+      store.delete(key);
+    }
+  }
+};

@@ -242,7 +242,6 @@ export const createFriend = async (req: AuthRequest, res: Response, next: NextFu
     const existing = await prisma.friend.findFirst({
       where: {
         userId,
-        deletedAt: null,
         OR: [
           { name: { equals: cleanName, mode: 'insensitive' } },
           cleanEmail ? { email: cleanEmail } : null,
@@ -252,12 +251,38 @@ export const createFriend = async (req: AuthRequest, res: Response, next: NextFu
     });
 
     if (existing) {
-      const reason = existing.name.toLowerCase() === cleanName.toLowerCase()
-        ? 'A friend with this name already exists.'
-        : (cleanEmail && existing.email === cleanEmail)
-          ? 'A friend with this email already exists.'
-          : 'A friend with this phone number already exists.';
-      throw AppError.badRequest(reason, 'FRIEND_ALREADY_EXISTS');
+      if (existing.deletedAt === null) {
+        const reason = existing.name.toLowerCase() === cleanName.toLowerCase()
+          ? 'A friend with this name already exists.'
+          : (cleanEmail && existing.email === cleanEmail)
+            ? 'A friend with this email already exists.'
+            : 'A friend with this phone number already exists.';
+        throw AppError.badRequest(reason, 'FRIEND_ALREADY_EXISTS');
+      } else {
+        // Restore soft-deleted friend!
+        const restoredFriend = await prisma.friend.update({
+          where: { id: existing.id },
+          data: {
+            name: cleanName,
+            email: cleanEmail || existing.email,
+            phone: cleanPhone || existing.phone,
+            deletedAt: null,
+            updatedAt: new Date(),
+          },
+        });
+        
+        const registeredMap = await getRegisteredUserMap([restoredFriend.email!], [restoredFriend.phone!]);
+        const { isRegistered, linkedUserId } = resolveRegistration(registeredMap, restoredFriend.email, restoredFriend.phone);
+
+        return res.status(200).json({
+          success: true,
+          data: {
+            ...restoredFriend,
+            isRegistered,
+            linkedUserId,
+          },
+        });
+      }
     }
 
     // Fetch current user details
