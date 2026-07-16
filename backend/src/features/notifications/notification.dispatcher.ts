@@ -28,9 +28,25 @@ export interface DispatchNotificationInput {
   channels?: NotificationChannel[];
   sourceUserId?: string;
   metadata?: Record<string, unknown>;
+  requestId?: string;
 }
 
-export async function dispatchNotification(input: DispatchNotificationInput) {
+export async function dispatchNotification(input: DispatchNotificationInput, tx: any = prisma) {
+  // Deduplicate using requestId if provided
+  if (input.requestId) {
+    const existing = await tx.notification.findFirst({
+      where: {
+        userId: input.userId,
+        requestId: input.requestId,
+        deletedAt: null
+      }
+    });
+    if (existing) {
+      console.log(`[Notification] Idempotency hit for key: ${input.requestId}`);
+      return existing;
+    }
+  }
+
   const channels = input.channels ?? ['app'];
   const wantsEmail = channels.includes('email');
   const wantsPush = channels.includes('push');
@@ -40,7 +56,7 @@ export async function dispatchNotification(input: DispatchNotificationInput) {
   if (wantsEmail) deliveryStatus.email = 'queued';
   if (wantsPush) deliveryStatus.push = 'queued';
 
-  const notification = await prisma.notification.create({
+  const notification = await tx.notification.create({
     data: {
       userId: input.userId,
       sourceUserId: input.sourceUserId,
@@ -53,6 +69,7 @@ export async function dispatchNotification(input: DispatchNotificationInput) {
       channels: JSON.stringify(channels),
       metadata: input.metadata as any,
       deliveryStatus: JSON.stringify(deliveryStatus),
+      requestId: input.requestId || null,
       // 'pending' makes the outbox drainer pick the row up; app-only rows rest at 'sent'.
       status: wantsAsync ? 'pending' : 'sent',
       sentAt: wantsAsync ? null : new Date(),

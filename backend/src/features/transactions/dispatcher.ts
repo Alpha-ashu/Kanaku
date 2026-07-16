@@ -92,6 +92,29 @@ export class GroupSettlementCreatedEvent extends BaseFinancialEvent {
   }
 }
 
+export class GroupSettlementCompletedEvent extends BaseFinancialEvent {
+  readonly eventType = 'GROUP_SETTLEMENT_COMPLETED';
+  readonly sourceModule = 'GROUPS';
+  constructor(
+    userId: string,
+    readonly groupExpenseId: string,
+    readonly settlementId: string,
+    readonly payerUserId: string | null,
+    readonly receiverUserId: string,
+    readonly amount: number,
+    readonly accountId: string,
+    readonly category: string,
+    readonly description: string,
+    readonly settledAt: Date,
+    readonly idempotencyKey: string,
+    readonly oldMemberId?: string | null,
+    metadata?: BaseFinancialEvent['metadata']
+  ) {
+    super(userId, metadata);
+  }
+}
+
+
 export class InvestmentPurchasedEvent extends BaseFinancialEvent {
   readonly eventType = 'INVESTMENT_PURCHASED';
   readonly sourceModule = 'INVESTMENTS';

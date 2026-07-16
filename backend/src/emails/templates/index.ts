@@ -19,12 +19,13 @@ export function renderNotificationEmail(p: {
   deepLink?: string;
 }): RenderedEmail {
   const action = p.deepLink ? emailButton(`${FRONTEND_URL}${p.deepLink}`, 'View Details') : '';
+  const bodyTextHtml = escapeHtml(p.message).replace(/\n/g, '<br/>');
   return {
     subject: p.title,
     html: renderLayout({
       heading: p.title,
       category: p.category,
-      bodyHtml: `${escapeHtml(p.message)}${action ? `<div>${action}</div>` : ''}`,
+      bodyHtml: `${bodyTextHtml}${action ? `<div>${action}</div>` : ''}`,
     }),
   };
 }

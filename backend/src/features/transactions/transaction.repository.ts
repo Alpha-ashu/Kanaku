@@ -57,8 +57,9 @@ export class TransactionRepository {
   }
 
   async findMany(userId: string, whereClause: any, limit?: number, skip?: number) {
+    const defaultCategoryFilter = whereClause?.category !== undefined ? {} : { category: { not: 'Personal Share Offset' } };
     const txs = await prisma.transaction.findMany({
-      where: { userId, deletedAt: null, ...whereClause },
+      where: { userId, deletedAt: null, ...defaultCategoryFilter, ...whereClause },
       orderBy: { date: 'desc' },
       ...(limit !== undefined ? { take: limit } : {}),
       ...(skip !== undefined ? { skip } : {}),
@@ -67,8 +68,9 @@ export class TransactionRepository {
   }
 
   async count(userId: string, whereClause: any): Promise<number> {
+    const defaultCategoryFilter = whereClause?.category !== undefined ? {} : { category: { not: 'Personal Share Offset' } };
     return prisma.transaction.count({
-      where: { userId, deletedAt: null, ...whereClause },
+      where: { userId, deletedAt: null, ...defaultCategoryFilter, ...whereClause },
     });
   }
 

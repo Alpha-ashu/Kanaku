@@ -7,16 +7,19 @@ import { isDatabaseUnavailableError } from '../../utils/databaseAvailability';
 import { getSocketManager } from '../../sockets';
 import { sanitize } from '../../utils/sanitize';
 import { inviteParticipants } from '../collaboration/invitation.service';
+import { FinancialEventDispatcher, GroupExpenseCreatedEvent, GroupSettlementCompletedEvent } from '../transactions/dispatcher';
+import { FinancialLedgerService } from '../transactions/ledger.service';
+import { Decimal } from '@prisma/client/runtime/library';
 
-// User has no `phone` column — phone numbers live on `profiles` (synced 1:1 with User.id on registration).
-async function findUserByEmailOrPhone(email?: string | null, phone?: string | null): Promise<any> {
+
+async function findUserByEmailOrPhone(email?: string | null, phone?: string | null, client: any = prisma): Promise<any> {
   if (email) {
-    const user = await prisma.user.findFirst({ where: { email } });
+    const user = await client.user.findFirst({ where: { email } });
     if (user) return user;
   }
   if (phone) {
-    const profile = await prisma.profiles.findFirst({ where: { phone } });
-    if (profile) return prisma.user.findUnique({ where: { id: profile.id } });
+    const profile = await client.profiles.findFirst({ where: { phone } });
+    if (profile) return client.user.findUnique({ where: { id: profile.id } });
   }
   return null;
 }
@@ -216,6 +219,16 @@ export const getGroup = async (req: AuthRequest, res: Response) => {
   }
 };
 
+const findMatchingExistingMember = (newM: any, existingList: any[]) => {
+  return existingList.find(extM => {
+    if (newM.userId && extM.userId === newM.userId) return true;
+    if (newM.friendId && extM.friendId === newM.friendId) return true;
+    if (newM.email && extM.email && newM.email.trim().toLowerCase() === extM.email.trim().toLowerCase()) return true;
+    if (newM.name && extM.name && newM.name.trim().toLowerCase() === extM.name.trim().toLowerCase()) return true;
+    return false;
+  });
+};
+
 export const createGroup = async (req: AuthRequest, res: Response) => {
   try {
     const userId = getUserId(req);
@@ -245,143 +258,185 @@ export const createGroup = async (req: AuthRequest, res: Response) => {
       return res.status(200).json({ success: true, data });
     }
 
-    const group = await prisma.groupExpense.create({
-      data: {
-        id: randomUUID(),
-        userId,
-        name: body.name,
-        totalAmount: body.totalAmount,
-        paidBy: body.paidBy ? String(body.paidBy) : null,
-        date: new Date(body.date),
-        members: JSON.stringify(body.members || []),
-        items: JSON.stringify(body.items || []),
-        description: body.description,
-        category: body.category,
-        splitType: body.splitType || 'equal',
-        yourShare: body.yourShare,
-        status: body.status || 'pending',
-        syncStatus: 'synced'
-      }
-    });
+    const invitationsToSend: { email: string; name: string; share: number }[] = [];
+    const socketNotificationsToSend: { targetUserId: string; notification?: any; groupExpenseId: string }[] = [];
 
-    const currentUser = await prisma.user.findUnique({ where: { id: userId } });
-
-    // Parse and normalize members
-    const rawMembers = body.members || [];
-    const normalizedMembers = rawMembers.map((m: any) => {
-      if (typeof m === 'string') {
-        return {
-          name: m,
-          share: body.totalAmount / (rawMembers.length + 1),
-          paid: false
-        };
-      }
-      return {
-        name: m.name,
-        share: m.share ?? (body.totalAmount / (rawMembers.length + 1)),
-        paid: m.paid || m.paymentStatus === 'paid' || false,
-        email: m.email,
-        phone: m.phone,
-        isCurrentUser: m.isCurrentUser,
-      };
-    });
-
-    // Filter out creator from participants
-    const participants = normalizedMembers.filter((m: any) => !m.isCurrentUser && m.name.toLowerCase() !== 'you');
-
-    // Create GroupExpenseMember entries and notifications
-    for (const m of participants) {
-      let friend = await prisma.friend.findFirst({
-        where: { userId, name: { equals: m.name, mode: 'insensitive' }, deletedAt: null }
-      });
-
-      const memberEmail = (m.email || '').trim().toLowerCase() || null;
-      const memberPhone = (m.phone || '').trim() || null;
-
-      // Fall back to matching an existing friend by contact info if the name didn't match.
-      if (!friend && (memberEmail || memberPhone)) {
-        friend = await prisma.friend.findFirst({
-          where: {
-            userId,
-            deletedAt: null,
-            OR: [memberEmail ? { email: memberEmail } : null, memberPhone ? { phone: memberPhone } : null].filter(Boolean) as any,
-          },
-        });
-      }
-
-      // Every participant added to a group expense must become a manageable
-      // entity — auto-create a Friend record if one doesn't exist yet.
-      if (!friend && (memberEmail || memberPhone)) {
-        friend = await prisma.friend.create({
-          data: { userId, name: sanitize(m.name), email: memberEmail, phone: memberPhone, syncStatus: 'synced' },
-        });
-      }
-
-      const targetUser = await findUserByEmailOrPhone(friend?.email, friend?.phone);
-
-      const email = (memberEmail || friend?.email || '').trim().toLowerCase() || null;
-
-      await prisma.groupExpenseMember.create({
+    const result = await prisma.$transaction(async (tx) => {
+      const group = await tx.groupExpense.create({
         data: {
-          groupExpenseId: group.id,
-          userId: targetUser ? targetUser.id : null,
-          friendId: friend?.id || null,
-          name: m.name,
-          email,
-          phone: friend?.phone || memberPhone,
-          shareAmount: m.share,
-          hasPaid: m.paid,
+          id: randomUUID(),
+          userId,
+          name: body.name,
+          totalAmount: body.totalAmount,
+          paidBy: body.paidBy ? String(body.paidBy) : null,
+          date: new Date(body.date),
+          members: JSON.stringify(body.members || []),
+          items: JSON.stringify(body.items || []),
+          description: body.description,
+          category: body.category,
+          splitType: body.splitType || 'equal',
+          yourShare: body.yourShare,
+          status: body.status || 'pending',
+          syncStatus: 'synced'
         }
       });
 
-      if (email) {
-        // Resolves registered vs. pending, tracks the invite, and sends the
-        // matching in-app notification or "Join Kanaku" invitation email.
-        try {
-          const detail = `Total: ₹${Number(group.totalAmount).toFixed(0)}, Your share: ₹${Number(m.share).toFixed(0)}.`;
-          await inviteParticipants({
-            moduleType: 'group_expense',
-            moduleId: group.id,
-            moduleName: group.name,
-            creatorId: userId,
-            participants: [{ email, name: m.name, detail }],
-          });
-        } catch (err) {
-          logger.warn('Failed to invite group expense participant', err);
+      const currentUser = await tx.user.findUnique({ where: { id: userId } });
+
+      // Parse and normalize members
+      const rawMembers = body.members || [];
+      const normalizedMembers = rawMembers.map((m: any) => {
+        if (typeof m === 'string') {
+          return {
+            name: m,
+            share: body.totalAmount / (rawMembers.length + 1),
+            paid: false
+          };
         }
-      } else if (targetUser) {
-        // Resolved via phone only (no email on file) — fall back to a direct
-        // in-app notification since there's no email to track a pending invite by.
-        const notifTitle = 'New Group Expense';
-        const notifMsg = `${currentUser?.name || 'Someone'} added you to a split expense "${group.name}". Total: ₹${Number(group.totalAmount).toFixed(0)}, Your share: ₹${m.share.toFixed(0)}.`;
-        const notification = await prisma.notification.create({
+        return {
+          name: m.name,
+          share: m.share ?? (body.totalAmount / (rawMembers.length + 1)),
+          paid: m.paid || m.paymentStatus === 'paid' || false,
+          email: m.email,
+          phone: m.phone,
+          isCurrentUser: m.isCurrentUser,
+        };
+      });
+
+      // Filter out creator from participants
+      const participants = normalizedMembers.filter((m: any) => !m.isCurrentUser && m.name.toLowerCase() !== 'you');
+
+      // Create GroupExpenseMember entries and notifications
+      for (const m of participants) {
+        let friend = await tx.friend.findFirst({
+          where: { userId, name: { equals: m.name, mode: 'insensitive' }, deletedAt: null }
+        });
+
+        const memberEmail = (m.email || '').trim().toLowerCase() || null;
+        const memberPhone = (m.phone || '').trim() || null;
+
+        // Fall back to matching an existing friend by contact info if the name didn't match.
+        if (!friend && (memberEmail || memberPhone)) {
+          friend = await tx.friend.findFirst({
+            where: {
+              userId,
+              deletedAt: null,
+              OR: [memberEmail ? { email: memberEmail } : null, memberPhone ? { phone: memberPhone } : null].filter(Boolean) as any,
+            },
+          });
+        }
+
+        // Every participant added to a group expense must become a manageable
+        // entity — auto-create a Friend record if one doesn't exist yet.
+        if (!friend && (memberEmail || memberPhone)) {
+          friend = await tx.friend.create({
+            data: { userId, name: sanitize(m.name), email: memberEmail, phone: memberPhone, syncStatus: 'synced' },
+          });
+        }
+
+        const targetUser = await findUserByEmailOrPhone(friend?.email, friend?.phone, tx);
+
+        const email = (memberEmail || friend?.email || '').trim().toLowerCase() || null;
+
+        await tx.groupExpenseMember.create({
           data: {
-            userId: targetUser.id,
-            sourceUserId: userId,
-            title: notifTitle,
-            message: notifMsg,
-            type: 'group_expense',
-            category: 'group_expense',
-            deepLink: '/groups',
-            priority: 'high',
-            channels: '["app","email"]',
-            deliveryStatus: '{"app":"sent","email":"queued"}',
-            // 'pending' hands the email channel to the notification outbox drainer.
-            status: 'pending',
+            groupExpenseId: group.id,
+            userId: targetUser ? targetUser.id : null,
+            friendId: friend?.id || null,
+            name: m.name,
+            email,
+            phone: friend?.phone || memberPhone,
+            shareAmount: m.share,
+            hasPaid: m.paid,
           }
         });
 
-        try {
-          const socketManager = getSocketManager();
-          socketManager.notifyUser(targetUser.id, 'notification', notification);
-          socketManager.notifyUser(targetUser.id, 'group_expense_updated', { groupId: group.id });
-        } catch (err) {
-          logger.warn('Socket notification failed for group expense', err);
+        if (email) {
+          invitationsToSend.push({ email, name: m.name, share: m.share });
+        } else if (targetUser) {
+          const notifTitle = 'New Group Expense';
+          const notifMsg = `${currentUser?.name || 'Someone'} added you to a split expense "${group.name}". Total: ₹${Number(group.totalAmount).toFixed(0)}, Your share: ₹${m.share.toFixed(0)}.`;
+          const notification = await tx.notification.create({
+            data: {
+              userId: targetUser.id,
+              sourceUserId: userId,
+              title: notifTitle,
+              message: notifMsg,
+              type: 'group_expense',
+              category: 'group_expense',
+              deepLink: '/groups',
+              priority: 'high',
+              channels: '["app","email"]',
+              deliveryStatus: '{"app":"sent","email":"queued"}',
+              status: 'pending',
+            }
+          });
+
+          socketNotificationsToSend.push({
+            targetUserId: targetUser.id,
+            notification,
+            groupExpenseId: group.id
+          });
         }
+      }
+
+      // Ledger V2 Integration
+      if (FinancialLedgerService.isEnabled('groups')) {
+        let accountId = group.paidBy;
+        if (!accountId) {
+          const defaultAccount = await tx.account.findFirst({
+            where: { userId, isActive: true, deletedAt: null },
+            orderBy: { createdAt: 'asc' }
+          });
+          accountId = defaultAccount?.id || null;
+        }
+
+        if (accountId) {
+          await FinancialEventDispatcher.publish(tx, new GroupExpenseCreatedEvent(
+            userId,
+            group.id,
+            accountId,
+            Number(group.totalAmount),
+            group.name,
+            group.category || 'Group Expense',
+            `group-expense-create-${group.id}`
+          ));
+        }
+      }
+
+      return group;
+    }, { timeout: 30000 });
+
+    // Execute invitations outside of the transaction block
+    for (const inv of invitationsToSend) {
+      try {
+        const detail = `Total: ₹${Number(result.totalAmount).toFixed(0)}, Your share: ₹${Number(inv.share).toFixed(0)}.`;
+        await inviteParticipants({
+          moduleType: 'group_expense',
+          moduleId: result.id,
+          moduleName: result.name,
+          creatorId: userId,
+          participants: [{ email: inv.email, name: inv.name, detail }],
+        });
+      } catch (err) {
+        logger.warn('Failed to invite group expense participant', err);
       }
     }
 
-    const data = await buildGroupResponse(group, userId);
+    // Execute socket updates outside of the transaction block
+    for (const item of socketNotificationsToSend) {
+      try {
+        const socketManager = getSocketManager();
+        if (item.notification) {
+          socketManager.notifyUser(item.targetUserId, 'notification', item.notification);
+        }
+        socketManager.notifyUser(item.targetUserId, 'group_expense_updated', { groupId: item.groupExpenseId });
+      } catch (err) {
+        logger.warn('Socket notification failed for group expense', err);
+      }
+    }
+
+    const data = await buildGroupResponse(result, userId);
     res.status(201).json({ success: true, data });
   } catch (error) {
     logger.error('Failed to create group', { error });
@@ -419,203 +474,333 @@ export const updateGroup = async (req: AuthRequest, res: Response) => {
       return res.status(403).json({ success: false, error: 'Access denied' });
     }
 
+    let updatedGroup: any;
+    const invitationsToSend: { email: string; name: string; share: number; totalAmount: number; groupName: string }[] = [];
+    const socketNotificationsToSend: { targetUserId: string; notification?: any; groupExpenseId: string }[] = [];
+
     if (isCreator) {
       // Owner can update everything
-      const updated = await prisma.groupExpense.update({
-        where: { id },
-        data: {
-          name: body.name !== undefined ? body.name : undefined,
-          totalAmount: body.totalAmount !== undefined ? body.totalAmount : undefined,
-          paidBy: body.paidBy !== undefined ? (body.paidBy ? String(body.paidBy) : null) : undefined,
-          date: body.date !== undefined ? new Date(body.date) : undefined,
-          members: body.members !== undefined ? JSON.stringify(body.members) : undefined,
-          items: body.items !== undefined ? JSON.stringify(body.items) : undefined,
-          description: body.description !== undefined ? body.description : undefined,
-          category: body.category !== undefined ? body.category : undefined,
-          splitType: body.splitType !== undefined ? body.splitType : undefined,
-          yourShare: body.yourShare !== undefined ? body.yourShare : undefined,
-          status: body.status !== undefined ? body.status : undefined,
-          updatedAt: new Date()
-        }
-      });
-
-      // Update members if provided
-      if (body.members) {
-        // Soft delete/hard delete existing members first
-        await prisma.groupExpenseMember.deleteMany({
-          where: { groupExpenseId: id }
+      updatedGroup = await prisma.$transaction(async (tx) => {
+        const updated = await tx.groupExpense.update({
+          where: { id },
+          data: {
+            name: body.name !== undefined ? body.name : undefined,
+            totalAmount: body.totalAmount !== undefined ? body.totalAmount : undefined,
+            paidBy: body.paidBy !== undefined ? (body.paidBy ? String(body.paidBy) : null) : undefined,
+            date: body.date !== undefined ? new Date(body.date) : undefined,
+            members: body.members !== undefined ? JSON.stringify(body.members) : undefined,
+            items: body.items !== undefined ? JSON.stringify(body.items) : undefined,
+            description: body.description !== undefined ? body.description : undefined,
+            category: body.category !== undefined ? body.category : undefined,
+            splitType: body.splitType !== undefined ? body.splitType : undefined,
+            yourShare: body.yourShare !== undefined ? body.yourShare : undefined,
+            status: body.status !== undefined ? body.status : undefined,
+            updatedAt: new Date()
+          }
         });
 
-        // Parse and normalize members
-        const rawMembers = body.members || [];
-        const normalizedMembers = rawMembers.map((m: any) => {
-          if (typeof m === 'string') {
+        const transitions: { member: any; email: string | null; targetUserId: string | null; friendId: string | null; oldMemberId?: string | null }[] = [];
+
+        // Update members if provided
+        if (body.members) {
+          // Parse and normalize members
+          const rawMembers = body.members || [];
+          const normalizedMembers = rawMembers.map((m: any) => {
+            if (typeof m === 'string') {
+              return {
+                name: m,
+                share: (body.totalAmount ?? Number(existing.totalAmount)) / (rawMembers.length + 1),
+                paid: false
+              };
+            }
             return {
-              name: m,
-              share: (body.totalAmount ?? Number(existing.totalAmount)) / (rawMembers.length + 1),
-              paid: false
-            };
-          }
-          return {
-            name: m.name,
-            share: m.share ?? ((body.totalAmount ?? Number(existing.totalAmount)) / (rawMembers.length + 1)),
-            paid: m.paid || m.paymentStatus === 'paid' || false,
-            email: m.email,
-            phone: m.phone,
-            isCurrentUser: m.isCurrentUser,
-          };
-        });
-
-        const participants = normalizedMembers.filter((m: any) => !m.isCurrentUser && m.name.toLowerCase() !== 'you');
-
-        for (const m of participants) {
-          let friend = await prisma.friend.findFirst({
-            where: { userId, name: { equals: m.name, mode: 'insensitive' }, deletedAt: null }
-          });
-
-          const memberEmail = (m.email || '').trim().toLowerCase() || null;
-          const memberPhone = (m.phone || '').trim() || null;
-
-          if (!friend && (memberEmail || memberPhone)) {
-            friend = await prisma.friend.findFirst({
-              where: {
-                userId,
-                deletedAt: null,
-                OR: [memberEmail ? { email: memberEmail } : null, memberPhone ? { phone: memberPhone } : null].filter(Boolean) as any,
-              },
-            });
-          }
-          if (!friend && (memberEmail || memberPhone)) {
-            friend = await prisma.friend.create({
-              data: { userId, name: sanitize(m.name), email: memberEmail, phone: memberPhone, syncStatus: 'synced' },
-            });
-          }
-
-          const targetUser = await findUserByEmailOrPhone(friend?.email, friend?.phone);
-          const email = memberEmail || friend?.email || null;
-
-          await prisma.groupExpenseMember.create({
-            data: {
-              groupExpenseId: id,
-              userId: targetUser ? targetUser.id : null,
-              friendId: friend?.id || null,
               name: m.name,
-              email,
-              phone: friend?.phone || memberPhone,
-              shareAmount: m.share,
-              hasPaid: m.paid,
-            }
+              share: m.share ?? ((body.totalAmount ?? Number(existing.totalAmount)) / (rawMembers.length + 1)),
+              paid: m.paid || m.paymentStatus === 'paid' || false,
+              email: m.email,
+              phone: m.phone,
+              isCurrentUser: m.isCurrentUser,
+            };
           });
 
-          if (email) {
-            try {
-              const detail = `Total: ₹${Number(updated.totalAmount).toFixed(0)}, Your share: ₹${Number(m.share).toFixed(0)}.`;
-              await inviteParticipants({
-                moduleType: 'group_expense',
-                moduleId: id,
-                moduleName: updated.name,
-                creatorId: userId,
-                participants: [{ email, name: m.name, detail }],
+          const participants = normalizedMembers.filter((m: any) => !m.isCurrentUser && m.name.toLowerCase() !== 'you');
+
+          for (const m of participants) {
+            const existingMember = findMatchingExistingMember(m, existingMembers);
+            const wasPaid = existingMember?.hasPaid || false;
+            const nextPaid = m.paid || false;
+
+            if (nextPaid && !wasPaid) {
+              transitions.push({
+                member: m,
+                email: m.email || existingMember?.email || null,
+                targetUserId: existingMember?.userId || null,
+                friendId: existingMember?.friendId || null,
+                oldMemberId: existingMember?.id || null
               });
-            } catch (err) {
-              logger.warn('Failed to invite group expense participant on update', err);
             }
-          } else if (targetUser) {
-            // Resolved via phone only (no email on file) — fall back to a direct
-            // in-app notification since there's no email to track a pending invite by.
-            const updNotifTitle = 'Group Expense Updated';
-            const updNotifMsg = `${currentUser.name} updated the split expense "${updated.name}".`;
-            const notification = await prisma.notification.create({
+          }
+
+          // Soft delete/hard delete existing members first
+          await tx.groupExpenseMember.deleteMany({
+            where: { groupExpenseId: id }
+          });
+
+          for (const m of participants) {
+            let friend = await tx.friend.findFirst({
+              where: { userId, name: { equals: m.name, mode: 'insensitive' }, deletedAt: null }
+            });
+
+            const memberEmail = (m.email || '').trim().toLowerCase() || null;
+            const memberPhone = (m.phone || '').trim() || null;
+
+            if (!friend && (memberEmail || memberPhone)) {
+              friend = await tx.friend.findFirst({
+                where: {
+                  userId,
+                  deletedAt: null,
+                  OR: [memberEmail ? { email: memberEmail } : null, memberPhone ? { phone: memberPhone } : null].filter(Boolean) as any,
+                },
+              });
+            }
+            if (!friend && (memberEmail || memberPhone)) {
+              friend = await tx.friend.create({
+                data: { userId, name: sanitize(m.name), email: memberEmail, phone: memberPhone, syncStatus: 'synced' },
+              });
+            }
+
+            const targetUser = await findUserByEmailOrPhone(friend?.email, friend?.phone, tx);
+            const email = memberEmail || friend?.email || null;
+
+            const createdMember = await tx.groupExpenseMember.create({
               data: {
-                userId: targetUser.id,
-                sourceUserId: userId,
-                title: updNotifTitle,
-                message: updNotifMsg,
-                type: 'group_expense',
-                category: 'group_expense',
-                deepLink: '/groups',
-                priority: 'normal',
-                channels: '["app","email"]',
-                deliveryStatus: '{"app":"sent","email":"queued"}',
-                status: 'pending',
+                groupExpenseId: id,
+                userId: targetUser ? targetUser.id : null,
+                friendId: friend?.id || null,
+                name: m.name,
+                email,
+                phone: friend?.phone || memberPhone,
+                shareAmount: m.share,
+                hasPaid: m.paid,
               }
             });
 
-            try {
-              getSocketManager().notifyUser(targetUser.id, 'notification', notification);
-              getSocketManager().notifyUser(targetUser.id, 'group_expense_updated', { groupId: id });
-            } catch (err) {
-              // Ignore socket failures
+            const matchingTransition = transitions.find(t =>
+              t.member.name === m.name ||
+              (t.member.userId && t.member.userId === targetUser?.id) ||
+              (t.member.email && t.member.email.toLowerCase() === email?.toLowerCase())
+            );
+            if (matchingTransition) {
+              matchingTransition.member.newId = createdMember.id;
+            }
+
+            if (email) {
+              invitationsToSend.push({
+                email,
+                name: m.name,
+                share: m.share,
+                totalAmount: Number(updated.totalAmount),
+                groupName: updated.name
+              });
+            } else if (targetUser) {
+              const updNotifTitle = 'Group Expense Updated';
+              const updNotifMsg = `${currentUser.name} updated the split expense "${updated.name}".`;
+              const notification = await tx.notification.create({
+                data: {
+                  userId: targetUser.id,
+                  sourceUserId: userId,
+                  title: updNotifTitle,
+                  message: updNotifMsg,
+                  type: 'group_expense',
+                  category: 'group_expense',
+                  deepLink: '/groups',
+                  priority: 'normal',
+                  channels: '["app","email"]',
+                  deliveryStatus: '{"app":"sent","email":"queued"}',
+                  status: 'pending',
+                }
+              });
+
+              socketNotificationsToSend.push({
+                targetUserId: targetUser.id,
+                notification,
+                groupExpenseId: id
+              });
+            }
+          }
+        } else {
+          // Just trigger socket updates to existing participants
+          for (const m of existingMembers) {
+            if (m.userId) {
+              socketNotificationsToSend.push({
+                targetUserId: m.userId,
+                groupExpenseId: id
+              });
             }
           }
         }
-      } else {
-        // Just trigger socket updates to existing participants
-        for (const m of existingMembers) {
-          if (m.userId) {
-            try {
-              getSocketManager().notifyUser(m.userId, 'group_expense_updated', { groupId: id });
-            } catch (err) {
-              // Ignore
+
+        // Publish settlement completed events
+        if (FinancialLedgerService.isEnabled('groups')) {
+          let accountId = updated.paidBy;
+          if (!accountId) {
+            const defaultAccount = await tx.account.findFirst({
+              where: { userId, isActive: true, deletedAt: null },
+              orderBy: { createdAt: 'asc' }
+            });
+            accountId = defaultAccount?.id || null;
+          }
+
+          if (accountId) {
+            for (const t of transitions) {
+              const settlementId = t.member.newId;
+              if (!settlementId) continue;
+
+              await FinancialEventDispatcher.publish(tx, new GroupSettlementCompletedEvent(
+                updated.userId,
+                id,
+                settlementId,
+                t.targetUserId,
+                updated.userId,
+                Number(t.member.share),
+                accountId,
+                updated.category || 'Group Expense',
+                `Settlement Received - ${updated.name}`,
+                new Date(),
+                `group-settlement-${id}-${settlementId}`,
+                t.oldMemberId
+              ));
             }
           }
+        }
+
+        return updated;
+      }, { timeout: 30000 });
+
+      // Execute invitations after creator update transaction
+      for (const inv of invitationsToSend) {
+        try {
+          const detail = `Total: ₹${inv.totalAmount.toFixed(0)}, Your share: ₹${inv.share.toFixed(0)}.`;
+          await inviteParticipants({
+            moduleType: 'group_expense',
+            moduleId: id,
+            moduleName: inv.groupName,
+            creatorId: userId,
+            participants: [{ email: inv.email, name: inv.name, detail }],
+          });
+        } catch (err) {
+          logger.warn('Failed to invite group expense participant on update', err);
         }
       }
     } else {
       // Participant: can only update their own paid status
+      updatedGroup = existing;
       if (body.members) {
         const myMemberEntry = body.members.find((m: any) => m.isCurrentUser || m.userId === userId || m.email === currentUser.email);
         if (myMemberEntry) {
           const nextPaid = myMemberEntry.paid || myMemberEntry.paymentStatus === 'paid';
-          await prisma.groupExpenseMember.updateMany({
-            where: { groupExpenseId: id, userId },
-            data: {
-              hasPaid: nextPaid,
-              paidAt: nextPaid ? new Date() : null,
-            }
-          });
+          const existingMember = existingMembers.find(m => m.userId === userId);
+          const wasPaid = existingMember?.hasPaid || false;
 
-          // Notify creator
-          const settleNotifTitle = 'Split Expense Settled';
-          const settleNotifMsg = `${currentUser.name} marked their share as paid for "${existing.name}".`;
-          const notificationCreator = await prisma.notification.create({
-            data: {
-              userId: existing.userId,
-              sourceUserId: userId,
-              title: settleNotifTitle,
-              message: settleNotifMsg,
-              type: 'group_expense',
-              category: 'group_expense',
-              deepLink: '/groups',
-              priority: 'normal',
-              channels: '["app","email"]',
-              deliveryStatus: '{"app":"sent","email":"queued"}',
-              status: 'pending',
-            }
-          });
+          await prisma.$transaction(async (tx) => {
+            if (nextPaid && !wasPaid && existingMember) {
+              await tx.groupExpenseMember.updateMany({
+                where: { groupExpenseId: id, userId },
+                data: {
+                  hasPaid: true,
+                  paidAt: new Date(),
+                }
+              });
 
-          try {
-            getSocketManager().notifyUser(existing.userId, 'notification', notificationCreator);
-            getSocketManager().notifyUser(existing.userId, 'group_expense_updated', { groupId: id });
-          } catch (err) {
-            // Ignore
-          }
+              if (FinancialLedgerService.isEnabled('groups')) {
+                let accountId = existing.paidBy;
+                if (!accountId) {
+                  const defaultAccount = await tx.account.findFirst({
+                    where: { userId: existing.userId, isActive: true, deletedAt: null },
+                    orderBy: { createdAt: 'asc' }
+                  });
+                  accountId = defaultAccount?.id || null;
+                }
 
-          // Socket updates to other participants
-          for (const m of existingMembers) {
-            if (m.userId && m.userId !== userId) {
-              try {
-                getSocketManager().notifyUser(m.userId, 'group_expense_updated', { groupId: id });
-              } catch (err) {
-                // Ignore
+                if (accountId) {
+                  await FinancialEventDispatcher.publish(tx, new GroupSettlementCompletedEvent(
+                    existing.userId,
+                    id,
+                    existingMember.id,
+                    userId,
+                    existing.userId,
+                    Number(existingMember.shareAmount),
+                    accountId,
+                    existing.category || 'Group Expense',
+                    `Settlement Received - ${existing.name}`,
+                    new Date(),
+                    `group-settlement-${id}-${existingMember.id}`
+                  ));
+                }
               }
+
+              // Notify creator via outbox row (within tx)
+              const settleNotifTitle = 'Split Expense Settled';
+              const settleNotifMsg = `${currentUser.name} marked their share as paid for "${existing.name}".`;
+              const notificationCreator = await tx.notification.create({
+                data: {
+                  userId: existing.userId,
+                  sourceUserId: userId,
+                  title: settleNotifTitle,
+                  message: settleNotifMsg,
+                  type: 'group_expense',
+                  category: 'group_expense',
+                  deepLink: '/groups',
+                  priority: 'normal',
+                  channels: '["app","email"]',
+                  deliveryStatus: '{"app":"sent","email":"queued"}',
+                  status: 'pending',
+                }
+              });
+
+              socketNotificationsToSend.push({
+                targetUserId: existing.userId,
+                notification: notificationCreator,
+                groupExpenseId: id
+              });
+
+              for (const m of existingMembers) {
+                if (m.userId && m.userId !== userId) {
+                  socketNotificationsToSend.push({
+                    targetUserId: m.userId,
+                    groupExpenseId: id
+                  });
+                }
+              }
+            } else {
+              // Just update the status
+              await tx.groupExpenseMember.updateMany({
+                where: { groupExpenseId: id, userId },
+                data: {
+                  hasPaid: nextPaid,
+                  paidAt: nextPaid ? new Date() : null,
+                }
+              });
             }
-          }
+          }, { timeout: 30000 });
         }
       }
     }
 
-    const data = await buildGroupResponse(existing, userId);
+    // Execute socket updates after transaction block
+    for (const item of socketNotificationsToSend) {
+      try {
+        const socketManager = getSocketManager();
+        if (item.notification) {
+          socketManager.notifyUser(item.targetUserId, 'notification', item.notification);
+        }
+        socketManager.notifyUser(item.targetUserId, 'group_expense_updated', { groupId: item.groupExpenseId });
+      } catch (err) {
+        // Ignore
+      }
+    }
+
+    const data = await buildGroupResponse(updatedGroup, userId);
     res.json({ success: true, data });
   } catch (error) {
     logger.error('Failed to update group', { error });
@@ -808,3 +993,125 @@ export const deleteGroup = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ success: false, error: 'Failed to delete group' });
   }
 };
+
+export const getGroupAnalytics = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = getUserId(req);
+
+    // Get all groups created by the user
+    const groups = await prisma.groupExpense.findMany({
+      where: { userId, deletedAt: null }
+    });
+
+    const groupIds = groups.map(g => g.id);
+
+    // Get all members for these groups
+    const members = await prisma.groupExpenseMember.findMany({
+      where: { groupExpenseId: { in: groupIds }, deletedAt: null }
+    });
+
+    // Calculations
+    let totalGroupExpenses = 0;
+    let netGroupSpending = 0;
+    for (const g of groups) {
+      totalGroupExpenses += Number(g.totalAmount);
+      netGroupSpending += Number(g.yourShare || 0);
+    }
+
+    let totalRecoveredAmount = 0;
+    let pendingCollection = 0;
+    let totalPaidCount = 0;
+    let totalMembersCount = 0;
+    let totalSettlementDays = 0;
+    let overdueSettlements = 0;
+
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+    const friendStatsMap = new Map<string, { recovered: number; pending: number }>();
+    const categoryStatsMap = new Map<string, number>();
+
+    for (const m of members) {
+      const share = Number(m.shareAmount);
+      totalMembersCount++;
+
+      const friendKey = m.name || 'Unknown';
+      if (!friendStatsMap.has(friendKey)) {
+        friendStatsMap.set(friendKey, { recovered: 0, pending: 0 });
+      }
+      const friendStat = friendStatsMap.get(friendKey)!;
+
+      if (m.hasPaid) {
+        totalRecoveredAmount += share;
+        totalPaidCount++;
+        friendStat.recovered += share;
+
+        const groupExp = groups.find(g => g.id === m.groupExpenseId);
+        if (groupExp && m.paidAt) {
+          const createTime = new Date(groupExp.createdAt).getTime();
+          const payTime = new Date(m.paidAt).getTime();
+          const diffDays = Math.max(0, (payTime - createTime) / (1000 * 60 * 60 * 24));
+          totalSettlementDays += diffDays;
+        }
+      } else {
+        pendingCollection += share;
+        friendStat.pending += share;
+
+        const groupExp = groups.find(g => g.id === m.groupExpenseId);
+        if (groupExp && new Date(groupExp.createdAt) < oneWeekAgo) {
+          overdueSettlements++;
+        }
+      }
+    }
+
+    for (const g of groups) {
+      const cat = g.category || 'Group Expense';
+      const amt = Number(g.totalAmount);
+      categoryStatsMap.set(cat, (categoryStatsMap.get(cat) || 0) + amt);
+    }
+
+    const recoveryRate = (totalRecoveredAmount + pendingCollection) > 0
+      ? (totalRecoveredAmount / (totalRecoveredAmount + pendingCollection)) * 100
+      : 0;
+
+    const avgSettlementTimeDays = totalPaidCount > 0
+      ? totalSettlementDays / totalPaidCount
+      : 0;
+
+    const collectionEfficiency = totalMembersCount > 0
+      ? (totalPaidCount / totalMembersCount) * 100
+      : 0;
+
+    const topFriends = Array.from(friendStatsMap.entries()).map(([name, stats]) => ({
+      name,
+      recovered: stats.recovered,
+      pending: stats.pending,
+      total: stats.recovered + stats.pending
+    })).sort((a, b) => b.recovered - a.recovered).slice(0, 5);
+
+    const categoryBreakdown = Array.from(categoryStatsMap.entries()).map(([category, amount]) => ({
+      category,
+      amount
+    })).sort((a, b) => b.amount - a.amount);
+
+    res.json({
+      success: true,
+      data: {
+        totalGroupExpenses,
+        totalRecoveredAmount,
+        pendingCollection,
+        netGroupSpending,
+        recoveryRate,
+        avgSettlementTimeDays,
+        collectionEfficiency,
+        overdueSettlements,
+        topFriends,
+        categoryBreakdown
+      }
+    });
+  } catch (error) {
+    logger.error('Failed to fetch group analytics', { error });
+    res.status(500).json({ success: false, error: 'Failed to fetch group analytics' });
+  }
+};
+

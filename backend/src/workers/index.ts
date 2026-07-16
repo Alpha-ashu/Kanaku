@@ -107,10 +107,11 @@ export interface DeliveryJob {
   deviceId?: string;
   fcmToken?: string;
   priority?: string;
+  metadata?: unknown;
 }
 
 export async function processEmail(job: { data: DeliveryJob }): Promise<unknown> {
-  const { notificationId, userId, title, message, category, deepLink } = job.data;
+  const { notificationId, userId, title, message, category, deepLink, metadata } = job.data;
 
   if (await isAlreadySent(notificationId, 'email')) {
     return { skipped: true, reason: 'already_sent' };
@@ -124,10 +125,14 @@ export async function processEmail(job: { data: DeliveryJob }): Promise<unknown>
     return { skipped: true, reason: 'no_email' };
   }
 
+  const meta = parseJson<any>(metadata, {});
+  const emailTitle = meta?.emailTitle ?? title;
+  const emailMessage = meta?.emailBody ?? message;
+
   const sent = await sendNotificationEmail({
     to: user.email,
-    title,
-    message,
+    title: emailTitle,
+    message: emailMessage,
     category,
     deepLink,
     headers: { 'X-Notification-ID': notificationId },
@@ -139,7 +144,7 @@ export async function processEmail(job: { data: DeliveryJob }): Promise<unknown>
 }
 
 export async function processPush(job: { data: DeliveryJob }): Promise<unknown> {
-  const { notificationId, userId, deviceId, fcmToken, title, message, category, deepLink, priority } =
+  const { notificationId, userId, deviceId, fcmToken, title, message, category, deepLink, priority, metadata } =
     job.data;
 
   if (await isAlreadySent(notificationId, 'push')) {
@@ -159,9 +164,13 @@ export async function processPush(job: { data: DeliveryJob }): Promise<unknown> 
   }
 
   try {
+    const meta = parseJson<any>(metadata, {});
+    const pushTitle = meta?.pushTitle ?? title;
+    const pushBody = meta?.pushBody ?? message;
+
     const messageId = await sendPushNotification(fcmToken, {
-      title,
-      body: message,
+      title: pushTitle,
+      body: pushBody,
       data: {
         notificationId,
         category: category || '',
@@ -198,6 +207,7 @@ interface OutboxRow {
   deliveryStatus: unknown;
   attempts: number;
   requestId: string | null;
+  metadata: unknown;
 }
 
 const isTerminal = (s: string | undefined) => s === 'sent' || s === 'failed';
@@ -212,6 +222,7 @@ async function buildJob(row: OutboxRow, channel: Channel): Promise<DeliveryJob> 
     category: row.category ?? undefined,
     deepLink: row.deepLink ?? undefined,
     priority: row.priority ?? undefined,
+    metadata: row.metadata ?? undefined,
   };
   if (channel === 'push') {
     const device = await prisma.device.findFirst({
@@ -334,7 +345,7 @@ export async function drainNotificationOutbox(): Promise<number> {
       select: {
         id: true, userId: true, title: true, message: true, category: true,
         deepLink: true, priority: true, channels: true, deliveryStatus: true, attempts: true,
-        requestId: true,
+        requestId: true, metadata: true,
       },
     })) as OutboxRow[];
 

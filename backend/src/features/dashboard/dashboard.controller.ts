@@ -28,7 +28,7 @@ export const getDashboardSummary = async (req: AuthRequest, res: Response, next:
     const startOfMonth = new Date(year, month, 1);
     const endOfMonth = new Date(year, month + 1, 0, 23, 59, 59, 999);
 
-    const [monthlyTotals, categoryBreakdown, accounts, recentTransactions] = await Promise.all([
+    const [monthlyTotals, categoryBreakdown, accounts, recentTransactions, ledgerMetrics] = await Promise.all([
       // 1. Monthly income vs expense totals
       prismaRead.$queryRaw<{ type: string; _sum: number }[]>`
         SELECT t.type, COALESCE(SUM(t.amount), 0) as "_sum"
@@ -41,6 +41,8 @@ export const getDashboardSummary = async (req: AuthRequest, res: Response, next:
           AND t.date >= ${startOfMonth}
           AND t.date <= ${endOfMonth}
           AND t.type IN ('income', 'expense')
+          AND t.status = 'POSTED'
+          AND t.category != 'Personal Share Offset'
         GROUP BY t.type
       `,
 
@@ -56,6 +58,8 @@ export const getDashboardSummary = async (req: AuthRequest, res: Response, next:
           AND a."deletedAt" IS NULL
           AND a."isActive" = true
           AND t.type = 'expense'
+          AND t.status = 'POSTED'
+          AND t.category != 'Personal Share Offset'
           AND t.date >= ${startOfMonth}
           AND t.date <= ${endOfMonth}
         GROUP BY t.category
@@ -72,7 +76,12 @@ export const getDashboardSummary = async (req: AuthRequest, res: Response, next:
 
       // 4. Last 5 transactions (live accounts only — consistent with totals above)
       prismaRead.transaction.findMany({
-        where: { userId, deletedAt: null, account: { isActive: true, deletedAt: null } },
+        where: { 
+          userId, 
+          deletedAt: null, 
+          category: { not: 'Personal Share Offset' },
+          account: { isActive: true, deletedAt: null } 
+        },
         orderBy: { date: 'desc' },
         take: 5,
         select: {
@@ -81,17 +90,41 @@ export const getDashboardSummary = async (req: AuthRequest, res: Response, next:
           account: { select: { name: true } },
         },
       }),
+
+      // 5. Ledger metrics
+      prismaRead.$queryRaw<{ gross_expense: number; recovered: number; pending_receivable: number }[]>`
+        SELECT 
+          COALESCE(SUM(CASE WHEN t.type = 'expense' AND t.status = 'POSTED' THEN t.amount ELSE 0 END), 0)::float as gross_expense,
+          COALESCE(SUM(CASE WHEN t.type = 'income' AND t.status = 'POSTED' AND t."referenceType" = 'GROUP_SETTLEMENT' THEN t.amount ELSE 0 END), 0)::float as recovered,
+          COALESCE(SUM(CASE WHEN t.type = 'income' AND t.status = 'PENDING' THEN t.amount ELSE 0 END), 0)::float as pending_receivable
+        FROM "Transaction" t
+        JOIN "Account" a ON a.id = t."accountId"
+        WHERE t."userId" = ${userId}
+          AND t."deletedAt" IS NULL
+          AND a."deletedAt" IS NULL
+          AND a."isActive" = true
+          AND t.date >= ${startOfMonth}
+          AND t.date <= ${endOfMonth}
+      `
     ]);
 
     const income = monthlyTotals.find((r) => r.type === 'income')?._sum ?? 0;
     const expense = monthlyTotals.find((r) => r.type === 'expense')?._sum ?? 0;
     const totalBalance = accounts.reduce((sum, a) => sum + Number(a.balance), 0);
 
+    const metrics = ledgerMetrics[0] || { gross_expense: 0, recovered: 0, pending_receivable: 0 };
+
     const responseData = {
       success: true,
       data: {
         period: { year, month: month + 1 },
         monthlySpending: { income: Number(income), expense: Number(expense), net: Number(income) - Number(expense) },
+        ledgerMetrics: {
+          grossExpense: Number(metrics.gross_expense),
+          recoveredAmount: Number(metrics.recovered),
+          netExpense: Number(metrics.gross_expense) - Number(metrics.recovered),
+          moneyToReceive: Number(metrics.pending_receivable)
+        },
         categoryBreakdown: categoryBreakdown.map((c) => ({
           category: c.category,
           total: Number(c.total),

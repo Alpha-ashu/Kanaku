@@ -10,6 +10,7 @@ const router = Router();
 router.use(authMiddleware);
 
 router.get('/', GroupController.getGroups);
+router.get('/analytics', GroupController.getGroupAnalytics);
 // User-scoped: repairs only the caller's own groups (where: { userId }), so any
 // authenticated user may run it. (Was wrongly gated to admin/manager -> 403 for users.)
 router.post('/repair-all-members', GroupController.repairAllGroupMembers);

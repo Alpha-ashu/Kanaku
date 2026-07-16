@@ -159,7 +159,15 @@ function buildClient(datasourceUrl?: string, opts?: { audit?: boolean }): Prisma
 
           let before: unknown;
           if ((operation === 'update' || operation === 'delete' || operation === 'upsert') && args?.where) {
-            try { before = await (timed as any)[lcFirst(model)].findFirst({ where: args.where }); } catch { /* ignore */ }
+            const cleanWhere = { ...args.where };
+            for (const key of Object.keys(cleanWhere)) {
+              if (key.includes('_') && cleanWhere[key] && typeof cleanWhere[key] === 'object') {
+                const val = cleanWhere[key];
+                delete cleanWhere[key];
+                Object.assign(cleanWhere, val);
+              }
+            }
+            try { before = await (timed as any)[lcFirst(model)].findFirst({ where: cleanWhere }); } catch { /* ignore */ }
           }
 
           const result = await query(args);
