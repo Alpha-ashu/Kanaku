@@ -19,6 +19,10 @@ export function requestContext(req: Request, _res: Response, next: NextFunction)
   storage.run({ req }, () => next());
 }
 
+export function getRequestObject(): any {
+  return storage.getStore()?.req;
+}
+
 export function getRequestActor(): { userId?: string; ip?: string; userAgent?: string; requestId?: string } {
   const req = storage.getStore()?.req as any;
   if (!req) return {};

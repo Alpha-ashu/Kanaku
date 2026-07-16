@@ -68,7 +68,7 @@ export const removeObject = async (filePath: string) => {
     if (fs.existsSync(fullPath)) {
       try {
         fs.unlinkSync(fullPath);
-      } catch (unlinkErr) {
+      } catch {
         // ignore
       }
     }

@@ -13,9 +13,14 @@ import { asString } from '../../utils/requestParams';
 export const getDashboardSummary = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const userId = getUserId(req);
-    // Coerce to a real string (defeats array/object parameter tampering) — empty
-    // string is falsy, so an absent or tampered `month` falls back to the current month.
     const monthParam = asString(req.query.month);
+
+    const cacheKey = `dashboard:${userId}:summary:${monthParam || 'current'}`;
+    const { cacheGetJson, cacheSetJson } = require('../../cache/redis');
+    const cached = process.env.NODE_ENV !== 'test' ? await cacheGetJson(cacheKey) : null;
+    if (cached) {
+      return res.json(cached);
+    }
 
     const now = new Date();
     const year = monthParam ? parseInt(monthParam.slice(0, 4), 10) : now.getFullYear();
@@ -23,15 +28,6 @@ export const getDashboardSummary = async (req: AuthRequest, res: Response, next:
     const startOfMonth = new Date(year, month, 1);
     const endOfMonth = new Date(year, month + 1, 0, 23, 59, 59, 999);
 
-    // All dashboard queries are read-only — route to replica for scale.
-    //
-    // Every transaction aggregate below is JOINed to a *live* account (active and
-    // not soft-deleted). This keeps the dashboard internally consistent: the
-    // income/expense totals, category breakdown and recent list only ever reflect
-    // accounts that also appear in the Accounts list and net-worth total — so an
-    // archived account can never produce "expense ₹X with no account". The
-    // transactions themselves are never deleted; they remain fully visible and
-    // searchable on the Transactions/history page.
     const [monthlyTotals, categoryBreakdown, accounts, recentTransactions] = await Promise.all([
       // 1. Monthly income vs expense totals
       prismaRead.$queryRaw<{ type: string; _sum: number }[]>`
@@ -91,7 +87,7 @@ export const getDashboardSummary = async (req: AuthRequest, res: Response, next:
     const expense = monthlyTotals.find((r) => r.type === 'expense')?._sum ?? 0;
     const totalBalance = accounts.reduce((sum, a) => sum + Number(a.balance), 0);
 
-    res.json({
+    const responseData = {
       success: true,
       data: {
         period: { year, month: month + 1 },
@@ -105,7 +101,12 @@ export const getDashboardSummary = async (req: AuthRequest, res: Response, next:
         totalBalance,
         recentTransactions,
       },
-    });
+    };
+
+    if (process.env.NODE_ENV !== 'test') {
+      await cacheSetJson(cacheKey, responseData, 60);
+    }
+    res.json(responseData);
   } catch (error) {
     next(error);
   }
@@ -120,6 +121,13 @@ export const getCashflow = async (req: AuthRequest, res: Response, next: NextFun
   try {
     const userId = getUserId(req);
     const monthsBack = Math.min(24, Math.max(1, parseInt(req.query.months as string || '6', 10)));
+
+    const cacheKey = `dashboard:${userId}:cashflow:${monthsBack}`;
+    const { cacheGetJson, cacheSetJson } = require('../../cache/redis');
+    const cached = process.env.NODE_ENV !== 'test' ? await cacheGetJson(cacheKey) : null;
+    if (cached) {
+      return res.json(cached);
+    }
 
     const now = new Date();
     const startDate = new Date(now.getFullYear(), now.getMonth() - monthsBack + 1, 1);
@@ -156,7 +164,11 @@ export const getCashflow = async (req: AuthRequest, res: Response, next: NextFun
       net: v.income - v.expense,
     }));
 
-    res.json({ success: true, data: cashflow });
+    const responseData = { success: true, data: cashflow };
+    if (process.env.NODE_ENV !== 'test') {
+      await cacheSetJson(cacheKey, responseData, 60);
+    }
+    res.json(responseData);
   } catch (error) {
     next(error);
   }

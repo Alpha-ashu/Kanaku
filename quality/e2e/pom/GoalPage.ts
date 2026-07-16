@@ -21,7 +21,13 @@ export class GoalPage extends BasePage {
   async clickAddGoal() {
     const btn = this.addGoalBtn.first();
     await btn.waitFor({ state: 'visible', timeout: 15000 });
-    await btn.click();
+    await this.wait(500);
+    try {
+      await btn.click({ timeout: 3000 });
+    } catch (e) {
+      await this.wait(1000);
+      await btn.click();
+    }
     
     try {
       await this.nameInput.first().waitFor({ state: 'visible', timeout: 2000 });
@@ -47,9 +53,9 @@ export class GoalPage extends BasePage {
   }
 
   async clickGoal(name: string) {
-    const card = this.page.locator('div, [data-testid*="card"]').filter({ hasText: name }).first();
-    const viewDetailsBtn = card.getByRole('button', { name: /view details/i }).first();
-    await viewDetailsBtn.click();
+    const btn = this.page.getByRole('button', { name: `View details for ${name}` }).first();
+    await btn.waitFor({ state: 'visible', timeout: 15000 });
+    await btn.click();
     await this.wait(1000);
   }
 

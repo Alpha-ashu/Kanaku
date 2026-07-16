@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { randomUUID, randomInt } from 'crypto';
-import { AuthService } from './auth.service';
+import { AuthService, getCachedUserByEmail } from './auth.service';
 import { RegisterInput, LoginInput } from './auth.types';
 import { AuthRequest, invalidateUserSnapshotCache } from '../../middleware/auth';
 import { cacheGetJson, cacheSetJson, cacheDeleteByPrefix, getRedisClient, getRedisStatus } from '../../cache/redis';
@@ -555,9 +555,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
         throw AppError.unauthorized('Invalid or expired login challenge code. Please try again.', 'CHALLENGE_INVALID');
       }
 
-      userRecord = await prisma.user.findUnique({
-        where: { email: input.email.toLowerCase().trim() },
-      });
+      userRecord = await getCachedUserByEmail(input.email);
 
       if (!userRecord) {
         throw AppError.unauthorized('Invalid credentials');

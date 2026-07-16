@@ -6,6 +6,20 @@ import { logger } from '../../config/logger';
 import { inviteParticipants } from '../collaboration/invitation.service';
 
 export class TodoService {
+  private invalidateTodoCache(userIds: string[] | Set<string> | Iterable<string>) {
+    if (process.env.NODE_ENV === 'test') return;
+    try {
+      const { cacheDeleteByPrefix } = require('../../cache/redis');
+      for (const uid of userIds) {
+        if (uid) {
+          cacheDeleteByPrefix(`todos:${uid}:`).catch(() => {});
+        }
+      }
+    } catch {
+      // Ignore
+    }
+  }
+
   // Helpers for socket notification
   private notifyParticipants(listId: number, shares: any[], owner: any[]) {
     const socketManager = getSocketManager();
@@ -14,6 +28,9 @@ export class TodoService {
     if (shares) {
       shares.forEach((s) => notifyUserIds.add(s.sharedWithUserId));
     }
+
+    // Invalidate caches
+    this.invalidateTodoCache(notifyUserIds);
 
     notifyUserIds.forEach((targetId) => {
       try {
@@ -68,6 +85,7 @@ export class TodoService {
       throw AppError.badRequest('Name is required', 'MISSING_NAME');
     }
     const lists = await todoRepository.createList(userId, data.name, data.description);
+    this.invalidateTodoCache([userId]);
     return lists[0];
   }
 
@@ -96,6 +114,11 @@ export class TodoService {
     const shares = await todoRepository.findListShares(id);
 
     await todoRepository.deleteList(id, userId);
+
+    // Invalidate caches
+    const userIds = new Set<string>([userId]);
+    shares.forEach((s) => userIds.add(s.sharedWithUserId));
+    this.invalidateTodoCache(userIds);
 
     // Notify participants
     const socketManager = getSocketManager();
@@ -256,6 +279,9 @@ export class TodoService {
 
     const shares = await todoRepository.createShare(listId, targetUser.id, userId, permission);
 
+    // Invalidate caches
+    this.invalidateTodoCache([userId, targetUser.id]);
+
     try {
       const socketManager = getSocketManager();
       socketManager.notifyUser(targetUser.id, 'todo_updated', { listId });
@@ -288,6 +314,9 @@ export class TodoService {
 
     await todoRepository.deleteShare(id);
 
+    // Invalidate caches
+    this.invalidateTodoCache([userId, share.sharedWithUserId, share.sharedBy]);
+
     // Notify B that share was removed
     try {
       const socketManager = getSocketManager();
@@ -319,6 +348,9 @@ export class TodoService {
     const shares = await todoRepository.updateShare(id, permission);
 
     const share = shares[0];
+
+    // Invalidate caches
+    this.invalidateTodoCache([userId, share.sharedWithUserId, share.sharedBy]);
 
     // Notify
     try {

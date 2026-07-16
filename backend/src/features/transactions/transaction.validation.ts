@@ -77,7 +77,7 @@ export const transactionQuerySchema = z.object({
   endDate: DateStringSchema.optional(),
   category: z.string().trim().min(1).optional(),
   page: z.coerce.number().int().min(1).optional(),
-  limit: z.coerce.number().int().min(1).max(200).optional(),
+  limit: z.coerce.number().int().min(1).max(1000).optional(),
 });
 
 export const transactionIdParamSchema = z.object({

@@ -101,12 +101,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 96650,
+                      "duration": 95257,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-15T13:05:55.387Z",
+                      "startTime": "2026-07-15T21:55:24.220Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -141,12 +141,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 150237,
+                      "duration": 156616,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-15T13:07:32.416Z",
+                      "startTime": "2026-07-15T21:57:00.347Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -170,7 +170,7 @@
         {
           "title": "Kanaku Advisor Role Scenario-Level Testing Suite",
           "file": "11-user-advisor-scenarios.spec.ts",
-          "line": 241,
+          "line": 245,
           "column": 6,
           "specs": [
             {
@@ -189,12 +189,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 143941,
+                      "duration": 139967,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-15T13:10:02.693Z",
+                      "startTime": "2026-07-15T21:59:36.997Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -210,7 +210,7 @@
               ],
               "id": "e70723a47e036255403b-94f500c2127eca4616ee",
               "file": "11-user-advisor-scenarios.spec.ts",
-              "line": 247,
+              "line": 251,
               "column": 3
             },
             {
@@ -229,12 +229,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 61775,
+                      "duration": 59566,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-15T13:12:26.666Z",
+                      "startTime": "2026-07-15T22:01:56.991Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -250,7 +250,7 @@
               ],
               "id": "e70723a47e036255403b-ffccf52b425c3cd25019",
               "file": "11-user-advisor-scenarios.spec.ts",
-              "line": 302,
+              "line": 306,
               "column": 3
             },
             {
@@ -269,12 +269,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 56295,
+                      "duration": 55379,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-15T13:13:28.476Z",
+                      "startTime": "2026-07-15T22:02:56.582Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -290,7 +290,7 @@
               ],
               "id": "e70723a47e036255403b-f73ff0c22384e479558d",
               "file": "11-user-advisor-scenarios.spec.ts",
-              "line": 351,
+              "line": 355,
               "column": 3
             }
           ]
@@ -300,8 +300,8 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-07-15T13:05:54.711Z",
-    "duration": 511441.41699999996,
+    "startTime": "2026-07-15T21:55:23.173Z",
+    "duration": 509904.047,
     "expected": 5,
     "skipped": 0,
     "unexpected": 0,

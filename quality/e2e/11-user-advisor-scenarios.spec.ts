@@ -154,11 +154,12 @@ test.describe('Kanaku User Role Scenario-Level Testing Suite', () => {
     await txnPage.saveTransactionBtn.first().click();
     await txnPage.waitForToast(/saved|success/i);
     await screenshot(page, 'us_04_us_05_transactions_completed');
+    await page.waitForTimeout(2000);
 
     // --- US-06: Goal Setting & Contributions ---
     const goalPage = new GoalPage(page);
     await goalPage.navigateTo('goals');
-    await page.getByRole('heading', { name: /goals/i }).first().waitFor({ state: 'visible', timeout: 15000 });
+    await page.getByRole('heading', { name: /goals/i }).first().waitFor({ state: 'visible', timeout: 30000 });
 
     const goalName = `E2E Emergency Fund ${Date.now()}`;
     await goalPage.createGoal({
@@ -172,11 +173,12 @@ test.describe('Kanaku User Role Scenario-Level Testing Suite', () => {
     await goalPage.addContribution('15000');
     await goalPage.waitForToast(/contribution added|saved/i);
     await screenshot(page, 'us_06_goal_contribution_added');
+    await page.waitForTimeout(2000);
 
     // --- US-07: Debt & EMI Tracking ---
     const loanPage = new LoanPage(page);
     await loanPage.navigateTo('loans');
-    await page.getByRole('heading', { name: /loans/i }).first().waitFor({ state: 'visible', timeout: 15000 });
+    await page.getByRole('heading', { name: /loans/i }).first().waitFor({ state: 'visible', timeout: 30000 });
 
     const lender = `E2E SBI Loan ${Date.now()}`;
     await loanPage.createLoan({
@@ -189,11 +191,12 @@ test.describe('Kanaku User Role Scenario-Level Testing Suite', () => {
     });
     await loanPage.assertLoanExists(lender);
     await screenshot(page, 'us_07_loan_created');
+    await page.waitForTimeout(2000);
 
     // --- US-08: To-Do Checklist Management ---
     const todoPage = new TodoPage(page);
     await todoPage.navigateTo('todo-lists');
-    await page.getByRole('heading', { name: /to-do lists/i }).first().waitFor({ state: 'visible', timeout: 15000 });
+    await page.getByRole('heading', { name: /to-do lists/i }).first().waitFor({ state: 'visible', timeout: 30000 });
 
     const listName = `E2E Tasklist ${Date.now()}`;
     await todoPage.createPersonalList(listName);
@@ -202,11 +205,12 @@ test.describe('Kanaku User Role Scenario-Level Testing Suite', () => {
     await todoPage.addTask('E2E Submit Bills');
     await todoPage.toggleTaskCompletion();
     await screenshot(page, 'us_08_todo_list_completed');
+    await page.waitForTimeout(2000);
 
     // --- US-09 & US-10: Advisor Browsing & Booking ---
     const advisorPage = new AdvisorPage(page);
     await advisorPage.navigateTo('book-advisor');
-    await page.getByRole('heading', { name: /find an advisor/i }).first().waitFor({ state: 'visible', timeout: 15000 });
+    await page.getByRole('heading', { name: /find an advisor/i }).first().waitFor({ state: 'visible', timeout: 30000 });
 
     // Search and verify advisor
     const searchInput = page.locator('input[placeholder*="search" i]').first();

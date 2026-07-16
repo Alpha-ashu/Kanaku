@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import { app } from '../../../../backend/src/app';
 
 const API = '/api/v1';
-const JWT_SECRET = 'test-secret-key-at-least-32-characters-long-for-testing';
+const JWT_SECRET = process.env.JWT_SECRET || 'test-secret-key-at-least-32-characters-long-for-testing';
 
 // Generate a valid mock user and JWT
 const userId = 'd89b14f8-1111-4444-8888-999999999999';
@@ -29,7 +29,7 @@ describe('DEBUG TRANSACTION POST', () => {
       .post(`${API}/accounts`)
       .set(getAuthHeaders())
       .send({
-        name: 'Bank of Baroda',
+        name: `Bank of Baroda - ${Math.random()}`,
         type: 'savings',
         balance: 10000,
         currency: 'INR',

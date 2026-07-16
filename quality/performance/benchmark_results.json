@@ -5,12 +5,12 @@
     "successCount": 5,
     "failureCount": 0,
     "stats": {
-      "min": 1589,
-      "max": 1701,
-      "mean": 1632,
-      "median": 1598,
-      "p95": 1701,
-      "p99": 1701
+      "min": 349,
+      "max": 1185,
+      "mean": 527,
+      "median": 366,
+      "p95": 1185,
+      "p99": 1185
     },
     "sla": 2000,
     "passed": true
@@ -21,15 +21,15 @@
     "successCount": 10,
     "failureCount": 0,
     "stats": {
-      "min": 899,
-      "max": 1707,
-      "mean": 1000.6,
-      "median": 911,
-      "p95": 1707,
-      "p99": 1707
+      "min": 3,
+      "max": 7,
+      "mean": 4.4,
+      "median": 4,
+      "p95": 7,
+      "p99": 7
     },
     "sla": 1000,
-    "passed": false
+    "passed": true
   },
   {
     "name": "cashflow",
@@ -37,12 +37,12 @@
     "successCount": 10,
     "failureCount": 0,
     "stats": {
-      "min": 661,
-      "max": 664,
-      "mean": 662.8,
-      "median": 663,
-      "p95": 664,
-      "p99": 664
+      "min": 2,
+      "max": 6,
+      "mean": 3.1,
+      "median": 3,
+      "p95": 6,
+      "p99": 6
     },
     "sla": 1000,
     "passed": true
@@ -53,12 +53,12 @@
     "successCount": 10,
     "failureCount": 0,
     "stats": {
-      "min": 1,
-      "max": 4,
-      "mean": 2.3,
-      "median": 2,
-      "p95": 4,
-      "p99": 4
+      "min": 2,
+      "max": 5,
+      "mean": 3.5,
+      "median": 4,
+      "p95": 5,
+      "p99": 5
     },
     "sla": 500,
     "passed": true
@@ -70,11 +70,11 @@
     "failureCount": 0,
     "stats": {
       "min": 2,
-      "max": 3,
-      "mean": 2.4,
-      "median": 2,
-      "p95": 3,
-      "p99": 3
+      "max": 5,
+      "mean": 3.3,
+      "median": 3,
+      "p95": 5,
+      "p99": 5
     },
     "sla": 500,
     "passed": true
@@ -85,14 +85,14 @@
     "successCount": 10,
     "failureCount": 0,
     "stats": {
-      "min": 654,
-      "max": 657,
-      "mean": 655.9,
-      "median": 656,
-      "p95": 657,
-      "p99": 657
+      "min": 2,
+      "max": 5,
+      "mean": 3.1,
+      "median": 3,
+      "p95": 5,
+      "p99": 5
     },
     "sla": 500,
-    "passed": false
+    "passed": true
   }
 ]

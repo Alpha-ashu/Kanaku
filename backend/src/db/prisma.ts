@@ -5,7 +5,7 @@ config();
 
 import { PrismaClient } from './prisma-client';
 import { logger } from '../config/logger';
-import { getRequestActor } from '../middleware/requestContext';
+import { getRequestActor, getRequestObject } from '../middleware/requestContext';
 import { redact } from '../utils/redact';
 
 // ── Audit interceptor config ────────────────────────────────────────────────
@@ -46,10 +46,34 @@ function buildClient(datasourceUrl?: string, opts?: { audit?: boolean }): Prisma
   (base as any).$on('error', (e: any) => logger.error('[Prisma]', e));
 
   // Query timeout + slow-query logging via $extends (Prisma v5+)
+  const WRITE_OPS = new Set(['create', 'update', 'delete', 'upsert', 'createMany', 'updateMany', 'deleteMany']);
   const timed = base.$extends({
     query: {
+      async $queryRaw({ query, args }) {
+        const start = Date.now();
+        const result = await query(args);
+        const duration = Date.now() - start;
+        const req = getRequestObject();
+        if (req) {
+          req.prismaDuration = (req.prismaDuration || 0) + duration;
+        }
+        return result;
+      },
+      async $executeRaw({ query, args }) {
+        const start = Date.now();
+        const result = await query(args);
+        const duration = Date.now() - start;
+        const req = getRequestObject();
+        if (req) {
+          req.prismaDuration = (req.prismaDuration || 0) + duration;
+        }
+        return result;
+      },
       $allModels: {
-        async $allOperations({ args, query }: { args: any; query: (args: any) => Promise<any> }) {
+        async $allOperations(
+          { model, operation, args, query }:
+          { model?: string; operation: string; args: any; query: (args: any) => Promise<any> },
+        ) {
           const start = Date.now();
           const timeoutPromise = new Promise<never>((_, reject) =>
             setTimeout(
@@ -59,9 +83,39 @@ function buildClient(datasourceUrl?: string, opts?: { audit?: boolean }): Prisma
           );
           const result = await Promise.race([query(args), timeoutPromise]);
           const duration = Date.now() - start;
+          const req = getRequestObject();
+          if (req) {
+            req.prismaDuration = (req.prismaDuration || 0) + duration;
+          }
           if (duration > SLOW_QUERY_MS) {
             logger.warn(`[Prisma] Slow query (${duration}ms)`);
           }
+
+          // Cache invalidation on writes (bypassed in test environment to avoid Jest teardown require failures)
+          if (process.env.NODE_ENV !== 'test' && WRITE_OPS.has(operation)) {
+            const actor = getRequestActor();
+            const userId = actor?.userId || args?.data?.userId || args?.where?.userId || args?.data?.id || args?.where?.id;
+            if (userId && typeof userId === 'string') {
+              try {
+                const { cacheDeleteByPrefix } = require('../cache/redis');
+                const { invalidateUserSnapshotCache } = require('../middleware/auth');
+                cacheDeleteByPrefix(`dashboard:${userId}:`);
+                cacheDeleteByPrefix(`todos:${userId}:`);
+                invalidateUserSnapshotCache(userId);
+              } catch (cacheErr) {
+                // Ignore cache invalidation errors
+              }
+            }
+            if (model === 'User') {
+              try {
+                const { cacheDeleteByPrefix } = require('../cache/redis');
+                cacheDeleteByPrefix('user:');
+              } catch (cacheErr) {
+                // Ignore cache invalidation errors
+              }
+            }
+          }
+
           return result;
         },
       },

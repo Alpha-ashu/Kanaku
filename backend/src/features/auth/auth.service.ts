@@ -14,6 +14,17 @@ import {
   DEFAULT_CATEGORIES,
 } from './registration.defaults';
 
+// NOTE: auth.service intentionally does NOT cache user records.
+// Authentication lookups (login, password reset, OTP) must always read fresh
+// data to prevent stale password hashes, locked accounts, or deleted users
+// from being served during a TTL window. See: Phase 7 security review.
+
+/** Always fetches fresh from DB. Auth lookups must never be cached. */
+export const getCachedUserByEmail = async (email: string) => {
+  const normalized = email.toLowerCase().trim();
+  return prisma.user.findUnique({ where: { email: normalized } });
+};
+
 export class AuthService {
   async register(input: RegisterInput & {
     firstName?: string;
@@ -330,9 +341,7 @@ export class AuthService {
   }
 
   async login(input: LoginInput): Promise<AuthTokens> {
-    const user = await prisma.user.findUnique({
-      where: { email: input.email },
-    });
+    const user = await getCachedUserByEmail(input.email);
 
     if (!user) {
       throw new Error('Invalid credentials');
@@ -382,9 +391,7 @@ export class AuthService {
    * over the (HTTPS-encrypted) wire — bcrypt is the security gate.
    */
   async verifyPasswordOnly(email: string, passwordStr: string): Promise<{ valid: boolean; status: string | null }> {
-    const user = await prisma.user.findUnique({
-      where: { email },
-    });
+    const user = await getCachedUserByEmail(email);
 
     if (!user) {
       // User doesn't exist in local DB — check if they exist in Supabase

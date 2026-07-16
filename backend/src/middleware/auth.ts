@@ -229,7 +229,15 @@ const idleSessionRejected = async (
   return true;
 };
 
+const stampAuthTime = (req: any, startTime: bigint) => {
+  if (req && req.startTime) {
+    req.authDuration = Number(process.hrtime.bigint() - startTime) / 1_000_000;
+    req.controllerStart = process.hrtime.bigint();
+  }
+};
+
 export const authMiddleware = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  const authStart = process.hrtime.bigint();
   try {
     const authHeader = req.headers.authorization || '';
     const token = authHeader.replace(/^Bearer\s+/i, '').trim();
@@ -296,6 +304,7 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
           return;
         }
 
+        stampAuthTime(req, authStart);
         return next();
       } catch (err) {
         // Fall back to Supabase
@@ -335,6 +344,7 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
           if (await idleSessionRejected(req, res, userId, typeof supabaseDecoded.iat === 'number' ? supabaseDecoded.iat : undefined)) {
             return;
           }
+          stampAuthTime(req, authStart);
           return next();
         }
       } catch (err) {
@@ -376,6 +386,7 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
           if (await idleSessionRejected(req, res, user.id, apiIat)) {
             return;
           }
+          stampAuthTime(req, authStart);
           return next();
         } else if (error) {
           logger.warn(`Supabase Auth rejection: ${error.message}`);
@@ -403,6 +414,7 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
             name: unverified?.user_metadata?.full_name,
           };
           await ensureUserInDb(userId, req.user);
+          stampAuthTime(req, authStart);
           return next();
         }
       } catch {

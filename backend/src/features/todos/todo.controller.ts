@@ -6,7 +6,17 @@ import { todoService } from './todo.service';
 export const getTodos = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const userId = getUserId(req);
+    const cacheKey = `todos:${userId}:list`;
+    const { cacheGetJson, cacheSetJson } = require('../../cache/redis');
+    const cached = process.env.NODE_ENV !== 'test' ? await cacheGetJson(cacheKey) : null;
+    if (cached) {
+      return res.json({ success: true, data: cached });
+    }
+
     const todos = await todoService.getTodos(userId);
+    if (process.env.NODE_ENV !== 'test') {
+      await cacheSetJson(cacheKey, todos, 60);
+    }
     res.json({ success: true, data: todos });
   } catch (error) {
     next(error);
@@ -49,7 +59,17 @@ export const deleteTodo = async (req: AuthRequest, res: Response, next: NextFunc
 export const getTodoLists = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const userId = getUserId(req);
+    const cacheKey = `todos:${userId}:lists`;
+    const { cacheGetJson, cacheSetJson } = require('../../cache/redis');
+    const cached = process.env.NODE_ENV !== 'test' ? await cacheGetJson(cacheKey) : null;
+    if (cached) {
+      return res.json({ success: true, data: cached });
+    }
+
     const lists = await todoService.getTodoLists(userId);
+    if (process.env.NODE_ENV !== 'test') {
+      await cacheSetJson(cacheKey, lists, 60);
+    }
     res.json({ success: true, data: lists });
   } catch (error) {
     next(error);
@@ -90,8 +110,19 @@ export const deleteTodoList = async (req: AuthRequest, res: Response, next: Next
 
 export const getTodoItems = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
+    const userId = getUserId(req);
     const { listId } = req.params;
+    const cacheKey = `todos:${userId}:list:${listId}:items`;
+    const { cacheGetJson, cacheSetJson } = require('../../cache/redis');
+    const cached = process.env.NODE_ENV !== 'test' ? await cacheGetJson(cacheKey) : null;
+    if (cached) {
+      return res.json({ success: true, data: cached });
+    }
+
     const items = await todoService.getTodoItems(parseInt(listId));
+    if (process.env.NODE_ENV !== 'test') {
+      await cacheSetJson(cacheKey, items, 60);
+    }
     res.json({ success: true, data: items });
   } catch (error) {
     next(error);
@@ -101,7 +132,17 @@ export const getTodoItems = async (req: AuthRequest, res: Response, next: NextFu
 export const getAllTodoItems = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const userId = getUserId(req);
+    const cacheKey = `todos:${userId}:items`;
+    const { cacheGetJson, cacheSetJson } = require('../../cache/redis');
+    const cached = process.env.NODE_ENV !== 'test' ? await cacheGetJson(cacheKey) : null;
+    if (cached) {
+      return res.json({ success: true, data: cached });
+    }
+
     const items = await todoService.getAllTodoItems(userId);
+    if (process.env.NODE_ENV !== 'test') {
+      await cacheSetJson(cacheKey, items, 60);
+    }
     res.json({ success: true, data: items });
   } catch (error) {
     next(error);

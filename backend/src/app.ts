@@ -14,6 +14,7 @@ import { prisma } from './db/prisma';
 import { requestTimeout } from './middleware/timeout';
 import { authMiddleware, type AuthRequest } from './middleware/auth';
 import { requestContext } from './middleware/requestContext';
+import { performanceTracker } from './middleware/performanceTracker';
 import { requireRole } from './middleware/rbac';
 import { adminPlatformGate } from './middleware/adminPlatformGate';
 import { metricsMiddleware, getMetricsSnapshot } from './middleware/metrics';
@@ -42,6 +43,7 @@ app.use((req, res, next) => {
 // Per-request context (AsyncLocalStorage) — lets the Prisma audit interceptor
 // attribute every financial mutation to the acting user/IP/User-Agent.
 app.use(requestContext);
+app.use(performanceTracker);
 
 // Hard request timeout — prevents a stuck DB query / hung upstream call
 // from holding a worker indefinitely. Configurable via REQUEST_TIMEOUT_MS.

@@ -461,10 +461,17 @@ export async function skipOnboardingIfPresent(page: Page) {
 
   await page.waitForTimeout(500);
 }
-
 /** Click a nav item by label text — finds sidebar data-nav-id items and bottom nav buttons */
 export async function clickNav(page: Page, label: string): Promise<boolean> {
   const re = new RegExp(label, 'i');
+
+  // Priority 0: Exact or partial test-id for sidebar item
+  const byTestId = page.locator(`[data-testid="nav-${label}-button" i], [data-testid="nav-${label}-link" i], [data-testid*="nav-${label}" i]`).first();
+  if (await isElementVisible(byTestId, 1000)) {
+    await byTestId.click();
+    await page.waitForTimeout(800);
+    return true;
+  }
 
   // Priority 1: sidebar items tagged with data-nav-id or aria-label (motion.div, not button)
   const sidebarById = page.locator(`[data-nav-id*="${label}" i]`).first();
