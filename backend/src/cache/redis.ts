@@ -16,6 +16,12 @@
  */
 import { logger } from '../config/logger';
 import type { RedisLike } from '../config/redis-connections';
+import {
+  cacheHitsTotal,
+  cacheMissesTotal,
+  cacheEvictionsTotal,
+  cacheInvalidationTotal,
+} from '../config/metrics';
 
 type RedisStatus = 'disabled' | 'connected' | 'connecting' | 'error';
 
@@ -110,6 +116,7 @@ const evictIfNeeded = () => {
     const oldest = store.keys().next().value;
     if (oldest === undefined) break;
     store.delete(oldest);
+    cacheEvictionsTotal.labels({ prefix: 'capacity' }).inc();
   }
 };
 
@@ -132,13 +139,20 @@ export const closeRedis = async (): Promise<void> => {
 };
 
 export const cacheGetJson = async <T>(key: string): Promise<T | null> => {
+  const prefix = key.split(':')[0] ?? key;
   const entry = store.get(key);
-  if (!entry) return null;
+  if (!entry) {
+    cacheMissesTotal.labels({ prefix }).inc();
+    return null;
+  }
   if (entry.expiresAt <= Date.now()) {
     store.delete(key);
+    cacheEvictionsTotal.labels({ prefix }).inc();
+    cacheMissesTotal.labels({ prefix }).inc();
     return null;
   }
   try {
+    cacheHitsTotal.labels({ prefix }).inc();
     return JSON.parse(entry.value) as T;
   } catch {
     return null;
@@ -158,16 +172,22 @@ export const cacheSetJson = async (key: string, value: unknown, ttlSeconds: numb
 };
 
 export const cacheDeleteByPrefix = async (prefix: string): Promise<void> => {
+  let count = 0;
   for (const key of store.keys()) {
-    if (key.startsWith(prefix)) store.delete(key);
+    if (key.startsWith(prefix)) { store.delete(key); count++; }
   }
+  if (count > 0) cacheInvalidationTotal.inc();
 };
 
 export const cacheDeleteByUserId = async (userId: string): Promise<void> => {
+  let count = 0;
   for (const key of store.keys()) {
     const parts = key.split(':');
-    if (parts.includes(userId)) {
-      store.delete(key);
-    }
+    if (parts.includes(userId)) { store.delete(key); count++; }
   }
+  if (count > 0) cacheInvalidationTotal.inc();
 };
+
+/** Increment the Prometheus cache invalidation counter directly (for callers
+ *  that perform their own eviction logic outside this module). */
+export const cacheInvalidationCount = (): void => cacheInvalidationTotal.inc();

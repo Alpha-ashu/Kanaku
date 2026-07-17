@@ -71,8 +71,13 @@ type Meta = unknown;
 
 const buildFields = (meta: Meta): Record<string, unknown> => {
   const fields: Record<string, unknown> = {};
-  const requestId = getRequestActor().requestId;
-  if (requestId) fields.requestId = requestId;
+  const actor = getRequestActor();
+  if (actor.requestId) fields.requestId = actor.requestId;
+  if (actor.correlationId) fields.correlationId = actor.correlationId;
+  if (actor.sessionId) fields.sessionId = actor.sessionId;
+  if (actor.userId) fields.userId = actor.userId;
+  if (actor.route) fields.route = actor.route;
+  if (actor.method) fields.method = actor.method;
 
   if (meta instanceof Error) {
     fields.err = { name: meta.name, message: meta.message, stack: meta.stack };

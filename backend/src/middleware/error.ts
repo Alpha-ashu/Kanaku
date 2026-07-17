@@ -3,6 +3,7 @@ import { logger } from '../config/logger';
 import { AppError, fromPrismaError, isDatabaseConnectivityError } from '../utils/AppError';
 import { errorsTotal } from '../config/metrics';
 import { serviceName } from '../config/serviceRole';
+import { ErrorTracker } from '../utils/errorTracker';
 
 // Re-export AppError so existing imports from this path still work
 export { AppError };
@@ -69,6 +70,12 @@ export const errorHandler = (
 
   if (appError.statusCode >= 500) {
     logger.error('Server error', logPayload);
+    // Forward to Sentry (no-op if SENTRY_DSN is not configured or @sentry/node absent)
+    ErrorTracker.captureException(err, {
+      operation: 'http_request',
+      route: req.path,
+      userId: (req as any).userId ?? undefined,
+    });
   } else {
     logger.warn('Client error', logPayload);
   }

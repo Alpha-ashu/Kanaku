@@ -6,6 +6,12 @@ import { roundMoney, neg } from '../utils/money';
 import { eventBus } from '../utils/eventBus';
 import { transactionRepository } from '../features/transactions/transaction.repository';
 import { Prisma } from '../db/prisma-client';
+import {
+  recurringExecutionTotal,
+  recurringJobsRunning,
+  recurringJobsFailedTotal,
+  databaseTransactionDuration,
+} from '../config/metrics';
 
 let recurringJob: ScheduledTask | null = null;
 
@@ -161,7 +167,13 @@ export const processDueRecurringTransactions = async (): Promise<void> => {
                 },
               });
 
-              logger.info(`[recurring-worker] Automatically posted transaction ${createdTx.id} for user ${item.userId}`);
+              logger.info('[recurring-worker] Automatically posted transaction', {
+                transactionId: createdTx.id,
+                userId: item.userId,
+                recurringRuleId: item.id,
+                dueDate: currentDueDate.toISOString(),
+              });
+              recurringExecutionTotal.labels({ status: 'success' }).inc();
             });
           } else {
             // Dispatch a reminder notification for non-auto-processed items
@@ -179,9 +191,13 @@ export const processDueRecurringTransactions = async (): Promise<void> => {
             logger.info(`[recurring-worker] Dispatched due reminder for recurring item ${item.id}`);
           }
         } catch (err) {
-          logger.error(`[recurring-worker] Failed to process recurring transaction item ${item.id} for date ${currentDueDate.toISOString()}`, {
+          logger.error('[recurring-worker] Failed to process recurring transaction item', {
+            recurringRuleId: item.id,
+            dueDate: currentDueDate.toISOString(),
             error: err instanceof Error ? err.message : String(err),
           });
+          recurringExecutionTotal.labels({ status: 'failed' }).inc();
+          recurringJobsFailedTotal.inc();
           break; // Stop catching up this specific item on failure to prevent stuck state
         }
 

@@ -3,7 +3,16 @@ import { PrismaTx, FinancialEventDispatcher, LedgerPostedEvent, LedgerSettledEve
 import { AppError } from '../../utils/AppError';
 import { LedgerStatus, LedgerReferenceType, SourceModule, LedgerDirection, FinancialEventType } from '../../db/prisma-client';
 import { randomUUID } from 'crypto';
-import { cacheDeleteByUserId } from '../../cache/redis';
+import { cacheDeleteByUserId, cacheInvalidationCount } from '../../cache/redis';
+import { logger } from '../../config/logger';
+import {
+  ledgerPostTotal,
+  ledgerPostFailedTotal,
+  journalBalanceErrorsTotal,
+  groupSettlementTotal,
+  databaseTransactionDuration,
+} from '../../config/metrics';
+import { getRequestActor } from '../../middleware/requestContext';
 
 export interface LedgerLeg {
   accountId: string;
@@ -87,8 +96,11 @@ export class FinancialLedgerService {
     journal: JournalParams,
     legs: LedgerLeg[]
   ) {
+    const opStart = Date.now();
+    const actor = getRequestActor();
     // 1. Validation Rules
     if (legs.length === 0) {
+      ledgerPostFailedTotal.labels({ reason: 'LEDGER_IMBALANCED' }).inc();
       throw new LedgerError('LEDGER_IMBALANCED', 'Journal must have at least one transaction leg.');
     }
 
@@ -141,6 +153,8 @@ export class FinancialLedgerService {
     // If double-entry is active (e.g. transfer between two accounts), assert they balance
     const isDoubleEntry = legs.length > 1;
     if (isDoubleEntry && !debitSum.equals(creditSum)) {
+      journalBalanceErrorsTotal.inc();
+      ledgerPostFailedTotal.labels({ reason: 'LEDGER_IMBALANCED' }).inc();
       throw new LedgerError('LEDGER_IMBALANCED', `Double-entry journal must balance. Inflows (${debitSum}) !== Outflows (${creditSum}).`);
     }
 
@@ -157,7 +171,12 @@ export class FinancialLedgerService {
       });
 
       if (existingTx && existingTx.journalEntry) {
-        console.log(`[Ledger] Idempotency hit: Returning existing JournalEntry ${existingTx.journalEntryId}`);
+        logger.info('[Ledger] Idempotency hit — returning existing journal entry', {
+          journalEntryId: existingTx.journalEntryId,
+          userId: journal.userId,
+          idempotencyKey,
+          correlationId: actor.correlationId,
+        });
         return existingTx.journalEntry;
       }
     }
@@ -244,8 +263,30 @@ export class FinancialLedgerService {
       }
     }
 
-    // Increment Metrics & Defer post-commit events
+    // Increment Prometheus Metrics & Defer post-commit events
+    ledgerPostTotal.inc();
     FinancialMetrics.increment('ledger_posted_total');
+
+    // Structured audit trail for this journal posting
+    const opDurationMs = Date.now() - opStart;
+    databaseTransactionDuration.observe({ operation: 'postJournalEntry' }, opDurationMs / 1000);
+    logger.info('[Ledger] Journal entry posted', {
+      module: 'Ledger',
+      operation: 'PostJournalEntry',
+      journalId: journalEntry.id,
+      userId: journal.userId,
+      sourceModule: journal.sourceModule,
+      referenceType: journal.referenceType,
+      referenceId: journal.referenceId,
+      transactionIds: createdTransactions.map(t => t.id),
+      legCount: legs.length,
+      isDoubleEntry,
+      isTransfer,
+      durationMs: opDurationMs,
+      correlationId: actor.correlationId,
+      requestId: actor.requestId ?? journal.requestId,
+      result: 'SUCCESS',
+    });
 
     if (isTransfer) {
       FinancialMetrics.increment('transfer_completed_total');
@@ -362,6 +403,7 @@ export class FinancialLedgerService {
     });
 
     FinancialMetrics.increment('ledger_settled_total');
+    groupSettlementTotal.inc();
 
     // 3. Increment Cash Account balance by settledAmount
     const currentAccount = await tx.account.findUnique({ where: { id: accountId } });

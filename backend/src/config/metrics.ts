@@ -9,6 +9,9 @@
  *
  * On Render the API and worker run in ONE combined process (server.ts), so all
  * metrics originate from the same process and share the same registry.
+ *
+ * Phase 9.5 — Observability:
+ * Added financial ledger, cache, database, worker, and notification metrics.
  */
 import client from 'prom-client';
 import { serviceName } from './serviceRole';
@@ -30,6 +33,46 @@ export const httpRequestDuration = new client.Histogram({
   help: 'HTTP request latency in seconds',
   labelNames: ['method', 'route'] as const,
   buckets: [0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2, 5],
+  registers: [registry],
+});
+
+export const apiErrorsTotal = new client.Counter({
+  name: 'kanaku_api_errors_total',
+  help: 'Total HTTP errors by method, route, status class, and error code',
+  labelNames: ['method', 'route', 'status_class', 'code'] as const,
+  registers: [registry],
+});
+
+// ── Financial Ledger metrics ──────────────────────────────────────────────────
+export const ledgerPostTotal = new client.Counter({
+  name: 'kanaku_ledger_post_total',
+  help: 'Total number of successful journal entries posted',
+  registers: [registry],
+});
+
+export const ledgerPostFailedTotal = new client.Counter({
+  name: 'kanaku_ledger_post_failed_total',
+  help: 'Total number of failed journal entry postings by reason',
+  labelNames: ['reason'] as const,
+  registers: [registry],
+});
+
+export const journalBalanceErrorsTotal = new client.Counter({
+  name: 'kanaku_journal_balance_errors_total',
+  help: 'Double-entry balance violations detected (debits ≠ credits)',
+  registers: [registry],
+});
+
+export const groupSettlementTotal = new client.Counter({
+  name: 'kanaku_group_settlement_total',
+  help: 'Total group expense settlements completed',
+  registers: [registry],
+});
+
+export const recurringExecutionTotal = new client.Counter({
+  name: 'kanaku_recurring_execution_total',
+  help: 'Total recurring transaction executions by status',
+  labelNames: ['status'] as const,
   registers: [registry],
 });
 
@@ -67,10 +110,69 @@ export const notificationOutcomesTotal = new client.Counter({
   registers: [registry],
 });
 
+export const notificationSentTotal = new client.Counter({
+  name: 'kanaku_notification_sent_total',
+  help: 'Total notifications successfully delivered',
+  registers: [registry],
+});
+
+export const notificationFailedTotal = new client.Counter({
+  name: 'kanaku_notification_failed_total',
+  help: 'Total notifications that permanently failed delivery',
+  registers: [registry],
+});
+
 export const workerJobFailuresTotal = new client.Counter({
   name: 'kanaku_worker_job_failures_total',
   help: 'Background job failures by job name',
   labelNames: ['job'] as const,
+  registers: [registry],
+});
+
+// ── Worker-level job lifecycle metrics ────────────────────────────────────────
+export const recurringJobsRunning = new client.Gauge({
+  name: 'kanaku_recurring_jobs_running',
+  help: 'Number of recurring transaction jobs currently executing',
+  registers: [registry],
+});
+
+export const recurringJobsFailedTotal = new client.Counter({
+  name: 'kanaku_recurring_jobs_failed_total',
+  help: 'Total recurring jobs that failed permanently',
+  registers: [registry],
+});
+
+export const recurringJobsRetryingTotal = new client.Counter({
+  name: 'kanaku_recurring_jobs_retrying_total',
+  help: 'Total recurring jobs scheduled for retry',
+  registers: [registry],
+});
+
+// ── Cache metrics ─────────────────────────────────────────────────────────────
+export const cacheHitsTotal = new client.Counter({
+  name: 'kanaku_cache_hits_total',
+  help: 'Cache read hits by prefix',
+  labelNames: ['prefix'] as const,
+  registers: [registry],
+});
+
+export const cacheMissesTotal = new client.Counter({
+  name: 'kanaku_cache_misses_total',
+  help: 'Cache read misses by prefix',
+  labelNames: ['prefix'] as const,
+  registers: [registry],
+});
+
+export const cacheEvictionsTotal = new client.Counter({
+  name: 'kanaku_cache_evictions_total',
+  help: 'Cache entries evicted (TTL expiry or capacity pressure)',
+  labelNames: ['prefix'] as const,
+  registers: [registry],
+});
+
+export const cacheInvalidationTotal = new client.Counter({
+  name: 'kanaku_cache_invalidation_total',
+  help: 'Total cache invalidations triggered by writes',
   registers: [registry],
 });
 
@@ -97,6 +199,27 @@ export const dbQueryDuration = new client.Histogram({
 export const observeDbQuery = (operation: string, durationMs: number): void => {
   dbQueryDuration.observe({ operation }, durationMs / 1000);
 };
+
+export const dbQueriesTotal = new client.Counter({
+  name: 'kanaku_db_queries_total',
+  help: 'Total database queries by operation type',
+  labelNames: ['operation'] as const,
+  registers: [registry],
+});
+
+export const dbTransactionRollbacksTotal = new client.Counter({
+  name: 'kanaku_db_transaction_rollbacks_total',
+  help: 'Total database transaction rollbacks',
+  registers: [registry],
+});
+
+export const databaseTransactionDuration = new client.Histogram({
+  name: 'kanaku_database_transaction_duration_seconds',
+  help: 'Duration of database transactions (Prisma $transaction calls) by operation',
+  labelNames: ['operation'] as const,
+  buckets: [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2, 5, 10],
+  registers: [registry],
+});
 
 // ── Process lifecycle ─────────────────────────────────────────────────────────
 /** Unix timestamp of process start. Lets Grafana compute uptime and detect

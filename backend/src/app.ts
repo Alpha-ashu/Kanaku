@@ -26,19 +26,39 @@ import { isAllowedOrigin } from './config/cors';
 
 const app = express();
 
-//  Request ID stamping (B-1)
-// End-to-end correlation: honor a caller-supplied `X-Request-Id` (so the chain
-// Frontend → API → DB/AuditLog → Worker shares one ID) and otherwise mint one.
-// The incoming value is format-validated to avoid log-forging / header injection
-// (bounded length, id-safe charset); anything else is replaced with a fresh UUID.
+
+//  Request ID + Correlation ID stamping (Phase 9.5 Observability)
+// requestId   — per-request UUID (unchanged; may be supplied by caller via X-Request-Id)
+// correlationId — durable end-to-end trace ID for the full user action:
+//   honored from X-Correlation-Id so a frontend-minted ID survives the entire
+//   HTTP → API → Ledger → Worker → Notification chain; falls back to requestId.
+// sessionId   — stable per-browser-session identifier from X-Session-Id header.
+// All values are format-validated to prevent log-forging / header injection.
 const REQUEST_ID_RE = /^[A-Za-z0-9_-]{8,128}$/;
 app.use((req, res, next) => {
   const incoming = req.headers['x-request-id'];
   const candidate = Array.isArray(incoming) ? incoming[0] : incoming;
   (req as any).id = candidate && REQUEST_ID_RE.test(candidate) ? candidate : randomUUID();
   res.setHeader('X-Request-Id', (req as any).id);
+
+  // Correlation ID — use caller-supplied value if valid, else fall back to requestId
+  const incomingCorrelation = req.headers['x-correlation-id'];
+  const correlationCandidate = Array.isArray(incomingCorrelation) ? incomingCorrelation[0] : incomingCorrelation;
+  (req as any).correlationId = correlationCandidate && REQUEST_ID_RE.test(correlationCandidate)
+    ? correlationCandidate
+    : (req as any).id;
+  res.setHeader('X-Correlation-Id', (req as any).correlationId);
+
+  // Session ID — optional; never minted by the server, only forwarded if supplied
+  const incomingSession = req.headers['x-session-id'];
+  const sessionCandidate = Array.isArray(incomingSession) ? incomingSession[0] : incomingSession;
+  if (sessionCandidate && REQUEST_ID_RE.test(sessionCandidate)) {
+    (req as any).sessionId = sessionCandidate;
+  }
+
   next();
 });
+
 
 // Per-request context (AsyncLocalStorage) — lets the Prisma audit interceptor
 // attribute every financial mutation to the acting user/IP/User-Agent.
@@ -56,16 +76,21 @@ app.use(metricsMiddleware);
 app.use((req, res, next) => {
   const startTime = Date.now();
   const requestId = (req as any).id;
+  const correlationId = (req as any).correlationId ?? requestId;
+  const sessionId = (req as any).sessionId;
   const ip = req.ip || req.socket.remoteAddress;
   const userAgent = req.headers['user-agent'] || '';
 
   res.on('finish', () => {
     const duration = Date.now() - startTime;
     const statusCode = res.statusCode;
-    
+
     const meta = {
       requestId,
+      correlationId,
+      ...(sessionId ? { sessionId } : {}),
       method: req.method,
+      route: req.route?.path ?? req.path,
       path: req.path,
       statusCode,
       durationMs: duration,
@@ -87,6 +112,7 @@ app.use((req, res, next) => {
 
   next();
 });
+
 
 // Disable X-Powered-By header to prevent server fingerprinting
 app.disable('x-powered-by');
