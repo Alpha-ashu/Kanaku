@@ -313,6 +313,23 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   }, [applyStoredPreferences, dataReady, user?.id]);
 
+  useEffect(() => {
+    try {
+      const channel = new BroadcastChannel('kanaku-system');
+      channel.onmessage = (event) => {
+        if (event.data?.type === 'clear-all-data') {
+          console.log('Detected clear-all-data from another tab. Reloading...');
+          window.location.reload();
+        }
+      };
+      return () => {
+        channel.close();
+      };
+    } catch (e) {
+      // Ignore if BroadcastChannel is not supported
+    }
+  }, []);
+
   const refreshData = useCallback(() => {
     setManualRefreshToken(prev => prev + 1);
   }, []);

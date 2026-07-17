@@ -32,6 +32,7 @@ import { goldRoutes } from '../features/gold/gold.routes';
 import { collaborationRoutes } from '../features/collaboration/collaboration.routes';
 import { webhookRoutes } from '../features/webhooks/webhook.routes';
 import { reportsRoutes } from '../features/reports/reports.routes';
+import { systemRoutes } from '../features/system/integrity.routes';
 
 const router = Router();
 
@@ -119,6 +120,8 @@ router.use('/bills', lazyRoute(() => require('../features/bills/bills.routes'), 
 
 // Dashboard aggregation
 router.use('/dashboard', dashboardRoutes);
+
+router.use('/system', systemRoutes);
 
 // Admin routes (requires admin role)
 router.use('/admin', adminRoutes);

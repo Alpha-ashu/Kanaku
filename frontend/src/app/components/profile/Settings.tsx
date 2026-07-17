@@ -19,7 +19,7 @@ import {
  listBackups
 } from '@/lib/importExport';
 import supabase from '@/utils/supabase/client';
-import { api } from '@/lib/api';
+import { api, apiClient } from '@/lib/api';
 import { permissionService } from '@/services/permissionService';
 import { ImportDataModal } from '@/app/components/shared/ImportDataModal';
 import {
@@ -236,7 +236,7 @@ export const Settings: React.FC = () => {
  if (confirm('Are you ABSOLUTELY sure? This is your last warning!')) {
  try {
         // Clear cloud user-scoped entities first so sync does not restore cleared local records.
-        const res = await api.post<any>('/settings/clear-data');
+        const res = await apiClient.post<any>('/settings/clear-data');
         if (!res.success) {
           throw new Error(res.message || 'Failed to clear cloud data');
         }
@@ -281,6 +281,22 @@ export const Settings: React.FC = () => {
  db.backups.clear(),
  ]);
  });
+
+        // Clear localStorage keys (except auth credentials)
+        for (const key of Object.keys(localStorage)) {
+          if (!['auth_token', 'refresh_token', 'accessToken', 'refreshToken', 'token', 'user'].includes(key)) {
+            localStorage.removeItem(key);
+          }
+        }
+        sessionStorage.clear();
+
+        // Broadcast to other tabs
+        try {
+          const channel = new BroadcastChannel('kanaku-system');
+          channel.postMessage({ type: 'clear-all-data' });
+        } catch (e) {
+          // Ignore if BroadcastChannel not supported
+        }
 
         toast.success('All user data cleared. Profile/account identity has been preserved.');
  refreshData();
