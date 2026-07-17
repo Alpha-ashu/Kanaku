@@ -407,6 +407,8 @@ export const createGroup = async (req: AuthRequest, res: Response) => {
       return group;
     }, { timeout: 30000 });
 
+    await FinancialEventDispatcher.flushDeferred();
+
     // Execute invitations outside of the transaction block
     for (const inv of invitationsToSend) {
       try {
@@ -677,6 +679,8 @@ export const updateGroup = async (req: AuthRequest, res: Response) => {
         return updated;
       }, { timeout: 30000 });
 
+      await FinancialEventDispatcher.flushDeferred();
+
       // Execute invitations after creator update transaction
       for (const inv of invitationsToSend) {
         try {
@@ -783,6 +787,8 @@ export const updateGroup = async (req: AuthRequest, res: Response) => {
               });
             }
           }, { timeout: 30000 });
+
+          await FinancialEventDispatcher.flushDeferred();
         }
       }
     }

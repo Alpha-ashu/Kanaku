@@ -3,6 +3,7 @@ import { PrismaTx, FinancialEventDispatcher, LedgerPostedEvent, LedgerSettledEve
 import { AppError } from '../../utils/AppError';
 import { LedgerStatus, LedgerReferenceType, SourceModule, LedgerDirection, FinancialEventType } from '../../db/prisma-client';
 import { randomUUID } from 'crypto';
+import { cacheDeleteByUserId } from '../../cache/redis';
 
 export interface LedgerLeg {
   accountId: string;
@@ -281,6 +282,8 @@ export class FinancialLedgerService {
       journal.metadata
     ));
 
+    await cacheDeleteByUserId(journal.userId);
+
     return journalEntry;
   }
 
@@ -409,6 +412,8 @@ export class FinancialLedgerService {
       Number(settledAmount),
       Number(remainder)
     ));
+
+    await cacheDeleteByUserId(userId);
 
     return settlementTx;
   }

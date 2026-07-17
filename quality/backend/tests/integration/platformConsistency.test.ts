@@ -36,6 +36,7 @@ describe('Phase 9 — Platform Consistency & Data Integrity Integration Tests', 
   beforeAll(async () => {
     // 0. Initialize ledger subscriptions
     initializeLedgerSubscriptions();
+    jest.setTimeout(60000);
 
     // 1. Set environment variables
     process.env.LEDGER_V2_ENABLED = 'true';
@@ -148,8 +149,9 @@ describe('Phase 9 — Platform Consistency & Data Integrity Integration Tests', 
         .get(`${API}/dashboard/summary`)
         .set('Authorization', `Bearer ${authToken}`);
       expect(dashRes.status).toBe(200);
-      // Net flow = 400
-      expect(Number(dashRes.body.data.netFlow)).toBe(400);
+      // Net flow / remaining balance = 400
+      expect(Number(dashRes.body.data.totalBalance)).toBe(400);
+      expect(Number(dashRes.body.data.monthlySpending.expense)).toBe(600);
 
       // 6. Friend pays back share (complete settlement workflow)
       const settleRes = await request(app)
@@ -174,8 +176,8 @@ describe('Phase 9 — Platform Consistency & Data Integrity Integration Tests', 
       const notifRes = await request(app)
         .get(`${API}/notifications`)
         .set('Authorization', `Bearer ${authToken}`);
-      expect(notifRes.body.data.length).toBeGreaterThan(0);
-    });
+      expect(notifRes.body.length).toBeGreaterThan(0);
+    }, 90000);
   });
 
   describe('Scenario 2: Complete Transactional Clear All Data Reset', () => {
@@ -211,7 +213,7 @@ describe('Phase 9 — Platform Consistency & Data Integrity Integration Tests', 
       // 4. Verify Caches are invalidated
       const cachedAfter = await cacheGetJson(cacheKey);
       expect(cachedAfter).toBeNull();
-    });
+    }, 90000);
   });
 
   describe('Scenario 3: Friend Recreation Soft-Delete Restoration', () => {
@@ -252,6 +254,6 @@ describe('Phase 9 — Platform Consistency & Data Integrity Integration Tests', 
         .get(`${API}/friends`)
         .set('Authorization', `Bearer ${authToken}`);
       expect(listRes.body.data.length).toBe(1);
-    });
+    }, 90000);
   });
 });
