@@ -235,7 +235,7 @@ export class FinancialLedgerService {
       const outLeg = createdTransactions.find(t => t.type.toUpperCase() === 'TRANSFER_OUT');
       const inLeg = createdTransactions.find(t => t.type.toUpperCase() === 'TRANSFER_IN');
       if (outLeg && inLeg) {
-        FinancialEventDispatcher.defer(new LedgerTransferCompletedEvent(
+        await FinancialEventDispatcher.defer(tx, new LedgerTransferCompletedEvent(
           journal.userId,
           outLeg.accountId,
           inLeg.accountId,
@@ -247,7 +247,7 @@ export class FinancialLedgerService {
       }
     }
 
-    FinancialEventDispatcher.defer(new LedgerPostedEvent(
+    await FinancialEventDispatcher.defer(tx, new LedgerPostedEvent(
       journal.userId,
       journalEntry.id,
       journal.referenceId || null,
@@ -313,7 +313,7 @@ export class FinancialLedgerService {
     });
 
     FinancialMetrics.increment('ledger_reversed_total');
-    FinancialEventDispatcher.defer(new LedgerReversedEvent(
+    await FinancialEventDispatcher.defer(tx, new LedgerReversedEvent(
       pendingTx.userId,
       pendingTx.id,
       pendingTx.journalEntryId || '',
@@ -386,7 +386,7 @@ export class FinancialLedgerService {
       });
     }
 
-    FinancialEventDispatcher.defer(new LedgerSettledEvent(
+    await FinancialEventDispatcher.defer(tx, new LedgerSettledEvent(
       pendingTx.userId,
       settlementTx.id,
       pendingTx.journalEntryId || '',

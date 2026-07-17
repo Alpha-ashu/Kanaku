@@ -254,6 +254,8 @@ export class LoanPaymentCreatedEvent extends BaseFinancialEvent {
   }
 }
 
+import { FinancialEventStore } from '../events/eventStore';
+
 type Listener<T extends BaseFinancialEvent = any> = (tx: PrismaTx, event: T) => Promise<void>;
 
 class EventDispatcher {
@@ -267,6 +269,9 @@ class EventDispatcher {
   }
 
   async publish(tx: PrismaTx, event: BaseFinancialEvent): Promise<void> {
+    // Record to Event Store inside the active transaction
+    await FinancialEventStore.record(tx, event);
+
     const list = this.listeners.get(event.eventType);
     if (!list || list.length === 0) return;
     for (const listener of list) {
@@ -274,7 +279,10 @@ class EventDispatcher {
     }
   }
 
-  defer(event: any) {
+  async defer(tx: PrismaTx, event: BaseFinancialEvent): Promise<void> {
+    // Record to Event Store inside the active transaction
+    await FinancialEventStore.record(tx, event);
+
     this.deferredEvents.push(event);
   }
 

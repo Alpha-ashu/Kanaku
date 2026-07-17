@@ -172,8 +172,8 @@ export class FinancialSnapshotService {
     });
     const existingAccIds = new Set(existingBalances.map(b => b.accountId));
 
-    const toCreate = [];
-    const toUpdate = [];
+    const toCreate: any[] = [];
+    const toUpdate: any[] = [];
 
     for (const acc of accounts) {
       if (existingAccIds.has(acc.id)) {

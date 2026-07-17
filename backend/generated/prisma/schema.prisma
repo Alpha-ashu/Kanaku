@@ -1353,3 +1353,46 @@ model MonthlyCashflow {
   @@map("monthly_cashflow")
   @@schema("public")
 }
+
+enum FinancialEventLogType {
+  LEDGER_POSTED
+  LEDGER_SETTLED
+  LEDGER_REVERSED
+  TRANSFER_COMPLETED
+  RECURRING_EXECUTED
+  GOAL_CONTRIBUTED
+  GOAL_WITHDRAWN
+  LOAN_DISBURSED
+  LOAN_PAYMENT
+  GROUP_EXPENSE_CREATED
+  GROUP_SETTLEMENT_COMPLETED
+  SNAPSHOT_UPDATED
+
+  @@schema("public")
+}
+
+model FinancialEvent {
+  id             String                @id @default(uuid())
+  eventType      FinancialEventLogType
+  aggregateType  String
+  aggregateId    String
+  userId         String
+  journalEntryId String?
+  transactionId  String?
+  eventVersion   Int                   @default(1)
+  correlationId  String?
+  requestId      String?
+  sessionId      String?
+  sourceModule   SourceModule?
+  payload        Json
+  metadata       Json?
+  createdAt      DateTime              @default(now())
+
+  @@index([userId])
+  @@index([aggregateId])
+  @@index([aggregateType])
+  @@index([eventType])
+  @@index([journalEntryId])
+  @@map("financial_events")
+  @@schema("public")
+}
