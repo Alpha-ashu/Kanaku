@@ -959,6 +959,24 @@ exports.Prisma.MonthlyCashflowScalarFieldEnum = {
   expense: 'expense'
 };
 
+exports.Prisma.FinancialEventScalarFieldEnum = {
+  id: 'id',
+  eventType: 'eventType',
+  aggregateType: 'aggregateType',
+  aggregateId: 'aggregateId',
+  userId: 'userId',
+  journalEntryId: 'journalEntryId',
+  transactionId: 'transactionId',
+  eventVersion: 'eventVersion',
+  correlationId: 'correlationId',
+  requestId: 'requestId',
+  sessionId: 'sessionId',
+  sourceModule: 'sourceModule',
+  payload: 'payload',
+  metadata: 'metadata',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -1046,6 +1064,21 @@ exports.RecurringExecutionStatus = exports.$Enums.RecurringExecutionStatus = {
   SKIPPED: 'SKIPPED'
 };
 
+exports.FinancialEventLogType = exports.$Enums.FinancialEventLogType = {
+  LEDGER_POSTED: 'LEDGER_POSTED',
+  LEDGER_SETTLED: 'LEDGER_SETTLED',
+  LEDGER_REVERSED: 'LEDGER_REVERSED',
+  TRANSFER_COMPLETED: 'TRANSFER_COMPLETED',
+  RECURRING_EXECUTED: 'RECURRING_EXECUTED',
+  GOAL_CONTRIBUTED: 'GOAL_CONTRIBUTED',
+  GOAL_WITHDRAWN: 'GOAL_WITHDRAWN',
+  LOAN_DISBURSED: 'LOAN_DISBURSED',
+  LOAN_PAYMENT: 'LOAN_PAYMENT',
+  GROUP_EXPENSE_CREATED: 'GROUP_EXPENSE_CREATED',
+  GROUP_SETTLEMENT_COMPLETED: 'GROUP_SETTLEMENT_COMPLETED',
+  SNAPSHOT_UPDATED: 'SNAPSHOT_UPDATED'
+};
+
 exports.Prisma.ModelName = {
   Account: 'Account',
   AdvisorApplication: 'AdvisorApplication',
@@ -1098,7 +1131,8 @@ exports.Prisma.ModelName = {
   JournalEntry: 'JournalEntry',
   DailyAccountBalance: 'DailyAccountBalance',
   MonthlyCategorySpend: 'MonthlyCategorySpend',
-  MonthlyCashflow: 'MonthlyCashflow'
+  MonthlyCashflow: 'MonthlyCashflow',
+  FinancialEvent: 'FinancialEvent'
 };
 
 /**

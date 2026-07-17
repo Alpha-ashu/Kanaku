@@ -273,6 +273,11 @@ export type MonthlyCategorySpend = $Result.DefaultSelection<Prisma.$MonthlyCateg
  * 
  */
 export type MonthlyCashflow = $Result.DefaultSelection<Prisma.$MonthlyCashflowPayload>
+/**
+ * Model FinancialEvent
+ * 
+ */
+export type FinancialEvent = $Result.DefaultSelection<Prisma.$FinancialEventPayload>
 
 /**
  * Enums
@@ -353,6 +358,24 @@ export const LedgerStatus: {
 
 export type LedgerStatus = (typeof LedgerStatus)[keyof typeof LedgerStatus]
 
+
+export const FinancialEventLogType: {
+  LEDGER_POSTED: 'LEDGER_POSTED',
+  LEDGER_SETTLED: 'LEDGER_SETTLED',
+  LEDGER_REVERSED: 'LEDGER_REVERSED',
+  TRANSFER_COMPLETED: 'TRANSFER_COMPLETED',
+  RECURRING_EXECUTED: 'RECURRING_EXECUTED',
+  GOAL_CONTRIBUTED: 'GOAL_CONTRIBUTED',
+  GOAL_WITHDRAWN: 'GOAL_WITHDRAWN',
+  LOAN_DISBURSED: 'LOAN_DISBURSED',
+  LOAN_PAYMENT: 'LOAN_PAYMENT',
+  GROUP_EXPENSE_CREATED: 'GROUP_EXPENSE_CREATED',
+  GROUP_SETTLEMENT_COMPLETED: 'GROUP_SETTLEMENT_COMPLETED',
+  SNAPSHOT_UPDATED: 'SNAPSHOT_UPDATED'
+};
+
+export type FinancialEventLogType = (typeof FinancialEventLogType)[keyof typeof FinancialEventLogType]
+
 }
 
 export type RecurringExecutionStatus = $Enums.RecurringExecutionStatus
@@ -378,6 +401,10 @@ export const FinancialEventType: typeof $Enums.FinancialEventType
 export type LedgerStatus = $Enums.LedgerStatus
 
 export const LedgerStatus: typeof $Enums.LedgerStatus
+
+export type FinancialEventLogType = $Enums.FinancialEventLogType
+
+export const FinancialEventLogType: typeof $Enums.FinancialEventLogType
 
 /**
  * ##  Prisma Client ʲˢ
@@ -1016,6 +1043,16 @@ export class PrismaClient<
     * ```
     */
   get monthlyCashflow(): Prisma.MonthlyCashflowDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.financialEvent`: Exposes CRUD operations for the **FinancialEvent** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more FinancialEvents
+    * const financialEvents = await prisma.financialEvent.findMany()
+    * ```
+    */
+  get financialEvent(): Prisma.FinancialEventDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -1508,7 +1545,8 @@ export namespace Prisma {
     JournalEntry: 'JournalEntry',
     DailyAccountBalance: 'DailyAccountBalance',
     MonthlyCategorySpend: 'MonthlyCategorySpend',
-    MonthlyCashflow: 'MonthlyCashflow'
+    MonthlyCashflow: 'MonthlyCashflow',
+    FinancialEvent: 'FinancialEvent'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1527,7 +1565,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "account" | "advisorApplication" | "advisorAvailability" | "advisorSession" | "bookingRequest" | "category" | "chatMessage" | "device" | "expenseBill" | "friend" | "goal" | "goalContribution" | "importLog" | "investment" | "loan" | "loanPayment" | "notification" | "payment" | "refreshToken" | "syncQueue" | "todo" | "transaction" | "user" | "userPin" | "userSettings" | "platformSettings" | "otpCode" | "aiScan" | "ai_events" | "ai_insights" | "ai_model_runs" | "auditLog" | "groupExpense" | "groupExpenseMember" | "collaborationParticipant" | "goalMember" | "user_features" | "profiles" | "otpRequest" | "aaConsent" | "aaConsentArtifact" | "aaDataSession" | "aaFinancialData" | "aaTransaction" | "recurringTransaction" | "budget" | "goldAsset" | "recurringExecution" | "journalEntry" | "dailyAccountBalance" | "monthlyCategorySpend" | "monthlyCashflow"
+      modelProps: "account" | "advisorApplication" | "advisorAvailability" | "advisorSession" | "bookingRequest" | "category" | "chatMessage" | "device" | "expenseBill" | "friend" | "goal" | "goalContribution" | "importLog" | "investment" | "loan" | "loanPayment" | "notification" | "payment" | "refreshToken" | "syncQueue" | "todo" | "transaction" | "user" | "userPin" | "userSettings" | "platformSettings" | "otpCode" | "aiScan" | "ai_events" | "ai_insights" | "ai_model_runs" | "auditLog" | "groupExpense" | "groupExpenseMember" | "collaborationParticipant" | "goalMember" | "user_features" | "profiles" | "otpRequest" | "aaConsent" | "aaConsentArtifact" | "aaDataSession" | "aaFinancialData" | "aaTransaction" | "recurringTransaction" | "budget" | "goldAsset" | "recurringExecution" | "journalEntry" | "dailyAccountBalance" | "monthlyCategorySpend" | "monthlyCashflow" | "financialEvent"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -5379,6 +5417,80 @@ export namespace Prisma {
           }
         }
       }
+      FinancialEvent: {
+        payload: Prisma.$FinancialEventPayload<ExtArgs>
+        fields: Prisma.FinancialEventFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.FinancialEventFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FinancialEventPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.FinancialEventFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FinancialEventPayload>
+          }
+          findFirst: {
+            args: Prisma.FinancialEventFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FinancialEventPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.FinancialEventFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FinancialEventPayload>
+          }
+          findMany: {
+            args: Prisma.FinancialEventFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FinancialEventPayload>[]
+          }
+          create: {
+            args: Prisma.FinancialEventCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FinancialEventPayload>
+          }
+          createMany: {
+            args: Prisma.FinancialEventCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.FinancialEventCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FinancialEventPayload>[]
+          }
+          delete: {
+            args: Prisma.FinancialEventDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FinancialEventPayload>
+          }
+          update: {
+            args: Prisma.FinancialEventUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FinancialEventPayload>
+          }
+          deleteMany: {
+            args: Prisma.FinancialEventDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.FinancialEventUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.FinancialEventUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FinancialEventPayload>[]
+          }
+          upsert: {
+            args: Prisma.FinancialEventUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FinancialEventPayload>
+          }
+          aggregate: {
+            args: Prisma.FinancialEventAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateFinancialEvent>
+          }
+          groupBy: {
+            args: Prisma.FinancialEventGroupByArgs<ExtArgs>
+            result: $Utils.Optional<FinancialEventGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.FinancialEventCountArgs<ExtArgs>
+            result: $Utils.Optional<FinancialEventCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -5527,6 +5639,7 @@ export namespace Prisma {
     dailyAccountBalance?: DailyAccountBalanceOmit
     monthlyCategorySpend?: MonthlyCategorySpendOmit
     monthlyCashflow?: MonthlyCashflowOmit
+    financialEvent?: FinancialEventOmit
   }
 
   /* Types for Logging */
@@ -68527,6 +68640,1157 @@ export namespace Prisma {
 
 
   /**
+   * Model FinancialEvent
+   */
+
+  export type AggregateFinancialEvent = {
+    _count: FinancialEventCountAggregateOutputType | null
+    _avg: FinancialEventAvgAggregateOutputType | null
+    _sum: FinancialEventSumAggregateOutputType | null
+    _min: FinancialEventMinAggregateOutputType | null
+    _max: FinancialEventMaxAggregateOutputType | null
+  }
+
+  export type FinancialEventAvgAggregateOutputType = {
+    eventVersion: number | null
+  }
+
+  export type FinancialEventSumAggregateOutputType = {
+    eventVersion: number | null
+  }
+
+  export type FinancialEventMinAggregateOutputType = {
+    id: string | null
+    eventType: $Enums.FinancialEventLogType | null
+    aggregateType: string | null
+    aggregateId: string | null
+    userId: string | null
+    journalEntryId: string | null
+    transactionId: string | null
+    eventVersion: number | null
+    correlationId: string | null
+    requestId: string | null
+    sessionId: string | null
+    sourceModule: $Enums.SourceModule | null
+    createdAt: Date | null
+  }
+
+  export type FinancialEventMaxAggregateOutputType = {
+    id: string | null
+    eventType: $Enums.FinancialEventLogType | null
+    aggregateType: string | null
+    aggregateId: string | null
+    userId: string | null
+    journalEntryId: string | null
+    transactionId: string | null
+    eventVersion: number | null
+    correlationId: string | null
+    requestId: string | null
+    sessionId: string | null
+    sourceModule: $Enums.SourceModule | null
+    createdAt: Date | null
+  }
+
+  export type FinancialEventCountAggregateOutputType = {
+    id: number
+    eventType: number
+    aggregateType: number
+    aggregateId: number
+    userId: number
+    journalEntryId: number
+    transactionId: number
+    eventVersion: number
+    correlationId: number
+    requestId: number
+    sessionId: number
+    sourceModule: number
+    payload: number
+    metadata: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type FinancialEventAvgAggregateInputType = {
+    eventVersion?: true
+  }
+
+  export type FinancialEventSumAggregateInputType = {
+    eventVersion?: true
+  }
+
+  export type FinancialEventMinAggregateInputType = {
+    id?: true
+    eventType?: true
+    aggregateType?: true
+    aggregateId?: true
+    userId?: true
+    journalEntryId?: true
+    transactionId?: true
+    eventVersion?: true
+    correlationId?: true
+    requestId?: true
+    sessionId?: true
+    sourceModule?: true
+    createdAt?: true
+  }
+
+  export type FinancialEventMaxAggregateInputType = {
+    id?: true
+    eventType?: true
+    aggregateType?: true
+    aggregateId?: true
+    userId?: true
+    journalEntryId?: true
+    transactionId?: true
+    eventVersion?: true
+    correlationId?: true
+    requestId?: true
+    sessionId?: true
+    sourceModule?: true
+    createdAt?: true
+  }
+
+  export type FinancialEventCountAggregateInputType = {
+    id?: true
+    eventType?: true
+    aggregateType?: true
+    aggregateId?: true
+    userId?: true
+    journalEntryId?: true
+    transactionId?: true
+    eventVersion?: true
+    correlationId?: true
+    requestId?: true
+    sessionId?: true
+    sourceModule?: true
+    payload?: true
+    metadata?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type FinancialEventAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which FinancialEvent to aggregate.
+     */
+    where?: FinancialEventWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of FinancialEvents to fetch.
+     */
+    orderBy?: FinancialEventOrderByWithRelationInput | FinancialEventOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: FinancialEventWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` FinancialEvents from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` FinancialEvents.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned FinancialEvents
+    **/
+    _count?: true | FinancialEventCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: FinancialEventAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: FinancialEventSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: FinancialEventMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: FinancialEventMaxAggregateInputType
+  }
+
+  export type GetFinancialEventAggregateType<T extends FinancialEventAggregateArgs> = {
+        [P in keyof T & keyof AggregateFinancialEvent]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateFinancialEvent[P]>
+      : GetScalarType<T[P], AggregateFinancialEvent[P]>
+  }
+
+
+
+
+  export type FinancialEventGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: FinancialEventWhereInput
+    orderBy?: FinancialEventOrderByWithAggregationInput | FinancialEventOrderByWithAggregationInput[]
+    by: FinancialEventScalarFieldEnum[] | FinancialEventScalarFieldEnum
+    having?: FinancialEventScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: FinancialEventCountAggregateInputType | true
+    _avg?: FinancialEventAvgAggregateInputType
+    _sum?: FinancialEventSumAggregateInputType
+    _min?: FinancialEventMinAggregateInputType
+    _max?: FinancialEventMaxAggregateInputType
+  }
+
+  export type FinancialEventGroupByOutputType = {
+    id: string
+    eventType: $Enums.FinancialEventLogType
+    aggregateType: string
+    aggregateId: string
+    userId: string
+    journalEntryId: string | null
+    transactionId: string | null
+    eventVersion: number
+    correlationId: string | null
+    requestId: string | null
+    sessionId: string | null
+    sourceModule: $Enums.SourceModule | null
+    payload: JsonValue
+    metadata: JsonValue | null
+    createdAt: Date
+    _count: FinancialEventCountAggregateOutputType | null
+    _avg: FinancialEventAvgAggregateOutputType | null
+    _sum: FinancialEventSumAggregateOutputType | null
+    _min: FinancialEventMinAggregateOutputType | null
+    _max: FinancialEventMaxAggregateOutputType | null
+  }
+
+  type GetFinancialEventGroupByPayload<T extends FinancialEventGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<FinancialEventGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof FinancialEventGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], FinancialEventGroupByOutputType[P]>
+            : GetScalarType<T[P], FinancialEventGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type FinancialEventSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    eventType?: boolean
+    aggregateType?: boolean
+    aggregateId?: boolean
+    userId?: boolean
+    journalEntryId?: boolean
+    transactionId?: boolean
+    eventVersion?: boolean
+    correlationId?: boolean
+    requestId?: boolean
+    sessionId?: boolean
+    sourceModule?: boolean
+    payload?: boolean
+    metadata?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["financialEvent"]>
+
+  export type FinancialEventSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    eventType?: boolean
+    aggregateType?: boolean
+    aggregateId?: boolean
+    userId?: boolean
+    journalEntryId?: boolean
+    transactionId?: boolean
+    eventVersion?: boolean
+    correlationId?: boolean
+    requestId?: boolean
+    sessionId?: boolean
+    sourceModule?: boolean
+    payload?: boolean
+    metadata?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["financialEvent"]>
+
+  export type FinancialEventSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    eventType?: boolean
+    aggregateType?: boolean
+    aggregateId?: boolean
+    userId?: boolean
+    journalEntryId?: boolean
+    transactionId?: boolean
+    eventVersion?: boolean
+    correlationId?: boolean
+    requestId?: boolean
+    sessionId?: boolean
+    sourceModule?: boolean
+    payload?: boolean
+    metadata?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["financialEvent"]>
+
+  export type FinancialEventSelectScalar = {
+    id?: boolean
+    eventType?: boolean
+    aggregateType?: boolean
+    aggregateId?: boolean
+    userId?: boolean
+    journalEntryId?: boolean
+    transactionId?: boolean
+    eventVersion?: boolean
+    correlationId?: boolean
+    requestId?: boolean
+    sessionId?: boolean
+    sourceModule?: boolean
+    payload?: boolean
+    metadata?: boolean
+    createdAt?: boolean
+  }
+
+  export type FinancialEventOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "eventType" | "aggregateType" | "aggregateId" | "userId" | "journalEntryId" | "transactionId" | "eventVersion" | "correlationId" | "requestId" | "sessionId" | "sourceModule" | "payload" | "metadata" | "createdAt", ExtArgs["result"]["financialEvent"]>
+
+  export type $FinancialEventPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "FinancialEvent"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      eventType: $Enums.FinancialEventLogType
+      aggregateType: string
+      aggregateId: string
+      userId: string
+      journalEntryId: string | null
+      transactionId: string | null
+      eventVersion: number
+      correlationId: string | null
+      requestId: string | null
+      sessionId: string | null
+      sourceModule: $Enums.SourceModule | null
+      payload: Prisma.JsonValue
+      metadata: Prisma.JsonValue | null
+      createdAt: Date
+    }, ExtArgs["result"]["financialEvent"]>
+    composites: {}
+  }
+
+  type FinancialEventGetPayload<S extends boolean | null | undefined | FinancialEventDefaultArgs> = $Result.GetResult<Prisma.$FinancialEventPayload, S>
+
+  type FinancialEventCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<FinancialEventFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: FinancialEventCountAggregateInputType | true
+    }
+
+  export interface FinancialEventDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['FinancialEvent'], meta: { name: 'FinancialEvent' } }
+    /**
+     * Find zero or one FinancialEvent that matches the filter.
+     * @param {FinancialEventFindUniqueArgs} args - Arguments to find a FinancialEvent
+     * @example
+     * // Get one FinancialEvent
+     * const financialEvent = await prisma.financialEvent.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends FinancialEventFindUniqueArgs>(args: SelectSubset<T, FinancialEventFindUniqueArgs<ExtArgs>>): Prisma__FinancialEventClient<$Result.GetResult<Prisma.$FinancialEventPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one FinancialEvent that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {FinancialEventFindUniqueOrThrowArgs} args - Arguments to find a FinancialEvent
+     * @example
+     * // Get one FinancialEvent
+     * const financialEvent = await prisma.financialEvent.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends FinancialEventFindUniqueOrThrowArgs>(args: SelectSubset<T, FinancialEventFindUniqueOrThrowArgs<ExtArgs>>): Prisma__FinancialEventClient<$Result.GetResult<Prisma.$FinancialEventPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first FinancialEvent that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FinancialEventFindFirstArgs} args - Arguments to find a FinancialEvent
+     * @example
+     * // Get one FinancialEvent
+     * const financialEvent = await prisma.financialEvent.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends FinancialEventFindFirstArgs>(args?: SelectSubset<T, FinancialEventFindFirstArgs<ExtArgs>>): Prisma__FinancialEventClient<$Result.GetResult<Prisma.$FinancialEventPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first FinancialEvent that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FinancialEventFindFirstOrThrowArgs} args - Arguments to find a FinancialEvent
+     * @example
+     * // Get one FinancialEvent
+     * const financialEvent = await prisma.financialEvent.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends FinancialEventFindFirstOrThrowArgs>(args?: SelectSubset<T, FinancialEventFindFirstOrThrowArgs<ExtArgs>>): Prisma__FinancialEventClient<$Result.GetResult<Prisma.$FinancialEventPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more FinancialEvents that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FinancialEventFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all FinancialEvents
+     * const financialEvents = await prisma.financialEvent.findMany()
+     * 
+     * // Get first 10 FinancialEvents
+     * const financialEvents = await prisma.financialEvent.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const financialEventWithIdOnly = await prisma.financialEvent.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends FinancialEventFindManyArgs>(args?: SelectSubset<T, FinancialEventFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FinancialEventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a FinancialEvent.
+     * @param {FinancialEventCreateArgs} args - Arguments to create a FinancialEvent.
+     * @example
+     * // Create one FinancialEvent
+     * const FinancialEvent = await prisma.financialEvent.create({
+     *   data: {
+     *     // ... data to create a FinancialEvent
+     *   }
+     * })
+     * 
+     */
+    create<T extends FinancialEventCreateArgs>(args: SelectSubset<T, FinancialEventCreateArgs<ExtArgs>>): Prisma__FinancialEventClient<$Result.GetResult<Prisma.$FinancialEventPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many FinancialEvents.
+     * @param {FinancialEventCreateManyArgs} args - Arguments to create many FinancialEvents.
+     * @example
+     * // Create many FinancialEvents
+     * const financialEvent = await prisma.financialEvent.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends FinancialEventCreateManyArgs>(args?: SelectSubset<T, FinancialEventCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many FinancialEvents and returns the data saved in the database.
+     * @param {FinancialEventCreateManyAndReturnArgs} args - Arguments to create many FinancialEvents.
+     * @example
+     * // Create many FinancialEvents
+     * const financialEvent = await prisma.financialEvent.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many FinancialEvents and only return the `id`
+     * const financialEventWithIdOnly = await prisma.financialEvent.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends FinancialEventCreateManyAndReturnArgs>(args?: SelectSubset<T, FinancialEventCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FinancialEventPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a FinancialEvent.
+     * @param {FinancialEventDeleteArgs} args - Arguments to delete one FinancialEvent.
+     * @example
+     * // Delete one FinancialEvent
+     * const FinancialEvent = await prisma.financialEvent.delete({
+     *   where: {
+     *     // ... filter to delete one FinancialEvent
+     *   }
+     * })
+     * 
+     */
+    delete<T extends FinancialEventDeleteArgs>(args: SelectSubset<T, FinancialEventDeleteArgs<ExtArgs>>): Prisma__FinancialEventClient<$Result.GetResult<Prisma.$FinancialEventPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one FinancialEvent.
+     * @param {FinancialEventUpdateArgs} args - Arguments to update one FinancialEvent.
+     * @example
+     * // Update one FinancialEvent
+     * const financialEvent = await prisma.financialEvent.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends FinancialEventUpdateArgs>(args: SelectSubset<T, FinancialEventUpdateArgs<ExtArgs>>): Prisma__FinancialEventClient<$Result.GetResult<Prisma.$FinancialEventPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more FinancialEvents.
+     * @param {FinancialEventDeleteManyArgs} args - Arguments to filter FinancialEvents to delete.
+     * @example
+     * // Delete a few FinancialEvents
+     * const { count } = await prisma.financialEvent.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends FinancialEventDeleteManyArgs>(args?: SelectSubset<T, FinancialEventDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more FinancialEvents.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FinancialEventUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many FinancialEvents
+     * const financialEvent = await prisma.financialEvent.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends FinancialEventUpdateManyArgs>(args: SelectSubset<T, FinancialEventUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more FinancialEvents and returns the data updated in the database.
+     * @param {FinancialEventUpdateManyAndReturnArgs} args - Arguments to update many FinancialEvents.
+     * @example
+     * // Update many FinancialEvents
+     * const financialEvent = await prisma.financialEvent.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more FinancialEvents and only return the `id`
+     * const financialEventWithIdOnly = await prisma.financialEvent.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends FinancialEventUpdateManyAndReturnArgs>(args: SelectSubset<T, FinancialEventUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FinancialEventPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one FinancialEvent.
+     * @param {FinancialEventUpsertArgs} args - Arguments to update or create a FinancialEvent.
+     * @example
+     * // Update or create a FinancialEvent
+     * const financialEvent = await prisma.financialEvent.upsert({
+     *   create: {
+     *     // ... data to create a FinancialEvent
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the FinancialEvent we want to update
+     *   }
+     * })
+     */
+    upsert<T extends FinancialEventUpsertArgs>(args: SelectSubset<T, FinancialEventUpsertArgs<ExtArgs>>): Prisma__FinancialEventClient<$Result.GetResult<Prisma.$FinancialEventPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of FinancialEvents.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FinancialEventCountArgs} args - Arguments to filter FinancialEvents to count.
+     * @example
+     * // Count the number of FinancialEvents
+     * const count = await prisma.financialEvent.count({
+     *   where: {
+     *     // ... the filter for the FinancialEvents we want to count
+     *   }
+     * })
+    **/
+    count<T extends FinancialEventCountArgs>(
+      args?: Subset<T, FinancialEventCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], FinancialEventCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a FinancialEvent.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FinancialEventAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends FinancialEventAggregateArgs>(args: Subset<T, FinancialEventAggregateArgs>): Prisma.PrismaPromise<GetFinancialEventAggregateType<T>>
+
+    /**
+     * Group by FinancialEvent.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FinancialEventGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends FinancialEventGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: FinancialEventGroupByArgs['orderBy'] }
+        : { orderBy?: FinancialEventGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, FinancialEventGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetFinancialEventGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the FinancialEvent model
+   */
+  readonly fields: FinancialEventFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for FinancialEvent.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__FinancialEventClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the FinancialEvent model
+   */
+  interface FinancialEventFieldRefs {
+    readonly id: FieldRef<"FinancialEvent", 'String'>
+    readonly eventType: FieldRef<"FinancialEvent", 'FinancialEventLogType'>
+    readonly aggregateType: FieldRef<"FinancialEvent", 'String'>
+    readonly aggregateId: FieldRef<"FinancialEvent", 'String'>
+    readonly userId: FieldRef<"FinancialEvent", 'String'>
+    readonly journalEntryId: FieldRef<"FinancialEvent", 'String'>
+    readonly transactionId: FieldRef<"FinancialEvent", 'String'>
+    readonly eventVersion: FieldRef<"FinancialEvent", 'Int'>
+    readonly correlationId: FieldRef<"FinancialEvent", 'String'>
+    readonly requestId: FieldRef<"FinancialEvent", 'String'>
+    readonly sessionId: FieldRef<"FinancialEvent", 'String'>
+    readonly sourceModule: FieldRef<"FinancialEvent", 'SourceModule'>
+    readonly payload: FieldRef<"FinancialEvent", 'Json'>
+    readonly metadata: FieldRef<"FinancialEvent", 'Json'>
+    readonly createdAt: FieldRef<"FinancialEvent", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * FinancialEvent findUnique
+   */
+  export type FinancialEventFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FinancialEvent
+     */
+    select?: FinancialEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FinancialEvent
+     */
+    omit?: FinancialEventOmit<ExtArgs> | null
+    /**
+     * Filter, which FinancialEvent to fetch.
+     */
+    where: FinancialEventWhereUniqueInput
+  }
+
+  /**
+   * FinancialEvent findUniqueOrThrow
+   */
+  export type FinancialEventFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FinancialEvent
+     */
+    select?: FinancialEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FinancialEvent
+     */
+    omit?: FinancialEventOmit<ExtArgs> | null
+    /**
+     * Filter, which FinancialEvent to fetch.
+     */
+    where: FinancialEventWhereUniqueInput
+  }
+
+  /**
+   * FinancialEvent findFirst
+   */
+  export type FinancialEventFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FinancialEvent
+     */
+    select?: FinancialEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FinancialEvent
+     */
+    omit?: FinancialEventOmit<ExtArgs> | null
+    /**
+     * Filter, which FinancialEvent to fetch.
+     */
+    where?: FinancialEventWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of FinancialEvents to fetch.
+     */
+    orderBy?: FinancialEventOrderByWithRelationInput | FinancialEventOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for FinancialEvents.
+     */
+    cursor?: FinancialEventWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` FinancialEvents from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` FinancialEvents.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of FinancialEvents.
+     */
+    distinct?: FinancialEventScalarFieldEnum | FinancialEventScalarFieldEnum[]
+  }
+
+  /**
+   * FinancialEvent findFirstOrThrow
+   */
+  export type FinancialEventFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FinancialEvent
+     */
+    select?: FinancialEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FinancialEvent
+     */
+    omit?: FinancialEventOmit<ExtArgs> | null
+    /**
+     * Filter, which FinancialEvent to fetch.
+     */
+    where?: FinancialEventWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of FinancialEvents to fetch.
+     */
+    orderBy?: FinancialEventOrderByWithRelationInput | FinancialEventOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for FinancialEvents.
+     */
+    cursor?: FinancialEventWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` FinancialEvents from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` FinancialEvents.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of FinancialEvents.
+     */
+    distinct?: FinancialEventScalarFieldEnum | FinancialEventScalarFieldEnum[]
+  }
+
+  /**
+   * FinancialEvent findMany
+   */
+  export type FinancialEventFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FinancialEvent
+     */
+    select?: FinancialEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FinancialEvent
+     */
+    omit?: FinancialEventOmit<ExtArgs> | null
+    /**
+     * Filter, which FinancialEvents to fetch.
+     */
+    where?: FinancialEventWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of FinancialEvents to fetch.
+     */
+    orderBy?: FinancialEventOrderByWithRelationInput | FinancialEventOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing FinancialEvents.
+     */
+    cursor?: FinancialEventWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` FinancialEvents from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` FinancialEvents.
+     */
+    skip?: number
+    distinct?: FinancialEventScalarFieldEnum | FinancialEventScalarFieldEnum[]
+  }
+
+  /**
+   * FinancialEvent create
+   */
+  export type FinancialEventCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FinancialEvent
+     */
+    select?: FinancialEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FinancialEvent
+     */
+    omit?: FinancialEventOmit<ExtArgs> | null
+    /**
+     * The data needed to create a FinancialEvent.
+     */
+    data: XOR<FinancialEventCreateInput, FinancialEventUncheckedCreateInput>
+  }
+
+  /**
+   * FinancialEvent createMany
+   */
+  export type FinancialEventCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many FinancialEvents.
+     */
+    data: FinancialEventCreateManyInput | FinancialEventCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * FinancialEvent createManyAndReturn
+   */
+  export type FinancialEventCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FinancialEvent
+     */
+    select?: FinancialEventSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the FinancialEvent
+     */
+    omit?: FinancialEventOmit<ExtArgs> | null
+    /**
+     * The data used to create many FinancialEvents.
+     */
+    data: FinancialEventCreateManyInput | FinancialEventCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * FinancialEvent update
+   */
+  export type FinancialEventUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FinancialEvent
+     */
+    select?: FinancialEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FinancialEvent
+     */
+    omit?: FinancialEventOmit<ExtArgs> | null
+    /**
+     * The data needed to update a FinancialEvent.
+     */
+    data: XOR<FinancialEventUpdateInput, FinancialEventUncheckedUpdateInput>
+    /**
+     * Choose, which FinancialEvent to update.
+     */
+    where: FinancialEventWhereUniqueInput
+  }
+
+  /**
+   * FinancialEvent updateMany
+   */
+  export type FinancialEventUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update FinancialEvents.
+     */
+    data: XOR<FinancialEventUpdateManyMutationInput, FinancialEventUncheckedUpdateManyInput>
+    /**
+     * Filter which FinancialEvents to update
+     */
+    where?: FinancialEventWhereInput
+    /**
+     * Limit how many FinancialEvents to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * FinancialEvent updateManyAndReturn
+   */
+  export type FinancialEventUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FinancialEvent
+     */
+    select?: FinancialEventSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the FinancialEvent
+     */
+    omit?: FinancialEventOmit<ExtArgs> | null
+    /**
+     * The data used to update FinancialEvents.
+     */
+    data: XOR<FinancialEventUpdateManyMutationInput, FinancialEventUncheckedUpdateManyInput>
+    /**
+     * Filter which FinancialEvents to update
+     */
+    where?: FinancialEventWhereInput
+    /**
+     * Limit how many FinancialEvents to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * FinancialEvent upsert
+   */
+  export type FinancialEventUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FinancialEvent
+     */
+    select?: FinancialEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FinancialEvent
+     */
+    omit?: FinancialEventOmit<ExtArgs> | null
+    /**
+     * The filter to search for the FinancialEvent to update in case it exists.
+     */
+    where: FinancialEventWhereUniqueInput
+    /**
+     * In case the FinancialEvent found by the `where` argument doesn't exist, create a new FinancialEvent with this data.
+     */
+    create: XOR<FinancialEventCreateInput, FinancialEventUncheckedCreateInput>
+    /**
+     * In case the FinancialEvent was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<FinancialEventUpdateInput, FinancialEventUncheckedUpdateInput>
+  }
+
+  /**
+   * FinancialEvent delete
+   */
+  export type FinancialEventDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FinancialEvent
+     */
+    select?: FinancialEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FinancialEvent
+     */
+    omit?: FinancialEventOmit<ExtArgs> | null
+    /**
+     * Filter which FinancialEvent to delete.
+     */
+    where: FinancialEventWhereUniqueInput
+  }
+
+  /**
+   * FinancialEvent deleteMany
+   */
+  export type FinancialEventDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which FinancialEvents to delete
+     */
+    where?: FinancialEventWhereInput
+    /**
+     * Limit how many FinancialEvents to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * FinancialEvent without action
+   */
+  export type FinancialEventDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FinancialEvent
+     */
+    select?: FinancialEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FinancialEvent
+     */
+    omit?: FinancialEventOmit<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -69534,6 +70798,27 @@ export namespace Prisma {
   export type MonthlyCashflowScalarFieldEnum = (typeof MonthlyCashflowScalarFieldEnum)[keyof typeof MonthlyCashflowScalarFieldEnum]
 
 
+  export const FinancialEventScalarFieldEnum: {
+    id: 'id',
+    eventType: 'eventType',
+    aggregateType: 'aggregateType',
+    aggregateId: 'aggregateId',
+    userId: 'userId',
+    journalEntryId: 'journalEntryId',
+    transactionId: 'transactionId',
+    eventVersion: 'eventVersion',
+    correlationId: 'correlationId',
+    requestId: 'requestId',
+    sessionId: 'sessionId',
+    sourceModule: 'sourceModule',
+    payload: 'payload',
+    metadata: 'metadata',
+    createdAt: 'createdAt'
+  };
+
+  export type FinancialEventScalarFieldEnum = (typeof FinancialEventScalarFieldEnum)[keyof typeof FinancialEventScalarFieldEnum]
+
+
   export const SortOrder: {
     asc: 'asc',
     desc: 'desc'
@@ -69759,6 +71044,20 @@ export namespace Prisma {
    * Reference to a field of type 'RecurringExecutionStatus[]'
    */
   export type ListEnumRecurringExecutionStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RecurringExecutionStatus[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'FinancialEventLogType'
+   */
+  export type EnumFinancialEventLogTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'FinancialEventLogType'>
+    
+
+
+  /**
+   * Reference to a field of type 'FinancialEventLogType[]'
+   */
+  export type ListEnumFinancialEventLogTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'FinancialEventLogType[]'>
     
   /**
    * Deep Input Types
@@ -74950,6 +76249,110 @@ export namespace Prisma {
     month?: IntWithAggregatesFilter<"MonthlyCashflow"> | number
     income?: DecimalWithAggregatesFilter<"MonthlyCashflow"> | Decimal | DecimalJsLike | number | string
     expense?: DecimalWithAggregatesFilter<"MonthlyCashflow"> | Decimal | DecimalJsLike | number | string
+  }
+
+  export type FinancialEventWhereInput = {
+    AND?: FinancialEventWhereInput | FinancialEventWhereInput[]
+    OR?: FinancialEventWhereInput[]
+    NOT?: FinancialEventWhereInput | FinancialEventWhereInput[]
+    id?: StringFilter<"FinancialEvent"> | string
+    eventType?: EnumFinancialEventLogTypeFilter<"FinancialEvent"> | $Enums.FinancialEventLogType
+    aggregateType?: StringFilter<"FinancialEvent"> | string
+    aggregateId?: StringFilter<"FinancialEvent"> | string
+    userId?: StringFilter<"FinancialEvent"> | string
+    journalEntryId?: StringNullableFilter<"FinancialEvent"> | string | null
+    transactionId?: StringNullableFilter<"FinancialEvent"> | string | null
+    eventVersion?: IntFilter<"FinancialEvent"> | number
+    correlationId?: StringNullableFilter<"FinancialEvent"> | string | null
+    requestId?: StringNullableFilter<"FinancialEvent"> | string | null
+    sessionId?: StringNullableFilter<"FinancialEvent"> | string | null
+    sourceModule?: EnumSourceModuleNullableFilter<"FinancialEvent"> | $Enums.SourceModule | null
+    payload?: JsonFilter<"FinancialEvent">
+    metadata?: JsonNullableFilter<"FinancialEvent">
+    createdAt?: DateTimeFilter<"FinancialEvent"> | Date | string
+  }
+
+  export type FinancialEventOrderByWithRelationInput = {
+    id?: SortOrder
+    eventType?: SortOrder
+    aggregateType?: SortOrder
+    aggregateId?: SortOrder
+    userId?: SortOrder
+    journalEntryId?: SortOrderInput | SortOrder
+    transactionId?: SortOrderInput | SortOrder
+    eventVersion?: SortOrder
+    correlationId?: SortOrderInput | SortOrder
+    requestId?: SortOrderInput | SortOrder
+    sessionId?: SortOrderInput | SortOrder
+    sourceModule?: SortOrderInput | SortOrder
+    payload?: SortOrder
+    metadata?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type FinancialEventWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: FinancialEventWhereInput | FinancialEventWhereInput[]
+    OR?: FinancialEventWhereInput[]
+    NOT?: FinancialEventWhereInput | FinancialEventWhereInput[]
+    eventType?: EnumFinancialEventLogTypeFilter<"FinancialEvent"> | $Enums.FinancialEventLogType
+    aggregateType?: StringFilter<"FinancialEvent"> | string
+    aggregateId?: StringFilter<"FinancialEvent"> | string
+    userId?: StringFilter<"FinancialEvent"> | string
+    journalEntryId?: StringNullableFilter<"FinancialEvent"> | string | null
+    transactionId?: StringNullableFilter<"FinancialEvent"> | string | null
+    eventVersion?: IntFilter<"FinancialEvent"> | number
+    correlationId?: StringNullableFilter<"FinancialEvent"> | string | null
+    requestId?: StringNullableFilter<"FinancialEvent"> | string | null
+    sessionId?: StringNullableFilter<"FinancialEvent"> | string | null
+    sourceModule?: EnumSourceModuleNullableFilter<"FinancialEvent"> | $Enums.SourceModule | null
+    payload?: JsonFilter<"FinancialEvent">
+    metadata?: JsonNullableFilter<"FinancialEvent">
+    createdAt?: DateTimeFilter<"FinancialEvent"> | Date | string
+  }, "id">
+
+  export type FinancialEventOrderByWithAggregationInput = {
+    id?: SortOrder
+    eventType?: SortOrder
+    aggregateType?: SortOrder
+    aggregateId?: SortOrder
+    userId?: SortOrder
+    journalEntryId?: SortOrderInput | SortOrder
+    transactionId?: SortOrderInput | SortOrder
+    eventVersion?: SortOrder
+    correlationId?: SortOrderInput | SortOrder
+    requestId?: SortOrderInput | SortOrder
+    sessionId?: SortOrderInput | SortOrder
+    sourceModule?: SortOrderInput | SortOrder
+    payload?: SortOrder
+    metadata?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    _count?: FinancialEventCountOrderByAggregateInput
+    _avg?: FinancialEventAvgOrderByAggregateInput
+    _max?: FinancialEventMaxOrderByAggregateInput
+    _min?: FinancialEventMinOrderByAggregateInput
+    _sum?: FinancialEventSumOrderByAggregateInput
+  }
+
+  export type FinancialEventScalarWhereWithAggregatesInput = {
+    AND?: FinancialEventScalarWhereWithAggregatesInput | FinancialEventScalarWhereWithAggregatesInput[]
+    OR?: FinancialEventScalarWhereWithAggregatesInput[]
+    NOT?: FinancialEventScalarWhereWithAggregatesInput | FinancialEventScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"FinancialEvent"> | string
+    eventType?: EnumFinancialEventLogTypeWithAggregatesFilter<"FinancialEvent"> | $Enums.FinancialEventLogType
+    aggregateType?: StringWithAggregatesFilter<"FinancialEvent"> | string
+    aggregateId?: StringWithAggregatesFilter<"FinancialEvent"> | string
+    userId?: StringWithAggregatesFilter<"FinancialEvent"> | string
+    journalEntryId?: StringNullableWithAggregatesFilter<"FinancialEvent"> | string | null
+    transactionId?: StringNullableWithAggregatesFilter<"FinancialEvent"> | string | null
+    eventVersion?: IntWithAggregatesFilter<"FinancialEvent"> | number
+    correlationId?: StringNullableWithAggregatesFilter<"FinancialEvent"> | string | null
+    requestId?: StringNullableWithAggregatesFilter<"FinancialEvent"> | string | null
+    sessionId?: StringNullableWithAggregatesFilter<"FinancialEvent"> | string | null
+    sourceModule?: EnumSourceModuleNullableWithAggregatesFilter<"FinancialEvent"> | $Enums.SourceModule | null
+    payload?: JsonWithAggregatesFilter<"FinancialEvent">
+    metadata?: JsonNullableWithAggregatesFilter<"FinancialEvent">
+    createdAt?: DateTimeWithAggregatesFilter<"FinancialEvent"> | Date | string
   }
 
   export type AccountCreateInput = {
@@ -80965,6 +82368,132 @@ export namespace Prisma {
     expense?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
   }
 
+  export type FinancialEventCreateInput = {
+    id?: string
+    eventType: $Enums.FinancialEventLogType
+    aggregateType: string
+    aggregateId: string
+    userId: string
+    journalEntryId?: string | null
+    transactionId?: string | null
+    eventVersion?: number
+    correlationId?: string | null
+    requestId?: string | null
+    sessionId?: string | null
+    sourceModule?: $Enums.SourceModule | null
+    payload: JsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+  }
+
+  export type FinancialEventUncheckedCreateInput = {
+    id?: string
+    eventType: $Enums.FinancialEventLogType
+    aggregateType: string
+    aggregateId: string
+    userId: string
+    journalEntryId?: string | null
+    transactionId?: string | null
+    eventVersion?: number
+    correlationId?: string | null
+    requestId?: string | null
+    sessionId?: string | null
+    sourceModule?: $Enums.SourceModule | null
+    payload: JsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+  }
+
+  export type FinancialEventUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    eventType?: EnumFinancialEventLogTypeFieldUpdateOperationsInput | $Enums.FinancialEventLogType
+    aggregateType?: StringFieldUpdateOperationsInput | string
+    aggregateId?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    journalEntryId?: NullableStringFieldUpdateOperationsInput | string | null
+    transactionId?: NullableStringFieldUpdateOperationsInput | string | null
+    eventVersion?: IntFieldUpdateOperationsInput | number
+    correlationId?: NullableStringFieldUpdateOperationsInput | string | null
+    requestId?: NullableStringFieldUpdateOperationsInput | string | null
+    sessionId?: NullableStringFieldUpdateOperationsInput | string | null
+    sourceModule?: NullableEnumSourceModuleFieldUpdateOperationsInput | $Enums.SourceModule | null
+    payload?: JsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FinancialEventUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    eventType?: EnumFinancialEventLogTypeFieldUpdateOperationsInput | $Enums.FinancialEventLogType
+    aggregateType?: StringFieldUpdateOperationsInput | string
+    aggregateId?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    journalEntryId?: NullableStringFieldUpdateOperationsInput | string | null
+    transactionId?: NullableStringFieldUpdateOperationsInput | string | null
+    eventVersion?: IntFieldUpdateOperationsInput | number
+    correlationId?: NullableStringFieldUpdateOperationsInput | string | null
+    requestId?: NullableStringFieldUpdateOperationsInput | string | null
+    sessionId?: NullableStringFieldUpdateOperationsInput | string | null
+    sourceModule?: NullableEnumSourceModuleFieldUpdateOperationsInput | $Enums.SourceModule | null
+    payload?: JsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FinancialEventCreateManyInput = {
+    id?: string
+    eventType: $Enums.FinancialEventLogType
+    aggregateType: string
+    aggregateId: string
+    userId: string
+    journalEntryId?: string | null
+    transactionId?: string | null
+    eventVersion?: number
+    correlationId?: string | null
+    requestId?: string | null
+    sessionId?: string | null
+    sourceModule?: $Enums.SourceModule | null
+    payload: JsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+  }
+
+  export type FinancialEventUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    eventType?: EnumFinancialEventLogTypeFieldUpdateOperationsInput | $Enums.FinancialEventLogType
+    aggregateType?: StringFieldUpdateOperationsInput | string
+    aggregateId?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    journalEntryId?: NullableStringFieldUpdateOperationsInput | string | null
+    transactionId?: NullableStringFieldUpdateOperationsInput | string | null
+    eventVersion?: IntFieldUpdateOperationsInput | number
+    correlationId?: NullableStringFieldUpdateOperationsInput | string | null
+    requestId?: NullableStringFieldUpdateOperationsInput | string | null
+    sessionId?: NullableStringFieldUpdateOperationsInput | string | null
+    sourceModule?: NullableEnumSourceModuleFieldUpdateOperationsInput | $Enums.SourceModule | null
+    payload?: JsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FinancialEventUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    eventType?: EnumFinancialEventLogTypeFieldUpdateOperationsInput | $Enums.FinancialEventLogType
+    aggregateType?: StringFieldUpdateOperationsInput | string
+    aggregateId?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    journalEntryId?: NullableStringFieldUpdateOperationsInput | string | null
+    transactionId?: NullableStringFieldUpdateOperationsInput | string | null
+    eventVersion?: IntFieldUpdateOperationsInput | number
+    correlationId?: NullableStringFieldUpdateOperationsInput | string | null
+    requestId?: NullableStringFieldUpdateOperationsInput | string | null
+    sessionId?: NullableStringFieldUpdateOperationsInput | string | null
+    sourceModule?: NullableEnumSourceModuleFieldUpdateOperationsInput | $Enums.SourceModule | null
+    payload?: JsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -84806,6 +86335,98 @@ export namespace Prisma {
     expense?: SortOrder
   }
 
+  export type EnumFinancialEventLogTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.FinancialEventLogType | EnumFinancialEventLogTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.FinancialEventLogType[] | ListEnumFinancialEventLogTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.FinancialEventLogType[] | ListEnumFinancialEventLogTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumFinancialEventLogTypeFilter<$PrismaModel> | $Enums.FinancialEventLogType
+  }
+
+  export type EnumSourceModuleNullableFilter<$PrismaModel = never> = {
+    equals?: $Enums.SourceModule | EnumSourceModuleFieldRefInput<$PrismaModel> | null
+    in?: $Enums.SourceModule[] | ListEnumSourceModuleFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.SourceModule[] | ListEnumSourceModuleFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumSourceModuleNullableFilter<$PrismaModel> | $Enums.SourceModule | null
+  }
+
+  export type FinancialEventCountOrderByAggregateInput = {
+    id?: SortOrder
+    eventType?: SortOrder
+    aggregateType?: SortOrder
+    aggregateId?: SortOrder
+    userId?: SortOrder
+    journalEntryId?: SortOrder
+    transactionId?: SortOrder
+    eventVersion?: SortOrder
+    correlationId?: SortOrder
+    requestId?: SortOrder
+    sessionId?: SortOrder
+    sourceModule?: SortOrder
+    payload?: SortOrder
+    metadata?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type FinancialEventAvgOrderByAggregateInput = {
+    eventVersion?: SortOrder
+  }
+
+  export type FinancialEventMaxOrderByAggregateInput = {
+    id?: SortOrder
+    eventType?: SortOrder
+    aggregateType?: SortOrder
+    aggregateId?: SortOrder
+    userId?: SortOrder
+    journalEntryId?: SortOrder
+    transactionId?: SortOrder
+    eventVersion?: SortOrder
+    correlationId?: SortOrder
+    requestId?: SortOrder
+    sessionId?: SortOrder
+    sourceModule?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type FinancialEventMinOrderByAggregateInput = {
+    id?: SortOrder
+    eventType?: SortOrder
+    aggregateType?: SortOrder
+    aggregateId?: SortOrder
+    userId?: SortOrder
+    journalEntryId?: SortOrder
+    transactionId?: SortOrder
+    eventVersion?: SortOrder
+    correlationId?: SortOrder
+    requestId?: SortOrder
+    sessionId?: SortOrder
+    sourceModule?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type FinancialEventSumOrderByAggregateInput = {
+    eventVersion?: SortOrder
+  }
+
+  export type EnumFinancialEventLogTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.FinancialEventLogType | EnumFinancialEventLogTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.FinancialEventLogType[] | ListEnumFinancialEventLogTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.FinancialEventLogType[] | ListEnumFinancialEventLogTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumFinancialEventLogTypeWithAggregatesFilter<$PrismaModel> | $Enums.FinancialEventLogType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumFinancialEventLogTypeFilter<$PrismaModel>
+    _max?: NestedEnumFinancialEventLogTypeFilter<$PrismaModel>
+  }
+
+  export type EnumSourceModuleNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.SourceModule | EnumSourceModuleFieldRefInput<$PrismaModel> | null
+    in?: $Enums.SourceModule[] | ListEnumSourceModuleFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.SourceModule[] | ListEnumSourceModuleFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumSourceModuleNullableWithAggregatesFilter<$PrismaModel> | $Enums.SourceModule | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedEnumSourceModuleNullableFilter<$PrismaModel>
+    _max?: NestedEnumSourceModuleNullableFilter<$PrismaModel>
+  }
+
   export type UserCreateNestedOneWithoutAccountsInput = {
     create?: XOR<UserCreateWithoutAccountsInput, UserUncheckedCreateWithoutAccountsInput>
     connectOrCreate?: UserCreateOrConnectWithoutAccountsInput
@@ -87604,6 +89225,14 @@ export namespace Prisma {
     deleteMany?: TransactionScalarWhereInput | TransactionScalarWhereInput[]
   }
 
+  export type EnumFinancialEventLogTypeFieldUpdateOperationsInput = {
+    set?: $Enums.FinancialEventLogType
+  }
+
+  export type NullableEnumSourceModuleFieldUpdateOperationsInput = {
+    set?: $Enums.SourceModule | null
+  }
+
   export type NestedStringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -88062,6 +89691,40 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumRecurringExecutionStatusFilter<$PrismaModel>
     _max?: NestedEnumRecurringExecutionStatusFilter<$PrismaModel>
+  }
+
+  export type NestedEnumFinancialEventLogTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.FinancialEventLogType | EnumFinancialEventLogTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.FinancialEventLogType[] | ListEnumFinancialEventLogTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.FinancialEventLogType[] | ListEnumFinancialEventLogTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumFinancialEventLogTypeFilter<$PrismaModel> | $Enums.FinancialEventLogType
+  }
+
+  export type NestedEnumSourceModuleNullableFilter<$PrismaModel = never> = {
+    equals?: $Enums.SourceModule | EnumSourceModuleFieldRefInput<$PrismaModel> | null
+    in?: $Enums.SourceModule[] | ListEnumSourceModuleFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.SourceModule[] | ListEnumSourceModuleFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumSourceModuleNullableFilter<$PrismaModel> | $Enums.SourceModule | null
+  }
+
+  export type NestedEnumFinancialEventLogTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.FinancialEventLogType | EnumFinancialEventLogTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.FinancialEventLogType[] | ListEnumFinancialEventLogTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.FinancialEventLogType[] | ListEnumFinancialEventLogTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumFinancialEventLogTypeWithAggregatesFilter<$PrismaModel> | $Enums.FinancialEventLogType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumFinancialEventLogTypeFilter<$PrismaModel>
+    _max?: NestedEnumFinancialEventLogTypeFilter<$PrismaModel>
+  }
+
+  export type NestedEnumSourceModuleNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.SourceModule | EnumSourceModuleFieldRefInput<$PrismaModel> | null
+    in?: $Enums.SourceModule[] | ListEnumSourceModuleFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.SourceModule[] | ListEnumSourceModuleFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumSourceModuleNullableWithAggregatesFilter<$PrismaModel> | $Enums.SourceModule | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedEnumSourceModuleNullableFilter<$PrismaModel>
+    _max?: NestedEnumSourceModuleNullableFilter<$PrismaModel>
   }
 
   export type UserCreateWithoutAccountsInput = {
