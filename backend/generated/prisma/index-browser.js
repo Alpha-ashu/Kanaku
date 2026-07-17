@@ -931,6 +931,34 @@ exports.Prisma.JournalEntryScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.DailyAccountBalanceScalarFieldEnum = {
+  id: 'id',
+  accountId: 'accountId',
+  userId: 'userId',
+  date: 'date',
+  balance: 'balance',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.MonthlyCategorySpendScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  year: 'year',
+  month: 'month',
+  category: 'category',
+  total: 'total'
+};
+
+exports.Prisma.MonthlyCashflowScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  year: 'year',
+  month: 'month',
+  income: 'income',
+  expense: 'expense'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -1067,7 +1095,10 @@ exports.Prisma.ModelName = {
   Budget: 'Budget',
   GoldAsset: 'GoldAsset',
   RecurringExecution: 'RecurringExecution',
-  JournalEntry: 'JournalEntry'
+  JournalEntry: 'JournalEntry',
+  DailyAccountBalance: 'DailyAccountBalance',
+  MonthlyCategorySpend: 'MonthlyCategorySpend',
+  MonthlyCashflow: 'MonthlyCashflow'
 };
 
 /**

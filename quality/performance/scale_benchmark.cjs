@@ -25,13 +25,17 @@ const BASE = process.env.BENCHMARK_URL || 'http://localhost:3000/api/v1';
 const USER_EMAIL = process.env.BENCHMARK_EMAIL || 'user@kanaku.com';
 const USER_PASS = process.env.BENCHMARK_PASS || 'K@n4ku_Us3r#3Pm2*Wy';
 
-const ACCOUNT_COUNT = 5;
-const TRANSACTION_COUNT = 100;
-const GROUP_EXPENSE_COUNT = 10;
-const RECURRING_RULE_COUNT = 5;
-const CONCURRENCY = 20;
+const ACCOUNT_COUNT = Number(process.env.BENCHMARK_ACCOUNTS || 5);
+const TRANSACTION_COUNT = Number(process.env.BENCHMARK_TRANSACTIONS || 100);
+const GROUP_EXPENSE_COUNT = Number(process.env.BENCHMARK_GROUP_EXPENSES || 10);
+const RECURRING_RULE_COUNT = Number(process.env.BENCHMARK_RECURRING || 5);
+const CONCURRENCY = Number(process.env.BENCHMARK_CONCURRENCY || 20);
 
-const SLA = { read: 1000, write: 2000, login: 3000 };
+const SLA = { 
+  read: Number(process.env.BENCHMARK_SLA_READ || 1000), 
+  write: Number(process.env.BENCHMARK_SLA_WRITE || 2000), 
+  login: Number(process.env.BENCHMARK_SLA_LOGIN || 3000) 
+};
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
@@ -124,16 +128,22 @@ async function seedData(token) {
   console.log(`  OK: Seeded ${accountIds.length} accounts`);
 
   let txCount = 0;
-  for (let i = 0; i < TRANSACTION_COUNT; i++) {
-    const r = await request('POST', '/transactions', {
-      accountId: accountIds[i % accountIds.length],
-      type: i % 3 === 0 ? 'income' : 'expense',
-      amount: Math.round(Math.random() * 5000 + 100),
-      category: i % 3 === 0 ? 'Salary' : 'Food',
-      description: `BENCH_TX_${i}`,
-      date: new Date(Date.now() - i * 86400000).toISOString(),
-    }, token, true);
-    if (r.ok) txCount++;
+  const txBatchSize = 50;
+  for (let i = 0; i < TRANSACTION_COUNT; i += txBatchSize) {
+    const batch = [];
+    for (let j = 0; j < txBatchSize && i + j < TRANSACTION_COUNT; j++) {
+      const idx = i + j;
+      batch.push(request('POST', '/transactions', {
+        accountId: accountIds[idx % accountIds.length],
+        type: idx % 3 === 0 ? 'income' : 'expense',
+        amount: Math.round(Math.random() * 5000 + 100),
+        category: idx % 3 === 0 ? 'Salary' : 'Food',
+        description: `BENCH_TX_${idx}`,
+        date: new Date(Date.now() - idx * 86400000).toISOString(),
+      }, token, true));
+    }
+    const results = await Promise.all(batch);
+    txCount += results.filter(r => r.ok).length;
   }
   console.log(`  OK: Seeded ${txCount} transactions`);
 
@@ -142,17 +152,23 @@ async function seedData(token) {
   const friends = friendsRes.data?.data ?? [];
   if (friends.length > 0) {
     const friendId = friends[0]?.friendId ?? friends[0]?.id;
-    for (let i = 0; i < GROUP_EXPENSE_COUNT; i++) {
-      const r = await request('POST', '/group-expenses', {
-        description: `BENCH_GE_${i}`,
-        totalAmount: 2000,
-        paidBy: 'me',
-        members: [{ userId: friendId, amount: 1000, status: 'pending' }],
-        accountId: accountIds[0],
-        category: 'Travel',
-        date: new Date().toISOString(),
-      }, token, true);
-      if (r.ok) groupExpenseCount++;
+    const geBatchSize = 50;
+    for (let i = 0; i < GROUP_EXPENSE_COUNT; i += geBatchSize) {
+      const batch = [];
+      for (let j = 0; j < geBatchSize && i + j < GROUP_EXPENSE_COUNT; j++) {
+        const idx = i + j;
+        batch.push(request('POST', '/group-expenses', {
+          description: `BENCH_GE_${idx}`,
+          totalAmount: 2000,
+          paidBy: 'me',
+          members: [{ userId: friendId, amount: 1000, status: 'pending' }],
+          accountId: accountIds[0],
+          category: 'Travel',
+          date: new Date().toISOString(),
+        }, token, true));
+      }
+      const results = await Promise.all(batch);
+      groupExpenseCount += results.filter(r => r.ok).length;
     }
   } else {
     console.log('  INFO: No friends found — skipping group expense seeding');
@@ -160,18 +176,24 @@ async function seedData(token) {
   console.log(`  OK: Seeded ${groupExpenseCount} group expenses`);
 
   let recurringCount = 0;
-  for (let i = 0; i < RECURRING_RULE_COUNT; i++) {
-    const r = await request('POST', '/recurring', {
-      title: `BENCH_REC_${i}`,
-      amount: 500,
-      category: 'Utilities',
-      type: 'expense',
-      interval: 'monthly',
-      accountId: accountIds[0],
-      autoProcess: false,
-      nextDueDate: new Date(Date.now() + 30 * 86400000).toISOString(),
-    }, token, true);
-    if (r.ok) recurringCount++;
+  const recBatchSize = 50;
+  for (let i = 0; i < RECURRING_RULE_COUNT; i += recBatchSize) {
+    const batch = [];
+    for (let j = 0; j < recBatchSize && i + j < RECURRING_RULE_COUNT; j++) {
+      const idx = i + j;
+      batch.push(request('POST', '/recurring', {
+        title: `BENCH_REC_${idx}`,
+        amount: 500,
+        category: 'Utilities',
+        type: 'expense',
+        interval: 'monthly',
+        accountId: accountIds[0],
+        autoProcess: false,
+        nextDueDate: new Date(Date.now() + 30 * 86400000).toISOString(),
+      }, token, true));
+    }
+    const results = await Promise.all(batch);
+    recurringCount += results.filter(r => r.ok).length;
   }
   console.log(`  OK: Seeded ${recurringCount} recurring rules`);
 
@@ -193,12 +215,25 @@ async function concurrencyTest(token, accountIds) {
   const t0 = Date.now();
   const results = await Promise.all(tasks);
   const wallMs = Date.now() - t0;
+
+  // Immediately query system integrity to get active database locks/waiting locks and queue status
+  const integrityRes = await request('GET', '/system/integrity', null, token, true);
+  const dbLocks = integrityRes.data?.data?.database;
+  const activeLocks = dbLocks?.activeLocksCount ?? 0;
+  const waitingLocks = dbLocks?.waitingLocksCount ?? 0;
+  const queueDepth = integrityRes.data?.data?.notificationsQueue?.pending ?? 0;
+
   const successes = results.filter(r => r.ok).length;
   const failures = results.filter(r => !r.ok).length;
-  const icon = failures === 0 ? 'OK' : 'FAIL';
+  const icon = (failures === 0 && waitingLocks === 0) ? 'OK' : 'FAIL';
   console.log(`  [${icon}] ${successes}/${CONCURRENCY} succeeded in ${wallMs}ms wall time`);
+  console.log(`  [INFO] DB Locks: Active=${activeLocks}, Waiting=${waitingLocks}`);
+  console.log(`  [INFO] Notification Queue Depth: ${queueDepth} pending`);
+  
   if (failures > 0) console.log(`  FAIL: ${failures} concurrent writes failed`);
-  return { parallel: CONCURRENCY, successes, failures, wallMs };
+  if (waitingLocks > 0) console.log(`  FAIL: ${waitingLocks} database locks are waiting/blocked (Deadlocks detected!)`);
+
+  return { parallel: CONCURRENCY, successes, failures, wallMs, activeLocks, waitingLocks, queueDepth };
 }
 
 async function cleanupAndVerify(token) {
@@ -295,7 +330,7 @@ async function main() {
 
   const allReadPass = readResults.every(r => r.pass);
   const allWritePass = writeResults.every(r => r.pass);
-  const noDeadlocks = concurrencyResult.failures === 0;
+  const noDeadlocks = concurrencyResult.failures === 0 && concurrencyResult.waitingLocks === 0;
 
   const report = {
     timestamp: new Date().toISOString(),

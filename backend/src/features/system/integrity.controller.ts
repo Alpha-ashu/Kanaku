@@ -91,16 +91,28 @@ export const getSystemIntegrity = async (req: Request, res: Response) => {
       orphanTransactions.length === 0 &&
       orphanGroupMembers.length === 0;
 
-    // ── 2. Database Connectivity ──────────────────────────────────────────────
+    // ── 2. Database Connectivity & Lock Monitoring ────────────────────────────
     let dbConnected = false;
     let dbLatencyMs: number | null = null;
+    let dbActiveLocksCount = 0;
+    let dbWaitingLocksCount = 0;
     try {
       const dbStart = Date.now();
       await prisma.$queryRaw`SELECT 1`;
       dbLatencyMs = Date.now() - dbStart;
       dbConnected = true;
+
+      const lockStats = await prisma.$queryRaw<any[]>`
+        SELECT 
+          (SELECT count(*)::int FROM pg_locks) as active_locks,
+          (SELECT count(*)::int FROM pg_locks WHERE NOT granted) as waiting_locks
+      `;
+      if (lockStats && lockStats[0]) {
+        dbActiveLocksCount = Number(lockStats[0].active_locks || 0);
+        dbWaitingLocksCount = Number(lockStats[0].waiting_locks || 0);
+      }
     } catch {
-      dbConnected = false;
+      // If lock queries fail (e.g. SQLite local development), we keep default counts of 0
     }
 
     // ── 3. Schema / Migration Status ──────────────────────────────────────────
@@ -176,11 +188,13 @@ export const getSystemIntegrity = async (req: Request, res: Response) => {
 
         // ── Database ───────────────────────────────────────────────────────
         database: {
-          isHealthy: dbConnected,
+          isHealthy: dbConnected && dbWaitingLocksCount === 0,
           connected: dbConnected,
           latencyMs: dbLatencyMs,
           migrationCount,
           latestMigration,
+          activeLocksCount: dbActiveLocksCount,
+          waitingLocksCount: dbWaitingLocksCount,
         },
 
         // ── Worker ─────────────────────────────────────────────────────────

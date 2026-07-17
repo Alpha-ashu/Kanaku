@@ -14,9 +14,13 @@ import { FinancialLedgerService } from './ledger.service';
 import { SourceModule, LedgerReferenceType, LedgerStatus, FinancialEventType } from '../../db/prisma-client';
 import { dispatchNotification } from '../notifications/notification.dispatcher';
 import { Decimal } from '@prisma/client/runtime/library';
+import { FinancialSnapshotService } from '../snapshots/snapshotService';
 
 
 export function initializeLedgerSubscriptions() {
+  // Initialize Snapshot Service listener
+  FinancialSnapshotService.init();
+
   // 1. Goal Contribution
   FinancialEventDispatcher.subscribe<GoalContributionEvent>('GOAL_CONTRIBUTION', async (tx, event) => {
     await FinancialLedgerService.postJournalEntry(

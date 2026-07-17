@@ -326,6 +326,89 @@ async function runAudit() {
   }
 
   // ══════════════════════════════════════════════════════════
+  // 5.5. ADDITIONAL OWASP CONTROLS
+  // ══════════════════════════════════════════════════════════
+  console.log('\n── 5.5. ADDITIONAL OWASP CONTROLS ──');
+
+  // Test: JWT Replay / Revocation on logout
+  if (token2) {
+    try {
+      // 1. Perform logout of user2 token
+      const logoutRes = await fetch(`${BASE_URL}/auth/logout`, {
+        method: 'POST',
+        headers: { Authorization: token2 }
+      });
+      
+      if (logoutRes.ok) {
+        log('JWT_REPLAY', 'Logout challenge request', 'PASS', 'Logout completed successfully');
+        
+        // 2. Try to use user2's logged out token to access accounts
+        const replayRes = await fetch(`${BASE_URL}/accounts`, {
+          headers: { Authorization: token2 }
+        });
+        
+        if (replayRes.status === 401 || replayRes.status === 403) {
+          log('JWT_REPLAY', 'Token rejection after logout', 'PASS', `HTTP ${replayRes.status} (Replay rejected)`);
+        } else {
+          log('JWT_REPLAY', 'Token rejection after logout', 'FAIL', `HTTP ${replayRes.status} (Replayed token accepted!)`);
+        }
+      } else {
+        log('JWT_REPLAY', 'Logout challenge request', 'WARN', `HTTP ${logoutRes.status} on logout`);
+      }
+    } catch (e) {
+      log('JWT_REPLAY', 'Logout & replay audit', 'WARN', e.message);
+    }
+  } else {
+    log('JWT_REPLAY', 'Logout & replay audit', 'WARN', 'Skipped — token2 unavailable');
+  }
+
+  // Test: ID Enumeration
+  try {
+    const enumIds = ['1', '99', '1234567890', '00000000-0000-0000-0000-000000000000'];
+    let safeEnumCount = 0;
+    for (const id of enumIds) {
+      const res = await fetch(`${BASE_URL}/accounts/${id}`, { headers: auth1 });
+      // It should return 400 (bad format) or 404 (not found), but NEVER 200 or 500 (internal db error)
+      if (res.status === 400 || res.status === 404 || res.status === 401 || res.status === 403) {
+        safeEnumCount++;
+      }
+    }
+    if (safeEnumCount === enumIds.length) {
+      log('ID_ENUMERATION', 'Sequential ID guess checks', 'PASS', 'Enumeration queries rejected safely');
+    } else {
+      log('ID_ENUMERATION', 'Sequential ID guess checks', 'FAIL', 'Unexpected HTTP response for non-existent IDs');
+    }
+  } catch (e) {
+    log('ID_ENUMERATION', 'ID enumeration audit', 'WARN', e.message);
+  }
+
+  // Test: File Upload Constraints (MIME type / Payload validation)
+  try {
+    // Send a payload with invalid MIME/content-type to bill upload
+    const dummyFile = Buffer.from('malicious_payload_content');
+    const formData = new FormData();
+    // Wrap buffer in Blob with illegal MIME type
+    const blob = new Blob([dummyFile], { type: 'application/x-msdownload' }); // .exe type
+    formData.append('file', blob, 'exploit.exe');
+
+    const res = await fetch(`${BASE_URL}/receipts/upload`, {
+      method: 'POST',
+      headers: {
+        Authorization: auth1.Authorization
+      },
+      body: formData
+    });
+
+    if (res.status === 400 || res.status === 415 || res.status === 403) {
+      log('FILE_UPLOAD', 'Upload payload constraint audit', 'PASS', `Rejected illegal MIME type with HTTP ${res.status}`);
+    } else {
+      log('FILE_UPLOAD', 'Upload payload constraint audit', 'FAIL', `Accepted illegal file upload with HTTP ${res.status}`);
+    }
+  } catch (e) {
+    log('FILE_UPLOAD', 'File upload audit', 'WARN', e.message);
+  }
+
+  // ══════════════════════════════════════════════════════════
   // 6. RATE LIMITING
   // ══════════════════════════════════════════════════════════
   console.log('\n── 6. RATE LIMITING ──');

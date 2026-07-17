@@ -13,6 +13,7 @@ import {
   databaseTransactionDuration,
 } from '../../config/metrics';
 import { getRequestActor } from '../../middleware/requestContext';
+import { FinancialInvariantValidator } from '../../utils/financialInvariantValidator';
 
 export interface LedgerLeg {
   accountId: string;
@@ -98,81 +99,24 @@ export class FinancialLedgerService {
   ) {
     const opStart = Date.now();
     const actor = getRequestActor();
-    // 1. Validation Rules
-    if (legs.length === 0) {
-      ledgerPostFailedTotal.labels({ reason: 'LEDGER_IMBALANCED' }).inc();
-      throw new LedgerError('LEDGER_IMBALANCED', 'Journal must have at least one transaction leg.');
-    }
-
-    // Validate account existence, non-zero values, and correct directions
-    let debitSum = new Decimal(0);
-    let creditSum = new Decimal(0);
-
-    // Validate transfers
+    // 1. Invariant Validation Rules (includes leg count, transfers, positive amounts, account ownership)
+    const accounts = await FinancialInvariantValidator.validateJournalLegs(tx, journal, legs);
     const isTransfer = journal.referenceType === LedgerReferenceType.TRANSFER;
-    if (isTransfer) {
-      if (legs.length !== 2) {
-        throw new LedgerError('LEDGER_INVALID_TRANSFER', 'A transfer must have exactly two transaction legs.');
-      }
-      const leg1 = legs[0];
-      const leg2 = legs[1];
-      const type1 = leg1.type.toUpperCase();
-      const type2 = leg2.type.toUpperCase();
-
-      if (!((type1 === 'TRANSFER_OUT' && type2 === 'TRANSFER_IN') || (type1 === 'TRANSFER_IN' && type2 === 'TRANSFER_OUT'))) {
-        throw new LedgerError('LEDGER_INVALID_TRANSFER', 'A transfer must consist of exactly one TRANSFER_OUT leg and one TRANSFER_IN leg.');
-      }
-
-      if (leg1.accountId === leg2.accountId) {
-        throw new LedgerError('LEDGER_INVALID_TRANSFER', 'Source and destination accounts for a transfer must be different.');
-      }
-    }
-
-    for (const leg of legs) {
-      const amountDec = new Decimal(leg.amount);
-      if (amountDec.lessThanOrEqualTo(0)) {
-        throw new LedgerError('LEDGER_INVALID_AMOUNT', 'Transaction amount must be a positive non-zero number.');
-      }
-
-      // Verify account existence
-      const account = await tx.account.findFirst({
-        where: { id: leg.accountId, userId: journal.userId, deletedAt: null }
-      });
-      if (!account) {
-        throw new LedgerError('LEDGER_ACCOUNT_NOT_FOUND', `Account ${leg.accountId} not found or unauthorized.`);
-      }
-
-      const legTypeLower = leg.type.toLowerCase();
-      if (legTypeLower === 'income' || legTypeLower === 'transfer_in') {
-        debitSum = debitSum.add(amountDec);
-      } else {
-        creditSum = creditSum.add(amountDec);
-      }
-    }
-
-    // If double-entry is active (e.g. transfer between two accounts), assert they balance
     const isDoubleEntry = legs.length > 1;
-    if (isDoubleEntry && !debitSum.equals(creditSum)) {
-      journalBalanceErrorsTotal.inc();
-      ledgerPostFailedTotal.labels({ reason: 'LEDGER_IMBALANCED' }).inc();
-      throw new LedgerError('LEDGER_IMBALANCED', `Double-entry journal must balance. Inflows (${debitSum}) !== Outflows (${creditSum}).`);
-    }
 
-    // 2. Idempotency Key Validation (Unique constraint across userId + sourceModule + idempotencyKey)
+    // 2. Idempotency Key Validation
     const idempotencyKey = legs[0]?.idempotencyKey;
     if (idempotencyKey) {
-      const existingTx = await tx.transaction.findFirst({
-        where: {
-          userId: journal.userId,
-          sourceModule: journal.sourceModule,
-          idempotencyKey
-        },
-        include: { journalEntry: true }
-      });
+      const existingTx = await FinancialInvariantValidator.checkIdempotencyKey(
+        tx,
+        journal.userId,
+        journal.sourceModule,
+        idempotencyKey
+      );
 
       if (existingTx && existingTx.journalEntry) {
         logger.info('[Ledger] Idempotency hit — returning existing journal entry', {
-          journalEntryId: existingTx.journalEntryId,
+          journalEntryId: existingTx.journalEntry.id,
           userId: journal.userId,
           idempotencyKey,
           correlationId: actor.correlationId,
@@ -246,10 +190,8 @@ export class FinancialLedgerService {
       // Update Account balance atomically (skip if status is PENDING or skipBalanceUpdate = true)
       const shouldUpdateBalance = legStatus === LedgerStatus.POSTED && !leg.skipBalanceUpdate;
       if (shouldUpdateBalance) {
-        const currentAccount = await tx.account.findUnique({ where: { id: leg.accountId } });
-        if (!currentAccount) {
-          throw new LedgerError('LEDGER_ACCOUNT_NOT_FOUND', `Account ${leg.accountId} was deleted mid-transaction.`);
-        }
+        const currentAccount = accounts.get(leg.accountId);
+        FinancialInvariantValidator.assertAccountNotDeleted(currentAccount, leg.accountId);
 
         const balanceDec = new Decimal(currentAccount.balance);
         const nextBalance = (legTypeLower === 'income' || legTypeLower === 'transfer_in')
@@ -347,6 +289,9 @@ export class FinancialLedgerService {
       throw new LedgerError('LEDGER_TRANSACTION_NOT_FOUND', `Transaction ${transactionId} not found.`);
     }
 
+    // Guard 1: Cross-user reference guard
+    FinancialInvariantValidator.assertSameUser(pendingTx.userId, userId, 'transaction');
+
     if (pendingTx.status !== LedgerStatus.PENDING) {
       // Already settled/posted/reversed — return it (idempotency)
       return pendingTx;
@@ -355,9 +300,8 @@ export class FinancialLedgerService {
     const pendingAmount = new Decimal(pendingTx.amount);
     const settledAmount = new Decimal(settledAmountVal);
 
-    if (settledAmount.greaterThan(pendingAmount)) {
-      throw new LedgerError('LEDGER_INVALID_AMOUNT', `Settlement amount (${settledAmount.toFixed(2)}) cannot exceed pending amount (${pendingAmount.toFixed(2)}).`);
-    }
+    // Guard 2: Settlement amount check (must be positive and cannot exceed pending)
+    FinancialInvariantValidator.assertSettlementAmount(settledAmount, pendingAmount, transactionId);
 
     // 1. Cancel the original pending receivable by setting status = REVERSED
     await tx.transaction.update({
@@ -405,11 +349,8 @@ export class FinancialLedgerService {
     FinancialMetrics.increment('ledger_settled_total');
     groupSettlementTotal.inc();
 
-    // 3. Increment Cash Account balance by settledAmount
-    const currentAccount = await tx.account.findUnique({ where: { id: accountId } });
-    if (!currentAccount) {
-      throw new LedgerError('LEDGER_ACCOUNT_NOT_FOUND', `Account ${accountId} not found.`);
-    }
+    // 3. Guard 3 & 4: verify account existence and ownership before incrementing balance
+    const currentAccount = await FinancialInvariantValidator.assertAccountOwned(tx, accountId, userId);
     const balanceDec = new Decimal(currentAccount.balance);
     await tx.account.update({
       where: { id: accountId },

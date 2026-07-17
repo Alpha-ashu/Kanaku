@@ -258,6 +258,21 @@ export type RecurringExecution = $Result.DefaultSelection<Prisma.$RecurringExecu
  * 
  */
 export type JournalEntry = $Result.DefaultSelection<Prisma.$JournalEntryPayload>
+/**
+ * Model DailyAccountBalance
+ * 
+ */
+export type DailyAccountBalance = $Result.DefaultSelection<Prisma.$DailyAccountBalancePayload>
+/**
+ * Model MonthlyCategorySpend
+ * 
+ */
+export type MonthlyCategorySpend = $Result.DefaultSelection<Prisma.$MonthlyCategorySpendPayload>
+/**
+ * Model MonthlyCashflow
+ * 
+ */
+export type MonthlyCashflow = $Result.DefaultSelection<Prisma.$MonthlyCashflowPayload>
 
 /**
  * Enums
@@ -971,6 +986,36 @@ export class PrismaClient<
     * ```
     */
   get journalEntry(): Prisma.JournalEntryDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.dailyAccountBalance`: Exposes CRUD operations for the **DailyAccountBalance** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more DailyAccountBalances
+    * const dailyAccountBalances = await prisma.dailyAccountBalance.findMany()
+    * ```
+    */
+  get dailyAccountBalance(): Prisma.DailyAccountBalanceDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.monthlyCategorySpend`: Exposes CRUD operations for the **MonthlyCategorySpend** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more MonthlyCategorySpends
+    * const monthlyCategorySpends = await prisma.monthlyCategorySpend.findMany()
+    * ```
+    */
+  get monthlyCategorySpend(): Prisma.MonthlyCategorySpendDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.monthlyCashflow`: Exposes CRUD operations for the **MonthlyCashflow** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more MonthlyCashflows
+    * const monthlyCashflows = await prisma.monthlyCashflow.findMany()
+    * ```
+    */
+  get monthlyCashflow(): Prisma.MonthlyCashflowDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -1460,7 +1505,10 @@ export namespace Prisma {
     Budget: 'Budget',
     GoldAsset: 'GoldAsset',
     RecurringExecution: 'RecurringExecution',
-    JournalEntry: 'JournalEntry'
+    JournalEntry: 'JournalEntry',
+    DailyAccountBalance: 'DailyAccountBalance',
+    MonthlyCategorySpend: 'MonthlyCategorySpend',
+    MonthlyCashflow: 'MonthlyCashflow'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1479,7 +1527,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "account" | "advisorApplication" | "advisorAvailability" | "advisorSession" | "bookingRequest" | "category" | "chatMessage" | "device" | "expenseBill" | "friend" | "goal" | "goalContribution" | "importLog" | "investment" | "loan" | "loanPayment" | "notification" | "payment" | "refreshToken" | "syncQueue" | "todo" | "transaction" | "user" | "userPin" | "userSettings" | "platformSettings" | "otpCode" | "aiScan" | "ai_events" | "ai_insights" | "ai_model_runs" | "auditLog" | "groupExpense" | "groupExpenseMember" | "collaborationParticipant" | "goalMember" | "user_features" | "profiles" | "otpRequest" | "aaConsent" | "aaConsentArtifact" | "aaDataSession" | "aaFinancialData" | "aaTransaction" | "recurringTransaction" | "budget" | "goldAsset" | "recurringExecution" | "journalEntry"
+      modelProps: "account" | "advisorApplication" | "advisorAvailability" | "advisorSession" | "bookingRequest" | "category" | "chatMessage" | "device" | "expenseBill" | "friend" | "goal" | "goalContribution" | "importLog" | "investment" | "loan" | "loanPayment" | "notification" | "payment" | "refreshToken" | "syncQueue" | "todo" | "transaction" | "user" | "userPin" | "userSettings" | "platformSettings" | "otpCode" | "aiScan" | "ai_events" | "ai_insights" | "ai_model_runs" | "auditLog" | "groupExpense" | "groupExpenseMember" | "collaborationParticipant" | "goalMember" | "user_features" | "profiles" | "otpRequest" | "aaConsent" | "aaConsentArtifact" | "aaDataSession" | "aaFinancialData" | "aaTransaction" | "recurringTransaction" | "budget" | "goldAsset" | "recurringExecution" | "journalEntry" | "dailyAccountBalance" | "monthlyCategorySpend" | "monthlyCashflow"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -5109,6 +5157,228 @@ export namespace Prisma {
           }
         }
       }
+      DailyAccountBalance: {
+        payload: Prisma.$DailyAccountBalancePayload<ExtArgs>
+        fields: Prisma.DailyAccountBalanceFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.DailyAccountBalanceFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DailyAccountBalancePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.DailyAccountBalanceFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DailyAccountBalancePayload>
+          }
+          findFirst: {
+            args: Prisma.DailyAccountBalanceFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DailyAccountBalancePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.DailyAccountBalanceFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DailyAccountBalancePayload>
+          }
+          findMany: {
+            args: Prisma.DailyAccountBalanceFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DailyAccountBalancePayload>[]
+          }
+          create: {
+            args: Prisma.DailyAccountBalanceCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DailyAccountBalancePayload>
+          }
+          createMany: {
+            args: Prisma.DailyAccountBalanceCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.DailyAccountBalanceCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DailyAccountBalancePayload>[]
+          }
+          delete: {
+            args: Prisma.DailyAccountBalanceDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DailyAccountBalancePayload>
+          }
+          update: {
+            args: Prisma.DailyAccountBalanceUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DailyAccountBalancePayload>
+          }
+          deleteMany: {
+            args: Prisma.DailyAccountBalanceDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.DailyAccountBalanceUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.DailyAccountBalanceUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DailyAccountBalancePayload>[]
+          }
+          upsert: {
+            args: Prisma.DailyAccountBalanceUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DailyAccountBalancePayload>
+          }
+          aggregate: {
+            args: Prisma.DailyAccountBalanceAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateDailyAccountBalance>
+          }
+          groupBy: {
+            args: Prisma.DailyAccountBalanceGroupByArgs<ExtArgs>
+            result: $Utils.Optional<DailyAccountBalanceGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.DailyAccountBalanceCountArgs<ExtArgs>
+            result: $Utils.Optional<DailyAccountBalanceCountAggregateOutputType> | number
+          }
+        }
+      }
+      MonthlyCategorySpend: {
+        payload: Prisma.$MonthlyCategorySpendPayload<ExtArgs>
+        fields: Prisma.MonthlyCategorySpendFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.MonthlyCategorySpendFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MonthlyCategorySpendPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.MonthlyCategorySpendFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MonthlyCategorySpendPayload>
+          }
+          findFirst: {
+            args: Prisma.MonthlyCategorySpendFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MonthlyCategorySpendPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.MonthlyCategorySpendFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MonthlyCategorySpendPayload>
+          }
+          findMany: {
+            args: Prisma.MonthlyCategorySpendFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MonthlyCategorySpendPayload>[]
+          }
+          create: {
+            args: Prisma.MonthlyCategorySpendCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MonthlyCategorySpendPayload>
+          }
+          createMany: {
+            args: Prisma.MonthlyCategorySpendCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.MonthlyCategorySpendCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MonthlyCategorySpendPayload>[]
+          }
+          delete: {
+            args: Prisma.MonthlyCategorySpendDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MonthlyCategorySpendPayload>
+          }
+          update: {
+            args: Prisma.MonthlyCategorySpendUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MonthlyCategorySpendPayload>
+          }
+          deleteMany: {
+            args: Prisma.MonthlyCategorySpendDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.MonthlyCategorySpendUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.MonthlyCategorySpendUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MonthlyCategorySpendPayload>[]
+          }
+          upsert: {
+            args: Prisma.MonthlyCategorySpendUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MonthlyCategorySpendPayload>
+          }
+          aggregate: {
+            args: Prisma.MonthlyCategorySpendAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateMonthlyCategorySpend>
+          }
+          groupBy: {
+            args: Prisma.MonthlyCategorySpendGroupByArgs<ExtArgs>
+            result: $Utils.Optional<MonthlyCategorySpendGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.MonthlyCategorySpendCountArgs<ExtArgs>
+            result: $Utils.Optional<MonthlyCategorySpendCountAggregateOutputType> | number
+          }
+        }
+      }
+      MonthlyCashflow: {
+        payload: Prisma.$MonthlyCashflowPayload<ExtArgs>
+        fields: Prisma.MonthlyCashflowFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.MonthlyCashflowFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MonthlyCashflowPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.MonthlyCashflowFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MonthlyCashflowPayload>
+          }
+          findFirst: {
+            args: Prisma.MonthlyCashflowFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MonthlyCashflowPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.MonthlyCashflowFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MonthlyCashflowPayload>
+          }
+          findMany: {
+            args: Prisma.MonthlyCashflowFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MonthlyCashflowPayload>[]
+          }
+          create: {
+            args: Prisma.MonthlyCashflowCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MonthlyCashflowPayload>
+          }
+          createMany: {
+            args: Prisma.MonthlyCashflowCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.MonthlyCashflowCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MonthlyCashflowPayload>[]
+          }
+          delete: {
+            args: Prisma.MonthlyCashflowDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MonthlyCashflowPayload>
+          }
+          update: {
+            args: Prisma.MonthlyCashflowUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MonthlyCashflowPayload>
+          }
+          deleteMany: {
+            args: Prisma.MonthlyCashflowDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.MonthlyCashflowUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.MonthlyCashflowUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MonthlyCashflowPayload>[]
+          }
+          upsert: {
+            args: Prisma.MonthlyCashflowUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MonthlyCashflowPayload>
+          }
+          aggregate: {
+            args: Prisma.MonthlyCashflowAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateMonthlyCashflow>
+          }
+          groupBy: {
+            args: Prisma.MonthlyCashflowGroupByArgs<ExtArgs>
+            result: $Utils.Optional<MonthlyCashflowGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.MonthlyCashflowCountArgs<ExtArgs>
+            result: $Utils.Optional<MonthlyCashflowCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -5254,6 +5524,9 @@ export namespace Prisma {
     goldAsset?: GoldAssetOmit
     recurringExecution?: RecurringExecutionOmit
     journalEntry?: JournalEntryOmit
+    dailyAccountBalance?: DailyAccountBalanceOmit
+    monthlyCategorySpend?: MonthlyCategorySpendOmit
+    monthlyCashflow?: MonthlyCashflowOmit
   }
 
   /* Types for Logging */
@@ -65095,6 +65368,3165 @@ export namespace Prisma {
 
 
   /**
+   * Model DailyAccountBalance
+   */
+
+  export type AggregateDailyAccountBalance = {
+    _count: DailyAccountBalanceCountAggregateOutputType | null
+    _avg: DailyAccountBalanceAvgAggregateOutputType | null
+    _sum: DailyAccountBalanceSumAggregateOutputType | null
+    _min: DailyAccountBalanceMinAggregateOutputType | null
+    _max: DailyAccountBalanceMaxAggregateOutputType | null
+  }
+
+  export type DailyAccountBalanceAvgAggregateOutputType = {
+    balance: Decimal | null
+  }
+
+  export type DailyAccountBalanceSumAggregateOutputType = {
+    balance: Decimal | null
+  }
+
+  export type DailyAccountBalanceMinAggregateOutputType = {
+    id: string | null
+    accountId: string | null
+    userId: string | null
+    date: Date | null
+    balance: Decimal | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type DailyAccountBalanceMaxAggregateOutputType = {
+    id: string | null
+    accountId: string | null
+    userId: string | null
+    date: Date | null
+    balance: Decimal | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type DailyAccountBalanceCountAggregateOutputType = {
+    id: number
+    accountId: number
+    userId: number
+    date: number
+    balance: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type DailyAccountBalanceAvgAggregateInputType = {
+    balance?: true
+  }
+
+  export type DailyAccountBalanceSumAggregateInputType = {
+    balance?: true
+  }
+
+  export type DailyAccountBalanceMinAggregateInputType = {
+    id?: true
+    accountId?: true
+    userId?: true
+    date?: true
+    balance?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type DailyAccountBalanceMaxAggregateInputType = {
+    id?: true
+    accountId?: true
+    userId?: true
+    date?: true
+    balance?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type DailyAccountBalanceCountAggregateInputType = {
+    id?: true
+    accountId?: true
+    userId?: true
+    date?: true
+    balance?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type DailyAccountBalanceAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which DailyAccountBalance to aggregate.
+     */
+    where?: DailyAccountBalanceWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of DailyAccountBalances to fetch.
+     */
+    orderBy?: DailyAccountBalanceOrderByWithRelationInput | DailyAccountBalanceOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: DailyAccountBalanceWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` DailyAccountBalances from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` DailyAccountBalances.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned DailyAccountBalances
+    **/
+    _count?: true | DailyAccountBalanceCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: DailyAccountBalanceAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: DailyAccountBalanceSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: DailyAccountBalanceMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: DailyAccountBalanceMaxAggregateInputType
+  }
+
+  export type GetDailyAccountBalanceAggregateType<T extends DailyAccountBalanceAggregateArgs> = {
+        [P in keyof T & keyof AggregateDailyAccountBalance]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateDailyAccountBalance[P]>
+      : GetScalarType<T[P], AggregateDailyAccountBalance[P]>
+  }
+
+
+
+
+  export type DailyAccountBalanceGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: DailyAccountBalanceWhereInput
+    orderBy?: DailyAccountBalanceOrderByWithAggregationInput | DailyAccountBalanceOrderByWithAggregationInput[]
+    by: DailyAccountBalanceScalarFieldEnum[] | DailyAccountBalanceScalarFieldEnum
+    having?: DailyAccountBalanceScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: DailyAccountBalanceCountAggregateInputType | true
+    _avg?: DailyAccountBalanceAvgAggregateInputType
+    _sum?: DailyAccountBalanceSumAggregateInputType
+    _min?: DailyAccountBalanceMinAggregateInputType
+    _max?: DailyAccountBalanceMaxAggregateInputType
+  }
+
+  export type DailyAccountBalanceGroupByOutputType = {
+    id: string
+    accountId: string
+    userId: string
+    date: Date
+    balance: Decimal
+    createdAt: Date
+    updatedAt: Date
+    _count: DailyAccountBalanceCountAggregateOutputType | null
+    _avg: DailyAccountBalanceAvgAggregateOutputType | null
+    _sum: DailyAccountBalanceSumAggregateOutputType | null
+    _min: DailyAccountBalanceMinAggregateOutputType | null
+    _max: DailyAccountBalanceMaxAggregateOutputType | null
+  }
+
+  type GetDailyAccountBalanceGroupByPayload<T extends DailyAccountBalanceGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<DailyAccountBalanceGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof DailyAccountBalanceGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], DailyAccountBalanceGroupByOutputType[P]>
+            : GetScalarType<T[P], DailyAccountBalanceGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type DailyAccountBalanceSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    accountId?: boolean
+    userId?: boolean
+    date?: boolean
+    balance?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["dailyAccountBalance"]>
+
+  export type DailyAccountBalanceSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    accountId?: boolean
+    userId?: boolean
+    date?: boolean
+    balance?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["dailyAccountBalance"]>
+
+  export type DailyAccountBalanceSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    accountId?: boolean
+    userId?: boolean
+    date?: boolean
+    balance?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["dailyAccountBalance"]>
+
+  export type DailyAccountBalanceSelectScalar = {
+    id?: boolean
+    accountId?: boolean
+    userId?: boolean
+    date?: boolean
+    balance?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type DailyAccountBalanceOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "accountId" | "userId" | "date" | "balance" | "createdAt" | "updatedAt", ExtArgs["result"]["dailyAccountBalance"]>
+
+  export type $DailyAccountBalancePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "DailyAccountBalance"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      accountId: string
+      userId: string
+      date: Date
+      balance: Prisma.Decimal
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["dailyAccountBalance"]>
+    composites: {}
+  }
+
+  type DailyAccountBalanceGetPayload<S extends boolean | null | undefined | DailyAccountBalanceDefaultArgs> = $Result.GetResult<Prisma.$DailyAccountBalancePayload, S>
+
+  type DailyAccountBalanceCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<DailyAccountBalanceFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: DailyAccountBalanceCountAggregateInputType | true
+    }
+
+  export interface DailyAccountBalanceDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['DailyAccountBalance'], meta: { name: 'DailyAccountBalance' } }
+    /**
+     * Find zero or one DailyAccountBalance that matches the filter.
+     * @param {DailyAccountBalanceFindUniqueArgs} args - Arguments to find a DailyAccountBalance
+     * @example
+     * // Get one DailyAccountBalance
+     * const dailyAccountBalance = await prisma.dailyAccountBalance.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends DailyAccountBalanceFindUniqueArgs>(args: SelectSubset<T, DailyAccountBalanceFindUniqueArgs<ExtArgs>>): Prisma__DailyAccountBalanceClient<$Result.GetResult<Prisma.$DailyAccountBalancePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one DailyAccountBalance that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {DailyAccountBalanceFindUniqueOrThrowArgs} args - Arguments to find a DailyAccountBalance
+     * @example
+     * // Get one DailyAccountBalance
+     * const dailyAccountBalance = await prisma.dailyAccountBalance.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends DailyAccountBalanceFindUniqueOrThrowArgs>(args: SelectSubset<T, DailyAccountBalanceFindUniqueOrThrowArgs<ExtArgs>>): Prisma__DailyAccountBalanceClient<$Result.GetResult<Prisma.$DailyAccountBalancePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first DailyAccountBalance that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DailyAccountBalanceFindFirstArgs} args - Arguments to find a DailyAccountBalance
+     * @example
+     * // Get one DailyAccountBalance
+     * const dailyAccountBalance = await prisma.dailyAccountBalance.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends DailyAccountBalanceFindFirstArgs>(args?: SelectSubset<T, DailyAccountBalanceFindFirstArgs<ExtArgs>>): Prisma__DailyAccountBalanceClient<$Result.GetResult<Prisma.$DailyAccountBalancePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first DailyAccountBalance that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DailyAccountBalanceFindFirstOrThrowArgs} args - Arguments to find a DailyAccountBalance
+     * @example
+     * // Get one DailyAccountBalance
+     * const dailyAccountBalance = await prisma.dailyAccountBalance.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends DailyAccountBalanceFindFirstOrThrowArgs>(args?: SelectSubset<T, DailyAccountBalanceFindFirstOrThrowArgs<ExtArgs>>): Prisma__DailyAccountBalanceClient<$Result.GetResult<Prisma.$DailyAccountBalancePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more DailyAccountBalances that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DailyAccountBalanceFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all DailyAccountBalances
+     * const dailyAccountBalances = await prisma.dailyAccountBalance.findMany()
+     * 
+     * // Get first 10 DailyAccountBalances
+     * const dailyAccountBalances = await prisma.dailyAccountBalance.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const dailyAccountBalanceWithIdOnly = await prisma.dailyAccountBalance.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends DailyAccountBalanceFindManyArgs>(args?: SelectSubset<T, DailyAccountBalanceFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DailyAccountBalancePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a DailyAccountBalance.
+     * @param {DailyAccountBalanceCreateArgs} args - Arguments to create a DailyAccountBalance.
+     * @example
+     * // Create one DailyAccountBalance
+     * const DailyAccountBalance = await prisma.dailyAccountBalance.create({
+     *   data: {
+     *     // ... data to create a DailyAccountBalance
+     *   }
+     * })
+     * 
+     */
+    create<T extends DailyAccountBalanceCreateArgs>(args: SelectSubset<T, DailyAccountBalanceCreateArgs<ExtArgs>>): Prisma__DailyAccountBalanceClient<$Result.GetResult<Prisma.$DailyAccountBalancePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many DailyAccountBalances.
+     * @param {DailyAccountBalanceCreateManyArgs} args - Arguments to create many DailyAccountBalances.
+     * @example
+     * // Create many DailyAccountBalances
+     * const dailyAccountBalance = await prisma.dailyAccountBalance.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends DailyAccountBalanceCreateManyArgs>(args?: SelectSubset<T, DailyAccountBalanceCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many DailyAccountBalances and returns the data saved in the database.
+     * @param {DailyAccountBalanceCreateManyAndReturnArgs} args - Arguments to create many DailyAccountBalances.
+     * @example
+     * // Create many DailyAccountBalances
+     * const dailyAccountBalance = await prisma.dailyAccountBalance.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many DailyAccountBalances and only return the `id`
+     * const dailyAccountBalanceWithIdOnly = await prisma.dailyAccountBalance.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends DailyAccountBalanceCreateManyAndReturnArgs>(args?: SelectSubset<T, DailyAccountBalanceCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DailyAccountBalancePayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a DailyAccountBalance.
+     * @param {DailyAccountBalanceDeleteArgs} args - Arguments to delete one DailyAccountBalance.
+     * @example
+     * // Delete one DailyAccountBalance
+     * const DailyAccountBalance = await prisma.dailyAccountBalance.delete({
+     *   where: {
+     *     // ... filter to delete one DailyAccountBalance
+     *   }
+     * })
+     * 
+     */
+    delete<T extends DailyAccountBalanceDeleteArgs>(args: SelectSubset<T, DailyAccountBalanceDeleteArgs<ExtArgs>>): Prisma__DailyAccountBalanceClient<$Result.GetResult<Prisma.$DailyAccountBalancePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one DailyAccountBalance.
+     * @param {DailyAccountBalanceUpdateArgs} args - Arguments to update one DailyAccountBalance.
+     * @example
+     * // Update one DailyAccountBalance
+     * const dailyAccountBalance = await prisma.dailyAccountBalance.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends DailyAccountBalanceUpdateArgs>(args: SelectSubset<T, DailyAccountBalanceUpdateArgs<ExtArgs>>): Prisma__DailyAccountBalanceClient<$Result.GetResult<Prisma.$DailyAccountBalancePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more DailyAccountBalances.
+     * @param {DailyAccountBalanceDeleteManyArgs} args - Arguments to filter DailyAccountBalances to delete.
+     * @example
+     * // Delete a few DailyAccountBalances
+     * const { count } = await prisma.dailyAccountBalance.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends DailyAccountBalanceDeleteManyArgs>(args?: SelectSubset<T, DailyAccountBalanceDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more DailyAccountBalances.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DailyAccountBalanceUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many DailyAccountBalances
+     * const dailyAccountBalance = await prisma.dailyAccountBalance.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends DailyAccountBalanceUpdateManyArgs>(args: SelectSubset<T, DailyAccountBalanceUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more DailyAccountBalances and returns the data updated in the database.
+     * @param {DailyAccountBalanceUpdateManyAndReturnArgs} args - Arguments to update many DailyAccountBalances.
+     * @example
+     * // Update many DailyAccountBalances
+     * const dailyAccountBalance = await prisma.dailyAccountBalance.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more DailyAccountBalances and only return the `id`
+     * const dailyAccountBalanceWithIdOnly = await prisma.dailyAccountBalance.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends DailyAccountBalanceUpdateManyAndReturnArgs>(args: SelectSubset<T, DailyAccountBalanceUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DailyAccountBalancePayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one DailyAccountBalance.
+     * @param {DailyAccountBalanceUpsertArgs} args - Arguments to update or create a DailyAccountBalance.
+     * @example
+     * // Update or create a DailyAccountBalance
+     * const dailyAccountBalance = await prisma.dailyAccountBalance.upsert({
+     *   create: {
+     *     // ... data to create a DailyAccountBalance
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the DailyAccountBalance we want to update
+     *   }
+     * })
+     */
+    upsert<T extends DailyAccountBalanceUpsertArgs>(args: SelectSubset<T, DailyAccountBalanceUpsertArgs<ExtArgs>>): Prisma__DailyAccountBalanceClient<$Result.GetResult<Prisma.$DailyAccountBalancePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of DailyAccountBalances.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DailyAccountBalanceCountArgs} args - Arguments to filter DailyAccountBalances to count.
+     * @example
+     * // Count the number of DailyAccountBalances
+     * const count = await prisma.dailyAccountBalance.count({
+     *   where: {
+     *     // ... the filter for the DailyAccountBalances we want to count
+     *   }
+     * })
+    **/
+    count<T extends DailyAccountBalanceCountArgs>(
+      args?: Subset<T, DailyAccountBalanceCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], DailyAccountBalanceCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a DailyAccountBalance.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DailyAccountBalanceAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends DailyAccountBalanceAggregateArgs>(args: Subset<T, DailyAccountBalanceAggregateArgs>): Prisma.PrismaPromise<GetDailyAccountBalanceAggregateType<T>>
+
+    /**
+     * Group by DailyAccountBalance.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DailyAccountBalanceGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends DailyAccountBalanceGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: DailyAccountBalanceGroupByArgs['orderBy'] }
+        : { orderBy?: DailyAccountBalanceGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, DailyAccountBalanceGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetDailyAccountBalanceGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the DailyAccountBalance model
+   */
+  readonly fields: DailyAccountBalanceFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for DailyAccountBalance.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__DailyAccountBalanceClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the DailyAccountBalance model
+   */
+  interface DailyAccountBalanceFieldRefs {
+    readonly id: FieldRef<"DailyAccountBalance", 'String'>
+    readonly accountId: FieldRef<"DailyAccountBalance", 'String'>
+    readonly userId: FieldRef<"DailyAccountBalance", 'String'>
+    readonly date: FieldRef<"DailyAccountBalance", 'DateTime'>
+    readonly balance: FieldRef<"DailyAccountBalance", 'Decimal'>
+    readonly createdAt: FieldRef<"DailyAccountBalance", 'DateTime'>
+    readonly updatedAt: FieldRef<"DailyAccountBalance", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * DailyAccountBalance findUnique
+   */
+  export type DailyAccountBalanceFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DailyAccountBalance
+     */
+    select?: DailyAccountBalanceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DailyAccountBalance
+     */
+    omit?: DailyAccountBalanceOmit<ExtArgs> | null
+    /**
+     * Filter, which DailyAccountBalance to fetch.
+     */
+    where: DailyAccountBalanceWhereUniqueInput
+  }
+
+  /**
+   * DailyAccountBalance findUniqueOrThrow
+   */
+  export type DailyAccountBalanceFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DailyAccountBalance
+     */
+    select?: DailyAccountBalanceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DailyAccountBalance
+     */
+    omit?: DailyAccountBalanceOmit<ExtArgs> | null
+    /**
+     * Filter, which DailyAccountBalance to fetch.
+     */
+    where: DailyAccountBalanceWhereUniqueInput
+  }
+
+  /**
+   * DailyAccountBalance findFirst
+   */
+  export type DailyAccountBalanceFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DailyAccountBalance
+     */
+    select?: DailyAccountBalanceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DailyAccountBalance
+     */
+    omit?: DailyAccountBalanceOmit<ExtArgs> | null
+    /**
+     * Filter, which DailyAccountBalance to fetch.
+     */
+    where?: DailyAccountBalanceWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of DailyAccountBalances to fetch.
+     */
+    orderBy?: DailyAccountBalanceOrderByWithRelationInput | DailyAccountBalanceOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for DailyAccountBalances.
+     */
+    cursor?: DailyAccountBalanceWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` DailyAccountBalances from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` DailyAccountBalances.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of DailyAccountBalances.
+     */
+    distinct?: DailyAccountBalanceScalarFieldEnum | DailyAccountBalanceScalarFieldEnum[]
+  }
+
+  /**
+   * DailyAccountBalance findFirstOrThrow
+   */
+  export type DailyAccountBalanceFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DailyAccountBalance
+     */
+    select?: DailyAccountBalanceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DailyAccountBalance
+     */
+    omit?: DailyAccountBalanceOmit<ExtArgs> | null
+    /**
+     * Filter, which DailyAccountBalance to fetch.
+     */
+    where?: DailyAccountBalanceWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of DailyAccountBalances to fetch.
+     */
+    orderBy?: DailyAccountBalanceOrderByWithRelationInput | DailyAccountBalanceOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for DailyAccountBalances.
+     */
+    cursor?: DailyAccountBalanceWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` DailyAccountBalances from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` DailyAccountBalances.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of DailyAccountBalances.
+     */
+    distinct?: DailyAccountBalanceScalarFieldEnum | DailyAccountBalanceScalarFieldEnum[]
+  }
+
+  /**
+   * DailyAccountBalance findMany
+   */
+  export type DailyAccountBalanceFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DailyAccountBalance
+     */
+    select?: DailyAccountBalanceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DailyAccountBalance
+     */
+    omit?: DailyAccountBalanceOmit<ExtArgs> | null
+    /**
+     * Filter, which DailyAccountBalances to fetch.
+     */
+    where?: DailyAccountBalanceWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of DailyAccountBalances to fetch.
+     */
+    orderBy?: DailyAccountBalanceOrderByWithRelationInput | DailyAccountBalanceOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing DailyAccountBalances.
+     */
+    cursor?: DailyAccountBalanceWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` DailyAccountBalances from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` DailyAccountBalances.
+     */
+    skip?: number
+    distinct?: DailyAccountBalanceScalarFieldEnum | DailyAccountBalanceScalarFieldEnum[]
+  }
+
+  /**
+   * DailyAccountBalance create
+   */
+  export type DailyAccountBalanceCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DailyAccountBalance
+     */
+    select?: DailyAccountBalanceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DailyAccountBalance
+     */
+    omit?: DailyAccountBalanceOmit<ExtArgs> | null
+    /**
+     * The data needed to create a DailyAccountBalance.
+     */
+    data: XOR<DailyAccountBalanceCreateInput, DailyAccountBalanceUncheckedCreateInput>
+  }
+
+  /**
+   * DailyAccountBalance createMany
+   */
+  export type DailyAccountBalanceCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many DailyAccountBalances.
+     */
+    data: DailyAccountBalanceCreateManyInput | DailyAccountBalanceCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * DailyAccountBalance createManyAndReturn
+   */
+  export type DailyAccountBalanceCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DailyAccountBalance
+     */
+    select?: DailyAccountBalanceSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the DailyAccountBalance
+     */
+    omit?: DailyAccountBalanceOmit<ExtArgs> | null
+    /**
+     * The data used to create many DailyAccountBalances.
+     */
+    data: DailyAccountBalanceCreateManyInput | DailyAccountBalanceCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * DailyAccountBalance update
+   */
+  export type DailyAccountBalanceUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DailyAccountBalance
+     */
+    select?: DailyAccountBalanceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DailyAccountBalance
+     */
+    omit?: DailyAccountBalanceOmit<ExtArgs> | null
+    /**
+     * The data needed to update a DailyAccountBalance.
+     */
+    data: XOR<DailyAccountBalanceUpdateInput, DailyAccountBalanceUncheckedUpdateInput>
+    /**
+     * Choose, which DailyAccountBalance to update.
+     */
+    where: DailyAccountBalanceWhereUniqueInput
+  }
+
+  /**
+   * DailyAccountBalance updateMany
+   */
+  export type DailyAccountBalanceUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update DailyAccountBalances.
+     */
+    data: XOR<DailyAccountBalanceUpdateManyMutationInput, DailyAccountBalanceUncheckedUpdateManyInput>
+    /**
+     * Filter which DailyAccountBalances to update
+     */
+    where?: DailyAccountBalanceWhereInput
+    /**
+     * Limit how many DailyAccountBalances to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * DailyAccountBalance updateManyAndReturn
+   */
+  export type DailyAccountBalanceUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DailyAccountBalance
+     */
+    select?: DailyAccountBalanceSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the DailyAccountBalance
+     */
+    omit?: DailyAccountBalanceOmit<ExtArgs> | null
+    /**
+     * The data used to update DailyAccountBalances.
+     */
+    data: XOR<DailyAccountBalanceUpdateManyMutationInput, DailyAccountBalanceUncheckedUpdateManyInput>
+    /**
+     * Filter which DailyAccountBalances to update
+     */
+    where?: DailyAccountBalanceWhereInput
+    /**
+     * Limit how many DailyAccountBalances to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * DailyAccountBalance upsert
+   */
+  export type DailyAccountBalanceUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DailyAccountBalance
+     */
+    select?: DailyAccountBalanceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DailyAccountBalance
+     */
+    omit?: DailyAccountBalanceOmit<ExtArgs> | null
+    /**
+     * The filter to search for the DailyAccountBalance to update in case it exists.
+     */
+    where: DailyAccountBalanceWhereUniqueInput
+    /**
+     * In case the DailyAccountBalance found by the `where` argument doesn't exist, create a new DailyAccountBalance with this data.
+     */
+    create: XOR<DailyAccountBalanceCreateInput, DailyAccountBalanceUncheckedCreateInput>
+    /**
+     * In case the DailyAccountBalance was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<DailyAccountBalanceUpdateInput, DailyAccountBalanceUncheckedUpdateInput>
+  }
+
+  /**
+   * DailyAccountBalance delete
+   */
+  export type DailyAccountBalanceDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DailyAccountBalance
+     */
+    select?: DailyAccountBalanceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DailyAccountBalance
+     */
+    omit?: DailyAccountBalanceOmit<ExtArgs> | null
+    /**
+     * Filter which DailyAccountBalance to delete.
+     */
+    where: DailyAccountBalanceWhereUniqueInput
+  }
+
+  /**
+   * DailyAccountBalance deleteMany
+   */
+  export type DailyAccountBalanceDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which DailyAccountBalances to delete
+     */
+    where?: DailyAccountBalanceWhereInput
+    /**
+     * Limit how many DailyAccountBalances to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * DailyAccountBalance without action
+   */
+  export type DailyAccountBalanceDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DailyAccountBalance
+     */
+    select?: DailyAccountBalanceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DailyAccountBalance
+     */
+    omit?: DailyAccountBalanceOmit<ExtArgs> | null
+  }
+
+
+  /**
+   * Model MonthlyCategorySpend
+   */
+
+  export type AggregateMonthlyCategorySpend = {
+    _count: MonthlyCategorySpendCountAggregateOutputType | null
+    _avg: MonthlyCategorySpendAvgAggregateOutputType | null
+    _sum: MonthlyCategorySpendSumAggregateOutputType | null
+    _min: MonthlyCategorySpendMinAggregateOutputType | null
+    _max: MonthlyCategorySpendMaxAggregateOutputType | null
+  }
+
+  export type MonthlyCategorySpendAvgAggregateOutputType = {
+    year: number | null
+    month: number | null
+    total: Decimal | null
+  }
+
+  export type MonthlyCategorySpendSumAggregateOutputType = {
+    year: number | null
+    month: number | null
+    total: Decimal | null
+  }
+
+  export type MonthlyCategorySpendMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    year: number | null
+    month: number | null
+    category: string | null
+    total: Decimal | null
+  }
+
+  export type MonthlyCategorySpendMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    year: number | null
+    month: number | null
+    category: string | null
+    total: Decimal | null
+  }
+
+  export type MonthlyCategorySpendCountAggregateOutputType = {
+    id: number
+    userId: number
+    year: number
+    month: number
+    category: number
+    total: number
+    _all: number
+  }
+
+
+  export type MonthlyCategorySpendAvgAggregateInputType = {
+    year?: true
+    month?: true
+    total?: true
+  }
+
+  export type MonthlyCategorySpendSumAggregateInputType = {
+    year?: true
+    month?: true
+    total?: true
+  }
+
+  export type MonthlyCategorySpendMinAggregateInputType = {
+    id?: true
+    userId?: true
+    year?: true
+    month?: true
+    category?: true
+    total?: true
+  }
+
+  export type MonthlyCategorySpendMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    year?: true
+    month?: true
+    category?: true
+    total?: true
+  }
+
+  export type MonthlyCategorySpendCountAggregateInputType = {
+    id?: true
+    userId?: true
+    year?: true
+    month?: true
+    category?: true
+    total?: true
+    _all?: true
+  }
+
+  export type MonthlyCategorySpendAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which MonthlyCategorySpend to aggregate.
+     */
+    where?: MonthlyCategorySpendWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of MonthlyCategorySpends to fetch.
+     */
+    orderBy?: MonthlyCategorySpendOrderByWithRelationInput | MonthlyCategorySpendOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: MonthlyCategorySpendWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` MonthlyCategorySpends from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` MonthlyCategorySpends.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned MonthlyCategorySpends
+    **/
+    _count?: true | MonthlyCategorySpendCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: MonthlyCategorySpendAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: MonthlyCategorySpendSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: MonthlyCategorySpendMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: MonthlyCategorySpendMaxAggregateInputType
+  }
+
+  export type GetMonthlyCategorySpendAggregateType<T extends MonthlyCategorySpendAggregateArgs> = {
+        [P in keyof T & keyof AggregateMonthlyCategorySpend]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateMonthlyCategorySpend[P]>
+      : GetScalarType<T[P], AggregateMonthlyCategorySpend[P]>
+  }
+
+
+
+
+  export type MonthlyCategorySpendGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: MonthlyCategorySpendWhereInput
+    orderBy?: MonthlyCategorySpendOrderByWithAggregationInput | MonthlyCategorySpendOrderByWithAggregationInput[]
+    by: MonthlyCategorySpendScalarFieldEnum[] | MonthlyCategorySpendScalarFieldEnum
+    having?: MonthlyCategorySpendScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: MonthlyCategorySpendCountAggregateInputType | true
+    _avg?: MonthlyCategorySpendAvgAggregateInputType
+    _sum?: MonthlyCategorySpendSumAggregateInputType
+    _min?: MonthlyCategorySpendMinAggregateInputType
+    _max?: MonthlyCategorySpendMaxAggregateInputType
+  }
+
+  export type MonthlyCategorySpendGroupByOutputType = {
+    id: string
+    userId: string
+    year: number
+    month: number
+    category: string
+    total: Decimal
+    _count: MonthlyCategorySpendCountAggregateOutputType | null
+    _avg: MonthlyCategorySpendAvgAggregateOutputType | null
+    _sum: MonthlyCategorySpendSumAggregateOutputType | null
+    _min: MonthlyCategorySpendMinAggregateOutputType | null
+    _max: MonthlyCategorySpendMaxAggregateOutputType | null
+  }
+
+  type GetMonthlyCategorySpendGroupByPayload<T extends MonthlyCategorySpendGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<MonthlyCategorySpendGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof MonthlyCategorySpendGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], MonthlyCategorySpendGroupByOutputType[P]>
+            : GetScalarType<T[P], MonthlyCategorySpendGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type MonthlyCategorySpendSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    year?: boolean
+    month?: boolean
+    category?: boolean
+    total?: boolean
+  }, ExtArgs["result"]["monthlyCategorySpend"]>
+
+  export type MonthlyCategorySpendSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    year?: boolean
+    month?: boolean
+    category?: boolean
+    total?: boolean
+  }, ExtArgs["result"]["monthlyCategorySpend"]>
+
+  export type MonthlyCategorySpendSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    year?: boolean
+    month?: boolean
+    category?: boolean
+    total?: boolean
+  }, ExtArgs["result"]["monthlyCategorySpend"]>
+
+  export type MonthlyCategorySpendSelectScalar = {
+    id?: boolean
+    userId?: boolean
+    year?: boolean
+    month?: boolean
+    category?: boolean
+    total?: boolean
+  }
+
+  export type MonthlyCategorySpendOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "year" | "month" | "category" | "total", ExtArgs["result"]["monthlyCategorySpend"]>
+
+  export type $MonthlyCategorySpendPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "MonthlyCategorySpend"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userId: string
+      year: number
+      month: number
+      category: string
+      total: Prisma.Decimal
+    }, ExtArgs["result"]["monthlyCategorySpend"]>
+    composites: {}
+  }
+
+  type MonthlyCategorySpendGetPayload<S extends boolean | null | undefined | MonthlyCategorySpendDefaultArgs> = $Result.GetResult<Prisma.$MonthlyCategorySpendPayload, S>
+
+  type MonthlyCategorySpendCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<MonthlyCategorySpendFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: MonthlyCategorySpendCountAggregateInputType | true
+    }
+
+  export interface MonthlyCategorySpendDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['MonthlyCategorySpend'], meta: { name: 'MonthlyCategorySpend' } }
+    /**
+     * Find zero or one MonthlyCategorySpend that matches the filter.
+     * @param {MonthlyCategorySpendFindUniqueArgs} args - Arguments to find a MonthlyCategorySpend
+     * @example
+     * // Get one MonthlyCategorySpend
+     * const monthlyCategorySpend = await prisma.monthlyCategorySpend.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends MonthlyCategorySpendFindUniqueArgs>(args: SelectSubset<T, MonthlyCategorySpendFindUniqueArgs<ExtArgs>>): Prisma__MonthlyCategorySpendClient<$Result.GetResult<Prisma.$MonthlyCategorySpendPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one MonthlyCategorySpend that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {MonthlyCategorySpendFindUniqueOrThrowArgs} args - Arguments to find a MonthlyCategorySpend
+     * @example
+     * // Get one MonthlyCategorySpend
+     * const monthlyCategorySpend = await prisma.monthlyCategorySpend.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends MonthlyCategorySpendFindUniqueOrThrowArgs>(args: SelectSubset<T, MonthlyCategorySpendFindUniqueOrThrowArgs<ExtArgs>>): Prisma__MonthlyCategorySpendClient<$Result.GetResult<Prisma.$MonthlyCategorySpendPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first MonthlyCategorySpend that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MonthlyCategorySpendFindFirstArgs} args - Arguments to find a MonthlyCategorySpend
+     * @example
+     * // Get one MonthlyCategorySpend
+     * const monthlyCategorySpend = await prisma.monthlyCategorySpend.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends MonthlyCategorySpendFindFirstArgs>(args?: SelectSubset<T, MonthlyCategorySpendFindFirstArgs<ExtArgs>>): Prisma__MonthlyCategorySpendClient<$Result.GetResult<Prisma.$MonthlyCategorySpendPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first MonthlyCategorySpend that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MonthlyCategorySpendFindFirstOrThrowArgs} args - Arguments to find a MonthlyCategorySpend
+     * @example
+     * // Get one MonthlyCategorySpend
+     * const monthlyCategorySpend = await prisma.monthlyCategorySpend.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends MonthlyCategorySpendFindFirstOrThrowArgs>(args?: SelectSubset<T, MonthlyCategorySpendFindFirstOrThrowArgs<ExtArgs>>): Prisma__MonthlyCategorySpendClient<$Result.GetResult<Prisma.$MonthlyCategorySpendPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more MonthlyCategorySpends that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MonthlyCategorySpendFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all MonthlyCategorySpends
+     * const monthlyCategorySpends = await prisma.monthlyCategorySpend.findMany()
+     * 
+     * // Get first 10 MonthlyCategorySpends
+     * const monthlyCategorySpends = await prisma.monthlyCategorySpend.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const monthlyCategorySpendWithIdOnly = await prisma.monthlyCategorySpend.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends MonthlyCategorySpendFindManyArgs>(args?: SelectSubset<T, MonthlyCategorySpendFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MonthlyCategorySpendPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a MonthlyCategorySpend.
+     * @param {MonthlyCategorySpendCreateArgs} args - Arguments to create a MonthlyCategorySpend.
+     * @example
+     * // Create one MonthlyCategorySpend
+     * const MonthlyCategorySpend = await prisma.monthlyCategorySpend.create({
+     *   data: {
+     *     // ... data to create a MonthlyCategorySpend
+     *   }
+     * })
+     * 
+     */
+    create<T extends MonthlyCategorySpendCreateArgs>(args: SelectSubset<T, MonthlyCategorySpendCreateArgs<ExtArgs>>): Prisma__MonthlyCategorySpendClient<$Result.GetResult<Prisma.$MonthlyCategorySpendPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many MonthlyCategorySpends.
+     * @param {MonthlyCategorySpendCreateManyArgs} args - Arguments to create many MonthlyCategorySpends.
+     * @example
+     * // Create many MonthlyCategorySpends
+     * const monthlyCategorySpend = await prisma.monthlyCategorySpend.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends MonthlyCategorySpendCreateManyArgs>(args?: SelectSubset<T, MonthlyCategorySpendCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many MonthlyCategorySpends and returns the data saved in the database.
+     * @param {MonthlyCategorySpendCreateManyAndReturnArgs} args - Arguments to create many MonthlyCategorySpends.
+     * @example
+     * // Create many MonthlyCategorySpends
+     * const monthlyCategorySpend = await prisma.monthlyCategorySpend.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many MonthlyCategorySpends and only return the `id`
+     * const monthlyCategorySpendWithIdOnly = await prisma.monthlyCategorySpend.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends MonthlyCategorySpendCreateManyAndReturnArgs>(args?: SelectSubset<T, MonthlyCategorySpendCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MonthlyCategorySpendPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a MonthlyCategorySpend.
+     * @param {MonthlyCategorySpendDeleteArgs} args - Arguments to delete one MonthlyCategorySpend.
+     * @example
+     * // Delete one MonthlyCategorySpend
+     * const MonthlyCategorySpend = await prisma.monthlyCategorySpend.delete({
+     *   where: {
+     *     // ... filter to delete one MonthlyCategorySpend
+     *   }
+     * })
+     * 
+     */
+    delete<T extends MonthlyCategorySpendDeleteArgs>(args: SelectSubset<T, MonthlyCategorySpendDeleteArgs<ExtArgs>>): Prisma__MonthlyCategorySpendClient<$Result.GetResult<Prisma.$MonthlyCategorySpendPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one MonthlyCategorySpend.
+     * @param {MonthlyCategorySpendUpdateArgs} args - Arguments to update one MonthlyCategorySpend.
+     * @example
+     * // Update one MonthlyCategorySpend
+     * const monthlyCategorySpend = await prisma.monthlyCategorySpend.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends MonthlyCategorySpendUpdateArgs>(args: SelectSubset<T, MonthlyCategorySpendUpdateArgs<ExtArgs>>): Prisma__MonthlyCategorySpendClient<$Result.GetResult<Prisma.$MonthlyCategorySpendPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more MonthlyCategorySpends.
+     * @param {MonthlyCategorySpendDeleteManyArgs} args - Arguments to filter MonthlyCategorySpends to delete.
+     * @example
+     * // Delete a few MonthlyCategorySpends
+     * const { count } = await prisma.monthlyCategorySpend.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends MonthlyCategorySpendDeleteManyArgs>(args?: SelectSubset<T, MonthlyCategorySpendDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more MonthlyCategorySpends.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MonthlyCategorySpendUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many MonthlyCategorySpends
+     * const monthlyCategorySpend = await prisma.monthlyCategorySpend.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends MonthlyCategorySpendUpdateManyArgs>(args: SelectSubset<T, MonthlyCategorySpendUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more MonthlyCategorySpends and returns the data updated in the database.
+     * @param {MonthlyCategorySpendUpdateManyAndReturnArgs} args - Arguments to update many MonthlyCategorySpends.
+     * @example
+     * // Update many MonthlyCategorySpends
+     * const monthlyCategorySpend = await prisma.monthlyCategorySpend.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more MonthlyCategorySpends and only return the `id`
+     * const monthlyCategorySpendWithIdOnly = await prisma.monthlyCategorySpend.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends MonthlyCategorySpendUpdateManyAndReturnArgs>(args: SelectSubset<T, MonthlyCategorySpendUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MonthlyCategorySpendPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one MonthlyCategorySpend.
+     * @param {MonthlyCategorySpendUpsertArgs} args - Arguments to update or create a MonthlyCategorySpend.
+     * @example
+     * // Update or create a MonthlyCategorySpend
+     * const monthlyCategorySpend = await prisma.monthlyCategorySpend.upsert({
+     *   create: {
+     *     // ... data to create a MonthlyCategorySpend
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the MonthlyCategorySpend we want to update
+     *   }
+     * })
+     */
+    upsert<T extends MonthlyCategorySpendUpsertArgs>(args: SelectSubset<T, MonthlyCategorySpendUpsertArgs<ExtArgs>>): Prisma__MonthlyCategorySpendClient<$Result.GetResult<Prisma.$MonthlyCategorySpendPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of MonthlyCategorySpends.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MonthlyCategorySpendCountArgs} args - Arguments to filter MonthlyCategorySpends to count.
+     * @example
+     * // Count the number of MonthlyCategorySpends
+     * const count = await prisma.monthlyCategorySpend.count({
+     *   where: {
+     *     // ... the filter for the MonthlyCategorySpends we want to count
+     *   }
+     * })
+    **/
+    count<T extends MonthlyCategorySpendCountArgs>(
+      args?: Subset<T, MonthlyCategorySpendCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], MonthlyCategorySpendCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a MonthlyCategorySpend.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MonthlyCategorySpendAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends MonthlyCategorySpendAggregateArgs>(args: Subset<T, MonthlyCategorySpendAggregateArgs>): Prisma.PrismaPromise<GetMonthlyCategorySpendAggregateType<T>>
+
+    /**
+     * Group by MonthlyCategorySpend.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MonthlyCategorySpendGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends MonthlyCategorySpendGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: MonthlyCategorySpendGroupByArgs['orderBy'] }
+        : { orderBy?: MonthlyCategorySpendGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, MonthlyCategorySpendGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetMonthlyCategorySpendGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the MonthlyCategorySpend model
+   */
+  readonly fields: MonthlyCategorySpendFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for MonthlyCategorySpend.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__MonthlyCategorySpendClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the MonthlyCategorySpend model
+   */
+  interface MonthlyCategorySpendFieldRefs {
+    readonly id: FieldRef<"MonthlyCategorySpend", 'String'>
+    readonly userId: FieldRef<"MonthlyCategorySpend", 'String'>
+    readonly year: FieldRef<"MonthlyCategorySpend", 'Int'>
+    readonly month: FieldRef<"MonthlyCategorySpend", 'Int'>
+    readonly category: FieldRef<"MonthlyCategorySpend", 'String'>
+    readonly total: FieldRef<"MonthlyCategorySpend", 'Decimal'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * MonthlyCategorySpend findUnique
+   */
+  export type MonthlyCategorySpendFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MonthlyCategorySpend
+     */
+    select?: MonthlyCategorySpendSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MonthlyCategorySpend
+     */
+    omit?: MonthlyCategorySpendOmit<ExtArgs> | null
+    /**
+     * Filter, which MonthlyCategorySpend to fetch.
+     */
+    where: MonthlyCategorySpendWhereUniqueInput
+  }
+
+  /**
+   * MonthlyCategorySpend findUniqueOrThrow
+   */
+  export type MonthlyCategorySpendFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MonthlyCategorySpend
+     */
+    select?: MonthlyCategorySpendSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MonthlyCategorySpend
+     */
+    omit?: MonthlyCategorySpendOmit<ExtArgs> | null
+    /**
+     * Filter, which MonthlyCategorySpend to fetch.
+     */
+    where: MonthlyCategorySpendWhereUniqueInput
+  }
+
+  /**
+   * MonthlyCategorySpend findFirst
+   */
+  export type MonthlyCategorySpendFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MonthlyCategorySpend
+     */
+    select?: MonthlyCategorySpendSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MonthlyCategorySpend
+     */
+    omit?: MonthlyCategorySpendOmit<ExtArgs> | null
+    /**
+     * Filter, which MonthlyCategorySpend to fetch.
+     */
+    where?: MonthlyCategorySpendWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of MonthlyCategorySpends to fetch.
+     */
+    orderBy?: MonthlyCategorySpendOrderByWithRelationInput | MonthlyCategorySpendOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for MonthlyCategorySpends.
+     */
+    cursor?: MonthlyCategorySpendWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` MonthlyCategorySpends from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` MonthlyCategorySpends.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of MonthlyCategorySpends.
+     */
+    distinct?: MonthlyCategorySpendScalarFieldEnum | MonthlyCategorySpendScalarFieldEnum[]
+  }
+
+  /**
+   * MonthlyCategorySpend findFirstOrThrow
+   */
+  export type MonthlyCategorySpendFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MonthlyCategorySpend
+     */
+    select?: MonthlyCategorySpendSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MonthlyCategorySpend
+     */
+    omit?: MonthlyCategorySpendOmit<ExtArgs> | null
+    /**
+     * Filter, which MonthlyCategorySpend to fetch.
+     */
+    where?: MonthlyCategorySpendWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of MonthlyCategorySpends to fetch.
+     */
+    orderBy?: MonthlyCategorySpendOrderByWithRelationInput | MonthlyCategorySpendOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for MonthlyCategorySpends.
+     */
+    cursor?: MonthlyCategorySpendWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` MonthlyCategorySpends from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` MonthlyCategorySpends.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of MonthlyCategorySpends.
+     */
+    distinct?: MonthlyCategorySpendScalarFieldEnum | MonthlyCategorySpendScalarFieldEnum[]
+  }
+
+  /**
+   * MonthlyCategorySpend findMany
+   */
+  export type MonthlyCategorySpendFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MonthlyCategorySpend
+     */
+    select?: MonthlyCategorySpendSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MonthlyCategorySpend
+     */
+    omit?: MonthlyCategorySpendOmit<ExtArgs> | null
+    /**
+     * Filter, which MonthlyCategorySpends to fetch.
+     */
+    where?: MonthlyCategorySpendWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of MonthlyCategorySpends to fetch.
+     */
+    orderBy?: MonthlyCategorySpendOrderByWithRelationInput | MonthlyCategorySpendOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing MonthlyCategorySpends.
+     */
+    cursor?: MonthlyCategorySpendWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` MonthlyCategorySpends from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` MonthlyCategorySpends.
+     */
+    skip?: number
+    distinct?: MonthlyCategorySpendScalarFieldEnum | MonthlyCategorySpendScalarFieldEnum[]
+  }
+
+  /**
+   * MonthlyCategorySpend create
+   */
+  export type MonthlyCategorySpendCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MonthlyCategorySpend
+     */
+    select?: MonthlyCategorySpendSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MonthlyCategorySpend
+     */
+    omit?: MonthlyCategorySpendOmit<ExtArgs> | null
+    /**
+     * The data needed to create a MonthlyCategorySpend.
+     */
+    data: XOR<MonthlyCategorySpendCreateInput, MonthlyCategorySpendUncheckedCreateInput>
+  }
+
+  /**
+   * MonthlyCategorySpend createMany
+   */
+  export type MonthlyCategorySpendCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many MonthlyCategorySpends.
+     */
+    data: MonthlyCategorySpendCreateManyInput | MonthlyCategorySpendCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * MonthlyCategorySpend createManyAndReturn
+   */
+  export type MonthlyCategorySpendCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MonthlyCategorySpend
+     */
+    select?: MonthlyCategorySpendSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the MonthlyCategorySpend
+     */
+    omit?: MonthlyCategorySpendOmit<ExtArgs> | null
+    /**
+     * The data used to create many MonthlyCategorySpends.
+     */
+    data: MonthlyCategorySpendCreateManyInput | MonthlyCategorySpendCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * MonthlyCategorySpend update
+   */
+  export type MonthlyCategorySpendUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MonthlyCategorySpend
+     */
+    select?: MonthlyCategorySpendSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MonthlyCategorySpend
+     */
+    omit?: MonthlyCategorySpendOmit<ExtArgs> | null
+    /**
+     * The data needed to update a MonthlyCategorySpend.
+     */
+    data: XOR<MonthlyCategorySpendUpdateInput, MonthlyCategorySpendUncheckedUpdateInput>
+    /**
+     * Choose, which MonthlyCategorySpend to update.
+     */
+    where: MonthlyCategorySpendWhereUniqueInput
+  }
+
+  /**
+   * MonthlyCategorySpend updateMany
+   */
+  export type MonthlyCategorySpendUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update MonthlyCategorySpends.
+     */
+    data: XOR<MonthlyCategorySpendUpdateManyMutationInput, MonthlyCategorySpendUncheckedUpdateManyInput>
+    /**
+     * Filter which MonthlyCategorySpends to update
+     */
+    where?: MonthlyCategorySpendWhereInput
+    /**
+     * Limit how many MonthlyCategorySpends to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * MonthlyCategorySpend updateManyAndReturn
+   */
+  export type MonthlyCategorySpendUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MonthlyCategorySpend
+     */
+    select?: MonthlyCategorySpendSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the MonthlyCategorySpend
+     */
+    omit?: MonthlyCategorySpendOmit<ExtArgs> | null
+    /**
+     * The data used to update MonthlyCategorySpends.
+     */
+    data: XOR<MonthlyCategorySpendUpdateManyMutationInput, MonthlyCategorySpendUncheckedUpdateManyInput>
+    /**
+     * Filter which MonthlyCategorySpends to update
+     */
+    where?: MonthlyCategorySpendWhereInput
+    /**
+     * Limit how many MonthlyCategorySpends to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * MonthlyCategorySpend upsert
+   */
+  export type MonthlyCategorySpendUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MonthlyCategorySpend
+     */
+    select?: MonthlyCategorySpendSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MonthlyCategorySpend
+     */
+    omit?: MonthlyCategorySpendOmit<ExtArgs> | null
+    /**
+     * The filter to search for the MonthlyCategorySpend to update in case it exists.
+     */
+    where: MonthlyCategorySpendWhereUniqueInput
+    /**
+     * In case the MonthlyCategorySpend found by the `where` argument doesn't exist, create a new MonthlyCategorySpend with this data.
+     */
+    create: XOR<MonthlyCategorySpendCreateInput, MonthlyCategorySpendUncheckedCreateInput>
+    /**
+     * In case the MonthlyCategorySpend was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<MonthlyCategorySpendUpdateInput, MonthlyCategorySpendUncheckedUpdateInput>
+  }
+
+  /**
+   * MonthlyCategorySpend delete
+   */
+  export type MonthlyCategorySpendDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MonthlyCategorySpend
+     */
+    select?: MonthlyCategorySpendSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MonthlyCategorySpend
+     */
+    omit?: MonthlyCategorySpendOmit<ExtArgs> | null
+    /**
+     * Filter which MonthlyCategorySpend to delete.
+     */
+    where: MonthlyCategorySpendWhereUniqueInput
+  }
+
+  /**
+   * MonthlyCategorySpend deleteMany
+   */
+  export type MonthlyCategorySpendDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which MonthlyCategorySpends to delete
+     */
+    where?: MonthlyCategorySpendWhereInput
+    /**
+     * Limit how many MonthlyCategorySpends to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * MonthlyCategorySpend without action
+   */
+  export type MonthlyCategorySpendDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MonthlyCategorySpend
+     */
+    select?: MonthlyCategorySpendSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MonthlyCategorySpend
+     */
+    omit?: MonthlyCategorySpendOmit<ExtArgs> | null
+  }
+
+
+  /**
+   * Model MonthlyCashflow
+   */
+
+  export type AggregateMonthlyCashflow = {
+    _count: MonthlyCashflowCountAggregateOutputType | null
+    _avg: MonthlyCashflowAvgAggregateOutputType | null
+    _sum: MonthlyCashflowSumAggregateOutputType | null
+    _min: MonthlyCashflowMinAggregateOutputType | null
+    _max: MonthlyCashflowMaxAggregateOutputType | null
+  }
+
+  export type MonthlyCashflowAvgAggregateOutputType = {
+    year: number | null
+    month: number | null
+    income: Decimal | null
+    expense: Decimal | null
+  }
+
+  export type MonthlyCashflowSumAggregateOutputType = {
+    year: number | null
+    month: number | null
+    income: Decimal | null
+    expense: Decimal | null
+  }
+
+  export type MonthlyCashflowMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    year: number | null
+    month: number | null
+    income: Decimal | null
+    expense: Decimal | null
+  }
+
+  export type MonthlyCashflowMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    year: number | null
+    month: number | null
+    income: Decimal | null
+    expense: Decimal | null
+  }
+
+  export type MonthlyCashflowCountAggregateOutputType = {
+    id: number
+    userId: number
+    year: number
+    month: number
+    income: number
+    expense: number
+    _all: number
+  }
+
+
+  export type MonthlyCashflowAvgAggregateInputType = {
+    year?: true
+    month?: true
+    income?: true
+    expense?: true
+  }
+
+  export type MonthlyCashflowSumAggregateInputType = {
+    year?: true
+    month?: true
+    income?: true
+    expense?: true
+  }
+
+  export type MonthlyCashflowMinAggregateInputType = {
+    id?: true
+    userId?: true
+    year?: true
+    month?: true
+    income?: true
+    expense?: true
+  }
+
+  export type MonthlyCashflowMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    year?: true
+    month?: true
+    income?: true
+    expense?: true
+  }
+
+  export type MonthlyCashflowCountAggregateInputType = {
+    id?: true
+    userId?: true
+    year?: true
+    month?: true
+    income?: true
+    expense?: true
+    _all?: true
+  }
+
+  export type MonthlyCashflowAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which MonthlyCashflow to aggregate.
+     */
+    where?: MonthlyCashflowWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of MonthlyCashflows to fetch.
+     */
+    orderBy?: MonthlyCashflowOrderByWithRelationInput | MonthlyCashflowOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: MonthlyCashflowWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` MonthlyCashflows from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` MonthlyCashflows.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned MonthlyCashflows
+    **/
+    _count?: true | MonthlyCashflowCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: MonthlyCashflowAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: MonthlyCashflowSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: MonthlyCashflowMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: MonthlyCashflowMaxAggregateInputType
+  }
+
+  export type GetMonthlyCashflowAggregateType<T extends MonthlyCashflowAggregateArgs> = {
+        [P in keyof T & keyof AggregateMonthlyCashflow]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateMonthlyCashflow[P]>
+      : GetScalarType<T[P], AggregateMonthlyCashflow[P]>
+  }
+
+
+
+
+  export type MonthlyCashflowGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: MonthlyCashflowWhereInput
+    orderBy?: MonthlyCashflowOrderByWithAggregationInput | MonthlyCashflowOrderByWithAggregationInput[]
+    by: MonthlyCashflowScalarFieldEnum[] | MonthlyCashflowScalarFieldEnum
+    having?: MonthlyCashflowScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: MonthlyCashflowCountAggregateInputType | true
+    _avg?: MonthlyCashflowAvgAggregateInputType
+    _sum?: MonthlyCashflowSumAggregateInputType
+    _min?: MonthlyCashflowMinAggregateInputType
+    _max?: MonthlyCashflowMaxAggregateInputType
+  }
+
+  export type MonthlyCashflowGroupByOutputType = {
+    id: string
+    userId: string
+    year: number
+    month: number
+    income: Decimal
+    expense: Decimal
+    _count: MonthlyCashflowCountAggregateOutputType | null
+    _avg: MonthlyCashflowAvgAggregateOutputType | null
+    _sum: MonthlyCashflowSumAggregateOutputType | null
+    _min: MonthlyCashflowMinAggregateOutputType | null
+    _max: MonthlyCashflowMaxAggregateOutputType | null
+  }
+
+  type GetMonthlyCashflowGroupByPayload<T extends MonthlyCashflowGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<MonthlyCashflowGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof MonthlyCashflowGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], MonthlyCashflowGroupByOutputType[P]>
+            : GetScalarType<T[P], MonthlyCashflowGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type MonthlyCashflowSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    year?: boolean
+    month?: boolean
+    income?: boolean
+    expense?: boolean
+  }, ExtArgs["result"]["monthlyCashflow"]>
+
+  export type MonthlyCashflowSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    year?: boolean
+    month?: boolean
+    income?: boolean
+    expense?: boolean
+  }, ExtArgs["result"]["monthlyCashflow"]>
+
+  export type MonthlyCashflowSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    year?: boolean
+    month?: boolean
+    income?: boolean
+    expense?: boolean
+  }, ExtArgs["result"]["monthlyCashflow"]>
+
+  export type MonthlyCashflowSelectScalar = {
+    id?: boolean
+    userId?: boolean
+    year?: boolean
+    month?: boolean
+    income?: boolean
+    expense?: boolean
+  }
+
+  export type MonthlyCashflowOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "year" | "month" | "income" | "expense", ExtArgs["result"]["monthlyCashflow"]>
+
+  export type $MonthlyCashflowPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "MonthlyCashflow"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userId: string
+      year: number
+      month: number
+      income: Prisma.Decimal
+      expense: Prisma.Decimal
+    }, ExtArgs["result"]["monthlyCashflow"]>
+    composites: {}
+  }
+
+  type MonthlyCashflowGetPayload<S extends boolean | null | undefined | MonthlyCashflowDefaultArgs> = $Result.GetResult<Prisma.$MonthlyCashflowPayload, S>
+
+  type MonthlyCashflowCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<MonthlyCashflowFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: MonthlyCashflowCountAggregateInputType | true
+    }
+
+  export interface MonthlyCashflowDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['MonthlyCashflow'], meta: { name: 'MonthlyCashflow' } }
+    /**
+     * Find zero or one MonthlyCashflow that matches the filter.
+     * @param {MonthlyCashflowFindUniqueArgs} args - Arguments to find a MonthlyCashflow
+     * @example
+     * // Get one MonthlyCashflow
+     * const monthlyCashflow = await prisma.monthlyCashflow.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends MonthlyCashflowFindUniqueArgs>(args: SelectSubset<T, MonthlyCashflowFindUniqueArgs<ExtArgs>>): Prisma__MonthlyCashflowClient<$Result.GetResult<Prisma.$MonthlyCashflowPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one MonthlyCashflow that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {MonthlyCashflowFindUniqueOrThrowArgs} args - Arguments to find a MonthlyCashflow
+     * @example
+     * // Get one MonthlyCashflow
+     * const monthlyCashflow = await prisma.monthlyCashflow.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends MonthlyCashflowFindUniqueOrThrowArgs>(args: SelectSubset<T, MonthlyCashflowFindUniqueOrThrowArgs<ExtArgs>>): Prisma__MonthlyCashflowClient<$Result.GetResult<Prisma.$MonthlyCashflowPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first MonthlyCashflow that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MonthlyCashflowFindFirstArgs} args - Arguments to find a MonthlyCashflow
+     * @example
+     * // Get one MonthlyCashflow
+     * const monthlyCashflow = await prisma.monthlyCashflow.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends MonthlyCashflowFindFirstArgs>(args?: SelectSubset<T, MonthlyCashflowFindFirstArgs<ExtArgs>>): Prisma__MonthlyCashflowClient<$Result.GetResult<Prisma.$MonthlyCashflowPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first MonthlyCashflow that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MonthlyCashflowFindFirstOrThrowArgs} args - Arguments to find a MonthlyCashflow
+     * @example
+     * // Get one MonthlyCashflow
+     * const monthlyCashflow = await prisma.monthlyCashflow.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends MonthlyCashflowFindFirstOrThrowArgs>(args?: SelectSubset<T, MonthlyCashflowFindFirstOrThrowArgs<ExtArgs>>): Prisma__MonthlyCashflowClient<$Result.GetResult<Prisma.$MonthlyCashflowPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more MonthlyCashflows that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MonthlyCashflowFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all MonthlyCashflows
+     * const monthlyCashflows = await prisma.monthlyCashflow.findMany()
+     * 
+     * // Get first 10 MonthlyCashflows
+     * const monthlyCashflows = await prisma.monthlyCashflow.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const monthlyCashflowWithIdOnly = await prisma.monthlyCashflow.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends MonthlyCashflowFindManyArgs>(args?: SelectSubset<T, MonthlyCashflowFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MonthlyCashflowPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a MonthlyCashflow.
+     * @param {MonthlyCashflowCreateArgs} args - Arguments to create a MonthlyCashflow.
+     * @example
+     * // Create one MonthlyCashflow
+     * const MonthlyCashflow = await prisma.monthlyCashflow.create({
+     *   data: {
+     *     // ... data to create a MonthlyCashflow
+     *   }
+     * })
+     * 
+     */
+    create<T extends MonthlyCashflowCreateArgs>(args: SelectSubset<T, MonthlyCashflowCreateArgs<ExtArgs>>): Prisma__MonthlyCashflowClient<$Result.GetResult<Prisma.$MonthlyCashflowPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many MonthlyCashflows.
+     * @param {MonthlyCashflowCreateManyArgs} args - Arguments to create many MonthlyCashflows.
+     * @example
+     * // Create many MonthlyCashflows
+     * const monthlyCashflow = await prisma.monthlyCashflow.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends MonthlyCashflowCreateManyArgs>(args?: SelectSubset<T, MonthlyCashflowCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many MonthlyCashflows and returns the data saved in the database.
+     * @param {MonthlyCashflowCreateManyAndReturnArgs} args - Arguments to create many MonthlyCashflows.
+     * @example
+     * // Create many MonthlyCashflows
+     * const monthlyCashflow = await prisma.monthlyCashflow.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many MonthlyCashflows and only return the `id`
+     * const monthlyCashflowWithIdOnly = await prisma.monthlyCashflow.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends MonthlyCashflowCreateManyAndReturnArgs>(args?: SelectSubset<T, MonthlyCashflowCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MonthlyCashflowPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a MonthlyCashflow.
+     * @param {MonthlyCashflowDeleteArgs} args - Arguments to delete one MonthlyCashflow.
+     * @example
+     * // Delete one MonthlyCashflow
+     * const MonthlyCashflow = await prisma.monthlyCashflow.delete({
+     *   where: {
+     *     // ... filter to delete one MonthlyCashflow
+     *   }
+     * })
+     * 
+     */
+    delete<T extends MonthlyCashflowDeleteArgs>(args: SelectSubset<T, MonthlyCashflowDeleteArgs<ExtArgs>>): Prisma__MonthlyCashflowClient<$Result.GetResult<Prisma.$MonthlyCashflowPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one MonthlyCashflow.
+     * @param {MonthlyCashflowUpdateArgs} args - Arguments to update one MonthlyCashflow.
+     * @example
+     * // Update one MonthlyCashflow
+     * const monthlyCashflow = await prisma.monthlyCashflow.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends MonthlyCashflowUpdateArgs>(args: SelectSubset<T, MonthlyCashflowUpdateArgs<ExtArgs>>): Prisma__MonthlyCashflowClient<$Result.GetResult<Prisma.$MonthlyCashflowPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more MonthlyCashflows.
+     * @param {MonthlyCashflowDeleteManyArgs} args - Arguments to filter MonthlyCashflows to delete.
+     * @example
+     * // Delete a few MonthlyCashflows
+     * const { count } = await prisma.monthlyCashflow.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends MonthlyCashflowDeleteManyArgs>(args?: SelectSubset<T, MonthlyCashflowDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more MonthlyCashflows.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MonthlyCashflowUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many MonthlyCashflows
+     * const monthlyCashflow = await prisma.monthlyCashflow.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends MonthlyCashflowUpdateManyArgs>(args: SelectSubset<T, MonthlyCashflowUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more MonthlyCashflows and returns the data updated in the database.
+     * @param {MonthlyCashflowUpdateManyAndReturnArgs} args - Arguments to update many MonthlyCashflows.
+     * @example
+     * // Update many MonthlyCashflows
+     * const monthlyCashflow = await prisma.monthlyCashflow.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more MonthlyCashflows and only return the `id`
+     * const monthlyCashflowWithIdOnly = await prisma.monthlyCashflow.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends MonthlyCashflowUpdateManyAndReturnArgs>(args: SelectSubset<T, MonthlyCashflowUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MonthlyCashflowPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one MonthlyCashflow.
+     * @param {MonthlyCashflowUpsertArgs} args - Arguments to update or create a MonthlyCashflow.
+     * @example
+     * // Update or create a MonthlyCashflow
+     * const monthlyCashflow = await prisma.monthlyCashflow.upsert({
+     *   create: {
+     *     // ... data to create a MonthlyCashflow
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the MonthlyCashflow we want to update
+     *   }
+     * })
+     */
+    upsert<T extends MonthlyCashflowUpsertArgs>(args: SelectSubset<T, MonthlyCashflowUpsertArgs<ExtArgs>>): Prisma__MonthlyCashflowClient<$Result.GetResult<Prisma.$MonthlyCashflowPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of MonthlyCashflows.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MonthlyCashflowCountArgs} args - Arguments to filter MonthlyCashflows to count.
+     * @example
+     * // Count the number of MonthlyCashflows
+     * const count = await prisma.monthlyCashflow.count({
+     *   where: {
+     *     // ... the filter for the MonthlyCashflows we want to count
+     *   }
+     * })
+    **/
+    count<T extends MonthlyCashflowCountArgs>(
+      args?: Subset<T, MonthlyCashflowCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], MonthlyCashflowCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a MonthlyCashflow.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MonthlyCashflowAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends MonthlyCashflowAggregateArgs>(args: Subset<T, MonthlyCashflowAggregateArgs>): Prisma.PrismaPromise<GetMonthlyCashflowAggregateType<T>>
+
+    /**
+     * Group by MonthlyCashflow.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MonthlyCashflowGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends MonthlyCashflowGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: MonthlyCashflowGroupByArgs['orderBy'] }
+        : { orderBy?: MonthlyCashflowGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, MonthlyCashflowGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetMonthlyCashflowGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the MonthlyCashflow model
+   */
+  readonly fields: MonthlyCashflowFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for MonthlyCashflow.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__MonthlyCashflowClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the MonthlyCashflow model
+   */
+  interface MonthlyCashflowFieldRefs {
+    readonly id: FieldRef<"MonthlyCashflow", 'String'>
+    readonly userId: FieldRef<"MonthlyCashflow", 'String'>
+    readonly year: FieldRef<"MonthlyCashflow", 'Int'>
+    readonly month: FieldRef<"MonthlyCashflow", 'Int'>
+    readonly income: FieldRef<"MonthlyCashflow", 'Decimal'>
+    readonly expense: FieldRef<"MonthlyCashflow", 'Decimal'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * MonthlyCashflow findUnique
+   */
+  export type MonthlyCashflowFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MonthlyCashflow
+     */
+    select?: MonthlyCashflowSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MonthlyCashflow
+     */
+    omit?: MonthlyCashflowOmit<ExtArgs> | null
+    /**
+     * Filter, which MonthlyCashflow to fetch.
+     */
+    where: MonthlyCashflowWhereUniqueInput
+  }
+
+  /**
+   * MonthlyCashflow findUniqueOrThrow
+   */
+  export type MonthlyCashflowFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MonthlyCashflow
+     */
+    select?: MonthlyCashflowSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MonthlyCashflow
+     */
+    omit?: MonthlyCashflowOmit<ExtArgs> | null
+    /**
+     * Filter, which MonthlyCashflow to fetch.
+     */
+    where: MonthlyCashflowWhereUniqueInput
+  }
+
+  /**
+   * MonthlyCashflow findFirst
+   */
+  export type MonthlyCashflowFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MonthlyCashflow
+     */
+    select?: MonthlyCashflowSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MonthlyCashflow
+     */
+    omit?: MonthlyCashflowOmit<ExtArgs> | null
+    /**
+     * Filter, which MonthlyCashflow to fetch.
+     */
+    where?: MonthlyCashflowWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of MonthlyCashflows to fetch.
+     */
+    orderBy?: MonthlyCashflowOrderByWithRelationInput | MonthlyCashflowOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for MonthlyCashflows.
+     */
+    cursor?: MonthlyCashflowWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` MonthlyCashflows from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` MonthlyCashflows.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of MonthlyCashflows.
+     */
+    distinct?: MonthlyCashflowScalarFieldEnum | MonthlyCashflowScalarFieldEnum[]
+  }
+
+  /**
+   * MonthlyCashflow findFirstOrThrow
+   */
+  export type MonthlyCashflowFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MonthlyCashflow
+     */
+    select?: MonthlyCashflowSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MonthlyCashflow
+     */
+    omit?: MonthlyCashflowOmit<ExtArgs> | null
+    /**
+     * Filter, which MonthlyCashflow to fetch.
+     */
+    where?: MonthlyCashflowWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of MonthlyCashflows to fetch.
+     */
+    orderBy?: MonthlyCashflowOrderByWithRelationInput | MonthlyCashflowOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for MonthlyCashflows.
+     */
+    cursor?: MonthlyCashflowWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` MonthlyCashflows from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` MonthlyCashflows.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of MonthlyCashflows.
+     */
+    distinct?: MonthlyCashflowScalarFieldEnum | MonthlyCashflowScalarFieldEnum[]
+  }
+
+  /**
+   * MonthlyCashflow findMany
+   */
+  export type MonthlyCashflowFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MonthlyCashflow
+     */
+    select?: MonthlyCashflowSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MonthlyCashflow
+     */
+    omit?: MonthlyCashflowOmit<ExtArgs> | null
+    /**
+     * Filter, which MonthlyCashflows to fetch.
+     */
+    where?: MonthlyCashflowWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of MonthlyCashflows to fetch.
+     */
+    orderBy?: MonthlyCashflowOrderByWithRelationInput | MonthlyCashflowOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing MonthlyCashflows.
+     */
+    cursor?: MonthlyCashflowWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` MonthlyCashflows from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` MonthlyCashflows.
+     */
+    skip?: number
+    distinct?: MonthlyCashflowScalarFieldEnum | MonthlyCashflowScalarFieldEnum[]
+  }
+
+  /**
+   * MonthlyCashflow create
+   */
+  export type MonthlyCashflowCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MonthlyCashflow
+     */
+    select?: MonthlyCashflowSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MonthlyCashflow
+     */
+    omit?: MonthlyCashflowOmit<ExtArgs> | null
+    /**
+     * The data needed to create a MonthlyCashflow.
+     */
+    data: XOR<MonthlyCashflowCreateInput, MonthlyCashflowUncheckedCreateInput>
+  }
+
+  /**
+   * MonthlyCashflow createMany
+   */
+  export type MonthlyCashflowCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many MonthlyCashflows.
+     */
+    data: MonthlyCashflowCreateManyInput | MonthlyCashflowCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * MonthlyCashflow createManyAndReturn
+   */
+  export type MonthlyCashflowCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MonthlyCashflow
+     */
+    select?: MonthlyCashflowSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the MonthlyCashflow
+     */
+    omit?: MonthlyCashflowOmit<ExtArgs> | null
+    /**
+     * The data used to create many MonthlyCashflows.
+     */
+    data: MonthlyCashflowCreateManyInput | MonthlyCashflowCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * MonthlyCashflow update
+   */
+  export type MonthlyCashflowUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MonthlyCashflow
+     */
+    select?: MonthlyCashflowSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MonthlyCashflow
+     */
+    omit?: MonthlyCashflowOmit<ExtArgs> | null
+    /**
+     * The data needed to update a MonthlyCashflow.
+     */
+    data: XOR<MonthlyCashflowUpdateInput, MonthlyCashflowUncheckedUpdateInput>
+    /**
+     * Choose, which MonthlyCashflow to update.
+     */
+    where: MonthlyCashflowWhereUniqueInput
+  }
+
+  /**
+   * MonthlyCashflow updateMany
+   */
+  export type MonthlyCashflowUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update MonthlyCashflows.
+     */
+    data: XOR<MonthlyCashflowUpdateManyMutationInput, MonthlyCashflowUncheckedUpdateManyInput>
+    /**
+     * Filter which MonthlyCashflows to update
+     */
+    where?: MonthlyCashflowWhereInput
+    /**
+     * Limit how many MonthlyCashflows to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * MonthlyCashflow updateManyAndReturn
+   */
+  export type MonthlyCashflowUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MonthlyCashflow
+     */
+    select?: MonthlyCashflowSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the MonthlyCashflow
+     */
+    omit?: MonthlyCashflowOmit<ExtArgs> | null
+    /**
+     * The data used to update MonthlyCashflows.
+     */
+    data: XOR<MonthlyCashflowUpdateManyMutationInput, MonthlyCashflowUncheckedUpdateManyInput>
+    /**
+     * Filter which MonthlyCashflows to update
+     */
+    where?: MonthlyCashflowWhereInput
+    /**
+     * Limit how many MonthlyCashflows to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * MonthlyCashflow upsert
+   */
+  export type MonthlyCashflowUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MonthlyCashflow
+     */
+    select?: MonthlyCashflowSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MonthlyCashflow
+     */
+    omit?: MonthlyCashflowOmit<ExtArgs> | null
+    /**
+     * The filter to search for the MonthlyCashflow to update in case it exists.
+     */
+    where: MonthlyCashflowWhereUniqueInput
+    /**
+     * In case the MonthlyCashflow found by the `where` argument doesn't exist, create a new MonthlyCashflow with this data.
+     */
+    create: XOR<MonthlyCashflowCreateInput, MonthlyCashflowUncheckedCreateInput>
+    /**
+     * In case the MonthlyCashflow was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<MonthlyCashflowUpdateInput, MonthlyCashflowUncheckedUpdateInput>
+  }
+
+  /**
+   * MonthlyCashflow delete
+   */
+  export type MonthlyCashflowDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MonthlyCashflow
+     */
+    select?: MonthlyCashflowSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MonthlyCashflow
+     */
+    omit?: MonthlyCashflowOmit<ExtArgs> | null
+    /**
+     * Filter which MonthlyCashflow to delete.
+     */
+    where: MonthlyCashflowWhereUniqueInput
+  }
+
+  /**
+   * MonthlyCashflow deleteMany
+   */
+  export type MonthlyCashflowDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which MonthlyCashflows to delete
+     */
+    where?: MonthlyCashflowWhereInput
+    /**
+     * Limit how many MonthlyCashflows to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * MonthlyCashflow without action
+   */
+  export type MonthlyCashflowDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MonthlyCashflow
+     */
+    select?: MonthlyCashflowSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MonthlyCashflow
+     */
+    omit?: MonthlyCashflowOmit<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -66063,6 +69495,43 @@ export namespace Prisma {
   };
 
   export type JournalEntryScalarFieldEnum = (typeof JournalEntryScalarFieldEnum)[keyof typeof JournalEntryScalarFieldEnum]
+
+
+  export const DailyAccountBalanceScalarFieldEnum: {
+    id: 'id',
+    accountId: 'accountId',
+    userId: 'userId',
+    date: 'date',
+    balance: 'balance',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type DailyAccountBalanceScalarFieldEnum = (typeof DailyAccountBalanceScalarFieldEnum)[keyof typeof DailyAccountBalanceScalarFieldEnum]
+
+
+  export const MonthlyCategorySpendScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    year: 'year',
+    month: 'month',
+    category: 'category',
+    total: 'total'
+  };
+
+  export type MonthlyCategorySpendScalarFieldEnum = (typeof MonthlyCategorySpendScalarFieldEnum)[keyof typeof MonthlyCategorySpendScalarFieldEnum]
+
+
+  export const MonthlyCashflowScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    year: 'year',
+    month: 'month',
+    income: 'income',
+    expense: 'expense'
+  };
+
+  export type MonthlyCashflowScalarFieldEnum = (typeof MonthlyCashflowScalarFieldEnum)[keyof typeof MonthlyCashflowScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -71296,6 +74765,191 @@ export namespace Prisma {
     requestId?: StringNullableWithAggregatesFilter<"JournalEntry"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"JournalEntry"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"JournalEntry"> | Date | string
+  }
+
+  export type DailyAccountBalanceWhereInput = {
+    AND?: DailyAccountBalanceWhereInput | DailyAccountBalanceWhereInput[]
+    OR?: DailyAccountBalanceWhereInput[]
+    NOT?: DailyAccountBalanceWhereInput | DailyAccountBalanceWhereInput[]
+    id?: StringFilter<"DailyAccountBalance"> | string
+    accountId?: StringFilter<"DailyAccountBalance"> | string
+    userId?: StringFilter<"DailyAccountBalance"> | string
+    date?: DateTimeFilter<"DailyAccountBalance"> | Date | string
+    balance?: DecimalFilter<"DailyAccountBalance"> | Decimal | DecimalJsLike | number | string
+    createdAt?: DateTimeFilter<"DailyAccountBalance"> | Date | string
+    updatedAt?: DateTimeFilter<"DailyAccountBalance"> | Date | string
+  }
+
+  export type DailyAccountBalanceOrderByWithRelationInput = {
+    id?: SortOrder
+    accountId?: SortOrder
+    userId?: SortOrder
+    date?: SortOrder
+    balance?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type DailyAccountBalanceWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    accountId_date?: DailyAccountBalanceAccountIdDateCompoundUniqueInput
+    AND?: DailyAccountBalanceWhereInput | DailyAccountBalanceWhereInput[]
+    OR?: DailyAccountBalanceWhereInput[]
+    NOT?: DailyAccountBalanceWhereInput | DailyAccountBalanceWhereInput[]
+    accountId?: StringFilter<"DailyAccountBalance"> | string
+    userId?: StringFilter<"DailyAccountBalance"> | string
+    date?: DateTimeFilter<"DailyAccountBalance"> | Date | string
+    balance?: DecimalFilter<"DailyAccountBalance"> | Decimal | DecimalJsLike | number | string
+    createdAt?: DateTimeFilter<"DailyAccountBalance"> | Date | string
+    updatedAt?: DateTimeFilter<"DailyAccountBalance"> | Date | string
+  }, "id" | "accountId_date">
+
+  export type DailyAccountBalanceOrderByWithAggregationInput = {
+    id?: SortOrder
+    accountId?: SortOrder
+    userId?: SortOrder
+    date?: SortOrder
+    balance?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: DailyAccountBalanceCountOrderByAggregateInput
+    _avg?: DailyAccountBalanceAvgOrderByAggregateInput
+    _max?: DailyAccountBalanceMaxOrderByAggregateInput
+    _min?: DailyAccountBalanceMinOrderByAggregateInput
+    _sum?: DailyAccountBalanceSumOrderByAggregateInput
+  }
+
+  export type DailyAccountBalanceScalarWhereWithAggregatesInput = {
+    AND?: DailyAccountBalanceScalarWhereWithAggregatesInput | DailyAccountBalanceScalarWhereWithAggregatesInput[]
+    OR?: DailyAccountBalanceScalarWhereWithAggregatesInput[]
+    NOT?: DailyAccountBalanceScalarWhereWithAggregatesInput | DailyAccountBalanceScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"DailyAccountBalance"> | string
+    accountId?: StringWithAggregatesFilter<"DailyAccountBalance"> | string
+    userId?: StringWithAggregatesFilter<"DailyAccountBalance"> | string
+    date?: DateTimeWithAggregatesFilter<"DailyAccountBalance"> | Date | string
+    balance?: DecimalWithAggregatesFilter<"DailyAccountBalance"> | Decimal | DecimalJsLike | number | string
+    createdAt?: DateTimeWithAggregatesFilter<"DailyAccountBalance"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"DailyAccountBalance"> | Date | string
+  }
+
+  export type MonthlyCategorySpendWhereInput = {
+    AND?: MonthlyCategorySpendWhereInput | MonthlyCategorySpendWhereInput[]
+    OR?: MonthlyCategorySpendWhereInput[]
+    NOT?: MonthlyCategorySpendWhereInput | MonthlyCategorySpendWhereInput[]
+    id?: StringFilter<"MonthlyCategorySpend"> | string
+    userId?: StringFilter<"MonthlyCategorySpend"> | string
+    year?: IntFilter<"MonthlyCategorySpend"> | number
+    month?: IntFilter<"MonthlyCategorySpend"> | number
+    category?: StringFilter<"MonthlyCategorySpend"> | string
+    total?: DecimalFilter<"MonthlyCategorySpend"> | Decimal | DecimalJsLike | number | string
+  }
+
+  export type MonthlyCategorySpendOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    year?: SortOrder
+    month?: SortOrder
+    category?: SortOrder
+    total?: SortOrder
+  }
+
+  export type MonthlyCategorySpendWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    userId_year_month_category?: MonthlyCategorySpendUserIdYearMonthCategoryCompoundUniqueInput
+    AND?: MonthlyCategorySpendWhereInput | MonthlyCategorySpendWhereInput[]
+    OR?: MonthlyCategorySpendWhereInput[]
+    NOT?: MonthlyCategorySpendWhereInput | MonthlyCategorySpendWhereInput[]
+    userId?: StringFilter<"MonthlyCategorySpend"> | string
+    year?: IntFilter<"MonthlyCategorySpend"> | number
+    month?: IntFilter<"MonthlyCategorySpend"> | number
+    category?: StringFilter<"MonthlyCategorySpend"> | string
+    total?: DecimalFilter<"MonthlyCategorySpend"> | Decimal | DecimalJsLike | number | string
+  }, "id" | "userId_year_month_category">
+
+  export type MonthlyCategorySpendOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    year?: SortOrder
+    month?: SortOrder
+    category?: SortOrder
+    total?: SortOrder
+    _count?: MonthlyCategorySpendCountOrderByAggregateInput
+    _avg?: MonthlyCategorySpendAvgOrderByAggregateInput
+    _max?: MonthlyCategorySpendMaxOrderByAggregateInput
+    _min?: MonthlyCategorySpendMinOrderByAggregateInput
+    _sum?: MonthlyCategorySpendSumOrderByAggregateInput
+  }
+
+  export type MonthlyCategorySpendScalarWhereWithAggregatesInput = {
+    AND?: MonthlyCategorySpendScalarWhereWithAggregatesInput | MonthlyCategorySpendScalarWhereWithAggregatesInput[]
+    OR?: MonthlyCategorySpendScalarWhereWithAggregatesInput[]
+    NOT?: MonthlyCategorySpendScalarWhereWithAggregatesInput | MonthlyCategorySpendScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"MonthlyCategorySpend"> | string
+    userId?: StringWithAggregatesFilter<"MonthlyCategorySpend"> | string
+    year?: IntWithAggregatesFilter<"MonthlyCategorySpend"> | number
+    month?: IntWithAggregatesFilter<"MonthlyCategorySpend"> | number
+    category?: StringWithAggregatesFilter<"MonthlyCategorySpend"> | string
+    total?: DecimalWithAggregatesFilter<"MonthlyCategorySpend"> | Decimal | DecimalJsLike | number | string
+  }
+
+  export type MonthlyCashflowWhereInput = {
+    AND?: MonthlyCashflowWhereInput | MonthlyCashflowWhereInput[]
+    OR?: MonthlyCashflowWhereInput[]
+    NOT?: MonthlyCashflowWhereInput | MonthlyCashflowWhereInput[]
+    id?: StringFilter<"MonthlyCashflow"> | string
+    userId?: StringFilter<"MonthlyCashflow"> | string
+    year?: IntFilter<"MonthlyCashflow"> | number
+    month?: IntFilter<"MonthlyCashflow"> | number
+    income?: DecimalFilter<"MonthlyCashflow"> | Decimal | DecimalJsLike | number | string
+    expense?: DecimalFilter<"MonthlyCashflow"> | Decimal | DecimalJsLike | number | string
+  }
+
+  export type MonthlyCashflowOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    year?: SortOrder
+    month?: SortOrder
+    income?: SortOrder
+    expense?: SortOrder
+  }
+
+  export type MonthlyCashflowWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    userId_year_month?: MonthlyCashflowUserIdYearMonthCompoundUniqueInput
+    AND?: MonthlyCashflowWhereInput | MonthlyCashflowWhereInput[]
+    OR?: MonthlyCashflowWhereInput[]
+    NOT?: MonthlyCashflowWhereInput | MonthlyCashflowWhereInput[]
+    userId?: StringFilter<"MonthlyCashflow"> | string
+    year?: IntFilter<"MonthlyCashflow"> | number
+    month?: IntFilter<"MonthlyCashflow"> | number
+    income?: DecimalFilter<"MonthlyCashflow"> | Decimal | DecimalJsLike | number | string
+    expense?: DecimalFilter<"MonthlyCashflow"> | Decimal | DecimalJsLike | number | string
+  }, "id" | "userId_year_month">
+
+  export type MonthlyCashflowOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    year?: SortOrder
+    month?: SortOrder
+    income?: SortOrder
+    expense?: SortOrder
+    _count?: MonthlyCashflowCountOrderByAggregateInput
+    _avg?: MonthlyCashflowAvgOrderByAggregateInput
+    _max?: MonthlyCashflowMaxOrderByAggregateInput
+    _min?: MonthlyCashflowMinOrderByAggregateInput
+    _sum?: MonthlyCashflowSumOrderByAggregateInput
+  }
+
+  export type MonthlyCashflowScalarWhereWithAggregatesInput = {
+    AND?: MonthlyCashflowScalarWhereWithAggregatesInput | MonthlyCashflowScalarWhereWithAggregatesInput[]
+    OR?: MonthlyCashflowScalarWhereWithAggregatesInput[]
+    NOT?: MonthlyCashflowScalarWhereWithAggregatesInput | MonthlyCashflowScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"MonthlyCashflow"> | string
+    userId?: StringWithAggregatesFilter<"MonthlyCashflow"> | string
+    year?: IntWithAggregatesFilter<"MonthlyCashflow"> | number
+    month?: IntWithAggregatesFilter<"MonthlyCashflow"> | number
+    income?: DecimalWithAggregatesFilter<"MonthlyCashflow"> | Decimal | DecimalJsLike | number | string
+    expense?: DecimalWithAggregatesFilter<"MonthlyCashflow"> | Decimal | DecimalJsLike | number | string
   }
 
   export type AccountCreateInput = {
@@ -77115,6 +80769,202 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type DailyAccountBalanceCreateInput = {
+    id?: string
+    accountId: string
+    userId: string
+    date: Date | string
+    balance: Decimal | DecimalJsLike | number | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type DailyAccountBalanceUncheckedCreateInput = {
+    id?: string
+    accountId: string
+    userId: string
+    date: Date | string
+    balance: Decimal | DecimalJsLike | number | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type DailyAccountBalanceUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    accountId?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    balance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DailyAccountBalanceUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    accountId?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    balance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DailyAccountBalanceCreateManyInput = {
+    id?: string
+    accountId: string
+    userId: string
+    date: Date | string
+    balance: Decimal | DecimalJsLike | number | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type DailyAccountBalanceUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    accountId?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    balance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DailyAccountBalanceUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    accountId?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    balance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type MonthlyCategorySpendCreateInput = {
+    id?: string
+    userId: string
+    year: number
+    month: number
+    category: string
+    total: Decimal | DecimalJsLike | number | string
+  }
+
+  export type MonthlyCategorySpendUncheckedCreateInput = {
+    id?: string
+    userId: string
+    year: number
+    month: number
+    category: string
+    total: Decimal | DecimalJsLike | number | string
+  }
+
+  export type MonthlyCategorySpendUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    year?: IntFieldUpdateOperationsInput | number
+    month?: IntFieldUpdateOperationsInput | number
+    category?: StringFieldUpdateOperationsInput | string
+    total?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+  }
+
+  export type MonthlyCategorySpendUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    year?: IntFieldUpdateOperationsInput | number
+    month?: IntFieldUpdateOperationsInput | number
+    category?: StringFieldUpdateOperationsInput | string
+    total?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+  }
+
+  export type MonthlyCategorySpendCreateManyInput = {
+    id?: string
+    userId: string
+    year: number
+    month: number
+    category: string
+    total: Decimal | DecimalJsLike | number | string
+  }
+
+  export type MonthlyCategorySpendUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    year?: IntFieldUpdateOperationsInput | number
+    month?: IntFieldUpdateOperationsInput | number
+    category?: StringFieldUpdateOperationsInput | string
+    total?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+  }
+
+  export type MonthlyCategorySpendUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    year?: IntFieldUpdateOperationsInput | number
+    month?: IntFieldUpdateOperationsInput | number
+    category?: StringFieldUpdateOperationsInput | string
+    total?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+  }
+
+  export type MonthlyCashflowCreateInput = {
+    id?: string
+    userId: string
+    year: number
+    month: number
+    income: Decimal | DecimalJsLike | number | string
+    expense: Decimal | DecimalJsLike | number | string
+  }
+
+  export type MonthlyCashflowUncheckedCreateInput = {
+    id?: string
+    userId: string
+    year: number
+    month: number
+    income: Decimal | DecimalJsLike | number | string
+    expense: Decimal | DecimalJsLike | number | string
+  }
+
+  export type MonthlyCashflowUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    year?: IntFieldUpdateOperationsInput | number
+    month?: IntFieldUpdateOperationsInput | number
+    income?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    expense?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+  }
+
+  export type MonthlyCashflowUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    year?: IntFieldUpdateOperationsInput | number
+    month?: IntFieldUpdateOperationsInput | number
+    income?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    expense?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+  }
+
+  export type MonthlyCashflowCreateManyInput = {
+    id?: string
+    userId: string
+    year: number
+    month: number
+    income: Decimal | DecimalJsLike | number | string
+    expense: Decimal | DecimalJsLike | number | string
+  }
+
+  export type MonthlyCashflowUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    year?: IntFieldUpdateOperationsInput | number
+    month?: IntFieldUpdateOperationsInput | number
+    income?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    expense?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+  }
+
+  export type MonthlyCashflowUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    year?: IntFieldUpdateOperationsInput | number
+    month?: IntFieldUpdateOperationsInput | number
+    income?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    expense?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -80818,6 +84668,142 @@ export namespace Prisma {
 
   export type JournalEntrySumOrderByAggregateInput = {
     eventVersion?: SortOrder
+  }
+
+  export type DailyAccountBalanceAccountIdDateCompoundUniqueInput = {
+    accountId: string
+    date: Date | string
+  }
+
+  export type DailyAccountBalanceCountOrderByAggregateInput = {
+    id?: SortOrder
+    accountId?: SortOrder
+    userId?: SortOrder
+    date?: SortOrder
+    balance?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type DailyAccountBalanceAvgOrderByAggregateInput = {
+    balance?: SortOrder
+  }
+
+  export type DailyAccountBalanceMaxOrderByAggregateInput = {
+    id?: SortOrder
+    accountId?: SortOrder
+    userId?: SortOrder
+    date?: SortOrder
+    balance?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type DailyAccountBalanceMinOrderByAggregateInput = {
+    id?: SortOrder
+    accountId?: SortOrder
+    userId?: SortOrder
+    date?: SortOrder
+    balance?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type DailyAccountBalanceSumOrderByAggregateInput = {
+    balance?: SortOrder
+  }
+
+  export type MonthlyCategorySpendUserIdYearMonthCategoryCompoundUniqueInput = {
+    userId: string
+    year: number
+    month: number
+    category: string
+  }
+
+  export type MonthlyCategorySpendCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    year?: SortOrder
+    month?: SortOrder
+    category?: SortOrder
+    total?: SortOrder
+  }
+
+  export type MonthlyCategorySpendAvgOrderByAggregateInput = {
+    year?: SortOrder
+    month?: SortOrder
+    total?: SortOrder
+  }
+
+  export type MonthlyCategorySpendMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    year?: SortOrder
+    month?: SortOrder
+    category?: SortOrder
+    total?: SortOrder
+  }
+
+  export type MonthlyCategorySpendMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    year?: SortOrder
+    month?: SortOrder
+    category?: SortOrder
+    total?: SortOrder
+  }
+
+  export type MonthlyCategorySpendSumOrderByAggregateInput = {
+    year?: SortOrder
+    month?: SortOrder
+    total?: SortOrder
+  }
+
+  export type MonthlyCashflowUserIdYearMonthCompoundUniqueInput = {
+    userId: string
+    year: number
+    month: number
+  }
+
+  export type MonthlyCashflowCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    year?: SortOrder
+    month?: SortOrder
+    income?: SortOrder
+    expense?: SortOrder
+  }
+
+  export type MonthlyCashflowAvgOrderByAggregateInput = {
+    year?: SortOrder
+    month?: SortOrder
+    income?: SortOrder
+    expense?: SortOrder
+  }
+
+  export type MonthlyCashflowMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    year?: SortOrder
+    month?: SortOrder
+    income?: SortOrder
+    expense?: SortOrder
+  }
+
+  export type MonthlyCashflowMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    year?: SortOrder
+    month?: SortOrder
+    income?: SortOrder
+    expense?: SortOrder
+  }
+
+  export type MonthlyCashflowSumOrderByAggregateInput = {
+    year?: SortOrder
+    month?: SortOrder
+    income?: SortOrder
+    expense?: SortOrder
   }
 
   export type UserCreateNestedOneWithoutAccountsInput = {
