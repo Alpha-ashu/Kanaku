@@ -371,7 +371,10 @@ export const FinancialEventLogType: {
   LOAN_PAYMENT: 'LOAN_PAYMENT',
   GROUP_EXPENSE_CREATED: 'GROUP_EXPENSE_CREATED',
   GROUP_SETTLEMENT_COMPLETED: 'GROUP_SETTLEMENT_COMPLETED',
-  SNAPSHOT_UPDATED: 'SNAPSHOT_UPDATED'
+  SNAPSHOT_UPDATED: 'SNAPSHOT_UPDATED',
+  FACTORY_RESET_STARTED: 'FACTORY_RESET_STARTED',
+  FACTORY_RESET_COMPLETED: 'FACTORY_RESET_COMPLETED',
+  FACTORY_RESET_FAILED: 'FACTORY_RESET_FAILED'
 };
 
 export type FinancialEventLogType = (typeof FinancialEventLogType)[keyof typeof FinancialEventLogType]
@@ -37046,8 +37049,20 @@ export namespace Prisma {
 
   export type AggregateUserSettings = {
     _count: UserSettingsCountAggregateOutputType | null
+    _avg: UserSettingsAvgAggregateOutputType | null
+    _sum: UserSettingsSumAggregateOutputType | null
     _min: UserSettingsMinAggregateOutputType | null
     _max: UserSettingsMaxAggregateOutputType | null
+  }
+
+  export type UserSettingsAvgAggregateOutputType = {
+    factoryResetCount: number | null
+    factoryResetVersion: number | null
+  }
+
+  export type UserSettingsSumAggregateOutputType = {
+    factoryResetCount: number | null
+    factoryResetVersion: number | null
   }
 
   export type UserSettingsMinAggregateOutputType = {
@@ -37059,6 +37074,9 @@ export namespace Prisma {
     timezone: string | null
     createdAt: Date | null
     updatedAt: Date | null
+    lastFactoryResetAt: Date | null
+    factoryResetCount: number | null
+    factoryResetVersion: number | null
   }
 
   export type UserSettingsMaxAggregateOutputType = {
@@ -37070,6 +37088,9 @@ export namespace Prisma {
     timezone: string | null
     createdAt: Date | null
     updatedAt: Date | null
+    lastFactoryResetAt: Date | null
+    factoryResetCount: number | null
+    factoryResetVersion: number | null
   }
 
   export type UserSettingsCountAggregateOutputType = {
@@ -37082,9 +37103,22 @@ export namespace Prisma {
     settings: number
     createdAt: number
     updatedAt: number
+    lastFactoryResetAt: number
+    factoryResetCount: number
+    factoryResetVersion: number
     _all: number
   }
 
+
+  export type UserSettingsAvgAggregateInputType = {
+    factoryResetCount?: true
+    factoryResetVersion?: true
+  }
+
+  export type UserSettingsSumAggregateInputType = {
+    factoryResetCount?: true
+    factoryResetVersion?: true
+  }
 
   export type UserSettingsMinAggregateInputType = {
     id?: true
@@ -37095,6 +37129,9 @@ export namespace Prisma {
     timezone?: true
     createdAt?: true
     updatedAt?: true
+    lastFactoryResetAt?: true
+    factoryResetCount?: true
+    factoryResetVersion?: true
   }
 
   export type UserSettingsMaxAggregateInputType = {
@@ -37106,6 +37143,9 @@ export namespace Prisma {
     timezone?: true
     createdAt?: true
     updatedAt?: true
+    lastFactoryResetAt?: true
+    factoryResetCount?: true
+    factoryResetVersion?: true
   }
 
   export type UserSettingsCountAggregateInputType = {
@@ -37118,6 +37158,9 @@ export namespace Prisma {
     settings?: true
     createdAt?: true
     updatedAt?: true
+    lastFactoryResetAt?: true
+    factoryResetCount?: true
+    factoryResetVersion?: true
     _all?: true
   }
 
@@ -37159,6 +37202,18 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
+     * Select which fields to average
+    **/
+    _avg?: UserSettingsAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: UserSettingsSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
      * Select which fields to find the minimum value
     **/
     _min?: UserSettingsMinAggregateInputType
@@ -37189,6 +37244,8 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: UserSettingsCountAggregateInputType | true
+    _avg?: UserSettingsAvgAggregateInputType
+    _sum?: UserSettingsSumAggregateInputType
     _min?: UserSettingsMinAggregateInputType
     _max?: UserSettingsMaxAggregateInputType
   }
@@ -37203,7 +37260,12 @@ export namespace Prisma {
     settings: JsonValue
     createdAt: Date
     updatedAt: Date
+    lastFactoryResetAt: Date | null
+    factoryResetCount: number
+    factoryResetVersion: number
     _count: UserSettingsCountAggregateOutputType | null
+    _avg: UserSettingsAvgAggregateOutputType | null
+    _sum: UserSettingsSumAggregateOutputType | null
     _min: UserSettingsMinAggregateOutputType | null
     _max: UserSettingsMaxAggregateOutputType | null
   }
@@ -37232,6 +37294,9 @@ export namespace Prisma {
     settings?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    lastFactoryResetAt?: boolean
+    factoryResetCount?: boolean
+    factoryResetVersion?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["userSettings"]>
 
@@ -37245,6 +37310,9 @@ export namespace Prisma {
     settings?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    lastFactoryResetAt?: boolean
+    factoryResetCount?: boolean
+    factoryResetVersion?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["userSettings"]>
 
@@ -37258,6 +37326,9 @@ export namespace Prisma {
     settings?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    lastFactoryResetAt?: boolean
+    factoryResetCount?: boolean
+    factoryResetVersion?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["userSettings"]>
 
@@ -37271,9 +37342,12 @@ export namespace Prisma {
     settings?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    lastFactoryResetAt?: boolean
+    factoryResetCount?: boolean
+    factoryResetVersion?: boolean
   }
 
-  export type UserSettingsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "theme" | "language" | "currency" | "timezone" | "settings" | "createdAt" | "updatedAt", ExtArgs["result"]["userSettings"]>
+  export type UserSettingsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "theme" | "language" | "currency" | "timezone" | "settings" | "createdAt" | "updatedAt" | "lastFactoryResetAt" | "factoryResetCount" | "factoryResetVersion", ExtArgs["result"]["userSettings"]>
   export type UserSettingsInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
   }
@@ -37299,6 +37373,9 @@ export namespace Prisma {
       settings: Prisma.JsonValue
       createdAt: Date
       updatedAt: Date
+      lastFactoryResetAt: Date | null
+      factoryResetCount: number
+      factoryResetVersion: number
     }, ExtArgs["result"]["userSettings"]>
     composites: {}
   }
@@ -37732,6 +37809,9 @@ export namespace Prisma {
     readonly settings: FieldRef<"UserSettings", 'Json'>
     readonly createdAt: FieldRef<"UserSettings", 'DateTime'>
     readonly updatedAt: FieldRef<"UserSettings", 'DateTime'>
+    readonly lastFactoryResetAt: FieldRef<"UserSettings", 'DateTime'>
+    readonly factoryResetCount: FieldRef<"UserSettings", 'Int'>
+    readonly factoryResetVersion: FieldRef<"UserSettings", 'Int'>
   }
     
 
@@ -70335,7 +70415,10 @@ export namespace Prisma {
     timezone: 'timezone',
     settings: 'settings',
     createdAt: 'createdAt',
-    updatedAt: 'updatedAt'
+    updatedAt: 'updatedAt',
+    lastFactoryResetAt: 'lastFactoryResetAt',
+    factoryResetCount: 'factoryResetCount',
+    factoryResetVersion: 'factoryResetVersion'
   };
 
   export type UserSettingsScalarFieldEnum = (typeof UserSettingsScalarFieldEnum)[keyof typeof UserSettingsScalarFieldEnum]
@@ -73889,6 +73972,9 @@ export namespace Prisma {
     settings?: JsonFilter<"UserSettings">
     createdAt?: DateTimeFilter<"UserSettings"> | Date | string
     updatedAt?: DateTimeFilter<"UserSettings"> | Date | string
+    lastFactoryResetAt?: DateTimeNullableFilter<"UserSettings"> | Date | string | null
+    factoryResetCount?: IntFilter<"UserSettings"> | number
+    factoryResetVersion?: IntFilter<"UserSettings"> | number
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
   }
 
@@ -73902,6 +73988,9 @@ export namespace Prisma {
     settings?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    lastFactoryResetAt?: SortOrderInput | SortOrder
+    factoryResetCount?: SortOrder
+    factoryResetVersion?: SortOrder
     user?: UserOrderByWithRelationInput
   }
 
@@ -73918,6 +74007,9 @@ export namespace Prisma {
     settings?: JsonFilter<"UserSettings">
     createdAt?: DateTimeFilter<"UserSettings"> | Date | string
     updatedAt?: DateTimeFilter<"UserSettings"> | Date | string
+    lastFactoryResetAt?: DateTimeNullableFilter<"UserSettings"> | Date | string | null
+    factoryResetCount?: IntFilter<"UserSettings"> | number
+    factoryResetVersion?: IntFilter<"UserSettings"> | number
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
   }, "id" | "userId">
 
@@ -73931,9 +74023,14 @@ export namespace Prisma {
     settings?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    lastFactoryResetAt?: SortOrderInput | SortOrder
+    factoryResetCount?: SortOrder
+    factoryResetVersion?: SortOrder
     _count?: UserSettingsCountOrderByAggregateInput
+    _avg?: UserSettingsAvgOrderByAggregateInput
     _max?: UserSettingsMaxOrderByAggregateInput
     _min?: UserSettingsMinOrderByAggregateInput
+    _sum?: UserSettingsSumOrderByAggregateInput
   }
 
   export type UserSettingsScalarWhereWithAggregatesInput = {
@@ -73949,6 +74046,9 @@ export namespace Prisma {
     settings?: JsonWithAggregatesFilter<"UserSettings">
     createdAt?: DateTimeWithAggregatesFilter<"UserSettings"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"UserSettings"> | Date | string
+    lastFactoryResetAt?: DateTimeNullableWithAggregatesFilter<"UserSettings"> | Date | string | null
+    factoryResetCount?: IntWithAggregatesFilter<"UserSettings"> | number
+    factoryResetVersion?: IntWithAggregatesFilter<"UserSettings"> | number
   }
 
   export type PlatformSettingsWhereInput = {
@@ -79660,6 +79760,9 @@ export namespace Prisma {
     settings?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
+    lastFactoryResetAt?: Date | string | null
+    factoryResetCount?: number
+    factoryResetVersion?: number
     user: UserCreateNestedOneWithoutUserSettingsInput
   }
 
@@ -79673,6 +79776,9 @@ export namespace Prisma {
     settings?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
+    lastFactoryResetAt?: Date | string | null
+    factoryResetCount?: number
+    factoryResetVersion?: number
   }
 
   export type UserSettingsUpdateInput = {
@@ -79684,6 +79790,9 @@ export namespace Prisma {
     settings?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastFactoryResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    factoryResetCount?: IntFieldUpdateOperationsInput | number
+    factoryResetVersion?: IntFieldUpdateOperationsInput | number
     user?: UserUpdateOneRequiredWithoutUserSettingsNestedInput
   }
 
@@ -79697,6 +79806,9 @@ export namespace Prisma {
     settings?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastFactoryResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    factoryResetCount?: IntFieldUpdateOperationsInput | number
+    factoryResetVersion?: IntFieldUpdateOperationsInput | number
   }
 
   export type UserSettingsCreateManyInput = {
@@ -79709,6 +79821,9 @@ export namespace Prisma {
     settings?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
+    lastFactoryResetAt?: Date | string | null
+    factoryResetCount?: number
+    factoryResetVersion?: number
   }
 
   export type UserSettingsUpdateManyMutationInput = {
@@ -79720,6 +79835,9 @@ export namespace Prisma {
     settings?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastFactoryResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    factoryResetCount?: IntFieldUpdateOperationsInput | number
+    factoryResetVersion?: IntFieldUpdateOperationsInput | number
   }
 
   export type UserSettingsUncheckedUpdateManyInput = {
@@ -79732,6 +79850,9 @@ export namespace Prisma {
     settings?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastFactoryResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    factoryResetCount?: IntFieldUpdateOperationsInput | number
+    factoryResetVersion?: IntFieldUpdateOperationsInput | number
   }
 
   export type PlatformSettingsCreateInput = {
@@ -84881,6 +85002,14 @@ export namespace Prisma {
     settings?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    lastFactoryResetAt?: SortOrder
+    factoryResetCount?: SortOrder
+    factoryResetVersion?: SortOrder
+  }
+
+  export type UserSettingsAvgOrderByAggregateInput = {
+    factoryResetCount?: SortOrder
+    factoryResetVersion?: SortOrder
   }
 
   export type UserSettingsMaxOrderByAggregateInput = {
@@ -84892,6 +85021,9 @@ export namespace Prisma {
     timezone?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    lastFactoryResetAt?: SortOrder
+    factoryResetCount?: SortOrder
+    factoryResetVersion?: SortOrder
   }
 
   export type UserSettingsMinOrderByAggregateInput = {
@@ -84903,6 +85035,14 @@ export namespace Prisma {
     timezone?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    lastFactoryResetAt?: SortOrder
+    factoryResetCount?: SortOrder
+    factoryResetVersion?: SortOrder
+  }
+
+  export type UserSettingsSumOrderByAggregateInput = {
+    factoryResetCount?: SortOrder
+    factoryResetVersion?: SortOrder
   }
 
   export type PlatformSettingsCountOrderByAggregateInput = {
@@ -98284,6 +98424,9 @@ export namespace Prisma {
     settings?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
+    lastFactoryResetAt?: Date | string | null
+    factoryResetCount?: number
+    factoryResetVersion?: number
   }
 
   export type UserSettingsUncheckedCreateWithoutUserInput = {
@@ -98295,6 +98438,9 @@ export namespace Prisma {
     settings?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
+    lastFactoryResetAt?: Date | string | null
+    factoryResetCount?: number
+    factoryResetVersion?: number
   }
 
   export type UserSettingsCreateOrConnectWithoutUserInput = {
@@ -99548,6 +99694,9 @@ export namespace Prisma {
     settings?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastFactoryResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    factoryResetCount?: IntFieldUpdateOperationsInput | number
+    factoryResetVersion?: IntFieldUpdateOperationsInput | number
   }
 
   export type UserSettingsUncheckedUpdateWithoutUserInput = {
@@ -99559,6 +99708,9 @@ export namespace Prisma {
     settings?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastFactoryResetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    factoryResetCount?: IntFieldUpdateOperationsInput | number
+    factoryResetVersion?: IntFieldUpdateOperationsInput | number
   }
 
   export type OtpCodeUpsertWithWhereUniqueWithoutUserInput = {

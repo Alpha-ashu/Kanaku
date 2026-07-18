@@ -580,7 +580,10 @@ exports.Prisma.UserSettingsScalarFieldEnum = {
   timezone: 'timezone',
   settings: 'settings',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  lastFactoryResetAt: 'lastFactoryResetAt',
+  factoryResetCount: 'factoryResetCount',
+  factoryResetVersion: 'factoryResetVersion'
 };
 
 exports.Prisma.PlatformSettingsScalarFieldEnum = {
@@ -1076,7 +1079,10 @@ exports.FinancialEventLogType = exports.$Enums.FinancialEventLogType = {
   LOAN_PAYMENT: 'LOAN_PAYMENT',
   GROUP_EXPENSE_CREATED: 'GROUP_EXPENSE_CREATED',
   GROUP_SETTLEMENT_COMPLETED: 'GROUP_SETTLEMENT_COMPLETED',
-  SNAPSHOT_UPDATED: 'SNAPSHOT_UPDATED'
+  SNAPSHOT_UPDATED: 'SNAPSHOT_UPDATED',
+  FACTORY_RESET_STARTED: 'FACTORY_RESET_STARTED',
+  FACTORY_RESET_COMPLETED: 'FACTORY_RESET_COMPLETED',
+  FACTORY_RESET_FAILED: 'FACTORY_RESET_FAILED'
 };
 
 exports.Prisma.ModelName = {

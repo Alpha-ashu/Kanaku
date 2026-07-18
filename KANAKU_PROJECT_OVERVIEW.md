@@ -53,12 +53,40 @@ Kanaku/
 
 ---
 
-## A1. Recent Hardening & Fixes (last 7 days — 2026-07-09 → 2026-07-16)
+## A1. Recent Hardening & Fixes (last 7 days — 2026-07-11 → 2026-07-18)
 
-> Rolling 1-week changelog. Entries older than 2026-07-09 have been pruned (see
+> Rolling 1-week changelog. Entries older than 2026-07-11 have been pruned (see
 > git history); the architecture/governance sections below are unaffected. Treat
 > as authoritative — these changes alter auth/session, RBAC, monetary
 > persistence, security headers, and accessibility.
+
+### Phase 10.7 — Factory Reset / Clear Data Enterprise Hardening (2026-07-17 → 2026-07-18)
+- **Root Cause Fix (Append-Only AuditLog):** Removed `auditLog.deleteMany()` from the `clear-data` transaction. The database enforces an append-only trigger (`AuditLog is append-only — UPDATE/DELETE is not permitted`) that aborted the entire Prisma transaction and rolled back all deletions. Removing it permanently fixes the "data comes back after Clear Data" regression.
+- **Session-Level Advisory Lock (`clearDataLock.ts`):** Added `pg_try_advisory_lock` / `pg_advisory_unlock` wrapping the full reset lifecycle — DB transaction, Supabase Storage cleanup, cache bust, and event logging. Session-level (not transaction-level) so the lock survives past `COMMIT`. Concurrent requests return `409 CLEAR_ALREADY_RUNNING` immediately.
+- **Scoped Idempotency Keys:** Reset idempotency keys are scoped as `idempotency:{userId}:clearAllUserData:{clientKey}` to prevent cross-endpoint key collisions. Responses cached for 10 minutes.
+- **Worker Skip Guard:** Added `clearingDataUsers` in-memory Set to `recurring.worker.ts` and `workers/index.ts`. Recurring transaction worker and notification outbox worker skip any user marked as mid-reset. Set cleared in `finally` block. Documented as single-node; migration path to DB-backed flag noted.
+- **Event Store Lifecycle (FACTORY_RESET_STARTED/COMPLETED/FAILED):** Extended `FinancialEventLogType` PostgreSQL enum and `eventStore.ts` to record all three lifecycle events outside the deletions transaction (never rolled back). Each event carries `factoryResetId`, `factoryResetVersion`, timings, and a deletion summary.
+- **FactoryResetId:** Every reset generates a structured `FR-YYYYMMDD-{12hex}` identifier (e.g. `FR-20260718-919fb955496a`) included in the response, dry-run, and all event store entries. Support can query the event store instantly by ID.
+- **FactoryResetVersion String:** `factoryResetVersion: "10.7"` carried in every response and event payload. Bumped when the deletion table set changes so support knows which tables were in scope.
+- **Per-Phase Timing Report:** `timings.phase0` through `timings.phase5` (ms) returned in every response and in the `FACTORY_RESET_COMPLETED` event. Phase 1 (DB deletes) and Phase 3 (storage) are the dominant phases; used as production performance baseline.
+- **Snapshot Table Invalidation:** `DailyAccountBalance`, `MonthlyCategorySpend`, `MonthlyCashflow` rows are deleted inside the transaction. Snapshot service rebuilds them incrementally on the user's next transaction, guaranteeing dashboard returns zero immediately after reset.
+- **Reset Metadata:** `UserSettings` is updated with `lastFactoryResetAt`, `factoryResetCount` (incremented), and `factoryResetVersion` (integer, incremented) on every reset.
+- **Dry-Run Mode (`?dryRun=true`):** Returns row counts of what would be deleted and an estimated duration without mutating data. Returns `factoryResetId` and `factoryResetVersion` for traceability. No re-authentication required for dry-run.
+- **Two-Layer Verification:** Layer 1 (in-transaction): counts all 14 primary tables inside the `$transaction` before `COMMIT` — throws `VERIFY_FAILED` and rolls back if any > 0. Layer 2 (post-commit): soft-delete-aware counts for accounts, transactions, budgets, goals, plus aggregated dashboard totals, cashflow, AI insights — sets `integrity.status = 'warning'` if residual found.
+- **Official Specification (`quality/specs/CLEAR_DATA_SPEC.md`):** Ratified 26-section production specification covering: user intent, preserve/delete/reset taxonomy, post-reset API contract (9 endpoints), authorization contract, re-authentication requirement (OTP challenge flow), rate limiting (3/hour per user, 20/hour per IP), UserSettings reset values, FactoryResetId format, response schema versioning (`responseVersion: 1`), phase timing, Supabase Storage orphan cleanup policy and retry job spec, event store lifecycle, monitoring & alerting thresholds (6 alert rules), support runbook (SQL queries + manual remediation steps), and client responsibilities.
+- **E2E Integration Test (`clearData.e2e.test.ts`):** Full lifecycle test: seeds all major tables, dry-run, reset, idempotency replay, API empty-state verification, worker simulation, new account creation. Passes in ~43 seconds against remote staging DB.
+
+### Phase 10 — Production Readiness & Financial Hardening (2026-07-15 → 2026-07-17)
+- **Financial Invariant Validator (`financialInvariantValidator.ts`):** Centralized static validator class enforcing all double-entry ledger rules: non-zero amounts, balanced debits/credits, transfer shape (source ≠ destination, exactly 1 IN + 1 OUT), account ownership & soft-deletion guards, cross-user reference prevention, balance floors (negative balance prevention), and pending settlement limits. Integrated into `ledger.service.ts`'s `postJournalEntry` and `settleJournalEntryLeg`. Covered by 22-case integration test suite.
+- **Incremental Snapshot Tables:** Three new Prisma models added: `DailyAccountBalance` (unique per account + date), `MonthlyCategorySpend` (unique per user + year + month + category), `MonthlyCashflow` (unique per user + year + month). `snapshotService.ts` subscribes to `LEDGER_POSTED` events and updates rows incrementally (O(1) upsert per transaction). Automatic safe startup backfill for existing transaction history.
+- **Database Index Audit & Migration:** Created `quality/database/index_audit.sql` with DDL and `EXPLAIN` plans for monthly aggregates, paginated transactions, and double-entry integrity scans. Added composite indexes: `RecurringTransaction@@index([status, nextDueDate])` and `GroupExpenseMember@@index([groupExpenseId, userId])`. Applied via safe DDL (no external auth table drops).
+- **API Contract Freeze (OpenAPI V1 Snapshot):** Dumped frozen V1 OpenAPI specification (148 paths, 185 operations) to `quality/api/openapi-v1-snapshot.json`. `apiContract.test.ts` checks current code against the golden snapshot on every PR to enforce backward compatibility.
+- **Migration Safety Tests (`migrationSafety.test.ts`):** Verifies Phase 5 → current database state upgrades seamlessly, passes reconciliation, and backfills snapshot tables without data or logic errors.
+- **Security Hardening Suite (`security-audit.cjs`):** Extended staging check with JWT replay/revocation on logout, sequential ID enumeration guards, and file upload MIME type/size limit constraints.
+- **Disaster Recovery Test (`disaster_recovery.cjs`):** Database backup in-memory → wipe → bulk `createMany` restore → 100% balance reconciliation in under 3 seconds for 114 accounts and 606 transactions.
+- **Observability Dashboards:** `engineering.json` (CPU, memory, transaction latency, DB pools, error tracking) and `business.json` (user growth, active sessions, double-entry anomalies, split volume, executor health) for Grafana.
+- **CI Pipeline (`ci.yml`):** Upgraded GitHub Actions to run backend unit tests, contract tests, invariant integration tests, and migration integration tests on every pull request.
+- **19 Enterprise Release Readiness Reports:** Generated under `quality/release/`: Cache Validation, Code Review, Concurrency, Database Index, Database Integrity, Data Integrity Audit, Deployment Checklist, Financial Integrity, Known Issues, Load Test, Monitoring, Observability, Offline Sync, Performance, Readiness, Request Trace, Resource Usage, Rollback, Security.
 
 ### Financial Ledger Integration / Core Ledger Foundation (Phase 7A) (2026-07-16)
 - **Central Master Ledger Architecture:** Integrated `ledger.service.ts` to manage all transactional journal writes, ensuring that accounts are atomically adjusted whenever journal entries are posted, enforcing a single source of truth.

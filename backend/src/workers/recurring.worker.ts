@@ -15,6 +15,41 @@ import {
 
 let recurringJob: ScheduledTask | null = null;
 
+// ── Worker User-Skip Guard ────────────────────────────────────────────────────
+// When a factory reset is in progress for a user, the recurring worker (and
+// notification drainer in workers/index.ts) skip that user's items to prevent
+// a race where a worker commits a new expense AFTER the reset transaction
+// committed but BEFORE the controller marks the operation complete.
+//
+// ⚠️  SCALABILITY NOTE: This Set is process-local. It is correct and sufficient
+//     for a single Node.js deployment. If the service is scaled horizontally
+//     (multiple processes, Kubernetes pods, PM2 cluster), each process maintains
+//     its own copy of the Set, so a reset triggered on Pod A would not pause the
+//     worker on Pod B.
+//
+//     Migration path to multi-process deployments:
+//       1. Add `clearingData Boolean @default(false)` to the UserSettings model.
+//       2. The factory reset sets it true before the transaction and false after.
+//       3. Workers query `UserSettings.clearingData` to decide whether to skip.
+//     Until then, the advisory lock (pg_try_advisory_lock) on Postgres guarantees
+//     a single concurrent reset per user across the entire DB cluster.
+const clearingDataUsers = new Set<string>();
+
+/** Mark a user as having an active factory reset in progress. */
+export function markUserClearing(userId: string): void {
+  clearingDataUsers.add(userId);
+}
+
+/** Unmark a user after their factory reset completes or fails. */
+export function unmarkUserClearing(userId: string): void {
+  clearingDataUsers.delete(userId);
+}
+
+/** Returns true if a factory reset is currently in progress for this user. */
+export function isUserClearing(userId: string): boolean {
+  return clearingDataUsers.has(userId);
+}
+
 export function calculateNextDueDate(currentDate: Date, interval: string): Date {
   const next = new Date(currentDate);
   if (interval === 'weekly') {
@@ -52,6 +87,12 @@ export const processDueRecurringTransactions = async (): Promise<void> => {
     logger.info(`[recurring-worker] Processing ${dueItems.length} due recurring transactions`);
 
     for (const item of dueItems) {
+      // Skip users who currently have a factory reset in progress
+      if (isUserClearing(item.userId)) {
+        logger.debug(`[recurring-worker] Skipping item ${item.id} — factory reset in progress for user ${item.userId}`);
+        continue;
+      }
+
       // Check optional start and end dates
       if (item.startDate && new Date(item.startDate) > now) {
         continue; // Not started yet

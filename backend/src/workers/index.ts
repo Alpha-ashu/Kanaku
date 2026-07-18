@@ -25,6 +25,7 @@ import {
   outboxDrainsTotal, outboxDrainDuration, outboxQueueDepth,
   notificationDeliveriesTotal, notificationOutcomesTotal, workerJobFailuresTotal,
 } from '../config/metrics';
+import { isUserClearing } from './recurring.worker';
 
 // ── Delivery policy ──────────────────────────────────────────────────────────
 export const MAX_ATTEMPTS = Number(process.env.NOTIFICATION_MAX_ATTEMPTS || 5);
@@ -350,6 +351,10 @@ export async function drainNotificationOutbox(): Promise<number> {
     })) as OutboxRow[];
 
     for (const row of due) {
+      if (isUserClearing(row.userId)) {
+        logger.debug(`[outbox] Skipping notification ${row.id} — factory reset in progress for user ${row.userId}`);
+        continue;
+      }
       await deliverNotification(row);
     }
     markOutboxDrain(due.length); // liveness heartbeat for worker health monitoring

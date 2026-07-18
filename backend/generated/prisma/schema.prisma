@@ -704,16 +704,20 @@ model UserPin {
 }
 
 model UserSettings {
-  id        String   @id @default(uuid())
-  userId    String   @unique
-  theme     String   @default("light")
-  language  String   @default("en")
-  currency  String   @default("USD")
-  timezone  String   @default("UTC")
-  settings  Json     @default("{}")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                  String    @id @default(uuid())
+  userId              String    @unique
+  theme               String    @default("light")
+  language            String    @default("en")
+  currency            String    @default("USD")
+  timezone            String    @default("UTC")
+  settings            Json      @default("{}")
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  // Factory reset tracking
+  lastFactoryResetAt  DateTime?
+  factoryResetCount   Int       @default(0)
+  factoryResetVersion Int       @default(0)
+  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@schema("public")
@@ -1367,6 +1371,9 @@ enum FinancialEventLogType {
   GROUP_EXPENSE_CREATED
   GROUP_SETTLEMENT_COMPLETED
   SNAPSHOT_UPDATED
+  FACTORY_RESET_STARTED
+  FACTORY_RESET_COMPLETED
+  FACTORY_RESET_FAILED
 
   @@schema("public")
 }

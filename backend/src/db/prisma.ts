@@ -34,12 +34,17 @@ const SLOW_QUERY_MS    = 2_000;
 const READ_REPLICA_URL = process.env.READ_REPLICA_URL;
 
 function buildClient(datasourceUrl?: string, opts?: { audit?: boolean }): PrismaClient {
+  let url = datasourceUrl;
+  if (process.env.NODE_ENV === 'test') {
+    url = process.env.DIRECT_URL || process.env.DATABASE_URL;
+  }
+
   const base = new PrismaClient({
     log: [
       { emit: 'event', level: 'warn'  },
       { emit: 'event', level: 'error' },
     ],
-    ...(datasourceUrl ? { datasources: { db: { url: datasourceUrl } } } : {}),
+    ...(url ? { datasources: { db: { url } } } : {}),
   });
 
   (base as any).$on('warn',  (e: any) => logger.warn('[Prisma]',  e));

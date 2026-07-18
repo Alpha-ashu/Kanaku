@@ -194,10 +194,6 @@ describe('Phase 5 to Phase 9 Migration Safety & Backfill Verification Tests', ()
     expect(new Decimal(finalDaily!.balance).toNumber()).toBe(1300.00);
 
     // Assert monthly cashflow totals match legacy transaction sums
-    const monthlyCf = await prisma.monthlyCashflow.findFirst({
-      where: { userId: TEST_USER, year: 2026, month: 7 } // legacy txs were June, backfill runs for today, transactions backfilled YYYY-MM based on date
-    });
-    // Wait, transactions were date: June 2026, so month = 6, year = 2026.
     const juneCf = await prisma.monthlyCashflow.findFirst({
       where: { userId: TEST_USER, year: 2026, month: 6 }
     });

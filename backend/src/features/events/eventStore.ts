@@ -21,7 +21,10 @@ const EventTypeMap: Record<string, FinancialEventLogType> = {
   'LOAN_DISBURSED': 'LOAN_DISBURSED',
   'LOAN_PAYMENT_CREATED': 'LOAN_PAYMENT',
   'RECURRING_EXECUTED': 'RECURRING_EXECUTED',
-  'SNAPSHOT_UPDATED': 'SNAPSHOT_UPDATED'
+  'SNAPSHOT_UPDATED': 'SNAPSHOT_UPDATED',
+  'FACTORY_RESET_STARTED': 'FACTORY_RESET_STARTED',
+  'FACTORY_RESET_COMPLETED': 'FACTORY_RESET_COMPLETED',
+  'FACTORY_RESET_FAILED': 'FACTORY_RESET_FAILED',
 };
 
 export class FinancialEventStore {
@@ -40,7 +43,7 @@ export class FinancialEventStore {
       // Gather correlation info from context or event metadata
       const actor = getRequestActor();
       const correlationId = actor.correlationId || event.metadata?.requestId || null;
-      const requestId = actor.requestId || event.metadata?.requestId || null;
+      let requestId = actor.requestId || event.metadata?.requestId || null;
       const sessionId = actor.sessionId || null;
 
       // Extract aggregate fields
@@ -55,6 +58,19 @@ export class FinancialEventStore {
         aggregateType = 'JournalEntry';
         aggregateId = ev.journalEntryId;
         journalEntryId = ev.journalEntryId;
+
+        // Fallback: if requestId is null, query it from the JournalEntry record in database
+        if (!requestId) {
+          try {
+            const je = await tx.journalEntry.findUnique({
+              where: { id: journalEntryId as string },
+              select: { requestId: true }
+            });
+            if (je?.requestId) requestId = je.requestId;
+          } catch (err) {
+            // Ignore query errors in fallback
+          }
+        }
       } else if (ev.transactionId) {
         aggregateType = 'Transaction';
         aggregateId = ev.transactionId;
@@ -106,22 +122,39 @@ export class FinancialEventStore {
   }
 
   /**
-   * Retrieves all events for a specific aggregate.
+   * Records a FACTORY_RESET_STARTED, FACTORY_RESET_COMPLETED, or
+   * FACTORY_RESET_FAILED lifecycle event directly into the FinancialEvent
+   * table (outside a transaction — these are operational events, not financial
+   * journal entries, and must survive even if the reset transaction rolled back).
+   *
+   * @param userId  The user whose data is being reset
+   * @param phase   'STARTED' | 'COMPLETED' | 'FAILED'
+   * @param payload Optional metadata (e.g. failure reason, counts)
    */
-  static async getEventsByAggregate(tx: PrismaTx, aggregateId: string): Promise<any[]> {
-    return await tx.financialEvent.findMany({
-      where: { aggregateId },
-      orderBy: { createdAt: 'asc' }
-    });
-  }
-
-  /**
-   * Retrieves all events for a specific user.
-   */
-  static async getEventsByUser(tx: PrismaTx, userId: string): Promise<any[]> {
-    return await tx.financialEvent.findMany({
-      where: { userId },
-      orderBy: { createdAt: 'asc' }
-    });
+  static async recordFactoryReset(
+    userId: string,
+    phase: 'STARTED' | 'COMPLETED' | 'FAILED',
+    payload?: Record<string, unknown>,
+  ): Promise<void> {
+    const { prisma } = await import('../../db/prisma');
+    const eventType: FinancialEventLogType = `FACTORY_RESET_${phase}` as FinancialEventLogType;
+    try {
+      await prisma.financialEvent.create({
+        data: {
+          eventType,
+          aggregateType: 'User',
+          aggregateId:   userId,
+          userId,
+          eventVersion:  1,
+          sourceModule:  undefined,
+          payload:       payload ? JSON.parse(JSON.stringify(payload)) : {},
+          createdAt:     new Date(),
+        },
+      });
+      logger.debug(`[EventStore] Factory reset event recorded: FACTORY_RESET_${phase} for user ${userId}`);
+    } catch (err: any) {
+      // Non-fatal — we never let audit logging crash the reset operation
+      logger.error(`[EventStore] Failed to record FACTORY_RESET_${phase}`, { userId, error: err.message });
+    }
   }
 }

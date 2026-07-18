@@ -33,22 +33,24 @@ export class FinancialSnapshotService {
       }
     });
 
-    // Run safe async backfill check if database is empty of daily balances
-    try {
-      const { prisma } = require('../../db/prisma');
-      prisma.dailyAccountBalance.count()
-        .then((count: number) => {
-          if (count === 0) {
-            this.backfillAll(prisma).catch((err: any) => {
-              logger.error('[SnapshotService] Retroactive backfill failed', { error: err.message });
-            });
-          }
-        })
-        .catch((err: any) => {
-          logger.warn('[SnapshotService] Could not query snapshot tables for backfill check', { error: err.message });
-        });
-    } catch (err: any) {
-      logger.warn('[SnapshotService] Failed to bind prisma client for backfill check', { error: err.message });
+    // Run safe async backfill check if database is empty of daily balances (bypassed in tests to avoid deadlocks)
+    if (process.env.NODE_ENV !== 'test') {
+      try {
+        const { prisma } = require('../../db/prisma');
+        prisma.dailyAccountBalance.count()
+          .then((count: number) => {
+            if (count === 0) {
+              this.backfillAll(prisma).catch((err: any) => {
+                logger.error('[SnapshotService] Retroactive backfill failed', { error: err.message });
+              });
+            }
+          })
+          .catch((err: any) => {
+            logger.warn('[SnapshotService] Could not query snapshot tables for backfill check', { error: err.message });
+          });
+      } catch (err: any) {
+        logger.warn('[SnapshotService] Failed to bind prisma client for backfill check', { error: err.message });
+      }
     }
 
     logger.info('[SnapshotService] Financial snapshot listener initialized.');
@@ -170,14 +172,17 @@ export class FinancialSnapshotService {
     const existingBalances = await tx.dailyAccountBalance.findMany({
       where: { date: today }
     });
-    const existingAccIds = new Set(existingBalances.map(b => b.accountId));
+    const existingBalancesMap = new Map(existingBalances.map(b => [b.accountId, b.balance]));
 
     const toCreate: any[] = [];
     const toUpdate: any[] = [];
 
     for (const acc of accounts) {
-      if (existingAccIds.has(acc.id)) {
-        toUpdate.push(acc);
+      const existingBal = existingBalancesMap.get(acc.id);
+      if (existingBal !== undefined) {
+        if (!new Decimal(existingBal).equals(new Decimal(acc.balance))) {
+          toUpdate.push(acc);
+        }
       } else {
         toCreate.push({
           accountId: acc.id,
@@ -216,7 +221,7 @@ export class FinancialSnapshotService {
       const m = date.getMonth() + 1;
       const amt = new Decimal(txn.amount);
       const dir = txn.direction; // INFLOW or OUTFLOW
-      const isIncome = dir === 'INFLOW';
+      const isIncome = dir === 'INFLOW' || txn.type.toLowerCase() === 'income';
 
       // Aggregate Cashflow key: userId_year_month
       const cfKey = `${txn.userId}_${y}_${m}`;
@@ -238,8 +243,20 @@ export class FinancialSnapshotService {
       }
     }
 
-    // Now execute upserts on the aggregated in-memory maps (drastically reduces query count)
+    const existingCf = await tx.monthlyCashflow.findMany();
+    const existingCfMap = new Map(existingCf.map(c => [`${c.userId}_${c.year}_${c.month}`, c]));
+
+    const existingCs = await tx.monthlyCategorySpend.findMany();
+    const existingCsMap = new Map(existingCs.map(c => [`${c.userId}_${c.year}_${c.month}_${c.category}`, c]));
+
     for (const cf of cashflows.values()) {
+      const key = `${cf.userId}_${cf.year}_${cf.month}`;
+      const existing = existingCfMap.get(key);
+      if (existing) {
+        if (new Decimal(existing.income).equals(cf.income) && new Decimal(existing.expense).equals(cf.expense)) {
+          continue; // Skip redundant upsert
+        }
+      }
       await tx.monthlyCashflow.upsert({
         where: { userId_year_month: { userId: cf.userId, year: cf.year, month: cf.month } },
         update: { income: cf.income, expense: cf.expense },
@@ -248,6 +265,13 @@ export class FinancialSnapshotService {
     }
 
     for (const cs of categorySpends.values()) {
+      const key = `${cs.userId}_${cs.year}_${cs.month}_${cs.category}`;
+      const existing = existingCsMap.get(key);
+      if (existing) {
+        if (new Decimal(existing.total).equals(cs.total)) {
+          continue; // Skip redundant upsert
+        }
+      }
       await tx.monthlyCategorySpend.upsert({
         where: { userId_year_month_category: { userId: cs.userId, year: cs.year, month: cs.month, category: cs.category } },
         update: { total: cs.total },
