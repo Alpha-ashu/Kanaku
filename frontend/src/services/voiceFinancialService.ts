@@ -5,20 +5,11 @@
  */
 
 import { backendService } from '@/lib/backend-api';
+// Wire-contract base types are shared with the backend; the client widens them
+// with local-only action types and entities. Backend responses stay assignable.
+import type { VoiceActionType, VoiceActionEntities, VoiceFinancialAction } from '@kanaku/shared';
 
-export interface FinancialActionEntities {
-  amount?: number;
-  currency?: string;
-  category?: string;
-  subcategory?: string;
-  person?: string;
-  merchant?: string;
-  description?: string;
-  date?: string;
-  paymentMethod?: string;
-  goalTarget?: number;
-  goalDuration?: string;
-  goalMonthly?: number;
+export interface FinancialActionEntities extends VoiceActionEntities {
   members?: string[];
   answer?: string;
   queryResult?: any;
@@ -28,17 +19,21 @@ export interface FinancialActionEntities {
   billUrl?: string;
 }
 
-export interface FinancialAction {
-  type: 'expense' | 'income' | 'transfer' | 'loan_borrow' | 'loan_lend' | 'goal' | 'investment' | 'group_expense' | 'query' | 'bill_scan' | 'subscription' | 'unknown';
-  rawSegment: string;
-  entities: FinancialActionEntities;
-  confidence: number;
-  requiresReview: boolean;
-}
+/** Backend action types plus client-only intents from the local parser. */
+export type ClientVoiceActionType =
+  | VoiceActionType
+  | 'group_expense'
+  | 'query'
+  | 'bill_scan'
+  | 'subscription';
+
+export type FinancialAction = VoiceFinancialAction<ClientVoiceActionType, FinancialActionEntities>;
 
 export interface VoiceProcessResponse {
   success: boolean;
   transcript: string;
+  language?: string;
+  sttProvider?: 'gemini' | 'whisper';
   actions: FinancialAction[];
   totalActions: number;
   requiresReview: boolean;

@@ -120,7 +120,8 @@
     "tailwindcss": "4.1.12",
     "typescript": "^5.3.3",
     "vite": "8.0.16",
-    "vitest": "^4.1.0"
+    "vitest": "^4.1.0",
+    "@kanaku/shared": "*"
   },
   "optionalDependencies": {
     "@rolldown/binding-linux-x64-gnu": "1.0.3",
