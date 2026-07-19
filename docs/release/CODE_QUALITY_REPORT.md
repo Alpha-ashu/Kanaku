@@ -40,12 +40,12 @@ Backend eslint: 105 errors / 571 warnings (dominant: `no-unused-vars` on imports
 then make CI blocking with `--max-warnings` budget.
 
 ### Q-3 — Root-level doc/scripts sprawl (LOW)
-- 4 overlapping root architecture docs (`KANAKU_PROJECT_OVERVIEW.md` 442 KB,
+- ~~4 overlapping root architecture docs~~ moved into `docs/architecture/` + `docs/archive/` (cleanup PR 1) — (`OVERVIEW.md` 442 KB,
   `kanaku_architecture_workflow.md`, `implementation_plan.md`, `ENGINEERING_DECISIONS.md`)
   vs. `docs/` set — consolidation plan in BETA_READINESS_REPORT §Docs.
-- Pre-Prisma SQL helpers in `backend/` root (`schema*.sql`, `create_*.sql`,
-  `apply_schema.cjs`) — archive under `backend/scripts/legacy/`.
-- `scratch/`, `test-results/`, `rbac-export/` in repo root — fold into `quality/`.
+- ~~Pre-Prisma SQL helpers in `backend/` root~~ — archived to `db/legacy-sql/` (cleanup PR 1) (`schema*.sql`, `create_*.sql`,
+  `apply_schema.cjs`).
+- ~~`scratch/`, `test-results/`, `rbac-export/` in repo root~~ — folded into `quality/` / deleted (2026-07 cleanup PR 1).
 
 ### Q-4 — Dead API wrappers (FIXED in this audit)
 4 frontend wrappers pointing at nonexistent endpoints removed/redirected ([api.ts](../../frontend/src/lib/api.ts));

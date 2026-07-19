@@ -23,7 +23,5 @@ backend/docker-compose.yml
 backend/jest.config.ts
 backend/README.md
 backend/API_DOCUMENTATION.md
-!backend/dist
-!backend/generated
 !backend/prisma
 !backend/eng.traineddata

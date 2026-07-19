@@ -1,20 +1,18 @@
-# API
+# /api — Vercel Edge Functions
 
-This folder contains lightweight serverless endpoints that are separate from the main Express backend.
+This folder contains **Vercel serverless functions only**. There is exactly one:
 
-## Current files
+- `stocks.ts` — public stock/market-data quote proxy (`/api/v1/stocks*`), served at the
+  edge for latency and CDN caching. Self-contained: no backend imports, no database.
 
-- `auth.ts`
-- `health.ts`
-- `stocks.ts`
-- `users.ts`
+## The boundary rule
 
-## Use cases
+**`backend/` is the application API.** All `/api/v1/*` business logic — auth, RBAC,
+persistence, sync, ledger — lives in the Express backend deployed on Render.
+`vercel.json` proxies every other `/api/*` path straight to that backend.
 
-- small deployable endpoints for Vercel/serverless hosting
-- health checks
-- thin integrations that do not need the full backend runtime
+Nothing may be added to this folder without an ADR in `docs/architecture/`. If an
+endpoint needs auth, the database, or any backend module, it belongs in `backend/`.
 
-## Important boundary
-
-The main application authority still lives in [`backend/`](../backend/README.md). Keep business logic, authz rules, sync identity, and core persistence there unless there is a clear reason to duplicate them in serverless form.
+(The former `auth.ts`, `users.ts`, `health.ts`, and `index.ts` here were unrouted legacy
+duplicates of backend functionality and were removed in the 2026-07 repo cleanup.)

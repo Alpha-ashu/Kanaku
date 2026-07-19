@@ -63,7 +63,7 @@ design, tree-shaken lazy-loaded frontend (182 KB gzip core).
 
 1. Root `kanaku_architecture_workflow.md`, `implementation_plan.md` → fold into
    `docs/architecture/` + `docs/06_IMPLEMENTATION_PLAN.md`, then delete.
-2. `KANAKU_PROJECT_OVERVIEW.md` (442 KB) remains the living deep-dive; docs/release/* are
+2. `docs/architecture/OVERVIEW.md` (moved from repo root, 442 KB) remains the living deep-dive; docs/release/* are
    the audit-verified summaries linking into it (done).
 3. Archive pre-Prisma SQL helpers under `backend/scripts/legacy/`.
 4. Backfill QA contract descriptions (`qa:contract-enrich`) to close the 260-contract gap.

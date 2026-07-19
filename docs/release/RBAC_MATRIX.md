@@ -3,7 +3,7 @@
 Source of truth in code: `backend/src/middleware/rbac.ts` (`requireRole`),
 `middleware/adminPlatformGate.ts`, `middleware/featureGate.ts` (admin-panel feature
 flags, deny-by-default), and per-route gates. Full per-endpoint export:
-[Kanaku_Feature_Endpoint_Role_Matrix.xlsx](../../Kanaku_Feature_Endpoint_Role_Matrix.xlsx) and `rbac-export/`.
+[Kanaku_Feature_Endpoint_Role_Matrix.xlsx](../../quality/reports/Kanaku_Feature_Endpoint_Role_Matrix.xlsx) and `quality/reports/rbac/`.
 
 ## Roles (as implemented)
 

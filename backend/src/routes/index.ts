@@ -61,7 +61,7 @@ const lazyRoute =
 // ships (Account Aggregator / Setu, Phase 5) is instead deferred at the mount
 // layer behind the ENABLED_MODULES env allowlist: with it unset — the production
 // default — `/aa` returns 404 and cannot be reached just because its code exists.
-// See KANAKU_PROJECT_OVERVIEW.md → "Module Phasing & Gating".
+// See docs/architecture/OVERVIEW.md → "Module Phasing & Gating".
 const ENABLED_MODULES = new Set(
   (process.env.ENABLED_MODULES ?? '')
     .split(',')

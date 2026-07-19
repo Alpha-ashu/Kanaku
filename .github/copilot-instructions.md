@@ -9,7 +9,7 @@ Terms & Conditions `docs/TERMS_*.md` + these guardrails). For a new feature, fil
 **`docs/FEATURE_TEMPLATE.md`** and satisfy **every** applicable box in the
 Rulebook's §9 *Definition of Done* before shipping. If a rule blocks the feature,
 the rule wins — escalate, do not bypass. Precedence: Law → Terms →
-`KANAKU_PROJECT_OVERVIEW.md` → `docs/RULEBOOK.md` → skill docs → individual PRs.
+`docs/architecture/OVERVIEW.md` → `docs/RULEBOOK.md` → skill docs → individual PRs.
 
 ## Architecture Guardrails
 - React 18 + TypeScript frontend on Vite + Capacitor.

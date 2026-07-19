@@ -1404,7 +1404,7 @@ model FinancialEvent {
   @@schema("public")
 }
 
-// ── Voice Intelligence (tables originally created by supabase/migrations/015) ──
+// ── Voice Intelligence (tables originally created by db/supabase/migrations/015) ──
 // Mapped to the existing snake_case tables. No FK relation to User is declared:
 // the Supabase-created variant references auth.users, which lives outside the
 // Prisma-managed "public" model set; rows are scoped by userId in queries.
